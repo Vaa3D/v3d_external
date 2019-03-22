@@ -3843,12 +3843,43 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 			//cout << endl;
 			int seg1ID = dist2segsMap.begin()->second.begin()->segID;
 			int seg2ID = (dist2segsMap.begin()->second.begin() + 1)->segID;
-			cout << " -- post elongation distance measured: " << dist2segsMap.begin()->first << " " << seg1ID << "_" << dist2segsMap.begin()->second.begin()->head_tail << " " << seg2ID << "_" << (dist2segsMap.begin()->second.begin() + 1)->head_tail << endl;
+			//cout << " -- post elongation distance measured: " << dist2segsMap.begin()->first << " " << seg1ID << "_" << dist2segsMap.begin()->second.begin()->head_tail << " " << seg2ID << "_" << (dist2segsMap.begin()->second.begin() + 1)->head_tail << endl;
 			//cout << "  -- seg1 head: " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->x << " " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->y << " " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->z << endl;
 			//cout << "  -- seg1 tail: " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->x << " " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->y << " " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->z << endl;
 			//cout << "  -- seg2 head: " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->x << " " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->y << " " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->z << endl;
 			//cout << "  -- seg2 tail: " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->x << " " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->y << " " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->z << endl;
-			if (dist2segsMap.begin()->first < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
+			if (dist2segsMap.begin()->first < this->fragTraceParams.at("labeledDistThreshold"))
+			{
+				vector<float> seg1Vec(3);
+				vector<float> seg2Vec(3);
+				if (dist2segsMap.begin()->second.begin()->head_tail == -1)
+				{
+					seg1Vec[0] = (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->x - curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->x;
+					seg1Vec[1] = (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->y - curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->y;
+					seg1Vec[2] = (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->z - curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->z;
+				}
+				else if (dist2segsMap.begin()->second.begin()->head_tail == 2)
+				{
+					seg1Vec[0] = curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->x - (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->x;
+					seg1Vec[1] = curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->y - (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->y;
+					seg1Vec[2] = curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->z - (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->z;
+				}
+				if ((dist2segsMap.begin()->second.begin() + 1)->head_tail == -1)
+				{
+					seg2Vec[0] = curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->x - (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->x;
+					seg2Vec[1] = curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->y - (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->y;
+					seg2Vec[2] = curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->z - (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->z;
+				}
+				else if ((dist2segsMap.begin()->second.begin() + 1)->head_tail == 2)
+				{
+					seg2Vec[0] = (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->x - curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->x;
+					seg2Vec[1] = (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->y - curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->y;
+					seg2Vec[2] = (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->z - curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->z;
+				}
+
+				float innerProduct = seg1Vec[0] * seg2Vec[0] + seg1Vec[1] * seg2Vec[1] + seg1Vec[2] * seg2Vec[2];
+				if (innerProduct >= 0) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
+			}
 			//cout << endl;
 
 			if (curImgPtr->tracedNeuron.seg.at(seg1ID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1ID));
