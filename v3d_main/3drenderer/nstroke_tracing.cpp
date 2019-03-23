@@ -3878,7 +3878,13 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 				}
 
 				float innerProduct = seg1Vec[0] * seg2Vec[0] + seg1Vec[1] * seg2Vec[1] + seg1Vec[2] * seg2Vec[2];
+				//cout << innerProduct << endl;
 				if (innerProduct >= 0) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
+				else
+				{
+					segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1ID));
+					segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2ID));
+				}
 			}
 			//cout << endl;
 
