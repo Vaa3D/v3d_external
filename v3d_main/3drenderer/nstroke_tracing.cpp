@@ -3843,12 +3843,49 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 			//cout << endl;
 			int seg1ID = dist2segsMap.begin()->second.begin()->segID;
 			int seg2ID = (dist2segsMap.begin()->second.begin() + 1)->segID;
-			cout << " -- post elongation distance measured: " << dist2segsMap.begin()->first << " " << seg1ID << "_" << dist2segsMap.begin()->second.begin()->head_tail << " " << seg2ID << "_" << (dist2segsMap.begin()->second.begin() + 1)->head_tail << endl;
+			//cout << " -- post elongation distance measured: " << dist2segsMap.begin()->first << " " << seg1ID << "_" << dist2segsMap.begin()->second.begin()->head_tail << " " << seg2ID << "_" << (dist2segsMap.begin()->second.begin() + 1)->head_tail << endl;
 			//cout << "  -- seg1 head: " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->x << " " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->y << " " << (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->z << endl;
 			//cout << "  -- seg1 tail: " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->x << " " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->y << " " << curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->z << endl;
 			//cout << "  -- seg2 head: " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->x << " " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->y << " " << (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->z << endl;
 			//cout << "  -- seg2 tail: " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->x << " " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->y << " " << curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->z << endl;
-			if (dist2segsMap.begin()->first < this->fragTraceParams.at("labeledDistThreshold")) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
+			if (dist2segsMap.begin()->first < this->fragTraceParams.at("labeledDistThreshold"))
+			{
+				vector<float> seg1Vec(3);
+				vector<float> seg2Vec(3);
+				if (dist2segsMap.begin()->second.begin()->head_tail == -1)
+				{
+					seg1Vec[0] = (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->x - curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->x;
+					seg1Vec[1] = (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->y - curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->y;
+					seg1Vec[2] = (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->z - curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->z;
+				}
+				else if (dist2segsMap.begin()->second.begin()->head_tail == 2)
+				{
+					seg1Vec[0] = curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->x - (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->x;
+					seg1Vec[1] = curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->y - (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->y;
+					seg1Vec[2] = curImgPtr->tracedNeuron.seg.at(seg1ID).row.begin()->z - (curImgPtr->tracedNeuron.seg.at(seg1ID).row.end() - 1)->z;
+				}
+				if ((dist2segsMap.begin()->second.begin() + 1)->head_tail == -1)
+				{
+					seg2Vec[0] = curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->x - (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->x;
+					seg2Vec[1] = curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->y - (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->y;
+					seg2Vec[2] = curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->z - (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->z;
+				}
+				else if ((dist2segsMap.begin()->second.begin() + 1)->head_tail == 2)
+				{
+					seg2Vec[0] = (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->x - curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->x;
+					seg2Vec[1] = (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->y - curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->y;
+					seg2Vec[2] = (curImgPtr->tracedNeuron.seg.at(seg2ID).row.end() - 1)->z - curImgPtr->tracedNeuron.seg.at(seg2ID).row.begin()->z;
+				}
+
+				float innerProduct = seg1Vec[0] * seg2Vec[0] + seg1Vec[1] * seg2Vec[1] + seg1Vec[2] * seg2Vec[2];
+				//cout << innerProduct << endl;
+				if (innerProduct >= 0) this->simpleConnectExecutor(curImgPtr, dist2segsMap.begin()->second);
+				else
+				{
+					segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1ID));
+					segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg2ID));
+				}
+			}
 			//cout << endl;
 
 			if (curImgPtr->tracedNeuron.seg.at(seg1ID).to_be_deleted) segTypeIt->second.erase(find(segTypeIt->second.begin(), segTypeIt->second.end(), seg1ID));
@@ -4383,7 +4420,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 							cout << "  Loop from 3 way detected ----> (" << *it << ") ";
 							for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
 								cout << *thisLoopIt << " ";
-							cout << endl;
+							cout << endl << endl;
 							return;
 						}
 					}
@@ -4411,7 +4448,34 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 					cout << "  Loop detected ----> (" << *it << ") ";
 					for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
 						cout << *thisLoopIt << " ";
-					cout << endl;
+					cout << endl << endl;
+
+					while (1)
+					{
+						for (set<set<size_t> >::iterator setCheckIt1 = this->finalizedLoopsSet.begin(); setCheckIt1 != this->finalizedLoopsSet.end(); ++setCheckIt1)
+						{
+							for (set<set<size_t> >::iterator setCheckIt2 = this->finalizedLoopsSet.begin(); setCheckIt2 != this->finalizedLoopsSet.end(); ++setCheckIt2)
+							{
+								if (setCheckIt1 == setCheckIt2) continue;
+								else
+								{
+									int segNum = 0;
+									for (set<size_t>::iterator segCheck1 = setCheckIt1->begin(); segCheck1 != setCheckIt1->end(); ++segCheck1)
+										if (setCheckIt2->find(*segCheck1) != setCheckIt2->end()) ++segNum;
+
+									if (segNum == setCheckIt1->size())
+									{
+										this->finalizedLoopsSet.erase(setCheckIt1);
+										goto SET_ERASED;
+									}
+								}
+							}
+						}
+						break;
+
+					SET_ERASED:
+						continue;
+					}
 				}
 			}
 			else return;
