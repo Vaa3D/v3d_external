@@ -2330,30 +2330,32 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		case _TeraShift:
 			{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
-				glm::mat4 mat = glm::mat4();
-				for (size_t i = 0; i < 4; i++)
-				{
-					for (size_t j = 0; j < 4; j++)
+					glm::mat4 mat = glm::mat4();
+					for (size_t i = 0; i < 4; i++)
 					{
-						mat[i][j] = *(mat_M.get() + i * 4 + j);
+						for (size_t j = 0; j < 4; j++)
+						{
+							mat[i][j] = *(mat_M.get() + i * 4 + j);
+						}
 					}
-				}
-				mat=glm::inverse(m_globalMatrix) * mat;
-				glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
-
-				float _deltaX = fabs(ctrlLeftPos.x - loadedNTCenter.x);
-				float _deltaY = fabs(ctrlLeftPos.y - loadedNTCenter.y);
-				float _deltaZ = fabs(ctrlLeftPos.z - loadedNTCenter.z);
-				float _maxDelta = MAX(MAX(_deltaX,_deltaY),_deltaZ);
-				if(_maxDelta == _deltaX)
-					postVRFunctionCallMode = (ctrlLeftPos.x - loadedNTCenter.x)>0?1:2;
-				else if(_maxDelta == _deltaY)
-					postVRFunctionCallMode = (ctrlLeftPos.y - loadedNTCenter.y)>0?3:4;
-				else if(_maxDelta == _deltaZ)
-					postVRFunctionCallMode = (ctrlLeftPos.z - loadedNTCenter.z)>0?5:6;
-				else
-					qDebug()<<"oh no! Something wrong!Please check!";
-				break;
+					mat=glm::inverse(m_globalMatrix) * mat;
+					glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
+					teraflyPOS = XYZ(ctrlLeftPos.x,ctrlLeftPos.y,ctrlLeftPos.z);
+					if(teraflyPOS.x<swcBB.x0)
+						teraflyPOS.x=swcBB.x0;
+					else if (teraflyPOS.x>swcBB.x1)
+						teraflyPOS.x=swcBB.x1;
+					if(teraflyPOS.y<swcBB.y0)
+						teraflyPOS.y=swcBB.y0;
+					else if (teraflyPOS.y>swcBB.y1)
+						teraflyPOS.y=swcBB.y1;
+					if(teraflyPOS.z<swcBB.z0)
+						teraflyPOS.z=swcBB.z0;
+					else if (teraflyPOS.y>swcBB.y1)
+						teraflyPOS.z=swcBB.z1;
+					postVRFunctionCallMode = 1;//1 means shift   ,center current controler  
+					cout<<"postVRFunctionCallMode"<<postVRFunctionCallMode<<endl;
+					break;
 			}
 		case _TeraZoom:
 			{
@@ -2479,7 +2481,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			break;
 		}
 	}
-
     if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
     {
 
