@@ -1770,28 +1770,35 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 {
-	//cout<<"step liqi"<<endl;
 
 	doimageVRView(bCanCoMode);
 
 }
 void V3dR_GLWidget::process3Dwindow(bool show)
 {
+	static bool clearwindowlist = true;// if process3Dwindow is not used in pair ,set it true 
 	XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+	if(!curXWidget)
+	{cout<<"curXWidget is nor exist";clearwindowlist =false;return; }
+	if(!curXWidget->getMainControlWindow())
+		cout<<"main window is nor exist";
 	V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 	QList<V3dR_MainWindow*> windowList = mypluginloader.getListAll3DViewers();
 	static QVector<int> visibility;
+
 	if(show)
 	{
-
+		cout<<"windowList"<<windowList.size();
 		for(int i=0;i<visibility.size();++i)
 		{
 
 			windowList[visibility[i]]->show();
 		}
+		clearwindowlist = true;
 	}
 	else
 	{
+		if(clearwindowlist)
 		visibility.clear();
 		for(int i=0;i<windowList.size();++i)
 		{
@@ -1808,12 +1815,9 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
 	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
 	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
-
     this->getMainWindow()->hide();
 	process3Dwindow(false);
-
     QMessageBox::StandardButton reply;
 	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
