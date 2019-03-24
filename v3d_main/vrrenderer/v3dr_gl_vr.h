@@ -229,6 +229,7 @@ public:
 	QString delcurvePOS;
 	QString dragnodePOS;
 	bool _call_assemble_plugin;
+	bool _startdragnode;
 	int postVRFunctionCallMode;
 	XYZ teraflyPOS;
 	XYZ CmainVRVolumeStartPoint;

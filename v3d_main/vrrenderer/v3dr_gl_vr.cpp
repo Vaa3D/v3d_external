@@ -734,6 +734,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, bIsUndoEnable (false)
 	, bIsRedoEnable (false)
 	, _call_assemble_plugin(false)
+	, _startdragnode(false)
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
 	, showshootingray(false)
@@ -1578,6 +1579,23 @@ bool CMainApplication::HandleInput()
 					mat=glm::inverse(m_globalMatrix) * mat;
 					glm::vec4 ctrlRightPos = mat * glm::vec4( 0, 0, 0, 1 );
 					//qDebug("ctrlRightPos = %.2f,%.2f,%.2f\n",ctrlRightPos.x,ctrlRightPos.y,ctrlRightPos.z);
+					if(!_startdragnode)
+					{
+						if (isOnline == false)
+						{
+							bIsUndoEnable = true;
+							if (vUndoList.size() == MAX_UNDO_COUNT)
+							{
+								vUndoList.erase(vUndoList.begin());
+							}
+							vUndoList.push_back(sketchedNTList);
+							if (vRedoList.size() > 0)
+								vRedoList.clear();
+							bIsRedoEnable = false;
+							vRedoList.clear();
+						}
+					}
+					_startdragnode = true;
 					if(m_pickUpState == false)
 					{
 						float dist = 0;
@@ -2930,9 +2948,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case m_dragMode:
 			{
-				ClearUndoRedoVectors();
-				break;
+				_startdragnode = false;
+				//ClearUndoRedoVectors();
 			}
+			
+			break;
 		case m_delmarkMode:
 			{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
