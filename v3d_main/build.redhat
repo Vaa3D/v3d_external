@@ -80,6 +80,17 @@ cd jba/c++
 make -f jba.makefile $ARGS 
 cd ../../
 
+# Compile 2 of MK's libraries - v3d_imgManagerMK and NeuronStructNavigator (optional)
+# These libraries are needed if wish to use fragment tracing functionalities ------- MK, Mar, 2019
+#cd ../../vaa3d_tools/hackathon/MK/v3d_imgManagerMK
+#qmake v3d_imgManagerMK.pro
+#make -j4
+#cd ../NeuronStructNavigator
+#qmake NeuronStructNavigator.pro
+#make -j4
+#cd ../../../../v3d_external/v3d_main
+##################################################################################################
+
 cd v3d
 echo qmake vaa3d.pro \"$QARGS\"
 echo =========================================================
