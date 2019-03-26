@@ -3,5 +3,7 @@
 
 //#define _YUN_
 
+#define _FRAGTRACE_
+
 
 #endif

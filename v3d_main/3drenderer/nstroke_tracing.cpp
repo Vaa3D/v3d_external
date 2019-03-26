@@ -85,6 +85,14 @@
 
 #include "../terafly/src/control/CPlugin.h"
 
+// ------- Conditional inclusion for fragment tracing, MK, Mar, 2019 -------
+#include "../v3d/CustomDefine.h"
+#ifdef _FRAGTRACE_
+#include "NeuronStructExplorer.h"
+#include "NeuronStructUtilities.h"
+#endif
+// -------------------------------------------------------------------------
+
 #define EPS 0.01
 #define PI 3.14159265
 #define MAX_DOUBLE 1.79769e+308

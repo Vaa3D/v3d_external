@@ -79,6 +79,26 @@ win32 {
 		equals(MSVCVERSION, "win32-msvc2010") {
 			LIBS += -L$$BOOSTPATH\\lib64-msvc-10.0
 		}
+
+		exists(..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK\\v3d_imgManagerMK.lib) {
+			message("Fragment tracing essential libraries are built. v3d_imgManagerMK.lib will be included.")
+			
+			INCLUDEPATH += ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK \
+						   ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK\\imgAnalyzer \
+					       ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK\\imgProcessor 
+			
+			LIBS += -L..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK
+			LIBS += -lv3d_imgManagerMK
+		}
+
+		exists(..\\..\\..\\vaa3d_tools\\hackathon\\MK\\NeuronStructNavigator\\NeuronStructNavigator.lib) {
+			message("Fragment tracing essential libraries are built. NeuronStructNavigator.lib will be included.")
+			
+			INCLUDEPATH += ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\NeuronStructNavigator
+
+			LIBS += -L..\\..\\..\\vaa3d_tools\\hackathon\\MK\\NeuronStructNavigator
+			LIBS += -lNeuronStructNavigator
+		}
 				
 		LIBS += \
 				-llibtiff \
@@ -101,7 +121,7 @@ win32 {
 	
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
 		               $$LOCAL_DIR\\common_lib\\include \
-					   $$BOOSTPATH
+					   $$BOOSTPATH \ 
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)
