@@ -2700,13 +2700,24 @@ void CViewer::ShiftToAnotherDirection(int _direction)
 		return;
 	}
     if(_direction<7)
-       // PMain::getInstance()->teraflyShiftClickedinVR(_direction);  
+       // PMain::getInstance()->teraflyShiftClickedinVR(_direction);
 	    if(view3DWidget)
         {
             PMain::getInstance()->resumeVR = true;
             XYZ point = view3DWidget->teraflyZoomInPOS;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
-            newViewer(point.x, point.y, point.z, volResIndex, volT0, volT1);    
+            if (_direction == 1)
+                newViewer((volH1 - volH0) / 2 + (volH1 - volH0) * (100 - CSettings::instance()->getTraslX()) / 100.0f, point.y, point.z, volResIndex, volT0, volT1);
+            else if (_direction == 2)
+                newViewer((volH1 - volH0) / 2 - (volH1 - volH0) * (100 - CSettings::instance()->getTraslX()) / 100.0f, point.y, point.z, volResIndex, volT0, volT1);
+            else if (_direction == 3)
+                newViewer(point.x, (volV1 - volV0) / 2 + (volV1 - volV0) * (100 - CSettings::instance()->getTraslY()) / 100.0f, point.z, volResIndex, volT0, volT1);
+            else if (_direction == 4)
+                newViewer(point.x, (volV1 - volV0) / 2 - (volV1 - volV0) * (100 - CSettings::instance()->getTraslY()) / 100.0f, point.z, volResIndex, volT0, volT1);
+            else if (_direction == 5)
+                newViewer(point.x, point.y, (volD1 - volD0) / 2 + (volD1 - volD0) * (100 - CSettings::instance()->getTraslZ()) / 100.0f, volResIndex, volT0, volT1);
+            else if (_direction == 6)
+                newViewer(point.x, point.y, (volD1 - volD0) / 2 - (volD1 - volD0) * (100 - CSettings::instance()->getTraslZ()) / 100.0f, volResIndex, volT0, volT1);
         }
     else if(_direction == 7)
     {

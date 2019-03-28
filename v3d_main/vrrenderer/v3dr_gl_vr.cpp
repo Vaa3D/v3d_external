@@ -2359,6 +2359,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					mat=glm::inverse(m_globalMatrix) * mat;
 					glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
 					teraflyPOS = XYZ(ctrlLeftPos.x,ctrlLeftPos.y,ctrlLeftPos.z);
+					float _deltaX = fabs(ctrlLeftPos.x - loadedNTCenter.x);
+					float _deltaY = fabs(ctrlLeftPos.y - loadedNTCenter.y);
+					float _deltaZ = fabs(ctrlLeftPos.z - loadedNTCenter.z);
+					float _maxDelta = MAX(MAX(_deltaX, _deltaY), _deltaZ);
 					if(teraflyPOS.x<swcBB.x0)
 						teraflyPOS.x=swcBB.x0;
 					else if (teraflyPOS.x>swcBB.x1)
@@ -2371,7 +2375,23 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						teraflyPOS.z=swcBB.z0;
 					else if (teraflyPOS.y>swcBB.y1)
 						teraflyPOS.z=swcBB.z1;
-					postVRFunctionCallMode = 1;//1 means shift   ,center current controler  
+					if (_maxDelta == _deltaX)
+					{
+						postVRFunctionCallMode = (ctrlLeftPos.x - loadedNTCenter.x) > 0 ? 1 : 2;
+						teraflyPOS.x = loadedNTCenter.x;
+					}
+					else if (_maxDelta == _deltaY)
+					{
+						postVRFunctionCallMode = (ctrlLeftPos.y - loadedNTCenter.y) > 0 ? 3 : 4;
+						teraflyPOS.y = loadedNTCenter.y;
+					}
+					else if (_maxDelta == _deltaZ)
+					{
+						postVRFunctionCallMode = (ctrlLeftPos.z - loadedNTCenter.z) > 0 ? 5 : 6;
+						teraflyPOS.z = loadedNTCenter.z;
+					}
+					else
+						qDebug() << "oh no! Something wrong!Please check!";
 					cout<<"postVRFunctionCallMode"<<postVRFunctionCallMode<<endl;
 					break;
 			}
