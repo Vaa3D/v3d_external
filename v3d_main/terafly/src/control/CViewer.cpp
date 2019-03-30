@@ -2693,7 +2693,6 @@ void CViewer::ShiftToAnotherDirection(int _direction)
 {
 #ifdef __ALLOW_VR_FUNCS__
     // slot func related to VR shift signal
-	
 	if (volResIndex == 0 &&(_direction<7 || _direction == 8) )//at lowerest level, do not allow shift and zoom-out.
 	{
 		QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
@@ -2701,11 +2700,12 @@ void CViewer::ShiftToAnotherDirection(int _direction)
 	}
     if(_direction<7)
        // PMain::getInstance()->teraflyShiftClickedinVR(_direction);
-	    if(view3DWidget)
+    {
+        if (view3DWidget)
         {
             PMain::getInstance()->resumeVR = true;
             XYZ point = view3DWidget->teraflyZoomInPOS;
-            qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
+            qDebug() << "In terafly,X is " << point.x << " && Y is " << point.y << " && Z is " << point.z;
             if (_direction == 1)
                 newViewer((volH1 - volH0) / 2 + (volH1 - volH0) * (100 - CSettings::instance()->getTraslX()) / 100.0f, point.y, point.z, volResIndex, volT0, volT1);
             else if (_direction == 2)
@@ -2719,6 +2719,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             else if (_direction == 6)
                 newViewer(point.x, point.y, (volD1 - volD0) / 2 - (volD1 - volD0) * (100 - CSettings::instance()->getTraslZ()) / 100.0f, volResIndex, volT0, volT1);
         }
+    }
     else if(_direction == 7)
     {
         // forcezoomin
