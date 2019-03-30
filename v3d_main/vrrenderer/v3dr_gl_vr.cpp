@@ -2077,7 +2077,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 
 }
 
-void CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type)
+bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type)
 {
 	// bool deletedmarker=false;
 	//remove the marker in list 
@@ -2096,9 +2096,10 @@ void CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
 			Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
 			Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
 			// deletedmarker = true;
-			break;
+			return true;
 		}
 	}
+	return false;
 	//if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
 	//{
 	//	//empty all Markers_spheres,Markers_spheresPos,Markers_spheresColor
@@ -2943,29 +2944,29 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
-		case m_markMode:
-			{
-				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
-				glm::mat4 mat = glm::mat4();
-				for (size_t i = 0; i < 4; i++)
-				{
-					for (size_t j = 0; j < 4; j++)
-					{
-						mat[i][j] = *(mat_M.get() + i * 4 + j);
-					}
-				}
-				mat=glm::inverse(m_globalMatrix) * mat;
-				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-				markerPOS="";
-				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-				if(isOnline==false)	
-				{
-					ClearUndoRedoVectors();
-					SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
-				}
+		// case m_markMode:
+		// 	{
+		// 		const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+		// 		glm::mat4 mat = glm::mat4();
+		// 		for (size_t i = 0; i < 4; i++)
+		// 		{
+		// 			for (size_t j = 0; j < 4; j++)
+		// 			{
+		// 				mat[i][j] = *(mat_M.get() + i * 4 + j);
+		// 			}
+		// 		}
+		// 		mat=glm::inverse(m_globalMatrix) * mat;
+		// 		glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
+		// 		markerPOS="";
+		// 		markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+		// 		if(isOnline==false)	
+		// 		{
+		// 			ClearUndoRedoVectors();
+		// 			SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
+		// 		}
 
-				break;
-			}
+		// 		break;
+		// 	}
 		case m_dragMode:
 			{
 				_startdragnode = false;
@@ -2973,7 +2974,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 			
 			break;
-		case m_delmarkMode:
+		case m_markMode://when there is a maker ,delete it ,otherwise add a marker
 			{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
@@ -2988,10 +2989,15 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
 				delmarkerPOS="";
 				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+				bool IsmarkerValid = false;
 				if(isOnline==false)	
 				{
 					ClearUndoRedoVectors();
-					RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
+					IsmarkerValid = RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
+					if(!IsmarkerValid)
+					{
+						SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
+					}
 				}
 				break;
 			}
@@ -4485,16 +4491,16 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.335f,0.25f,vcVerts);
 				break;
 			}
-		case m_markMode:
-			{//draw marker
-				AddVertex(point_M.x,point_M.y,point_M.z,0.335,0.25f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.25f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.375f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.375f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.375f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.25f,vcVerts);
-				break;
-			}
+		// case m_markMode:
+		// 	{//draw marker
+		// 		AddVertex(point_M.x,point_M.y,point_M.z,0.335,0.25f,vcVerts);
+		// 		AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.25f,vcVerts);
+		// 		AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.375f,vcVerts);
+		// 		AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.375f,vcVerts);
+		// 		AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.375f,vcVerts);
+		// 		AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.25f,vcVerts);
+		// 		break;
+		// 	}
 		case m_dragMode:
 			{//pull node
 				AddVertex(point_M.x,point_M.y,point_M.z,0.42,0.25f,vcVerts);
@@ -4505,8 +4511,8 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.25f,vcVerts);
 				break;
 			}
-		case m_delmarkMode:
-			{//delete marker mode
+		case m_markMode:
+			{// marker mode
 				AddVertex(point_M.x,point_M.y,point_M.z,0.25,0,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0,vcVerts);
 				AddVertex(point_O.x,point_O.y,point_O.z,0.25,0.125f,vcVerts);
@@ -7420,11 +7426,12 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
-			m_modeGrip_R = m_markMode;
+			m_modeGrip_R = m_insertnodeMode;
+			//m_modeGrip_R = m_markMode;
 		}
 		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
-			m_modeGrip_R = m_delmarkMode;
+			m_modeGrip_R = m_markMode;
 		}
 		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{
@@ -7436,7 +7443,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		{
-			m_modeGrip_R = m_insertnodeMode;
+			
 		}
 
 	}
