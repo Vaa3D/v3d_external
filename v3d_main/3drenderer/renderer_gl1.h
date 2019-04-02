@@ -504,6 +504,7 @@ public:
 	 set<set<size_t> > finalizedLoopsSet;
 	 set<set<size_t> > nonLoopErrors;
 	 map<size_t, set<size_t> > seg2SegsMap;
+	 map<size_t, set<size_t> > segTail2segIDmap;
 	 void loopDetection();
 	 void rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWalk, My4DImage* curImg);
 

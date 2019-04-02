@@ -4187,6 +4187,7 @@ void Renderer_gl1::loopDetection()
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
 	this->seg2SegsMap.clear();
+	this->segTail2segIDmap.clear();
 	for (set<size_t>::iterator it = subtreeSegs.begin(); it != subtreeSegs.end(); ++it)
 	{
 		//cout << *it << ":";
@@ -4222,6 +4223,7 @@ void Renderer_gl1::loopDetection()
 						set<size_t> reversed;
 						reversed.insert(*it);
 						if (!this->seg2SegsMap.insert(pair<size_t, set<size_t> >(*scannedIt, reversed)).second) this->seg2SegsMap[*scannedIt].insert(*it);
+						if (!this->segTail2segIDmap.insert(pair<size_t, set<size_t> >(*scannedIt, reversed)).second) this->segTail2segIDmap[*scannedIt].insert(*it);
 					}
 					else if ((curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->x == nodeIt->x && (curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->y == nodeIt->y && (curImg->tracedNeuron.seg[*scannedIt].row.end() - 1)->z == nodeIt->z)
 					{
@@ -4344,6 +4346,8 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 
 	for (set<size_t>::iterator it = this->seg2SegsMap[inputSegID].begin(); it != this->seg2SegsMap[inputSegID].end(); ++it)
 	{
+		if (this->segTail2segIDmap.find(*it) == this->segTail2segIDmap.end()) continue;
+
 		if (curPathWalk.size() >= 2 && *it == *(curPathWalk.end() - 2))
 		{
 			V_NeuronSWC_unit headUnit = *(curImg->tracedNeuron.seg[*it].row.end() - 1);
