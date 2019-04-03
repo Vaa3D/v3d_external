@@ -4301,18 +4301,52 @@ void Renderer_gl1::loopDetection()
 	if (this->finalizedLoopsSet.empty()) return;
 	else
 	{
+		int loopCount = 0;
 		for (set<set<size_t> >::iterator loopIt = this->finalizedLoopsSet.begin(); loopIt != this->finalizedLoopsSet.end(); ++loopIt)
 		{
-			set<size_t> thisLoop = *loopIt;
-			for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+			int jointCount = 0;
+			for (set<size_t>::iterator multiForkIt1 = loopIt->begin(); multiForkIt1 != loopIt->end(); ++multiForkIt1)
 			{
-				//cout << *it << " ";
-				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
-                    unitIt->type = 6; //changed to be yellow by ZZ 04022019
+				for (set<size_t>::iterator multiForkIt2 = loopIt->begin(); multiForkIt2 != loopIt->end(); ++multiForkIt2)
+				{
+					if (multiForkIt1 == multiForkIt2) continue;
+					else
+					{
+						if (curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->x == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->x &&
+							curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->y == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->y &&
+							curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->z == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->z) ++jointCount;
+						else if (curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->x == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->x &&
+								 curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->y == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->y &&
+								 curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->z == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->z) ++jointCount;
+
+						if ((curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->x == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->x &&
+							(curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->y == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->y &&
+							(curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->z == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->z) ++jointCount;
+						else if ((curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->x == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->x &&
+								 (curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->y == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->y &&
+								 (curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->z == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->z) ++jointCount;
+					}
+				}
 			}
-			//cout << endl << endl;
+			
+			if (jointCount == loopIt->size() * (loopIt->size() - 1))
+			{
+				this->nonLoopErrors.insert(*loopIt);
+			}
+			else
+			{
+				++loopCount;
+				set<size_t> thisLoop = *loopIt;
+				for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
+				{
+					cout << *it << " ";
+					for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+						unitIt->type = 6; //changed to be yellow by ZZ 04022019
+				}
+				cout << endl << endl;
+			}
 		}
-		cout << "LOOPS NUMBER (set): " << this->finalizedLoopsSet.size() << endl << endl;
+		cout << "LOOPS NUMBER (set): " << loopCount << endl << endl;
 
 		if (!this->nonLoopErrors.empty())
 		{
@@ -4321,14 +4355,14 @@ void Renderer_gl1::loopDetection()
 				set<size_t> thisLoop = *loopIt;
 				for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
 				{
-					//cout << *it << " ";
+					cout << *it << " ";
 					for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
 						unitIt->type = 20;
 				}
-				//cout << endl << endl;
+				cout << endl << endl;
 			}
 		}
-		//cout << "non LOOPS ERROR NUMBER (set): " << thisRenderer->nonLoopErrors.size() << endl << endl;
+		cout << "non LOOPS ERROR NUMBER (set): " << this->nonLoopErrors.size() << endl << endl;
 	}
 
 	curImg->update_3drenderer_neuron_view(w, this);
@@ -4348,16 +4382,17 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 	{
 		if (this->segTail2segIDmap.find(*it) == this->segTail2segIDmap.end()) continue;
 
+		// ------- duplicated root detection ------- //
 		if (curPathWalk.size() >= 2 && *it == *(curPathWalk.end() - 2))
 		{
 			V_NeuronSWC_unit headUnit = *(curImg->tracedNeuron.seg[*it].row.end() - 1);
 			V_NeuronSWC_unit tailUnit = *curImg->tracedNeuron.seg[*it].row.begin();
 
 			bool headCheck = false, tailCheck = false;
-			for (vector<V_NeuronSWC_unit>::iterator it = curImg->tracedNeuron.seg[*(curPathWalk.end() - 1)].row.begin(); it != curImg->tracedNeuron.seg[*(curPathWalk.end() - 1)].row.end(); ++it)
+			for (vector<V_NeuronSWC_unit>::iterator it2 = curImg->tracedNeuron.seg[*(curPathWalk.end() - 1)].row.begin(); it2 != curImg->tracedNeuron.seg[*(curPathWalk.end() - 1)].row.end(); ++it2)
 			{
-				if (it->x == headUnit.x && it->y == headUnit.y && it->z == headUnit.z) headCheck = true;
-				if (it->x == tailUnit.x && it->y == tailUnit.y && it->z == tailUnit.z) tailCheck = true;
+				if (it2->x == headUnit.x && it2->y == headUnit.y && it2->z == headUnit.z) headCheck = true;
+				if (it2->x == tailUnit.x && it2->y == tailUnit.y && it2->z == tailUnit.z) tailCheck = true;
 			}
 
 			if (headCheck == true && tailCheck == true)
@@ -4376,6 +4411,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 			}
 			else continue;
 		}
+		// --------------------------------------- //
 
 		if (find(curPathWalk.begin(), curPathWalk.end(), *it) == curPathWalk.end())
 		{
@@ -4394,7 +4430,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 				// pusedoloop by fork intersection check
 				cout << "pusedoloop check.." << endl;
 
-				if (*(curPathWalk.end() - 3) == *it)
+				if (*(curPathWalk.end() - 3) == *it) // exclude 3-way intersection
 				{
 					if (this->seg2SegsMap[*(curPathWalk.end() - 2)].find(*it) != this->seg2SegsMap[*(curPathWalk.end() - 2)].end())
 					{
@@ -4418,7 +4454,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 								++tailConnectedCount;
 						}
 
-						if (!(headConnectedCount == 1 && tailConnectedCount == 1))
+						if (!(headConnectedCount == 1 && tailConnectedCount == 1)) // check if it's a 3 segment loop 
 						{
 							cout << "  -> 3 seg intersection detected, exluded from loop candidates. (" << *it << ") ";
 							for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
@@ -4437,7 +4473,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 						}
 					}
 				}
-				else if (curPathWalk.size() == 4)
+				else if (curPathWalk.size() == 4) // exclude 4-way intersection  
 				{
 					if ((*curPathWalk.end() - 4) == *it)
 					{
