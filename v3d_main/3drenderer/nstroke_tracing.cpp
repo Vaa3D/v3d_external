@@ -4316,6 +4316,7 @@ void Renderer_gl1::loopDetection()
 	if (this->finalizedLoopsSet.empty()) return;
 	else
 	{
+		set<size_t> loopSegsChecked;
 		int loopCount = 0;
 		for (set<set<size_t> >::iterator loopIt = this->finalizedLoopsSet.begin(); loopIt != this->finalizedLoopsSet.end(); ++loopIt)
 		{
@@ -4344,6 +4345,7 @@ void Renderer_gl1::loopDetection()
 				cout << *it << " ";
 				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
 					unitIt->type = 6; //changed to be yellow by ZZ 04022019
+				loopSegsChecked.insert(*it);
 			}
 			cout << endl << endl;
 			continue;
@@ -4366,6 +4368,7 @@ void Renderer_gl1::loopDetection()
 					cout << *it << " ";
 					for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
 						unitIt->type = 6; //changed to be yellow by ZZ 04022019
+					loopSegsChecked.insert(*it);
 				}
 				cout << endl << endl;
 				continue;
@@ -4381,8 +4384,11 @@ void Renderer_gl1::loopDetection()
 				for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
 				{
 					cout << *it << " ";
-					for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
-						unitIt->type = 20;
+					if (loopSegsChecked.find(*it) == loopSegsChecked.end())
+					{
+						for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+							unitIt->type = 20;
+					}
 				}
 				cout << endl << endl;
 			}
