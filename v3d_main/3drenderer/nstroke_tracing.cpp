@@ -75,6 +75,7 @@
 #include <map>
 #include <algorithm>
 #include <ctime>
+#include <omp.h>
 
 #include <boost/algorithm/string.hpp>
 #endif //test_main_cpp
@@ -4180,6 +4181,13 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
 
 void Renderer_gl1::loopDetection()
 {
+#ifdef Q_OS_WIN32
+	char* numProcsC;
+	numProcsC = getenv("NUMBER_OF_PROCESSORS");
+	string numProcsString(numProcsC);
+	int numProcs = stoi(numProcsString);
+#endif
+
 	this->connectEdit = loopEdit;
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -4264,32 +4272,39 @@ void Renderer_gl1::loopDetection()
 	this->detectedLoopsSet.clear();
 	this->finalizedLoopsSet.clear();
 	this->nonLoopErrors.clear();
-	for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
+#ifdef Q_OS_WIN32
+#pragma omp parallel num_threads(numProcs)
 	{
-		double progressBarValue = (double(it->first) / segSize) * 100;
-		int progressBarValueInt = floor(progressBarValue);
+#endif
+		for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
+		{
+			double progressBarValue = (double(it->first) / segSize) * 100;
+			int progressBarValueInt = floor(progressBarValue);
 
-		if (it->second.empty()) continue;
-		else if (it->second.size() <= 2) continue;
+			if (it->second.empty()) continue;
+			else if (it->second.size() <= 2) continue;
 
-		vector<size_t> loops2ThisSeg;
-		loops2ThisSeg.clear();
+			vector<size_t> loops2ThisSeg;
+			loops2ThisSeg.clear();
 
-		cout << "Starting segment: " << it->first << " ==> ";
-		for (set<size_t>::iterator seg2SegsIt = this->seg2SegsMap[it->first].begin(); seg2SegsIt != this->seg2SegsMap[it->first].end(); ++seg2SegsIt)
-			cout << *seg2SegsIt << " ";
-		cout << endl;
+			cout << "Starting segment: " << it->first << " ==> ";
+			for (set<size_t>::iterator seg2SegsIt = this->seg2SegsMap[it->first].begin(); seg2SegsIt != this->seg2SegsMap[it->first].end(); ++seg2SegsIt)
+				cout << *seg2SegsIt << " ";
+			cout << endl;
 
-		int loopCount = this->finalizedLoopsSet.size();
+			int loopCount = this->finalizedLoopsSet.size();
 
-		this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
+			this->rc_loopPathCheck(it->first, loops2ThisSeg, curImg);
 
-		w->progressBarPtr->setValue(progressBarValueInt);
-		w->progressBarPtr->setFormat("detecting loops.. " + QString::number(progressBarValueInt) + "%");
+			w->progressBarPtr->setValue(progressBarValueInt);
+			w->progressBarPtr->setFormat("detecting loops.. " + QString::number(progressBarValueInt) + "%");
 
-		if (this->finalizedLoopsSet.size() - loopCount == 0) cout << " -- no loops detected with this starting seg." << endl;
-		else cout << this->finalizedLoopsSet.size() - loopCount << " loops detected with seg " << it->first << endl << endl;
+			if (this->finalizedLoopsSet.size() - loopCount == 0) cout << " -- no loops detected with this starting seg." << endl;
+			else cout << this->finalizedLoopsSet.size() - loopCount << " loops detected with seg " << it->first << endl << endl;
+		}
+#ifdef Q_OS_WIN32
 	}
+#endif
 	w->progressBarPtr->setValue(100);
 	w->progressBarPtr->setFormat(QString::number(100) + "%");
 	w->progressBarPtr->close();
@@ -4304,39 +4319,48 @@ void Renderer_gl1::loopDetection()
 		int loopCount = 0;
 		for (set<set<size_t> >::iterator loopIt = this->finalizedLoopsSet.begin(); loopIt != this->finalizedLoopsSet.end(); ++loopIt)
 		{
+			set<size_t> thisLoop = *loopIt;
 			int jointCount = 0;
-			for (set<size_t>::iterator multiForkIt1 = loopIt->begin(); multiForkIt1 != loopIt->end(); ++multiForkIt1)
-			{
-				for (set<size_t>::iterator multiForkIt2 = loopIt->begin(); multiForkIt2 != loopIt->end(); ++multiForkIt2)
-				{
-					if (multiForkIt1 == multiForkIt2) continue;
-					else
-					{
-						if (curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->x == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->x &&
-							curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->y == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->y &&
-							curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->z == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->z) ++jointCount;
-						else if (curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->x == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->x &&
-								 curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->y == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->y &&
-								 curImg->tracedNeuron.seg.at(*multiForkIt1).row.begin()->z == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->z) ++jointCount;
+			vector<size_t> thisSet;
+			for (set<size_t>::iterator setIt = loopIt->begin(); setIt != loopIt->end(); ++setIt) thisSet.push_back(*setIt);
 
-						if ((curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->x == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->x &&
-							(curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->y == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->y &&
-							(curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->z == curImg->tracedNeuron.seg.at(*multiForkIt2).row.begin()->z) ++jointCount;
-						else if ((curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->x == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->x &&
-								 (curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->y == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->y &&
-								 (curImg->tracedNeuron.seg.at(*multiForkIt1).row.end() - 1)->z == (curImg->tracedNeuron.seg.at(*multiForkIt2).row.end() - 1)->z) ++jointCount;
+			V_NeuronSWC_unit jointNode;
+			for (vector<V_NeuronSWC_unit>::iterator seg1It = curImg->tracedNeuron.seg.at(thisSet.at(0)).row.begin(); seg1It != curImg->tracedNeuron.seg.at(thisSet.at(1)).row.end(); ++seg1It)
+			{
+				for (vector<V_NeuronSWC_unit>::iterator seg2It = curImg->tracedNeuron.seg.at(thisSet.at(1)).row.begin(); seg2It != curImg->tracedNeuron.seg.at(thisSet.at(1)).row.end(); ++seg2It)
+				{
+					if (seg1It->x == seg2It->x && seg1It->y == seg2It->y && seg1It->z == seg2It->z)
+					{
+						jointNode = *seg1It;
+						jointCount = 2;
+						goto FOUND_JOINT_NODE;
 					}
 				}
 			}
-			
-			if (jointCount == loopIt->size() * (loopIt->size() - 1))
+
+			++loopCount;		
+			for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
 			{
-				this->nonLoopErrors.insert(*loopIt);
+				cout << *it << " ";
+				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*it].row.begin(); unitIt != curImg->tracedNeuron.seg[*it].row.end(); ++unitIt)
+					unitIt->type = 6; //changed to be yellow by ZZ 04022019
 			}
+			cout << endl << endl;
+			continue;
+
+		FOUND_JOINT_NODE:
+			for (vector<size_t>::iterator segIt = thisSet.begin() + 2; segIt != thisSet.end(); ++segIt)
+			{
+				for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg.at(*segIt).row.begin(); nodeIt != curImg->tracedNeuron.seg.at(*segIt).row.end(); ++nodeIt)
+				{
+					if (nodeIt->x == jointNode.x && nodeIt->y == jointNode.y && nodeIt->z == jointNode.z) ++jointCount;
+				}
+			}
+
+			if (jointCount == loopIt->size()) this->nonLoopErrors.insert(*loopIt);
 			else
 			{
 				++loopCount;
-				set<size_t> thisLoop = *loopIt;
 				for (set<size_t>::iterator it = thisLoop.begin(); it != thisLoop.end(); ++it)
 				{
 					cout << *it << " ";
@@ -4344,6 +4368,7 @@ void Renderer_gl1::loopDetection()
 						unitIt->type = 6; //changed to be yellow by ZZ 04022019
 				}
 				cout << endl << endl;
+				continue;
 			}
 		}
 		cout << "LOOPS NUMBER (set): " << loopCount << endl << endl;
@@ -4484,8 +4509,13 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 								this->seg2SegsMap[*(curPathWalk.end() - 3)].find(*(curPathWalk.end() - 2)) != this->seg2SegsMap[*(curPathWalk.end() - 3)].end() &&
 								this->seg2SegsMap[*(curPathWalk.end() - 4)].find(*(curPathWalk.end() - 3)) != this->seg2SegsMap[*(curPathWalk.end() - 4)].end())
 							{
-								cout << "  -> 4 seg intersection detected, exluded from loop candidates. (" << *it << ")" << endl;
-								continue;
+								this->nonLoopErrors.insert(detectedLoopPathSet);
+								cout << "  -> 4 way intersection detected ----> (" << *it << ") ";
+								for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
+									cout << *thisLoopIt << " ";
+								cout << endl << endl;
+								//cout << "  -> 4 seg intersection detected, exluded from loop candidates. (" << *it << ")" << endl;
+								//continue;
 							}
 						}
 					}
