@@ -685,6 +685,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_unControllerRayProgramID( 0 )
 	, m_pHMD( NULL )
 	, m_pRenderModels( NULL )
+	, m_pChaperone( NULL )
 	, m_bDebugOpenGL( false )
 	, m_bVerbose( false )
 	, m_bPerf( false )
@@ -841,6 +842,20 @@ bool CMainApplication::BInit()
 		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
+	m_pChaperone = (vr::IVRChaperone *)vr::VR_GetGenericInterface( vr::IVRChaperone_Version, &eError );
+	//question: difference between IVRRenderModels and the CGLRenderModel?
+	//is IVRRenderModels necessary for VR? comment it and observe the change
+	if( !m_pChaperone )
+	{
+		m_pHMD = NULL;
+		vr::VR_Shutdown();
+
+		char buf[1024];
+		sprintf_s( buf, sizeof( buf ), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+		return false;
+	}
+
 
 	int nWindowPosX = 100;
 	int nWindowPosY = 100;
@@ -918,8 +933,8 @@ bool CMainApplication::BInit()
  	m_fFarClip = 30.0f;
 	m_iTexture = 0;
 	m_uiControllerTexIndexSize = 0;
-	//m_globalMatrix = m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
 	m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
+	//m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
 
 	// m_modeGrip_R = global_padm_modeGrip_R;
 	// m_modeGrip_L = global_padm_modeGrip_L;
@@ -1099,9 +1114,9 @@ bool CMainApplication::BInitCompositor()//note: VRCompositor is responsible for 
 //-----------------------------------------------------------------------------
 void CMainApplication::Shutdown()
 {
-	float trans_x = 0.6 ;
-	float trans_y = 1.5 ;
-	float trans_z = 0.4 ;
+	// float trans_x = 0.6 ;
+	// float trans_y = 1.5 ;
+	// float trans_z = 0.4 ;
 	
 	//remeber last Grip choice
 	// global_padm_modeGrip_L = m_modeGrip_L;
@@ -1109,8 +1124,8 @@ void CMainApplication::Shutdown()
 	//reverse the normalization (so that the next VR session can normalize correctly)
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z) ); 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1.0f/m_globalScale,1.0f/m_globalScale,1.0f/m_globalScale));
-	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(-trans_x,-trans_y,-trans_z) ); //fine tune
-	
+	//m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(-trans_x,-trans_y,-trans_z) ); //fine tune
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(HmdQuadImageOffset.v[0],HmdQuadImageOffset.v[1],HmdQuadImageOffset.v[2]));
 	//replace "vaa3d_traced_neuron" with VR_drawn_curves
 	////////update glwidget->listneurontree
 	if(m_bHasImage4D&&(sketchedNTList.size()>0))
@@ -5219,8 +5234,8 @@ void CMainApplication::SetupGlobalMatrix()
 	float r_max = -1;
 	swcBB = NULL_BoundingBox;
 
-
 	
+
 	//if (    !((img4d->getXDim()==0)  &&  (img4d->getYDim()==0)  &&  (img4d->getZDim()==0))    ) 
 	if (m_bHasImage4D)
 	{
@@ -5243,7 +5258,7 @@ void CMainApplication::SetupGlobalMatrix()
 	float DZ = swcBB.Dz();
 	cout <<"bounding box(swc+image): dx = "<< DX << ", dy = " << DY << ", dz =  " << DZ <<endl;
 
-
+	
 	
 
 	float maxD = swcBB.Dmax();
@@ -5252,24 +5267,50 @@ void CMainApplication::SetupGlobalMatrix()
 	loadedNTCenter.x = (swcBB.x0 + swcBB.x1)/2;
 	loadedNTCenter.y = (swcBB.y0 + swcBB.y1)/2;
 	loadedNTCenter.z = (swcBB.z0 + swcBB.z1)/2;
-	//qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
+	qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
 	m_globalScale = 1 / maxD * 2; // these numbers are related to room size
 	float trans_x = 0.6 ;
 	float trans_y = 1.5 ;
 	float trans_z = 0.4 ;
 	//printf("transform: scale = %f, translate = (%f,%f,%f)\n", scale,trans_x,trans_y,trans_z );
+	if(!m_pChaperone)
+	{
+		cout<<"m_pChaperone is NULL"<<endl;
+	}
+	rect = new vr::HmdQuad_t();
+	m_pChaperone->GetPlayAreaRect(rect);
+		vr::HmdVector3_t HmdQuadmin = {100.0f,100.0f,100.0f};
+		vr::HmdVector3_t HmdQuadmax = {-100.0f,-100.0f,-100.0f};
+	for(size_t i=0;i<4;++i)
+	{
+		vr::HmdVector3_t currentHmdQuadPos = rect->vCorners[i];
+		HmdQuadmin.v[0] = HmdQuadmin.v[0]<currentHmdQuadPos.v[0]?HmdQuadmin.v[0]:currentHmdQuadPos.v[0];
+		HmdQuadmin.v[1] = HmdQuadmin.v[1]<currentHmdQuadPos.v[1]?HmdQuadmin.v[1]:currentHmdQuadPos.v[1];
+		HmdQuadmin.v[2] = HmdQuadmin.v[2]<currentHmdQuadPos.v[2]?HmdQuadmin.v[2]:currentHmdQuadPos.v[2];
+		HmdQuadmax.v[0] = HmdQuadmax.v[0]>currentHmdQuadPos.v[0]?HmdQuadmax.v[0]:currentHmdQuadPos.v[0];
+		HmdQuadmax.v[1] = HmdQuadmax.v[1]>currentHmdQuadPos.v[1]?HmdQuadmax.v[1]:currentHmdQuadPos.v[1];
+		HmdQuadmax.v[2] = HmdQuadmax.v[2]>currentHmdQuadPos.v[2]?HmdQuadmax.v[2]:currentHmdQuadPos.v[2];
+	}
+	HmdQuadImageOffset.v[0] = 0;
+	HmdQuadImageOffset.v[1] = 1.5f;
+	HmdQuadImageOffset.v[2] = (HmdQuadmax.v[1]-HmdQuadmin.v[1])/4;
+	// cout<<"HmdQuadmin x == "<<HmdQuadmin.v[0]<<"HmdQuadmin y == "<<HmdQuadmin.v[1]<<"HmdQuadmin z == "<<HmdQuadmin.v[2]<<endl;
+	// cout<<"HmdQuadmax x == "<<HmdQuadmax.v[0]<<"HmdQuadmax y == "<<HmdQuadmax.v[1]<<"HmdQuadmax z == "<<HmdQuadmax.v[2]<<endl;	
 
-	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); //fine tune
-
-	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(m_globalScale,m_globalScale,m_globalScale));
+		
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(HmdQuadImageOffset.v[0],HmdQuadImageOffset.v[1],HmdQuadImageOffset.v[2])); 
+	//m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(trans_x,trans_y,trans_z) ); //fine tune
 		//glm::vec4 cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
 		//qDebug("after scaling: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
-
+	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(m_globalScale,m_globalScale,m_globalScale));
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(- loadedNTCenter.x,- loadedNTCenter.y,- loadedNTCenter.z) ); 
+	
 		//cntr = m_globalMatrix * glm::vec4(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z,1);
 		//qDebug("after translation: center.x = %f,center.y = %f,center.z = %f\n",cntr.x,cntr.y,cntr.z);
+
 	
+
 }
 
 
@@ -6020,7 +6061,6 @@ void CMainApplication::UpdateHMDMatrixPose()
 					m_HMDTrans[i][j] = *(m_mat4HMDPose.get() + i * 4 + j);
 				}
 			}
-
 			m_frozen_mat4HMDPose = m_mat4HMDPose;
 			m_frozen_HMDTrans = m_HMDTrans;
 		} 
@@ -6030,6 +6070,7 @@ void CMainApplication::UpdateHMDMatrixPose()
 		// 	m_HMDTrans = m_frozen_HMDTrans;
 		// }
 	}
+	
 }
 
 QString  CMainApplication::getHMDPOSstr()

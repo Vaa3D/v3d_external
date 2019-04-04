@@ -263,7 +263,11 @@ private:
 	int curveDrawingTestStatus;
 
 	vr::IVRSystem *m_pHMD;
+	vr::HmdQuad_t *rect;
 	vr::IVRRenderModels *m_pRenderModels;
+	vr::IVRChaperone *m_pChaperone;
+
+	vr::HmdVector3_t HmdQuadImageOffset;
 	std::string m_strDriver;
 	std::string m_strDisplay;
 	vr::TrackedDevicePose_t m_rTrackedDevicePose[ vr::k_unMaxTrackedDeviceCount ]; //note: contain everything: validity, matrix, ...
@@ -329,7 +333,6 @@ private: // OpenGL bookkeeping
 	glm::vec3 loadedNTCenter;
 	glm::vec3 autoRotationCenter;
 	long int vertexcount, swccount;
-
 	std::string m_strPoseClasses;                            // what classes we saw poses for this frame
 	char m_rDevClassChar[ vr::k_unMaxTrackedDeviceCount ];   // for each device, a character representing its class
 
