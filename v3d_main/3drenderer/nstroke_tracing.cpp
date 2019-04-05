@@ -4198,7 +4198,6 @@ void Renderer_gl1::loopDetection()
 	this->segTail2segIDmap.clear();
 	for (set<size_t>::iterator it = subtreeSegs.begin(); it != subtreeSegs.end(); ++it)
 	{
-		//cout << *it << ":";
 		set<size_t> connectedSegs;
 		connectedSegs.clear();
 		if (curImg->tracedNeuron.seg[*it].row.size() <= 1)
@@ -4250,15 +4249,6 @@ void Renderer_gl1::loopDetection()
 		}
 	}
 
-	/*for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
-	{
-		cout << seg2SegsIt->first << ":";
-		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
-			cout << *it << " ";
-
-		cout << endl;
-	}*/
-
 	w->progressBarPtr = new QProgressBar;
 	w->progressBarPtr->show();
 	w->progressBarPtr->move(w->x() + w->width() - w->progressBarPtr->width() / 2, w->y() + w->height() - w->progressBarPtr->height() / 2);
@@ -4272,10 +4262,10 @@ void Renderer_gl1::loopDetection()
 	this->detectedLoopsSet.clear();
 	this->finalizedLoopsSet.clear();
 	this->nonLoopErrors.clear();
-#ifdef Q_OS_WIN32
-#pragma omp parallel num_threads(numProcs)
-	{
-#endif
+//#ifdef Q_OS_WIN32
+//#pragma omp parallel num_threads(numProcs)
+//	{
+//#endif
 		for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 		{
 			double progressBarValue = (double(it->first) / segSize) * 100;
@@ -4302,9 +4292,9 @@ void Renderer_gl1::loopDetection()
 			if (this->finalizedLoopsSet.size() - loopCount == 0) cout << " -- no loops detected with this starting seg." << endl;
 			else cout << this->finalizedLoopsSet.size() - loopCount << " loops detected with seg " << it->first << endl << endl;
 		}
-#ifdef Q_OS_WIN32
-	}
-#endif
+//#ifdef Q_OS_WIN32
+//	}
+//#endif
 	w->progressBarPtr->setValue(100);
 	w->progressBarPtr->setFormat(QString::number(100) + "%");
 	w->progressBarPtr->close();
@@ -4529,7 +4519,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 				else
 				{
 					this->finalizedLoopsSet.insert(detectedLoopPathSet);
-					cout << "  Loop detected ----> (" << *it << ") ";
+					cout << "  Topological loop identified ----> (" << *it << ") ";
 					for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
 						cout << *thisLoopIt << " ";
 					cout << endl << endl;
