@@ -1125,7 +1125,7 @@ void CMainApplication::Shutdown()
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z) ); 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1.0f/m_globalScale,1.0f/m_globalScale,1.0f/m_globalScale));
 	//m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(-trans_x,-trans_y,-trans_z) ); //fine tune
-	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(HmdQuadImageOffset.v[0],HmdQuadImageOffset.v[1],HmdQuadImageOffset.v[2]));
+	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(- HmdQuadImageOffset.v[0],- HmdQuadImageOffset.v[1],- HmdQuadImageOffset.v[2]));
 	//replace "vaa3d_traced_neuron" with VR_drawn_curves
 	////////update glwidget->listneurontree
 	if(m_bHasImage4D&&(sketchedNTList.size()>0))
@@ -5278,13 +5278,13 @@ void CMainApplication::SetupGlobalMatrix()
 	{
 		cout<<"m_pChaperone is NULL"<<endl;
 	}
-	rect = new vr::HmdQuad_t();
-	m_pChaperone->GetPlayAreaRect(rect);
+	vr::HmdQuad_t rect;
+	m_pChaperone->GetPlayAreaRect(&rect);
 		vr::HmdVector3_t HmdQuadmin = {100.0f,100.0f,100.0f};
 		vr::HmdVector3_t HmdQuadmax = {-100.0f,-100.0f,-100.0f};
 	for(size_t i=0;i<4;++i)
 	{
-		vr::HmdVector3_t currentHmdQuadPos = rect->vCorners[i];
+		vr::HmdVector3_t currentHmdQuadPos = rect.vCorners[i];
 		HmdQuadmin.v[0] = HmdQuadmin.v[0]<currentHmdQuadPos.v[0]?HmdQuadmin.v[0]:currentHmdQuadPos.v[0];
 		HmdQuadmin.v[1] = HmdQuadmin.v[1]<currentHmdQuadPos.v[1]?HmdQuadmin.v[1]:currentHmdQuadPos.v[1];
 		HmdQuadmin.v[2] = HmdQuadmin.v[2]<currentHmdQuadPos.v[2]?HmdQuadmin.v[2]:currentHmdQuadPos.v[2];
@@ -5439,17 +5439,17 @@ void CMainApplication::RenderStereoTargets()
 	// Left Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId ); //render scene to m_nRenderFramebufferId
  	glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
-	// frameCount++;
-	// if(GetTime() > 1.0f)
-	// {
-	// 	fps = frameCount;
-	// 	frameCount = 0;
-	// 	StartTimer();
-	// 	cout<<fps<<endl;
-	// 	//used for fps tess liqi
-	// }	
-
-	// frameTime = GetFrameTime();
+	//frameCount++;
+	//if(GetTime() > 1.0f)
+	//{
+	//	fps = frameCount;
+	//	frameCount = 0;
+	//	StartTimer();
+	//	cout<<fps<<endl;
+	//	//used for fps tess liqi
+	//}	
+	//
+	//frameTime = GetFrameTime();
  	RenderScene( vr::Eye_Left );
  	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDisable( GL_MULTISAMPLE );
