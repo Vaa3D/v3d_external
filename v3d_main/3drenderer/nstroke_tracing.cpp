@@ -75,7 +75,10 @@
 #include <map>
 #include <algorithm>
 #include <ctime>
-#include <omp.h>
+
+#ifndef Q_OS_MAC
+    #include <omp.h>
+#endif
 
 #include <boost/algorithm/string.hpp>
 #endif //test_main_cpp
