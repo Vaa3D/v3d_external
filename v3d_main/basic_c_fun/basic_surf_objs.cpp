@@ -346,6 +346,7 @@ NeuronTree readSWC_file(const QString& filename)
         	else if (i==8) S.level = qsl[i].toInt();
             else if (i==9) S.creatmode = qsl[i].toInt();
             else if (i==10) S.timestamp = qsl[i].toInt();
+             else if (i==11) S.tfresindex = qsl[i].toInt();
 	//change ESWC format to adapt to flexible feature number, by WYN, 20150602
         	else 
 		S.fea_val.append(qsl[i].toFloat());
