@@ -2055,13 +2055,51 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
 	cout << "Annotation size: " << annotations.size() << endl;
     if(removedupnode)
     {
-        if(SOMA_FOUND>1){
+        // Peng Xie 2019-04-23
+        // Find new soma node in the current annotation
+        long soma_found_new = 0;
+        double soma_x_new = -1.1;
+        double soma_y_new = -1.1;
+        double soma_z_new = -1.1;
+        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+        {
+            if((*i)->type == 1) //selecting NeuronSWC
+            {
+                if((*i)->subtype == 1){ // soma found in current annotation
+                    if(soma_found_new == 0){
+                        soma_found_new ++;
+                        soma_x_new = (*i)->x;
+                        soma_y_new = (*i)->y;
+                        soma_z_new = (*i)->z;
+                    }
+                    else{
+                        if(((*i)->x != soma_x_new) || ((*i)->y != soma_y_new) || ((*i)->x != soma_y_new)){
+                            soma_found_new ++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Decide which soma location to use.
+        if(soma_found_new == 0){     // Case 1: If soma_found_new == 0, try using the old soma location
+            qDebug()<<"'Remove dup and save': Using soma from the 'original' annotation.";
+        }
+        else{
+            qDebug()<<"'Remove dup and save': Using soma from the 'edited' annotation.";
+            SOMA_FOUND = soma_found_new;
+            SOMA_X = soma_x_new;
+            SOMA_Y = soma_y_new;
+            SOMA_Z = soma_z_new;
+        }
+        if(SOMA_FOUND>1){      // Case 2: If soma_found_new > 0, use the new soma location
             v3d_msg("Multiple node locations typed as soma in your input swc.\n"
                     "If root of output swc does not match with the real soma,\n"
                     "please double check your input swc.\n"
                     );
         }
 
+        // Create the neuron tree to be sorted.
         QList<NeuronSWC> nt,nt_sort;
         long countNode=0;
         long soma_ct = 0;
@@ -2100,6 +2138,7 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
         NeuronTree tp;
         tp.listNeuron = nt;
 
+        // Sorting
         if(soma_name == -1){
             v3d_msg("No soma detected in the input swc.\n"
                     "If root of output swc does not match with the real soma,\n"
@@ -2111,6 +2150,8 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
             Sort_SWC_NewVersion(nt,nt_sort,soma_name);
         }
         cout<<"nt_sort size is "<<nt_sort.size()<<endl;
+
+        // Saving
         if(as_swc){
             fprintf(f, "#n type x y z radius parent\n");
             for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
@@ -2136,7 +2177,7 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
                         );
             }
         }
-
+        v3d_msg(qPrintable("De-duplicated swc saved: " + fileprefix + output_swc));
     }
     else
     {
