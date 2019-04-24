@@ -6289,15 +6289,17 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                 }
             }
             curImg->update_3drenderer_neuron_view(w, this);
-            int soma_cnt=0;
-            curImg->proj_trace_history_append();
+            QHash<QString, int>  soma_cnt;
+;           curImg->proj_trace_history_append();
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
-                if(p_listneuron->at(i).type == 1 && (i==0 || (p_listneuron->at(i).x != p_listneuron->at(i-1).x && p_listneuron->at(i).y != p_listneuron->at(i-1).y &&
-                                                              p_listneuron->at(i).z != p_listneuron->at(i-1).z)))
-                    soma_cnt++;
+                if(p_listneuron->at(i).type == 1)
+                {
+                    QString soma_str = QString("(%1,%2,%3)").arg(p_listneuron->at(i).x).arg(p_listneuron->at(i).y).arg(p_listneuron->at(i).z);
+                    soma_cnt[soma_str]++;
+                }
             }
-            if(soma_cnt>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt));
+            if(soma_cnt.size()>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt.size()));
         }
     }
 }
