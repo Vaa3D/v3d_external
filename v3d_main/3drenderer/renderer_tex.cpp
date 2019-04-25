@@ -541,7 +541,7 @@ void Renderer_gl1::paint()
 			if (bOrthoView)
 			{
 				glPushMatrix(); //============================================== scale bar {
-#ifdef _YUN_
+#ifdef _YUN_ // MK, April, 2019 --> scale bar redesigned
 				double voxDims[3];
 				voxDims[0] = terafly::CSettings::instance()->getVoxelSizeX();
 				voxDims[1] = terafly::CSettings::instance()->getVoxelSizeY();

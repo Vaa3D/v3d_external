@@ -837,6 +837,7 @@ void Renderer::drawScaleBar(float AlineWidth)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+// --------- MK, April, 2019, customized scale bar design --------- //
 void Renderer::drawScaleBar_Yun(const double voxDims[], const int voxNums[], const int VOIdims[], int resIndex, float AlineWidth)
 {
 	int resLevel = std::pow(2, resIndex);
@@ -950,6 +951,7 @@ void Renderer::drawScaleBar_Yun(const double voxDims[], const int voxNums[], con
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 }
+// ----------------------------------------------------------------- //
 
 ////////////////////////////////////////////////////////////////////////////////
 
