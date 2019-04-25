@@ -46,6 +46,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 
+#include "../terafly/src/control/CSettings.h"
+#include "../terafly/src/control/CImport.h"
+#include "../terafly/src/control/CViewer.h"
+#include "CustomDefine.h"
+
 #define SIM_DIM1 765	//X
 #define SIM_DIM2 567	//Y
 #define SIM_DIM3 200	//Z
@@ -536,8 +541,18 @@ void Renderer_gl1::paint()
 			if (bOrthoView)
 			{
 				glPushMatrix(); //============================================== scale bar {
-
+#ifdef _YUN_
+				double voxXdim = terafly::CSettings::instance()->getVoxelSizeX();
+				double voxYdim = terafly::CSettings::instance()->getVoxelSizeY();
+				double voxZdim = terafly::CSettings::instance()->getVoxelSizeZ();
+				int xVoxNum = terafly::CImport::instance()->getHighestResVolume()->getDIM_H();
+				int yVoxNum = terafly::CImport::instance()->getHighestResVolume()->getDIM_V();
+				int zVoxNum = terafly::CImport::instance()->getHighestResVolume()->getDIM_D();
+				int resIndex = terafly::CViewer::getCurrent()->getResIndex();
+				drawScaleBar_Yun(voxXdim, voxYdim, voxZdim, xVoxNum, yVoxNum, zVoxNum, resIndex);
+#else
 				drawScaleBar();
+#endif
 
 				glPopMatrix(); //========================================================= }
 			}
@@ -2288,7 +2303,6 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
     GLuint *selectBuf = new GLuint[PICK_BUFFER_SIZE]; //
     glSelectBuffer(PICK_BUFFER_SIZE, selectBuf);
     glRenderMode(GL_SELECT);
-
     glInitNames();
     {
             glMatrixMode(GL_PROJECTION);

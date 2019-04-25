@@ -41,6 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_glwidget.h" //for makeCurrent, drawText
 #include <sstream>
 #include <string>
+#include <cmath>
 
 Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
 
@@ -832,6 +833,100 @@ void Renderer::drawScaleBar(float AlineWidth)
 
 	glPopAttrib();
     glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void Renderer::drawScaleBar_Yun(double xVoxDim, double yVoxDim, double zVoxDim, int xVoxNum, int yVoxNum, int zVoxNum, int resIndex, float AlineWidth)
+{
+	int resLevel = std::pow(2, resIndex);
+	cout << resLevel << endl;
+	// no scale here
+	GLdouble mRot[16];
+	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
+	for (int i = 0; i<3; i++) mRot[i * 4 + 3] = mRot[3 * 4 + i] = 0; mRot[3 * 4 + 3] = 1; // only reserve rotation, remove translation in mRot
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	double aspect = double(screenW) / MAX(screenH, 1);
+	double halfw = 1.3*aspect;
+	double halfh = 1.3;
+	glOrtho(-halfw, halfw, -halfh, halfh, -1, 1000); // 1000 makes 0 at most front depth in z-buffer
+	glTranslated(+0.8, -1.15, 0); // put at right-bottom corner
+
+	double sbar = 0.1; // scale bar display size
+	glScaled(sbar * 2, sbar * 2, sbar * 2); //[0,1]-->[-1,+1]
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glMultMatrixd(mRot); // last rotation pose
+
+	glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_POLYGON_OFFSET_LINE);
+
+	glColor3fv(color_line.c);
+
+	if (AlineWidth > 0)
+	{
+		BoundingBox BB = UNIT_BoundingBox;
+		float D = (BB.Dmax());
+		float ld = D*0.0001; //1e-4 is best
+		float td = 0.02;
+		XYZ A0 = BB.Vabsmin();
+		XYZ A1 = BB.V1();
+		A0.y = A0.y - 2.2;
+		A0.z = A0.z - 2;
+		A1.y = A1.y - 2.2;
+		A1.z = A1.z - 2;
+
+		glLineWidth(AlineWidth); // work only before glBegin(), by RZC 080827
+		glBegin(GL_QUADS);
+		{
+			//glColor3f(1, 0, 0);
+			box_quads(BoundingBox(A0, XYZ(A1.x, A0.y + ld, A0.z + ld)));
+			//glColor3f(0, 1, 0);
+			box_quads(BoundingBox(A0, XYZ(A0.x + ld, A1.y, A0.z + ld)));
+			//glColor3f(0, 0, 1);
+			box_quads(BoundingBox(A0, XYZ(A0.x + ld, A0.y + ld, A1.z)));
+		}
+		glEnd();
+
+		////////////////////////////////////////
+		double sizeX = bufSize[0] / sampleScale[0];
+		double sizeY = bufSize[1] / sampleScale[1];
+		double sizeZ = bufSize[2] / sampleScale[2];
+		double unitXscale = boundingBox.Dx() / boundingBox.Dmax(); // scale bar ratio in 3 dimensions; max among the 3 is 1
+		double unitYscale = boundingBox.Dy() / boundingBox.Dmax();
+		double unitZscale = boundingBox.Dz() / boundingBox.Dmax();
+		double sizeXunit = sizeX / unitXscale; 
+		double sizeYunit = sizeY / unitYscale;
+		double sizeZunit = sizeZ / unitZscale;
+		double xScale = round(((sbar * zoomRatio) * (xVoxNum * xVoxDim) / unitXscale) / resLevel);
+		double yScale = round(((sbar * zoomRatio) * (yVoxNum * yVoxDim) / unitYscale) / resLevel);
+		double zScale = round(((sbar * zoomRatio) * (zVoxNum * zVoxDim) / unitZscale) / resLevel);
+
+		char str[100];
+		char strY[100];
+		char strZ[100];
+		sprintf(str, "%g", xScale);
+		sprintf(strY, "%g", yScale);
+		sprintf(strZ, "%g", zScale);
+
+		//qDebug("sizeX=%g unitXscale=%g sizeXunit=%g", sizeX, unitXscale, sizeXunit);
+
+		drawString(A1.x + td + 0.2, A0.y - 0.05, A0.z + 0.1, str, 0, 8);
+		drawString(A0.x + 0.2, A1.y + td + 0.1, A0.z + 0.1, strY, 0, 8);
+		drawString(A0.x + 0.2, A0.y - 0.05, A1.z + td + 0.1, strZ, 0, 8);
+		//drawString()
+		glColor3f(0, 1, 0);		drawString(A1.x + td, A0.y - 0.05, A0.z, "X", 10);
+		glColor3f(0, 1, 0);		drawString(A0.x, A1.y + td + 0.1, A0.z, "Y", 10);
+		glColor3f(0, 1, 0);		drawString(A0.x, A0.y - 0.05, A1.z + td, "Z", 10);
+	}
+
+	glPopAttrib();
+	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 }

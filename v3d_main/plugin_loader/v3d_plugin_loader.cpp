@@ -497,7 +497,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
             break;
         }
     }
-
+	
     if(flag == 1)
     {
         int currentIndex = 0;
