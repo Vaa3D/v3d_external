@@ -176,7 +176,7 @@ public:
 	virtual void drawSegInfo();
 	vector<size_t> segInfoShow;
     virtual void drawScaleBar(float AlineWidth=3);
-	virtual void drawScaleBar_Yun(double xVoxDim, double yVoxDim, double zVoxDim, int xVoxNum, int yVoxNum, int zVoxNum, int resIndex, float AlineWidth = 3);
+	virtual void drawScaleBar_Yun(const double voxDims[], const int voxNums[], const int VOIdims[], int resIndex, float AlineWidth = 3);
 
 	virtual void updateVolCutRange();
 	virtual void updateSurfClipRange();

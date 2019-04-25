@@ -542,14 +542,24 @@ void Renderer_gl1::paint()
 			{
 				glPushMatrix(); //============================================== scale bar {
 #ifdef _YUN_
-				double voxXdim = terafly::CSettings::instance()->getVoxelSizeX();
-				double voxYdim = terafly::CSettings::instance()->getVoxelSizeY();
-				double voxZdim = terafly::CSettings::instance()->getVoxelSizeZ();
-				int xVoxNum = terafly::CImport::instance()->getHighestResVolume()->getDIM_H();
-				int yVoxNum = terafly::CImport::instance()->getHighestResVolume()->getDIM_V();
-				int zVoxNum = terafly::CImport::instance()->getHighestResVolume()->getDIM_D();
+				double voxDims[3];
+				voxDims[0] = terafly::CSettings::instance()->getVoxelSizeX();
+				voxDims[1] = terafly::CSettings::instance()->getVoxelSizeY();
+				voxDims[2] = terafly::CSettings::instance()->getVoxelSizeZ();
+
+				int voxNums[3];
+				voxNums[0] = terafly::CImport::instance()->getHighestResVolume()->getDIM_H();
+				voxNums[1] = terafly::CImport::instance()->getHighestResVolume()->getDIM_V();
+				voxNums[2] = terafly::CImport::instance()->getHighestResVolume()->getDIM_D();
+				
+				int VOIdims[3];
+				VOIdims[0] = terafly::CSettings::instance()->getVOIdimH();
+				VOIdims[1] = terafly::CSettings::instance()->getVOIdimV();
+				VOIdims[2] = terafly::CSettings::instance()->getVOIdimD();
+
 				int resIndex = terafly::CViewer::getCurrent()->getResIndex();
-				drawScaleBar_Yun(voxXdim, voxYdim, voxZdim, xVoxNum, yVoxNum, zVoxNum, resIndex);
+				
+				drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex);
 #else
 				drawScaleBar();
 #endif

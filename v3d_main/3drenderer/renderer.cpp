@@ -837,10 +837,10 @@ void Renderer::drawScaleBar(float AlineWidth)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void Renderer::drawScaleBar_Yun(double xVoxDim, double yVoxDim, double zVoxDim, int xVoxNum, int yVoxNum, int zVoxNum, int resIndex, float AlineWidth)
+void Renderer::drawScaleBar_Yun(const double voxDims[], const int voxNums[], const int VOIdims[], int resIndex, float AlineWidth)
 {
 	int resLevel = std::pow(2, resIndex);
-	cout << resLevel << endl;
+	//cout << resLevel << endl;
 	// no scale here
 	GLdouble mRot[16];
 	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
@@ -876,9 +876,11 @@ void Renderer::drawScaleBar_Yun(double xVoxDim, double yVoxDim, double zVoxDim, 
 		float td = 0.02;
 		XYZ A0 = BB.Vabsmin();
 		XYZ A1 = BB.V1();
-		A0.y = A0.y - 2.2;
+		A0.x = A0.x - 1;
+		A0.y = A0.y - 2.5;
 		A0.z = A0.z - 2;
-		A1.y = A1.y - 2.2;
+		A1.x = A1.x - 1;
+		A1.y = A1.y - 2.5;
 		A1.z = A1.z - 2;
 
 		glLineWidth(AlineWidth); // work only before glBegin(), by RZC 080827
@@ -894,29 +896,47 @@ void Renderer::drawScaleBar_Yun(double xVoxDim, double yVoxDim, double zVoxDim, 
 		glEnd();
 
 		////////////////////////////////////////
-		double sizeX = bufSize[0] / sampleScale[0];
-		double sizeY = bufSize[1] / sampleScale[1];
-		double sizeZ = bufSize[2] / sampleScale[2];
-		double unitXscale = boundingBox.Dx() / boundingBox.Dmax(); // scale bar ratio in 3 dimensions; max among the 3 is 1
-		double unitYscale = boundingBox.Dy() / boundingBox.Dmax();
-		double unitZscale = boundingBox.Dz() / boundingBox.Dmax();
-		double sizeXunit = sizeX / unitXscale; 
-		double sizeYunit = sizeY / unitYscale;
-		double sizeZunit = sizeZ / unitZscale;
-		double xScale = round(((sbar * zoomRatio) * (xVoxNum * xVoxDim) / unitXscale) / resLevel);
-		double yScale = round(((sbar * zoomRatio) * (yVoxNum * yVoxDim) / unitYscale) / resLevel);
-		double zScale = round(((sbar * zoomRatio) * (zVoxNum * zVoxDim) / unitZscale) / resLevel);
+		double maxVOIdim;
+		if (resLevel == 1) maxVOIdim = MAX(MAX(voxNums[0], voxNums[1]), voxNums[2]);
+		else maxVOIdim = MAX(MAX(VOIdims[0], VOIdims[1]), VOIdims[2]);
+		//cout << voxNums[0] << " " << voxNums[1] << " " << voxNums[2] << endl;
+		//cout << VOIdims[0] << " " << VOIdims[1] << " " << VOIdims[2] << endl;
+		//cout << maxVOIdim << endl << endl;
 
-		char str[100];
+		int VOIdimRatio = 32 / resLevel;
+		double xScale, yScale, zScale;
+		if (VOIdimRatio == 32)
+		{
+			double sizeX = bufSize[0] / sampleScale[0];
+			double sizeY = bufSize[1] / sampleScale[1];
+			double sizeZ = bufSize[2] / sampleScale[2];
+			double unitXscale = boundingBox.Dx() / boundingBox.Dmax(); // scale bar ratio in 3 dimensions; the max among the 3 is 1
+			double unitYscale = boundingBox.Dy() / boundingBox.Dmax();
+			double unitZscale = boundingBox.Dz() / boundingBox.Dmax();
+			xScale = round((sbar * zoomRatio) * (voxNums[0] * voxDims[0]) / unitXscale);
+			yScale = round((sbar * zoomRatio) * (voxNums[1] * voxDims[1]) / unitYscale);
+			zScale = round((sbar * zoomRatio) * (voxNums[2] * voxDims[2]) / unitZscale);
+		}
+		else
+		{
+			double unitXscale = VOIdims[0] / maxVOIdim;
+			double unitYscale = VOIdims[1] / maxVOIdim;
+			double unitZscale = VOIdims[2] / maxVOIdim;
+			xScale = round((VOIdims[0] * sbar * zoomRatio) * VOIdimRatio * voxDims[0] / unitXscale);
+			yScale = round((VOIdims[1] * sbar * zoomRatio) * VOIdimRatio * voxDims[1] / unitYscale);
+			zScale = round((VOIdims[2] * sbar * zoomRatio) * VOIdimRatio * voxDims[2] / unitZscale);
+		}
+
+		char strX[100];
 		char strY[100];
 		char strZ[100];
-		sprintf(str, "%g", xScale);
+		sprintf(strX, "%g", xScale);
 		sprintf(strY, "%g", yScale);
 		sprintf(strZ, "%g", zScale);
 
 		//qDebug("sizeX=%g unitXscale=%g sizeXunit=%g", sizeX, unitXscale, sizeXunit);
 
-		drawString(A1.x + td + 0.2, A0.y - 0.05, A0.z + 0.1, str, 0, 8);
+		drawString(A1.x + td + 0.2, A0.y - 0.05, A0.z + 0.1, strX, 0, 8);
 		drawString(A0.x + 0.2, A1.y + td + 0.1, A0.z + 0.1, strY, 0, 8);
 		drawString(A0.x + 0.2, A0.y - 0.05, A1.z + td + 0.1, strZ, 0, 8);
 		//drawString()
