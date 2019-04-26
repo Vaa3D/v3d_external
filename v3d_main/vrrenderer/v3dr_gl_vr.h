@@ -37,7 +37,9 @@ enum ModelControlR
 	m_markMode,
     m_delmarkMode,
 	m_splitMode,
-	m_insertnodeMode
+	m_insertnodeMode,
+	m_clipplaneMode,
+	m_slabplaneMode
 };
 enum ModeControlSettings
 {
@@ -58,6 +60,11 @@ enum ModeControlSettings
 	_MovetoCreator,
 	_StretchImage
 };
+enum ModeTouchPadR
+{
+	tr_contrast = 0,
+	tr_clipplane
+};
 enum RGBImageChannel
 {
 	channel_rgb = 1,
@@ -69,7 +76,8 @@ enum RGBImageChannel
 enum SecondeMenu
 {
 	_nothing = 0,
-	_colorPad = 1
+	_colorPad = 1,
+//	_cutplane = 2
 };
 enum FlashType
 {
@@ -305,6 +313,7 @@ private: // OpenGL bookkeeping
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
 	static ModeControlSettings m_modeGrip_L;
+	static ModeTouchPadR m_modeTouchPad_R;
 	static SecondeMenu m_secondMenu;
 	static RGBImageChannel m_rgbChannel;
 	/*FlashType m_flashtype;
@@ -379,6 +388,8 @@ private: // OpenGL bookkeeping
 	Sphere* ctrSphere; // indicate the origin for curve drawing
 	glm::vec3 ctrSpherePos;
 	glm::vec3 ctrSphereColor;
+	glm::vec3 u_clipnormal;
+	glm::vec3 u_clippoint;
 
 	GLuint m_unMorphologyLineModeVAO;
 	GLuint m_glMorphologyLineModeVertBuffer;
@@ -405,7 +416,7 @@ private: // OpenGL bookkeeping
 	GLuint m_glControllerVertBuffer;
 	GLuint m_unControllerVAO;//note: axes for controller
 	unsigned int m_uiControllerVertcount;
-	unsigned int m_uiControllerRayVertcount;
+	unsigned int m_uiControllerRayVertcount;//note: used to draw controller ray
 	Matrix4 m_mat4HMDPose;//note: m_rmat4DevicePose[hmd].invert()
 	Matrix4 m_mat4eyePosLeft;
 	Matrix4 m_mat4eyePosRight;
@@ -525,6 +536,7 @@ private:
 	GLuint g_volTexObj_octree_128;			
 	static float fBrightness;
 	static float fContrast;
+	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
 	__int64 CounterStart;

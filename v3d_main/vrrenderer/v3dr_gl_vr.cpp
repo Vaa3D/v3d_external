@@ -77,6 +77,7 @@ glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
 My4DImage *CMainApplication::img4d_replace = nullptr;
 ModelControlR CMainApplication::m_modeGrip_R = m_drawMode;
 ModeControlSettings  CMainApplication::m_modeGrip_L = _donothing;
+ModeTouchPadR CMainApplication::m_modeTouchPad_R = tr_contrast;
 SecondeMenu CMainApplication::m_secondMenu = _nothing;
 RGBImageChannel CMainApplication::m_rgbChannel = channel_rgb;
 bool CMainApplication::showshootingPad = false;
@@ -944,6 +945,7 @@ bool CMainApplication::BInit()
 	vertexcount = swccount = 0;
 	pick_node = 0;
 
+	fSlabwidth = 0.05;
 	
 	if (!BInitGL())
 	{
@@ -975,6 +977,8 @@ bool CMainApplication::BInit()
 	ctrSphereColor[1] =  neuron_type_color[color_id][1] /255.0;
 	ctrSphereColor[2] =  neuron_type_color[color_id][2] /255.0;
 
+	u_clipnormal = glm::vec3(0,-1.0,0);
+	u_clippoint = glm::vec3(0.0,0.0,2.0);
 	teraflyPOS = 0;
 	CollaborationCreatorPos = 0;
 	SDL_StartTextInput();
@@ -1658,6 +1662,29 @@ bool CMainApplication::HandleInput()
 						qDebug()<<"finish update nearest node location";
 					}
 				}
+				//else if(m_modeGrip_R==m_slabplaneMode)
+				//{
+				//	glm::mat4 model;
+				//	model = glm::scale(glm::mat4(), glm::vec3(img4d->getXDim(), img4d->getYDim(), img4d->getZDim()));
+				//	model = m_globalMatrix * model;
+				//	const Matrix4 &mat_M = m_rmat4DevicePose[m_iControllerIDRight]; // mat means current controller pos
+				//	glm::mat4 mat = glm::mat4();
+				//	for (size_t i = 0; i < 4; i++)
+				//	{
+				//		for (size_t j = 0; j < 4; j++)
+				//		{
+				//			mat[i][j] = *(mat_M.get() + i * 4 + j);
+				//		}
+				//	}
+
+				//	mat = glm::inverse(model) * mat;
+				//	glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);
+				//	mat = glm::inverse(mat);
+				//	mat = glm::transpose(mat);
+				//	glm::vec4 clipnormal = mat * glm::vec4(0.0, 1.0, 0.0, 1);
+				//	u_clipnormal = glm::vec3(clipnormal.x, clipnormal.y, clipnormal.z);
+				//	u_clippoint = glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z);
+				//}
 			}
 
 			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
@@ -1697,42 +1724,65 @@ bool CMainApplication::HandleInput()
 				bRet = true;
 				return bRet;
 				}//*/
-				if(m_contrastMode==true)//into translate mode
+				//if(m_contrastMode==true)//into translate mode
+				if(m_modeTouchPad_R == tr_contrast)
 				{
-				if(m_fTouchPosY>0)
-				{
-					fContrast+=0.5;
-					if (fContrast>50)
-						fContrast = 50;
-					//fBrightness+= 0.01f;
-					//if(fBrightness>0.8f)
-					//	fBrightness = 0.8f;
-				}
-				else
-				{
-					fContrast-=0.5;
-					if (fContrast<1)
-						fContrast = 1;
-					//fBrightness-= 0.01f;
-					//if(fBrightness<0)
-					//	fBrightness = 0;
-				}	
+					if (m_fTouchPosY > 0)
+					{
+						fContrast += 0.5;
+						if (fContrast > 50)
+							fContrast = 50;
+						//fBrightness+= 0.01f;
+						//if(fBrightness>0.8f)
+						//	fBrightness = 0.8f;
+					}
+					else
+					{
+						fContrast -= 0.5;
+						if (fContrast < 1)
+							fContrast = 1;
+						//fBrightness-= 0.01f;
+						//if(fBrightness<0)
+						//	fBrightness = 0;
+					}
 
+				}
+				else if(m_modeTouchPad_R == tr_clipplane)
+				{
+					glm::mat4 model;
+					model = glm::scale(glm::mat4(), glm::vec3(img4d->getXDim(), img4d->getYDim(), img4d->getZDim()));
+					model = m_globalMatrix * model;
+					const Matrix4 &mat_M = m_rmat4DevicePose[m_iControllerIDRight]; // mat means current controller pos
+					glm::mat4 mat = glm::mat4();
+					for (size_t i = 0; i < 4; i++)
+					{
+						for (size_t j = 0; j < 4; j++)
+						{
+							mat[i][j] = *(mat_M.get() + i * 4 + j);
+						}
+					}
 
+					mat = glm::inverse(model) * mat;
+					glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);
+					mat = glm::inverse(mat);
+					mat = glm::transpose(mat);
+					glm::vec4 clipnormal = mat * glm::vec4(0.0, 0.0, 0.05, 1);
+					u_clipnormal = glm::vec3(clipnormal.x, clipnormal.y, clipnormal.z);
+					u_clippoint = glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z);
 				}
-				else if(0&&m_rotateMode==true)//into ratate mode
-				{
-					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/100,glm::vec3(1,0,0));
-					m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/100,glm::vec3(0,1,0));
-					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-				}
-				else if(0&&m_zoomMode==true)//into zoom mode
-				{
-					m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-					m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/15));
-					m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-				}
+				// else if(0&&m_rotateMode==true)//into ratate mode
+				// {
+				// 	m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+				// 	m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/100,glm::vec3(1,0,0));
+				// 	m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/100,glm::vec3(0,1,0));
+				// 	m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+				// }
+				// else if(0&&m_zoomMode==true)//into zoom mode
+				// {
+				// 	m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
+				// 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/15));
+				// 	m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
+				// }
 			}
 		}
 	}//
@@ -2708,6 +2758,26 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// 	break;
 		// }	
 		//qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
+		vr::VRControllerState_t state;	
+		m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
+		float temp_x  = state.rAxis[0].x;
+		// case m_slabplaneMode:
+		// {
+		// 	if(temp_x>0)
+		// 	{
+		// 		fSlabwidth += 0.1;
+		// 		if (fSlabwidth > 0.5)
+		// 			fSlabwidth = 0.5;
+		// 	}
+		// 	if(temp_x<0)
+		// 	{
+		// 		fSlabwidth -= 0.1;
+		// 		if (fSlabwidth < 0.05)
+		// 			fSlabwidth = 0.05;
+		// 	}
+		// 	break;
+		// }
+
 	}
 		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))	//detect trigger when menu show
 		{
@@ -3397,6 +3467,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				break;
 			}
 			}
+		
 		default :
 			break;
 		}
@@ -3447,11 +3518,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				//2.return to top menu from second menu and hide second menu meantime
 				//3.hide top menu
 				//4.when no menu show ,hide ray
-				showshootingPad =! showshootingPad;//show virtualPad
-				if(showshootingPad) m_secondMenu=_nothing;
-                if(!showshootingPad&&m_secondMenu==_nothing)  //when top menu and second menu dont show ,then hide ray
-                    showshootingray=false;
-				
+				showshootingPad = !showshootingPad; //show virtualPad
+				if (showshootingPad)
+					m_secondMenu = _nothing;
+				if (!showshootingPad && m_secondMenu == _nothing) //when top menu and second menu dont show ,then hide ray
+					showshootingray = false;
 	}
 
 		//save swc
@@ -4379,13 +4450,34 @@ void CMainApplication::SetupControllerTexture()
 		// 		break;
 		// 	}
 		//case 1://translate
-		//contrast texture only
-				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.375f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.25,0.375f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.17,0.5f,vcVerts);
-				AddVertex(point_G.x,point_G.y,point_G.z,0.17,0.5f,vcVerts);
-				AddVertex(point_H.x,point_H.y,point_H.z,0.25f,0.5f,vcVerts);
-				AddVertex(point_F.x,point_F.y,point_F.z,0.25f,0.375f,vcVerts);
+		
+			//terazoom
+	switch(m_modeTouchPad_R)
+	{
+		case tr_contrast:
+		{
+			AddVertex(point_E.x, point_E.y, point_E.z, 0.17f, 0.375f, vcVerts);
+			AddVertex(point_F.x, point_F.y, point_F.z, 0.25, 0.375f, vcVerts);
+			AddVertex(point_G.x, point_G.y, point_G.z, 0.17, 0.5f, vcVerts);
+			AddVertex(point_G.x, point_G.y, point_G.z, 0.17, 0.5f, vcVerts);
+			AddVertex(point_H.x, point_H.y, point_H.z, 0.25f, 0.5f, vcVerts);
+			AddVertex(point_F.x, point_F.y, point_F.z, 0.25f, 0.375f, vcVerts);
+			break;
+		}
+		case tr_clipplane:
+		{
+			AddVertex(point_E.x, point_E.y, point_E.z, 0.42f,0.635f, vcVerts);
+			AddVertex(point_F.x, point_F.y, point_F.z, 0.5,0.635f, vcVerts);
+			AddVertex(point_G.x, point_G.y, point_G.z, 0.42f,0.765f, vcVerts);
+			AddVertex(point_G.x, point_G.y, point_G.z, 0.42f,0.765f, vcVerts);
+			AddVertex(point_H.x, point_H.y, point_H.z, 0.5,0.765f, vcVerts);
+			AddVertex(point_F.x, point_F.y, point_F.z, 0.5,0.635f, vcVerts);
+			break;
+		}
+		default:
+		break;
+	}
+				
 				//break;
 		// case 2://rotate
 		// 	{
@@ -5122,12 +5214,12 @@ void CMainApplication::RenderControllerAxes() //note: note render, actually setu
 
 		Vector4 center = mat * Vector4( 0, 0, 0, 1 );
 
-		for ( int i = 0; i < 3; ++i )//note: prepare data for axes and ray
+		for ( int i = 0; i < 2; ++i )//note: prepare data for axes and ray
 		{
 			Vector3 color( 0, 0, 0 );
 			Vector4 point( 0, 0, 0, 1 );
 			point[i] += 0.05f;  // offset in X, Y, Z
-			color[i] = 1.0;  // R, G, B
+			color[0] = 1.0;  // R, G, B
 			point = mat * point;
 			vertdataarray.push_back( center.x );
 			vertdataarray.push_back( center.y );
@@ -5149,7 +5241,7 @@ void CMainApplication::RenderControllerAxes() //note: note render, actually setu
 		}
 		
 		//prepare the shooting ray
-		
+
 		// if(showshootingPad && (unTrackedDevice ==vr::k_unTrackedDeviceIndex_Hmd + 3))  //only right controller render ray
 		// {		Vector4 start = mat * Vector4( 0, 0, -0.02f, 1 );
 		// 		Vector4 end = mat * Vector4( 0, 0, -39.f, 1 );
@@ -5160,29 +5252,30 @@ void CMainApplication::RenderControllerAxes() //note: note render, actually setu
 
 		// 		vertdataarray.push_back( end.x );vertdataarray.push_back( end.y );vertdataarray.push_back( end.z );
 		// 		vertdataarray.push_back( color.x );vertdataarray.push_back( color.y );vertdataarray.push_back( color.z );
-		// 		m_uiControllerVertcount += 2;}
+		// 		m_uiControllerVertcount += 2;
 		// }
+		
 
-	// Setup the VAO the first time through.
-	if ( m_unControllerVAO == 0 )
-	{
-		glGenVertexArrays( 1, &m_unControllerVAO );
-		glBindVertexArray( m_unControllerVAO );
+		// Setup the VAO the first time through.
+		if (m_unControllerVAO == 0)
+		{
+			glGenVertexArrays(1, &m_unControllerVAO);
+			glBindVertexArray(m_unControllerVAO);
 
-		glGenBuffers( 1, &m_glControllerVertBuffer );
-		glBindBuffer( GL_ARRAY_BUFFER, m_glControllerVertBuffer );
+			glGenBuffers(1, &m_glControllerVertBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, m_glControllerVertBuffer);
 
-		GLuint stride = 2 * 3 * sizeof( float );
-		uintptr_t offset = 0;
+			GLuint stride = 2 * 3 * sizeof(float);
+			uintptr_t offset = 0;
 
-		glEnableVertexAttribArray( 0 );
-		glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
 
-		offset += sizeof( Vector3 );
-		glEnableVertexAttribArray( 1 );
-		glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
+			offset += sizeof(Vector3);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
 
-		glBindVertexArray( 0 );
+			glBindVertexArray(0);
 	}
 
 	glBindBuffer( GL_ARRAY_BUFFER, m_glControllerVertBuffer );
@@ -5439,17 +5532,17 @@ void CMainApplication::RenderStereoTargets()
 	// Left Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId ); //render scene to m_nRenderFramebufferId
  	glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
-	//frameCount++;
-	//if(GetTime() > 1.0f)
-	//{
-	//	fps = frameCount;
-	//	frameCount = 0;
-	//	StartTimer();
-	//	cout<<fps<<endl;
-	//	//used for fps tess liqi
-	//}	
-	//
-	//frameTime = GetFrameTime();
+	frameCount++;
+	if(GetTime() > 1.0f)
+	{
+		fps = frameCount;
+		frameCount = 0;
+		StartTimer();
+		cout<<fps<<endl;
+		//used for fps tess liqi
+	}	
+	
+	frameTime = GetFrameTime();
  	RenderScene( vr::Eye_Left );
  	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDisable( GL_MULTISAMPLE );
@@ -5853,14 +5946,16 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	}
 	//=================== draw the controller axis lines ======================
 	bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
-	// if( !bIsInputCapturedByAnotherProcess )
-	// {
-	// 	glUseProgram( m_unControllerTransformProgramID );
-	// 	glUniformMatrix4fv( m_nControllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
-	// 	glBindVertexArray( m_unControllerVAO );
-	// 	glDrawArrays( GL_LINES, 0, m_uWiControllerVertcount );
-	// 	glBindVertexArray( 0 );
-	// }
+	if( !bIsInputCapturedByAnotherProcess&&m_modeTouchPad_R == tr_clipplane)
+	{
+		glUseProgram( m_unControllerTransformProgramID );
+		glUniformMatrix4fv( m_nControllerMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+		glBindVertexArray( m_unControllerVAO );
+		glLineWidth(9);
+		glDrawArrays( GL_LINES, 0, m_uiControllerVertcount );
+		glBindVertexArray( 0 );
+		glLineWidth(iLineWid);
+	}
 	//=================== draw the controller shooting ray ======================
 	if( !bIsInputCapturedByAnotherProcess )
 	{
@@ -6734,7 +6829,25 @@ void CMainApplication::SetupCubeForImage4D()
 	glBindVertexArray(m_clipPatchVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, frustum_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(frustum_vertices), frustum_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(frustum_vertices), frustum_vertices, GL_STATIC_DRAW);// 在这里做眼睛前面的裁剪 
+	/*
+	但是把顶点颜色和顶点位置做成一个东西是要做什么？
+	顶点颜色在标准空间下 对应射线入口点？
+	为什么在渲染背面的时候  才绘制这个裁剪面
+	因为使用了不同的渲染shader。。。 mvp被逆变换了
+	这个面也没有被变换到图像空间 它就是标准设备空间的眼前的一个面
+	在ray casting 里的entry point 就是在图像空间内的一个点 然后从texture 中取出的backface的贴图坐标 其实也是在图像空间的
+	整个ray casting 都是在图像空间里做的，然后渲染到当前像素上而已
+	 
+	 如果想生成别的切面
+	 我们可以 给定一个顶点和一个法线 这个顶点是在世界坐标中的，我们需要变换到图像空间中
+
+	 然后对于当前的坐标点 计算它是否在裁剪面的前面
+	  如果是就break掉
+	
+
+
+	*/
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -6826,6 +6939,7 @@ GLuint CMainApplication::initVol3DTex()
 	{
 	case 1:
 	{
+		//GLubyte * testData = new GLubyte[img4d->getTotalUnitNumberPerChannel() * 3];
 		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLubyte *)img4d->getRawData());
 	}
 	break;
@@ -6988,7 +7102,26 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
 	model = glm::scale(glm::mat4(),glm::vec3(img4d->getXDim(),img4d->getYDim(),img4d->getZDim()));
 	model = m_globalMatrix * model;
 	glm::mat4 mvp = projection * view * model;
-
+	// const Matrix4 &mat_M = m_rmat4DevicePose[m_iControllerIDRight]; // mat means current controller pos
+	// glm::mat4 mat = glm::mat4();
+	// for (size_t i = 0; i < 4; i++)
+	// {
+	// 	for (size_t j = 0; j < 4; j++)
+	// 	{
+	// 		mat[i][j] = *(mat_M.get() + i * 4 + j);
+	// 	}
+	// }
+	
+	//clipnormal = mat * clipnormal;
+	//glm::mat4 mat_normal = glm::transpose(model);
+	//clipnormal = mat_normal * clipnormal;
+	// mat = glm::inverse(model) * mat;
+	// glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);
+	// mat = glm::inverse(mat);
+	// mat = glm::transpose(mat);
+	// glm::vec4 clipnormal = mat * glm::vec4(0.0,0.0,0.05,1);	
+	// glm::vec3 u_clipnormal = glm::vec3(clipnormal.x,clipnormal.y,clipnormal.z);
+	// glm::vec3 u_clippoint = glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
 	// render
 	glEnable(GL_CULL_FACE);
     glCullFace(cullFace);
@@ -7002,6 +7135,8 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
 		shader->use();
 	}
 	shader->setMat4("MVP",mvp);
+	
+	//raycastingShader->setFloat("StepSize",0.001f);
     glBindVertexArray(m_VolumeImageVAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint *)NULL);
     glDisable(GL_CULL_FACE); 
@@ -7060,7 +7195,23 @@ void CMainApplication::SetUinformsForRayCasting()
 	else	
 		raycastingShader->setInt("channel", m_rgbChannel);
 		
-
+	if(m_modeTouchPad_R == tr_clipplane)
+	{
+		raycastingShader->setVec3("clippoint", u_clippoint);
+		raycastingShader->setVec3("clipnormal", u_clipnormal);
+		raycastingShader->setInt("clipmode", 1);
+	}
+	// else if(m_modeGrip_R == m_slabplaneMode)
+	// {
+	// 	raycastingShader->setVec3("clippoint", u_clippoint);
+	// 	raycastingShader->setVec3("clipnormal", u_clipnormal);
+	// 	raycastingShader->setInt("clipmode", 2);
+	// 	raycastingShader->setFloat("clipwidth",fSlabwidth);
+	// }
+	// else 
+	// {
+	// 	raycastingShader->setInt("clipmode", 0);
+	// }
 }
 
 
@@ -7455,40 +7606,53 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		//these function may be added in the future
 	}
 	//choose Right controllerFunction
-	if(panelpos_x >= 0.657)
+	if(panelpos_x >= 0.437)
 	{
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
 		{
 			m_modeGrip_R = m_drawMode;
 		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
 		{
 			m_modeGrip_R = m_deleteMode;
 		}
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
 			m_modeGrip_R = m_insertnodeMode;
 			//m_modeGrip_R = m_markMode;
 		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
 			m_modeGrip_R = m_markMode;
 		}
-		if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{
 			m_modeGrip_R = m_dragMode;
 		}
-		else if((panelpos_x >= 0.823)&&(panelpos_x <= 1)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{
 			m_modeGrip_R = m_splitMode;
 		}
-		else if((panelpos_x >= 0.657)&&(panelpos_x <= 0.823)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
-		{
-			
-		}
-
+		//else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
+		//{
+		//	m_modeGrip_R = m_clipplaneMode;
+		//}
+		//else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
+		//{
+		//	m_modeGrip_R = m_slabplaneMode;
+		//}
 	}
-
+	if(panelpos_x >= 0.806)//switch touchpad right function
+	{
+		if((panelpos_y >= 0.09)&&(panelpos_y <= 0.305))
+		{
+			m_modeTouchPad_R = tr_contrast;
+		}
+		else if((panelpos_y >= 0.32)&&(panelpos_y <= 0.528))
+		{
+			m_modeTouchPad_R = tr_clipplane;
+		}
+	}
 
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z)//localtogolbal
@@ -7503,9 +7667,9 @@ XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z)//local
 }
 XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 {
-	x*=pow(2.0,CmainResIndex-1);;
-	y*=pow(2.0,CmainResIndex-1);;
-	z*=pow(2.0,CmainResIndex-1);;
+	x*=pow(2.0,CmainResIndex-1);
+	y*=pow(2.0,CmainResIndex-1);
+	z*=pow(2.0,CmainResIndex-1);
 	x-= CmainVRVolumeStartPoint.x;
 	y-= CmainVRVolumeStartPoint.y;
 	z-= CmainVRVolumeStartPoint.z;
