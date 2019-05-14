@@ -30,6 +30,7 @@
 #include "v3d_interface.h"
 #include "../presentation/PMain.h"
 #include "../presentation/PConverter.h"
+#include "../presentation/PDialogProofreading.h"
 #include "VirtualVolume.h"
 #include "v3d_message.h"
 #include "CPlugin.h"
@@ -540,6 +541,9 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     }
 }
 
+
+// ------------------------------------ Fragment-based Tracing Related ------------------------------------ //
+//--------------------------------------------------------------------------- MK, Mar, 2019 --------------- //
 void tf::PluginInterface::drawEditInfo(int editNum)
 {
 	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
@@ -563,3 +567,18 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
 	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
 }
+
+void tf::PluginInterface::getPartialVolumeCoords(int localCoords[], int displayingVolDims[])
+{
+	localCoords[0] = PDialogProofreading::instance()->sbXlb;
+	localCoords[1] = PDialogProofreading::instance()->sbXhb;
+	localCoords[2] = PDialogProofreading::instance()->sbYlb;
+	localCoords[3] = PDialogProofreading::instance()->sbYhb;
+	localCoords[4] = PDialogProofreading::instance()->sbZlb;
+	localCoords[5] = PDialogProofreading::instance()->sbZhb;
+
+	displayingVolDims[0] = PDialogProofreading::instance()->displayingVolDimX;
+	displayingVolDims[1] = PDialogProofreading::instance()->displayingVolDimY;
+	displayingVolDims[2] = PDialogProofreading::instance()->displayingVolDimZ;
+}
+// -------------------------------------------------------------------------------------------------------- //

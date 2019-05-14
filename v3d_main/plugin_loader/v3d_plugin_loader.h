@@ -230,6 +230,7 @@ public:
 	virtual bool checkFragTraceStatus();
 	virtual void changeFragTraceStatus(bool newStatus);
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
+	virtual void getPartialVolumeCoords(int localCoords[], int displayingVolDims[]);
 };
 
 #endif

@@ -386,6 +386,7 @@ class terafly::CViewer : public QWidget
         void Vaa3D_changeTSlider(int s, bool editingFinished = false);
         void ShiftToAnotherDirection(int direction);
 
+
         /**********************************************************************************
         * Linked to PMain GUI VOI's widgets.
         * This implements the syncronization TeraFly-->Vaa3D of subvolume selection.

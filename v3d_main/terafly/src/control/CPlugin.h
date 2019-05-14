@@ -935,10 +935,14 @@ class terafly::PluginInterface
         static std::string version(){ return "1.1.0"; }
         static bool setImage(size_t x, size_t y, size_t z);
 
+		// ----------------- Fragment-based Tracing Related ----------------- //
+		//------------------------------------- MK, Mar, 2019 --------------- //
 		static void drawEditInfo(int editNum);
 		static bool checkFragTraceStatus();
 		static void changeFragTraceStatus(bool newStatus);
 		static void getParamsFromFragTraceUI(const string& keyName, const float& value);
+		static void getPartialVolumeCoords(int localCoords[], int displayingVolDims[]);
+		// ------------------------------------------------------------------ //
 };
 
 #endif

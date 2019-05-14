@@ -247,6 +247,7 @@ public:
 	virtual bool checkFragTraceStatus() = 0;
 	virtual void changeFragTraceStatus(bool newStatus) = 0;
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
+	virtual void getPartialVolumeCoords(int localCoords[], int displayingVolDims[]) = 0;
 
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
