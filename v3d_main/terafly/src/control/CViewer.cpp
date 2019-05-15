@@ -445,6 +445,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     insituZoomOut_z = 0;
     isTranslate = false;
     toRetrieveData = false;
+	volumeCutSbAdjusted = false;
 
     try
     {
@@ -2665,7 +2666,8 @@ void CViewer::Vaa3D_changeYCut0(int s)
     disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
     PMain::getInstance()->V0_sbox->setValue(coord2global<int>(s, iim::vertical, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbYlb = s;
+	PDialogProofreading::instance()->sbYlb = s + 1;
+	this->volumeCutSbAdjusted = true;
     connect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
 }
 void CViewer::Vaa3D_changeYCut1(int s)
@@ -2677,7 +2679,8 @@ void CViewer::Vaa3D_changeYCut1(int s)
     disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
     PMain::getInstance()->V1_sbox->setValue(coord2global<int>(s+1, iim::vertical, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbYhb = s;
+	PDialogProofreading::instance()->sbYhb = s + 1;
+	this->volumeCutSbAdjusted = true;
     connect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
 }
 void CViewer::Vaa3D_changeXCut0(int s)
@@ -2689,7 +2692,8 @@ void CViewer::Vaa3D_changeXCut0(int s)
     disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
     PMain::getInstance()->H0_sbox->setValue(coord2global<int>(s, iim::horizontal, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbXlb = s;
+	PDialogProofreading::instance()->sbXlb = s + 1;
+	this->volumeCutSbAdjusted = true;
     connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
 }
 void CViewer::ShiftToAnotherDirection(int _direction)
@@ -2778,7 +2782,8 @@ void CViewer::Vaa3D_changeXCut1(int s)
     disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
     PMain::getInstance()->H1_sbox->setValue(coord2global<int>(s+1, iim::horizontal, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbXhb = s;
+	PDialogProofreading::instance()->sbXhb = s + 1;
+	this->volumeCutSbAdjusted = true;
     connect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut0(int s)
@@ -2790,7 +2795,8 @@ void CViewer::Vaa3D_changeZCut0(int s)
     disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
     PMain::getInstance()->D0_sbox->setValue(coord2global<int>(s, iim::depth, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbZlb = s;
+	PDialogProofreading::instance()->sbZlb = s + 1;
+	this->volumeCutSbAdjusted = true;
     connect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut1(int s)
@@ -2802,7 +2808,8 @@ void CViewer::Vaa3D_changeZCut1(int s)
     disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
     PMain::getInstance()->D1_sbox->setValue(coord2global<int>(s+1, iim::depth, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbZhb = s;
+	PDialogProofreading::instance()->sbZhb = s + 1;
+	this->volumeCutSbAdjusted = true;
     connect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
 }
 

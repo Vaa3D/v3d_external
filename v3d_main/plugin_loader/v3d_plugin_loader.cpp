@@ -1707,9 +1707,9 @@ void V3d_PluginLoader::getParamsFromFragTraceUI(const string& keyName, const flo
 	terafly::PluginInterface::getParamsFromFragTraceUI(keyName, value);
 }
 
-void V3d_PluginLoader::getPartialVolumeCoords(int localCoords[], int displayingVolDims[])
+bool V3d_PluginLoader::getPartialVolumeCoords(int localCoords[], int displayingVolDims[], bool& partialVolume)
 {
-	terafly::PluginInterface::getPartialVolumeCoords(localCoords, displayingVolDims);
+	return terafly::PluginInterface::getPartialVolumeCoords(localCoords, displayingVolDims, partialVolume);
 }
 
 #ifdef __ALLOW_VR_FUNCS__

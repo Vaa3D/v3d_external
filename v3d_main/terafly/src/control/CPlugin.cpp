@@ -568,8 +568,10 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
 }
 
-void tf::PluginInterface::getPartialVolumeCoords(int localCoords[], int displayingVolDims[])
+bool tf::PluginInterface::getPartialVolumeCoords(int localCoords[], int displayingVolDims[], bool& partialVolume)
 {
+	if (!CViewer::getCurrent()->volumeCutSbAdjusted) return false;
+
 	localCoords[0] = PDialogProofreading::instance()->sbXlb;
 	localCoords[1] = PDialogProofreading::instance()->sbXhb;
 	localCoords[2] = PDialogProofreading::instance()->sbYlb;
@@ -580,5 +582,12 @@ void tf::PluginInterface::getPartialVolumeCoords(int localCoords[], int displayi
 	displayingVolDims[0] = PDialogProofreading::instance()->displayingVolDimX;
 	displayingVolDims[1] = PDialogProofreading::instance()->displayingVolDimY;
 	displayingVolDims[2] = PDialogProofreading::instance()->displayingVolDimZ;
+
+	if (localCoords[1] - localCoords[0] + 1 == displayingVolDims[0] &&
+		localCoords[3] - localCoords[2] + 1 == displayingVolDims[1] &&
+		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) partialVolume = false;
+	else partialVolume = true;
+
+	return true;
 }
 // -------------------------------------------------------------------------------------------------------- //
