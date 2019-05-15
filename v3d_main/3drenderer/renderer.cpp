@@ -840,7 +840,7 @@ void Renderer::drawScaleBar(float AlineWidth)
 // --------- MK, April, 2019, customized scale bar design --------- //
 void Renderer::drawScaleBar_Yun(const double voxDims[], const int voxNums[], const int VOIdims[], int resIndex, float AlineWidth)
 {
-	int resLevel = std::pow(2, resIndex);
+    int resLevel = std::pow(2.0, resIndex);
 	//cout << resLevel << endl;
 	// no scale here
 	GLdouble mRot[16];
