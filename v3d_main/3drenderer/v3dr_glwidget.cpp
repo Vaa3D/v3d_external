@@ -51,6 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
 #include "../terafly/src/control/CPlugin.h"
+#include "../terafly/src/presentation/PMain.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
@@ -2932,6 +2933,32 @@ void V3dR_GLWidget::switchBackgroundColor()
     }
 
     POST_updateGL();
+}
+
+void V3dR_GLWidget::setVoxSize()
+{
+	terafly::CImport* importCheckPtr = terafly::CImport::instance();
+	if (importCheckPtr->getVMapRawData() != 0)
+	{
+		v3d_msg(tr("There is a terafly UI inhereted from this Vaa3D controls.\n Please adjust the voxel size from terafly control panel instead."));
+		return;
+	}
+
+	QSettings voxSettings("SEU-Allen", "scaleBar_nonTerafly");
+
+	this->setVoxSizeDlg = new QDialog;
+	this->setVoxDlgPtr = new Ui::setVoxSizeDialog;
+	this->setVoxDlgPtr->setupUi(this->setVoxSizeDlg);
+	this->setVoxDlgPtr->doubleSpinBox->setValue(voxSettings.value("x").toDouble());
+	this->setVoxDlgPtr->doubleSpinBox_2->setValue(voxSettings.value("y").toDouble());
+	this->setVoxDlgPtr->doubleSpinBox_3->setValue(voxSettings.value("z").toDouble());
+	this->setVoxSizeDlg->exec();
+		
+	voxSettings.setValue("x", this->setVoxDlgPtr->doubleSpinBox->value());
+	voxSettings.setValue("y", this->setVoxDlgPtr->doubleSpinBox_2->value());
+	voxSettings.setValue("z", this->setVoxDlgPtr->doubleSpinBox_3->value());
+
+	renderer->paint();
 }
 
 void V3dR_GLWidget::enableShowAxes(bool s)

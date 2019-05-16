@@ -50,6 +50,8 @@ typedef QGLWidget QOpenGLWidget_proxy;
 #endif
 #include "../vrrenderer/VR_MainWindow.h"
 
+#include "ui_setVoxSize.h"
+
 class Renderer;
 class V3dR_MainWindow;
 class V3dr_colormapDialog;
@@ -167,10 +169,11 @@ public:
 public slots:
    	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
 
-
 #define __view3dcontrol_interface__
 public:
 	View3DControl * getView3DControl() {return dynamic_cast<View3DControl *>(this);}
+	QDialog* setVoxSizeDlg;
+	Ui::setVoxSizeDialog* setVoxDlgPtr;
 //----------------------------------------------------------------------------------------
 // begin View3DControl interface
 //----------------------------------------------------------------------------------------
@@ -401,6 +404,8 @@ public slots:
     virtual void updateImageData();
 	virtual void reloadData();
 	virtual void cancelSelect();
+
+	virtual void setVoxSize();
 
     //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
     virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing

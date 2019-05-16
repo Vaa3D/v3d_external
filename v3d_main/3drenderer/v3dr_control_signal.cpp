@@ -215,6 +215,7 @@ void V3dR_MainWindow::createControlWidgets()
 
     movieSaveButton = new QPushButton("Save Movie", miscDisplayOptGroup);
     animateButton = new QPushButton("Animate >>", miscDisplayOptGroup);
+	resOfOriginalImage = new QPushButton("Set corresponding image voxel size");
     //reloadDataButton = new QPushButton("Reload", miscDisplayOptGroup);
 
 	layout_miscDisplayOptGroup->addWidget(checkBox_displayAxes, 1, 0, 1, 20);
@@ -227,6 +228,7 @@ void V3dR_MainWindow::createControlWidgets()
 	//layout_miscDisplayOptGroup->addWidget(reloadDataButton, 3, 1+11, 1, 21-12);
     layout_miscDisplayOptGroup->addWidget(backgroundColorSwitchButton, 3, 1+11, 1, 21-12);
 	layout_miscDisplayOptGroup->addWidget(brightButton, 4, 1+11, 1, 21-12);
+	layout_miscDisplayOptGroup->addWidget(resOfOriginalImage, 5, 0, 1, 21);
 
 
     //==============================================================================
@@ -1066,6 +1068,8 @@ void V3dR_MainWindow::connectSignal()
 	{
 		connect(animateButton, SIGNAL(clicked()), this, SLOT(doMenuOfAnimate()));
 	}
+
+	if (resOfOriginalImage) connect(resOfOriginalImage, SIGNAL(clicked()), glWidget, SLOT(setVoxSize()));
 
 
 	connect(glWidget, SIGNAL(signalVolumeCutRange()), this, SLOT(initVolumeCutRange())); // 081122

@@ -566,6 +566,13 @@ void Renderer_gl1::paint()
 					
 					resIndex = terafly::CViewer::getCurrent()->getResIndex();
 				}
+				else
+				{
+					QSettings callVoxSettings("SEU-Allen", "scaleBar_nonTerafly");
+					voxDims[0] = callVoxSettings.value("x").toDouble();
+					voxDims[1] = callVoxSettings.value("y").toDouble();
+					voxDims[2] = callVoxSettings.value("z").toDouble();
+				}
 		
 				drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex);
 #else
