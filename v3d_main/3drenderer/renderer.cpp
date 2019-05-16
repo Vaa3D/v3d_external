@@ -838,8 +838,15 @@ void Renderer::drawScaleBar(float AlineWidth)
 }
 
 // --------- MK, April, 2019, customized scale bar design --------- //
-void Renderer::drawScaleBar_Yun(const double voxDims[], const int voxNums[], const int VOIdims[], int resIndex, float AlineWidth)
+void Renderer::drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], int resIndex, float AlineWidth)
 {
+	if (voxNums[0] == 0 || voxNums[1] == 0 || voxNums[2] == 0)
+	{
+		voxNums[0] = boundingBox.Dx();
+		voxNums[1] = boundingBox.Dy();
+		voxNums[2] = boundingBox.Dz();
+	}
+
     int resLevel = std::pow(2.0, resIndex);
 	//cout << resLevel << endl;
 	// no scale here
@@ -908,9 +915,6 @@ void Renderer::drawScaleBar_Yun(const double voxDims[], const int voxNums[], con
 		double xScale, yScale, zScale;
 		if (VOIdimRatio == 32)
 		{
-			double sizeX = bufSize[0] / sampleScale[0];
-			double sizeY = bufSize[1] / sampleScale[1];
-			double sizeZ = bufSize[2] / sampleScale[2];
 			double unitXscale = boundingBox.Dx() / boundingBox.Dmax(); // scale bar ratio in 3 dimensions; the max among the 3 is 1
 			double unitYscale = boundingBox.Dy() / boundingBox.Dmax();
 			double unitZscale = boundingBox.Dz() / boundingBox.Dmax();

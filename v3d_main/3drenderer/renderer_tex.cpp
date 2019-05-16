@@ -541,10 +541,14 @@ void Renderer_gl1::paint()
 			if (bOrthoView)
 			{
 				glPushMatrix(); //============================================== scale bar {
+
 #ifdef _YUN_ // MK, April, 2019 --> scale bar redesigned
-				double voxDims[3];
-				int voxNums[3];
-				int VOIdims[3];
+				
+				double voxDims[3] = { 0.2, 0.2, 1 };
+				int voxNums[3] = { 0, 0, 0 };
+				int VOIdims[3] = { 0, 0, 0 };
+				int resIndex = 0;
+				
 				terafly::CImport* importCheckPtr = terafly::CImport::instance();
 				if (importCheckPtr->getVMapRawData() != 0)
 				{				
@@ -560,11 +564,10 @@ void Renderer_gl1::paint()
 					VOIdims[1] = terafly::CSettings::instance()->getVOIdimV();
 					VOIdims[2] = terafly::CSettings::instance()->getVOIdimD();
 					
-					int resIndex = terafly::CViewer::getCurrent()->getResIndex();
-					
-					drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex);
+					resIndex = terafly::CViewer::getCurrent()->getResIndex();
 				}
-				else drawScaleBar();
+		
+				drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex);
 #else
 				drawScaleBar();
 #endif
