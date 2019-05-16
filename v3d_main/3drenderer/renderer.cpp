@@ -823,7 +823,7 @@ void Renderer::drawScaleBar(float AlineWidth)
         double sizeXunit = sizeX / unitXscale;
         char str[100];
         sprintf(str, "%g", sizeXunit * sbar * zoomRatio);
-        //qDebug("sizeX=%g unitXscale=%g sizeXunit=%g", sizeX, unitXscale, sizeXunit);
+        qDebug("sizeX=%g unitXscale=%g sizeXunit=%g", sizeX, unitXscale, sizeXunit);
 
         drawString(A1.x + td, A0.y, A0.z, str, 0, 0);
 		//glColor3f(1, 0, 0);		drawString(A1.x + td, A0.y, A0.z, "X");

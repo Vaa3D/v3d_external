@@ -2965,7 +2965,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
 int Renderer_gl1::hitWheel(int x, int y)
 {
-  //  qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
+    //qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
     wheelPos.x = x;
     wheelPos.y = y;
     int i;
