@@ -1601,6 +1601,9 @@ void V3dR_GLWidget::setThickness(double t) //added by PHC, 090215
 		if (renderer) renderer->setThickness(_thickness);
 		POST_updateGL();
 	}
+
+	Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+	rendererGL1Ptr->zThick = t;
 }
 
 void V3dR_GLWidget::setCurChannel(int t) //100802

@@ -178,7 +178,7 @@ public:
     virtual void drawScaleBar(float AlineWidth=3);
 
 	// MK, April, 2019  scale bar redesigned --> 3 dimensions, displayed in micrometer, adaptively changes with current terafly::CImport, terafly::CSettings and input voxel dimensions.
-	virtual void drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], int resIndex, float AlineWidth = 3);
+	virtual void drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], int resIndex, float zThickness, float AlineWidth = 3);
 
 	virtual void updateVolCutRange();
 	virtual void updateSurfClipRange();

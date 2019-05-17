@@ -701,6 +701,8 @@ public:
 
     RGBA8 currentMarkerColor;//added by ZZ 05142018
 
+	float zThick;
+
 private:
 	void init_members()
 	{

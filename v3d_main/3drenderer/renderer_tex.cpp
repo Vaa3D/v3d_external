@@ -100,6 +100,7 @@ Renderer_gl1::Renderer_gl1(void* widget)
 	this->isLoadFromFile = false;
 	this->pressedShowSubTree = false;
 	this->fragmentTrace = false;
+	this->zThick = 1;
 
 	qDebug("  Renderer_gl1::Renderer_gl1");
 	init_members();
@@ -573,8 +574,8 @@ void Renderer_gl1::paint()
 					voxDims[1] = callVoxSettings.value("y").toDouble();
 					voxDims[2] = callVoxSettings.value("z").toDouble();
 				}
-		
-				drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex);
+
+				drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex, this->zThick);
 #else
 				drawScaleBar();
 #endif

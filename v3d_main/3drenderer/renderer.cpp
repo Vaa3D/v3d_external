@@ -838,7 +838,7 @@ void Renderer::drawScaleBar(float AlineWidth)
 }
 
 // --------- MK, April, 2019, customized scale bar design --------- //
-void Renderer::drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], int resIndex, float AlineWidth)
+void Renderer::drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], int resIndex, float zThickness, float AlineWidth)
 {
 	if (voxNums[0] == 0 || voxNums[1] == 0 || voxNums[2] == 0)
 	{
@@ -921,6 +921,7 @@ void Renderer::drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], 
 			xScale = round((sbar * zoomRatio) * (voxNums[0] * voxDims[0]) / unitXscale);
 			yScale = round((sbar * zoomRatio) * (voxNums[1] * voxDims[1]) / unitYscale);
 			zScale = round((sbar * zoomRatio) * (voxNums[2] * voxDims[2]) / unitZscale);
+			zScale = round(zScale / double(zThickness));
 		}
 		else
 		{
@@ -930,6 +931,7 @@ void Renderer::drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], 
 			xScale = round((VOIdims[0] * sbar * zoomRatio) * VOIdimRatio * voxDims[0] / unitXscale);
 			yScale = round((VOIdims[1] * sbar * zoomRatio) * VOIdimRatio * voxDims[1] / unitYscale);
 			zScale = round((VOIdims[2] * sbar * zoomRatio) * VOIdimRatio * voxDims[2] / unitZscale);
+			zScale = round(zScale / double(zThickness));
 		}
 
 		char strX[100];
