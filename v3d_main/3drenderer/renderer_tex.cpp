@@ -566,6 +566,8 @@ void Renderer_gl1::paint()
 					VOIdims[2] = terafly::CSettings::instance()->getVOIdimD();
 					
 					resIndex = terafly::CViewer::getCurrent()->getResIndex();
+
+					drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex, 1);
 				}
 				else
 				{
@@ -573,9 +575,9 @@ void Renderer_gl1::paint()
 					voxDims[0] = callVoxSettings.value("x").toDouble();
 					voxDims[1] = callVoxSettings.value("y").toDouble();
 					voxDims[2] = callVoxSettings.value("z").toDouble();
+					drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex, this->zThick);
 				}
-
-				drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex, this->zThick);
+				
 #else
 				drawScaleBar();
 #endif
