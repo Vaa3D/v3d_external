@@ -257,6 +257,13 @@ void tf::PDialogProofreading::updateBlocks(int)
         int VOIze_cr = CVolume::scaleCoord<int>(parent->D1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::depth, true);
         //printf("VOI is X=[%d,%d], Y=[%d,%d], Z=[%d,%d]\n", VOIxs_cr, VOIxe_cr, VOIys_cr, VOIye_cr, VOIzs_cr, VOIze_cr);
 
+		this->xCoordl = VOIxs_cr;
+		this->xCoordh = VOIxe_cr;
+		this->yCoordl = VOIys_cr;
+		this->yCoordh = VOIye_cr;
+		this->zCoordl = VOIzs_cr;
+		this->zCoordh = VOIze_cr;
+
         int dimX   = VOIxe_cr-VOIxs_cr+1;
         int dimY   = VOIye_cr-VOIys_cr+1;
         int dimZ   = VOIze_cr-VOIzs_cr+1;

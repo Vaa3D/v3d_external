@@ -67,6 +67,7 @@ class terafly::PDialogProofreading : public QWidget
 		// Keep volume cut scrollbar location for fragment-based tracing, MK, May, 2019
 		int sbXlb, sbXhb, sbYlb, sbYhb, sbZlb, sbZhb;
 		int displayingVolDimX, displayingVolDimY, displayingVolDimZ;
+		int xCoordl, xCoordh, yCoordl, yCoordh, zCoordl, zCoordh;
 		// ----------------------------------------------------------------------------
 
     signals:

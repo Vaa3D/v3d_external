@@ -568,9 +568,16 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
 }
 
-bool tf::PluginInterface::getPartialVolumeCoords(int localCoords[], int displayingVolDims[], bool& partialVolume)
+bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[], bool& partialVolume)
 {
 	if (!CViewer::getCurrent()->volumeCutSbAdjusted) return false;
+
+	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
+	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
+	globalCoords[2] = PDialogProofreading::instance()->yCoordl;
+	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
+	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
+	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
 
 	localCoords[0] = PDialogProofreading::instance()->sbXlb;
 	localCoords[1] = PDialogProofreading::instance()->sbXhb;
