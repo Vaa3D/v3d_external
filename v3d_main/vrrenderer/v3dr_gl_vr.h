@@ -39,7 +39,8 @@ enum ModelControlR
 	m_splitMode,
 	m_insertnodeMode,
 	m_clipplaneMode,
-	m_slabplaneMode
+	m_ConnectMode
+	//m_slabplaneMode
 };
 enum ModeControlSettings
 {
@@ -131,6 +132,30 @@ private:
 	int step;
 };
 
+class TransferControlPoint
+{
+public:
+	TransferControlPoint(float r,float g,float b,int isovalue)
+	{
+		Color.x = r;
+		Color.y = g;
+		Color.z = b;
+		Color.w = 1.0f;
+		Isovalue = isovalue;
+	}
+	TransferControlPoint(float alpha,int isovalue)
+	{
+		Color.x = 0.0f;
+		Color.y = 0.0f;
+		Color.z = 0.0f;
+		Color.w = alpha;
+		Isovalue = isovalue;
+	}
+	glm::vec4 Color;
+	int Isovalue;
+
+
+};
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
@@ -500,7 +525,7 @@ private: // OpenGL bookkeeping
 ***********************************/
 public:
 	void SetupCubeForImage4D();
-	GLuint initTFF1DTex(const char* filename);
+	GLuint initTFF1DTex();
 	GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
 	GLuint initVol3DTex();
 	GLuint initVolOctree3DTex(int step,GLuint octreestep);

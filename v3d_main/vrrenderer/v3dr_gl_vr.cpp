@@ -1,5 +1,6 @@
 ﻿#include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
+#include"./spline.h"
 //#include <GL/glew.h>
 #include <SDL_opengl.h>
 
@@ -1662,6 +1663,94 @@ bool CMainApplication::HandleInput()
 						qDebug()<<"finish update nearest node location";
 					}
 				}
+				else if(m_modeGrip_R==m_ConnectMode)
+				{
+					//this part is for building a neuron tree to further save as SWC file
+					if (vertexcount%drawing_step_size ==0)//use vertexcount to control point counts in a single line 
+					//each #drawing_step_size frames render a SWC node
+					{
+						const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos 
+						glm::mat4 mat = glm::mat4();
+						for (size_t i = 0; i < 4; i++)
+						{
+							for (size_t j = 0; j < 4; j++)
+							{
+								mat[i][j] = *(mat_M.get() + i * 4 + j);
+							}
+						}
+						mat=glm::inverse(m_globalMatrix) * mat;
+						glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
+
+						swccount++;//for every 10(#drawing_step_size) frames we store a point as a neuronswc point,control with swccount
+						NeuronSWC SL0;
+						SL0.x = m_v4DevicePose.x ;
+						SL0.y = m_v4DevicePose.y ;
+						SL0.z = m_v4DevicePose.z ;
+						SL0.r = default_radius; //set default radius 1
+						SL0.type = m_curMarkerColorType;//set default type 11:ice
+						SL0.n = currentNT.listNeuron.size()+1;
+						SL0.creatmode = 618;
+						if((swccount==1)||(vertexcount == 0))
+						{
+							SL0.pn = -1;//for the first point of each lines , it's parent must be -1	
+						}
+						else
+						{
+							SL0.pn = currentNT.listNeuron.at(SL0.n-1-1).n;//for the others, their parent should be the last one
+						}
+						currentNT.listNeuron.append(SL0);
+						currentNT.hashNeuron.insert(SL0.n, currentNT.listNeuron.size()-1);//store NeuronSWC SL0 into currentNT
+						// if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawing
+						// {
+						// 	// for each 10 nodes/points, call virtual finger once aiming to see the line's mid-result
+						// 	if((currentNT.listNeuron.size()>0)&&(currentNT.listNeuron.size()%10==0))
+						// 	{	
+						// 		qDebug()<<"size%10==0 goto charge isAnyNodeOutBBox";
+						// 		tempNT.listNeuron.clear();
+						// 		tempNT.hashNeuron.clear();
+						// 		for(int i=0;i<currentNT.listNeuron.size();i++)
+						// 		{
+						// 			NeuronSWC S_node = currentNT.listNeuron.at(i);//swcBB
+						// 			if(!isAnyNodeOutBBox(S_node))
+						// 			{
+						// 				S_node.n=tempNT.listNeuron.size();
+						// 				if(S_node.pn!=-1)
+						// 					S_node.pn = tempNT.listNeuron.last().n;
+						// 				tempNT.listNeuron.append(S_node);
+						// 				tempNT.hashNeuron.insert(S_node.n, tempNT.listNeuron.size()-1);
+						// 			}
+						// 			else if(i==0)
+						// 			{
+						// 				vertexcount=swccount=0;
+						// 				break;
+						// 			}
+										
+						// 		}
+						// 		qDebug()<<"charge isAnyNodeOutBBox done  goto virtual finger";
+						// 		// improve curve shape
+						// 		NeuronTree InputNT;
+						// 		InputNT = tempNT;
+						// 		int iter_number=1;
+						// 		//for(int i=0;i<iter_number;i++)  // liqi  Find matching line segments more than once, resulting in inaccurate results
+						// 		//{
+						// 		//	NeuronTree OutputNT;
+						// 		//	RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
+						// 		//	//convergent = CompareDist(InputNT, OutputNT);
+						// 		//	InputNT.listNeuron.clear();
+						// 		//	InputNT.hashNeuron.clear();
+						// 		//	InputNT = OutputNT;
+						// 		//}
+						// 		currentNT.listNeuron.clear();
+						// 		currentNT.hashNeuron.clear();
+						// 		currentNT = InputNT;
+						// 		tempNT.listNeuron.clear();
+						// 		tempNT.hashNeuron.clear();	
+						// 		qDebug()<<"virtual finger done  goto next frame";
+						// 	}
+						// }
+					}	
+					vertexcount++;
+				}
 				//else if(m_modeGrip_R==m_slabplaneMode)
 				//{
 				//	glm::mat4 model;
@@ -2920,7 +3009,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					{
 						// qDebug()<<"start to find begin nearest node";
 						for(int i = 0; i<sketchedNTList.size();i++)
-						{
+						 {
 							NeuronTree nt0 = sketchedNTList.at(i);
 							float dist = 0;
 							float min_dist = 999999;
@@ -3029,6 +3118,389 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+		case m_ConnectMode:
+		{
+			//do timestamp when create new segments
+			time_t timer2; // set timestamp to all segments created,with or without virtual finger on
+			struct tm y2k = {0};
+			double seconds;
+			y2k.tm_hour = 0;
+			y2k.tm_min = 0;
+			y2k.tm_sec = 0;
+			y2k.tm_year = 100;
+			y2k.tm_mon = 0;
+			y2k.tm_mday = 1;						  // seconds since January 1, 2000 in UTC
+			time(&timer2);							  /* get current time; same as: timer = time(NULL)  */
+			seconds = difftime(timer2, timegm(&y2k)); //Timestamp LMG 27/9/2018
+			qDebug("Timestamp at m_drawMode (VR) (seconds since January 1, 2000 in UTC): %.0f", seconds);
+			for (int i = 0; i < currentNT.listNeuron.size(); i++)
+			{
+				if (currentNT.listNeuron[i].timestamp == 0)
+					currentNT.listNeuron[i].timestamp = seconds;
+			}
+
+			//do simple connect
+			float tolerance = 20;
+			std::vector<int> segInfo;//prevent connect same segment
+			std::vector<int> nodeIndexInfo;//check connected node index ,prevent connect node both in middle of segment .only allow connect Branch to begin/end or begin/end to end/begin
+			NeuronTree connectTree;
+			for(V3DLONG  i = 0;i<sketchedNTList.size();i++)
+			{
+				cout<<"sketchedNTList"<<"   "<<i<<endl;
+				NeuronTree* p_tree = (NeuronTree*)(&(sketchedNTList.at(i)));
+				QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
+
+				long minX=currentNT.listNeuron.at(0).x;
+				long minY=currentNT.listNeuron.at(0).y;
+				long minZ=currentNT.listNeuron.at(0).z;
+				long maxX=minX;
+				long maxY=minY;
+				long maxZ=minZ;
+				for(size_t curi = 0;curi<currentNT.listNeuron.size();++curi)
+				{
+					if(currentNT.listNeuron.at(curi).x<=minX) minX = currentNT.listNeuron.at(curi).x;
+					if(currentNT.listNeuron.at(curi).y<=minY) minY = currentNT.listNeuron.at(curi).y;
+					if(currentNT.listNeuron.at(curi).z<=minZ) minZ = currentNT.listNeuron.at(curi).z;
+					if(currentNT.listNeuron.at(curi).x>=maxX) maxX = currentNT.listNeuron.at(curi).x;
+					if(currentNT.listNeuron.at(curi).y>=maxY) maxY = currentNT.listNeuron.at(curi).y;
+					if(currentNT.listNeuron.at(curi).z>=maxZ) maxZ = currentNT.listNeuron.at(curi).z;
+				}
+
+				minX = minX - 5;minY = minY - 5;minZ = minZ - 5;
+				maxX = maxX + 5;maxY = maxY + 5;maxZ = maxZ + 5;
+				cout<<"minX is "<<minX<<"minY is "<<minY<<"minZ is "<<minZ<<endl;
+				cout<<"maxX is "<<maxX<<"maxY is "<<maxY<<"maxZ is "<<maxZ<<endl;
+
+				QList<NeuronSWC> nodeOnStroke;
+				float matchdistance = 9999;
+				NeuronSWC matchestNode;
+				int matchestIndex = -1;
+				for(size_t j = 0;j<p_listneuron->size();j++)
+				{
+					GLdouble  ix, iy, iz;
+					ix = p_listneuron->at(j).x;
+					iy = p_listneuron->at(j).y;
+					iz = p_listneuron->at(j).z;
+					cout<<"ix is "<<ix<<"iy is "<<iy<<"iz is "<<iz<<endl;
+					if ((ix >= minX && ix<= maxX) && (iy >= minY &&iy <= maxY) && (iz >= minZ &&iz <= maxZ))
+					{
+						nodeOnStroke.push_back(p_listneuron->at(j));//把当前考虑的已经画好的线 并且在stroke的矩形范围内的节点Push进入nodeonstroke
+						//cout << p.x() << " " << p.y() << endl;
+					}
+				}
+
+				cout<<"node on stroke size in skelist"<<" "<<i<<"is"<<nodeOnStroke.size();
+				for(V3DLONG j = 0;j<currentNT.listNeuron.size();j++)
+				{
+					
+					for(V3DLONG k = 0;k<nodeOnStroke.size();++k)
+					{
+						GLdouble  ix, iy, iz;
+						ix = nodeOnStroke.at(k).x;
+						iy = nodeOnStroke.at(k).y;
+						iz = nodeOnStroke.at(k).z;
+						XYZ p2(ix,iy,iz);
+						XYZ p(currentNT.listNeuron.at(j).x,currentNT.listNeuron.at(j).y,currentNT.listNeuron.at(j).z);
+						float currentdistance = std::sqrt((p.x - p2.x)*(p.x - p2.x) + (p.y - p2.y)*(p.y - p2.y)+(p.z - p2.z)*(p.z - p2.z));
+						if(currentdistance <= tolerance)
+						{
+							if(currentdistance<matchdistance) 
+							{
+								matchestNode = nodeOnStroke.at(k);
+								
+								matchdistance = currentdistance;
+							}
+						}
+						
+					}
+
+				}
+				//push matchest node on the same segment (distance is smallest
+				if(segInfo.size()==0&&matchdistance<=tolerance)
+				{
+					segInfo.push_back(i);//push current segment ID
+					nodeIndexInfo.push_back(matchestNode.n);
+					NeuronSWC SL0 = matchestNode;
+					//SL0.pn = -1;
+					//SL0.n = 1;
+					connectTree.listNeuron.append(SL0);
+					connectTree.hashNeuron.insert(SL0.n,connectTree.listNeuron.size()-1);
+					cout<<"segInfo.size == 1 now"<<endl;
+				}							
+				else
+				{
+					cout<<"come into else "<<endl;
+					bool repeat = false;
+					if(std::find(segInfo.begin(),segInfo.end(),i)!=segInfo.end())repeat = true;
+					cout<<"step 1"<<endl;
+					if(repeat ==false&&matchdistance<=tolerance)
+					{
+						segInfo.push_back(i);
+						nodeIndexInfo.push_back(matchestNode.n);
+						NeuronSWC SL0 = matchestNode;
+						//SL0.pn = 1;
+						//SL0.n = 2;
+						connectTree.listNeuron.append(SL0);
+						connectTree.hashNeuron.insert(SL0.n,connectTree.listNeuron.size()-1);
+						cout<<"segInfo.size == 2 now"<<endl;
+					}
+				}//for each sketchlist
+
+				cout<<"come out of for"<<endl;
+				if(segInfo.size()==2) break;
+			}
+			NeuronTree curNT;
+			//resort the number of connected segment
+			if(segInfo.size()==2)
+			{
+
+				int index1 = connectTree.listNeuron.at(0).n;
+				int index2 = connectTree.listNeuron.at(1).n;
+				cout<<"index1 is "<<index1<<endl;
+				cout<<"index2 is "<<index2<<endl;
+				
+				NeuronTree * p_connectNT1 = &sketchedNTList[segInfo[0]];
+				NeuronTree * p_connectNT2 = &sketchedNTList[segInfo[1]];
+				cout<<"p_connectNT1.list size is "<<p_connectNT1->listNeuron.size();
+				cout<<"p_connectNT2.list size is "<<p_connectNT2->listNeuron.size();
+				if((index1==1&&index2==p_connectNT2->listNeuron.size())//head to tail
+					||(index1==p_connectNT1->listNeuron.size()&&index2==1)//tail to head 
+					||(index1==1&&index2==1)//head to head
+					||(index1==p_connectNT1->listNeuron.size()&&index2 ==p_connectNT2->listNeuron.size()))//tail to tail
+				{
+					cout<<"connect head to tail !!! come into here"<<endl;
+					for(int j = 0;j<2;j++)
+					{
+						cout<<"pos 1 "<<j<<endl;
+						int index = connectTree.listNeuron.at(j).n;
+						NeuronTree * connectedNT = &sketchedNTList[segInfo[j]];
+						if((index==1&&j==0)||(index==connectedNT->listNeuron.size()&&j==1))
+						{
+							cout<<"pos 3 "<<j<<endl;
+							for(int i = connectedNT->listNeuron.size()-1;i>=0;i--)//add first segment to connectNT
+							{
+								cout<<"pos 4 "<<i<<endl;
+								NeuronSWC SL0  = connectedNT->listNeuron.at(i);
+								SL0.n = curNT.listNeuron.size()+1;
+								if(i==connectedNT->listNeuron.size()-1&&j==0)
+								{
+									SL0.pn = -1;
+								}
+								else
+									SL0.pn = curNT.listNeuron.at(SL0.n-1-1).n;
+								curNT.listNeuron.append(SL0);
+								curNT.hashNeuron.insert(SL0.n,curNT.listNeuron.size()-1);
+							}
+						}	
+						else if((index==connectedNT->listNeuron.size()&&j==0)||(index==1&&j==1))
+						{
+							cout<<"pos 2 "<<j<<endl;
+							for(int i = 0;i<connectedNT->listNeuron.size();i++)//add first segment to connectNT
+							{
+
+								NeuronSWC SL0  = connectedNT->listNeuron.at(i);
+								SL0.n = curNT.listNeuron.size()+1;
+								if(i==0&&j==0)
+								{
+									SL0.pn = -1;
+								}
+								else
+									SL0.pn = curNT.listNeuron.at(SL0.n-1-1).n;
+								curNT.listNeuron.append(SL0);
+								curNT.hashNeuron.insert(SL0.n,curNT.listNeuron.size()-1);
+							}
+						}
+
+						}
+					if(isOnline==false)
+					{
+						if(currentNT.listNeuron.size()>0)
+						{
+							bIsUndoEnable = true;
+							if(vUndoList.size()==MAX_UNDO_COUNT)
+							{
+								vUndoList.erase(vUndoList.begin());
+							}
+							vUndoList.push_back(sketchedNTList);
+							if (vRedoList.size()> 0)
+								vRedoList.clear();
+							bIsRedoEnable = false;
+							vRedoList.clear();
+
+							//sketchedNTList.removeAt(segInfo[0]);
+							//sketchedNTList.removeAt(segInfo[1]);
+							//SetupSingleMorphologyLine(segInfo[1],2);
+							DeleteSegment(sketchedNTList.at(segInfo[0]).name);
+							DeleteSegment(sketchedNTList.at(segInfo[1]).name);
+
+							curNT.name = "sketch_"+QString("%1").arg(sketchNum++);
+							qDebug()<<curNT.name;
+							sketchedNTList.push_back(curNT);
+							int lIndex = sketchedNTList.size() - 1;
+							qDebug()<<"index = "<<lIndex;
+							SetupSingleMorphologyLine(lIndex,0);
+							currentNT.listNeuron.clear();
+							currentNT.hashNeuron.clear();		
+						}
+						swccount=0;
+					}
+				}
+				else if(index1==1||index1==p_connectNT1->listNeuron.size()
+						||index2==1||index2==p_connectNT2->listNeuron.size())
+				{
+					cout<<"come into connect branch to begin/end"<<endl;
+					/*
+					|	|
+					|	|
+					|\	|
+					| \	|
+					|  \|
+					|	NT1
+					NT2
+					*/
+					//begin/end connect to branch
+					
+					if(index2==1||index2==p_connectNT2->listNeuron.size())
+					{
+						cout<<"tranverse index1 and index2"<<endl;
+						NeuronTree* p_tempNT = p_connectNT2;
+						p_connectNT2 = p_connectNT1;
+						p_connectNT1 = p_tempNT;
+						int tempindex = index2;
+						index2 = index1;
+						index1 = tempindex;
+					}
+					NeuronTree result_NT1,result_NT2,result_NT3;
+					cout<<"begin to add result NT1"<<endl;
+					for(int i=0;i<index2;i++)
+					{
+						NeuronSWC SL0  = p_connectNT2->listNeuron.at(i);
+						SL0.n = result_NT1.listNeuron.size()+1;
+						if(i==0)
+						{
+							SL0.pn = -1;
+						}
+						else
+							SL0.pn = result_NT1.listNeuron.at(SL0.n-1-1).n;
+						result_NT1.listNeuron.append(SL0);
+						result_NT1.hashNeuron.insert(SL0.n,result_NT1.listNeuron.size()-1);
+					}
+					cout<<"begin to add result NT2"<<endl;
+					for(int i=index2-1;i<p_connectNT2->listNeuron.size();i++)
+					{
+						NeuronSWC SL0  = p_connectNT2->listNeuron.at(i);
+						SL0.n = result_NT2.listNeuron.size()+1;
+						if(i==index2-1)
+						{
+							SL0.pn = -1;
+						}
+						else
+							SL0.pn = result_NT2.listNeuron.at(SL0.n-1-1).n;
+						result_NT2.listNeuron.append(SL0);
+						result_NT2.hashNeuron.insert(SL0.n,result_NT2.listNeuron.size()-1);
+					}
+					//add third segment
+					NeuronSWC SL0  = p_connectNT2->listNeuron.at(index2-1);
+					SL0.n = result_NT3.listNeuron.size()+1;
+					SL0.pn = -1;
+					result_NT3.listNeuron.append(SL0);
+					result_NT3.hashNeuron.insert(SL0.n,result_NT3.listNeuron.size()-1);
+					cout<<"begin to add result NT3"<<endl;
+					if(index1 == 1)
+					{
+						cout<<"connect to NT3begin"<<endl;
+						for(int i=0;i<p_connectNT1->listNeuron.size();i++)
+						{
+							NeuronSWC SL0  = p_connectNT1->listNeuron.at(i);
+							SL0.n = result_NT3.listNeuron.size()+1;
+							SL0.pn = result_NT3.listNeuron.at(SL0.n-1-1).n;
+							result_NT3.listNeuron.append(SL0);
+							result_NT3.hashNeuron.insert(SL0.n,result_NT3.listNeuron.size()-1);
+						}
+					}
+					else if (index1==p_connectNT1->listNeuron.size())
+					{
+						cout<<"connect to NT3end"<<endl;
+						for(int i=p_connectNT1->listNeuron.size()-1;i>=0;i--)
+						{
+							NeuronSWC SL0  = p_connectNT1->listNeuron.at(i);
+							SL0.n = result_NT3.listNeuron.size()+1;
+							SL0.pn = result_NT3.listNeuron.at(SL0.n-1-1).n;
+							result_NT3.listNeuron.append(SL0);
+							result_NT3.hashNeuron.insert(SL0.n,result_NT3.listNeuron.size()-1);
+						}
+					}
+					if(isOnline==false)
+					{
+						cout<<"add result NT 1 2 3 to sketchlist"<<endl;
+						if(currentNT.listNeuron.size()>0)
+						{
+							bIsUndoEnable = true;
+							if(vUndoList.size()==MAX_UNDO_COUNT)
+							{
+								vUndoList.erase(vUndoList.begin());
+							}
+							vUndoList.push_back(sketchedNTList);
+							if (vRedoList.size()> 0)
+								vRedoList.clear();
+							bIsRedoEnable = false;
+							vRedoList.clear();
+
+							//sketchedNTList.removeAt(segInfo[0]);
+							//sketchedNTList.removeAt(segInfo[1]);
+							//SetupSingleMorphologyLine(segInfo[0],2);
+							//SetupSingleMorphologyLine(segInfo[1],2);
+							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
+							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
+							QString tempdelname = sketchedNTList.at(segInfo[0]).name;
+							QString tempdelname1 = sketchedNTList.at(segInfo[1]).name;
+							bool delerror1 = DeleteSegment(tempdelname);
+							if(delerror1)cout<<"delete 1 success"<<endl;
+							cout<<"pos 1 get seginfo[1] name"<<endl;
+							bool delerror2 = DeleteSegment(tempdelname1);
+							if(delerror2)cout<<"delete 2 success"<<endl;
+							
+							result_NT1.name = "sketch_"+QString("%1").arg(sketchNum++);
+							qDebug()<<result_NT1.name;
+							sketchedNTList.push_back(result_NT1);
+							int lIndex = sketchedNTList.size() - 1;
+							qDebug()<<"index = "<<lIndex;
+							SetupSingleMorphologyLine(lIndex,0);
+
+							result_NT2.name = "sketch_"+QString("%1").arg(sketchNum++);
+							qDebug()<<result_NT2.name;
+							sketchedNTList.push_back(result_NT2);
+							lIndex = sketchedNTList.size() - 1;
+							qDebug()<<"index = "<<lIndex;
+							SetupSingleMorphologyLine(lIndex,0);
+
+							result_NT3.name = "sketch_"+QString("%1").arg(sketchNum++);
+							qDebug()<<result_NT3.name;
+							sketchedNTList.push_back(result_NT3);
+							lIndex = sketchedNTList.size() - 1;
+							qDebug()<<"index = "<<lIndex;
+							SetupSingleMorphologyLine(lIndex,0);
+							currentNT.listNeuron.clear();
+							currentNT.hashNeuron.clear();		
+						}
+						swccount=0;
+					}
+
+				}
+				else
+				{
+					//other situation clear currentNT listNeuron
+					currentNT.listNeuron.clear();
+					currentNT.hashNeuron.clear();
+					swccount=0;
+				}
+			cout<<"add curNT done"<<endl;
+			}
+			
+			break;
+		}
+
+		
 		// case m_markMode:
 		// 	{
 		// 		const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
@@ -3072,8 +3544,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-				delmarkerPOS="";
-				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+				/*delmarkerPOS="";
+				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
+				markerPOS="";
+				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 				bool IsmarkerValid = false;
 				if(isOnline==false)	
 				{
@@ -5538,7 +6012,7 @@ void CMainApplication::RenderStereoTargets()
 		fps = frameCount;
 		frameCount = 0;
 		StartTimer();
-		cout<<fps<<endl;
+		//cout<<fps<<endl;
 		//used for fps tess liqi
 	}	
 	
@@ -6368,6 +6842,7 @@ void CMainApplication::UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,f
 bool CMainApplication::DeleteSegment(QString segName)
 {
 	//delete the segment that match with segName
+	cout<<"segname is "<<endl;
 	if(segName=="") return false;//segName="" will do nothing
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
@@ -6375,6 +6850,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 		NTname = sketchedNTList.at(i).name;
 		if(segName==NTname)
 		{
+			cout<<"find delete seg!@!!@"<<endl;
 			//delete the segment in NTList,then return
 			sketchedNTList.removeAt(i);
 			SetupSingleMorphologyLine(i,2);
@@ -6785,7 +7261,11 @@ void CMainApplication::SetupCubeForImage4D()
 	4,5,1
     };
     GLuint gbo[2];
-    
+    /*
+	图像块box是1*1*1   对每个体素都进行一次取样 只需要256次或者512 为什么循环次数需要1600
+	因为stepsize 是0.001 那么走完一个块需要1000次 走最大对角线需要1414次
+	ray casting 是在图像空间 1*1*1实现的
+	*/
     glGenBuffers(2, gbo);
     GLuint vertexdat = gbo[0];
     GLuint veridxdat = gbo[1];
@@ -6829,25 +7309,7 @@ void CMainApplication::SetupCubeForImage4D()
 	glBindVertexArray(m_clipPatchVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, frustum_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(frustum_vertices), frustum_vertices, GL_STATIC_DRAW);// 在这里做眼睛前面的裁剪 
-	/*
-	但是把顶点颜色和顶点位置做成一个东西是要做什么？
-	顶点颜色在标准空间下 对应射线入口点？
-	为什么在渲染背面的时候  才绘制这个裁剪面
-	因为使用了不同的渲染shader。。。 mvp被逆变换了
-	这个面也没有被变换到图像空间 它就是标准设备空间的眼前的一个面
-	在ray casting 里的entry point 就是在图像空间内的一个点 然后从texture 中取出的backface的贴图坐标 其实也是在图像空间的
-	整个ray casting 都是在图像空间里做的，然后渲染到当前像素上而已
-	 
-	 如果想生成别的切面
-	 我们可以 给定一个顶点和一个法线 这个顶点是在世界坐标中的，我们需要变换到图像空间中
-
-	 然后对于当前的坐标点 计算它是否在裁剪面的前面
-	  如果是就break掉
-	
-
-
-	*/
+    glBufferData(GL_ARRAY_BUFFER, sizeof(frustum_vertices), frustum_vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -6858,47 +7320,70 @@ void CMainApplication::SetupCubeForImage4D()
 	glBindVertexArray(0); 
 }
 
-//// init the 1 dimentional texture for transfer function
-//GLuint CMainApplication::initTFF1DTex(const char* filename)
-//{
-//    //qDebug("initTFF1DTex() is called.");
-//
-//	// read in the user defined data of transfer function
+// init the 1 dimentional texture for transfer function
+GLuint CMainApplication::initTFF1DTex()
+{
+   //qDebug("initTFF1DTex() is called.");
+
+	// read in the user defined data of transfer function
 //    ifstream inFile(filename, ifstream::in);
 //        if (!inFile)
 //    {
-//	cerr << "Error openning file: " << filename << endl;
-//	exit(EXIT_FAILURE);
+// 	cerr << "Error openning file: " << filename << endl;
+// 	exit(EXIT_FAILURE);
 //    }
-//    
+   
 //    const int MAX_CNT = 10000;
 //    GLubyte *tff = (GLubyte *) calloc(MAX_CNT, sizeof(GLubyte));
 //    inFile.read(reinterpret_cast<char *>(tff), MAX_CNT);
 //    if (inFile.eof())
 //    {
-//	size_t bytecnt = inFile.gcount();
-//	*(tff + bytecnt) = '\0';
-//	cout << "bytecnt " << bytecnt << endl;
+// 	size_t bytecnt = inFile.gcount();
+// 	*(tff + bytecnt) = '\0';
+// 	cout << "bytecnt " << bytecnt << endl;
 //    }
 //    else if(inFile.fail())
 //    {
-//	cout << filename << "read failed " << endl;
+// 	cout << filename << "read failed " << endl;
 //    }
 //    else
 //    {
-//	cout << filename << "is too large" << endl;
+// 	cout << filename << "is too large" << endl;
 //    }    
+	
+   GLubyte *transferfunc = new GLubyte[256*3];
+
+
+//    tk::spline spline_r,spline_g,spline_b,spline_a;
+//    std::vector<double> vec_cx,vec_ry,vec_gy,vec_by,vec_ax,vec_ay;
+//    vec_cx.push_back(0);vec_cx.push_back(80);vec_cx.push_back(82);vec_cx.push_back(256);
+//    vec_ry.push_back(0.91);vec_ry.push_back(0.91);vec_ry.push_back(1.0);vec_ry.push_back(1.0);
+//    vec_gy.push_back(0.7);vec_gy.push_back(0.7);vec_gy.push_back(1.0);vec_gy.push_back(1.0);
+//    vec_by.push_back(0.61);vec_by.push_back(0.61);
+   
+// 	spline_r.set_points(vec_cx,vec_ry);
+// 	spline_g.set_points(vec_cx,vec_gy);
+// 	spline_b.set_points(vec_cx,vec_by);
+	
+// 	cout<<"come into spline_r"<<endl;
+//    for(int i=0;i<256;++i)
+//    {
+// 	   transferfunc[i*3] = spline_r(i);
+// 	   transferfunc[i*3+1] = spline_g(i);	
+// 	   transferfunc[i*3+2] = spline_b(i);	   
+//    }
+// 	cout<<"come out spline_r"<<endl;
 //    GLuint tff1DTex;
 //    glGenTextures(1, &tff1DTex);
 //    glBindTexture(GL_TEXTURE_1D, tff1DTex);
 //    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 //    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-//    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, tff);
-//    free(tff);    
+//    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, transferfunc);
+//    free(transferfunc);    
 //    return tff1DTex;
-//}
+}
 
 // init the 2D texture for render backface 'bf' stands for backface
 GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
@@ -7065,7 +7550,7 @@ void CMainApplication::SetupVolumeRendering()
 
 	SetupCubeForImage4D();
 
-    //g_tffTexObj = initTFF1DTex("tff.dat");
+    //g_tffTexObj = initTFF1DTex();
     g_bfTexObj = initFace2DTex(g_texWidth, g_texHeight);
     g_volTexObj = initVol3DTex();
 	//g_volTexObj_octree_8 = initVolOctree3DTex(8);
@@ -7102,29 +7587,11 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
 	model = glm::scale(glm::mat4(),glm::vec3(img4d->getXDim(),img4d->getYDim(),img4d->getZDim()));
 	model = m_globalMatrix * model;
 	glm::mat4 mvp = projection * view * model;
-	// const Matrix4 &mat_M = m_rmat4DevicePose[m_iControllerIDRight]; // mat means current controller pos
-	// glm::mat4 mat = glm::mat4();
-	// for (size_t i = 0; i < 4; i++)
-	// {
-	// 	for (size_t j = 0; j < 4; j++)
-	// 	{
-	// 		mat[i][j] = *(mat_M.get() + i * 4 + j);
-	// 	}
-	// }
-	
-	//clipnormal = mat * clipnormal;
-	//glm::mat4 mat_normal = glm::transpose(model);
-	//clipnormal = mat_normal * clipnormal;
-	// mat = glm::inverse(model) * mat;
-	// glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);
-	// mat = glm::inverse(mat);
-	// mat = glm::transpose(mat);
-	// glm::vec4 clipnormal = mat * glm::vec4(0.0,0.0,0.05,1);	
-	// glm::vec3 u_clipnormal = glm::vec3(clipnormal.x,clipnormal.y,clipnormal.z);
-	// glm::vec3 u_clippoint = glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
+
 	// render
 	glEnable(GL_CULL_FACE);
     glCullFace(cullFace);
+	
 	if (cullFace == GL_BACK)
 	{
 		//for the patch, tranform the coordinates from NDC space back to world space
@@ -7136,7 +7603,6 @@ void CMainApplication::RenderImage4D(Shader* shader, vr::Hmd_Eye nEye, GLenum cu
 	}
 	shader->setMat4("MVP",mvp);
 	
-	//raycastingShader->setFloat("StepSize",0.001f);
     glBindVertexArray(m_VolumeImageVAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint *)NULL);
     glDisable(GL_CULL_FACE); 
@@ -7624,6 +8090,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
 			m_modeGrip_R = m_markMode;
+			//m_modeGrip_R = m_ConnectMode;
 		}
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{

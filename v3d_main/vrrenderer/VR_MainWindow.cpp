@@ -359,7 +359,15 @@ void VR_MainWindow::onReadyRead() {
 					break;
 				}
 			}
-			pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+			//pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+			bool IsmarkerValid = false;
+			IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z);
+			cout<<"IsmarkerValid is "<<IsmarkerValid<<endl;
+			if(!IsmarkerValid)
+			{
+				pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+			}
+
         }
         else if (delmarkerRex.indexIn(line) != -1) {
 			QStringList delmarkerPOS = delmarkerRex.cap(1).split(" ");
