@@ -171,9 +171,6 @@ tf::PDialogProofreading::PDialogProofreading(tf::PMain *_parent) : QWidget(0)
     QLabel *instructionsLabel = new QLabel("TeraFly will guide you through a stoppable/resumable block-by-block scan of the entire """
                                            "volume (or a VOI) to proofread automatic cell counts or neuron reconstructions.\n\n\n"
                                            "Use the settings below and the Vaa3D and TeraFly controls (e.g. Vaa3D volume cut scrollbars, TeraFly's 3D viewer max dims) to set up your proofreading session.");
-	this->displayingVolDimX = parent->Hdim_sbox->value();
-	this->displayingVolDimY = parent->Vdim_sbox->value();
-	this->displayingVolDimZ = parent->Ddim_sbox->value();
 	this->sbXlb = 1;
 	this->sbXhb = CSettings::instance()->getVOIdimH();
 	this->sbYlb = 1;
@@ -270,10 +267,6 @@ void tf::PDialogProofreading::updateBlocks(int)
         int blockX = parent->Hdim_sbox->value();
         int blockY = parent->Vdim_sbox->value();
         int blockZ = parent->Ddim_sbox->value();
-
-		this->displayingVolDimX = blockX;
-		this->displayingVolDimY = blockY;
-		this->displayingVolDimZ = blockZ;
 
 		int ovlX  = ( overlap_sbox->value()/100.0f )*parent->Hdim_sbox->value();
         int ovlY  = ( overlap_sbox->value()/100.0f )*parent->Vdim_sbox->value();

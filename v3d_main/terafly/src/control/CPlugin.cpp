@@ -568,9 +568,14 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
 }
 
-bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[], bool& partialVolume)
+bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
 {
-	if (!CViewer::getCurrent()->volumeCutSbAdjusted) return false;
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	
+	if (!currViewerPtr->volumeCutSbAdjusted) return false;
+	displayingVolDims[0] = currViewerPtr->getXDim();
+	displayingVolDims[1] = currViewerPtr->getYDim();
+	displayingVolDims[2] = currViewerPtr->getZDim();
 
 	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
 	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
@@ -579,22 +584,24 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
 	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
 
-	localCoords[0] = PDialogProofreading::instance()->sbXlb;
-	localCoords[1] = PDialogProofreading::instance()->sbXhb;
-	localCoords[2] = PDialogProofreading::instance()->sbYlb;
-	localCoords[3] = PDialogProofreading::instance()->sbYhb;
-	localCoords[4] = PDialogProofreading::instance()->sbZlb;
-	localCoords[5] = PDialogProofreading::instance()->sbZhb;
-
-	displayingVolDims[0] = PDialogProofreading::instance()->displayingVolDimX;
-	displayingVolDims[1] = PDialogProofreading::instance()->displayingVolDimY;
-	displayingVolDims[2] = PDialogProofreading::instance()->displayingVolDimZ;
+	if (currViewerPtr->xMinAdjusted) localCoords[0] = PDialogProofreading::instance()->sbXlb;
+	else localCoords[0] = 1;
+	if (currViewerPtr->xMaxAdjusted) localCoords[1] = PDialogProofreading::instance()->sbXhb;
+	else localCoords[1] = displayingVolDims[0];
+	if (currViewerPtr->yMinAdjusted) localCoords[2] = PDialogProofreading::instance()->sbYlb;
+	else localCoords[2] = 1;
+	if (currViewerPtr->yMaxAdjusted) localCoords[3] = PDialogProofreading::instance()->sbYhb;
+	else localCoords[3] = displayingVolDims[1];
+	if (currViewerPtr->zMinAdjusted) localCoords[4] = PDialogProofreading::instance()->sbZlb;
+	else localCoords[4] = 1;
+	if (currViewerPtr->zMaxAdjusted) localCoords[5] = PDialogProofreading::instance()->sbZhb;
+	else localCoords[5] = displayingVolDims[2];
+	
+	//cout << "  Image block dimensions: " << displayingVolDims[0] << " " << displayingVolDims[1] << " " << displayingVolDims[2] << endl;
 
 	if (localCoords[1] - localCoords[0] + 1 == displayingVolDims[0] &&
 		localCoords[3] - localCoords[2] + 1 == displayingVolDims[1] &&
-		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) partialVolume = false;
-	else partialVolume = true;
-
-	return true;
+		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) return false;
+	else return true;
 }
 // -------------------------------------------------------------------------------------------------------- //

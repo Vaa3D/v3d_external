@@ -446,6 +446,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     isTranslate = false;
     toRetrieveData = false;
 	volumeCutSbAdjusted = false;
+	xMinAdjusted = false, xMaxAdjusted = false, yMinAdjusted = false, yMaxAdjusted = false, zMinAdjusted = false, zMaxAdjusted = false;
 
     try
     {
@@ -2668,6 +2669,7 @@ void CViewer::Vaa3D_changeYCut0(int s)
     PDialogProofreading::instance()->updateBlocks(0);
 	PDialogProofreading::instance()->sbYlb = s + 1;
 	this->volumeCutSbAdjusted = true;
+	this->yMinAdjusted = true;
     connect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
 }
 void CViewer::Vaa3D_changeYCut1(int s)
@@ -2681,6 +2683,7 @@ void CViewer::Vaa3D_changeYCut1(int s)
     PDialogProofreading::instance()->updateBlocks(0);
 	PDialogProofreading::instance()->sbYhb = s + 1;
 	this->volumeCutSbAdjusted = true;
+	this->yMaxAdjusted = true;
     connect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
 }
 void CViewer::Vaa3D_changeXCut0(int s)
@@ -2694,6 +2697,7 @@ void CViewer::Vaa3D_changeXCut0(int s)
     PDialogProofreading::instance()->updateBlocks(0);
 	PDialogProofreading::instance()->sbXlb = s + 1;
 	this->volumeCutSbAdjusted = true;
+	this->xMinAdjusted = true;
     connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
 }
 void CViewer::ShiftToAnotherDirection(int _direction)
@@ -2784,6 +2788,7 @@ void CViewer::Vaa3D_changeXCut1(int s)
     PDialogProofreading::instance()->updateBlocks(0);
 	PDialogProofreading::instance()->sbXhb = s + 1;
 	this->volumeCutSbAdjusted = true;
+	this->xMaxAdjusted = true;
     connect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut0(int s)
@@ -2797,6 +2802,7 @@ void CViewer::Vaa3D_changeZCut0(int s)
     PDialogProofreading::instance()->updateBlocks(0);
 	PDialogProofreading::instance()->sbZlb = s + 1;
 	this->volumeCutSbAdjusted = true;
+	this->zMinAdjusted = true;
     connect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut1(int s)
@@ -2810,6 +2816,7 @@ void CViewer::Vaa3D_changeZCut1(int s)
     PDialogProofreading::instance()->updateBlocks(0);
 	PDialogProofreading::instance()->sbZhb = s + 1;
 	this->volumeCutSbAdjusted = true;
+	this->zMaxAdjusted = true;
     connect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
 }
 
