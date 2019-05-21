@@ -7373,7 +7373,7 @@ GLuint CMainApplication::initTFF1DTex()
 // 	   transferfunc[i*3+2] = spline_b(i);	   
 //    }
 // 	cout<<"come out spline_r"<<endl;
-//    GLuint tff1DTex;
+    GLuint tff1DTex;
 //    glGenTextures(1, &tff1DTex);
 //    glBindTexture(GL_TEXTURE_1D, tff1DTex);
 //    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -7382,7 +7382,7 @@ GLuint CMainApplication::initTFF1DTex()
 //    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 //    glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, transferfunc);
 //    free(transferfunc);    
-//    return tff1DTex;
+    return tff1DTex;
 }
 
 // init the 2D texture for render backface 'bf' stands for backface
