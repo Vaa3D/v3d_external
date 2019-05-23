@@ -1702,6 +1702,11 @@ void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
 	terafly::PluginInterface::changeFragTraceStatus(newStatus);
 }
 
+void V3d_PluginLoader::changeUIstatus(bool newStatus)
+{
+	terafly::PluginInterface::changeUIstatus(newStatus);
+}
+
 void V3d_PluginLoader::getParamsFromFragTraceUI(const string& keyName, const float& value)
 {
 	terafly::PluginInterface::getParamsFromFragTraceUI(keyName, value);
@@ -1710,6 +1715,11 @@ void V3d_PluginLoader::getParamsFromFragTraceUI(const string& keyName, const flo
 bool V3d_PluginLoader::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
 {
 	return terafly::PluginInterface::getPartialVolumeCoords(globalCoords, localCoords, displayingVolDims);
+}
+
+bool V3d_PluginLoader::teraflyImgInstance()
+{
+	return terafly::PluginInterface::teraflyImgInstance();
 }
 
 #ifdef __ALLOW_VR_FUNCS__

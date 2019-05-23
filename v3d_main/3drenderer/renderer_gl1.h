@@ -473,6 +473,7 @@ public:
 	 void showConnectedSegs();
 
 	 bool fragmentTrace; // Fragment tracing mode switch, MK, Dec 2018
+	 bool UIinstance;
 	 map<string, float> fragTraceParams;
 	 void connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage*& curImgPtr);
 	 
