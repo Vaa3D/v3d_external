@@ -1802,16 +1802,18 @@ void V3dR_GLWidget::process3Dwindow(bool show)
 
 	if(show)
 	{
+		cout<<"process3Dwindow show"<<endl;
 		cout<<"windowList"<<windowList.size();
 		for(int i=0;i<visibility.size();++i)
 		{
-
 			windowList[visibility[i]]->show();
 		}
+
 		clearwindowlist = true;
 	}
 	else
 	{
+		cout<<"process3Dwindow hide"<<endl;
 		if(clearwindowlist)
 		visibility.clear();
 		for(int i=0;i<windowList.size();++i)
@@ -1858,7 +1860,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
-			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,CollaborationCreatorRes,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
 
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;

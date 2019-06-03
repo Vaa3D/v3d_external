@@ -2739,7 +2739,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             PMain::getInstance()->resumeVR = true;
             XYZ point = view3DWidget->teraflyZoomInPOS;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
-            newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);    
+			newViewer(point.x, point.y, point.z,  volResIndex+1, volT0, volT1);    
         }    
     }
     else if(_direction == 8)
@@ -2771,7 +2771,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             PMain::getInstance()->resumeVR = true;
 			XYZ point = view3DWidget->CollaborationCreatorPos;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
-            newViewer(point.x, point.y, point.z, volResIndex, volT0, volT1);    
+            newViewer(point.x, point.y, point.z,view3DWidget->CollaborationCreatorRes, volT0, volT1);    
         }    
     }
 #endif
