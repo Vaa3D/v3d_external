@@ -1029,13 +1029,27 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 				
 				callFragmentTracing();
+
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				if (!thisRenderer->UIinstance)
+				{
+					thisRenderer->UIinstance = true;
+
+					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+					mypluginloader.runPlugin(loader, "settings");
+				}
+				else v3d_msg("There is a Neuron Assembler UI existing.");
 			}
 	  		break;
 
 		case Qt::Key_M:
 			if (renderer)
 			{
-				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				/*Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 				if (thisRenderer->fragmentTrace)
 				{
 					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
@@ -1044,7 +1058,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					mypluginloader.runPlugin(loader, "settings");
-				}
+				}*/
 			}
 			break;
 
@@ -1076,16 +1090,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (renderer)
 			{
 				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				if (thisRenderer->fragmentTrace)
-				{
-					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-
-					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					mypluginloader.runPlugin(loader, "start_tracing");
-                }
-                else if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
+                if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
                 {
                     thisRenderer->setDeleteKey(2);
                     thisRenderer->deleteMultiNeuronsByStroke();

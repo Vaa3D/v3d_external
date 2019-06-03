@@ -937,9 +937,11 @@ class terafly::PluginInterface
 
 		// ----------------- Fragment-based Tracing Related ----------------- //
 		//------------------------------------- MK, Mar, 2019 --------------- //
+		static bool teraflyImgInstance();
 		static void drawEditInfo(int editNum);
 		static bool checkFragTraceStatus();
 		static void changeFragTraceStatus(bool newStatus);
+		static void changeUIstatus(bool newStatus);
 		static void getParamsFromFragTraceUI(const string& keyName, const float& value);
 		static bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
 		// ------------------------------------------------------------------ //

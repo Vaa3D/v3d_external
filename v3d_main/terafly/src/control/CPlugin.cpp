@@ -544,6 +544,12 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
 
 // ------------------------------------ Fragment-based Tracing Related ------------------------------------ //
 //--------------------------------------------------------------------------- MK, Mar, 2019 --------------- //
+bool tf::PluginInterface::teraflyImgInstance()
+{
+	if (!CImport::instance()->isEmpty()) return true;
+	else return false;
+}
+
 void tf::PluginInterface::drawEditInfo(int editNum)
 {
 	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
@@ -560,6 +566,12 @@ void tf::PluginInterface::changeFragTraceStatus(bool newStatus)
 {
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
 	thisRenderer->fragmentTrace = newStatus;
+}
+
+void tf::PluginInterface::changeUIstatus(bool newStatus)
+{
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	thisRenderer->UIinstance = newStatus;
 }
 
 void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const float& value)

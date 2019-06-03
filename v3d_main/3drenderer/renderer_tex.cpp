@@ -100,6 +100,7 @@ Renderer_gl1::Renderer_gl1(void* widget)
 	this->isLoadFromFile = false;
 	this->pressedShowSubTree = false;
 	this->fragmentTrace = false;
+	this->UIinstance = false;
 	this->zThick = 1;
 
 	qDebug("  Renderer_gl1::Renderer_gl1");
