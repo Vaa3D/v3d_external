@@ -909,7 +909,11 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     }
                 }
             }
-            if (cc.pointcloud_file_list.size()>0 || cc.swc_file_list.size()>0 || cc.surface_file_list.size()>0)
+            if (cc.pointcloud_file_list.size()>0
+                    || cc.swc_file_list.size()>0
+                    || cc.surface_file_list.size()>0
+                    || cc.marker_file_list.size()>0 // Added by Peng Xie , 2019-06-05
+                    )
             {
                 //directly open the 3D viewer
                 iDrawExternalParameter * mypara_3Dview = 0;
@@ -942,6 +946,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     mypara_3Dview->swc_file_list.append(cc.swc_file_list.at(ii));
                 if (cc.surface_file_list.size()>0) //081016: at this moment I use only the first one
                     mypara_3Dview->surface_file = cc.surface_file_list.at(0);
+                // Added by Peng Xie , 2019-06-05
+                if (cc.marker_file_list.size()>0) //06052019: at this moment I use only the first one
+                    mypara_3Dview->marker_file = cc.marker_file_list.at(0);
                 //			if (cc.labelfield_image_file_list.size()>0)
                 //				mypara_3Dview->swc_file = cc.labelfield_image_file_list.at(0);
                 //081016. Note: an interesting side-effect of this ano open function is that the RAW-image window will have "memory" of the associated files.

@@ -655,6 +655,8 @@ void Renderer_gl1::loadObjectListFromFile()
 	qsl << ep->pointcloud_file_list;
 	qsl << ep->surface_file;
 	qsl << ep->labelfield_file;
+    // Added by Peng Xie, 06-05-2019
+    qsl << ep->marker_file;
 #endif
 	((QWidget*)widget)->hide(); //101024 to avoid busy updateGL
 	foreach (QString filename, qsl)
