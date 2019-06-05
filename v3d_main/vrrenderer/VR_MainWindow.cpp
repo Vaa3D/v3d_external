@@ -279,12 +279,15 @@ void VR_MainWindow::onReadyRead() {
 			//qDebug()<<"the color receieved is :"<<colorFromServer;
 			QStringList creatorMSGs = creatorRex.cap(1).split(" ");
 			QString user=creatorMSGs.at(0);
+			QString creator_Res = creatorMSGs.at(1);
 			for(int i=0;i<Agents.size();i++)
 			{
 				qDebug()<<"creator name is "<<user;
 				if(Agents.at(i).name!=user) continue;
 				pMainApplication->collaboration_creator_name = user;
+				pMainApplication->collaboration_creator_res = creator_Res.toInt();
 				qDebug()<<"user:"<<user<<" receievedCreator"<<pMainApplication->collaboration_creator_name;
+				qDebug()<<"user:"<<user<<" receievedCreator res"<<pMainApplication->collaboration_creator_res;
 			}
 		}
         else if (deletecurveRex.indexIn(line) != -1) {
@@ -470,16 +473,16 @@ void VR_MainWindow::onDisconnected() {
 
 
 
-int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, bool isLinkSuccess,QString ImageVolumeInfo,XYZ* zoomPOS,XYZ *CreatorPos) {
+int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
 
-	pMainApplication = new CMainApplication( 0, 0 );
+	pMainApplication = new CMainApplication(  0, 0 );
 
 	pMainApplication->mainwindow =pmain; 
 
 	pMainApplication->isOnline = isLinkSuccess;
     //pMainApplication->loadedNT.listNeuron.clear();
     //pMainApplication->loadedNT.hashNeuron.clear();
-	GetResindexandStartPointfromVRInfo(ImageVolumeInfo);
+	GetResindexandStartPointfromVRInfo(ImageVolumeInfo,MaxResolution);
 	if(ntlist != NULL)
 	{
 		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
@@ -541,6 +544,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		CreatorPos->x = pMainApplication->CollaborationCreatorPos.x;
 		CreatorPos->y = pMainApplication->CollaborationCreatorPos.y;
 		CreatorPos->z = pMainApplication->CollaborationCreatorPos.z;
+		CreatorRes = pMainApplication->collaboration_creator_res;
 		qDebug()<<"call that function is"<<_call_that_function;
 		socket->disconnectFromHost();
 		Agents.clear();
@@ -557,7 +561,9 @@ void VR_MainWindow::SendHMDPosition()
 	//send hmd position
 	socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
 	//QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
-
+	//cout<<"socket resindex"<<ResIndex<<endl;
+	//qDebug()<<"QString resindex"<< QString("%1").arg(ResIndex);
+	socket->write(QString("/ResIndex:" + QString("%1").arg(ResIndex) + "\n").toUtf8());
 }
 void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 {
@@ -740,22 +746,31 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	// return _call_that_plugin;
 	return _call_that_function;
 }
-void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo)
+void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution)
 {
 	qDebug()<<"GetResindexandStartPointfromVRInfo........";
 	qDebug()<<VRinfo;
-	QRegExp rx("Res\\((\\d+)\\s.\\s\\d+\\s.\\s\\d+\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
+	QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
 	if (rx.indexIn(VRinfo) != -1) {
 		qDebug()<<"get  VRResindex and VRVolume Start point ";
-		VRVolumeStartPoint = XYZ(rx.cap(2).toInt(),rx.cap(4).toInt(),rx.cap(6).toInt());
-		VRVolumeEndPoint = XYZ(rx.cap(3).toInt(),rx.cap(5).toInt(),rx.cap(7).toInt());
+		VRVolumeStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
+		VRVolumeEndPoint = XYZ(rx.cap(5).toInt(),rx.cap(7).toInt(),rx.cap(9).toInt());
+		VRVolumeCurrentRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
+		VRvolumeMaxRes = CollaborationMaxResolution;
 		qDebug()<<"get Resindex = "<<ResIndex;
 		qDebug()<<"Start X = "<<VRVolumeStartPoint.x<<"Start Y = "<<VRVolumeStartPoint.y<<"Start Z = "<<VRVolumeStartPoint.z;
 		qDebug()<<"End X = "<<VRVolumeEndPoint.x<<"End Y = "<<VRVolumeEndPoint.y<<"End Z = "<<VRVolumeEndPoint.z;
+		qDebug()<<"current Res X = "<<VRVolumeCurrentRes.x<<"current Res Y = "<<VRVolumeCurrentRes.y<<"current Res Z = "<<VRVolumeCurrentRes.z;
+		qDebug()<<"Collaboration Max Res X = "<<CollaborationMaxResolution.x<<"Collaboration Max Y = "<<CollaborationMaxResolution.y<<"Collaboration Max Z = "<<CollaborationMaxResolution.z;
 	}
 	//pass Resindex and VRvolumeStartPoint to PMAIN  to  offer parameter to NT2QString
 	pMainApplication->CmainResIndex = ResIndex;
 	pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
+	pMainApplication->collaboration_creator_res = ResIndex;
+	cout<<"pMainApplication->collaboration_creator_res = "<<pMainApplication->collaboration_creator_res<<endl;
+	pMainApplication->CollaborationMaxResolution = CollaborationMaxResolution;
+	pMainApplication->CollaborationCurrentRes = VRVolumeCurrentRes;
+
 }
 
 QString VR_MainWindow::ConvertsendCoords(QString coords)
@@ -763,24 +778,29 @@ QString VR_MainWindow::ConvertsendCoords(QString coords)
 	float x = coords.section(' ',0, 0).toFloat();  // str == "bin/myapp"
 	float y = coords.section(' ',1, 1).toFloat();  // str == "bin/myapp"
 	float z = coords.section(' ',2, 2).toFloat();  // str == "bin/myapp"
-	x+=VRVolumeStartPoint.x;
-	y+=VRVolumeStartPoint.y;
-	z+=VRVolumeStartPoint.z;
-	x/=pow(2.0,ResIndex);
-	y/=pow(2.0,ResIndex);
-	z/=pow(2.0,ResIndex);
-	return QString("%1 %2 %3").arg(x).arg(y).arg(z);;
+	x+=(VRVolumeStartPoint.x-1);
+	y+=(VRVolumeStartPoint.y-1);
+	z+=(VRVolumeStartPoint.z-1);
+	x*=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
+	y*=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
+	z*=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
+	return QString("%1 %2 %3").arg(x).arg(y).arg(z);
 }
 XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 {
 	//QString str1 = coords.section(' ',0, 0);  // str == "bin/myapp"
 	//QString str2 = coords.section(' ',1, 1);  // str == "bin/myapp"
 	//QString str3 = coords.section(' ',2, 2);  // str == "bin/myapp"
-	x*=pow(2.0,ResIndex);
-	y*=pow(2.0,ResIndex);
-	z*=pow(2.0,ResIndex);
-	x-=VRVolumeStartPoint.x;
-	y-=VRVolumeStartPoint.y;
-	z-=VRVolumeStartPoint.z;
+	float dividex = VRvolumeMaxRes.x/VRVolumeCurrentRes.x;
+	float dividey = VRvolumeMaxRes.y/VRVolumeCurrentRes.y;
+	float dividez = VRvolumeMaxRes.z/VRVolumeCurrentRes.z;
+	cout<<"dividex = "<<dividex<<"dividey = "<<dividey<<"dividez = "<<dividez<<endl;
+	x/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
+	y/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
+	z/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
+	cout<<" x = "<<"y = "<<y<<"z = "<<z<<endl;
+	x-=(VRVolumeStartPoint.x-1);
+	y-=(VRVolumeStartPoint.y-1);
+	z-=(VRVolumeStartPoint.z-1);
 	return XYZ(x,y,z);
 }

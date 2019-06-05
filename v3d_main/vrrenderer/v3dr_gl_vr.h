@@ -268,6 +268,8 @@ public:
 	XYZ CmainVRVolumeStartPoint;
 	int CmainResIndex;
 	XYZ CollaborationCreatorPos;
+	XYZ CollaborationMaxResolution;
+	XYZ CollaborationCurrentRes;
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -588,6 +590,7 @@ private:
 	
 	bool showshootingray;
 	QString collaboration_creator_name;
+	int collaboration_creator_res;
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();

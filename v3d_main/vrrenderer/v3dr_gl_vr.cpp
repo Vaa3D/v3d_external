@@ -2606,10 +2606,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				if(isOnline == true)
 				{
-					qDebug()<<"didn't get creator pos";
 					if(CollaborationCreatorPos.x!=0&&CollaborationCreatorPos.y!=0&&CollaborationCreatorPos.z!=0)
 					{
-					qDebug()<<"get creator pos";						
+						qDebug()<<"get creator pos";						
 						teraflyPOS = XYZ(CollaborationCreatorPos.x,CollaborationCreatorPos.y,CollaborationCreatorPos.z);//liqi
 						postVRFunctionCallMode = 9;
 					}
@@ -3048,7 +3047,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						currentNT.listNeuron[i].type = autoConnected;
 					}
 				}
-
 				if (isOnline==false)
 				{
 					if(currentNT.listNeuron.size()>0)
@@ -3063,7 +3061,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							vRedoList.clear();
 						bIsRedoEnable = false;
 						vRedoList.clear();
-
+						
 						currentNT.name = "sketch_"+QString("%1").arg(sketchNum++);
 						qDebug()<<currentNT.name;
 						sketchedNTList.push_back(currentNT);
@@ -8100,6 +8098,10 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		{
 			m_modeGrip_R = m_splitMode;
 		}
+		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <=0.8))
+		{
+			m_modeGrip_L = _MovetoCreator;
+		}
 		//else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		//{
 		//	m_modeGrip_R = m_clipplaneMode;
@@ -8124,22 +8126,22 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z)//localtogolbal
 {
-	x+= CmainVRVolumeStartPoint.x;
-	y+= CmainVRVolumeStartPoint.y;
-	z+= CmainVRVolumeStartPoint.z;
-	x/=pow(2.0,CmainResIndex-1);
-	y/=pow(2.0,CmainResIndex-1);
-	z/=pow(2.0,CmainResIndex-1);
+	x+= (CmainVRVolumeStartPoint.x-1);
+	y+= (CmainVRVolumeStartPoint.y-1);
+	z+= (CmainVRVolumeStartPoint.z-1);
+	x*=(CollaborationMaxResolution.x/CollaborationCurrentRes.x);
+	y*=(CollaborationMaxResolution.y/CollaborationCurrentRes.y);
+	z*=(CollaborationMaxResolution.z/CollaborationCurrentRes.z);
 	return XYZ(x,y,z);
 }
 XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 {
-	x*=pow(2.0,CmainResIndex-1);
-	y*=pow(2.0,CmainResIndex-1);
-	z*=pow(2.0,CmainResIndex-1);
-	x-= CmainVRVolumeStartPoint.x;
-	y-= CmainVRVolumeStartPoint.y;
-	z-= CmainVRVolumeStartPoint.z;
+	x/=(CollaborationMaxResolution.x/CollaborationCurrentRes.x);
+	y/=(CollaborationMaxResolution.y/CollaborationCurrentRes.y);
+	z/=(CollaborationMaxResolution.z/CollaborationCurrentRes.z);
+	x-= (CmainVRVolumeStartPoint.x-1);
+	y-= (CmainVRVolumeStartPoint.y-1);
+	z-= (CmainVRVolumeStartPoint.z-1);
 
 	return XYZ(x,y,z);
 }

@@ -116,7 +116,10 @@ public:
 	V3dR_Communicator * myclient;
 	XYZ teraflyZoomInPOS;
 	XYZ CollaborationCreatorPos;
+	XYZ collaborationMaxResolution;
+	int CollaborationCreatorRes;
 	int Resindex;
+
 	static bool resumeCollaborationVR;
 #endif
 //protected:
