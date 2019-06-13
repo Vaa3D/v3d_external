@@ -301,10 +301,19 @@ void VR_MainWindow::onReadyRead() {
             float dx = delMSGs.at(1).toFloat();
 			float dy = delMSGs.at(2).toFloat();
 			float dz = delMSGs.at(3).toFloat();
+            float resx = delMSGs.at(4).toFloat();
+			float resy = delMSGs.at(5).toFloat();
+			float resz = delMSGs.at(6).toFloat();
+
+			pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);
 			qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
 			XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
 			qDebug()<<"user, "<<user<<" Converted Receive curve: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
-			XYZ TeraflyglobalPos =XYZ(dx * pow(2.0f,ResIndex),dy*pow(2.0f,ResIndex),dz*pow(2.0f,ResIndex));
+			XYZ TeraflyglobalPos =XYZ(dx ,dy,dz);
+			dx/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
+			dy/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
+			dz/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
+			
 			if(TeraflyglobalPos.x<VRVolumeStartPoint.x || 
 			TeraflyglobalPos.y<VRVolumeStartPoint.y||
 			TeraflyglobalPos.z<VRVolumeStartPoint.z||
@@ -314,9 +323,9 @@ void VR_MainWindow::onReadyRead() {
 			)
 			{
 				qDebug()<<"push_back test delete point ";
-				VROutinfo.deletedcurvespos.push_back(XYZ(dx * pow(2.0f,ResIndex),dy*pow(2.0f,ResIndex),dz*pow(2.0f,ResIndex)));
+				VROutinfo.deletedcurvespos.push_back(TeraflyglobalPos);
 			}
-			qDebug()<<"deletedcurvespos"<<dx * pow(2.0f,ResIndex)<<" "<<dy * pow(2.0f,ResIndex)<<" "<<dz * pow(2.0f,ResIndex)<<" ";
+			qDebug()<<"deletedcurvespos"<<dx<<" "<<dy<<" "<<dz;
 			if(user==userName)
 			{
 				pMainApplication->READY_TO_SEND=false;
@@ -343,7 +352,12 @@ void VR_MainWindow::onReadyRead() {
             float mx = markerMSGs.at(1).toFloat();
 			float my = markerMSGs.at(2).toFloat();
 			float mz = markerMSGs.at(3).toFloat();
+			int resx = markerMSGs.at(4).toFloat();
+			int resy = markerMSGs.at(5).toFloat();
+			int resz = markerMSGs.at(6).toFloat();	
 			qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
+			qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
+			pMainApplication->CollaborationTargetMarkerRes = XYZ(resx,resy,resz);
 			XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
 			qDebug()<<"user, "<<user<<" Converted Receive marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
 			if(user==userName)
@@ -606,7 +620,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			{
 				QString ConverteddelcurvePOS = ConvertsendCoords(pMainApplication->delcurvePOS);
 				qDebug()<<"Converted marker position = "<<ConverteddelcurvePOS;
-				socket->write(QString("/del_curve:" +  ConverteddelcurvePOS+ "\n").toUtf8());
+				QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
+				socket->write(QString("/del_curve:" +  ConverteddelcurvePOS+" "+QSCurrentRes + "\n").toUtf8());
 				CURRENT_DATA_IS_SENT=true;
 			}
 
@@ -622,17 +637,18 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
 			QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
 			qDebug()<<"Converted marker position = "<<ConvertedmarkerPOS;
-			socket->write(QString("/marker:" + ConvertedmarkerPOS + "\n").toUtf8());
+			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
+			socket->write(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes + "\n").toUtf8());
 			CURRENT_DATA_IS_SENT=true;
 		}
-		else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
-		{
-			qDebug()<<"marker to be delete position = "<<pMainApplication->delmarkerPOS;
-			QString ConverteddelmarkerPOS = ConvertsendCoords(pMainApplication->delmarkerPOS);
-			qDebug()<<"Converted delete marker position = "<<ConverteddelmarkerPOS;
-			socket->write(QString("/del_marker:" + ConverteddelmarkerPOS + "\n").toUtf8());
-			CURRENT_DATA_IS_SENT=true;
-		}
+		//else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
+		//{
+		//	qDebug()<<"marker to be delete position = "<<pMainApplication->delmarkerPOS;
+		//	QString ConverteddelmarkerPOS = ConvertsendCoords(pMainApplication->delmarkerPOS);
+		//	qDebug()<<"Converted delete marker position = "<<ConverteddelmarkerPOS;
+		//	socket->write(QString("/del_marker:" + ConverteddelmarkerPOS + "\n").toUtf8());
+		//	CURRENT_DATA_IS_SENT=true;
+		//}
 		else if(pMainApplication->m_modeGrip_R==m_dragMode)
 		{
 			qDebug()<<"drag node new position = "<<pMainApplication->dragnodePOS;
@@ -652,19 +668,27 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//	socket->write(QString("/ask:message \n").toUtf8());
 	//	sendHMDPOScout = 0;}
 	//}
-
-	switch (sendHMDPOScout/20)
+	if(sendHMDPOScout%20==0)
 	{
-	case 0:
 		socket->write(QString("/ask:message \n").toUtf8());
-		break;
-	case 3:
+	}
+	if(sendHMDPOScout%60==0)
+	{
 		SendHMDPosition();
 		sendHMDPOScout = 0;
-		break;
-	default:
-		break;
 	}
+	// switch (sendHMDPOScout/20)
+	// {
+	// case 1:
+	// 	socket->write(QString("/ask:message \n").toUtf8());
+	// 	break;
+	// case 3:
+	// 	SendHMDPosition();
+	// 	sendHMDPOScout = 0;
+	// 	break;
+	// default:
+	// 	break;
+	// }
 	}
 	//QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
 	return ;

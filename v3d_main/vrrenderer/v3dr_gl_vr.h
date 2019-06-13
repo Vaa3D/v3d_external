@@ -171,7 +171,7 @@ public:
 
 	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
     QString NT2QString(); // prepare the message to be sent from currentNT.
-	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z);
+	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
 	//bool FlashStuff(FlashType type,XYZ coords);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
@@ -270,6 +270,8 @@ public:
 	XYZ CollaborationCreatorPos;
 	XYZ CollaborationMaxResolution;
 	XYZ CollaborationCurrentRes;
+	XYZ CollaborationTargetMarkerRes;
+	XYZ collaborationTargetdelcurveRes;
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;

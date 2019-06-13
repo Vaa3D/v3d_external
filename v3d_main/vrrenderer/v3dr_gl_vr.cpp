@@ -2235,24 +2235,33 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
 {
 	// bool deletedmarker=false;
 	//remove the marker in list 
-	for(int i=0;i<drawnMarkerList.size();i++)
-	{
-		ImageMarker markertemp = drawnMarkerList.at(i);
-		float dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
-		//cal the dist between pos & current node'position, then compare with the threshold
-		if(dist < (dist_thres/m_globalScale*5))
+		for(int i=0;i<drawnMarkerList.size();i++)
 		{
-			drawnMarkerList.removeAt(i);
-			markerVisibility.erase(markerVisibility.begin()+i);
-			qDebug()<<"remove marker at "<<i;
-			if(Markers_spheres[i]) delete Markers_spheres[i];
-			Markers_spheres.erase(Markers_spheres.begin()+i);
-			Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
-			Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
-			// deletedmarker = true;
-			return true;
+			ImageMarker markertemp = drawnMarkerList.at(i);
+			float dist;
+			if(isOnline == false )
+				dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+			else 
+			{
+				XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+				XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+				dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+			}
+			//cal the dist between pos & current node'position, then compare with the threshold
+			if(dist < (dist_thres/m_globalScale*5))
+			{
+				drawnMarkerList.removeAt(i);
+				markerVisibility.erase(markerVisibility.begin()+i);
+				qDebug()<<"remove marker at "<<i;
+				if(Markers_spheres[i]) delete Markers_spheres[i];
+				Markers_spheres.erase(Markers_spheres.begin()+i);
+				Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
+				Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
+				// deletedmarker = true;
+				return true;
+			}
 		}
-	}
+
 	return false;
 	//if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
 	//{
@@ -6653,7 +6662,7 @@ QString  CMainApplication::getHMDPOSstr()
 	}
 	mat=glm::inverse(m_globalMatrix) * mat;
 	//qDebug()<<" convertedHMD SEND POS  1 "<<mat[3][0]<<" "<<mat[3][1]<<" "<<mat[3][2];
-	XYZ convertPOS = ConvertLocaltoGlobalCoords(mat[3][0],mat[3][1],mat[3][2]);
+	XYZ convertPOS = ConvertLocaltoGlobalCoords(mat[3][0],mat[3][1],mat[3][2],CollaborationMaxResolution);
 	mat[3][0] = convertPOS.x;
 	mat[3][1] = convertPOS.y;
 	mat[3][2] = convertPOS.z;
@@ -6698,7 +6707,7 @@ QString CMainApplication::NT2QString()
 		char packetbuff[300];
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
-		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z);
+		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
 		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
 		messageBuff +=packetbuff;
 	}
@@ -6795,7 +6804,15 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 		{
 			NeuronSWC SS0;
 			SS0 = nt.listNeuron.at(j);
-			float dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+			float dist;
+			if(isOnline == false)
+			dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+			else 
+			{
+				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x,dPOS.y,dPOS.z,collaborationTargetdelcurveRes);
+				XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,collaborationTargetdelcurveRes);
+				dist = glm::sqrt((TargetresdPOS.x-TargetresSS0POS.x)*(TargetresdPOS.x-TargetresSS0POS.x)+(TargetresdPOS.y-TargetresSS0POS.y)*(TargetresdPOS.y-TargetresSS0POS.y)+(TargetresdPOS.z-TargetresSS0POS.z)*(TargetresdPOS.z-TargetresSS0POS.z));
+			}
 			//cal the dist between pos & current node'position, then compare with the threshold
 			if(dist < (dist_thres/m_globalScale*5))
 			{
@@ -8124,14 +8141,14 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 	}
 
 }
-XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z)//localtogolbal
+XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes)//localtogolbal
 {
 	x+= (CmainVRVolumeStartPoint.x-1);
 	y+= (CmainVRVolumeStartPoint.y-1);
 	z+= (CmainVRVolumeStartPoint.z-1);
-	x*=(CollaborationMaxResolution.x/CollaborationCurrentRes.x);
-	y*=(CollaborationMaxResolution.y/CollaborationCurrentRes.y);
-	z*=(CollaborationMaxResolution.z/CollaborationCurrentRes.z);
+	x*=(targetRes.x/CollaborationCurrentRes.x);
+	y*=(targetRes.y/CollaborationCurrentRes.y);
+	z*=(targetRes.z/CollaborationCurrentRes.z);
 	return XYZ(x,y,z);
 }
 XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
