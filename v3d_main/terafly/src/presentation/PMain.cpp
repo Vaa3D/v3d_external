@@ -924,23 +924,15 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     localviewer_panel_layout->addLayout(VOImaxsize_layout, 0);
 #ifdef __ALLOW_VR_FUNCS__
 	/* --------------------- forth row ---------------------- */
-
-	teraflyrotCView = new QCheckBox("Start collaboration mode in 3D view.");
-	teraflyrotCView->setToolTip("You can edit current image in collaboration mode.");
-	//controlLayout->addWidget(rotCView);
-
-
 	teraflyVRView = new QPushButton("See in VR",0);
 	teraflyVRView->setToolTip("You can see current image in VR environment.");
 	collaborationVRView = new QPushButton("Collaborate in VR",0);
 	collaborationVRView->setToolTip("Start collaboration mode with VR.");
 	
-
 	QWidget* VR_buttons = new QWidget();
 	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
 	VR_buttons_layout->addWidget(teraflyVRView, 1);
     VR_buttons_layout->addWidget(collaborationVRView, 1);
-	 VR_buttons_layout->addWidget(teraflyrotCView);
 	VR_buttons->setLayout(VR_buttons_layout);
 	localviewer_panel_layout->addWidget(VR_buttons,0);
 #endif
@@ -1124,8 +1116,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
 	if(collaborationVRView)
 	    connect(collaborationVRView, SIGNAL(clicked()), this, SLOT(doCollaborationVRView()));
-	if(teraflyrotCView)
-		connect(teraflyrotCView, SIGNAL(toggled(bool)), this, SLOT(doclientView(bool)));
 #endif
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
