@@ -2971,6 +2971,11 @@ void V3dR_GLWidget::setVoxSize()
 	renderer->paint();
 }
 
+void V3dR_GLWidget::callUpBrainAtlas()
+{
+	cout << "test" << endl;
+}
+
 void V3dR_GLWidget::enableShowAxes(bool s)
 {
 	//qDebug("V3dR_GLWidget::setShowAxes = %i",s);

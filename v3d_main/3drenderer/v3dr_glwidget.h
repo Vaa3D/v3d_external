@@ -409,6 +409,7 @@ public slots:
 	virtual void cancelSelect();
 
 	virtual void setVoxSize();
+	virtual void callUpBrainAtlas();
 
     //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
     virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
