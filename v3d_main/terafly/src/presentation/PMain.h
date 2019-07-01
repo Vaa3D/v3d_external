@@ -206,6 +206,7 @@ class terafly::PMain : public QWidget
         QComboBox* resolution_cbox;
 #ifdef __ALLOW_VR_FUNCS__
 		QPushButton* teraflyVRView;
+		QCheckBox *teraflyrotCView;
 		QPushButton* collaborationVRView;
 #endif
         /* ------- zoom options panel widgets ------- */
