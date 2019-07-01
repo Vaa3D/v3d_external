@@ -471,6 +471,7 @@ public:
 	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 void showSubtree();
 	 void showConnectedSegs();
+     void sort_tracedNeuron(My4DImage* curImg, size_t rootID);  // Sort swc, Peng Xie, June 2019
 
 	 bool fragmentTrace; // Fragment tracing mode switch, MK, Dec 2018
 	 bool UIinstance;

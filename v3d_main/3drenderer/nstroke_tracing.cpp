@@ -76,6 +76,9 @@
 #include <algorithm>
 #include <ctime>
 
+//#include <boost/chrono.hpp>
+//#include <boost/thread/thread.hpp>
+
 #ifndef Q_OS_MAC
     #include <omp.h>
 #endif
@@ -96,6 +99,21 @@
 //#include "NeuronStructUtilities.h"
 //#endif
 // -------------------------------------------------------------------------
+#ifdef _WIN32
+    #include <windows.h>
+
+    void my_sleep(unsigned milliseconds)
+    {
+        Sleep(milliseconds);
+    }
+#else
+    #include <unistd.h>
+
+    void my_sleep(unsigned milliseconds)
+    {
+        usleep(milliseconds * 1000); // takes microseconds
+    }
+#endif
 
 #define EPS 0.01
 #define PI 3.14159265
@@ -3913,6 +3931,184 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
+// --------- Remove duplicates and save sorted swc, Peng Xie, June, 2019 --------
+//void VNeuron_to_Neuron(V_NeuronSWC_unit* vS, NeuronSWC* S){
+//    S->n = vS->n;
+//    S->type = vS->type;
+//    S->x = vS->x;
+//    S->y= vS->y;
+//    S->z = vS->z;
+//    S->r = vS->r;
+//    S->pn = vS->parent;
+//    S->seg_id = vS->seg_id;
+//    S->level = vS->level;
+//    S->creatmode = vS->creatmode;  // Creation Mode LMG 8/10/2018
+//    S->timestamp = vS->timestamp;  // Timestamp LMG 27/9/2018
+//    S->tfresindex = vS->tfresindex; // TeraFly resolution index LMG 13/12/2018
+//}
+
+struct SegmentSWC{
+    int name;
+    int parent;
+    int size;
+
+    SegmentSWC () {name=1; parent=-1; size=0;}
+    SegmentSWC (int s_name, int s_parent, int s_size) {name=s_name; parent=s_parent; size=s_size;}
+};
+
+//int whether_reverse_child_segment(vector<V_NeuronSWC_unit> parent_seg, vector<V_NeuronSWC_unit> child_seg){
+//    double phead_x = parent_seg.end().x;
+//    double phead_y = parent_seg.end().y;
+//    double phead_z = parent_seg.end().z;
+//    double chead_x = child_seg.end().x;
+//    double chead_y = child_seg.end().y;
+//    double chead_z = child_seg.end().z;
+//    double ptail_x = parent_seg.begin().x;
+//    double ptail_y = parent_seg.begin().y;
+//    double ptail_z = parent_seg.begin().z;
+//    double ctail_x = child_seg.begin().x;
+//    double ctail_y = child_seg.begin().y;
+//    double ctail_z = child_seg.begin().z;
+//    if (((phead_x==chead_x) && (phead_y==chead_y) && (phead_z==chead_z)) ||
+//            ((ptail_x==chead_x) && (ptail_y==chead_y) && (ptail_z==chead_z)))
+//    {
+//        return true;
+//    }
+//    return false;
+//}
+
+void Renderer_gl1::sort_tracedNeuron(My4DImage* curImg, size_t rootID)
+{
+    // Assert given rootID is valid
+    NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(0)));
+    if(!p_tree)return;
+    QList<NeuronSWC> p_listneuron = p_tree->listNeuron;
+    if(p_tree->hashNeuron.find(rootID)==p_tree->hashNeuron.end())return;
+    v3d_msg(QString("p_tree->hashNeuron.value(rootID): %1").arg(p_tree->hashNeuron.value(rootID)));
+
+    // ----------- Starting from the specified root, traverse the connected components ---------
+    NeuronTree sorted_nt;
+    QList<NeuronSWC> listNeuron;
+    QHash<int, int> hashNeuron;
+    int test_type = 0; // Testing Only
+    int cur_treesize;
+
+    // ----------- Sort tree structure by segments -------------
+
+    // If root is an internal node, then we need to split the segment
+    // To be implemented
+    // ------------ Begin DFS ------------
+    QStack<SegmentSWC> pstack;
+    set<size_t> visited;
+    size_t cur_segID = p_listneuron.at(p_tree->hashNeuron.value(rootID)).seg_id;
+    vector<V_NeuronSWC_unit> curSeg = curImg->tracedNeuron.seg[cur_segID].row;
+    visited.insert(cur_segID);
+    pstack.push(SegmentSWC(cur_segID, -1, curSeg.size()));
+    cur_treesize = listNeuron.size();
+    for (vector<V_NeuronSWC_unit>::iterator unitIt = curSeg.begin(); unitIt != curSeg.end(); ++unitIt)
+    {
+        NeuronSWC S;
+        S.n = unitIt->n + cur_treesize;
+//        S.type = unitIt->type;
+        S.type = test_type;
+        S.x = unitIt->x;
+        S.y= unitIt->y;
+        S.z = unitIt->z;
+        S.r = unitIt->r;
+        S.pn = unitIt==curSeg.begin()? (-1):((unitIt-1)->n + cur_treesize);
+        S.seg_id = unitIt->seg_id;
+//        S.level = unitIt->level;
+        S.level = test_type;
+        S.creatmode = unitIt->creatmode;  // Creation Mode LMG 8/10/2018
+        S.timestamp = unitIt->timestamp;  // Timestamp LMG 27/9/2018
+        S.tfresindex = unitIt->tfresindex; // TeraFly resolution index LMG 13/12/2018
+        listNeuron.append(S);
+        hashNeuron.insert(S.n, listNeuron.size()-1);
+    }
+    test_type++;
+//    v3d_msg(QString("Inserted segment: %1").arg(cur_segID));
+
+    bool new_push;
+    int parent_segID, child_segID;
+    while(!pstack.isEmpty()){
+        new_push = false;
+        /* --------- Find segments that are connected to the head or tail of input segment --------- */
+        cur_segID = pstack.top().name;
+//        v3d_msg(QString("Finding children of: %1").arg(cur_segID));
+        set<size_t> curSegEndRegionSegs;
+        curSegEndRegionSegs.clear();
+        curSegEndRegionSegs = this->segEndRegionCheck(curImg, cur_segID);
+        parent_segID = pstack.top().parent;
+        set<size_t> sibling_segs;
+        sibling_segs.clear();
+        if(parent_segID!=(-1)) sibling_segs = this->segEndRegionCheck(curImg, parent_segID);
+
+        if (!curSegEndRegionSegs.empty())
+        {
+            for (set<size_t>::iterator child_segIDIt = curSegEndRegionSegs.begin(); child_segIDIt != curSegEndRegionSegs.end(); ++child_segIDIt)
+            {
+                child_segID = *child_segIDIt;
+                if (child_segID == cur_segID) continue;
+                else if (visited.find(child_segID) != visited.end())
+                {
+                    // If already visited
+                    continue;
+                }
+                else if (sibling_segs.find(child_segID) != sibling_segs.end()){
+                    // If is the child of the same parent
+                    continue;
+                }
+                else
+                {
+                    vector<V_NeuronSWC_unit> child_seg = curImg->tracedNeuron.seg[child_segID].row;
+                    visited.insert(child_segID);
+                    pstack.push(SegmentSWC(child_segID, cur_segID, child_seg.size()));
+                    new_push = true;
+                    // Whether to reverse the child segment
+
+                    cur_treesize = listNeuron.size();
+                    for (vector<V_NeuronSWC_unit>::iterator unitIt = child_seg.begin(); unitIt != child_seg.end(); ++unitIt)
+                    {
+                        NeuronSWC S;
+                        S.n = unitIt->n + cur_treesize;
+                //        S.type = unitIt->type;
+                        S.type = test_type;
+                        S.x = unitIt->x;
+                        S.y= unitIt->y;
+                        S.z = unitIt->z;
+                        S.r = unitIt->r;
+                        S.pn = unitIt==child_seg.begin()? (-1):((unitIt-1)->n + cur_treesize);
+                        S.seg_id = unitIt->seg_id;
+//                        S.level = unitIt->level;
+                        S.level = test_type;
+                        S.creatmode = unitIt->creatmode;  // Creation Mode LMG 8/10/2018
+                        S.timestamp = unitIt->timestamp;  // Timestamp LMG 27/9/2018
+                        S.tfresindex = unitIt->tfresindex; // TeraFly resolution index LMG 13/12/2018
+                        listNeuron.append(S);
+                        hashNeuron.insert(S.n, listNeuron.size()-1);
+                    }
+                    test_type++;
+                    qDebug()<<QString("Inserted segment: %1").arg(child_segID);
+                    break;
+                }
+            }
+        }
+        if(!new_push){
+            pstack.pop();
+        }
+    }
+
+    // ----------- END: Sort tree structure by segments -------------
+
+    sorted_nt.n = 1; //only one neuron if read from a file
+    sorted_nt.listNeuron = listNeuron;
+    sorted_nt.hashNeuron = hashNeuron;
+    sorted_nt.color = XYZW(0,0,0,0); /// alpha==0 means using default neuron color, 081115
+    writeSWC_file(QString("C:/Users/pengx/Desktop/test.sorted.swc"), sorted_nt);
+
+    return;
+}
+
 // --------- Highlight the selected segment with its downstream subtree, MK, June, 2018 ---------
 void Renderer_gl1::showConnectedSegs()
 {
@@ -3931,7 +4127,8 @@ void Renderer_gl1::showConnectedSegs()
 
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
-	for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
+//    v3d_msg(QString("listNeuronTree.size(): %1").arg(listNeuronTree.size()));
+    for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
 	{
 		NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
 		if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
@@ -3974,6 +4171,12 @@ void Renderer_gl1::showConnectedSegs()
 			}
 			if (nodeOnStroke.size() == 0) return;
 			/* ------- END of [Only take in the nodes within the rectangle that contains the stroke] ------- */
+//            size_t rootID = nodeOnStroke.at(0).n;
+//            v3d_msg(QString("Root ID: %1").arg(rootID));
+//            this->sort_tracedNeuron(curImg, rootID);
+//            v3d_msg("Sorting finished");
+//            return;
+
 
 			/* ------- Acquire the starting segment ------- */
 			vector<size_t> involvedSegs;
@@ -4028,18 +4231,22 @@ void Renderer_gl1::showConnectedSegs()
 			this->subtreeSegs.clear();
 			this->subtreeSegs.insert(startingSegID);
 			this->rc_findConnectedSegs(curImg, startingSegID);
+            int color_code = 0;
 			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
 			{
 				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
-				//cout << *segIt << " ";
+                cout << *segIt << " "<<curImg->tracedNeuron.seg[*segIt].row.size()<<endl;
 				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
-					unitIt->type = 0;
+                    unitIt->type = color_code;
+//                color_code++;
 				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
-			}
+//                boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
+//                my_sleep(500);
+            }
 			//cout << endl;
 			/* ----------------- END of [Start finding connected segments] ----------------- */
 
-			curImg->update_3drenderer_neuron_view(w, this);
+            curImg->update_3drenderer_neuron_view(w, this);
 			//curImg->proj_trace_history_append(); // -> Highlighting is for temporary checking purpose, should not be appended to the history.
 		}
 	}
