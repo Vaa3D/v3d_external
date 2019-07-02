@@ -678,6 +678,7 @@ void Renderer::drawEditInfo()
 		case 10: editdisplay = "Highlight Subtree"; break;
 		case 11: editdisplay = "Highlight Connected Segments"; break;
 		case 12: editdisplay = "Fragment Tracing"; break;
+		case 13: editdisplay = "Brain Atlas"; break;
 
         }
 

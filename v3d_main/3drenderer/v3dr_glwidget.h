@@ -409,7 +409,6 @@ public slots:
 	virtual void cancelSelect();
 
 	virtual void setVoxSize();
-	virtual void callUpBrainAtlas();
 
     //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
     virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
@@ -426,6 +425,9 @@ public slots:
 
 	// Fragmented tracing, MK, Dec 2018
 	virtual void callFragmentTracing();
+
+	// Brain atlas app, MK, July 2019
+	virtual void callUpBrainAtlas();
 
     virtual void toggleEditMode();
     virtual void setEditMode();
