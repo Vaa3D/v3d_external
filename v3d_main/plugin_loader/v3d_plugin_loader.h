@@ -233,6 +233,8 @@ public:
 	virtual void changeUIstatus(bool newStatus);
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
+
+	virtual bool setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
 };
 
 #endif

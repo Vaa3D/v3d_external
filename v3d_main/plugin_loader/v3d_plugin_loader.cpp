@@ -1060,6 +1060,15 @@ bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt)
 	return false;
 }
 
+bool V3d_PluginLoader::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->setSWC_noDecompose(window, fileName);
+	}
+	return false;
+}
+
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
 {
     if (!filename)

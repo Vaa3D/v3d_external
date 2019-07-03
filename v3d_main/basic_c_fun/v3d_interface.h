@@ -251,6 +251,8 @@ public:
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
 
+	virtual bool setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName) = 0;
+
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
     virtual void openVRWindowV2(v3dhandle image_window, bool bOnlineMode = false) = 0;

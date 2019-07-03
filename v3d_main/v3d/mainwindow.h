@@ -529,5 +529,7 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	bool setSWC(void* window, NeuronTree & nt);
 	V3D_GlobalSetting getGlobalSetting();
 	bool setGlobalSetting( V3D_GlobalSetting &gs );
+
+	bool setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
 };
 #endif

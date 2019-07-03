@@ -248,6 +248,15 @@ bool MainWindow::setSWC(void* window, NeuronTree & nt)
 	else return false;
 }
 
+bool MainWindow::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
+{
+	V3dR_GLWidget* thisWidget = window->getGLWidget();
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(thisWidget->getRenderer());
+	thisRenderer->loadObjectFromFile(fileName);
+
+	return true;
+}
+
 
 V3D_GlobalSetting MainWindow::getGlobalSetting()
 {
