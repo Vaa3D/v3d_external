@@ -59,6 +59,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
 #include "v3d_commandlineparser.h"
 #include "pluginfunchandler.h"
+#include <set>
 #ifdef __V3DWSDEVELOP__
 #include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY
@@ -530,6 +531,9 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	V3D_GlobalSetting getGlobalSetting();
 	bool setGlobalSetting( V3D_GlobalSetting &gs );
 
-	bool setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
+	int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
+	bool hideSWC(V3dR_MainWindow* window, int treeIndex);
+	bool displaySWC(V3dR_MainWindow* window, int treeIndex);
+	QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
 };
 #endif

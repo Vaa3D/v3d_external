@@ -1060,13 +1060,41 @@ bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt)
 	return false;
 }
 
-bool V3d_PluginLoader::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
+int V3d_PluginLoader::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
 {
 	if (v3d_mainwindow)
 	{
 		return v3d_mainwindow->setSWC_noDecompose(window, fileName);
 	}
+	return -1;
+}
+
+bool V3d_PluginLoader::hideSWC(V3dR_MainWindow* window, int treeIndex)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->hideSWC(window, treeIndex);
+	}
 	return false;
+}
+
+bool V3d_PluginLoader::displaySWC(V3dR_MainWindow* window, int treeIndex)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->displaySWC(window, treeIndex);
+	}
+	return false;
+}
+
+QList<NeuronTree> V3d_PluginLoader::loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces)
+{
+	QList<NeuronTree> emptyList;
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->loadedNeurons(window, loadedSurfaces);
+	}
+	return emptyList;
 }
 
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs

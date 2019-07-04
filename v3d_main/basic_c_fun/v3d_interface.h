@@ -73,6 +73,7 @@ QT_END_NAMESPACE
 #include "basic_triview.h"
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
+#include <set>
 
 struct V3DPluginArgItem
 {
@@ -251,7 +252,10 @@ public:
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
 
-	virtual bool setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName) = 0;
+	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName) = 0;
+	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex) = 0;
+	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex) = 0;
+	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
 
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
