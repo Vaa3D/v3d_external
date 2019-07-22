@@ -255,6 +255,7 @@ public:
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
     virtual void callCreateMarkerNearestNode(int x, int y) {};
+    virtual void callCreateSpecialMarkerNearestNode(int x,int y){}; //add special marker, by XZ, 20190720
     virtual void callGDTracing() {};
 
     virtual void toggleEditMode()       {};

@@ -1255,6 +1255,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             break;
 
         case Qt::Key_Q:
+            if(IS_ALT_MODIFIER){
+                qDebug()<<"call special marker"<<endl<<"---------------------------------------------"<<endl;
+                callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
+            }
+            else
             {
                 callCreateMarkerNearestNode();
             }
@@ -3694,6 +3699,16 @@ void V3dR_GLWidget::callCreateMarkerNearestNode()
     }
 }
 //end five shortcuts
+
+void V3dR_GLWidget::callCreateSpecialMarkerNearestNode()
+{
+    if(renderer)
+    {
+        QPoint gpos = mapFromGlobal(cursor().pos());
+        renderer->callCreateSpecialMarkerNearestNode(gpos.x(),gpos.y());
+    }
+}
+//add special marker, by XZ, 20190720
 
 
 // For curveline detection , by PHC 20170531

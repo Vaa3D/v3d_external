@@ -421,6 +421,7 @@ public slots:
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode();
+    virtual void callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
     virtual void callGDTracing();
 
 	// Fragmented tracing, MK, Dec 2018
