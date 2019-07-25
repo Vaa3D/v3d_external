@@ -2054,7 +2054,7 @@ if (0)
 //                    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 
 
-                double th_merge = 5*th_times;
+                double th_merge = 5;//*th_times;
 
                 bool b_start_merged=false, b_end_merged=false;
                 NeuronSWC cur_node;

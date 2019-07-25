@@ -73,6 +73,7 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     buttonMarkerRoiDelete->setIcon(QIcon(":/icons/marker_delete_roi.png"));
     buttonMarkerRoiDelete->setCheckable(true);
     buttonMarkerRoiDelete->setToolTip("1-right-stroke to delete a group of markers");
+    buttonMarkerRoiDelete->setShortcut(QKeySequence("Alt+M")); //by XZ, 20190724
     connect(buttonMarkerRoiDelete, SIGNAL(toggled(bool)), this, SLOT(buttonMarkerRoiDeleteChecked(bool)));
     toolBar->insertWidget(0, buttonMarkerRoiDelete);
     /**/

@@ -1551,6 +1551,18 @@ void PMain::closeVolume()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
+    if(saveAnnotationsAction->isEnabled())
+    {
+        switch (QMessageBox::information(this,tr("warning"),tr("Do you want to save annotation file"),tr("yes"),tr("no"),0,1)) {
+        case 0:
+            saveAnnotations();
+            break;
+        case 1:
+            break;
+        }
+    } //by XZ, 20190725
+
+    qDebug()<<"in close volume";
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->releaseTools();
 
@@ -2090,7 +2102,6 @@ void PMain::clearAnnotations()
 void PMain::exit()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-
     this->close();
 }
 
@@ -2278,6 +2289,18 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 void PMain::closeEvent(QCloseEvent *evt)
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    if(saveAnnotationsAction->isEnabled())
+    {
+        switch (QMessageBox::information(this,tr("warning"),tr("Do you want to save annotation file"),tr("yes"),tr("no"),0,1)) {
+        case 0:
+            saveAnnotations();
+            break;
+        case 1:
+            break;
+        }
+    } //by XZ, 20190725
+
 
     if(evt)
     {
