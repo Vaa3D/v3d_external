@@ -3491,6 +3491,76 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			curImg->tracedNeuron.seg[s].to_be_deleted = curImg->tracedNeuron.seg[s].to_be_deleted && !allUnitsOutsideZCut;
 		}
 	}
+
+    vector <XYZ> specialmarkerloc;
+    vector <V3DLONG> specialmarkerslocindex;
+    QList <LocationSimple> &listloc = curImg->listLandmarks;
+    for(V3DLONG i=0; i<listloc.size(); ++i)
+    {
+        if(listloc[i].category==77)
+        {
+            XYZ tmp(listloc[i].x,listloc[i].y,listloc[i].z);
+            specialmarkerloc.push_back(tmp);
+            specialmarkerslocindex.push_back(i);
+        }
+    }
+    V3DLONG specialmarkersegindex = -1;
+    V3DLONG specialmarkerlocindex = -1;
+    for(V3DLONG i=0; i<nsegs; ++i)
+    {
+        V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(i);
+        const V3DLONG nrows = this_seg.row.size();
+        if(curImg->tracedNeuron.seg[i].to_be_deleted==true)
+        {
+            XYZ segloclast(this_seg.row.at(nrows-1).x+1,this_seg.row.at(nrows-1).y+1,this_seg.row.at(nrows-1).z+1);
+            for(V3DLONG j=0; j<specialmarkerloc.size(); ++j)
+            {
+                if(segloclast==specialmarkerloc.at(j))
+                {
+                    specialmarkerlocindex = specialmarkerslocindex.at(j);
+                    specialmarkersegindex = i;
+                    break;
+                }
+
+            }
+        }
+        if(specialmarkersegindex!=-1)
+            break;
+    }
+    if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
+    {
+        QList <LocationSimple> ::iterator it = listloc.begin();
+        listloc.erase(it+specialmarkerlocindex);
+        bool islastseg = false;
+        while(!islastseg)
+        {
+            bool changed = false;
+            for(V3DLONG i=0; i<nsegs; ++i)
+            {
+                if(curImg->tracedNeuron.seg[i].to_be_deleted==true && i!=specialmarkersegindex)
+                {
+                    XYZ parent(curImg->tracedNeuron.seg[i].row.back().x,curImg->tracedNeuron.seg[i].row.back().y,curImg->tracedNeuron.seg[i].row.back().z);
+                    XYZ child(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
+                    if(parent==child)
+                    {
+                        changed = true;
+                        specialmarkersegindex = i;
+                    }
+                }
+            }
+            if(!changed)
+            {
+                islastseg = true;
+            }
+            changed = false;
+        }
+    }
+    if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
+    {
+        XYZ markerloc(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
+        addSpecialMarker(markerloc);
+    } // by XZ, 20190726
+
     curImg->update_3drenderer_neuron_view(w, this);
     curImg->proj_trace_history_append();
 }

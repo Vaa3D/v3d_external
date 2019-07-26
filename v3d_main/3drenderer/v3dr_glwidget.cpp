@@ -1255,7 +1255,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             break;
 
         case Qt::Key_Q:
-            if(IS_ALT_MODIFIER){
+            if(IS_CTRL_MODIFIER){
                 qDebug()<<"call special marker"<<endl<<"---------------------------------------------"<<endl;
                 callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
             }
