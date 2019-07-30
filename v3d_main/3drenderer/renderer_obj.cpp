@@ -341,9 +341,9 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
 		{0,   200, 200},  // cyan,    5
 		{220, 200, 0  },  // yellow,  6
 		{0,   200, 20 },  // green,   7
-		{188, 94,  37 },  // coffee,  8
+        {250, 100, 120},  // coffee,  8 change to 10
 		{180, 200, 120},  // asparagus,	9
-		{250, 100, 120},  // salmon,	10
+        {188, 94,  37 },  // salmon,	10  change to 8
 		{120, 200, 200},  // ice,		11
 		{100, 120, 200},  // orchid,	12
     //the following is Hanchuan's further extended color. 111003
