@@ -1808,12 +1808,14 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
 #endif
 
             QDateTime mytime = QDateTime::currentDateTime();
-            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm")+"_nodup.ano", tr("annotation files (*.ano)"));
+//            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm")+"_nodup.ano", tr("annotation files (*.ano)"));
+            QString path = dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm");
             //tf::setWidgetOnTop(cur_win->window3D, true);
             #endif
 
             if(!path.isEmpty())
             {
+                string preannotationsPathLRU = annotationsPathLRU;
                 annotationsPathLRU = path.toStdString();
 //#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
 //                annotationsPathLRU = path.toStdString();
@@ -1844,6 +1846,10 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
                 CAnnotations::getInstance()->save(annotationsPathLRU.c_str(), true, false);
 //                saveAnnotationsAction->setEnabled(true);
 //                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+
+                //delete old file
+                if(preannotationsPathLRU.compare(annotationsPathLRU))
+                    CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
 
                 // reset saved cursor
                 CViewer::setCursor(cursor);
