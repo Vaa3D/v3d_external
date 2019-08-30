@@ -251,6 +251,7 @@ public:
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
 	virtual void callShowSubtree() {};
+	virtual void callShowBreakPoints() {};//add by wp
 	virtual void callShowConnectedSegs() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut

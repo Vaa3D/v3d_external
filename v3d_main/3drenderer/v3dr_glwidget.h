@@ -418,6 +418,7 @@ public slots:
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callShowSubtree();
 	virtual void callShowConnectedSegs();
+	virtual void callShowBreakPoints();//add by wp
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode();

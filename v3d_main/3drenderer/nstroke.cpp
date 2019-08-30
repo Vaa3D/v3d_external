@@ -1427,6 +1427,192 @@ void Renderer_gl1::callShowConnectedSegs()
 	}
 }
 
+double distance_wp(double x1, double y1, double z1, double x2, double y2, double z2){
+	return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2));
+}
+
+void Renderer_gl1::callShowBreakPoints()
+{
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+	if (curImg->listLandmarks.size() > 0){
+		curImg->listLandmarks.clear();
+		updateLandmark();
+		return;
+	}
+	size_t inputSegID = 0;
+
+	this->segEnd2SegIDmapping(curImg);
+
+	set<size_t> alltreeSegs;
+
+	alltreeSegs.clear();
+	this->subtreeSegs.clear();
+
+	cout << "wp_debug: " << __LINE__ << __FUNCTION__ << ": " << curImg->tracedNeuron.seg.size() << endl;
+
+	if (curImg->tracedNeuron.seg[inputSegID].to_be_deleted) return;
+
+	size_t curSegNum = alltreeSegs.size();
+	double radius = 10.0;
+
+	while (1){
+		this->subtreeSegs.clear();
+		this->subtreeSegs.insert(inputSegID);
+		cout << inputSegID << endl;
+
+		cout << "wp_debug: " << __LINE__ << __FUNCTION__ << "curSegNum_start: " << curSegNum << endl;
+		this->rc_findConnectedSegs_continue(curImg, inputSegID);
+		curSegNum = alltreeSegs.size();
+		cout << "wp_debug: " << __LINE__ << __FUNCTION__ << "curSegNum_end: " << curSegNum << endl;
+
+		for (set<size_t>::iterator it1 = alltreeSegs.begin(); it1 != alltreeSegs.end(); it1++){
+			for (set<size_t>::iterator it2 = this->subtreeSegs.begin(); it2 != this->subtreeSegs.end(); it2++){
+				float xLabelTail = curImg->tracedNeuron.seg[*it1].row.begin()->x;
+				float yLabelTail = curImg->tracedNeuron.seg[*it1].row.begin()->y;
+				float zLabelTail = curImg->tracedNeuron.seg[*it1].row.begin()->z;
+				float xLabelHead = (curImg->tracedNeuron.seg[*it1].row.end() - 1)->x;
+				float yLabelHead = (curImg->tracedNeuron.seg[*it1].row.end() - 1)->y;
+				float zLabelHead = (curImg->tracedNeuron.seg[*it1].row.end() - 1)->z;
+
+
+				float xLabelTail2 = curImg->tracedNeuron.seg[*it2].row.begin()->x;
+				float yLabelTail2 = curImg->tracedNeuron.seg[*it2].row.begin()->y;
+				float zLabelTail2 = curImg->tracedNeuron.seg[*it2].row.begin()->z;
+				float xLabelHead2 = (curImg->tracedNeuron.seg[*it2].row.end() - 1)->x;
+				float yLabelHead2 = (curImg->tracedNeuron.seg[*it2].row.end() - 1)->y;
+				float zLabelHead2 = (curImg->tracedNeuron.seg[*it2].row.end() - 1)->z;
+				if (distance_wp(xLabelTail, yLabelTail, zLabelTail, xLabelTail2, yLabelTail2, zLabelTail2) < radius){
+					XYZ loc1(xLabelTail, yLabelTail, zLabelTail);
+					addMarker(loc1);
+					XYZ loc2(xLabelTail2, yLabelTail2, zLabelTail2);
+					addMarker(loc2);
+				}
+
+				if (distance_wp(xLabelTail, yLabelTail, zLabelTail, xLabelHead2, yLabelHead2, zLabelHead2) < radius){
+					XYZ loc1(xLabelTail, yLabelTail, zLabelTail);
+					addMarker(loc1);
+					XYZ loc2(xLabelHead2, yLabelHead2, zLabelHead2);
+					addMarker(loc2);
+				}
+
+				if (distance_wp(xLabelHead, yLabelHead, zLabelHead, xLabelTail2, yLabelTail2, zLabelTail2) < radius){
+					XYZ loc1(xLabelHead, yLabelHead, zLabelHead);
+					addMarker(loc1);
+					XYZ loc2(xLabelTail2, yLabelTail2, zLabelTail2);
+					addMarker(loc2);
+				}
+
+				if (distance_wp(xLabelHead, yLabelHead, zLabelHead, xLabelHead2, yLabelHead2, zLabelHead2) < radius){
+					XYZ loc1(xLabelHead, yLabelHead, zLabelHead);
+					addMarker(loc1);
+					XYZ loc2(xLabelHead2, yLabelHead2, zLabelHead2);
+					addMarker(loc2);
+				}
+
+
+			}
+		}
+
+		for (set<size_t>::iterator it = this->subtreeSegs.begin(); it != this->subtreeSegs.end(); it++){
+			alltreeSegs.insert(*it);
+
+		}
+		while (alltreeSegs.find(inputSegID) != alltreeSegs.end()){
+			inputSegID++;
+		}
+
+		if (inputSegID >= curImg->tracedNeuron.seg.size()){
+			return;
+		}
+
+	}
+
+}
+
+void Renderer_gl1::rc_findConnectedSegs_continue(My4DImage* curImg, size_t inputSegID){
+	//this->subtreeSegs.insert(inputSegID);
+	// -- obtaining inputSegID head gridKey and tail gridKey
+	double xLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->x;
+	double yLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->y;
+	double zLabelTail = curImg->tracedNeuron.seg[inputSegID].row.begin()->z;
+	double xLabelHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x;
+	double yLabelHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y;
+	double zLabelHead = (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z;
+	QString key1Q = QString::number(xLabelTail) + "_" + QString::number(yLabelTail) + "_" + QString::number(zLabelTail);
+	string key1 = key1Q.toStdString();
+	QString key2Q = QString::number(xLabelHead) + "_" + QString::number(yLabelHead) + "_" + QString::number(zLabelHead);
+	string key2 = key2Q.toStdString();
+
+	/* --------- Find segments that are connected in the middle of input segment --------- */
+	if (curImg->tracedNeuron.seg[inputSegID].row.size() > 2)
+	{
+		for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[inputSegID].row.begin() + 1; unitIt != curImg->tracedNeuron.seg[inputSegID].row.end() - 1; ++unitIt)
+		{
+			double middleX = unitIt->x;
+			double middleY = unitIt->y;
+			double middleZ = unitIt->z;
+			QString middleNodeKeyQ = QString::number(middleX) + "_" + QString::number(middleY) + "_" + QString::number(middleZ);
+			string middleNodeKey = middleNodeKeyQ.toStdString();
+
+			pair<multimap<string, size_t>::iterator, multimap<string, size_t>::iterator> middleRange = this->segEnd2segIDmap.equal_range(middleNodeKey);
+			for (multimap<string, size_t>::iterator middleIt = middleRange.first; middleIt != middleRange.second; ++middleIt)
+			{
+				if (middleIt->second == inputSegID) continue;
+				else if (this->subtreeSegs.find(middleIt->second) != this->subtreeSegs.end())
+				{
+					//cout << "  --> already picked, move to the next." << endl;
+					continue;
+				}
+				else if (middleIt->first == middleNodeKey)
+				{
+					//cout << "  Found a segment in the middle of the route, adding it to the recursive searching process:" << middleNodeKey << " " << middleIt->second << endl;
+					if (curImg->tracedNeuron.seg[middleIt->second].to_be_deleted) continue;
+					this->subtreeSegs.insert(middleIt->second);
+					cout << "wp_debug: " << __LINE__ << __FUNCTION__ << ": " << middleIt->second << endl;
+					this->rc_findConnectedSegs_continue(curImg, middleIt->second);
+				}
+			}
+		}
+	}
+	/* ------- END of [Find segments that are connected in the middle of input segment] ------- */
+
+	/* --------- Find segments that are connected to the head or tail of input segment --------- */
+	set<size_t> curSegEndRegionSegs;
+	curSegEndRegionSegs.clear();
+	curSegEndRegionSegs = this->segEndRegionCheck(curImg, inputSegID);
+	//cout << curSegEndRegionSegs.size() << endl;
+	if (!curSegEndRegionSegs.empty())
+	{
+		for (set<size_t>::iterator regionSegIt = curSegEndRegionSegs.begin(); regionSegIt != curSegEndRegionSegs.end(); ++regionSegIt)
+		{
+			//cout << "  testing segs at the end region:" << *regionSegIt << endl;
+			if (*regionSegIt == inputSegID) continue;
+			else if (this->subtreeSegs.find(*regionSegIt) != this->subtreeSegs.end())
+			{
+				//cout << "  --> already picked, move to the next." << endl;
+				continue;
+			}
+			else
+			{
+				//cout << "    ==> segs at the end region added:" << *regionSegIt << endl;
+				if (curImg->tracedNeuron.seg[*regionSegIt].to_be_deleted) continue;
+
+				this->subtreeSegs.insert(*regionSegIt);
+				cout << "wp_debug: " << __LINE__ << __FUNCTION__ << ": " << *regionSegIt << endl;
+				this->rc_findConnectedSegs_continue(curImg, *regionSegIt);
+
+			}
+		}
+	}
+	/* ------- END of [Find segments that are connected to the head or tail of input segment] ------- */
+
+
+}
+
 void Renderer_gl1::seg2GridMapping(My4DImage* curImg)
 {
 	// This method profiles the geometrical information of every segment in Cartesian grids with selected grid length.

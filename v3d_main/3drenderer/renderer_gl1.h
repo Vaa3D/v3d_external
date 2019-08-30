@@ -220,6 +220,8 @@ public:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
+	virtual void callShowBreakPoints();
+	virtual void rc_findConnectedSegs_continue(My4DImage* curImg, size_t inputSegID);
 	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
@@ -331,6 +333,7 @@ public:
 	void refineMarkerLocal(int marker_id);
 
 	void addMarker(XYZ &loc);
+	void addMarkerUnique(XYZ &loc);
     void addSpecialMarker(XYZ &loc); //add special marker, by XZ, 20190720
 	void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120
 

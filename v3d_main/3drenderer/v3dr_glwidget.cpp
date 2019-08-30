@@ -1286,6 +1286,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			{
 				callShowConnectedSegs();
 			}
+			else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)
+			{
+				cout << "wp_debug" << __LINE__ << __FUNCTION__ << endl;
+				callShowBreakPoints();
+			}
             break;
 
 	  		///// neuron operation //////////////////////////////////////////////////////
@@ -3548,6 +3553,15 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
         renderer->callStrokeConnectMultiNeurons();
         POST_updateGL();
     }
+}
+
+void V3dR_GLWidget::callShowBreakPoints()
+{
+	if (renderer)
+	{
+		renderer->callShowBreakPoints();
+		POST_updateGL();
+	}
 }
 
 void V3dR_GLWidget::callShowSubtree()
