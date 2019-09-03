@@ -1,5 +1,6 @@
 #include "V3dR_Communicator.h"
-
+#include "../terafly/src/control/CPlugin.h"
+#include "../terafly/src/presentation/PMain.h"
 #include <QRegExp>
 //#include <QMessageBox>
 #include <QtGui>
@@ -21,6 +22,13 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag, QList<NeuronTree>* ntlis
 	clienton = client_flag;
 	NTList_3Dview = ntlist;
 	NTNumReceieved=0;
+	NeuronTree  nt = terafly::PluginInterface::getSWC();
+	int tempntsize = nt.listNeuron.size();
+	cout<<"tempnt size is liqiqqqqq "<<tempntsize<<endl;
+	
+	// NTNumcurrentUser = (*ntlist).size();
+	// std::cout<<"NTNumcurrentUser "<<NTNumcurrentUser<<std::endl;
+	
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
@@ -44,8 +52,13 @@ bool V3dR_Communicator::SendLoginRequest() {
 	QString serverName = QInputDialog::getText(0, "Server Address",
 		"Please enter the server address:", QLineEdit::Normal,
 		serverNameDefault, &ok1);
-
-	if(ok1 && !serverName.isEmpty())
+	if(!ok1||serverName.isEmpty())
+	{
+		qDebug()<<"WRONG!EMPTY! ";
+		//return SendLoginRequest();
+		return 0;
+	}
+	else
 	{
 		settings.setValue("vr_serverName", serverName);
 		QString PortDefault = "";
@@ -59,7 +72,7 @@ bool V3dR_Communicator::SendLoginRequest() {
 		if(!ok2 || vr_Port.isEmpty())
 		{
 			qDebug()<<"WRONG!EMPTY! ";
-			return SendLoginRequest();
+			return 0;
 		}
 		else
 		{
@@ -75,26 +88,71 @@ bool V3dR_Communicator::SendLoginRequest() {
 			if(!ok3 || userName.isEmpty())
 			{
 				qDebug()<<"WRONG!EMPTY! ";
-				return SendLoginRequest();
+				//return SendLoginRequest();
+				return 0;
 			}else
 				settings.setValue("vr_userName", userName);
 		}
-
 		Agent agent00={
 			//with local information
 			userName,
 			true,//means this struct point to itself,no need to render
 			21,
-			0
+			0,
 		};
 		Agents.push_back(agent00);
-
 	}
-    else
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        return SendLoginRequest();
-    }
+	
+	// if(ok1 && !serverName.isEmpty())
+	// {
+	// 	settings.setValue("vr_serverName", serverName);
+	// 	QString PortDefault = "";
+	// 	if(!settings.value("vr_PORT").toString().isEmpty())
+	// 		PortDefault = settings.value("vr_PORT").toString();
+	// 	bool ok2;
+	// 	vr_Port = QInputDialog::getText(0, "Port",
+	// 		"Please enter server port:", QLineEdit::Normal,
+	// 		PortDefault, &ok2);
+
+	// 	if(!ok2 || vr_Port.isEmpty())
+	// 	{
+	// 		qDebug()<<"WRONG!EMPTY! ";
+	// 		return SendLoginRequest();
+	// 	}
+	// 	else
+	// 	{
+	// 		settings.setValue("vr_PORT", vr_Port);
+	// 		QString userNameDefault = "";
+	// 		if(!settings.value("vr_userName").toString().isEmpty())
+	// 			userNameDefault = settings.value("vr_userName").toString();
+	// 		bool ok3;
+	// 		userName = QInputDialog::getText(0, "Lgoin Name",
+	// 			"Please enter your login name:", QLineEdit::Normal,
+	// 			userNameDefault, &ok3);
+
+	// 		if(!ok3 || userName.isEmpty())
+	// 		{
+	// 			qDebug()<<"WRONG!EMPTY! ";
+	// 			return SendLoginRequest();
+	// 		}else
+	// 			settings.setValue("vr_userName", userName);
+	// 	}
+
+	// 	Agent agent00={
+	// 		//with local information
+	// 		userName,
+	// 		true,//means this struct point to itself,no need to render
+	// 		21,
+	// 		0
+	// 	};
+	// 	Agents.push_back(agent00);
+
+	// }
+    // else
+    // {
+    //     qDebug()<<"WRONG!EMPTY! ";
+    //     return SendLoginRequest();
+    // }
 
     socket->connectToHost(serverName, vr_Port.toUInt());
 	if(!socket->waitForConnected(15000))
@@ -106,6 +164,7 @@ bool V3dR_Communicator::SendLoginRequest() {
 		}	
 	}
 	qDebug()<<"User:  "<<userName<<".  Connected with server: "<<serverName<<" :"<<vr_Port;
+	
 	return 1;
 }
 
@@ -316,12 +375,26 @@ void V3dR_Communicator::onReadyRead() {
     }
 }
 
+void V3dR_Communicator::CollaborationMainloop(){
+	Collaborationsendmessage();
+	Collaborationaskmessage();
+	QTimer::singleShot(200, this, SLOT(CollaborationMainloop()));
+}
 void V3dR_Communicator::onConnected() {
 
     socket->write(QString("/login:" +userName + "\n").toUtf8());
 
 }
+void V3dR_Communicator::Collaborationsendmessage()
+{
+	socket->write(QString("/say: send~\n").toUtf8());
+}
 
+
+void V3dR_Communicator::Collaborationaskmessage()
+{
+
+}
 void V3dR_Communicator::onDisconnected() {
     qDebug("Now disconnect with the server."); 
 	*clienton = false;

@@ -1933,17 +1933,37 @@ void V3dR_GLWidget::doclientView(bool check_flag)
 			myclient = 0;
 			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
 			bool linkerror = myclient->SendLoginRequest();
+			XFormWidget *curXWidget = v3dr_getXWidget(_idep);
+			if (!curXWidget)
+			{
+				cout << "curXWidget is nor exist";
+				return;
+			}
+			if (!curXWidget->getMainControlWindow())
+				cout << "main window is nor exist";
+			V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+			QList<V3dR_MainWindow *> windowList = mypluginloader.getListAll3DViewers();
+			
 			if(!linkerror)
 			{
+				for (int i = 0; i < windowList.size(); ++i)
+				{
+					if (windowList[i]->rotCView->isChecked())
+					{
+						windowList[i]->rotCView->setChecked(false);
+					}
+				}
 				v3d_msg("Error!Cannot link to server!");
 				myclient = 0;
 				VRClientON = false;
 			}
 			else
-				v3d_msg("Successed linking to server! ");
+				{v3d_msg("Successed linking to server! ");
+			myclient->CollaborationMainloop();}
 		}
 		else
 		{
+			
 			v3d_msg("The VR client is running.Failed to start ** client.");
 		}
 	}
