@@ -2413,13 +2413,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				 if(temp_x>0)
 				 {
-					fBrightness+= 0.05f;
+					fBrightness+= 0.02f;
 					if(fBrightness>0.9f)
 						fBrightness = 0.9f;
 				}
 				else
 				{
-					fBrightness-= 0.05f;
+					fBrightness-= 0.02f;
 					if(fBrightness<-0.9)
 						fBrightness = -0.9;
 				}
