@@ -71,7 +71,7 @@ bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
 float CMainApplication::iscaleZ =1;
-float CMainApplication::fBrightness = 0.9;
+float CMainApplication::fBrightness = 0.0;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
@@ -2398,50 +2398,33 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
 				//m_bFrozen is used to control texture
-				m_bFrozen = !m_bFrozen;
+				//m_bFrozen = !m_bFrozen;
 
-				//this part is used to change image texture
-				/*if(!img4d_replace)
-				{
-					img4d_replace = new My4DImage;
-					img4d_replace->loadImage("C:/Users/SHU/Desktop/18454-1.v3draw");
-				}
-				else
-					replacetexture = !replacetexture;
+
+				if (fBrightness >= 0.0) fBrightness = -0.1;
+				else fBrightness = 0.0;
 				
-				SetupVolumeRendering();*/
-				if (fBrightness > 0.5) fBrightness = 0.1;
-				else fBrightness = 0.9;
+
 				
-				//if(m_bFrozen)
-				//	qDebug()<<"Freeze View ON";
-				//else
-				//	qDebug()<<"Freeze View OFF";
-
-
 
 				break;
 			}
 		case _Contrast://contrast func is moved to right controller touch pad , grip button+/-
 			{
-				// if(temp_x>0)
-				// {
-				// 	fContrast+=1;
-				// 	if (fContrast>50)
-				// 		fContrast = 50;
-				// 	//fBrightness+= 0.01f;
-				// 	//if(fBrightness>0.8f)
-				// 	//	fBrightness = 0.8f;
-				// }
-				// else
-				// {
-				// 	fContrast-=1;
-				// 	if (fContrast<1)
-				// 		fContrast = 1;
-				// 	//fBrightness-= 0.01f;
-				// 	//if(fBrightness<0)
-				// 	//	fBrightness = 0;
-				// }
+				 if(temp_x>0)
+				 {
+					fBrightness+= 0.05f;
+					if(fBrightness>0.9f)
+						fBrightness = 0.9f;
+				}
+				else
+				{
+					fBrightness-= 0.05f;
+					if(fBrightness<0)
+						fBrightness = 0;
+				}
+
+
 				break;
 			}
 		case _UndoRedo:
@@ -8118,6 +8101,10 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <=0.8))
 		{
 			m_modeGrip_L = _MovetoCreator;
+		}
+		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
+		{
+			m_modeGrip_L = _Contrast;
 		}
 		//else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		//{
