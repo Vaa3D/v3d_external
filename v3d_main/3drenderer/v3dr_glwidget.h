@@ -418,13 +418,18 @@ public slots:
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callShowSubtree();
 	virtual void callShowConnectedSegs();
+	virtual void callShowBreakPoints();//add by wp
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode();
+    virtual void callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
     virtual void callGDTracing();
 
 	// Fragmented tracing, MK, Dec 2018
 	virtual void callFragmentTracing();
+
+	// Brain atlas app, MK, July 2019
+	virtual void callUpBrainAtlas();
 
     virtual void toggleEditMode();
     virtual void setEditMode();

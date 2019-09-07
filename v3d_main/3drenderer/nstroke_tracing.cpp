@@ -1389,6 +1389,51 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree)
 	return best_ind; //by PHC, 090209. return the index in the SWC file
 }
 
+V3DLONG Renderer_gl1::findNearestMarker_Loc(XYZ &loc, QList<LocationSimple> &listlandmarks,int mode)
+{
+    if(listlandmarks.empty()) return -1;
+
+    GLdouble ix , iy , iz;
+    V3DLONG best_ind = -1;double best_dist = 100000;
+    bool b_valid = false;
+    for(V3DLONG i = 0; i < listlandmarks.size(); ++i)
+    {
+        b_valid = false;
+        if(mode == 1)//for special marker
+        {
+            if(listlandmarks[i].category == 77)
+                b_valid = true;
+        }
+        else
+        {
+            b_valid = true;
+        }
+
+        if(b_valid)
+        {
+            ix = listlandmarks[i].x - 1;
+            iy = listlandmarks[i].y - 1;
+            iz = listlandmarks[i].z - 1;
+            double cur_dist = (loc.x-ix)*(loc.x-ix)+(loc.y-iy)*(loc.y-iy)+(loc.z-iz)*(loc.z-iz);
+            if(i == 0)
+            {
+                best_dist = cur_dist;
+                best_ind = 0;
+            }
+            else
+            {
+                if(cur_dist < best_dist)
+                {
+                    best_dist = cur_dist;
+                    best_ind = i;
+                }
+            }
+        }
+    }
+
+    return best_ind; //by XZ, 20190720, return the index of the listlandmarks
+}
+
 
 double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //used for marker-pool type curve-generating
                                             vector <XYZ> & loc_vec,  //the ouput 3D curve
@@ -1923,14 +1968,93 @@ if (0)
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
-			if (p_tree)
+
+            bool b_startnodeisspecialmarker=false;
+
+            float ratio = getZoomRatio();
+            int resindex = tf::PluginInterface::getRes();
+
+            double th_times = (7-resindex); //adaptive th_times, by XZ, 20190721
+
+            My4DImage* image4d = v3dr_getImage4d(_idep);
+            if(image4d)
+            {
+                QList <LocationSimple> & listLoc = image4d->listLandmarks;
+                int mode=1;
+                V3DLONG marker_id_start = findNearestMarker_Loc(loc_vec.at(0),listLoc,mode);
+                V3DLONG marker_id_end = findNearestMarker_Loc(loc_vec.at(N-1),listLoc,mode);
+                qDebug("detect nearest special marker [%ld] for the curve-start and marker [%ld] for curve-end",marker_id_start,marker_id_end);
+
+                double th_merge_m = 7;
+
+                bool b_start_merged = false, b_end_merged = false;
+
+                if(marker_id_start>=0)
+                {
+                    XYZ cur_node_xyz = XYZ(listLoc.at(marker_id_start).x-1, listLoc.at(marker_id_start).y-1, listLoc.at(marker_id_start).z-1);
+                    qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z;
+                    qDebug()<<"th_merge_m: "<<th_merge_m<<endl;
+                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(0))<<endl;
+                    if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge_m)
+                    {
+                        loc_vec.at(0) = cur_node_xyz;
+                        b_startnodeisspecialmarker = true;
+                        b_start_merged = true;
+                        qDebug()<<"force set the first point of this curve to the above marker node as they are close.";
+                    }
+                }
+
+                if(marker_id_end>=0)
+                {
+                    XYZ cur_node_xyz = XYZ(listLoc.at(marker_id_end).x-1, listLoc.at(marker_id_end).y-1, listLoc.at(marker_id_end).z-1);
+                    qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z;
+                    qDebug()<<"th_merge_m: "<<th_merge_m<<endl;
+                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(N-1))<<endl;
+                    if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge_m)
+                    {
+                        loc_vec.at(N-1) = cur_node_xyz;
+                        b_startnodeisspecialmarker = true;
+                        b_end_merged = true;
+                        qDebug()<<"force set the last point of this curve to the above marker node as they are close.";
+                    }
+                }
+
+                if(b_start_merged==false && b_end_merged==true)
+                {
+                    vector <XYZ> loc_vec_tmp = loc_vec;
+                    for (int i=0;i<N;i++)
+                        loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
+                }
+
+                if(b_startnodeisspecialmarker)
+                {
+                    QList <LocationSimple> ::iterator it=listLoc.begin();
+                    V3DLONG marker_index = (b_start_merged)?marker_id_start:marker_id_end;
+                    listLoc.erase(it+marker_index);
+                    XYZ loc(loc_vec.at(N-1).x,loc_vec.at(N-1).y,loc_vec.at(N-1).z);
+                    addSpecialMarker(loc);
+                }
+
+            }//add code to deal with the special marker problem, by XZ, 20190720
+
+
+            if (p_tree&&b_startnodeisspecialmarker==false)
 			{
                     // at(0) to at(index) ZJL 110901
                     V3DLONG n_id_start = findNearestNeuronNode_Loc(loc_vec.at(0), p_tree);
                     V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
                     qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-                double th_merge = 5;
+
+//                    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+//                    for(V3DLONG i=0;i<N;++i)
+//                    {
+//                        qDebug()<<"loc_vec "<<i<<" : "<<loc_vec[i].x<<" "<<loc_vec[i].y<<" "<<loc_vec[i].z<<endl;
+//                    }
+//                    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+
+
+                double th_merge = 5;//*th_times;
 
                 bool b_start_merged=false, b_end_merged=false;
                 NeuronSWC cur_node;
@@ -3367,6 +3491,76 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			curImg->tracedNeuron.seg[s].to_be_deleted = curImg->tracedNeuron.seg[s].to_be_deleted && !allUnitsOutsideZCut;
 		}
 	}
+
+    vector <XYZ> specialmarkerloc;
+    vector <V3DLONG> specialmarkerslocindex;
+    QList <LocationSimple> &listloc = curImg->listLandmarks;
+    for(V3DLONG i=0; i<listloc.size(); ++i)
+    {
+        if(listloc[i].category==77)
+        {
+            XYZ tmp(listloc[i].x,listloc[i].y,listloc[i].z);
+            specialmarkerloc.push_back(tmp);
+            specialmarkerslocindex.push_back(i);
+        }
+    }
+    V3DLONG specialmarkersegindex = -1;
+    V3DLONG specialmarkerlocindex = -1;
+    for(V3DLONG i=0; i<nsegs; ++i)
+    {
+        V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(i);
+        const V3DLONG nrows = this_seg.row.size();
+        if(curImg->tracedNeuron.seg[i].to_be_deleted==true)
+        {
+            XYZ segloclast(this_seg.row.at(nrows-1).x+1,this_seg.row.at(nrows-1).y+1,this_seg.row.at(nrows-1).z+1);
+            for(V3DLONG j=0; j<specialmarkerloc.size(); ++j)
+            {
+                if(segloclast==specialmarkerloc.at(j))
+                {
+                    specialmarkerlocindex = specialmarkerslocindex.at(j);
+                    specialmarkersegindex = i;
+                    break;
+                }
+
+            }
+        }
+        if(specialmarkersegindex!=-1)
+            break;
+    }
+    if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
+    {
+        QList <LocationSimple> ::iterator it = listloc.begin();
+        listloc.erase(it+specialmarkerlocindex);
+        bool islastseg = false;
+        while(!islastseg)
+        {
+            bool changed = false;
+            for(V3DLONG i=0; i<nsegs; ++i)
+            {
+                if(curImg->tracedNeuron.seg[i].to_be_deleted==true && i!=specialmarkersegindex)
+                {
+                    XYZ parent(curImg->tracedNeuron.seg[i].row.back().x,curImg->tracedNeuron.seg[i].row.back().y,curImg->tracedNeuron.seg[i].row.back().z);
+                    XYZ child(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
+                    if(parent==child)
+                    {
+                        changed = true;
+                        specialmarkersegindex = i;
+                    }
+                }
+            }
+            if(!changed)
+            {
+                islastseg = true;
+            }
+            changed = false;
+        }
+    }
+    if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
+    {
+        XYZ markerloc(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
+        addSpecialMarker(markerloc);
+    } // by XZ, 20190726
+
     curImg->update_3drenderer_neuron_view(w, this);
     curImg->proj_trace_history_append();
 }

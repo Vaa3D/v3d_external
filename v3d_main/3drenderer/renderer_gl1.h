@@ -220,10 +220,13 @@ public:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
+	virtual void callShowBreakPoints();
+	virtual void rc_findConnectedSegs_continue(My4DImage* curImg, size_t inputSegID);
 	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode(int x, int y); // call creating marker
+    virtual void callCreateSpecialMarkerNearestNode(int x,int y); //add special marker, by XZ, 20190720
     virtual void callGDTracing();
 
     virtual void toggleEditMode();
@@ -330,6 +333,8 @@ public:
 	void refineMarkerLocal(int marker_id);
 
 	void addMarker(XYZ &loc);
+	void addMarkerUnique(XYZ &loc);
+    void addSpecialMarker(XYZ &loc); //add special marker, by XZ, 20190720
 	void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120
 
 	// curve
@@ -439,6 +444,8 @@ public:
      double distance_between_2lines(NeuronTree &line1, NeuronTree &line2);
 
      V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
+
+     V3DLONG findNearestMarker_Loc(XYZ &loc, QList <LocationSimple> &listlandmarks,int mode); //add the function to deal with find nearestmarker, by XZ, 20190720
 
      bool lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb,
 									   double *mua, double *mub);

@@ -248,6 +248,53 @@ bool MainWindow::setSWC(void* window, NeuronTree & nt)
 	else return false;
 }
 
+int MainWindow::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
+{
+	V3dR_GLWidget* thisWidget = window->getGLWidget();
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(thisWidget->getRenderer());
+	thisRenderer->loadObjectFromFile(fileName);
+	return thisRenderer->listNeuronTree.size() - 1;
+}
+
+bool MainWindow::hideSWC(V3dR_MainWindow* window, int treeIndex)
+{
+	V3dR_GLWidget* thisWidget = window->getGLWidget();
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(thisWidget->getRenderer());
+	thisRenderer->listNeuronTree[treeIndex].on = false;
+	thisRenderer->updateBoundingBox();
+	return true;
+}
+
+bool MainWindow::displaySWC(V3dR_MainWindow* window, int treeIndex)
+{
+	V3dR_GLWidget* thisWidget = window->getGLWidget();
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(thisWidget->getRenderer());
+	thisRenderer->listNeuronTree[treeIndex].on = true;
+	thisRenderer->updateBoundingBox();
+	return true;
+}
+
+QList<NeuronTree> MainWindow::loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces)
+{
+	QList<NeuronTree> outputListNeuronTree;
+
+	V3dR_GLWidget* thisWidget = window->getGLWidget();
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(thisWidget->getRenderer());
+	
+	for (QList<NeuronTree>::iterator it = thisRenderer->listNeuronTree.begin(); it != thisRenderer->listNeuronTree.end(); ++it)
+	{
+		for (QList<string>::iterator it1 = loadedSurfaces.begin(); it1 != loadedSurfaces.end(); ++it1)
+		{
+			if (!it1->compare(it->name.toStdString())) goto SURFACE;
+		}
+		outputListNeuronTree.append(*it);
+
+	SURFACE:
+		continue;
+	}
+	return outputListNeuronTree;
+}
+
 
 V3D_GlobalSetting MainWindow::getGlobalSetting()
 {

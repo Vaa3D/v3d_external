@@ -1255,6 +1255,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             break;
 
         case Qt::Key_Q:
+            if(IS_CTRL_MODIFIER){
+                qDebug()<<"call special marker"<<endl<<"---------------------------------------------"<<endl;
+                callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
+            }
+            else
             {
                 callCreateMarkerNearestNode();
             }
@@ -1280,6 +1285,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (IS_ALT_MODIFIER)
 			{
 				callShowConnectedSegs();
+			}
+			else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)
+			{
+				cout << "wp_debug" << __LINE__ << __FUNCTION__ << endl;
+				callShowBreakPoints();
 			}
             break;
 
@@ -2991,6 +3001,27 @@ void V3dR_GLWidget::setVoxSize()
 	renderer->paint();
 }
 
+void V3dR_GLWidget::callUpBrainAtlas()
+{
+	if (renderer)
+	{
+		renderer->editinput = 13;
+		renderer->drawEditInfo();
+		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
+		cout << "test1" << endl;
+
+		QPluginLoader* loader = new QPluginLoader("plugins/BrainAtlas/BrainAtlas.dll");
+		if (!loader) v3d_msg("BrainAtlas module not found. Do nothing.");
+		cout << "test2" << endl;
+
+		XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+		cout << "test3" << endl;
+		V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow()); 
+		cout << "test4" << endl;
+		mypluginloader.runPlugin(loader, "menu1");
+	}
+}
+
 void V3dR_GLWidget::enableShowAxes(bool s)
 {
 	//qDebug("V3dR_GLWidget::setShowAxes = %i",s);
@@ -3544,6 +3575,15 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
     }
 }
 
+void V3dR_GLWidget::callShowBreakPoints()
+{
+	if (renderer)
+	{
+		renderer->callShowBreakPoints();
+		POST_updateGL();
+	}
+}
+
 void V3dR_GLWidget::callShowSubtree()
 {
 	if (renderer)
@@ -3693,6 +3733,16 @@ void V3dR_GLWidget::callCreateMarkerNearestNode()
     }
 }
 //end five shortcuts
+
+void V3dR_GLWidget::callCreateSpecialMarkerNearestNode()
+{
+    if(renderer)
+    {
+        QPoint gpos = mapFromGlobal(cursor().pos());
+        renderer->callCreateSpecialMarkerNearestNode(gpos.x(),gpos.y());
+    }
+}
+//add special marker, by XZ, 20190720
 
 
 // For curveline detection , by PHC 20170531

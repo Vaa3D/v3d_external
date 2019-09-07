@@ -41,6 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef _V3D_PLUGIN_LOADER_H_
 #define _V3D_PLUGIN_LOADER_H_
 #include <qmenu.h>
+#include <set>
 #if defined(USE_Qt5)
   #include <QtWidgets>
 #else
@@ -233,6 +234,11 @@ public:
 	virtual void changeUIstatus(bool newStatus);
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
+
+	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
+	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
+	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex);
+	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
 };
 
 #endif
