@@ -160,7 +160,7 @@ void main()
     if(colorAcum.b>1) colorAcum.b =1;
 
 	//brightness supression
-	if (ImageSettings.y < 0.0) // temporarily use ImageSettings.y for this
+	if (ImageSettings.y < -0.9) // temporarily use ImageSettings.y for this
 	{
 		if(colorAcum.r>0.4) colorAcum.r = 0.4;
 		//else if(colorAcum.r>0.2) colorAcum.r *= 1.5;

@@ -2401,7 +2401,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				//m_bFrozen = !m_bFrozen;
 
 
-				if (fBrightness >= 0.0) fBrightness = -0.1;
+				if (fBrightness >= -0.9) fBrightness = -1.0;
 				else fBrightness = 0.0;
 				
 
@@ -2420,8 +2420,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				else
 				{
 					fBrightness-= 0.05f;
-					if(fBrightness<0)
-						fBrightness = 0;
+					if(fBrightness<-0.9)
+						fBrightness = -0.9;
 				}
 
 
