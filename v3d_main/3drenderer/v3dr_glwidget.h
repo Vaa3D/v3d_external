@@ -426,7 +426,7 @@ public slots:
     virtual void callGDTracing();
 
 	// Fragmented tracing, MK, Dec 2018
-	virtual void callFragmentTracing();
+	virtual bool callFragmentTracing();
 
 	// Brain atlas app, MK, July 2019
 	virtual void callUpBrainAtlas();
