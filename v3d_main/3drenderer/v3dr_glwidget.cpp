@@ -1028,12 +1028,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				//QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 				
-				callFragmentTracing();
-
-				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				if (!thisRenderer->UIinstance)
+				if (!callFragmentTracing())
 				{
-					thisRenderer->UIinstance = true;
+					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 
 					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
@@ -1042,7 +1039,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					mypluginloader.runPlugin(loader, "settings");
 				}
-				else v3d_msg("There is a Neuron Assembler UI existing.");
+				else v3d_msg("Neuron Assembler plugin instance already exists.");
 			}
 	  		break;
 
@@ -3602,14 +3599,15 @@ void V3dR_GLWidget::callShowConnectedSegs()
 	}
 }
 
-void V3dR_GLWidget::callFragmentTracing()
+bool V3dR_GLWidget::callFragmentTracing()
 {
 	if (renderer)
 	{
-		renderer->editinput = 12;
-		renderer->drawEditInfo();
+		//renderer->editinput = 12;
+		//renderer->drawEditInfo();
 		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
-		rendererGL1->fragmentTrace = true;
+		if (rendererGL1->fragmentTrace) return false;
+		else return rendererGL1->fragmentTrace = true;
 		//renderer->callFragmentTracing();
 		//POST_updateGL();
 	}
