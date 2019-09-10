@@ -941,9 +941,10 @@ class terafly::PluginInterface
 		static void drawEditInfo(int editNum);
 		static bool checkFragTraceStatus();
 		static void changeFragTraceStatus(bool newStatus);
-		static void changeUIstatus(bool newStatus);
 		static void getParamsFromFragTraceUI(const string& keyName, const float& value);
 		static bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
+
+		static bool fragTraceUIexist;
 		// ------------------------------------------------------------------ //
 };
 

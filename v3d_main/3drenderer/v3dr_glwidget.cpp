@@ -101,7 +101,6 @@ static bool _isMultipleSampleSupported()
 void V3dR_GLWidget::closeEvent(QCloseEvent* e)
 {
 	qDebug("V3dR_GLWidget::closeEvent");  // never run to here for non-frame window, unless called directly, by RZC 080814
-
 	deleteRenderer();
 
 	/////////////////////////////////////////////////////
@@ -1027,11 +1026,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			{
 				//QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-				
-				if (!callFragmentTracing())
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (!pMain.fragTracePluginInstance)
 				{
-					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-
 					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 
@@ -1042,22 +1039,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				else v3d_msg("Neuron Assembler plugin instance already exists.");
 			}
 	  		break;
-
-		case Qt::Key_M:
-			if (renderer)
-			{
-				/*Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				if (thisRenderer->fragmentTrace)
-				{
-					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-				
-					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					mypluginloader.runPlugin(loader, "settings");
-				}*/
-			}
-			break;
 
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
@@ -1134,7 +1115,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
 
-					if (thisRenderer->fragmentTrace)
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
 					{
 						map<int, vector<int> > labeledSegs;
 						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
@@ -1165,7 +1147,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				My4DImage* curImg = 0;
 				if (this) curImg = v3dr_getImage4d(_idep);
 
-				if (thisRenderer->fragmentTrace)
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
 				{
 					map<int, vector<int> > labeledSegs;
 					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
@@ -3596,20 +3579,6 @@ void V3dR_GLWidget::callShowConnectedSegs()
 	{
 		renderer->callShowConnectedSegs();
 		POST_updateGL();
-	}
-}
-
-bool V3dR_GLWidget::callFragmentTracing()
-{
-	if (renderer)
-	{
-		//renderer->editinput = 12;
-		//renderer->drawEditInfo();
-		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
-		if (rendererGL1->fragmentTrace) return false;
-		else return rendererGL1->fragmentTrace = true;
-		//renderer->callFragmentTracing();
-		//POST_updateGL();
 	}
 }
 

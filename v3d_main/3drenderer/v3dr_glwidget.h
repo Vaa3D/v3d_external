@@ -425,9 +425,6 @@ public slots:
     virtual void callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
     virtual void callGDTracing();
 
-	// Fragmented tracing, MK, Dec 2018
-	virtual bool callFragmentTracing();
-
 	// Brain atlas app, MK, July 2019
 	virtual void callUpBrainAtlas();
 

@@ -1739,11 +1739,6 @@ void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
 	terafly::PluginInterface::changeFragTraceStatus(newStatus);
 }
 
-void V3d_PluginLoader::changeUIstatus(bool newStatus)
-{
-	terafly::PluginInterface::changeUIstatus(newStatus);
-}
-
 void V3d_PluginLoader::getParamsFromFragTraceUI(const string& keyName, const float& value)
 {
 	terafly::PluginInterface::getParamsFromFragTraceUI(keyName, value);
