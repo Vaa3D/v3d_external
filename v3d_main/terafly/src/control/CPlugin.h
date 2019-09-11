@@ -943,8 +943,6 @@ class terafly::PluginInterface
 		static void changeFragTraceStatus(bool newStatus);
 		static void getParamsFromFragTraceUI(const string& keyName, const float& value);
 		static bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
-
-		static bool fragTraceUIexist;
 		// ------------------------------------------------------------------ //
 };
 

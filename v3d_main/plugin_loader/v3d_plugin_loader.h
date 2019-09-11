@@ -228,7 +228,6 @@ public:
     virtual bool setImageTeraFly(size_t x, size_t y, size_t z);
 
 	virtual bool teraflyImgInstance();
-	virtual void redrawEditInfo(int editInputNum);
 	virtual bool checkFragTraceStatus();
 	virtual void changeFragTraceStatus(bool newStatus);
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);

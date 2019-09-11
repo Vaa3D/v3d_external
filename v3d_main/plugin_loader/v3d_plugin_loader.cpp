@@ -1724,11 +1724,6 @@ bool V3d_PluginLoader::setImageTeraFly(size_t x, size_t y, size_t z)
     return terafly::PluginInterface::setImage(x,y,z);
 }
 
-void V3d_PluginLoader::redrawEditInfo(int editInputNum)
-{
-	terafly::PluginInterface::drawEditInfo(editInputNum);
-}
-
 bool V3d_PluginLoader::checkFragTraceStatus()
 {
 	return terafly::PluginInterface::checkFragTraceStatus();

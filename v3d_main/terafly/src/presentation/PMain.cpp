@@ -1085,7 +1085,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
-	this->fragTracePluginInstance = false;
+	this->fragTracePluginInstance = false; // MK, 2019, Sep; for monitoring FragTrace app status.
 
     // signals and slots
     /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);

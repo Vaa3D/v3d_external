@@ -356,7 +356,10 @@ class terafly::PMain : public QWidget
         bool annotationChanged;
         bool isMagnificationLocked;
 
+		/****************** Fragment tracing related *****************/
+		// MK, Sep, 2019
 		bool fragTracePluginInstance;
+		/*************************************************************/
 
     public slots:
 
