@@ -99,8 +99,6 @@ Renderer_gl1::Renderer_gl1(void* widget)
 	this->isTera = false; // added by MK, 2018 May, for arranging segments before entering Rnderer_gla::loopCheck
 	this->isLoadFromFile = false;
 	this->pressedShowSubTree = false;
-	this->fragmentTrace = false;
-	this->UIinstance = false;
 	this->zThick = 1;
 
 	qDebug("  Renderer_gl1::Renderer_gl1");

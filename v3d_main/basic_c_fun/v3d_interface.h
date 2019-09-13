@@ -245,10 +245,8 @@ public:
     virtual bool setImageTeraFly(size_t x, size_t y, size_t z) = 0;
 
 	virtual bool teraflyImgInstance() = 0;
-	virtual void redrawEditInfo(int editInputNum) = 0;
 	virtual bool checkFragTraceStatus() = 0;
 	virtual void changeFragTraceStatus(bool newStatus) = 0;
-	virtual void changeUIstatus(bool newStatus) = 0;
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
 

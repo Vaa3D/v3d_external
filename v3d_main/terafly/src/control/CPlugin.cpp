@@ -564,14 +564,8 @@ bool tf::PluginInterface::checkFragTraceStatus()
 
 void tf::PluginInterface::changeFragTraceStatus(bool newStatus)
 {
-	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
-	thisRenderer->fragmentTrace = newStatus;
-}
-
-void tf::PluginInterface::changeUIstatus(bool newStatus)
-{
-	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
-	thisRenderer->UIinstance = newStatus;
+	PMain& pMain = *(PMain::getInstance());
+	pMain.fragTracePluginInstance = newStatus;
 }
 
 void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const float& value)
