@@ -630,9 +630,10 @@ void V3dR_MainWindow::createControlWidgets()
 #ifdef __ALLOW_VR_FUNCS__
 	//=============================================================================
 	//collaboration 
-	rotCView = new QCheckBox("Start collaboration mode in 3D view.");
-	rotCView->setToolTip("You can edit current image in collaboration mode.");
-	controlLayout->addWidget(rotCView);
+	//rotCView = new QCheckBox("Start collaboration mode in 3D view.");
+	//rotCView = new QPushButton("collaborate in VR", controlGroup);
+	//rotCView->setToolTip("You can edit current image in collaboration mode.");
+	//controlLayout->addWidget(rotCView);
 	//VR
 	rotVRView = new QPushButton("See in VR", controlGroup);
 	rotVRView->setToolTip("You can see current image in VR environment.");
@@ -891,7 +892,7 @@ void V3dR_MainWindow::connectSignal()
 		connect(rotVRView, SIGNAL(clicked()), glWidget, SLOT(doimage3DVRView()));
 	}
 	if(rotCView){
-		connect(rotCView, SIGNAL(toggled(bool)), glWidget, SLOT(doclientView(bool)));
+		connect(rotCView, SIGNAL(clicked()), glWidget, SLOT(doimage3DVRView()));
 	}
 #endif
 

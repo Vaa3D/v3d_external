@@ -1799,9 +1799,27 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 {
+	qDebug()<<"PMain::doCollaborationVRView()";
+	try
+	{
+			this->setWindowState(Qt::WindowMinimized);	
+			//this->hide();
+			
+			int maxresindex = 1;
+			My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+			
+			this->collaborationMaxResolution = XYZ(img4d->getXDim(),img4d->getYDim(),img4d->getZDim());
+			this->Resindex = -1;
+			cout<<"CViewer::getCurrent()->volResIndex;   "<<this->Resindex<<endl;
+			this->doimageVRView(true);
+			//cur_win->storeAnnotations();
+			//this->show();		
 
-	doimageVRView(bCanCoMode);
-
+	}
+	catch(...)
+	{
+		qDebug()<<"???do3DVRView()";
+	}
 }
 void V3dR_GLWidget::process3Dwindow(bool show)
 {
@@ -1929,65 +1947,65 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 void V3dR_GLWidget::doclientView(bool check_flag)
 {
 
-	if(check_flag)
+	/*if(check_flag)
 	{
-		qDebug()<<"run true.";
-		if(VRClientON==false)
-		{
-			v3d_msg("Now start Collaboration.");
-			VRClientON = true;
-			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-			if(myclient)
-				delete myclient;
-			myclient = 0;
-			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
-			bool linkerror = myclient->SendLoginRequest();
-			XFormWidget *curXWidget = v3dr_getXWidget(_idep);
-			if (!curXWidget)
-			{
-				cout << "curXWidget is nor exist";
-				return;
-			}
-			if (!curXWidget->getMainControlWindow())
-				cout << "main window is nor exist";
-			V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-			QList<V3dR_MainWindow *> windowList = mypluginloader.getListAll3DViewers();
-			
-			if(!linkerror)
-			{
-				for (int i = 0; i < windowList.size(); ++i)
-				{
-					if (windowList[i]->rotCView->isChecked())
-					{
-						windowList[i]->rotCView->setChecked(false);
-					}
-				}
-				v3d_msg("Error!Cannot link to server!");
-				myclient = 0;
-				VRClientON = false;
-			}
-			else
-				{v3d_msg("Successed linking to server! ");
-			myclient->CollaborationMainloop();}
-		}
-		else
-		{
-			
-			v3d_msg("The VR client is running.Failed to start ** client.");
-		}
+	qDebug()<<"run true.";
+	if(VRClientON==false)
+	{
+	v3d_msg("Now start Collaboration.");
+	VRClientON = true;
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+	if(myclient)
+	delete myclient;
+	myclient = 0;
+	myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+	bool linkerror = myclient->SendLoginRequest();
+	XFormWidget *curXWidget = v3dr_getXWidget(_idep);
+	if (!curXWidget)
+	{
+	cout << "curXWidget is nor exist";
+	return;
+	}
+	if (!curXWidget->getMainControlWindow())
+	cout << "main window is nor exist";
+	V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+	QList<V3dR_MainWindow *> windowList = mypluginloader.getListAll3DViewers();
+
+	if(!linkerror)
+	{
+	for (int i = 0; i < windowList.size(); ++i)
+	{
+	if (windowList[i]->rotCView->isChecked())
+	{
+	windowList[i]->rotCView->setChecked(false);
+	}
+	}
+	v3d_msg("Error!Cannot link to server!");
+	myclient = 0;
+	VRClientON = false;
+	}
+	else
+	{v3d_msg("Successed linking to server! ");
+	myclient->CollaborationMainloop();}
 	}
 	else
 	{
-		qDebug()<<"run false.";
-		if(myclient)
-		{
-			qDebug()<<"run disc.";
-			delete myclient;
-			myclient = 0;
-		}
-		VRClientON=false;
+
+	v3d_msg("The VR client is running.Failed to start ** client.");
 	}
+	}
+	else
+	{
+	qDebug()<<"run false.";
+	if(myclient)
+	{
+	qDebug()<<"run disc.";
+	delete myclient;
+	myclient = 0;
+	}
+	VRClientON=false;
+	}*/
 }
 
 void V3dR_GLWidget::OnVRSocketDisConnected()
