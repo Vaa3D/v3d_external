@@ -126,7 +126,26 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 		case stImageMarker: {//marker
 			(qsName = QString("marker #%1 ... ").arg(names[2]) + listMarker.at(names[2]-1).name);
-			LIST_SELECTED(listMarker, names[2]-1, true);
+			
+			/* ======== Select and unselect marker with mouse left button, MK, Sep, 2019 ======= */
+			switch (b_menu)
+			{
+			case true:
+				LIST_SELECTED(listMarker, names[2] - 1, true);
+				break;
+			case false:
+				switch (listMarker.at(names[2] - 1).selected)
+				{
+				case true:
+					LIST_SELECTED(listMarker, names[2] - 1, false);
+					break;
+				case false:
+					LIST_SELECTED(listMarker, names[2] - 1, true);
+					break;
+				}
+			}
+			/* ================================================================================= */
+
 			qsInfo = info_Marker(names[2]-1);
 		}break;
 		case stLabelSurface: {//label surface

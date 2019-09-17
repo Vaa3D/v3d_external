@@ -664,6 +664,20 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 event->ignore();
                 return true;
             }
+			else if (mouseEvt->button() == Qt::LeftButton)
+			{
+				QList <ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+				
+				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);				
+				for (int i = 0; i<imageMarkers.size(); i++)
+				{
+					if (imageMarkers[i].selected)
+					{
+						//imageMarkers[i].selected = false;
+						//cout << imageMarkers[i].x << " " << imageMarkers[i].y << " " << imageMarkers[i].z << endl;
+					}
+				}
+			}
 
             return false;
         }
