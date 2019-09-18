@@ -1749,6 +1749,16 @@ bool V3d_PluginLoader::teraflyImgInstance()
 	return terafly::PluginInterface::teraflyImgInstance();
 }
 
+int V3d_PluginLoader::getSelectedMarkerNum()
+{
+	return terafly::PluginInterface::getSelectedMarkerNum();
+}
+
+bool V3d_PluginLoader::getSelectedMarkerCoords(int markerCoords[])
+{
+	return terafly::PluginInterface::getSelectedMarkerCoords(markerCoords);
+}
+
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {

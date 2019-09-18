@@ -610,4 +610,27 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) return false;
 	else return true;
 }
+
+int tf::PluginInterface::getSelectedMarkerNum()
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	return currViewerPtr->selectedMarkerCoords.size();
+}
+
+bool tf::PluginInterface::getSelectedMarkerCoords(int markerCoords[])
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
+	int markerNum = currViewerPtr->selectedMarkerCoords.size();
+	if (markerNum == 0) return false;
+
+	for (int i = 0; i < markerNum; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			markerCoords[i * 3 + j] = currViewerPtr->selectedMarkerCoords.at(i).at(j);
+		}
+	}
+
+	return true;
+}
 // -------------------------------------------------------------------------------------------------------- //

@@ -177,6 +177,8 @@ class terafly::CViewer : public QWidget
 		inline int getYDim() { return (this->volV1 - this->volV0); }
 		inline int getZDim() { return (this->volD1 - this->volD0); }
 
+		vector<vector<int>> selectedMarkerCoords;
+
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.
         * Called by the next(prev) <CExplorerWindow>  when the user  zooms out(in) and  the
