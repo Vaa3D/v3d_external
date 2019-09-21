@@ -163,6 +163,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     tinyFont.setPointSize(9);
     #endif
 
+    //
+    cleanOldAutosavedFiles = true;
+
 
     //initializing menu
     /**/tf::debug(tf::LEV3, "initializing menu", __itm__current__function__);
@@ -1935,6 +1938,7 @@ void PMain::autosaveAnnotations()
             QDir dir(qappDirPath);
             dir.mkdir("autosave");
 
+            //
             QString autosavePath;
             if(annotationsPathLRU.compare("")==0)
                 autosavePath = qappDirPath+"/autosave/annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
@@ -1943,6 +1947,62 @@ void PMain::autosaveAnnotations()
                 QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
                 autosavePath = qappDirPath+"/autosave/"+annotationsBasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             }
+
+
+            // clean older auto saved files, e.g. longer than 24 hours
+            if(cleanOldAutosavedFiles)
+            {
+                cleanOldAutosavedFiles = false;
+
+                QString curTime = mytime.toString("yyyy_MM_dd_hh_mm");
+
+                QString curYear = curTime.mid(0, 4);
+                QString curMonth = curTime.mid(5, 2);
+                QString curDay = curTime.mid(8, 2);
+
+                int curYearInt = curYear.toInt();
+                int curMonthInt = curMonth.toInt();
+                int curDayInt = curDay.toInt();
+
+                //
+                QDir asDir(qappDirPath + "/autosave/");
+                QStringList fileNames = asDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+
+                foreach (const QString &fileName, fileNames)
+                {
+                    const QString savedFile = qappDirPath + "/autosave/" + fileName;
+
+                    //qDebug()<<savedFile;
+
+                    QString flag = "_stamp_";
+
+                    int idx = savedFile.lastIndexOf(flag) + 7;
+
+                    QString fileTime = savedFile.mid(idx, 10);
+
+                    QString fileYear = fileTime.mid(0, 4);
+                    QString fileMonth = fileTime.mid(5, 2);
+                    QString fileDay = fileTime.mid(8, 2);
+
+                    int fileYearInt = fileYear.toInt();
+                    int fileMonthInt = fileMonth.toInt();
+                    int fileDayInt = fileDay.toInt();
+
+                    //qDebug()<<curYear<<curMonth<<curDay<<" ... "<<fileYear<<fileMonth<<fileDay;
+
+
+                    if(abs(fileYearInt-curYearInt)>0 || abs(fileMonthInt-curMonthInt)>0 || abs(fileDayInt-curDayInt)>0)
+                    {
+                        // qDebug()<<"delete file ...";
+
+                        QFile file2del(savedFile);
+                        file2del.remove();
+                    }
+
+               }
+
+            }
+
 
             CAnnotations::getInstance()->save(autosavePath.toStdString().c_str(),false, false);
 
