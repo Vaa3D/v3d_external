@@ -578,17 +578,18 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 {
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
 	
-	if (!currViewerPtr->volumeCutSbAdjusted) return false;
-	displayingVolDims[0] = currViewerPtr->getXDim();
-	displayingVolDims[1] = currViewerPtr->getYDim();
-	displayingVolDims[2] = currViewerPtr->getZDim();
-
 	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
 	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
 	globalCoords[2] = PDialogProofreading::instance()->yCoordl;
 	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
 	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
 	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
+
+	displayingVolDims[0] = currViewerPtr->getXDim();
+	displayingVolDims[1] = currViewerPtr->getYDim();
+	displayingVolDims[2] = currViewerPtr->getZDim();
+
+	if (!currViewerPtr->volumeCutSbAdjusted) return false;
 
 	if (currViewerPtr->xMinAdjusted) localCoords[0] = PDialogProofreading::instance()->sbXlb;
 	else localCoords[0] = 1;
