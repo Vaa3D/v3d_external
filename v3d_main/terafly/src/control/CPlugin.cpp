@@ -576,12 +576,9 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 
 bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
 {
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
 	
 	if (!currViewerPtr->volumeCutSbAdjusted) return false;
-	displayingVolDims[0] = currViewerPtr->getXDim();
-	displayingVolDims[1] = currViewerPtr->getYDim();
-	displayingVolDims[2] = currViewerPtr->getZDim();
 
 	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
 	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
@@ -589,6 +586,10 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
 	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
 	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
+
+	displayingVolDims[0] = currViewerPtr->getXDim();
+	displayingVolDims[1] = currViewerPtr->getYDim();
+	displayingVolDims[2] = currViewerPtr->getZDim();
 
 	if (currViewerPtr->xMinAdjusted) localCoords[0] = PDialogProofreading::instance()->sbXlb;
 	else localCoords[0] = 1;
@@ -609,6 +610,18 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 		localCoords[3] - localCoords[2] + 1 == displayingVolDims[1] &&
 		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) return false;
 	else return true;
+}
+
+void tf::PluginInterface::getCurrentGlobalVolumeCoords(int globalCoords[])
+{
+	PMain& pMain = *(PMain::getInstance());
+	pMain.getCurrentGlobalVolumeCoords();
+	globalCoords[0] = pMain.globalXlb;
+	globalCoords[1] = pMain.globalXhb;
+	globalCoords[2] = pMain.globalYlb;
+	globalCoords[3] = pMain.globalYhb;
+	globalCoords[4] = pMain.globalZlb;
+	globalCoords[5] = pMain.globalZhb;
 }
 
 int tf::PluginInterface::getSelectedMarkerNum()

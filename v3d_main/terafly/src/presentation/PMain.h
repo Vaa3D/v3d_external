@@ -356,9 +356,13 @@ class terafly::PMain : public QWidget
         bool annotationChanged;
         bool isMagnificationLocked;
 
+        bool cleanOldAutosavedFiles; // e.g. longer than 24 hours
+
 		/****************** Fragment tracing related *****************/
 		// MK, Sep, 2019
 		bool fragTracePluginInstance;
+		void getCurrentGlobalVolumeCoords();
+		int globalXlb, globalXhb, globalYlb, globalYhb, globalZlb, globalZhb;
 		/*************************************************************/
 
     public slots:

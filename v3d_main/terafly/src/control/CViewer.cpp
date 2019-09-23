@@ -666,8 +666,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             }
 			else if (mouseEvt->button() == Qt::LeftButton)
 			{
-				QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;				
 				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
+				QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;				
 				this->selectedMarkerCoords.clear();
 				for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
 				{
