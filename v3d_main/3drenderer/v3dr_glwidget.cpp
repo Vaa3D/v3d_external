@@ -1846,7 +1846,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
     this->getMainWindow()->hide();
-	process3Dwindow(false);
+	//process3Dwindow(false);
     QMessageBox::StandardButton reply;
 	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
@@ -1921,7 +1921,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		// 	emit(signalCallTerafly());
 		// }
 	}
-		process3Dwindow(true);
+		//process3Dwindow(true);
 
 }
 void V3dR_GLWidget::doclientView(bool check_flag)
