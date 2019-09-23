@@ -943,6 +943,7 @@ class terafly::PluginInterface
 		static void changeFragTraceStatus(bool newStatus);
 		static void getParamsFromFragTraceUI(const string& keyName, const float& value);
 		static bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
+		static void getCurrentGlobalVolumeCoords(int globalCoords[]);
 		static int getSelectedMarkerNum();
 		static bool getSelectedMarkerCoords(int markerCoords[]);
 		// ------------------------------------------------------------------ //

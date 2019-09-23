@@ -1744,6 +1744,11 @@ bool V3d_PluginLoader::getPartialVolumeCoords(int globalCoords[], int localCoord
 	return terafly::PluginInterface::getPartialVolumeCoords(globalCoords, localCoords, displayingVolDims);
 }
 
+void V3d_PluginLoader::getCurrentGlobalVolumeCoords(int globalCoords[])
+{
+	terafly::PluginInterface::getCurrentGlobalVolumeCoords(globalCoords);
+}
+
 bool V3d_PluginLoader::teraflyImgInstance()
 {
 	return terafly::PluginInterface::teraflyImgInstance();

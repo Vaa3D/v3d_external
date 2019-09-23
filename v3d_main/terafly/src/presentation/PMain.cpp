@@ -3904,3 +3904,13 @@ void PMain::setLockMagnification(bool locked)
 {
     isMagnificationLocked = locked;
 }
+
+void PMain::getCurrentGlobalVolumeCoords()
+{
+	this->globalXlb = this->H0_sbox->value();
+	this->globalXhb = this->H1_sbox->value();
+	this->globalYlb = this->V0_sbox->value();
+	this->globalYhb = this->V1_sbox->value();
+	this->globalZlb = this->D0_sbox->value();
+	this->globalZhb = this->D1_sbox->value();
+}
