@@ -624,26 +624,19 @@ void tf::PluginInterface::getCurrentGlobalVolumeCoords(int globalCoords[])
 	globalCoords[5] = pMain.globalZhb;
 }
 
-int tf::PluginInterface::getSelectedMarkerNum()
+void tf::PluginInterface::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList)
 {
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	return currViewerPtr->selectedMarkerCoords.size();
+	selectedMarkerList = currViewerPtr->selectedMarkerList;
 }
 
-bool tf::PluginInterface::getSelectedMarkerCoords(int markerCoords[])
+void tf::PluginInterface::refreshSelectedMarkers()
 {
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
-	int markerNum = currViewerPtr->selectedMarkerCoords.size();
-	if (markerNum == 0) return false;
-
-	for (int i = 0; i < markerNum; ++i)
-	{
-		for (int j = 0; j < 3; ++j)
-		{
-			markerCoords[i * 3 + j] = currViewerPtr->selectedMarkerCoords.at(i).at(j);
-		}
-	}
-
-	return true;
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	currViewerPtr->selectedMarkerList.clear();
+	
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+		it->selected = false;
 }
 // -------------------------------------------------------------------------------------------------------- //

@@ -250,8 +250,8 @@ public:
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
 	virtual void getCurrentGlobalVolumeCoords(int globalCoords[]) = 0;
-	virtual int getSelectedMarkerNum() = 0;
-	virtual bool getSelectedMarkerCoords(int markerCoords[]) = 0;
+	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList) = 0;
+	virtual void refreshSelectedMarkers() = 0;
 
 	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName) = 0;
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex) = 0;
