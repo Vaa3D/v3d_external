@@ -612,18 +612,6 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 	else return true;
 }
 
-void tf::PluginInterface::getCurrentGlobalVolumeCoords(int globalCoords[])
-{
-	PMain& pMain = *(PMain::getInstance());
-	pMain.getCurrentGlobalVolumeCoords();
-	globalCoords[0] = pMain.globalXlb;
-	globalCoords[1] = pMain.globalXhb;
-	globalCoords[2] = pMain.globalYlb;
-	globalCoords[3] = pMain.globalYhb;
-	globalCoords[4] = pMain.globalZlb;
-	globalCoords[5] = pMain.globalZhb;
-}
-
 void tf::PluginInterface::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList)
 {
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();

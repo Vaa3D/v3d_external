@@ -361,7 +361,6 @@ class terafly::PMain : public QWidget
 		/****************** Fragment tracing related *****************/
 		// MK, Sep, 2019
 		bool fragTracePluginInstance;
-		void getCurrentGlobalVolumeCoords();
 		int globalXlb, globalXhb, globalYlb, globalYhb, globalZlb, globalZhb;
 		/*************************************************************/
 

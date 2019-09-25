@@ -671,7 +671,14 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				this->selectedMarkerList.clear();
 				for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
 				{
-					if (markerIt->selected) this->selectedMarkerList.push_back(*markerIt);
+					if (markerIt->selected)
+					{
+						ImageMarker currMarker = *markerIt;
+						currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+						currMarker.y = coord2global<float>(markerIt->y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+						currMarker.z = coord2global<float>(markerIt->z, iim::depth,      false, -1, false, false, __itm__current__function__);
+						this->selectedMarkerList.push_back(currMarker);
+					}
 				}
 			}
 

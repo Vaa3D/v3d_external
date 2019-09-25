@@ -249,7 +249,6 @@ public:
 	virtual void changeFragTraceStatus(bool newStatus) = 0;
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
-	virtual void getCurrentGlobalVolumeCoords(int globalCoords[]) = 0;
 	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList) = 0;
 	virtual void refreshSelectedMarkers() = 0;
 
