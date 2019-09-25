@@ -43,6 +43,13 @@
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
 
+class CollaborateSocket:public QTcpSocket
+{
+public:
+    QString ipaddress;
+    QString username;
+};
+
 class terafly::PMain : public QWidget
 {
     Q_OBJECT
@@ -82,7 +89,22 @@ class terafly::PMain : public QWidget
         QAction* saveAnnotationsAfterRemoveDupNodesAction;//"save annotations after removing duplicated nodes
         QAction* saveAnnotationsAsAction; //"Save annotations as" menu action
         QAction* clearAnnotationsAction;//"Clear annotations" menu action
-        QAction* exitAction;            //"Exit" menu action
+        QAction* exitAction;   //"Exit" menu action
+
+
+        // add by huanglei begin---
+        //"collaborate" Menu
+        QMenu* collaborateMenu;
+        QAction* loginAction;
+        QAction* uploadAction;
+        QAction* downloadAction;
+        QAction* getincollaborateAction;
+        QAction* exitlogAction;
+
+
+
+        //end
+
 
         // "Options" menu widgets
         QMenu* optionsMenu;             //"Options" menu
@@ -557,6 +579,15 @@ class terafly::PMain : public QWidget
         void showDialogGenerateTimeSeriesInterpolation();
         void showDialogGenerateTimeSeriesReplication();
         void showAnoOctree();
+
+        //collaborate mode slot huanglei begin
+        bool login();
+        void uploadFileToServer();
+        void downloadFileFromServer();
+        void getincollaborate();
+        void readmanage();
+        void exitlog();
+        //end
 #ifdef __ALLOW_VR_FUNCS__
 		void doTeraflyVRView();
 		void doCollaborationVRView();
@@ -567,7 +598,8 @@ class terafly::PMain : public QWidget
         void updateAnnotationStatus();
 
         void setLockMagnification(bool locked);
-
+private:
+        CollaborateSocket *loginsocket;
 
     signals:
 
