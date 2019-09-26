@@ -1372,3 +1372,69 @@
 2019/09/25 21:48:06:Debug: transparency true 
 2019/09/25 21:48:09:Debug: try to connect to server 
 2019/09/25 21:48:15:Debug: WRONG!EMPTY!  
+2019/09/26 00:03:06:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 00:03:06:Debug: Cannot find ./plugins directory!
+2019/09/26 00:03:06:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 00:03:11:Debug: transparency true 
+2019/09/26 00:03:17:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/09/26 00:35:17:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 00:35:17:Debug: Cannot find ./plugins directory!
+2019/09/26 00:35:17:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 00:35:38:Debug: transparency true 
+2019/09/26 00:35:46:Debug: try to uploadFile to server 
+2019/09/26 00:35:46:Debug: try to connect to server 
+2019/09/26 00:35:56:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/09/26 00:36:05:Debug: try to download file from server 
+2019/09/26 00:36:05:Debug: try to connect to server 
+2019/09/26 00:36:12:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/09/26 00:36:15:Debug: try to get in collborate mode 
+2019/09/26 00:36:15:Debug: try to connect to server 
+2019/09/26 00:36:17:Debug: WRONG!EMPTY!  
+2019/09/26 00:36:17:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/09/26 00:36:20:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/09/26 01:28:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 01:28:14:Debug: Cannot find ./plugins directory!
+2019/09/26 01:28:15:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 01:28:18:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/09/26 16:26:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 16:26:28:Debug: Cannot find ./plugins directory!
+2019/09/26 16:26:29:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 16:26:58:Debug: transparency true 
+2019/09/26 16:27:09:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/09/26 17:10:13:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:10:13:Debug: Cannot find ./plugins directory!
+2019/09/26 17:10:13:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:10:23:Debug: transparency true 
+2019/09/26 17:11:30:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:11:30:Debug: Cannot find ./plugins directory!
+2019/09/26 17:11:30:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:11:34:Debug: transparency true 
+2019/09/26 17:11:37:Debug: try to connect to server 
+2019/09/26 17:11:41:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/26 17:12:59:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:12:59:Debug: Cannot find ./plugins directory!
+2019/09/26 17:12:59:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:13:03:Debug: transparency true 
+2019/09/26 17:13:06:Debug: try to connect to server 
+2019/09/26 17:13:08:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/26 17:13:52:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:13:52:Debug: Cannot find ./plugins directory!
+2019/09/26 17:13:52:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:13:56:Debug: transparency true 
+2019/09/26 17:13:58:Debug: try to connect to server 
+2019/09/26 17:14:00:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/26 17:14:08:Debug: try to connect to server 
+2019/09/26 17:14:09:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/26 17:17:33:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:17:33:Debug: Cannot find ./plugins directory!
+2019/09/26 17:17:33:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/26 17:17:39:Debug: transparency true 
+2019/09/26 17:17:42:Debug: try to connect to server 
+2019/09/26 17:17:43:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/26 17:17:59:Debug: try to connect to server 
+2019/09/26 17:18:03:Debug: WRONG!EMPTY!  
+2019/09/26 17:18:24:Debug: try to connect to server 
+2019/09/26 17:18:25:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/26 17:18:38:Debug: import annotation to cloud, 
+2019/09/26 17:18:40:Debug: load annotation from cloud, 
+2019/09/26 17:18:42:Warning: QObject::killTimers: timers cannot be stopped from another thread

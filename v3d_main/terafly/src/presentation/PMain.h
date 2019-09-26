@@ -43,10 +43,11 @@
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
 
-class CollaborateSocket:public QTcpSocket
+class Socket:public QTcpSocket
 {
 public:
     QString ipaddress;
+    QString manageport;
     QString username;
 };
 
@@ -92,18 +93,18 @@ class terafly::PMain : public QWidget
         QAction* exitAction;   //"Exit" menu action
 
 
-        // add by huanglei begin---
-        //"collaborate" Menu
+        // ==================add by huanglei begin============
+        //-------------------"collaborate" Menu--------------
         QMenu* collaborateMenu;
         QAction* loginAction;
-        QAction* uploadAction;
-        QAction* downloadAction;
-        QAction* getincollaborateAction;
-        QAction* exitlogAction;
+        QAction* importAction;
+        QAction* loadAction;
+        QAction* logoutAction;
 
 
 
-        //end
+
+        //===========================end=======================
 
 
         // "Options" menu widgets
@@ -581,14 +582,17 @@ class terafly::PMain : public QWidget
         void showAnoOctree();
 
         //collaborate mode slot huanglei begin
-        bool login();
-        void uploadFileToServer();
-        void downloadFileFromServer();
-        void getincollaborate();
-        void readmanage();
-        void exitlog();
+        void login();
+        void logout();
+
+        void importToCloud();
+
+
+
         //end
 #ifdef __ALLOW_VR_FUNCS__
+
+        void loadFromCloud(); // collaborate on cloud
 		void doTeraflyVRView();
 		void doCollaborationVRView();
         void teraflyShiftClickedinVR(int _direction);
@@ -598,8 +602,7 @@ class terafly::PMain : public QWidget
         void updateAnnotationStatus();
 
         void setLockMagnification(bool locked);
-private:
-        CollaborateSocket *loginsocket;
+
 
     signals:
 
@@ -607,6 +610,11 @@ private:
         * Carries progress bar informations (progress percentage and remaining minutes).
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
+private:
+        Socket *socket;
+
+
+
 
 
 };

@@ -56,6 +56,7 @@
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
 # include <algorithm>
+#include <QFile>
 
 #include "../../v3d/CustomDefine.h"
 
@@ -146,6 +147,7 @@ PMain::~PMain()
 
 PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 {
+
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
 	resumeVR = false;
@@ -162,7 +164,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #ifdef Q_OS_LINUX
     tinyFont.setPointSize(9);
     #endif
-
+    socket=0;
 
     //initializing menu
     /**/tf::debug(tf::LEV3, "initializing menu", __itm__current__function__);
@@ -229,29 +231,30 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
 
-    //add by huanglei begin
-     // "collaborate" menu
+    //============================add by huanglei begin===========================
+     // ---------------------------"collaborate" menu------------------------------
 
     collaborateMenu=menuBar->addMenu("Collbarate");
-    loginAction=new QAction("log in",this);
+
+    loginAction = new QAction("log in",this);
     collaborateMenu->addAction(loginAction);
 
-    uploadAction = new QAction("upload file", this);
-    collaborateMenu->addAction(uploadAction);
-    downloadAction = new QAction("download file", this);
-    collaborateMenu->addAction(downloadAction);
-    getincollaborateAction = new QAction("Get in collaborate mode", this);
-    collaborateMenu->addAction(getincollaborateAction);
-    exitlogAction=new QAction("logout",this);
-    collaborateMenu->addAction(exitlogAction);
+    importAction=new QAction("import annotation to cloud",this);
+    collaborateMenu->addAction(importAction);
 
-     connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
-     connect(uploadAction,SIGNAL(triggered()),this,SLOT(uploadFileToServer()));
-     connect(downloadAction,SIGNAL(triggered()),this,SLOT(downloadFileFromServer()));
-     connect(getincollaborateAction,SIGNAL(triggered()),this,SLOT(getincollaborate()));
-    connect(exitlogAction,SIGNAL(triggered()),this,SLOT(exitlog()));
+    loadAction= new QAction("load annotation from cloud",this);
+    collaborateMenu->addAction(loadAction);
 
-    //end
+    logoutAction = new QAction("logout",this);
+    collaborateMenu->addAction(logoutAction);
+
+    connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
+    connect(importAction,SIGNAL(triggered()),this,SLOT(importToCloud()));
+    connect(loadAction,SIGNAL(triggered()),this,SLOT(loadFromCloud()));
+    connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
+
+
+    //====================================end========================================
 
     /* ------------------------- "Options" menu -------------------------- */
     optionsMenu = menuBar->addMenu("Options");
@@ -3875,147 +3878,379 @@ void PMain::setLockMagnification(bool locked)
 
 //huanglei begin
 
-bool PMain::login()
+//bool PMain::login()
+//{
+//    QSettings settings("HHMI", "Vaa3D");
+//    qDebug()<<"try to connect to server";
+//    QString serverNameDefault = "";
+//    if(!settings.value("vr_serverName").toString().isEmpty())
+//        serverNameDefault = settings.value("vr_serverName").toString();
+//    bool ok1;
+//    QString serverName = QInputDialog::getText(0, "Server Address",
+//        "Please enter the server address:", QLineEdit::Normal,
+//        serverNameDefault, &ok1);
+//    QString manageserver_Port;
+//    QString userName;
+
+//    if(!ok1||serverName.isEmpty())
+//    {
+//        qDebug()<<"WRONG!EMPTY! ";
+//        //return SendLoginRequest();
+//        return 0;
+//    }else
+//    {
+//        settings.setValue("vr_serverName", serverName);
+//        QString PortDefault = "";
+//        if(!settings.value("vr_PORT").toString().isEmpty())
+//            PortDefault = settings.value("vr_PORT").toString();
+//        bool ok2;
+//         manageserver_Port = QInputDialog::getText(0, "Port",//
+//            "Please enter server port:", QLineEdit::Normal,
+//            PortDefault, &ok2);
+
+//        if(!ok2 || manageserver_Port.isEmpty())//
+//        {
+//            qDebug()<<"WRONG!EMPTY! ";
+//            return 0;
+//        }
+//        else
+//        {
+//            settings.setValue("vr_PORT", manageserver_Port);//
+//            QString userNameDefault = "";
+//            if(!settings.value("vr_userName").toString().isEmpty())
+//                userNameDefault = settings.value("vr_userName").toString();
+//            bool ok3;
+//             userName = QInputDialog::getText(0, "Lgoin Name",
+//                "Please enter your login name:", QLineEdit::Normal,
+//                userNameDefault, &ok3);
+
+//            if(!ok3 || userName.isEmpty())
+//            {
+//                qDebug()<<"WRONG!EMPTY! ";
+//                //return SendLoginRequest();
+//                return 0;
+//            }else
+//                settings.setValue("vr_userName", userName);
+//        }
+//    }
+
+//    loginsocket = new CollaborateSocket;
+//    connect(loginsocket,SIGNAL(readyRead()),this,SLOT(readmanage()));
+//    loginsocket->ipaddress=serverName;
+//    loginsocket->username=userName;
+//    loginsocket->port=manageserver_Port;
+//    loginsocket->connectToHost(serverName,manageserver_Port.toUInt());
+//    if(!loginsocket->waitForConnected(15000))
+//    {
+//       if(loginsocket->state()==QAbstractSocket::UnconnectedState)
+//       {
+//           return 0;
+//       }
+//    }
+//    return 1;
+
+//    QString sendmsg="/manage:"+userName+" login";
+
+
+//    QByteArray block;
+//    QDataStream out(&block,QIODevice::ReadWrite);
+//    out.setVersion(QDataStream::Qt_4_6);
+
+//    out<<quint64(0)<<sendmsg;
+//    out.device()->seek(0);
+//    out<<quint64(block.size()-sizeof (quint64));
+//    loginsocket->write(block);
+
+//}
+
+
+
+//void PMain::readmanage()
+//{
+//    QDataStream in(loginsocket);
+//    in.setVersion(QDataStream::Qt_4_6);
+//    if(loginsocket->bytesAvailable()<sizeof (quint64)) return;
+//    quint64 receivedsize=0;
+//    in>>receivedsize;
+//    if(loginsocket->bytesAvailable()<receivedsize) return;
+
+//    QString receivemsg;
+//    in>>receivemsg;
+//    if(receivemsg == QString("welcome!"+loginsocket->username))
+//    {
+//        QString informationmsg=QString( loginsocket->username+" log in successfully.  ");
+//        QMessageBox::information(this, tr("Information"),
+//                informationmsg);
+//    }else if(receivemsg == QString("bye!"+loginsocket->username)){
+//        QString informationmsg=QString( loginsocket->username+" byebye  ");
+//        QMessageBox::information(this, tr("Information"),
+//                informationmsg);
+//        loginsocket->disconnectFromHost();
+//        loginsocket->deleteLater();
+//    }
+//}
+
+
+//void PMain::uploadFileToServer()
+//{
+//    qDebug()<<"try to uploadFile to server";
+//    login();
+//    totalsize=0;
+//    size_filename=0;
+
+//        QString sendmsg="/manage: upload";
+
+//        QByteArray block;
+//        QDataStream out(&block,QIODevice::ReadWrite);
+//        out.setVersion(QDataStream::Qt_4_6);
+
+//        out<<quint64(0)<<sendmsg;
+//        out.device()->seek(0);
+//        out<<quint64(block.size()-sizeof (quint64));
+//        loginsocket->write(block);
+
+//    QString fileName = QFileDialog::getOpenFileName(this,
+//                               tr("choose file"), ".",
+//                               tr("Spreadsheet files (*)"));
+//    file=new QFile(fileName);
+//    if(upload(file))
+//    {
+//        QMessageBox::information(this, tr("Information"),
+//                tr("upload successfully"));
+//    }else {
+//        QMessageBox::information(this, tr("Information"),
+//                tr("Sorry upload failed"));
+//    }
+//    exitlog();
+
+
+//}
+
+//void PMain::downloadFileFromServer()
+//{
+//    qDebug()<<"try to download file from server";
+//    login();
+//    totalsize=0;
+//    size_filename=0;
+
+//    QString sendmsg="/manage: download";
+
+//    QByteArray block;
+//    QDataStream out(&block,QIODevice::ReadWrite);
+//    out.setVersion(QDataStream::Qt_4_6);
+
+//    out<<quint64(0)<<sendmsg;
+//    out.device()->seek(0);
+//    out<<quint64(block.size()-sizeof (quint64));
+//    loginsocket->write(block);
+//    if(download(file))
+//    {
+//        QMessageBox::information(this, tr("Information"),
+//                tr("download successfully"));
+//    }else {
+//        QMessageBox::information(this, tr("Information"),
+//                tr("Sorry download failed"));
+//    }
+//    exitlog();
+//}
+//              \
+//void PMain::getincollaborate()
+//{
+//           qDebug()<<"try to get in collborate mode";
+//           login();
+
+
+//           exitlog();
+//}
+
+//void PMain::exitlog()
+//{
+
+//    if(loginsocket)
+//    {
+
+//        loginsocket->disconnectFromHost();
+//        if(loginsocket->waitForDisconnected())
+//        {
+//            delete loginsocket;
+
+//        }
+//    }
+//}
+
+
+
+//bool PMain::download(QFile *file)
+//{
+
+//    QString filename;
+//    QDataStream  in(loginsocket);
+//    in.setVersion(QDataStream::Qt_4_7);
+//    if(loginsocket->bytesAvailable()>=sizeof (quint64)*2 )
+//    {
+//        if(totalsize==0 && size_filename==0)
+//        {
+//            in>>totalsize>>size_filename;
+//            totalsize-=2*sizeof(quint64);
+//        }
+//        else if(loginsocket->bytesAvailable()>=totalsize)
+//        {
+//            in>>filename;
+//            QByteArray block;
+//            in>>block;
+//            QString path = QDir::currentPath();
+//            QDir dir(path);
+//            if(!QDir(path+"/DataReceived").exists())
+//            {
+//                dir.mkdir("DataReceived");
+//            }else {
+//                dir.cd("DataReceived");
+//            }
+//            file = new QFile(QDir::currentPath()+"/"+filename);
+//            if(file->open(QIODevice::WriteOnly))
+//            {
+//                file->write(block);
+//            }
+//            file->close();
+//            totalsize=0;
+//            size_filename=0;
+//        }
+//    } else {
+//        return 0;
+//    }
+//}
+
+void PMain::login()
 {
-    QSettings settings("HHMI", "Vaa3D");
-    qDebug()<<"try to connect to server";
-    QString serverNameDefault = "";
-    if(!settings.value("vr_serverName").toString().isEmpty())
-        serverNameDefault = settings.value("vr_serverName").toString();
-    bool ok1;
-    QString serverName = QInputDialog::getText(0, "Server Address",
-        "Please enter the server address:", QLineEdit::Normal,
-        serverNameDefault, &ok1);
-    QString manageserver_Port;
-    QString userName;
 
-    if(!ok1||serverName.isEmpty())
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        //return SendLoginRequest();
-        return 0;
-    }else
-    {
-        settings.setValue("vr_serverName", serverName);
-        QString PortDefault = "";
-        if(!settings.value("vr_PORT").toString().isEmpty())
-            PortDefault = settings.value("vr_PORT").toString();
-        bool ok2;
-         manageserver_Port = QInputDialog::getText(0, "Port",//
-            "Please enter server port:", QLineEdit::Normal,
-            PortDefault, &ok2);
+       if(socket)
+       {
+            QMessageBox::information(this, tr("Error"),tr("have been logged."));
+            return;
+       }
 
-        if(!ok2 || manageserver_Port.isEmpty())//
+
+        QSettings settings("HHMI", "Vaa3D");
+        qDebug()<<"try to connect to server";
+        QString serverNameDefault = "";
+        if(!settings.value("vr_serverName").toString().isEmpty())
+            serverNameDefault = settings.value("vr_serverName").toString();
+        bool ok1;
+        QString serverName = QInputDialog::getText(0, "Server Address",
+            "Please enter the server address:", QLineEdit::Normal,
+            serverNameDefault, &ok1);
+        QString manageserver_Port;
+        QString userName;
+
+        if(!ok1||serverName.isEmpty())
         {
             qDebug()<<"WRONG!EMPTY! ";
-            return 0;
-        }
-        else
+            //return SendLoginRequest();
+            return ;
+        }else
         {
-            settings.setValue("vr_PORT", manageserver_Port);//
-            QString userNameDefault = "";
-            if(!settings.value("vr_userName").toString().isEmpty())
-                userNameDefault = settings.value("vr_userName").toString();
-            bool ok3;
-             userName = QInputDialog::getText(0, "Lgoin Name",
-                "Please enter your login name:", QLineEdit::Normal,
-                userNameDefault, &ok3);
+            settings.setValue("vr_serverName", serverName);
+            QString PortDefault = "";
+            if(!settings.value("vr_PORT").toString().isEmpty())
+                PortDefault = settings.value("vr_PORT").toString();
+            bool ok2;
+             manageserver_Port = QInputDialog::getText(0, "Port",//
+                "Please enter server port:", QLineEdit::Normal,
+                PortDefault, &ok2);
 
-            if(!ok3 || userName.isEmpty())
+            if(!ok2 || manageserver_Port.isEmpty())//
             {
                 qDebug()<<"WRONG!EMPTY! ";
-                //return SendLoginRequest();
-                return 0;
-            }else
-                settings.setValue("vr_userName", userName);
+                return ;
+            }
+            else
+            {
+                settings.setValue("vr_PORT", manageserver_Port);//
+                QString userNameDefault = "";
+                if(!settings.value("vr_userName").toString().isEmpty())
+                    userNameDefault = settings.value("vr_userName").toString();
+                bool ok3;
+                 userName = QInputDialog::getText(0, "Lgoin Name",
+                    "Please enter your login name:", QLineEdit::Normal,
+                    userNameDefault, &ok3);
+
+                if(!ok3 || userName.isEmpty())
+                {
+                    qDebug()<<"WRONG!EMPTY! ";
+                    //return SendLoginRequest();
+                    return ;
+                }else
+                    settings.setValue("vr_userName", userName);
+            }
         }
-    }
 
-    loginsocket = new CollaborateSocket;
-    connect(loginsocket,SIGNAL(readyRead()),this,SLOT(readmanage()));
-    loginsocket->ipaddress=serverName;
-    loginsocket->username=userName;
-    loginsocket->connectToHost(serverName,manageserver_Port.toUInt());
-    if(!loginsocket->waitForConnected(15000))
-    {
-       if(loginsocket->state()==QAbstractSocket::UnconnectedState)
-       {
-           QMessageBox::information(this, tr("Information"),
-                   tr("Cannot connect with Server. Unknown error. "));
-       }else {
-           QMessageBox::information(this, tr("Information"),
-                   tr(" connect with Server.  "));
+        socket=new Socket;
+        socket->username=userName;
+        socket->ipaddress=serverName;
+        socket->manageport=manageserver_Port;
+
+        connect(socket,SIGNAL(readyRead()),this,SLOT(readmanage())); //need do
+        socket->connectToHost(serverName,manageserver_Port.toUInt());
+       if(!socket->waitForConnected(15000))
+      {
+         if(socket->state()==QAbstractSocket::UnconnectedState)
+        {
+             delete  socket;
+
+             socket=0;
+             QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
+         }
+     }else {
+            QMessageBox::information(this, tr("information"),tr("login successfully."));
+            loginAction->setText(socket->ipaddress);
+
         }
-    }
-
-    QString sendmsg="/manage:"+userName+" login";
-
-
-    QByteArray block;
-    QDataStream out(&block,QIODevice::ReadWrite);
-    out.setVersion(QDataStream::Qt_4_6);
-
-    out<<quint64(0)<<sendmsg;
-    out.device()->seek(0);
-    out<<quint64(block.size()-sizeof (quint64));
-    loginsocket->write(block);
 
 }
 
-void PMain::exitlog()
+void PMain::logout()
 {
-    QString sendmsg="/manage:"+loginsocket->username+" logout";
-    QByteArray block;
-    QDataStream out(&block,QIODevice::ReadWrite);
-    out.setVersion(QDataStream::Qt_4_6);
-
-    out<<quint64(0)<<sendmsg;
-    out.device()->seek(0);
-    out<<quint64(block.size()-sizeof (quint64));
-    loginsocket->write(block);
-
-}
-
-void PMain::readmanage()
-{
-    QDataStream in(loginsocket);
-    in.setVersion(QDataStream::Qt_4_6);
-    if(loginsocket->bytesAvailable()<sizeof (quint64)) return;
-    quint64 receivedsize=0;
-    in>>receivedsize;
-    if(loginsocket->bytesAvailable()<receivedsize) return;
-
-    QString receivemsg;
-    in>>receivemsg;
-    if(receivemsg == QString("welcome!"+loginsocket->username))
+    if(!socket)
     {
-        QString informationmsg=QString( loginsocket->username+" log in successfully.  ");
-        QMessageBox::information(this, tr("Information"),
-                informationmsg);
-    }else if(receivemsg == QString("bye!"+loginsocket->username)){
-        QString informationmsg=QString( loginsocket->username+" byebye  ");
-        QMessageBox::information(this, tr("Information"),
-                informationmsg);
-        loginsocket->disconnectFromHost();
-        loginsocket->deleteLater();
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
     }
+    socket->disconnectFromHost();
+    delete socket;
 }
 
-
-void PMain::uploadFileToServer()
+void PMain::importToCloud()
 {
-    qDebug()<<"try to uploadFile to server";
+    qDebug()<<"import annotation to cloud,";
 }
 
-void PMain::downloadFileFromServer()
+
+#ifdef __ALLOW_VR_FUNCS__
+
+void PMain::loadFromCloud()
 {
-    qDebug()<<"try to download file from server";
-}
-              \
-void PMain::getincollaborate()
-{
-           qDebug()<<"try to get in collborate mode";
+    qDebug()<<"load annotation from cloud,";
 }
 
 
-             //end
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//end
