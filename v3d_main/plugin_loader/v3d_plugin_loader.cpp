@@ -1749,9 +1749,9 @@ bool V3d_PluginLoader::teraflyImgInstance()
 	return terafly::PluginInterface::teraflyImgInstance();
 }
 
-void V3d_PluginLoader::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList)
+void V3d_PluginLoader::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
 {
-	terafly::PluginInterface::getSelectedMarkerList(selectedMarkerList);
+	terafly::PluginInterface::getSelectedMarkerList(selectedMarkerList, selectedLocalMarkerList);
 }
 
 void V3d_PluginLoader::refreshSelectedMarkers()

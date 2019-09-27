@@ -178,6 +178,7 @@ class terafly::CViewer : public QWidget
 		inline int getZDim() { return (this->volD1 - this->volD0); }
 
 		QList<ImageMarker> selectedMarkerList;
+		QList<ImageMarker> selectedLocalMarkerList;
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.

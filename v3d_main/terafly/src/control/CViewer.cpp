@@ -669,10 +669,12 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
 				QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;				
 				this->selectedMarkerList.clear();
+				this->selectedLocalMarkerList.clear();
 				for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
 				{
 					if (markerIt->selected)
 					{
+						this->selectedLocalMarkerList.push_back(*markerIt);
 						ImageMarker currMarker = *markerIt;
 						currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
 						currMarker.y = coord2global<float>(markerIt->y, iim::vertical,   false, -1, false, false, __itm__current__function__);

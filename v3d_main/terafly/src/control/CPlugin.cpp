@@ -612,10 +612,11 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 	else return true;
 }
 
-void tf::PluginInterface::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList)
+void tf::PluginInterface::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
 {
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
 	selectedMarkerList = currViewerPtr->selectedMarkerList;
+	selectedLocalMarkerList = currViewerPtr->selectedLocalMarkerList;
 }
 
 void tf::PluginInterface::refreshSelectedMarkers()
