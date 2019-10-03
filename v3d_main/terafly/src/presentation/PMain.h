@@ -43,13 +43,9 @@
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
 
-class Socket:public QTcpSocket
-{
-public:
-    QString ipaddress;
-    QString manageport;
-    QString username;
-};
+/*----------------collaborate mdoe-------------------*/
+class ManageSocket;
+/*---------------------------------------------------*/
 
 class terafly::PMain : public QWidget
 {
@@ -90,22 +86,7 @@ class terafly::PMain : public QWidget
         QAction* saveAnnotationsAfterRemoveDupNodesAction;//"save annotations after removing duplicated nodes
         QAction* saveAnnotationsAsAction; //"Save annotations as" menu action
         QAction* clearAnnotationsAction;//"Clear annotations" menu action
-        QAction* exitAction;   //"Exit" menu action
-
-
-        // ==================add by huanglei begin============
-        //-------------------"collaborate" Menu--------------
-        QMenu* collaborateMenu;
-        QAction* loginAction;
-        QAction* importAction;
-        QAction* loadAction;
-        QAction* logoutAction;
-
-
-
-
-        //===========================end=======================
-
+        QAction* exitAction;            //"Exit" menu action
 
         // "Options" menu widgets
         QMenu* optionsMenu;             //"Options" menu
@@ -379,9 +360,12 @@ class terafly::PMain : public QWidget
         bool annotationChanged;
         bool isMagnificationLocked;
 
+        bool cleanOldAutosavedFiles; // e.g. longer than 24 hours
+
 		/****************** Fragment tracing related *****************/
 		// MK, Sep, 2019
 		bool fragTracePluginInstance;
+		int globalXlb, globalXhb, globalYlb, globalYhb, globalZlb, globalZhb;
 		/*************************************************************/
 
     public slots:
@@ -580,19 +564,7 @@ class terafly::PMain : public QWidget
         void showDialogGenerateTimeSeriesInterpolation();
         void showDialogGenerateTimeSeriesReplication();
         void showAnoOctree();
-
-        //collaborate mode slot huanglei begin
-        void login();
-        void logout();
-
-        void importToCloud();
-
-
-
-        //end
 #ifdef __ALLOW_VR_FUNCS__
-
-        void loadFromCloud(); // collaborate on cloud
 		void doTeraflyVRView();
 		void doCollaborationVRView();
         void teraflyShiftClickedinVR(int _direction);
@@ -610,13 +582,70 @@ class terafly::PMain : public QWidget
         * Carries progress bar informations (progress percentage and remaining minutes).
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
+
+/*----------------collaborate mdoe-------------------*/
+protected:
+        QMenu* collaborateMenu;
+        QAction* loginAction;
+        QAction* logoutAction;
+        QAction* importAction;
+        QAction* downAction;
+        QAction* loadAction;
+public slots:
+        void login();
+        void logout();
+        void import();
+        void download();
+        void load();
+        void deleteManageSocket();
 private:
-        Socket *socket;
+        ManageSocket *managesocket;
 
 
+
+/*---------------------------------------------------*/
 
 
 
 };
+
+/*----------------collaborate mdoe-------------------*/
+class ManageSocket:public QTcpSocket
+{
+    Q_OBJECT
+
+
+public:
+    explicit ManageSocket(QObject *parent=0):QTcpSocket (parent)
+    {
+        filesocket=0;
+    }
+    QString ip;
+    QString manageport;
+    QString name;
+public slots:
+
+
+    void onReadyRead();
+    void readfileMsg();
+    void send(QListWidgetItem*);
+    void sendLoad(QListWidgetItem*);
+
+protected:
+
+    void sendFile(QTcpSocket *socket,QString filepath,QString filename);
+signals:
+
+    void makeMessageServer(QString port,QString anofilename);
+private:
+    QString anofile_path,eswcfile_path,apofile_path;
+    QString anofile_name,eswcfile_name,apofile_name;
+
+
+
+    QTcpSocket *filesocket;
+
+};
+/*---------------------------------------------------*/
 
 #endif // PMAIN_GUI_H

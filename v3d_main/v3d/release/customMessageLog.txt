@@ -98,3 +98,18 @@
 2019/09/25 20:35:17:Debug: WRONG!EMPTY!  
 2019/09/25 20:35:17:Debug: can't connect to server .unknown wrong  
 2019/09/25 20:55:23:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/09/27 06:12:33:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/27 06:12:33:Debug: Cannot find ./plugins directory!
+2019/09/27 06:12:34:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/27 06:12:38:Debug: transparency true 
+2019/09/27 06:12:41:Debug: try to connect to server 
+2019/09/27 06:12:46:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/27 06:13:12:Debug: import annotation to cloud, 
+2019/09/27 06:14:00:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/09/27 06:14:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/27 06:14:14:Debug: Cannot find ./plugins directory!
+2019/09/27 06:14:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/09/27 06:14:19:Debug: transparency true 
+2019/09/27 06:14:24:Debug: try to connect to server 
+2019/09/27 06:14:26:Warning: Object::connect: No such slot terafly::PMain::readmanage()
+2019/09/27 06:14:31:Debug: import annotation to cloud, 
