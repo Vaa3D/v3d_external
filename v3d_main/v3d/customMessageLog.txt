@@ -4226,3 +4226,1161 @@
 2019/09/30 21:28:45:Debug: "received 18465HL.ano.eswc" 
 2019/09/30 21:28:45:Debug: 452 	 34 
 2019/09/30 21:28:45:Debug: "received 18465HL.ano.apo" 
+2019/10/03 17:58:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 17:58:28:Debug: Cannot find ./plugins directory!
+2019/10/03 17:58:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 17:58:33:Debug: transparency true 
+2019/10/03 17:58:35:Debug: try to connect to server 
+2019/10/03 17:58:52:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 17:58:52:Debug: Cannot find ./plugins directory!
+2019/10/03 17:58:52:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 17:59:07:Debug: transparency true 
+2019/10/03 17:59:09:Debug: try to connect to server 
+2019/10/03 17:59:11:Debug: send: "HL:login.
+" 
+2019/10/03 17:59:11:Debug: receive: "HL:logged in.
+" 
+2019/10/03 17:59:11:Debug: login successfully 
+2019/10/03 17:59:28:Debug: "HL:import.
+" 
+2019/10/03 17:59:28:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 17:59:28:Debug: 111111 
+2019/10/03 17:59:28:Debug: "9998
+" 
+2019/10/03 17:59:32:Debug: "18465HL.ano" 
+2019/10/03 17:59:32:Debug: 1 
+2019/10/03 17:59:32:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/03 17:59:32:Debug: 2 
+2019/10/03 17:59:32:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 17:59:32:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/03 17:59:32:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/03 17:59:32:Debug: "18465HL.ano" ----- 
+2019/10/03 17:59:32:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 17:59:32:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/03 17:59:32:Debug: "18465HL.ano.eswc" ----- 
+2019/10/03 17:59:32:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 17:59:32:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 17:59:32:Debug: "18465HL.ano.apo" ----- 
+2019/10/03 17:59:32:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 17:59:35:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/03 18:00:02:Debug: "HL:import.
+" 
+2019/10/03 18:00:02:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 18:00:02:Debug: 111111 
+2019/10/03 18:00:02:Debug: "9998
+" 
+2019/10/03 18:00:06:Debug: "18465HL.ano" 
+2019/10/03 18:00:06:Debug: 1 
+2019/10/03 18:00:06:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/03 18:00:06:Debug: 2 
+2019/10/03 18:00:06:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:00:06:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/03 18:00:06:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/03 18:00:21:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/03 18:00:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:00:28:Debug: Cannot find ./plugins directory!
+2019/10/03 18:00:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:00:32:Debug: transparency true 
+2019/10/03 18:00:40:Debug: try to connect to server 
+2019/10/03 18:00:42:Debug: send: "HL:login.
+" 
+2019/10/03 18:00:42:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:00:42:Debug: login successfully 
+2019/10/03 18:00:46:Debug: "HL:import.
+" 
+2019/10/03 18:00:46:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 18:00:46:Debug: 111111 
+2019/10/03 18:00:46:Debug: "9998
+" 
+2019/10/03 18:00:51:Debug: "18465HL.ano" 
+2019/10/03 18:00:51:Debug: 1 
+2019/10/03 18:00:51:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/03 18:00:51:Debug: 2 
+2019/10/03 18:00:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:00:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/03 18:00:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/03 18:00:51:Debug: "18465HL.ano" ----- 
+2019/10/03 18:00:51:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:00:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/03 18:00:51:Debug: "18465HL.ano.eswc" ----- 
+2019/10/03 18:00:51:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:00:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:00:51:Debug: "18465HL.ano.apo" ----- 
+2019/10/03 18:00:51:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:00:53:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/03 18:01:15:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/03 18:01:15:Debug: "18465HL.ano
+" 
+2019/10/03 18:01:18:Debug: 88888 
+2019/10/03 18:01:18:Debug: "18465HL.ano
+" 
+2019/10/03 18:01:18:Debug: "HL choose:18465HL.ano
+" 
+2019/10/03 18:01:18:Debug: file new connection 
+2019/10/03 18:01:18:Debug: 161 	 26 
+2019/10/03 18:01:18:Debug: "received 18465HL.ano" 
+2019/10/03 18:01:18:Debug: 1259905 	 36 
+2019/10/03 18:01:18:Debug: "received 18465HL.ano.eswc" 
+2019/10/03 18:01:18:Debug: 452 	 34 
+2019/10/03 18:01:18:Debug: "received 18465HL.ano.apo" 
+2019/10/03 18:09:05:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:09:05:Debug: Cannot find ./plugins directory!
+2019/10/03 18:09:05:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:09:10:Debug: transparency true 
+2019/10/03 18:09:13:Debug: try to connect to server 
+2019/10/03 18:09:14:Debug: send: "HL:login.
+" 
+2019/10/03 18:09:14:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:09:14:Debug: login successfully 
+2019/10/03 18:09:39:Debug: "HL:download.
+" 
+2019/10/03 18:09:39:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/03 18:09:39:Debug: "18465HL.ano
+" 
+2019/10/03 18:09:40:Debug: 88888 
+2019/10/03 18:09:40:Debug: "18465HL.ano
+" 
+2019/10/03 18:09:40:Debug: "HL choose:18465HL.ano
+" 
+2019/10/03 18:09:40:Debug: file new connection 
+2019/10/03 18:09:40:Debug: 161 	 26 
+2019/10/03 18:09:40:Debug: "received 18465HL.ano" 
+2019/10/03 18:09:40:Debug: 1259905 	 36 
+2019/10/03 18:09:40:Debug: "received 18465HL.ano.eswc" 
+2019/10/03 18:09:40:Debug: 452 	 34 
+2019/10/03 18:09:40:Debug: "received 18465HL.ano.apo" 
+2019/10/03 18:10:42:Debug: "HL:import.
+" 
+2019/10/03 18:10:55:Debug: send: "HL:logout.
+" 
+2019/10/03 18:11:46:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:11:46:Debug: Cannot find ./plugins directory!
+2019/10/03 18:11:46:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:12:01:Debug: transparency true 
+2019/10/03 18:12:03:Debug: try to connect to server 
+2019/10/03 18:12:05:Debug: send: "HL:login.
+" 
+2019/10/03 18:12:05:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:12:05:Debug: login successfully 
+2019/10/03 18:12:09:Debug: "HL:import.
+" 
+2019/10/03 18:12:09:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 18:12:09:Debug: 111111 
+2019/10/03 18:12:09:Debug: "9998
+" 
+2019/10/03 18:12:14:Debug: "18465HL.ano" 
+2019/10/03 18:12:14:Debug: 1 
+2019/10/03 18:12:14:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/03 18:12:14:Debug: 2 
+2019/10/03 18:12:14:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:12:14:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/03 18:12:14:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/03 18:12:14:Debug: "18465HL.ano" ----- 
+2019/10/03 18:12:14:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:12:14:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/03 18:12:14:Debug: "18465HL.ano.eswc" ----- 
+2019/10/03 18:12:14:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:12:14:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:12:14:Debug: "18465HL.ano.apo" ----- 
+2019/10/03 18:12:14:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:12:16:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/03 18:12:25:Debug: "HL:download.
+" 
+2019/10/03 18:12:25:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/03 18:12:25:Debug: "18465HL.ano
+" 
+2019/10/03 18:12:27:Debug: 88888 
+2019/10/03 18:12:27:Debug: "18465HL.ano
+" 
+2019/10/03 18:12:27:Debug: "HL choose:18465HL.ano
+" 
+2019/10/03 18:12:27:Debug: file new connection 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: 161 	 26 
+2019/10/03 18:12:27:Debug: "received 18465HL.ano" 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: 1259905 	 36 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: "received 18465HL.ano.eswc" 
+2019/10/03 18:12:27:Debug: in read file 
+2019/10/03 18:12:27:Debug: 452 	 34 
+2019/10/03 18:12:27:Debug: "received 18465HL.ano.apo" 
+2019/10/03 18:13:13:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:13:13:Debug: Cannot find ./plugins directory!
+2019/10/03 18:13:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:13:35:Debug: transparency true 
+2019/10/03 18:13:39:Debug: try to connect to server 
+2019/10/03 18:13:40:Debug: send: "HL:login.
+" 
+2019/10/03 18:13:40:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:13:40:Debug: login successfully 
+2019/10/03 18:13:42:Debug: "HL:import.
+" 
+2019/10/03 18:13:42:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 18:13:42:Debug: 111111 
+2019/10/03 18:13:42:Debug: "9998
+" 
+2019/10/03 18:13:58:Debug: "18465HL.ano" 
+2019/10/03 18:13:58:Debug: 1 
+2019/10/03 18:13:58:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/03 18:13:58:Debug: 2 
+2019/10/03 18:13:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:13:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/03 18:13:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/03 18:13:58:Debug: "18465HL.ano" ----- 
+2019/10/03 18:13:58:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:13:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/03 18:13:58:Debug: "18465HL.ano.eswc" ----- 
+2019/10/03 18:13:58:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:13:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:13:58:Debug: "18465HL.ano.apo" ----- 
+2019/10/03 18:13:58:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:14:00:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/03 18:14:14:Debug: "HL:download.
+" 
+2019/10/03 18:14:14:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/03 18:14:14:Debug: "18465HL.ano
+" 
+2019/10/03 18:14:18:Debug: 88888 
+2019/10/03 18:14:18:Debug: "18465HL.ano
+" 
+2019/10/03 18:14:18:Debug: "HL choose:18465HL.ano
+" 
+2019/10/03 18:14:18:Debug: file new connection 
+2019/10/03 18:14:18:Debug: in read file 
+2019/10/03 18:14:18:Debug: 161 	 26 
+2019/10/03 18:14:18:Debug: "received 18465HL.ano" 
+2019/10/03 18:14:18:Debug: in read file 
+2019/10/03 18:14:18:Debug: 1259905 	 36 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: "received 18465HL.ano.eswc" 
+2019/10/03 18:14:19:Debug: in read file 
+2019/10/03 18:14:19:Debug: 452 	 34 
+2019/10/03 18:14:19:Debug: "received 18465HL.ano.apo" 
+2019/10/03 18:15:23:Debug: send: "HL:logout.
+" 
+2019/10/03 18:15:23:Debug: receive: "HL:logged out.
+" 
+2019/10/03 18:15:23:Debug: 111 
+2019/10/03 18:15:25:Debug: try to connect to server 
+2019/10/03 18:15:29:Debug: WRONG!EMPTY!  
+2019/10/03 18:15:32:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/03 18:22:02:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:22:02:Debug: Cannot find ./plugins directory!
+2019/10/03 18:22:02:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:22:19:Debug: transparency true 
+2019/10/03 18:22:37:Debug: try to connect to server 
+2019/10/03 18:22:38:Debug: send: "HL:login.
+" 
+2019/10/03 18:22:38:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:22:38:Debug: login successfully 
+2019/10/03 18:22:41:Debug: "HL:import.
+" 
+2019/10/03 18:22:41:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 18:22:41:Debug: 111111 
+2019/10/03 18:22:41:Debug: "9998
+" 
+2019/10/03 18:22:52:Debug: "" 
+2019/10/03 18:22:52:Debug: "" 
+2019/10/03 18:22:52:Warning: QFSFileEngine::open: No file name specified
+2019/10/03 18:22:52:Debug: "" +++ 
+2019/10/03 18:22:53:Debug: "HL:import.
+" 
+2019/10/03 18:22:53:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 18:22:53:Debug: 111111 
+2019/10/03 18:22:53:Debug: "9998
+" 
+2019/10/03 18:22:58:Debug: "18465HL.ano" 
+2019/10/03 18:22:58:Debug: 1 
+2019/10/03 18:22:58:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/03 18:22:58:Debug: 2 
+2019/10/03 18:22:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:22:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/03 18:22:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/03 18:22:58:Debug: "18465HL.ano" ----- 
+2019/10/03 18:22:58:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:22:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/03 18:22:58:Debug: "18465HL.ano.eswc" ----- 
+2019/10/03 18:22:58:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:22:58:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:22:58:Debug: "18465HL.ano.apo" ----- 
+2019/10/03 18:22:58:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:23:00:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/03 18:23:04:Debug: "HL:download.
+" 
+2019/10/03 18:23:04:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/03 18:23:04:Debug: "18465HL.ano
+" 
+2019/10/03 18:23:08:Debug: "HL:download.
+" 
+2019/10/03 18:23:08:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/03 18:23:08:Debug: "18465HL.ano
+" 
+2019/10/03 18:23:59:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/03 18:25:47:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/03 18:25:59:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:25:59:Debug: Cannot find ./plugins directory!
+2019/10/03 18:25:59:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:26:03:Debug: transparency true 
+2019/10/03 18:26:06:Debug: try to connect to server 
+2019/10/03 18:26:08:Debug: send: "HL:login.
+" 
+2019/10/03 18:26:08:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:26:08:Debug: login successfully 
+2019/10/03 18:26:11:Debug: "HL:import.
+" 
+2019/10/03 18:26:11:Debug: receive: "HL:import port :9998
+" 
+2019/10/03 18:26:11:Debug: 111111 
+2019/10/03 18:26:11:Debug: "9998
+" 
+2019/10/03 18:26:17:Debug: "18465HL.ano" 
+2019/10/03 18:26:17:Debug: 1 
+2019/10/03 18:26:17:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/03 18:26:17:Debug: 2 
+2019/10/03 18:26:17:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:26:17:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/03 18:26:17:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/03 18:26:17:Debug: "18465HL.ano" ----- 
+2019/10/03 18:26:17:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:26:17:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/03 18:26:17:Debug: "18465HL.ano.eswc" ----- 
+2019/10/03 18:26:17:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:26:17:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/03 18:26:17:Debug: "18465HL.ano.apo" ----- 
+2019/10/03 18:26:17:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/03 18:26:18:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/03 18:26:21:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/03 18:26:21:Debug: "18465HL.ano
+" 
+2019/10/03 18:26:26:Debug: 88888 
+2019/10/03 18:26:26:Debug: "18465HL.ano
+" 
+2019/10/03 18:26:26:Debug: "HL choose:18465HL.ano
+" 
+2019/10/03 18:26:26:Debug: file new connection 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: 161 	 26 
+2019/10/03 18:26:26:Debug: "received 18465HL.ano" 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: 1259905 	 36 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: "received 18465HL.ano.eswc" 
+2019/10/03 18:26:26:Debug: in read file 
+2019/10/03 18:26:26:Debug: 452 	 34 
+2019/10/03 18:26:26:Debug: "received 18465HL.ano.apo" 
+2019/10/03 18:28:20:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/03 18:28:32:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:28:32:Debug: Cannot find ./plugins directory!
+2019/10/03 18:28:33:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:28:40:Debug: transparency true 
+2019/10/03 18:28:42:Debug: try to connect to server 
+2019/10/03 18:28:44:Debug: send: "HL:login.
+" 
+2019/10/03 18:28:44:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:28:44:Debug: login successfully 
+2019/10/03 18:28:48:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/03 18:28:48:Debug: "18465HL.ano
+" 
+2019/10/03 18:29:12:Debug: receive: "messageport:6786.
+" 
+2019/10/03 18:29:12:Debug: "6786." 
+2019/10/03 18:44:41:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:44:41:Debug: Cannot find ./plugins directory!
+2019/10/03 18:44:41:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:44:50:Debug: transparency true 
+2019/10/03 18:44:52:Debug: try to connect to server 
+2019/10/03 18:44:53:Debug: send: "HL:login.
+" 
+2019/10/03 18:44:53:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:44:53:Debug: login successfully 
+2019/10/03 18:45:35:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:45:35:Debug: Cannot find ./plugins directory!
+2019/10/03 18:45:35:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:45:39:Debug: transparency true 
+2019/10/03 18:45:41:Debug: try to connect to server 
+2019/10/03 18:45:43:Debug: send: "HL:login.
+" 
+2019/10/03 18:45:43:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:45:43:Debug: login successfully 
+2019/10/03 18:45:47:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/03 18:45:47:Debug: "18465HL.ano
+" 
+2019/10/03 18:46:46:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:46:46:Debug: Cannot find ./plugins directory!
+2019/10/03 18:46:46:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/03 18:46:50:Debug: transparency true 
+2019/10/03 18:46:52:Debug: try to connect to server 
+2019/10/03 18:46:53:Debug: send: "HL:login.
+" 
+2019/10/03 18:46:53:Debug: receive: "HL:logged in.
+" 
+2019/10/03 18:46:53:Debug: login successfully 
+2019/10/03 18:46:57:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/03 18:46:57:Debug: "18465HL.ano
+" 
+2019/10/03 18:46:58:Debug: receive: "messageport:6786.
+" 
+2019/10/03 18:46:58:Debug: "6786." 
+2019/10/03 19:03:02:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/04 19:04:30:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:04:30:Debug: Cannot find ./plugins directory!
+2019/10/04 19:04:30:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:04:34:Debug: transparency true 
+2019/10/04 19:04:36:Debug: try to connect to server 
+2019/10/04 19:04:45:Debug: send: "HL:login.
+" 
+2019/10/04 19:04:46:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:04:46:Debug: login successfully 
+2019/10/04 19:04:54:Debug: "HL:download.
+" 
+2019/10/04 19:04:54:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/04 19:04:54:Debug: "18465HL.ano
+" 
+2019/10/04 19:05:05:Debug: 88888 
+2019/10/04 19:05:05:Debug: "18465HL.ano
+" 
+2019/10/04 19:05:05:Debug: "HL choose:18465HL.ano
+" 
+2019/10/04 19:05:05:Debug: file new connection 
+2019/10/04 19:05:05:Debug: in read file 
+2019/10/04 19:05:05:Debug: 161 	 26 
+2019/10/04 19:05:05:Debug: "received 18465HL.ano" 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: 1259905 	 36 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: "received 18465HL.ano.eswc" 
+2019/10/04 19:05:06:Debug: in read file 
+2019/10/04 19:05:06:Debug: 452 	 34 
+2019/10/04 19:05:06:Debug: "received 18465HL.ano.apo" 
+2019/10/04 19:06:06:Debug: send: "HL:logout.
+" 
+2019/10/04 19:06:24:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/04 19:06:29:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:06:29:Debug: Cannot find ./plugins directory!
+2019/10/04 19:06:29:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:06:43:Debug: transparency true 
+2019/10/04 19:06:45:Debug: try to connect to server 
+2019/10/04 19:06:46:Debug: send: "HL:login.
+" 
+2019/10/04 19:06:46:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:06:46:Debug: login successfully 
+2019/10/04 19:06:50:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:06:50:Debug: "18465HL.ano
+" 
+2019/10/04 19:08:02:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:08:02:Debug: Cannot find ./plugins directory!
+2019/10/04 19:08:02:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:08:23:Debug: transparency true 
+2019/10/04 19:08:26:Debug: try to connect to server 
+2019/10/04 19:08:33:Debug: send: "HL:login.
+" 
+2019/10/04 19:08:33:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:08:33:Debug: login successfully 
+2019/10/04 19:08:42:Debug: "HL:download.
+" 
+2019/10/04 19:08:42:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/04 19:08:42:Debug: "18465HL.ano
+" 
+2019/10/04 19:08:44:Debug: 88888 
+2019/10/04 19:08:44:Debug: "18465HL.ano
+" 
+2019/10/04 19:08:44:Debug: "HL choose:18465HL.ano
+" 
+2019/10/04 19:08:44:Debug: file new connection 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: 161 	 26 
+2019/10/04 19:08:44:Debug: "received 18465HL.ano" 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: 1259905 	 36 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: "received 18465HL.ano.eswc" 
+2019/10/04 19:08:44:Debug: in read file 
+2019/10/04 19:08:44:Debug: 452 	 34 
+2019/10/04 19:08:44:Debug: "received 18465HL.ano.apo" 
+2019/10/04 19:11:21:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:11:21:Debug: Cannot find ./plugins directory!
+2019/10/04 19:11:21:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:11:25:Debug: transparency true 
+2019/10/04 19:11:28:Debug: try to connect to server 
+2019/10/04 19:11:29:Debug: send: "HL:login.
+" 
+2019/10/04 19:11:29:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:11:29:Debug: login successfully 
+2019/10/04 19:11:34:Debug: "HL:download.
+" 
+2019/10/04 19:11:34:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/04 19:11:34:Debug: "18465HL.ano
+" 
+2019/10/04 19:11:35:Debug: 88888 
+2019/10/04 19:11:35:Debug: "18465HL.ano
+" 
+2019/10/04 19:11:35:Debug: "HL choose:18465HL.ano
+" 
+2019/10/04 19:13:23:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:13:23:Debug: Cannot find ./plugins directory!
+2019/10/04 19:13:23:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:13:26:Debug: transparency true 
+2019/10/04 19:13:31:Debug: try to connect to server 
+2019/10/04 19:13:32:Debug: send: "HL:login.
+" 
+2019/10/04 19:13:32:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:13:32:Debug: login successfully 
+2019/10/04 19:13:35:Debug: "HL:download.
+" 
+2019/10/04 19:13:35:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/04 19:13:35:Debug: "18465HL.ano
+" 
+2019/10/04 19:13:36:Debug: 88888 
+2019/10/04 19:13:36:Debug: "18465HL.ano
+" 
+2019/10/04 19:13:36:Debug: "HL choose:18465HL.ano
+" 
+2019/10/04 19:14:19:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:14:19:Debug: Cannot find ./plugins directory!
+2019/10/04 19:14:19:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:14:22:Debug: transparency true 
+2019/10/04 19:14:27:Debug: try to connect to server 
+2019/10/04 19:14:28:Debug: send: "HL:login.
+" 
+2019/10/04 19:14:28:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:14:28:Debug: login successfully 
+2019/10/04 19:14:31:Debug: "HL:download.
+" 
+2019/10/04 19:14:31:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/04 19:14:31:Debug: "18465HL.ano
+" 
+2019/10/04 19:14:33:Debug: 88888 
+2019/10/04 19:14:33:Debug: "18465HL.ano
+" 
+2019/10/04 19:14:33:Debug: "HL choose:18465HL.ano
+" 
+2019/10/04 19:14:33:Debug: file new connection 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: 161 	 26 
+2019/10/04 19:14:33:Debug: "received 18465HL.ano" 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: 1259905 	 36 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: "received 18465HL.ano.eswc" 
+2019/10/04 19:14:33:Debug: in read file 
+2019/10/04 19:14:33:Debug: 452 	 34 
+2019/10/04 19:14:33:Debug: "received 18465HL.ano.apo" 
+2019/10/04 19:15:17:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:15:17:Debug: "18465HL.ano
+" 
+2019/10/04 19:15:25:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:15:25:Debug: "18465HL.ano
+" 
+2019/10/04 19:16:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:16:14:Debug: Cannot find ./plugins directory!
+2019/10/04 19:16:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:16:20:Debug: transparency true 
+2019/10/04 19:16:22:Debug: try to connect to server 
+2019/10/04 19:16:23:Debug: send: "HL:login.
+" 
+2019/10/04 19:16:23:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:16:23:Debug: login successfully 
+2019/10/04 19:16:26:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:16:26:Debug: "18465HL.ano
+" 
+2019/10/04 19:20:04:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:20:04:Debug: Cannot find ./plugins directory!
+2019/10/04 19:20:04:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:20:26:Debug: transparency true 
+2019/10/04 19:20:29:Debug: try to connect to server 
+2019/10/04 19:20:30:Debug: send: "HL:login.
+" 
+2019/10/04 19:20:30:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:20:30:Debug: login successfully 
+2019/10/04 19:20:36:Debug: "HL:import.
+" 
+2019/10/04 19:20:36:Debug: receive: "HL:import port :9998
+" 
+2019/10/04 19:20:36:Debug: 111111 
+2019/10/04 19:20:36:Debug: "9998
+" 
+2019/10/04 19:20:41:Debug: "18465HL.ano" 
+2019/10/04 19:20:41:Debug: 1 
+2019/10/04 19:20:41:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 19:20:41:Debug: 2 
+2019/10/04 19:20:41:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:20:41:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 19:20:41:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 19:20:41:Debug: "18465HL.ano" ----- 
+2019/10/04 19:20:41:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:20:41:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/04 19:20:41:Debug: "18465HL.ano.eswc" ----- 
+2019/10/04 19:20:41:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:20:41:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:20:41:Debug: "18465HL.ano.apo" ----- 
+2019/10/04 19:20:41:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:20:43:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/04 19:20:47:Debug: send: "HL:logout.
+" 
+2019/10/04 19:20:47:Debug: receive: "HL:logged out.
+" 
+2019/10/04 19:20:47:Debug: 111 
+2019/10/04 19:20:50:Debug: try to connect to server 
+2019/10/04 19:20:53:Debug: send: "HL:login.
+" 
+2019/10/04 19:20:53:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:20:53:Debug: login successfully 
+2019/10/04 19:20:56:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:20:56:Debug: "18465HL.ano
+" 
+2019/10/04 19:20:58:Debug: receive: "messageport:6786.
+" 
+2019/10/04 19:20:58:Debug: "6786." 
+2019/10/04 19:20:58:Debug: make a message socket 
+2019/10/04 19:22:01:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:22:01:Debug: Cannot find ./plugins directory!
+2019/10/04 19:22:01:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:22:05:Debug: transparency true 
+2019/10/04 19:22:07:Debug: try to connect to server 
+2019/10/04 19:22:08:Debug: send: "HL:login.
+" 
+2019/10/04 19:22:08:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:22:08:Debug: login successfully 
+2019/10/04 19:22:10:Debug: "HL:import.
+" 
+2019/10/04 19:22:10:Debug: receive: "HL:import port :9998
+" 
+2019/10/04 19:22:10:Debug: 111111 
+2019/10/04 19:22:10:Debug: "9998
+" 
+2019/10/04 19:23:22:Debug: "18465HL.ano" 
+2019/10/04 19:23:22:Debug: 1 
+2019/10/04 19:23:22:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 19:23:22:Debug: 2 
+2019/10/04 19:23:22:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:23:22:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 19:23:22:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 19:23:22:Debug: "18465HL.ano" ----- 
+2019/10/04 19:23:22:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:23:22:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/04 19:23:22:Debug: "18465HL.ano.eswc" ----- 
+2019/10/04 19:23:22:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:23:22:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:23:22:Debug: "18465HL.ano.apo" ----- 
+2019/10/04 19:23:22:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:23:27:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/04 19:23:28:Debug: send: "HL:logout.
+" 
+2019/10/04 19:23:28:Debug: receive: "HL:logged out.
+" 
+2019/10/04 19:23:28:Debug: 111 
+2019/10/04 19:23:31:Debug: try to connect to server 
+2019/10/04 19:23:32:Debug: send: "HL:login.
+" 
+2019/10/04 19:23:32:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:23:32:Debug: login successfully 
+2019/10/04 19:23:35:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:23:35:Debug: "18465HL.ano
+" 
+2019/10/04 19:23:36:Debug: receive: "messageport:6786
+" 
+2019/10/04 19:23:36:Debug: "6786
+" 
+2019/10/04 19:23:36:Debug: make a message socket 
+2019/10/04 19:25:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:25:28:Debug: Cannot find ./plugins directory!
+2019/10/04 19:25:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:25:40:Debug: transparency true 
+2019/10/04 19:25:44:Debug: try to connect to server 
+2019/10/04 19:25:45:Debug: send: "HL:login.
+" 
+2019/10/04 19:25:56:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/04 19:26:00:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:26:00:Debug: Cannot find ./plugins directory!
+2019/10/04 19:26:00:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:26:06:Debug: transparency true 
+2019/10/04 19:26:08:Debug: try to connect to server 
+2019/10/04 19:26:09:Debug: send: "HL:login.
+" 
+2019/10/04 19:26:09:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:26:09:Debug: login successfully 
+2019/10/04 19:26:34:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:26:34:Debug: "18465HL.ano
+" 
+2019/10/04 19:26:35:Debug: receive: "messageport:6786
+" 
+2019/10/04 19:26:35:Debug: "6786" 
+2019/10/04 19:26:35:Debug: make a message socket 
+2019/10/04 19:29:01:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:29:02:Debug: Cannot find ./plugins directory!
+2019/10/04 19:29:02:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:29:28:Debug: transparency true 
+2019/10/04 19:29:30:Debug: try to connect to server 
+2019/10/04 19:29:31:Debug: send: "HL:login.
+" 
+2019/10/04 19:29:31:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:29:31:Debug: login successfully 
+2019/10/04 19:29:36:Debug: "HL:import.
+" 
+2019/10/04 19:29:36:Debug: receive: "HL:import port :9998
+" 
+2019/10/04 19:29:36:Debug: 111111 
+2019/10/04 19:29:36:Debug: "9998" 
+2019/10/04 19:29:40:Debug: "18465HL.ano" 
+2019/10/04 19:29:40:Debug: 1 
+2019/10/04 19:29:40:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 19:29:40:Debug: 2 
+2019/10/04 19:29:40:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:29:40:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 19:29:40:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 19:29:40:Debug: "18465HL.ano" ----- 
+2019/10/04 19:29:40:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:29:40:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/04 19:29:40:Debug: "18465HL.ano.eswc" ----- 
+2019/10/04 19:29:40:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:29:40:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:29:40:Debug: "18465HL.ano.apo" ----- 
+2019/10/04 19:29:40:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:29:42:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/04 19:29:44:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:29:44:Debug: "18465HL.ano
+" 
+2019/10/04 19:29:45:Debug: receive: "messageport:6786
+" 
+2019/10/04 19:29:45:Debug: "6786" 
+2019/10/04 19:29:45:Debug: make a message socket 
+2019/10/04 19:29:45:Debug: socket connected. 
+2019/10/04 19:35:28:Debug: try to connect to server 
+2019/10/04 19:35:39:Debug: "HL:import.
+" 
+2019/10/04 19:35:56:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:35:56:Debug: Cannot find ./plugins directory!
+2019/10/04 19:35:56:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:36:03:Debug: transparency true 
+2019/10/04 19:36:06:Debug: try to connect to server 
+2019/10/04 19:36:07:Debug: send: "HL:login.
+" 
+2019/10/04 19:36:07:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:36:07:Debug: login successfully 
+2019/10/04 19:36:10:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:36:10:Debug: "18465HL.ano
+" 
+2019/10/04 19:36:11:Debug: receive: "messageport:6786
+" 
+2019/10/04 19:36:11:Debug: "6786" 
+2019/10/04 19:36:11:Debug: make a message socket 
+2019/10/04 19:36:11:Debug: socket connected. 
+2019/10/04 19:48:50:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:48:50:Debug: Cannot find ./plugins directory!
+2019/10/04 19:48:50:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:48:55:Debug: transparency true 
+2019/10/04 19:48:56:Debug: try to connect to server 
+2019/10/04 19:48:58:Debug: send: "HL:login.
+" 
+2019/10/04 19:48:59:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:48:59:Debug: login successfully 
+2019/10/04 19:50:12:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:50:12:Debug: Cannot find ./plugins directory!
+2019/10/04 19:50:12:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:50:16:Debug: transparency true 
+2019/10/04 19:50:18:Debug: try to connect to server 
+2019/10/04 19:50:20:Debug: send: "HL:login.
+" 
+2019/10/04 19:50:20:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:50:20:Debug: login successfully 
+2019/10/04 19:50:49:Debug: send: "HL:logout.
+" 
+2019/10/04 19:50:49:Debug: receive: "HL:logged out.
+" 
+2019/10/04 19:50:49:Debug: 111 
+2019/10/04 19:51:02:Debug: try to connect to server 
+2019/10/04 19:51:04:Debug: send: "HL:login.
+" 
+2019/10/04 19:51:04:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:51:04:Debug: login successfully 
+2019/10/04 19:51:38:Debug: "HL:import.
+" 
+2019/10/04 19:51:38:Debug: receive: "HL:import port :9998
+" 
+2019/10/04 19:51:38:Debug: 111111 
+2019/10/04 19:51:38:Debug: "9998" 
+2019/10/04 19:53:00:Debug: "18465HL.ano" 
+2019/10/04 19:53:00:Debug: 1 
+2019/10/04 19:53:00:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 19:53:00:Debug: 2 
+2019/10/04 19:53:00:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:53:00:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 19:53:00:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 19:53:00:Debug: "18465HL.ano" ----- 
+2019/10/04 19:53:00:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:53:00:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/04 19:53:00:Debug: "18465HL.ano.eswc" ----- 
+2019/10/04 19:53:00:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:53:00:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 19:53:00:Debug: "18465HL.ano.apo" ----- 
+2019/10/04 19:53:01:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 19:53:02:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/04 19:53:36:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:53:36:Debug: Cannot find ./plugins directory!
+2019/10/04 19:53:36:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:53:45:Debug: transparency true 
+2019/10/04 19:53:47:Debug: try to connect to server 
+2019/10/04 19:53:48:Debug: send: "HL:login.
+" 
+2019/10/04 19:53:48:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:53:48:Debug: login successfully 
+2019/10/04 19:53:52:Debug: "HL:download.
+" 
+2019/10/04 19:53:52:Debug: receive: "currentDir:18465HL.ano
+" 
+2019/10/04 19:53:52:Debug: "18465HL.ano" 
+2019/10/04 19:54:03:Debug: 88888 
+2019/10/04 19:54:03:Debug: "18465HL.ano" 
+2019/10/04 19:54:03:Debug: "HL choose:18465HL.ano" 
+2019/10/04 19:54:03:Debug: file new connection 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: 161 	 26 
+2019/10/04 19:54:03:Debug: "received 18465HL.ano" 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: 1259905 	 36 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: "received 18465HL.ano.eswc" 
+2019/10/04 19:54:03:Debug: in read file 
+2019/10/04 19:54:03:Debug: 452 	 34 
+2019/10/04 19:54:03:Debug: "received 18465HL.ano.apo" 
+2019/10/04 19:58:38:Debug: send: "HL:logout.
+" 
+2019/10/04 19:58:50:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:58:50:Debug: Cannot find ./plugins directory!
+2019/10/04 19:58:50:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 19:58:54:Debug: transparency true 
+2019/10/04 19:58:56:Debug: try to connect to server 
+2019/10/04 19:58:58:Debug: send: "HL:login.
+" 
+2019/10/04 19:59:02:Debug: receive: "HL:logged in.
+" 
+2019/10/04 19:59:02:Debug: login successfully 
+2019/10/04 19:59:09:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 19:59:09:Debug: "18465HL.ano" 
+2019/10/04 19:59:22:Debug: receive: "messageport:6786
+" 
+2019/10/04 19:59:22:Debug: "6786" 
+2019/10/04 19:59:22:Debug: make a message socket 
+2019/10/04 19:59:22:Debug: socket connected. 
+2019/10/04 20:00:27:Debug: try to connect to server 
+2019/10/04 20:00:50:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:00:50:Debug: Cannot find ./plugins directory!
+2019/10/04 20:00:50:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:00:54:Debug: transparency true 
+2019/10/04 20:01:02:Debug: try to connect to server 
+2019/10/04 20:01:03:Debug: send: "HL:login.
+" 
+2019/10/04 20:01:03:Debug: receive: "HL:logged in.
+" 
+2019/10/04 20:01:03:Debug: login successfully 
+2019/10/04 20:01:12:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 20:01:12:Debug: "18465HL.ano" 
+2019/10/04 20:01:14:Debug: receive: "messageport:6786
+" 
+2019/10/04 20:01:14:Debug: "6786" 
+2019/10/04 20:01:14:Debug: make a message socket 
+2019/10/04 20:01:14:Debug: socket connected. 
+2019/10/04 20:04:20:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/04 20:04:34:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:04:34:Debug: Cannot find ./plugins directory!
+2019/10/04 20:04:34:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:04:38:Debug: transparency true 
+2019/10/04 20:04:41:Debug: try to connect to server 
+2019/10/04 20:04:42:Debug: send: "HL:login.
+" 
+2019/10/04 20:04:42:Debug: receive: "HL:logged in.
+" 
+2019/10/04 20:04:42:Debug: login successfully 
+2019/10/04 20:04:45:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 20:04:45:Debug: "18465HL.ano" 
+2019/10/04 20:04:46:Debug: receive: "messageport:6786
+" 
+2019/10/04 20:04:46:Debug: "6786" 
+2019/10/04 20:04:46:Debug: make a message socket 
+2019/10/04 20:04:46:Debug: socket connected. 
+2019/10/04 20:04:46:Debug: manage socket state: QAbstractSocket::ConnectedState 
+2019/10/04 20:06:18:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:06:18:Debug: Cannot find ./plugins directory!
+2019/10/04 20:06:18:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:06:21:Debug: transparency true 
+2019/10/04 20:06:25:Debug: try to connect to server 
+2019/10/04 20:08:54:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:08:54:Debug: Cannot find ./plugins directory!
+2019/10/04 20:08:54:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:08:59:Debug: transparency true 
+2019/10/04 20:09:01:Debug: try to connect to server 
+2019/10/04 20:09:02:Debug: send: "HL:login.
+" 
+2019/10/04 20:09:02:Debug: receive: "HL:logged in.
+" 
+2019/10/04 20:09:02:Debug: login successfully 
+2019/10/04 20:09:08:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 20:09:08:Debug: "18465HL.ano" 
+2019/10/04 20:09:10:Debug: receive: "messageport:6786
+" 
+2019/10/04 20:09:10:Debug: "6786" 
+2019/10/04 20:09:10:Debug: make a message socket 
+2019/10/04 20:09:10:Debug: socket connected. 
+2019/10/04 20:09:10:Debug: manage socket state: QAbstractSocket::ConnectedState 
+2019/10/04 20:09:10:Warning: QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState
+2019/10/04 20:10:10:Debug: try to connect to server 
+2019/10/04 20:18:41:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:18:41:Debug: Cannot find ./plugins directory!
+2019/10/04 20:18:42:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:18:49:Debug: transparency true 
+2019/10/04 20:18:58:Debug: try to connect to server 
+2019/10/04 20:19:06:Debug: ManageSocket(0x1c55c88ea90) 
+2019/10/04 20:20:00:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:20:00:Debug: Cannot find ./plugins directory!
+2019/10/04 20:20:00:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:20:03:Debug: transparency true 
+2019/10/04 20:20:05:Debug: managesocket address: QObject(0x0)  
+2019/10/04 20:20:05:Debug: try to connect to server 
+2019/10/04 20:20:07:Debug: send: "HL:login.
+" 
+2019/10/04 20:20:07:Debug: receive: "HL:logged in.
+" 
+2019/10/04 20:20:07:Debug: login successfully 
+2019/10/04 20:20:16:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 20:20:16:Debug: "18465HL.ano" 
+2019/10/04 20:20:18:Debug: receive: "messageport:6786
+" 
+2019/10/04 20:20:18:Debug: "6786" 
+2019/10/04 20:20:18:Debug: make a message socket 
+2019/10/04 20:20:18:Debug: socket connected. 
+2019/10/04 20:20:18:Debug: manage socket state: QAbstractSocket::ConnectedState 
+2019/10/04 20:20:18:Debug: when socket disconnected ,manage socket state: QAbstractSocket::ConnectedState 
+2019/10/04 20:22:45:Debug: managesocket address: QObject(0x0)  
+2019/10/04 20:22:45:Debug: try to connect to server 
+2019/10/04 20:22:55:Debug: ManageSocket(0x1cb6dff6490) 
+2019/10/04 20:36:47:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:36:47:Debug: Cannot find ./plugins directory!
+2019/10/04 20:36:48:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:36:51:Debug: transparency true 
+2019/10/04 20:36:53:Debug: managesocket address: QObject(0x0)  
+2019/10/04 20:36:53:Debug: try to connect to server 
+2019/10/04 20:36:54:Warning: QObject::connect: Cannot connect (null)::disconnected() to (null)::deleteLater()
+2019/10/04 20:36:54:Debug: send: "HL:login.
+" 
+2019/10/04 20:36:54:Debug: receive: "HL:logged in.
+" 
+2019/10/04 20:36:54:Debug: login successfully 
+2019/10/04 20:36:57:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 20:36:57:Debug: "18465HL.ano" 
+2019/10/04 20:36:58:Debug: receive: "messageport:6786
+" 
+2019/10/04 20:36:58:Debug: "6786" 
+2019/10/04 20:36:58:Debug: make a message socket 
+2019/10/04 20:36:58:Debug: messagesocket connected. 
+2019/10/04 20:42:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:42:14:Debug: Cannot find ./plugins directory!
+2019/10/04 20:42:14:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 20:42:29:Debug: transparency true 
+2019/10/04 20:42:31:Debug: managesocket address: QObject(0x0)  
+2019/10/04 20:42:31:Debug: try to connect to server 
+2019/10/04 20:42:32:Warning: QObject::connect: Cannot connect (null)::disconnected() to (null)::deleteLater()
+2019/10/04 20:42:32:Debug: send: "HL:login.
+" 
+2019/10/04 20:42:32:Debug: receive: "HL:logged in.
+" 
+2019/10/04 20:42:32:Debug: login successfully 
+2019/10/04 20:42:37:Debug: receive: "loadcurrentDir:18465HL.ano
+" 
+2019/10/04 20:42:37:Debug: "18465HL.ano" 
+2019/10/04 20:42:38:Debug: receive: "messageport:6786
+" 
+2019/10/04 20:42:38:Debug: "6786" 
+2019/10/04 20:42:38:Debug: make a message socket 
+2019/10/04 20:42:38:Debug: messagesocket connected. 

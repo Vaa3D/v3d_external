@@ -255,6 +255,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
         connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
         managesocket=0;
+//        messagesocket=0;
 
     /*---------------------------------------------------*/
 
@@ -3937,7 +3938,8 @@ void PMain::setLockMagnification(bool locked)
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
 {
-    if(managesocket!=0/*|| managesocket->state()==QAbstractSocket::ConnectedState*/)
+    qDebug()<<"managesocket address:"<<managesocket;
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
          QMessageBox::information(this, tr("Error"),tr("have been logged."));
          return;
@@ -4008,6 +4010,7 @@ void PMain::login()
     if( !managesocket->waitForConnected())
     {
         QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
+        managesocket->deleteLater();
         return;
     }
     else{
@@ -4026,10 +4029,11 @@ void PMain::logout()
     {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
+
     }else {
         qDebug()<<"send:"<<QString(managesocket->name+":logout."+"\n");
         managesocket->write(QString(managesocket->name+":logout."+"\n").toUtf8());
-        loginAction->setText("log in");
+
     }
 }
 
@@ -4070,7 +4074,7 @@ void PMain::load()
 void PMain::deleteManageSocket()
 {
     managesocket->deleteLater();
-    managesocket=0;
+    loginAction->setText("log in");
 
 }
 
@@ -4078,10 +4082,10 @@ void ManageSocket::onReadyRead()
 {
     QRegExp LoginRex("(.*):logged in.");
     QRegExp LogoutRex("(.*):logged out.");
-    QRegExp ImportRex("(.*):import port :(.*)");
-    QRegExp CurrentDirExp("currentDir:(.*)");
-    QRegExp LoadCurrentDirExp("loadcurrentDir:(.*)");
-    QRegExp MessagePortExp("messageport:(.*).");
+    QRegExp ImportRex("(.*):import port :(.*)\n");
+    QRegExp CurrentDirExp("currentDir:(.*)\n");
+    QRegExp LoadCurrentDirExp("loadcurrentDir:(.*)\n");
+    QRegExp MessagePortExp("messageport:(.*)\n");
     if(this->canReadLine())
     {
         QString manageMsg=QString::fromUtf8(this->readLine());
@@ -4134,7 +4138,7 @@ void ManageSocket::onReadyRead()
 
 
 
-        }else if(CurrentDirExp.indexIn(manageMsg)!=-1)
+        }else if(CurrentDirExp.indexIn(manageMsg)!=-1&&LoadCurrentDirExp.indexIn(manageMsg)==-1)
         {
             QString currentDir=CurrentDirExp.cap(1);
             QStringList file_list=currentDir.split(";");
@@ -4187,12 +4191,42 @@ void ManageSocket::onReadyRead()
             QString messageport=MessagePortExp.cap(1);
             qDebug()<<messageport;
             //建立一个messagesocket
+            qDebug()<<"make a message socket";
+//            QTcpSocket socket;
+
+//            socket.connectToHost(ip,messageport.toInt());
+                messagesocket=new QTcpSocket;
+                connect(messagesocket,SIGNAL(disconnected()),messagesocket,SLOT(deleteLater()));
+                messagesocket->connectToHost(ip,messageport.toInt());
+
+                if(messagesocket->waitForConnected())
+                {
+                    qDebug()<<"messagesocket connected.";
+
+//                    messagesocket->disconnectFromHost();
+
+                }
+
+//            if(socket.waitForConnected())
+//            {
+//                qDebug()<<"socket connected.";
+//                qDebug()<<"manage socket state:"<<this->state();
+//                socket.disconnectFromHost();
+//                socket.disconnectFromHost();
+//                if(socket.state()==QAbstractSocket::UnconnectedState)
+//                {
+//                    qDebug()<<"when socket disconnected ,manage socket state:"<<this->state();
+//                }
+
+//            }
+
+
         }
     }
 }
 void ManageSocket::sendLoad(QListWidgetItem *item)
 {
-    this->write(QString(this->name+" load:"+item->text()+"."+"\n").toUtf8());
+    this->write(QString(this->name+" load:"+item->text()+"\n").toUtf8());
 }
 
 void ManageSocket::send(QListWidgetItem *item)
@@ -4203,7 +4237,7 @@ void ManageSocket::send(QListWidgetItem *item)
     {
         qDebug()<<"88888";
         qDebug()<<item->text();
-        this->write(QString(this->name+" choose:"+item->text()/*+"\n"*/).toUtf8());
+        this->write(QString(this->name+" choose:"+item->text()+"\n").toUtf8());
         qDebug()<<QString(this->name+" choose:"+item->text());
     }
 
@@ -4250,10 +4284,10 @@ void ManageSocket::readfileMsg()
             {
                 QMessageBox::information(0, tr("information"),tr("upload successfully."));
                 filesocket->disconnectFromHost();
-                if(filesocket->waitForDisconnected())
-                {
+//                if(filesocket->waitForDisconnected())
+//                {
                     filesocket->deleteLater();
-                }
+//                }
             }
         }
     }

@@ -14,7 +14,7 @@ void FileServer::incomingConnection(int socketDesc)
     socket->setSocketDescriptor(socketDesc);
     clientNum++;
     connect(socket,SIGNAL(readyRead()),socket,SLOT(readFile()));
-    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
+//    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
     connect(socket,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 //    connect(socket,SIGNAL(disconnected()),this,SLOT(ondisconnect()));
 //    connect(socket,SIGNAL(received(QString)),this,SLOT(received(QString)));
@@ -41,6 +41,7 @@ FileSocket::FileSocket(QObject *parent):QTcpSocket (parent)
 
 void FileSocket::readFile()
 {
+    qDebug()<<"in read file";
     QDataStream in(this);
     in.setVersion(QDataStream::Qt_4_7);
     if(this->m_bytesreceived==0)

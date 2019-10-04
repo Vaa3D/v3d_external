@@ -603,6 +603,7 @@ private:
 
 
 
+
 /*---------------------------------------------------*/
 
 
@@ -618,7 +619,8 @@ class ManageSocket:public QTcpSocket
 public:
     explicit ManageSocket(QObject *parent=0):QTcpSocket (parent)
     {
-        filesocket=0;
+        filesocket=0;messagesocket=0;
+
     }
     QString ip;
     QString manageport;
@@ -642,7 +644,7 @@ private:
     QString anofile_name,eswcfile_name,apofile_name;
 
 
-
+    QTcpSocket *messagesocket;
     QTcpSocket *filesocket;
 
 };
