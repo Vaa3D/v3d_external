@@ -16,29 +16,28 @@ static struct Agent {
 
 };
 static std::vector<Agent> Agents;
-V3dR_Communicator::V3dR_Communicator(bool *client_flag, QList<NeuronTree>* ntlist) :
-	QWidget()
+V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {
 	clienton = client_flag;
-	NTList_3Dview = ntlist;
+	NTList_SendPool = ntlist;
 	NTNumReceieved=0;
 	NeuronTree  nt = terafly::PluginInterface::getSWC();
 	int tempntsize = nt.listNeuron.size();
 	cout<<"tempnt size is liqiqqqqq "<<tempntsize<<endl;
-	
+
 	// NTNumcurrentUser = (*ntlist).size();
 	// std::cout<<"NTNumcurrentUser "<<NTNumcurrentUser<<std::endl;
-	
+
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
-    connect(socket, SIGNAL(connected()), this, SLOT(onConnected()));
-    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+	connect(socket, SIGNAL(connected()), this, SLOT(onConnected()));
+	connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
 }
 
-V3dR_Communicator::~V3dR_Communicator() {
+	V3dR_Communicator::~V3dR_Communicator() {
 
 }
 
@@ -166,6 +165,11 @@ bool V3dR_Communicator::SendLoginRequest() {
 	qDebug()<<"User:  "<<userName<<".  Connected with server: "<<serverName<<" :"<<vr_Port;
 	
 	return 1;
+}
+
+void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
+{
+	NTList_SendPool->append(seg);
 }
 
 void V3dR_Communicator::onReadySend(QString &send_MSG) {
@@ -368,9 +372,9 @@ void V3dR_Communicator::onReadyRead() {
 			qDebug()<<"receieved message :"<<message<<"  from user: "<<user<<"  type :"<<colortype;
 			//trans message to neurontree with colortype
 			//pMainApplication->UpdateNTList(message,colortype);
-			qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
-			Update3DViewNTList(message,colortype);
-			qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
+			//qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
+			//Update3DViewNTList(message,colortype);
+			//qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
 		}
     }
 }
@@ -404,65 +408,67 @@ void V3dR_Communicator::onDisconnected() {
 }
 
 
-void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
-{	
-	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
-	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
-	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
-	NeuronSWC S_temp;
-	NeuronTree tempNT;
-	tempNT.listNeuron.clear();
-	tempNT.hashNeuron.clear();
-	//each segment has a unique ID storing as its name
-	tempNT.name  = "sketch_"+ QString("%1").arg(NTNumReceieved++);
-	for(int i=0;i<str_size;i++)
-	{
-		qsl[i].truncate(99);
-		//qDebug()<<qsl[i];
-		int iy = i%7;
-		if (iy==0)
-		{
-			S_temp.n = qsl[i].toInt();
-		}
-		else if (iy==1)
-		{
-			S_temp.type = type;
-		}
-		else if (iy==2)
-		{
-			S_temp.x = qsl[i].toFloat();
+//void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
+//{	
+//	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
+//	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
+//	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
+//	NeuronSWC S_temp;
+//	NeuronTree tempNT;
+//	tempNT.listNeuron.clear();
+//	tempNT.hashNeuron.clear();
+//	//each segment has a unique ID storing as its name
+//	tempNT.name  = "sketch_"+ QString("%1").arg(NTNumReceieved++);
+//	for(int i=0;i<str_size;i++)
+//	{
+//		qsl[i].truncate(99);
+//		//qDebug()<<qsl[i];
+//		int iy = i%7;
+//		if (iy==0)
+//		{
+//			S_temp.n = qsl[i].toInt();
+//		}
+//		else if (iy==1)
+//		{
+//			S_temp.type = type;
+//		}
+//		else if (iy==2)
+//		{
+//			S_temp.x = qsl[i].toFloat();
+//
+//		}
+//		else if (iy==3)
+//		{
+//			S_temp.y = qsl[i].toFloat();
+//
+//		}
+//		else if (iy==4)
+//		{
+//			S_temp.z = qsl[i].toFloat();
+//
+//		}
+//		else if (iy==5)
+//		{
+//			S_temp.r = qsl[i].toFloat();
+//
+//		}
+//		else if (iy==6)
+//		{
+//			S_temp.pn = qsl[i].toInt();
+//
+//			tempNT.listNeuron.append(S_temp);
+//			tempNT.hashNeuron.insert(S_temp.n, tempNT.listNeuron.size()-1);
+//		}
+//	}//*/
+//	//RGBA8 tmp= {(unsigned int)type};
+//	//tempNT.color = tmp;
+//	tempNT.color.i=type;
+//	NTList_3Dview->push_back(tempNT);
+//	qDebug()<<"receieved nt name is "<<tempNT.name;
+//	//updateremoteNT
+//}
 
-		}
-		else if (iy==3)
-		{
-			S_temp.y = qsl[i].toFloat();
 
-		}
-		else if (iy==4)
-		{
-			S_temp.z = qsl[i].toFloat();
-
-		}
-		else if (iy==5)
-		{
-			S_temp.r = qsl[i].toFloat();
-
-		}
-		else if (iy==6)
-		{
-			S_temp.pn = qsl[i].toInt();
-
-			tempNT.listNeuron.append(S_temp);
-			tempNT.hashNeuron.insert(S_temp.n, tempNT.listNeuron.size()-1);
-		}
-	}//*/
-	//RGBA8 tmp= {(unsigned int)type};
-	//tempNT.color = tmp;
-	tempNT.color.i=type;
-	NTList_3Dview->push_back(tempNT);
-	qDebug()<<"receieved nt name is "<<tempNT.name;
-	//updateremoteNT
-}
 
 
 //void V3dR_Communicator::SendHMDPosition()
