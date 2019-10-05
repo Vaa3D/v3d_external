@@ -59,6 +59,7 @@
 #include <QMessageBox>
 #include <QFile>
 #include "fileserver.h"
+#include "messageserverandmessagesocket.h"
 
 #include "../../v3d/CustomDefine.h"
 
@@ -4202,33 +4203,10 @@ void ManageSocket::onReadyRead()
             qDebug()<<messageport;
             //建立一个messagesocket
             qDebug()<<"make a message socket";
-//            QTcpSocket socket;
 
-//            socket.connectToHost(ip,messageport.toInt());
-//                messagesocket=new QTcpSocket;
-//                connect(messagesocket,SIGNAL(disconnected()),messagesocket,SLOT(deleteLater()));
-//                messagesocket->connectToHost(ip,messageport.toInt());
+            messagesocket=new MessageSocket(ip,messageport,name); //make a message socket to communicate
+            // messagesocket 是一个全局变量与this无关
 
-//                if(messagesocket->waitForConnected())
-//                {
-//                    qDebug()<<"messagesocket connected.";
-
-//                    messagesocket->disconnectFromHost();
-
-//                }
-
-//            if(socket.waitForConnected())
-//            {
-//                qDebug()<<"socket connected.";
-//                qDebug()<<"manage socket state:"<<this->state();
-//                socket.disconnectFromHost();
-//                socket.disconnectFromHost();
-//                if(socket.state()==QAbstractSocket::UnconnectedState)
-//                {
-//                    qDebug()<<"when socket disconnected ,manage socket state:"<<this->state();
-//                }
-
-//            }
 
 
         }
