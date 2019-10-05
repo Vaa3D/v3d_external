@@ -5600,3 +5600,10 @@
 " 
 2019/10/04 23:23:05:Debug: "6786" 
 2019/10/04 23:23:05:Debug: make a message socket 
+2019/10/05 20:43:42:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/05 20:43:42:Debug: Cannot find ./plugins directory!
+2019/10/05 20:43:42:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/05 20:43:46:Debug: transparency true 
+2019/10/05 20:43:48:Debug: managesocket address: QObject(0x0)  
+2019/10/05 20:43:48:Debug: try to connect to server 
+2019/10/05 20:43:50:Debug: WRONG!EMPTY!  

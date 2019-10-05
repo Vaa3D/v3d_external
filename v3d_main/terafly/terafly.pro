@@ -263,9 +263,9 @@ HEADERS += ../terafly/src/control/QUndoMarkerDelete.h
 HEADERS += ../terafly/src/control/QUndoMarkerDeleteROI.h
 
 HEADERS += ../terafly/src/presentation/fileserver.h
-HEADERS += ../terafly/src/presentation/messageserverandmessagesocket.h
+HEADERS +=
 SOURCES += ../terafly/src/presentation/fileserver.cpp
-SOURCES += ../terafly/src/presentation/messageserverandmessagesocket.cpp
+SOURCES +=
 
 SOURCES += ../terafly/src/control/CAnnotations.cpp
 SOURCES += ../terafly/src/control/CConverter.cpp
