@@ -1749,14 +1749,14 @@ bool V3d_PluginLoader::teraflyImgInstance()
 	return terafly::PluginInterface::teraflyImgInstance();
 }
 
-int V3d_PluginLoader::getSelectedMarkerNum()
+void V3d_PluginLoader::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
 {
-	return terafly::PluginInterface::getSelectedMarkerNum();
+	terafly::PluginInterface::getSelectedMarkerList(selectedMarkerList, selectedLocalMarkerList);
 }
 
-bool V3d_PluginLoader::getSelectedMarkerCoords(int markerCoords[])
+void V3d_PluginLoader::refreshSelectedMarkers()
 {
-	return terafly::PluginInterface::getSelectedMarkerCoords(markerCoords);
+	terafly::PluginInterface::refreshSelectedMarkers();
 }
 
 #ifdef __ALLOW_VR_FUNCS__

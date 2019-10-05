@@ -576,12 +576,9 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 
 bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
 {
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
 	
 	if (!currViewerPtr->volumeCutSbAdjusted) return false;
-	displayingVolDims[0] = currViewerPtr->getXDim();
-	displayingVolDims[1] = currViewerPtr->getYDim();
-	displayingVolDims[2] = currViewerPtr->getZDim();
 
 	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
 	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
@@ -589,6 +586,10 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
 	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
 	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
+
+	displayingVolDims[0] = currViewerPtr->getXDim();
+	displayingVolDims[1] = currViewerPtr->getYDim();
+	displayingVolDims[2] = currViewerPtr->getZDim();
 
 	if (currViewerPtr->xMinAdjusted) localCoords[0] = PDialogProofreading::instance()->sbXlb;
 	else localCoords[0] = 1;
@@ -611,26 +612,20 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 	else return true;
 }
 
-int tf::PluginInterface::getSelectedMarkerNum()
+void tf::PluginInterface::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
 {
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	return currViewerPtr->selectedMarkerCoords.size();
+	selectedMarkerList = currViewerPtr->selectedMarkerList;
+	selectedLocalMarkerList = currViewerPtr->selectedLocalMarkerList;
 }
 
-bool tf::PluginInterface::getSelectedMarkerCoords(int markerCoords[])
+void tf::PluginInterface::refreshSelectedMarkers()
 {
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
-	int markerNum = currViewerPtr->selectedMarkerCoords.size();
-	if (markerNum == 0) return false;
-
-	for (int i = 0; i < markerNum; ++i)
-	{
-		for (int j = 0; j < 3; ++j)
-		{
-			markerCoords[i * 3 + j] = currViewerPtr->selectedMarkerCoords.at(i).at(j);
-		}
-	}
-
-	return true;
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	currViewerPtr->selectedMarkerList.clear();
+	
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+		it->selected = false;
 }
 // -------------------------------------------------------------------------------------------------------- //

@@ -668,16 +668,18 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 			{
 				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
 				QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;				
-				this->selectedMarkerCoords.clear();
+				this->selectedMarkerList.clear();
+				this->selectedLocalMarkerList.clear();
 				for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
 				{
 					if (markerIt->selected)
 					{
-						vector<int> currMarker(3);
-						currMarker[0] = int(markerIt->x);
-						currMarker[1] = int(markerIt->y);
-						currMarker[2] = int(markerIt->z);
-						this->selectedMarkerCoords.push_back(currMarker);
+						this->selectedLocalMarkerList.push_back(*markerIt);
+						ImageMarker currMarker = *markerIt;
+						currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+						currMarker.y = coord2global<float>(markerIt->y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+						currMarker.z = coord2global<float>(markerIt->z, iim::depth,      false, -1, false, false, __itm__current__function__);
+						this->selectedMarkerList.push_back(currMarker);
 					}
 				}
 			}

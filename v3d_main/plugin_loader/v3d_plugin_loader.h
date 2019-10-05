@@ -232,8 +232,8 @@ public:
 	virtual void changeFragTraceStatus(bool newStatus);
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
-	virtual int getSelectedMarkerNum();
-	virtual bool getSelectedMarkerCoords(int markerCoords[]);
+	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
+	virtual void refreshSelectedMarkers();
 
 	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
