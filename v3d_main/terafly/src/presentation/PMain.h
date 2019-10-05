@@ -42,6 +42,7 @@
 #include "QGLRefSys.h"
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
+#include "fileserver.h"
 
 /*----------------collaborate mdoe-------------------*/
 class ManageSocket;
@@ -620,6 +621,7 @@ public:
     explicit ManageSocket(QObject *parent=0):QTcpSocket (parent)
     {
         filesocket=0;messagesocket=0;
+        fileserver=0;
 
     }
     QString ip;
@@ -646,6 +648,7 @@ private:
 
     QTcpSocket *messagesocket;
     QTcpSocket *filesocket;
+    FileServer *fileserver;
 
 };
 /*---------------------------------------------------*/

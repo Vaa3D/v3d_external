@@ -5384,3 +5384,219 @@
 2019/10/04 20:42:38:Debug: "6786" 
 2019/10/04 20:42:38:Debug: make a message socket 
 2019/10/04 20:42:38:Debug: messagesocket connected. 
+2019/10/04 23:07:51:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:07:51:Debug: Cannot find ./plugins directory!
+2019/10/04 23:07:51:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:08:07:Debug: transparency true 
+2019/10/04 23:08:10:Debug: managesocket address: QObject(0x0)  
+2019/10/04 23:08:10:Debug: try to connect to server 
+2019/10/04 23:08:13:Debug: send: "HL:login.
+" 
+2019/10/04 23:08:13:Debug: receive: "HL:logged in.
+" 
+2019/10/04 23:08:13:Debug: login successfully 
+2019/10/04 23:08:41:Debug: "HL:import.
+" 
+2019/10/04 23:08:41:Debug: receive: "HL:import port :9998.
+" 
+2019/10/04 23:08:41:Debug: 111111 
+2019/10/04 23:08:41:Debug: "9998" 
+2019/10/04 23:09:09:Debug: "18465HL.ano" 
+2019/10/04 23:09:09:Debug: 1 
+2019/10/04 23:09:09:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 23:09:09:Debug: 2 
+2019/10/04 23:09:09:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 23:09:09:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 23:09:09:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 23:14:41:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:14:41:Debug: Cannot find ./plugins directory!
+2019/10/04 23:14:41:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:14:54:Debug: transparency true 
+2019/10/04 23:14:55:Debug: managesocket address: QObject(0x0)  
+2019/10/04 23:14:55:Debug: try to connect to server 
+2019/10/04 23:14:57:Debug: send: "HL:login.
+" 
+2019/10/04 23:14:57:Debug: receive: "HL:logged in.
+" 
+2019/10/04 23:14:57:Debug: login successfully 
+2019/10/04 23:15:04:Debug: "HL:import.
+" 
+2019/10/04 23:15:04:Debug: receive: "HL:import port :9998.
+" 
+2019/10/04 23:15:04:Debug: 111111 
+2019/10/04 23:15:04:Debug: "9998" 
+2019/10/04 23:15:09:Debug: "18465HL.ano" 
+2019/10/04 23:15:09:Debug: 1 
+2019/10/04 23:15:09:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 23:15:09:Debug: 2 
+2019/10/04 23:15:09:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 23:15:09:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 23:15:09:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 23:15:09:Debug: receive filemsg: "received 18465HL.ano" 
+2019/10/04 23:16:28:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:16:28:Debug: Cannot find ./plugins directory!
+2019/10/04 23:16:29:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:16:39:Debug: transparency true 
+2019/10/04 23:16:41:Debug: managesocket address: QObject(0x0)  
+2019/10/04 23:16:41:Debug: try to connect to server 
+2019/10/04 23:16:43:Debug: send: "HL:login.
+" 
+2019/10/04 23:16:43:Debug: receive: "HL:logged in.
+" 
+2019/10/04 23:16:43:Debug: login successfully 
+2019/10/04 23:16:46:Debug: "HL:import.
+" 
+2019/10/04 23:16:46:Debug: receive: "HL:import port :9998.
+" 
+2019/10/04 23:16:46:Debug: 111111 
+2019/10/04 23:16:46:Debug: "9998" 
+2019/10/04 23:16:51:Debug: "18465HL.ano" 
+2019/10/04 23:16:51:Debug: 1 
+2019/10/04 23:16:51:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 23:16:51:Debug: 2 
+2019/10/04 23:16:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 23:16:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 23:16:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 23:16:51:Debug: receive filemsg: "received 18465HL.ano
+" 
+2019/10/04 23:16:51:Debug: "18465HL.ano" ----- 
+2019/10/04 23:16:51:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 23:16:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/04 23:16:51:Debug: receive filemsg: "received 18465HL.ano.eswc
+" 
+2019/10/04 23:16:51:Debug: "18465HL.ano.eswc" ----- 
+2019/10/04 23:16:51:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 23:16:51:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 23:16:51:Debug: receive filemsg: "received 18465HL.ano.apo
+" 
+2019/10/04 23:16:51:Debug: "18465HL.ano.apo" ----- 
+2019/10/04 23:16:51:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 23:18:46:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:18:46:Debug: Cannot find ./plugins directory!
+2019/10/04 23:18:46:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:18:56:Debug: transparency true 
+2019/10/04 23:18:58:Debug: managesocket address: QObject(0x0)  
+2019/10/04 23:18:58:Debug: try to connect to server 
+2019/10/04 23:18:59:Debug: send: "HL:login.
+" 
+2019/10/04 23:18:59:Debug: receive: "HL:logged in.
+" 
+2019/10/04 23:18:59:Debug: login successfully 
+2019/10/04 23:19:08:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:19:08:Debug: Cannot find ./plugins directory!
+2019/10/04 23:19:08:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:19:16:Debug: transparency true 
+2019/10/04 23:19:20:Debug: managesocket address: QObject(0x0)  
+2019/10/04 23:19:20:Debug: try to connect to server 
+2019/10/04 23:19:21:Debug: send: "HL:login.
+" 
+2019/10/04 23:19:21:Debug: receive: "HL:logged in.
+" 
+2019/10/04 23:19:21:Debug: login successfully 
+2019/10/04 23:19:27:Debug: "HL:download.
+" 
+2019/10/04 23:19:27:Debug: receive: "currentDir:18465HL.ano.
+" 
+2019/10/04 23:19:27:Debug: "18465HL.ano" 
+2019/10/04 23:19:32:Debug: 88888 
+2019/10/04 23:19:32:Debug: "18465HL.ano" 
+2019/10/04 23:19:32:Debug: "HL choose:18465HL.ano" 
+2019/10/04 23:19:32:Debug: file new connection 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: 161 	 26 
+2019/10/04 23:19:32:Debug: "received 18465HL.ano" 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: 1259905 	 36 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: "received 18465HL.ano.eswc" 
+2019/10/04 23:19:32:Debug: in read file 
+2019/10/04 23:19:32:Debug: 452 	 34 
+2019/10/04 23:19:32:Debug: "received 18465HL.ano.apo" 
+2019/10/04 23:21:19:Debug: "HL:load.
+" 
+2019/10/04 23:21:49:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:21:49:Debug: Cannot find ./plugins directory!
+2019/10/04 23:21:49:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:21:53:Debug: transparency true 
+2019/10/04 23:21:55:Debug: managesocket address: QObject(0x0)  
+2019/10/04 23:21:55:Debug: try to connect to server 
+2019/10/04 23:21:55:Debug: send: "HL:login.
+" 
+2019/10/04 23:21:55:Debug: receive: "HL:logged in.
+" 
+2019/10/04 23:21:55:Debug: login successfully 
+2019/10/04 23:21:59:Debug: "HL:load.
+" 
+2019/10/04 23:21:59:Debug: receive: "loadcurrentDir:18465HL.ano.
+" 
+2019/10/04 23:21:59:Debug: "18465HL.ano" 
+2019/10/04 23:22:01:Debug: receive: "messageport:6786.
+" 
+2019/10/04 23:22:01:Debug: "6786" 
+2019/10/04 23:22:01:Debug: make a message socket 
+2019/10/04 23:22:19:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2019/10/04 23:22:22:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:22:22:Debug: Cannot find ./plugins directory!
+2019/10/04 23:22:22:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/04 23:22:42:Debug: transparency true 
+2019/10/04 23:22:44:Debug: managesocket address: QObject(0x0)  
+2019/10/04 23:22:44:Debug: try to connect to server 
+2019/10/04 23:22:45:Debug: send: "HL:login.
+" 
+2019/10/04 23:22:45:Debug: receive: "HL:logged in.
+" 
+2019/10/04 23:22:45:Debug: login successfully 
+2019/10/04 23:22:48:Debug: "HL:import.
+" 
+2019/10/04 23:22:48:Debug: receive: "HL:import port :9998.
+" 
+2019/10/04 23:22:48:Debug: 111111 
+2019/10/04 23:22:48:Debug: "9998" 
+2019/10/04 23:22:53:Debug: "18465HL.ano" 
+2019/10/04 23:22:53:Debug: 1 
+2019/10/04 23:22:53:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/04 23:22:53:Debug: 2 
+2019/10/04 23:22:53:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 23:22:53:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/04 23:22:53:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/04 23:22:53:Debug: receive filemsg: "received 18465HL.ano
+" 
+2019/10/04 23:22:53:Debug: "18465HL.ano" ----- 
+2019/10/04 23:22:53:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 23:22:53:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/04 23:22:53:Debug: receive filemsg: "received 18465HL.ano.eswc
+" 
+2019/10/04 23:22:53:Debug: "18465HL.ano.eswc" ----- 
+2019/10/04 23:22:53:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 23:22:53:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/04 23:22:53:Debug: receive filemsg: "received 18465HL.ano.apo
+" 
+2019/10/04 23:22:53:Debug: "18465HL.ano.apo" ----- 
+2019/10/04 23:22:53:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/04 23:23:03:Debug: "HL:load.
+" 
+2019/10/04 23:23:03:Debug: receive: "loadcurrentDir:18465HL.ano.
+" 
+2019/10/04 23:23:03:Debug: "18465HL.ano" 
+2019/10/04 23:23:05:Debug: receive: "messageport:6786.
+" 
+2019/10/04 23:23:05:Debug: "6786" 
+2019/10/04 23:23:05:Debug: make a message socket 
