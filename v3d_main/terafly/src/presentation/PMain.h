@@ -43,7 +43,7 @@
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
 #include "fileserver.h"
-#include "messageserverandmessagesocket.h"
+
 
 /*----------------collaborate mdoe-------------------*/
 class ManageSocket;
@@ -615,19 +615,15 @@ private:
 
 /*----------------collaborate mdoe-------------------*/
 
-MessageSocket *messagesocket=0;
+//MessageSocket *messagesocket=0;
 class ManageSocket:public QTcpSocket
 {
     Q_OBJECT
 
 
 public:
-    explicit ManageSocket(QObject *parent=0):QTcpSocket (parent)
-    {
-        filesocket=0;
-        fileserver=0;
+    explicit ManageSocket(QObject *parent=0);
 
-    }
     QString ip;
     QString manageport;
     QString name;
