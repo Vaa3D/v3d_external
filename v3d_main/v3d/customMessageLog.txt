@@ -5607,3 +5607,50 @@
 2019/10/05 20:43:48:Debug: managesocket address: QObject(0x0)  
 2019/10/05 20:43:48:Debug: try to connect to server 
 2019/10/05 20:43:50:Debug: WRONG!EMPTY!  
+2019/10/05 20:49:04:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/05 20:49:04:Debug: Cannot find ./plugins directory!
+2019/10/05 20:49:04:Debug: "I:/vaa3d/v3d_external/v3d_main/v3d" 
+2019/10/05 20:49:09:Debug: transparency true 
+2019/10/05 20:49:11:Debug: managesocket address: QObject(0x0)  
+2019/10/05 20:49:11:Debug: try to connect to server 
+2019/10/05 20:49:45:Debug: send: "HL:login.
+" 
+2019/10/05 20:49:45:Debug: receive: "HL:logged in.
+" 
+2019/10/05 20:49:45:Debug: login successfully 
+2019/10/05 20:49:58:Debug: "HL:import.
+" 
+2019/10/05 20:49:58:Debug: receive: "HL:import port :9998.
+" 
+2019/10/05 20:49:58:Debug: 111111 
+2019/10/05 20:49:58:Debug: "9998" 
+2019/10/05 20:50:12:Debug: "18465HL.ano" 
+2019/10/05 20:50:12:Debug: 1 
+2019/10/05 20:50:12:Debug: "18465HL.ano.eswc" : "18465HL.ano.apo" 
+2019/10/05 20:50:12:Debug: 2 
+2019/10/05 20:50:12:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" : "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/05 20:50:12:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" 
+2019/10/05 20:50:12:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano" +++ 
+2019/10/05 20:50:12:Debug: receive filemsg: "received 18465HL.ano
+" 
+2019/10/05 20:50:12:Debug: "18465HL.ano" ----- 
+2019/10/05 20:50:12:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/05 20:50:12:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.eswc" 
+2019/10/05 20:50:12:Debug: receive filemsg: "received 18465HL.ano.eswc
+" 
+2019/10/05 20:50:12:Debug: "18465HL.ano.eswc" ----- 
+2019/10/05 20:50:12:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/05 20:50:12:Debug: "C:/Users/seu-allen/Desktop/HL18465_00319/18465HL.ano.apo" 
+2019/10/05 20:50:12:Debug: receive filemsg: "received 18465HL.ano.apo
+" 
+2019/10/05 20:50:12:Debug: "18465HL.ano.apo" ----- 
+2019/10/05 20:50:12:Debug: "18465HL.ano" "18465HL.ano.eswc" "18465HL.ano.apo" 
+2019/10/05 20:50:18:Debug: "HL:load.
+" 
+2019/10/05 20:50:18:Debug: receive: "loadcurrentDir:18465HL.ano.
+" 
+2019/10/05 20:50:18:Debug: "18465HL.ano" 
+2019/10/05 20:50:20:Debug: receive: "messageport:6646.
+" 
+2019/10/05 20:50:20:Debug: "6646" 
+2019/10/05 20:50:20:Debug: make a message socket 
