@@ -56,6 +56,10 @@
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
 # include <algorithm>
+#include <QMessageBox>
+#include <QFile>
+#include "fileserver.h"
+#include "messageserverandmessagesocket.h"
 
 #include "../../v3d/CustomDefine.h"
 
@@ -231,6 +235,34 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
+
+    /*----------------collaborate mdoe-------------------*/
+        collaborateMenu=menuBar->addMenu("Collaborate");
+        loginAction=new QAction("log in",this);
+        logoutAction=new QAction("log out",this);
+        importAction=new QAction("import annotation to cloud",this);
+        downAction=new QAction("Download annotation from cloud",this);
+        loadAction= new QAction("Load annotation and start collaborate",this);
+
+        collaborateMenu->addAction(loginAction);
+        collaborateMenu->addAction(importAction);
+        collaborateMenu->addAction(downAction);
+        collaborateMenu->addAction(loadAction);
+        collaborateMenu->addAction(logoutAction);
+
+        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
+        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
+        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
+        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
+        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
+        managesocket=0;
+        logoutAction->setEnabled(false);
+
+
+//        messagesocket=0;
+
+    /*---------------------------------------------------*/
+
     /* ------------------------- "Options" menu -------------------------- */
     optionsMenu = menuBar->addMenu("Options");
     /* ------------------------- "Options" menu: Import ------------------ */
@@ -1155,6 +1187,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
 
     /**/tf::debug(tf::LEV1, "object successfully constructed", __itm__current__function__);
+
+
 }
 
 //reset everything
@@ -3903,4 +3937,385 @@ void PMain::updateAnnotationStatus()
 void PMain::setLockMagnification(bool locked)
 {
     isMagnificationLocked = locked;
+<<<<<<< HEAD
 }
+
+/*----------------collaborate mdoe-------------------*/
+void PMain::login()
+{
+    qDebug()<<"managesocket address:"<<managesocket;
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+         QMessageBox::information(this, tr("Error"),tr("have been logged."));
+         return;
+    }
+
+
+
+    QSettings settings("HHMI", "Vaa3D");
+    qDebug()<<"try to connect to server";
+    QString serverNameDefault = "";
+    if(!settings.value("vr_serverName").toString().isEmpty())
+        serverNameDefault = settings.value("vr_serverName").toString();
+    bool ok1;
+    QString serverName = QInputDialog::getText(0, "Server Address",
+        "Please enter the server address:", QLineEdit::Normal,
+        serverNameDefault, &ok1);
+    QString manageserver_Port;
+    QString userName;
+
+    if(!ok1||serverName.isEmpty())
+    {
+        qDebug()<<"WRONG!EMPTY! ";
+        return ;
+    }else
+    {
+        settings.setValue("vr_serverName", serverName);
+        QString PortDefault = "";
+        if(!settings.value("vr_PORT").toString().isEmpty())
+            PortDefault = settings.value("vr_PORT").toString();
+        bool ok2;
+         manageserver_Port = QInputDialog::getText(0, "Port",//
+            "Please enter server port:", QLineEdit::Normal,
+            PortDefault, &ok2);
+
+        if(!ok2 || manageserver_Port.isEmpty())//
+        {
+            qDebug()<<"WRONG!EMPTY! ";
+            return ;
+        }
+        else
+        {
+            settings.setValue("vr_PORT", manageserver_Port);//
+            QString userNameDefault = "";
+            if(!settings.value("vr_userName").toString().isEmpty())
+                userNameDefault = settings.value("vr_userName").toString();
+            bool ok3;
+             userName = QInputDialog::getText(0, "Lgoin Name",
+                "Please enter your login name:", QLineEdit::Normal,
+                userNameDefault, &ok3);
+
+            if(!ok3 || userName.isEmpty())
+            {
+                qDebug()<<"WRONG!EMPTY! ";
+                //return SendLoginRequest();
+                return ;
+            }else
+                settings.setValue("vr_userName", userName);
+        }
+    }
+
+    managesocket=new ManageSocket;
+    managesocket->ip=serverName;
+    managesocket->manageport=manageserver_Port;
+    managesocket->name=userName;
+
+    managesocket->connectToHost(serverName,manageserver_Port.toInt());
+
+    if( !managesocket->waitForConnected())
+    {
+        managesocket->deleteLater();
+        QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
+        return;
+    }
+    else{
+        qDebug()<<"send:"<<QString(userName+":login."+"\n");
+        managesocket->write(QString(userName+":login."+"\n").toUtf8());
+        connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
+        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+        loginAction->setText(serverName);
+        loginAction->setEnabled(false);
+        logoutAction->setEnabled(true);
+    }
+}
+
+void PMain::logout()
+{
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+
+        managesocket->write(QString(managesocket->name+":logout."+"\n").toUtf8());
+        qDebug()<<"send:"<<QString(managesocket->name+":logout."+"\n");
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+}
+
+void PMain::import()
+{
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+        managesocket->write(QString(managesocket->name+":import."+"\n").toUtf8());
+        qDebug()<<QString(managesocket->name+":import."+"\n");
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+
+}
+
+void PMain::download()
+{
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+
+        managesocket->write(QString(managesocket->name+":download."+"\n").toUtf8());
+        qDebug()<<QString(managesocket->name+":download."+"\n");
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+}
+
+void PMain::load()
+{
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+
+        managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
+        qDebug()<<QString(managesocket->name+":load."+"\n");
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+}
+void PMain::deleteManageSocket()
+{
+//    managesocket->deleteLater();
+    loginAction->setText("log in");
+    loginAction->setEnabled(true);
+    logoutAction->setEnabled(false);
+}
+
+void ManageSocket::onReadyRead()
+{
+    QRegExp LoginRex("(.*):logged in.\n");
+    QRegExp LogoutRex("(.*):logged out.\n");
+    QRegExp ImportRex("(.*):import port :(.*).\n");
+    QRegExp CurrentDirExp("currentDir:(.*).\n");
+    QRegExp LoadCurrentDirExp("loadcurrentDir:(.*).\n");
+    QRegExp MessagePortExp("messageport:(.*).\n");
+    if(this->canReadLine())
+    {
+        QString manageMsg=QString::fromUtf8(this->readLine());
+        qDebug()<<"receive:"<<manageMsg;
+        if(LoginRex.indexIn(manageMsg)!=-1)
+        {
+           qDebug()<<"login successfully";
+           QMessageBox::information(0, tr("information"),tr("login successfully."));
+        }else if (LogoutRex.indexIn(manageMsg)!=-1)
+        {
+                qDebug()<<"111";
+            this->disconnectFromHost();
+                this->deleteLater();
+        }else if(ImportRex.indexIn(manageMsg)!=-1)
+        {
+            qDebug()<<"111111";
+            QString fileport=ImportRex.cap(2);
+            qDebug()<<fileport;
+            filesocket= new QTcpSocket;
+            connect(filesocket,SIGNAL(readyRead()),this,SLOT(readfileMsg()));
+            filesocket->connectToHost(ip,fileport.toInt());
+            if(filesocket->state()==QAbstractSocket::UnconnectedState)
+            {
+                qDebug()<<"222";
+                return ;
+            }
+
+            anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
+            QFileInfo  anofile_info(anofile_path);
+            anofile_name=anofile_info.fileName();
+            qDebug()<<anofile_name;
+            QRegExp tmpFileExp("(.*).ano");
+            if(tmpFileExp.indexIn(anofile_name)!=-1)
+              {
+                qDebug()<<"1";
+                eswcfile_name=tmpFileExp.cap(1)+".ano.eswc";
+                apofile_name=tmpFileExp.cap(1)+".ano.apo";
+                qDebug()<<eswcfile_name<<":"<<apofile_name;
+            }
+            QRegExp tmpPathExp("(.*).ano");
+            if(tmpPathExp.indexIn(anofile_path)!=-1)
+            {
+                qDebug()<<"2";
+                eswcfile_path=tmpPathExp.cap(1)+".ano.eswc";
+                apofile_path=tmpPathExp.cap(1)+".ano.apo";
+                qDebug()<<eswcfile_path<<":"<<apofile_path;
+            }
+
+            sendFile(filesocket, anofile_path, anofile_name);//
+            qDebug()<<anofile_path<<"+++";
+
+
+
+
+        }else if(CurrentDirExp.indexIn(manageMsg)!=-1&&LoadCurrentDirExp.indexIn(manageMsg)==-1)
+        {
+            QString currentDir=CurrentDirExp.cap(1);
+            QStringList file_list=currentDir.split(";");
+            QWidget *widget=new QWidget(0);
+            widget->setWindowTitle("choose annotation file ");
+            QListWidget *filelistWidget=new QListWidget;
+            QVBoxLayout mainlayout(widget);
+
+            mainlayout.addWidget(filelistWidget);
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                    this,SLOT(send(QListWidgetItem*)));
+
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                    widget,SLOT(close()));
+            filelistWidget->clear();
+            for(uint i=0;i<file_list.size();i++)
+            {
+                QIcon icon("file.png");
+                QListWidgetItem *tmp=new QListWidgetItem(icon,file_list.at(i));
+                qDebug()<<file_list.at(i);
+                filelistWidget->addItem(tmp);
+            }
+            widget->show();
+        }else if(LoadCurrentDirExp.indexIn(manageMsg)!=-1)
+        {
+            QString currentDir=LoadCurrentDirExp.cap(1);
+            QStringList file_list=currentDir.split(";");
+            QWidget *widget=new QWidget(0);
+            widget->setWindowTitle("choose annotation file ");
+            QListWidget *filelistWidget=new QListWidget;
+            QVBoxLayout mainlayout(widget);
+
+            mainlayout.addWidget(filelistWidget);
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                    this,SLOT(sendLoad(QListWidgetItem*)));
+
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                    widget,SLOT(close()));
+            filelistWidget->clear();
+            for(uint i=0;i<file_list.size();i++)
+            {
+                QIcon icon("file.png");
+                QListWidgetItem *tmp=new QListWidgetItem(icon,file_list.at(i));
+                qDebug()<<file_list.at(i);
+                filelistWidget->addItem(tmp);
+            }
+            widget->show();
+        }else if(MessagePortExp.indexIn(manageMsg)!=-1)
+        {
+            QString messageport=MessagePortExp.cap(1);
+            qDebug()<<messageport;
+            //建立一个messagesocket
+            qDebug()<<"make a message socket";
+
+            messagesocket=new MessageSocket(ip,messageport,name); //make a message socket to communicate
+            // messagesocket 是一个全局变量与this无关
+
+
+
+        }
+    }
+}
+void ManageSocket::sendLoad(QListWidgetItem *item)
+{
+    this->write(QString(this->name+" load:"+item->text()+"\n").toUtf8());
+}
+
+void ManageSocket::send(QListWidgetItem *item)
+{
+
+    fileserver=new FileServer;
+    if(fileserver->listen(QHostAddress::Any,9998))
+    {
+        qDebug()<<"88888";
+        qDebug()<<item->text();
+        this->write(QString(this->name+" choose:"+item->text()+"\n").toUtf8());
+        qDebug()<<QString(this->name+" choose:"+item->text());
+    }
+
+}
+
+void ManageSocket::sendFile(QTcpSocket *socket, QString filepath, QString filename)
+{
+    qDebug()<<filepath;
+        QFile f(filepath);
+        f.open(QIODevice::ReadOnly);
+        QByteArray data=f.readAll();
+        QByteArray block;
+        QDataStream dts(&block,QIODevice::WriteOnly);
+        dts.setVersion(QDataStream::Qt_4_7);
+
+        dts<<qint64(0)<<qint64(0)<<filename;
+        dts.device()->seek(0);
+        dts<<(qint64)(block.size()+f.size());
+        dts<<(qint64)(block.size()-sizeof(qint64)*2);
+        dts<<filename;
+        dts<<data;
+
+        socket->write(block);
+}
+void ManageSocket::readfileMsg()
+{
+    if(filesocket->canReadLine())
+    {
+        QString msg=QString::fromUtf8(filesocket->readLine());
+        qDebug()<<"receive filemsg:"<<msg;
+        QRegExp fileExp("received (.*)\n");
+
+        if(fileExp.indexIn(msg)!=-1)
+        {
+            QString tmpline=fileExp.cap(1);
+            qDebug()<<tmpline<<"-----";
+            qDebug()<<anofile_name<<eswcfile_name<<apofile_name;
+            if(tmpline==anofile_name)
+            {
+                sendFile(filesocket,eswcfile_path,eswcfile_name);
+            }else if(tmpline==eswcfile_name)
+            {
+                sendFile(filesocket,apofile_path,apofile_name);
+            }else if(tmpline==apofile_name)
+            {
+                QMessageBox::information(0, tr("information"),tr("upload successfully."));
+                filesocket->disconnectFromHost();
+//                if(filesocket->waitForDisconnected())
+//                {
+                    filesocket->deleteLater();
+//                }
+            }
+        }
+    }
+}
+
+
+
+
+/*---------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======
+}
+>>>>>>> a7e76b9abbe9ee64ccd3cad035eab3c8c918a15e

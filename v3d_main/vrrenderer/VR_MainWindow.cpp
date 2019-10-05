@@ -20,6 +20,8 @@ VR_MainWindow::VR_MainWindow() :
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
+    numreceivedmessage=0;//for debug hl
+    numsendmessage=0;
 }
 
 VR_MainWindow::~VR_MainWindow() {
@@ -133,6 +135,7 @@ void VR_MainWindow::onReadySend(QString &send_MSG) {
     if (!send_MSG.isEmpty()) {
 		if((send_MSG!="exit")&&(send_MSG!="quit"))
 		{
+            qDebug() <<"send NO."<<numsendmessage<<":"<< QString("/say:" + send_MSG + "\n");
 			socket->write(QString("/say:" + send_MSG + "\n").toUtf8());
 		}
 		else
@@ -164,6 +167,8 @@ void VR_MainWindow::onReadyRead() {
 
     while (socket->canReadLine()) {
         QString line = QString::fromUtf8(socket->readLine()).trimmed();
+
+        qDebug()<<"receive :"<<line;
 
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
@@ -291,6 +296,7 @@ void VR_MainWindow::onReadyRead() {
 			}
 		}
         else if (deletecurveRex.indexIn(line) != -1) {
+			qDebug() << "------------"<<line;
 			QStringList delMSGs = deletecurveRex.cap(1).split(" ");
 			if(delMSGs.size()<2) 
 			{
@@ -306,10 +312,13 @@ void VR_MainWindow::onReadyRead() {
 			float resz = delMSGs.at(6).toFloat();
 
 			pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);
+			
+            qDebug()<<"pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);";
 			qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
 			XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
 			qDebug()<<"user, "<<user<<" Converted Receive curve: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
 			XYZ TeraflyglobalPos =XYZ(dx ,dy,dz);
+
 			dx/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
 			dy/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
 			dz/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
@@ -333,8 +342,9 @@ void VR_MainWindow::onReadyRead() {
 				pMainApplication->ClearCurrentNT();
 			}
 			QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
-			qDebug()<<"delete ID"<<delID;
+            qDebug()<<"delete ID"<<delID<<"++++++++++++++++++++";
 			bool delerror = pMainApplication->DeleteSegment(delID);
+            qDebug()<<".................................";
 			if(delerror==true)
 				qDebug()<<"Segment Deleted.";
 			else
@@ -442,6 +452,7 @@ void VR_MainWindow::onReadyRead() {
         }
 		//dragnodeRex
         else if (messageRex.indexIn(line) != -1) {
+            qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
             QString user = messageRex.cap(1);
             QString message = messageRex.cap(2);
 			//qDebug()<<"user, "<<user<<" said: "<<message;

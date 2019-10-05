@@ -201,6 +201,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
+
+
+
+
     /* ------------------------- "Options" menu -------------------------- */
     optionsMenu = menuBar->addMenu("Options");
     /* ------------------------- "Options" menu: Import ------------------ */
@@ -394,6 +398,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     utilsAnno->addAction(displayAnoOctree);
 
 
+
     // "Debug" menu
     debugMenu = menuBar->addMenu("Debug");
     /* --------------------------------- show log --------------------------------- */
@@ -443,7 +448,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
 
     // "Help" menu
-    helpMenu = menuBar->addMenu("Help");
+    helpMenu = menuBar->addMenu("help");
     aboutAction = new QAction("Info about TeraFly", helpMenu);
     aboutAction->setIcon(QIcon(":/icons/about.png"));
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
@@ -1432,6 +1437,8 @@ void PMain::closeVolume()
 ***********************************************************************************/
 void PMain::loadAnnotations()
 {
+
+    qDebug()<<"load .ano";
     /**/itm::debug(itm::LEV1, 0, __itm__current__function__);
 
     CViewer *cur_win = CViewer::getCurrent();
@@ -1467,6 +1474,9 @@ void PMain::loadAnnotations()
             {
                 annotationsPathLRU = path.toStdString();
                 CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
+
+
+				qDebug() << "--++++++++++++++++load ok.";
 
                 // save current cursor and set wait cursor
                 QCursor cursor = cur_win->view3DWidget->cursor();

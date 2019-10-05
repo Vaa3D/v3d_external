@@ -177,11 +177,33 @@ void V3dR_Communicator::onReadySend(QString &send_MSG) {
     if (!send_MSG.isEmpty()) {
 		if((send_MSG!="exit")&&(send_MSG!="quit"))
 		{
-			socket->write(QString("/say:" + send_MSG + "\n").toUtf8());
+
+            QByteArray block;
+            QDataStream out(&block, QIODevice::WriteOnly);
+            out.setVersion(QDataStream::Qt_4_7);
+
+            out<<quint64(0)<<send_MSG;
+            out.device()->seek(0);
+            out<<quint64(sizeof (block)-sizeof (quint64))<<send_MSG;
+
+            socket->write(block);
+
+//			socket->write(QString("/say:" + send_MSG + "\n").toUtf8());
 		}
 		else
 		{
-			socket->write(QString("/say: GoodBye~\n").toUtf8());
+
+            QByteArray block;
+            QDataStream out(&block, QIODevice::WriteOnly);
+            out.setVersion(QDataStream::Qt_4_7);
+
+            out<<quint64(0)<<send_MSG;
+            out.device()->seek(0);
+            out<<quint64(sizeof (block)-sizeof (quint64))<<send_MSG;
+
+            socket->write(block);
+
+//			socket->write(QString("/say: GoodBye~\n").toUtf8());
 			socket->disconnectFromHost();
 			return;
 		}

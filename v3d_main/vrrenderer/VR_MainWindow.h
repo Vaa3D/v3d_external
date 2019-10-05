@@ -56,6 +56,9 @@ public:
 	void GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution);
 	QString ConvertsendCoords(QString coords);
 	XYZ ConvertreceiveCoords(float x,float y,float z);
+private:
+    int numreceivedmessage;//for debug HL
+    int numsendmessage;
 };
 
 // bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);

@@ -140,6 +140,8 @@ class teramanager::PMain : public QWidget
         QAction* generateTimeSeriesInterpolation;
         QAction* generateTimeSeriesDataReplication;
 
+
+
         // "Help" menu widgets
         QMenu* helpMenu;                //"Help" menu
         QAction* aboutAction;           //"About" menu action
@@ -506,6 +508,8 @@ class teramanager::PMain : public QWidget
         void showDialogGenerateTimeSeriesInterpolation();
         void showDialogGenerateTimeSeriesReplication();
         void showAnoOctree();
+
+
 
 
     signals:

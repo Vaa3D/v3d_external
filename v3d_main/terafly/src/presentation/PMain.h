@@ -42,6 +42,12 @@
 #include "QGLRefSys.h"
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
+#include "fileserver.h"
+#include "messageserverandmessagesocket.h"
+
+/*----------------collaborate mdoe-------------------*/
+class ManageSocket;
+/*---------------------------------------------------*/
 
 class terafly::PMain : public QWidget
 {
@@ -579,7 +585,78 @@ class terafly::PMain : public QWidget
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 
+/*----------------collaborate mdoe-------------------*/
+protected:
+        QMenu* collaborateMenu;
+        QAction* loginAction;
+        QAction* logoutAction;
+        QAction* importAction;
+        QAction* downAction;
+        QAction* loadAction;
+public slots:
+        void login();
+        void logout();
+        void import();
+        void download();
+        void load();
+        void deleteManageSocket();
+private:
+        ManageSocket *managesocket;
+
+
+
+
+/*---------------------------------------------------*/
+
+
 
 };
+
+
+/*----------------collaborate mdoe-------------------*/
+
+MessageSocket *messagesocket=0;
+class ManageSocket:public QTcpSocket
+{
+    Q_OBJECT
+
+
+public:
+    explicit ManageSocket(QObject *parent=0):QTcpSocket (parent)
+    {
+        filesocket=0;
+        fileserver=0;
+
+    }
+    QString ip;
+    QString manageport;
+    QString name;
+
+
+public slots:
+
+
+    void onReadyRead();
+    void readfileMsg();
+    void send(QListWidgetItem*);
+    void sendLoad(QListWidgetItem*);
+
+protected:
+
+    void sendFile(QTcpSocket *socket,QString filepath,QString filename);
+signals:
+
+    void makeMessageServer(QString port,QString anofilename);
+private:
+    QString anofile_path,eswcfile_path,apofile_path;
+    QString anofile_name,eswcfile_name,apofile_name;
+
+
+
+    QTcpSocket *filesocket;
+    FileServer *fileserver;
+
+};
+/*---------------------------------------------------*/
 
 #endif // PMAIN_GUI_H
