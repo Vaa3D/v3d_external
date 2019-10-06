@@ -59,7 +59,7 @@
 #include <QMessageBox>
 #include <QFile>
 #include "fileserver.h"
-#include "messageserverandmessagesocket.h"
+
 
 #include "../../v3d/CustomDefine.h"
 
@@ -3937,7 +3937,7 @@ void PMain::updateAnnotationStatus()
 void PMain::setLockMagnification(bool locked)
 {
     isMagnificationLocked = locked;
-<<<<<<< HEAD
+//<<<<<<< HEAD
 }
 
 /*----------------collaborate mdoe-------------------*/
@@ -4080,6 +4080,11 @@ void PMain::load()
         return;
     }
 }
+ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
+{
+    fileserver=0;
+    filesocket=0;
+}
 void PMain::deleteManageSocket()
 {
 //    managesocket->deleteLater();
@@ -4087,6 +4092,8 @@ void PMain::deleteManageSocket()
     loginAction->setEnabled(true);
     logoutAction->setEnabled(false);
 }
+
+
 
 void ManageSocket::onReadyRead()
 {
@@ -4205,7 +4212,7 @@ void ManageSocket::onReadyRead()
             //建立一个messagesocket
             qDebug()<<"make a message socket";
 
-            messagesocket=new MessageSocket(ip,messageport,name); //make a message socket to communicate
+  //          messagesocket=new MessageSocket(ip,messageport,name); //make a message socket to communicate
             // messagesocket 是一个全局变量与this无关
 
 
@@ -4316,6 +4323,6 @@ void ManageSocket::readfileMsg()
 
 
 
-=======
-}
->>>>>>> a7e76b9abbe9ee64ccd3cad035eab3c8c918a15e
+//=======
+//}
+//>>>>>>> a7e76b9abbe9ee64ccd3cad035eab3c8c918a15e

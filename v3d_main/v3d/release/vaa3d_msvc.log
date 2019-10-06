@@ -1,9 +1,0 @@
-﻿Build started 2019/10/4 23:22:21.
-     1>Project "I:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" on node 2 (Build target(s)).
-     1>Link:
-         vaa3d_msvc.vcxproj -> I:\vaa3d\v3d_external\v3d_main\v3d\release\vaa3d_msvc.exe
-     1>Done Building Project "I:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" (Build target(s)).
-
-Build succeeded.
-
-Time Elapsed 00:00:00.35
