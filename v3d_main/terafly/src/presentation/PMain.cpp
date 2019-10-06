@@ -3939,7 +3939,7 @@ void PMain::updateAnnotationStatus()
 void PMain::setLockMagnification(bool locked)
 {
     isMagnificationLocked = locked;
-//<<<<<<< HEAD
+
 }
 
 /*----------------collaborate mdoe-------------------*/

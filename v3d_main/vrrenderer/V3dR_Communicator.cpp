@@ -136,14 +136,8 @@ void ManageSocket::onReadyRead()
 		{
 			QString messageport=MessagePortExp.cap(1);
 			qDebug()<<messageport;
-			//建立一个messagesocket
-			qDebug()<<"make a message socket";
 
-			//          messagesocket=new MessageSocket(ip,messageport,name); //make a message socket to communicate
-			// messagesocket 是一个全局变量与this无关
-
-
-
+            emit makeMessageSocket(ip,messageport,name);
 		}
 	}
 }
@@ -233,7 +227,8 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
-	socket = new QTcpSocket(this);
+    socket = new QTcpSocket(this);
+    connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),this,SLOT(SendLoginRequest(QString,QString,QString)))
 	connect(socket, SIGNAL(connected()), this, SLOT(onConnected()));
 	connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -244,66 +239,75 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 
 }
 
-bool V3dR_Communicator::SendLoginRequest() {
+bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString username) {
 
     QSettings settings("HHMI", "Vaa3D");
-    QString serverNameDefault = "";
-	if(!settings.value("vr_serverName").toString().isEmpty())
-		serverNameDefault = settings.value("vr_serverName").toString();
-	bool ok1;
-	QString serverName = QInputDialog::getText(0, "Server Address",
-		"Please enter the server address:", QLineEdit::Normal,
-		serverNameDefault, &ok1);
-	if(!ok1||serverName.isEmpty())
-	{
-		qDebug()<<"WRONG!EMPTY! ";
-		//return SendLoginRequest();
-		return 0;
-	}
-	else
-	{
-		settings.setValue("vr_serverName", serverName);
-		QString PortDefault = "";
-		if(!settings.value("vr_PORT").toString().isEmpty())
-			PortDefault = settings.value("vr_PORT").toString();
-		bool ok2;
-		vr_Port = QInputDialog::getText(0, "Port",
-			"Please enter server port:", QLineEdit::Normal,
-			PortDefault, &ok2);
+//    QString serverNameDefault = "";
+//	if(!settings.value("vr_serverName").toString().isEmpty())
+//		serverNameDefault = settings.value("vr_serverName").toString();
+//	bool ok1;
+//	QString serverName = QInputDialog::getText(0, "Server Address",
+//		"Please enter the server address:", QLineEdit::Normal,
+//		serverNameDefault, &ok1);
+//	if(!ok1||serverName.isEmpty())
+//	{
+//		qDebug()<<"WRONG!EMPTY! ";
+//		//return SendLoginRequest();
+//		return 0;
+//	}
+//	else
+//	{
+//		settings.setValue("vr_serverName", serverName);
+//		QString PortDefault = "";
+//		if(!settings.value("vr_PORT").toString().isEmpty())
+//			PortDefault = settings.value("vr_PORT").toString();
+//		bool ok2;
+//		vr_Port = QInputDialog::getText(0, "Port",
+//			"Please enter server port:", QLineEdit::Normal,
+//			PortDefault, &ok2);
 
-		if(!ok2 || vr_Port.isEmpty())
-		{
-			qDebug()<<"WRONG!EMPTY! ";
-			return 0;
-		}
-		else
-		{
-			settings.setValue("vr_PORT", vr_Port);
-			QString userNameDefault = "";
-			if(!settings.value("vr_userName").toString().isEmpty())
-				userNameDefault = settings.value("vr_userName").toString();
-			bool ok3;
-			userName = QInputDialog::getText(0, "Lgoin Name",
-				"Please enter your login name:", QLineEdit::Normal,
-				userNameDefault, &ok3);
+//		if(!ok2 || vr_Port.isEmpty())
+//		{
+//			qDebug()<<"WRONG!EMPTY! ";
+//			return 0;
+//		}
+//		else
+//		{
+//			settings.setValue("vr_PORT", vr_Port);
+//			QString userNameDefault = "";
+//			if(!settings.value("vr_userName").toString().isEmpty())
+//				userNameDefault = settings.value("vr_userName").toString();
+//			bool ok3;
+//			userName = QInputDialog::getText(0, "Lgoin Name",
+//				"Please enter your login name:", QLineEdit::Normal,
+//				userNameDefault, &ok3);
 
-			if(!ok3 || userName.isEmpty())
-			{
-				qDebug()<<"WRONG!EMPTY! ";
-				//return SendLoginRequest();
-				return 0;
-			}else
-				settings.setValue("vr_userName", userName);
-		}
-		Agent agent00={
-			//with local information
-			userName,
-			true,//means this struct point to itself,no need to render
-			21,
-			0,
-		};
-		Agents.push_back(agent00);
-	}
+//			if(!ok3 || userName.isEmpty())
+//			{
+//				qDebug()<<"WRONG!EMPTY! ";
+//				//return SendLoginRequest();
+//				return 0;
+//			}else
+//				settings.setValue("vr_userName", userName);
+//		}
+//		Agent agent00={
+//			//with local information
+//			userName,
+//			true,//means this struct point to itself,no need to render
+//			21,
+//			0,
+//		};
+//		Agents.push_back(agent00);
+//	}
+
+    Agent agent00={
+        //with local information
+        username,
+        true,//means this struct point to itself,no need to render
+        21,
+        0,
+    };
+    Agents.push_back(agent00);
 	
 	// if(ok1 && !serverName.isEmpty())
 	// {
@@ -356,7 +360,8 @@ bool V3dR_Communicator::SendLoginRequest() {
     //     return SendLoginRequest();
     // }
 
-    socket->connectToHost(serverName, vr_Port.toUInt());
+//    socket->connectToHost(serverName, vr_Port.toUInt());
+    socket->connectToHost(ip, port.toUInt());
 	if(!socket->waitForConnected(15000))
 	{
 		if(socket->state()==QAbstractSocket::UnconnectedState)
