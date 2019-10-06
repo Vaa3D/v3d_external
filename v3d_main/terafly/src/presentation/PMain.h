@@ -47,6 +47,7 @@
 
 /*----------------collaborate mdoe-------------------*/
 class ManageSocket;
+class V3dR_Communicator;
 /*---------------------------------------------------*/
 
 class terafly::PMain : public QWidget
@@ -601,7 +602,7 @@ public slots:
         void load();
         void deleteManageSocket();
 private:
-        ManageSocket *managesocket;
+        V3dR_Communicator *TeraflyCommunicator;
 
 
 
@@ -616,43 +617,7 @@ private:
 /*----------------collaborate mdoe-------------------*/
 
 //MessageSocket *messagesocket=0;
-class ManageSocket:public QTcpSocket
-{
-    Q_OBJECT
 
-
-public:
-    explicit ManageSocket(QObject *parent=0);
-
-    QString ip;
-    QString manageport;
-    QString name;
-
-
-public slots:
-
-
-    void onReadyRead();
-    void readfileMsg();
-    void send(QListWidgetItem*);
-    void sendLoad(QListWidgetItem*);
-
-protected:
-
-    void sendFile(QTcpSocket *socket,QString filepath,QString filename);
-signals:
-
-    void makeMessageServer(QString port,QString anofilename);
-private:
-    QString anofile_path,eswcfile_path,apofile_path;
-    QString anofile_name,eswcfile_name,apofile_name;
-
-
-
-    QTcpSocket *filesocket;
-    FileServer *fileserver;
-
-};
 /*---------------------------------------------------*/
 
 #endif // PMAIN_GUI_H
