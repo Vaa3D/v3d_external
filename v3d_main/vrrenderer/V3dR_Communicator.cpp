@@ -607,6 +607,55 @@ void V3dR_Communicator::Collaborationaskmessage()
 {
 
 }
+
+QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
+{
+	string messageBuff="";
+	for(int i=0;(i<seg.row.size());i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
+	{
+		V_NeuronSWC_unit curSWCunit = seg.row[i];
+		char packetbuff[300];
+
+		
+		sprintf(packetbuff,"%5.3f %5.3f %5.3f",curSWCunit.x,curSWCunit.y,curSWCunit.z);
+		messageBuff +=packetbuff;
+	}
+
+	QString str=QString::fromStdString(messageBuff);
+	return str;
+}
+
+void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)
+{
+	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
+	int str_size = qsl.size()-(qsl.size()%3);//to make sure that the string list size always be 3*N;
+	qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
+	vector<XYZ> loclist_temp;
+	XYZ loc_temp;
+	for(int i=0;i<str_size;i++)
+	{
+		qsl[i].truncate(99);
+		qDebug()<<qsl[i];
+		int iy = i%7;
+		if (iy==0)
+		{
+			loc_temp.x = qsl[i].toFloat();
+		}
+		else if(iy==1)
+		{
+			loc_temp.y = qsl[i].toFloat();
+		}
+		else if(iy==2)
+		{
+			loc_temp.z = qsl[i].toFloat();
+			loclist_temp.emplace_back(loc_temp);
+		}
+
+	}
+	loc_ReceivePool.push_back(loclist_temp);
+	//update AddCurveSWC
+}
+
 void V3dR_Communicator::onDisconnected() {
     qDebug("Now disconnect with the server."); 
 	*clienton = false;

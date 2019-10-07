@@ -602,7 +602,7 @@ public slots:
         void load();
         void deleteManageSocket();
 private:
-        V3dR_Communicator *TeraflyCommunicator;
+        //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 
 
 

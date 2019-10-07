@@ -49,7 +49,7 @@ using QOpenGLWidget_proxy = QOpenGLWidget;
 typedef QGLWidget QOpenGLWidget_proxy;
 #endif
 #include "../vrrenderer/VR_MainWindow.h"
-
+#include "../vrrenderer/V3dR_Communicator.h"
 #include "ui_setVoxSize.h"
 
 class Renderer;
@@ -113,7 +113,7 @@ public:
 	void UpdateVRcollaInfo();
 	bool VRClientON;
 	VR_MainWindow * myvrwin;
-	V3dR_Communicator * myclient;
+	V3dR_Communicator * TeraflyCommunicator;
 	XYZ teraflyZoomInPOS;
 	XYZ CollaborationCreatorPos;
 	XYZ collaborationMaxResolution;
@@ -592,7 +592,7 @@ public:
 #ifdef __ALLOW_VR_FUNCS__
 		VRClientON=false;
 		myvrwin = 0;
-		myclient = 0;
+		//myclient = 0;
 		teraflyZoomInPOS = 0;
 		CollaborationCreatorPos = 0;
 		Resindex = 1;
