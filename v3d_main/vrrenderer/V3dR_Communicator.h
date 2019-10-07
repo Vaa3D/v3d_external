@@ -73,7 +73,9 @@ public:
 
 
 	//trans func
-	void V_NeuronSWCToSendMSG(V_NeuronSWC seg);
+	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
+
+	void MsgToV_NeuronSWC(QString msg);
 
 	ManageSocket * managesocket;
 
@@ -94,6 +96,7 @@ private:
 	bool CURRENT_DATA_IS_SENT;
 	bool * clienton;
 	V_NeuronSWC_list * NTList_SendPool;	
+	vector<vector<XYZ>> loc_ReceivePool;
 	int NTNumReceieved;
 	int NTNumcurrentUser;
 };

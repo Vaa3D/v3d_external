@@ -257,7 +257,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
         connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
 
-        TeraflyCommunicator=0;
         logoutAction->setEnabled(false);
 
 
@@ -3945,8 +3944,10 @@ void PMain::setLockMagnification(bool locked)
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
 {
-    qDebug()<<"managesocket address:"<<TeraflyCommunicator->managesocket;
-    if(TeraflyCommunicator->managesocket!=0&&TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
+	CViewer *cur_win = CViewer::getCurrent();
+	if(!cur_win) return;
+    qDebug()<<"managesocket address:"<<cur_win->getGLWidget()->TeraflyCommunicator->managesocket;
+    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0&&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
     {
          QMessageBox::information(this, tr("Error"),tr("have been logged."));
          return;
@@ -4007,24 +4008,24 @@ void PMain::login()
         }
     }
 
-    TeraflyCommunicator->managesocket=new ManageSocket;
-    TeraflyCommunicator->managesocket->ip=serverName;
-    TeraflyCommunicator->managesocket->manageport=manageserver_Port;
-    TeraflyCommunicator->managesocket->name=userName;
+    cur_win->getGLWidget()->TeraflyCommunicator->managesocket=new ManageSocket;
+    cur_win->getGLWidget()->TeraflyCommunicator->managesocket->ip=serverName;
+    cur_win->getGLWidget()->TeraflyCommunicator->managesocket->manageport=manageserver_Port;
+    cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name=userName;
 
-    TeraflyCommunicator->managesocket->connectToHost(serverName,manageserver_Port.toInt());
+    cur_win->getGLWidget()->TeraflyCommunicator->managesocket->connectToHost(serverName,manageserver_Port.toInt());
 
-    if( !TeraflyCommunicator->managesocket->waitForConnected())
+    if( !cur_win->getGLWidget()->TeraflyCommunicator->managesocket->waitForConnected())
     {
-        TeraflyCommunicator->managesocket->deleteLater();
+        cur_win->getGLWidget()->TeraflyCommunicator->managesocket->deleteLater();
         QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
         return;
     }
     else{
         qDebug()<<"send:"<<QString(userName+":login."+"\n");
-        TeraflyCommunicator->managesocket->write(QString(userName+":login."+"\n").toUtf8());
-        connect(TeraflyCommunicator->managesocket,SIGNAL(readyRead()),TeraflyCommunicator->managesocket,SLOT(onReadyRead()));
-        connect(TeraflyCommunicator->managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+        cur_win->getGLWidget()->TeraflyCommunicator->managesocket->write(QString(userName+":login."+"\n").toUtf8());
+        connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SIGNAL(readyRead()),cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SLOT(onReadyRead()));
+        connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
         loginAction->setText(serverName);
         loginAction->setEnabled(false);
         logoutAction->setEnabled(true);
@@ -4033,11 +4034,13 @@ void PMain::login()
 
 void PMain::logout()
 {
-    if(TeraflyCommunicator->managesocket!=0&&TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
+	CViewer *cur_win = CViewer::getCurrent();
+	if(!cur_win) return;
+    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0&&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
     {
 
-        TeraflyCommunicator->managesocket->write(QString(TeraflyCommunicator->managesocket->name+":logout."+"\n").toUtf8());
-        qDebug()<<"send:"<<QString(TeraflyCommunicator->managesocket->name+":logout."+"\n");
+        cur_win->getGLWidget()->TeraflyCommunicator->managesocket->write(QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":logout."+"\n").toUtf8());
+        qDebug()<<"send:"<<QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":logout."+"\n");
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4046,10 +4049,12 @@ void PMain::logout()
 
 void PMain::import()
 {
-    if(TeraflyCommunicator->managesocket!=0&&TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
+	CViewer *cur_win = CViewer::getCurrent();
+	if(!cur_win) return;
+    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0&&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
     {
-        TeraflyCommunicator->managesocket->write(QString(TeraflyCommunicator->managesocket->name+":import."+"\n").toUtf8());
-        qDebug()<<QString(TeraflyCommunicator->managesocket->name+":import."+"\n");
+        cur_win->getGLWidget()->TeraflyCommunicator->managesocket->write(QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":import."+"\n").toUtf8());
+        qDebug()<<QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":import."+"\n");
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4059,11 +4064,12 @@ void PMain::import()
 
 void PMain::download()
 {
-    if(TeraflyCommunicator->managesocket!=0&&TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
+	CViewer *cur_win = CViewer::getCurrent();
+    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0&&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
     {
 
-        TeraflyCommunicator->managesocket->write(QString(TeraflyCommunicator->managesocket->name+":download."+"\n").toUtf8());
-        qDebug()<<QString(TeraflyCommunicator->managesocket->name+":download."+"\n");
+        cur_win->getGLWidget()->TeraflyCommunicator->managesocket->write(QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":download."+"\n").toUtf8());
+        qDebug()<<QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":download."+"\n");
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4072,11 +4078,12 @@ void PMain::download()
 
 void PMain::load()
 {
-    if(TeraflyCommunicator->managesocket!=0&&TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
+	CViewer *cur_win = CViewer::getCurrent();
+    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0&&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
     {
 
-        TeraflyCommunicator->managesocket->write(QString(TeraflyCommunicator->managesocket->name+":load."+"\n").toUtf8());
-        qDebug()<<QString(TeraflyCommunicator->managesocket->name+":load."+"\n");
+        cur_win->getGLWidget()->TeraflyCommunicator->managesocket->write(QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":load."+"\n").toUtf8());
+        qDebug()<<QString(cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name+":load."+"\n");
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
