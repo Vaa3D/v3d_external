@@ -3944,8 +3944,15 @@ void PMain::setLockMagnification(bool locked)
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
 {
+
+            qDebug()<<"111111";
 	CViewer *cur_win = CViewer::getCurrent();
-	if(!cur_win) return;
+    if(!cur_win) {
+        qDebug()<<"3333";
+        return;
+    }
+
+    cur_win->getGLWidget()->TeraflyCommunicator= new V3dR_Communicator;
     qDebug()<<"managesocket address:"<<cur_win->getGLWidget()->TeraflyCommunicator->managesocket;
     if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0&&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
     {
@@ -3954,7 +3961,7 @@ void PMain::login()
     }
 
 
-
+    qDebug()<<"2222";
     QSettings settings("HHMI", "Vaa3D");
     qDebug()<<"try to connect to server";
     QString serverNameDefault = "";
@@ -4009,6 +4016,10 @@ void PMain::login()
     }
 
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket=new ManageSocket;
+    connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,
+            SIGNAL(makeMessageSocket(QString,QString,QString)),
+            cur_win->getGLWidget()->TeraflyCommunicator,
+            SLOT(SendLoginRequest(QString,QString,QString)));
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket->ip=serverName;
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket->manageport=manageserver_Port;
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name=userName;

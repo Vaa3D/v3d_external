@@ -47,9 +47,6 @@ signals:
 private:
 	QString anofile_path,eswcfile_path,apofile_path;
 	QString anofile_name,eswcfile_name,apofile_name;
-
-
-
 	QTcpSocket *filesocket;
 	FileServer *fileserver;
 
@@ -62,7 +59,7 @@ class V3dR_Communicator : public QWidget
 public:
     explicit V3dR_Communicator(bool *client_flag = 0, V_NeuronSWC_list* ntlist=0);
     ~V3dR_Communicator();
-	void onReadySend(QString &send_MSG);
+    void onReadySend(QString send_MSG);
 //	bool SendLoginRequest();
 	//void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
 	//void Update3DViewNTList(QString &msg, int type);
@@ -100,6 +97,7 @@ private:
 	vector<vector<XYZ>> loc_ReceivePool;
 	int NTNumReceieved;
 	int NTNumcurrentUser;
+    quint64 nextblocksize;
 };
 
 
