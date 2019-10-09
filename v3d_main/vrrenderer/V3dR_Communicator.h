@@ -12,46 +12,51 @@
 //#endif
 
 #include "../basic_c_fun/v3d_interface.h"
-#include "../../terafly/src/presentation/fileserver.h"
 
+
+
+class FileSocket_send:public QTcpSocket
+{
+    Q_OBJECT
+public:
+    explicit FileSocket_send::FileSocket_send
+    (QString ip,QString port,QString anofile_path,QObject *parent=0);
+
+    void sendFile(QString filepath,QString filename);
+public slots:
+    void readMSG();
+private:
+    QString anopath;
+    QString anoname;
+};
 //class CMainApplication;
 class My4DImage;
 class MainWindow;
 class ManageSocket:public QTcpSocket
 {
 	Q_OBJECT
-
-
 public:
 	explicit ManageSocket(QObject *parent=0);
-
 	QString ip;
 	QString manageport;
 	QString name;
+    QString loadfile_name;
 
-
-	public slots:
-
-
-		void onReadyRead();
-		void readfileMsg();
-		void send(QListWidgetItem*);
-		void sendLoad(QListWidgetItem*);
+public slots:
+    void onReadyRead();
+    void send(QListWidgetItem*);
 
 protected:
 
-	void sendFile(QTcpSocket *socket,QString filepath,QString filename);
 signals:
-
     void makeMessageSocket(QString ip,QString port,QString username);
 private:
-	QString anofile_path,eswcfile_path,apofile_path;
-	QString anofile_name,eswcfile_name,apofile_name;
-	QTcpSocket *filesocket;
-	FileServer *fileserver;
     QString messageport;
 
+
 };
+
+
 
 class V3dR_Communicator : public QWidget
 {
@@ -67,15 +72,11 @@ public:
 	void UpdateSendPoolNTList(V_NeuronSWC seg);
 	void Collaborationsendmessage();
 	void Collaborationaskmessage();
-
-
-
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
-
 	void MsgToV_NeuronSWC(QString msg);
 
-	ManageSocket * managesocket;
+//	ManageSocket * managesocket;
 
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
@@ -100,6 +101,7 @@ private:
 	int NTNumcurrentUser;
     quint64 nextblocksize;
 };
+
 
 
 

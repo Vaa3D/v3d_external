@@ -587,6 +587,8 @@ class terafly::PMain : public QWidget
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 
 /*----------------collaborate mdoe-------------------*/
+public:
+        ManageSocket * managesocket;
 protected:
         QMenu* collaborateMenu;
         QAction* loginAction;
@@ -603,21 +605,7 @@ public slots:
         void deleteManageSocket();
 private:
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
-
-
-
-
 /*---------------------------------------------------*/
-
-
-
 };
-
-
-/*----------------collaborate mdoe-------------------*/
-
-//MessageSocket *messagesocket=0;
-
-/*---------------------------------------------------*/
 
 #endif // PMAIN_GUI_H

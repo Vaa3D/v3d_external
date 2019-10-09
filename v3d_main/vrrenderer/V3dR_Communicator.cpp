@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 
+
 static struct Agent {
 	QString name;
 	bool isItSelf;
@@ -16,76 +17,102 @@ static struct Agent {
 
 };
 
+FileSocket_send::FileSocket_send(QString ip,QString port,QString anofile_path,QObject *parent)
+    :QTcpSocket (parent)
+{
+    connect(this,SIGNAL(readyRead()),this,SLOT(readMSG()));
+    this->connectToHost(ip,port.toInt());
+    QRegExp pathRex("(.*).ano");
+    if(pathRex.indexIn(anofile_path)!=-1)
+    {
+        anopath=pathRex.cap(1);
 
+        QFileInfo  anofile_info(anopath+".ano");
+        anoname=anofile_info.fileName();
+        QRegExp anoRex("(.*).ano");
+        if(anoRex.indexIn(anoname)!=-1)
+            anoname=anoRex.cap(1);
+    }
+    sendFile(anopath+".ano",anoname+".ano");
+}
+void FileSocket_send::sendFile(QString filepath, QString filename)
+{
+    QFile f(filepath);
+    f.open(QIODevice::ReadOnly);
+    QByteArray data=f.readAll();
+    QByteArray block;
+
+    QDataStream dts(&block,QIODevice::WriteOnly);
+    dts.setVersion(QDataStream::Qt_4_7);
+
+    dts<<qint64(0)<<qint64(0)<<filename;
+    dts.device()->seek(0);
+    dts<<(qint64)(block.size()+f.size());
+    dts<<(qint64)(block.size()-sizeof(qint64)*2);
+    dts<<filename;
+    dts<<data;
+
+    this->write(block);
+    qDebug()<<filepath;
+}
+void FileSocket_send::readMSG()
+{
+    while (this->canReadLine()) {
+        QRegExp anoRex("received (.*).ano\n");
+        QRegExp swcRex("received (.*).eswc\n");
+        QRegExp apoRex("received (.*).apo\n");
+        QString MSG=QString::fromUtf8(this->readLine());
+        if(anoRex.indexIn(MSG)!=-1)
+        {
+            sendFile(anopath+".ano.eswc",anoname+".ano.eswc");
+        }else if(swcRex.indexIn(MSG)!=-1)
+        {
+            sendFile(anopath+".ano.apo",anoname+".ano.apo");
+        }else if(apoRex.indexIn(MSG)!=-1)
+        {
+            this->disconnectFromHost();
+            QMessageBox::information(0, tr("information"),tr("import successfully."));
+        }
+    }
+}
 ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
 {
-	fileserver=0;
-	filesocket=0;
     connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 }
+
 void ManageSocket::onReadyRead()
 {
-	QRegExp LoginRex("(.*):logged in.\n");
-	QRegExp LogoutRex("(.*):logged out.\n");
-	QRegExp ImportRex("(.*):import port :(.*).\n");
-	QRegExp CurrentDirExp("currentDir:(.*).\n");
-	QRegExp LoadCurrentDirExp("loadcurrentDir:(.*).\n");
-	QRegExp MessagePortExp("messageport:(.*).\n");
+    QRegExp LoginRex("(.*):logged in success.\n");
+    QRegExp LogoutRex("(.*):logged out success.\n");
+    QRegExp ImportRex("(.*):import port.\n");
+    QRegExp CurrentDirExp("(.*):currentDir.\n");
+//	QRegExp MessagePortExp("messageport:(.*).\n");
 	if(this->canReadLine())
 	{
 		QString manageMsg=QString::fromUtf8(this->readLine());
 		qDebug()<<"receive:"<<manageMsg;
 		if(LoginRex.indexIn(manageMsg)!=-1)
 		{
-			qDebug()<<"login successfully";
 			QMessageBox::information(0, tr("information"),tr("login successfully."));
 		}else if (LogoutRex.indexIn(manageMsg)!=-1)
 		{
-			qDebug()<<"111";
+            // 需要加内容 V3dR communicator 的注销
 			this->disconnectFromHost();
 		}else if(ImportRex.indexIn(manageMsg)!=-1)
 		{
-			qDebug()<<"111111";
-			QString fileport=ImportRex.cap(2);
-			qDebug()<<fileport;
-			filesocket= new QTcpSocket;
-			connect(filesocket,SIGNAL(readyRead()),this,SLOT(readfileMsg()));
-			filesocket->connectToHost(ip,fileport.toInt());
-			if(filesocket->state()==QAbstractSocket::UnconnectedState)
-			{
+            if(this->state()==QAbstractSocket::UnconnectedState)
+            {
                 QMessageBox::information(0, tr("Error"),tr("can not connect with fileserver."));
-				return ;
-			}
+                return ;
+            }
 
-			anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
-			QFileInfo  anofile_info(anofile_path);
-			anofile_name=anofile_info.fileName();
-			qDebug()<<anofile_name;
-			QRegExp tmpFileExp("(.*).ano");
-			if(tmpFileExp.indexIn(anofile_name)!=-1)
-			{
-				qDebug()<<"1";
-				eswcfile_name=tmpFileExp.cap(1)+".ano.eswc";
-				apofile_name=tmpFileExp.cap(1)+".ano.apo";
-				qDebug()<<eswcfile_name<<":"<<apofile_name;
-			}
-			QRegExp tmpPathExp("(.*).ano");
-			if(tmpPathExp.indexIn(anofile_path)!=-1)
-			{
-				qDebug()<<"2";
-				eswcfile_path=tmpPathExp.cap(1)+".ano.eswc";
-				apofile_path=tmpPathExp.cap(1)+".ano.apo";
-				qDebug()<<eswcfile_path<<":"<<apofile_path;
-			}
+            QString anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
+            qDebug()<<anofile_path;
+            FileSocket_send *filesocket_send=new FileSocket_send(ip,ImportRex.cap(1),anofile_path);
 
-			sendFile(filesocket, anofile_path, anofile_name);//
-			qDebug()<<anofile_path<<"+++";
-
-
-
-
-		}else if(CurrentDirExp.indexIn(manageMsg)!=-1&&LoadCurrentDirExp.indexIn(manageMsg)==-1)
+        }else if(CurrentDirExp.indexIn(manageMsg)!=-1)
 		{
+            qDebug()<<"1";
 			QString currentDir=CurrentDirExp.cap(1);
 			QStringList file_list=currentDir.split(";");
 			QWidget *widget=new QWidget(0);
@@ -99,6 +126,7 @@ void ManageSocket::onReadyRead()
 
 			connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
 				widget,SLOT(close()));
+
 			filelistWidget->clear();
 			for(uint i=0;i<file_list.size();i++)
 			{
@@ -108,115 +136,36 @@ void ManageSocket::onReadyRead()
 				filelistWidget->addItem(tmp);
 			}
 			widget->show();
-		}else if(LoadCurrentDirExp.indexIn(manageMsg)!=-1)
-		{
-			QString currentDir=LoadCurrentDirExp.cap(1);
-			QStringList file_list=currentDir.split(";");
-			QWidget *widget=new QWidget(0);
-			widget->setWindowTitle("choose annotation file ");
-			QListWidget *filelistWidget=new QListWidget;
-			QVBoxLayout mainlayout(widget);
-
-			mainlayout.addWidget(filelistWidget);
-			connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-				this,SLOT(sendLoad(QListWidgetItem*)));
-
-			connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-				widget,SLOT(close()));
-			filelistWidget->clear();
-			for(uint i=0;i<file_list.size();i++)
-			{
-				QIcon icon("file.png");
-				QListWidgetItem *tmp=new QListWidgetItem(icon,file_list.at(i));
-				qDebug()<<file_list.at(i);
-				filelistWidget->addItem(tmp);
-			}
-			widget->show();
-		}else if(MessagePortExp.indexIn(manageMsg)!=-1)
+        }/*else if(MessagePortExp.indexIn(manageMsg)!=-1)
 		{
             messageport=MessagePortExp.cap(1);
 			qDebug()<<messageport;
 
             emit makeMessageSocket(ip,messageport,name);
             qDebug()<<"here 4";
-		}
+        }*/
 	}
-}
-void ManageSocket::sendLoad(QListWidgetItem *item)
-{
-	this->write(QString(this->name+" load:"+item->text()+"\n").toUtf8());
 }
 
 void ManageSocket::send(QListWidgetItem *item)
 {
 
-    fileserver=new FileServer;
-	if(fileserver->listen(QHostAddress::Any,9998))
-	{
-		qDebug()<<"88888";
-		qDebug()<<item->text();
-		this->write(QString(this->name+" choose:"+item->text()+"\n").toUtf8());
-		qDebug()<<QString(this->name+" choose:"+item->text());
-	}
-
+    FileServer *fileserver=new FileServer;
+    if(fileserver->listen(QHostAddress::Any,9998))
+    {
+        qDebug()<<"88888";
+        qDebug()<<item->text();
+        this->write(QString(item->text()+":choose."+"\n").toUtf8());
+        qDebug()<<QString(QString(item->text()+":choose."));
+    }
 }
 
-void ManageSocket::sendFile(QTcpSocket *socket, QString filepath, QString filename)
-{
-	qDebug()<<filepath;
-	QFile f(filepath);
-	f.open(QIODevice::ReadOnly);
-	QByteArray data=f.readAll();
-	QByteArray block;
-	QDataStream dts(&block,QIODevice::WriteOnly);
-	dts.setVersion(QDataStream::Qt_4_7);
-
-	dts<<qint64(0)<<qint64(0)<<filename;
-	dts.device()->seek(0);
-	dts<<(qint64)(block.size()+f.size());
-	dts<<(qint64)(block.size()-sizeof(qint64)*2);
-	dts<<filename;
-	dts<<data;
-
-	socket->write(block);
-}
-void ManageSocket::readfileMsg()
-{
-	if(filesocket->canReadLine())
-	{
-		QString msg=QString::fromUtf8(filesocket->readLine());
-		qDebug()<<"receive filemsg:"<<msg;
-		QRegExp fileExp("received (.*)\n");
-
-		if(fileExp.indexIn(msg)!=-1)
-		{
-			QString tmpline=fileExp.cap(1);
-			qDebug()<<tmpline<<"-----";
-			qDebug()<<anofile_name<<eswcfile_name<<apofile_name;
-			if(tmpline==anofile_name)
-			{
-				sendFile(filesocket,eswcfile_path,eswcfile_name);
-			}else if(tmpline==eswcfile_name)
-			{
-				sendFile(filesocket,apofile_path,apofile_name);
-			}else if(tmpline==apofile_name)
-			{
-				QMessageBox::information(0, tr("information"),tr("upload successfully."));
-				filesocket->disconnectFromHost();
-				//                if(filesocket->waitForDisconnected())
-				//                {
-				filesocket->deleteLater();
-				//                }
-			}
-		}
-	}
-}
 
 
 static std::vector<Agent> Agents;
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {
-    managesocket=0;
+//    managesocket=0;
 	clienton = client_flag;
 	NTList_SendPool = ntlist;
 	NTNumReceieved=0;
@@ -243,7 +192,9 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 
+
     socket=new QTcpSocket;
+//    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -288,29 +239,12 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
     if (!send_MSG.isEmpty()) {
         if((send_MSG!="exit")&&(send_MSG!="quit"))
         {
-//            qDebug()<<"send_MSG:"<<send_MSG;
-//        QByteArray block;
-//        QDataStream out(&block, QIODevice::WriteOnly);
-//        out.setVersion(QDataStream::Qt_4_7);
-//        out<<quint64(0)<<QString(send_MSG);
-//        out.device()->seek(0);
-//        out << quint64(block.size() - sizeof(quint64))<<send_MSG;
-//        qDebug()<<quint64(block.size() - sizeof(quint64));
-//        socket->write(block);
+
             socket->write(QString(send_MSG+"\n").toUtf8());
         }
         else
         {
 
-//            QByteArray block;
-//            QDataStream out(&block, QIODevice::WriteOnly);
-//            out.setVersion(QDataStream::Qt_4_7);
-//            out<<quint64(0)<<QString("/say: GoodBye~");
-//            out.device()->seek(0);
-//            out << quint64(block.size() - sizeof(quint64));
-//            socket->write(block);
-//            socket->disconnectFromHost();
-//            return;
             socket->write(QString("/say: GoodBye~\n").toUtf8());
         }
 	}
@@ -322,21 +256,8 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
 
 void V3dR_Communicator::onReadyRead() {
 
-//    QDataStream in(socket);
-//    in.setVersion(QDataStream::Qt_4_7);
 
-//    if (nextblocksize == 0) {
-//        if (socket->bytesAvailable() < sizeof(quint64))
-//            return;
-//        in >> nextblocksize;
-//    }
-
-//    if (socket->bytesAvailable() < nextblocksize)
-//        return;
-
-//    QString msg;
-//    in>>msg;
-
+        qDebug()<<"in read";
     while(socket->canReadLine())
     {
         QString msg=QString::fromUtf8(socket->readLine()).trimmed();
@@ -348,8 +269,74 @@ void V3dR_Communicator::onReadyRead() {
 	//QRegExp deleteRex("^/del:(.*)$");
         QRegExp markerRex("^/marker:(.*)$");
         QRegExp messageRex("^(.*):(.*)$");
+//        QRegExp anoExp("anofile:(.*)");
+//        QRegExp eswcExp("eswcfile:(.*)");
+//        QRegExp apoExp("apofile:(.*)");
 
-        if (usersRex.indexIn(msg) != -1) {
+/*
+        if(anoExp.indexIn(msg)!=-1)
+        {
+            QString tmp=anoExp.cap(1);
+            QStringList tmplist=tmp.split(";");
+            QRegExp tmpExp("(.*).ano");
+            if(tmpExp.indexIn(this->managesocket->loadfile_name)!=-1)
+            {
+                QFile f("./"+tmpExp.cap(1)+".ano");
+                f.open(QIODevice::WriteOnly|QIODevice::Text);
+                QTextStream out(&f);
+                for (int i=0;i<tmplist.size();i++)
+                {
+
+                    out<<tmplist.at(i).trimmed();
+
+                    if(i!=tmplist.size()-1)
+                        out<<endl;
+                    qDebug()<<tmplist.at(i)<<endl;
+                }
+            qDebug()<<"ano";
+                f.close();
+            }
+        }else if(eswcExp.indexIn(msg)!=-1)
+        {
+			qDebug() << "here 1";
+            QString tmp=eswcExp.cap(1);
+            QStringList tmplist=tmp.split(";");
+            QRegExp tmpExp("(.*).ano");
+            if(tmpExp.indexIn(this->managesocket->loadfile_name)!=-1)
+            {
+                QFile f("C://annotationdata/"+tmpExp.cap(1)+".ano");
+                f.open(QIODevice::WriteOnly|QIODevice::Text);
+                QTextStream out(&f);
+                for (int i=0;i<tmplist.size();i++)
+                {
+                    out<<tmplist.at(i).trimmed();
+                    if(i!=tmplist.size()-1)
+                        out<<endl;
+                }
+                qDebug()<<"swc";
+                f.close();
+            }
+        }else if(apoExp.indexIn(msg)!=-1)
+        {
+            QString tmp=apoExp.cap(1);
+            QStringList tmplist=tmp.split(";");
+            QRegExp tmpExp("(.*).ano");
+            if(tmpExp.indexIn(this->managesocket->loadfile_name)!=-1)
+            {
+                QFile f("C://annotationdata/"+tmpExp.cap(1)+".ano");
+                f.open(QIODevice::WriteOnly|QIODevice::Text);
+                QTextStream out(&f);
+                for (int i=0;i<tmplist.size();i++)
+                {
+                    out<<tmplist.at(i).trimmed();
+                    if(i!=tmplist.size()-1)
+                        out<<endl;
+                    qDebug()<<tmplist.at(i)<<endl;
+                }
+                qDebug()<<"apo";
+                f.close();
+            }
+        }else */if (usersRex.indexIn(msg) != -1) {
             QStringList users = usersRex.cap(1).split(",");
         //qDebug()<<"Current users are:";
             foreach (QString user, users) {
