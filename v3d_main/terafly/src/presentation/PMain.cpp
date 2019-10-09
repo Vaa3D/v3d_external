@@ -258,6 +258,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
 
         logoutAction->setEnabled(false);
+        importAction->setEnabled(false);
+        loadAction->setEnabled(false);
+        downAction->setEnabled(false);
+
+
 
 
 //        messagesocket=0;
@@ -3945,16 +3950,17 @@ void PMain::setLockMagnification(bool locked)
 void PMain::login()
 {
 
-            qDebug()<<"111111";
+    qDebug()<<"in login()";
 	CViewer *cur_win = CViewer::getCurrent();
     if(!cur_win) {
-        qDebug()<<"3333";
+        QMessageBox::information(this, tr("Error"),tr("please load the brain."));
         return;
     }
 
     cur_win->getGLWidget()->TeraflyCommunicator= new V3dR_Communicator;
     qDebug()<<"managesocket address:"<<cur_win->getGLWidget()->TeraflyCommunicator->managesocket;
-    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0&&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
+    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0
+            &&cur_win->getGLWidget()->TeraflyCommunicator->managesocket->state()==QAbstractSocket::ConnectedState)
     {
          QMessageBox::information(this, tr("Error"),tr("have been logged."));
          return;
@@ -4014,12 +4020,16 @@ void PMain::login()
                 settings.setValue("vr_userName", userName);
         }
     }
-
+    if(cur_win->getGLWidget()->TeraflyCommunicator->managesocket!=0)
+        delete cur_win->getGLWidget()->TeraflyCommunicator->managesocket;
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket=new ManageSocket;
     connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,
             SIGNAL(makeMessageSocket(QString,QString,QString)),
             cur_win->getGLWidget()->TeraflyCommunicator,
             SLOT(SendLoginRequest(QString,QString,QString)));
+    connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SIGNAL(disconnnnected())
+            ,cur_win->getGLWidget()->TeraflyCommunicator,
+            SLOT(deleteLater()));
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket->ip=serverName;
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket->manageport=manageserver_Port;
     cur_win->getGLWidget()->TeraflyCommunicator->managesocket->name=userName;
@@ -4034,12 +4044,18 @@ void PMain::login()
     }
     else{
         qDebug()<<"send:"<<QString(userName+":login."+"\n");
+        connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SIGNAL(readyRead()),
+                cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SLOT(onReadyRead()));
+        connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,
+                SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
         cur_win->getGLWidget()->TeraflyCommunicator->managesocket->write(QString(userName+":login."+"\n").toUtf8());
-        connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SIGNAL(readyRead()),cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SLOT(onReadyRead()));
-        connect(cur_win->getGLWidget()->TeraflyCommunicator->managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+
         loginAction->setText(serverName);
         loginAction->setEnabled(false);
         logoutAction->setEnabled(true);
+        importAction->setEnabled(true);
+        loadAction->setEnabled(true);
+        downAction->setEnabled(true);
     }
 }
 
@@ -4107,6 +4123,10 @@ void PMain::deleteManageSocket()
     loginAction->setText("log in");
     loginAction->setEnabled(true);
     logoutAction->setEnabled(false);
+
+    logoutAction->setEnabled(false);
+    importAction->setEnabled(false);
+    loadAction->setEnabled(false);
 }
 
 

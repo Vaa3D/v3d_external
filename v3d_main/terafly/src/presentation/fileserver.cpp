@@ -14,23 +14,10 @@ void FileServer::incomingConnection(int socketDesc)
     socket->setSocketDescriptor(socketDesc);
     clientNum++;
     connect(socket,SIGNAL(readyRead()),socket,SLOT(readFile()));
-//    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
     connect(socket,SIGNAL(disconnected()),this,SLOT(deleteLater()));
-//    connect(socket,SIGNAL(disconnected()),this,SLOT(ondisconnect()));
-//    connect(socket,SIGNAL(received(QString)),this,SLOT(received(QString)));
+    connect(socket,SIGNAL(received(QString)),this,SIGNAL(filereceived(QString)));
 }
 
-//void FileServer::received(QString msg,QString ip)
-//{
-//    emit filereceived(msg,ip);
-//}
-
-//void FileServer::ondisconnect()
-//{
-//    clientNum--;
-//    if(clientNum==0)
-//        this->deleteLater();
-//}
 
 FileSocket::FileSocket(QObject *parent):QTcpSocket (parent)
 {
@@ -55,8 +42,11 @@ void FileSocket::readFile()
         }
         if(this->bytesAvailable()+m_bytesreceived>=totalsize)
         {
+
+
             QString filename;
             in>>filename;
+            qDebug()<<filename<<endl<<endl;
             QByteArray block;
             in>>block;
             QFile file("C://annotationdata/"+filename);
@@ -64,12 +54,13 @@ void FileSocket::readFile()
             file.write(block);
             file.close();
             m_bytesreceived=0;
-//            emit received(QString("received "+filename+"\n"),this->peerAddress().toString());
-            this->write(QString("received "+filename+"\n").toUtf8());
-            qDebug()<<QString("received "+filename);
+
             QRegExp apoRex("(.*).ano.apo");
             if(apoRex.indexIn(filename)!=-1)
                 QMessageBox::information(0, tr("information"),tr("download successfully."));
+            this->write(QString("received "+filename+"\n").toUtf8());
+            qDebug()<<QString("received "+filename)<<endl<<endl;
+
         }
     }else {
             if(this->bytesAvailable()+m_bytesreceived>=totalsize)
@@ -78,17 +69,21 @@ void FileSocket::readFile()
                 in>>filename;
                 QByteArray block;
                 in>>block;
+                qDebug()<<filename<<endl<<endl;
                 QFile file("I://annotationdata/"+filename);
                 file.open(QIODevice::WriteOnly);
                 file.write(block);
                 file.close();
                 m_bytesreceived=0;
-//                emit received(QString("received "+filename+"\n"),this->peerAddress().toString());
-                this->write(QString("received "+filename+"\n").toUtf8());
-                qDebug()<<QString("received "+filename);
                 QRegExp apoRex("(.*).ano.apo");
                 if(apoRex.indexIn(filename)!=-1)
+                {
+                    emit received(apoRex.cap(1)+".ano");
                     QMessageBox::information(0, tr("information"),tr("download successfully."));
+                }
+                this->write(QString("received "+filename+"\n").toUtf8());
+                qDebug()<<QString("received "+filename)<<endl<<endl;
+
             }
         }
 }

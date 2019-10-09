@@ -49,6 +49,7 @@ private:
 	QString anofile_name,eswcfile_name,apofile_name;
 	QTcpSocket *filesocket;
 	FileServer *fileserver;
+    QString messageport;
 
 };
 

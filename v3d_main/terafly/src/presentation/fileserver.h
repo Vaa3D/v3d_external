@@ -11,7 +11,8 @@ public:
 public slots:
     void readFile();
 signals:
-    void received(QString,QString);
+    void received(QString/*,QString*/);
+//    void filesaved();
 private:
     quint64 totalsize;
     quint64 filenamesize;
@@ -30,9 +31,10 @@ public slots:
 //    void ondisconnect();
 //    void received(QString,QString);
 signals:
-    void filereceived(QString,QString);
+    void filereceived(QString/*,QString*/);
+
 private:
-    int clientNum=0;
+    int clientNum;
     void incomingConnection(int socketDesc);
 
 };

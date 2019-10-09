@@ -21,6 +21,7 @@ ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
 {
 	fileserver=0;
 	filesocket=0;
+    connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 }
 void ManageSocket::onReadyRead()
 {
@@ -42,7 +43,6 @@ void ManageSocket::onReadyRead()
 		{
 			qDebug()<<"111";
 			this->disconnectFromHost();
-			this->deleteLater();
 		}else if(ImportRex.indexIn(manageMsg)!=-1)
 		{
 			qDebug()<<"111111";
@@ -53,7 +53,7 @@ void ManageSocket::onReadyRead()
 			filesocket->connectToHost(ip,fileport.toInt());
 			if(filesocket->state()==QAbstractSocket::UnconnectedState)
 			{
-				qDebug()<<"222";
+                QMessageBox::information(0, tr("Error"),tr("can not connect with fileserver."));
 				return ;
 			}
 
@@ -134,7 +134,7 @@ void ManageSocket::onReadyRead()
 			widget->show();
 		}else if(MessagePortExp.indexIn(manageMsg)!=-1)
 		{
-			QString messageport=MessagePortExp.cap(1);
+            messageport=MessagePortExp.cap(1);
 			qDebug()<<messageport;
 
             emit makeMessageSocket(ip,messageport,name);
@@ -150,7 +150,7 @@ void ManageSocket::sendLoad(QListWidgetItem *item)
 void ManageSocket::send(QListWidgetItem *item)
 {
 
-	//fileserver=new FileServer;
+    fileserver=new FileServer;
 	if(fileserver->listen(QHostAddress::Any,9998))
 	{
 		qDebug()<<"88888";
@@ -229,13 +229,12 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
-    socket = new QTcpSocket(this);
-//    connect(this->managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),this,SLOT(SendLoginRequest(QString,QString,QString)));
-//	connect(socket, SIGNAL(connected()), this, SLOT(onConnected()));
-	connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    socket = 0;
+
+//	connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+//	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
-    nextblocksize=0;
+//    nextblocksize=0;
 }
 
 	V3dR_Communicator::~V3dR_Communicator() {
@@ -244,6 +243,10 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 
+    socket=new QTcpSocket;
+    connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
+    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     qDebug()<<"start login messageserver";
     QSettings settings("HHMI", "Vaa3D");
 
@@ -268,7 +271,8 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 		}	
 	}
     qDebug()<<"User:  "<<userName<<".  Connected with server: "<<ip<<" :"<<vr_Port;
-    onConnected();
+
+//    onConnected();
 	
 	return 1;
 }
@@ -338,7 +342,7 @@ void V3dR_Communicator::onReadyRead() {
         QString msg=QString::fromUtf8(socket->readLine()).trimmed();
 
         QRegExp usersRex("^/users:(.*)$");
-        QRegExp systemRex("^/system:(.*)$");
+        QRegExp systemRex("^/system:(.*)$");// can be deleted ? talk with LQ
 	//QRegExp hmdposRex("^/hmdpos:(.*)$");
         QRegExp colorRex("^/color:(.*)$");
 	//QRegExp deleteRex("^/del:(.*)$");
@@ -349,7 +353,6 @@ void V3dR_Communicator::onReadyRead() {
             QStringList users = usersRex.cap(1).split(",");
         //qDebug()<<"Current users are:";
             foreach (QString user, users) {
-            //qDebug()<<user;
                 if(user==userName) continue;// skip itself
             //traverse the user list. Create new item for Agents[] if there is a new agent.
                 bool findSameAgent=false;
@@ -448,6 +451,7 @@ void V3dR_Communicator::onReadyRead() {
                 //update agent color
             Agents.at(i).colorType=clrtype.toInt();
             qDebug()<<"user:"<<user<<" receievedColorTYPE="<<Agents.at(i).colorType;
+            qDebug()<< i <<" color "<< Agents.at(i).colorType;
         }
     }
 //     else if (deleteRex.indexIn(line) != -1) {
@@ -496,6 +500,7 @@ void V3dR_Communicator::onReadyRead() {
         }
     }
     else if (messageRex.indexIn(msg) != -1) {
+            qDebug()<<msg;
         QString user = messageRex.cap(1);
         QString message = messageRex.cap(2);
         //qDebug()<<"user, "<<user<<" said: "<<message;
@@ -505,10 +510,12 @@ void V3dR_Communicator::onReadyRead() {
             if(user == Agents.at(i).name)
             {
                 colortype=Agents.at(i).colorType;
+                qDebug()<<i<<" color :"<<colortype;
                 break;
             }
         }
         qDebug()<<"receieved message :"<<message<<"  from user: "<<user<<"  type :"<<colortype;
+
         //trans message to neurontree with colortype
         //pMainApplication->UpdateNTList(message,colortype);
         //qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
