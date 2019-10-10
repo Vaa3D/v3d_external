@@ -85,7 +85,8 @@ void ManageSocket::onReadyRead()
     QRegExp LoginRex("(.*):logged in success.\n");
     QRegExp LogoutRex("(.*):logged out success.\n");
     QRegExp ImportRex("(.*):import port.\n");
-    QRegExp CurrentDirExp("(.*):currentDir.\n");
+    QRegExp CurrentDirDownExp("(.*):currentDir_down.\n");
+    QRegExp CurrentDirLoadExp("(.*):currentDir_load.\n");
 //	QRegExp MessagePortExp("messageport:(.*).\n");
 	if(this->canReadLine())
 	{
@@ -110,10 +111,10 @@ void ManageSocket::onReadyRead()
             qDebug()<<anofile_path;
             FileSocket_send *filesocket_send=new FileSocket_send(ip,ImportRex.cap(1),anofile_path);
 
-        }else if(CurrentDirExp.indexIn(manageMsg)!=-1)
+        }else if(CurrentDirDownExp.indexIn(manageMsg)!=-1)
 		{
             qDebug()<<"1";
-			QString currentDir=CurrentDirExp.cap(1);
+            QString currentDir=CurrentDirDownExp.cap(1);
 			QStringList file_list=currentDir.split(";");
 			QWidget *widget=new QWidget(0);
 			widget->setWindowTitle("choose annotation file ");
@@ -122,7 +123,7 @@ void ManageSocket::onReadyRead()
 
 			mainlayout.addWidget(filelistWidget);
 			connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-				this,SLOT(send(QListWidgetItem*)));
+                this,SLOT(send1(QListWidgetItem*)));
 
 			connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
 				widget,SLOT(close()));
@@ -136,7 +137,41 @@ void ManageSocket::onReadyRead()
 				filelistWidget->addItem(tmp);
 			}
 			widget->show();
-        }/*else if(MessagePortExp.indexIn(manageMsg)!=-1)
+        }else if(CurrentDirLoadExp.indexIn(manageMsg)!=-1)
+        {
+            qDebug()<<"2";
+            QString currentDir=CurrentDirLoadExp.cap(1);
+            QStringList file_list=currentDir.split(";");
+            QWidget *widget=new QWidget(0);
+            widget->setWindowTitle("choose annotation file ");
+            QListWidget *filelistWidget=new QListWidget;
+            QVBoxLayout mainlayout(widget);
+
+            mainlayout.addWidget(filelistWidget);
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                this,SLOT(send2(QListWidgetItem*)));
+
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                widget,SLOT(close()));
+
+            filelistWidget->clear();
+            for(uint i=0;i<file_list.size();i++)
+            {
+                QIcon icon("file.png");
+                QListWidgetItem *tmp=new QListWidgetItem(icon,file_list.at(i));
+                qDebug()<<file_list.at(i);
+                filelistWidget->addItem(tmp);
+            }
+            widget->show();
+        }
+
+
+
+
+
+
+
+        /*else if(MessagePortExp.indexIn(manageMsg)!=-1)
 		{
             messageport=MessagePortExp.cap(1);
 			qDebug()<<messageport;
@@ -147,7 +182,19 @@ void ManageSocket::onReadyRead()
 	}
 }
 
-void ManageSocket::send(QListWidgetItem *item)
+void ManageSocket::send1(QListWidgetItem *item)
+{
+    FileServer *fileserver=new FileServer;
+    if(fileserver->listen(QHostAddress::Any,9998))
+    {
+        qDebug()<<"88888";
+        qDebug()<<item->text();
+        this->write(QString(item->text()+":choose1."+"\n").toUtf8());
+        qDebug()<<QString(QString(item->text()+":choose1."));
+    }
+}
+
+void ManageSocket::send2(QListWidgetItem *item)
 {
 
     FileServer *fileserver=new FileServer;
@@ -155,12 +202,10 @@ void ManageSocket::send(QListWidgetItem *item)
     {
         qDebug()<<"88888";
         qDebug()<<item->text();
-        this->write(QString(item->text()+":choose."+"\n").toUtf8());
-        qDebug()<<QString(QString(item->text()+":choose."));
+        this->write(QString(item->text()+":choose2."+"\n").toUtf8());
+        qDebug()<<QString(QString(item->text()+":choose2."));
     }
 }
-
-
 
 static std::vector<Agent> Agents;
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)

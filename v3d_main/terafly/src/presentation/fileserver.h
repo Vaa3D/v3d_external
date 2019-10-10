@@ -12,7 +12,7 @@ public slots:
 private:
     void incomingConnection(int socketDesc);
 signals:
-    void receivedfile(QString filename);
+//    void receivedfile(QString filename);
 private:
     quint64 clientNum;
 };
@@ -26,7 +26,7 @@ public slots:
 //    void socketstart();
     void readFile();
 signals:
-    void receivefile(QString filename);
+//    void receivefile(QString filename);
 private:
     int socketId;
     quint64 totalsize;

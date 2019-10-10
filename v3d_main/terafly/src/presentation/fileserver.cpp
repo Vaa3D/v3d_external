@@ -10,7 +10,8 @@ FileServer::FileServer(QObject *parent):QTcpServer (parent)
 void FileServer::incomingConnection(int socketDesc)
 {
     FileSocket_receive *filesocket=new FileSocket_receive(socketDesc);
-    connect(filesocket,SIGNAL(receivefile(QString)),this,SIGNAL(receivedfile(QString)));
+//    connect(filesocket,SIGNAL(receivefile(QString)),filesocket,SIGNAL(dis);
+//    connect(filesocket,SIGNAL(receivefile(QString)),this,SIGNAL(receivedfile(QString)));
     connect(filesocket,SIGNAL(disconnected()),this,SLOT(Socketdisconnect()));
 
 
@@ -28,6 +29,7 @@ void FileServer::Socketdisconnect()
 {
     if(--clientNum==0)
     {
+        qDebug()<<"delete";
         this->deleteLater();
     }
 }
@@ -88,7 +90,10 @@ void FileSocket_receive::readFile()
             qDebug()<<"hghjghjg";
             QRegExp apoRex("(.*).apo");
             if(apoRex.indexIn(filename)!=-1)
-                emit receivefile(filename);
+            {
+//                    emit receivefile(filename);
+                this->disconnectFromHost();
+            }
         }
     }else {
             if(this->bytesAvailable()+m_bytesreceived>=totalsize)
@@ -115,7 +120,11 @@ void FileSocket_receive::readFile()
                 qDebug()<<"hghjghjg";
                 QRegExp apoRex("(.*).apo");
                 if(apoRex.indexIn(filename)!=-1)
-                    emit receivefile(filename);
+                {
+//                    emit receivefile(filename);
+                    this->disconnectFromHost();
+                }
+
             }
         }
 }

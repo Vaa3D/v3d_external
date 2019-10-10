@@ -44,8 +44,8 @@ public:
 
 public slots:
     void onReadyRead();
-    void send(QListWidgetItem*);
-
+    void send1(QListWidgetItem*);
+    void send2(QListWidgetItem*);
 protected:
 
 signals:
