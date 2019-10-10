@@ -77,6 +77,8 @@ void FileSocket_send::readMSG()
 }
 ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
 {
+    messageport.clear();
+    loadfilename.clear();
     connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 }
 
@@ -87,7 +89,8 @@ void ManageSocket::onReadyRead()
     QRegExp ImportRex("(.*):import port.\n");
     QRegExp CurrentDirDownExp("(.*):currentDir_down.\n");
     QRegExp CurrentDirLoadExp("(.*):currentDir_load.\n");
-//	QRegExp MessagePortExp("messageport:(.*).\n");
+    QRegExp MessagePortExp("(.*):messageport.\n");
+
 	if(this->canReadLine())
 	{
 		QString manageMsg=QString::fromUtf8(this->readLine());
@@ -163,24 +166,23 @@ void ManageSocket::onReadyRead()
                 filelistWidget->addItem(tmp);
             }
             widget->show();
+        }else if(MessagePortExp.indexIn(manageMsg)!=-1)
+        {
+            messageport=MessagePortExp.cap(1);
+            emit makeMessageSocket(ip,MessagePortExp.cap(1),name);
         }
 
-
-
-
-
-
-
-        /*else if(MessagePortExp.indexIn(manageMsg)!=-1)
-		{
-            messageport=MessagePortExp.cap(1);
-			qDebug()<<messageport;
-
-            emit makeMessageSocket(ip,messageport,name);
-            qDebug()<<"here 4";
-        }*/
 	}
 }
+
+//void ManageSocket::receivedfile(QString anofile)
+//{
+//    loadfilename=anofile;
+//    if(!messageport.isEmpty())
+//    {
+//        emit makeMessageSocket(loadfilename,ip,messageport,name);
+//    }
+//}
 
 void ManageSocket::send1(QListWidgetItem *item)
 {
@@ -196,21 +198,13 @@ void ManageSocket::send1(QListWidgetItem *item)
 
 void ManageSocket::send2(QListWidgetItem *item)
 {
-
-    FileServer *fileserver=new FileServer;
-    if(fileserver->listen(QHostAddress::Any,9998))
-    {
-        qDebug()<<"88888";
-        qDebug()<<item->text();
         this->write(QString(item->text()+":choose2."+"\n").toUtf8());
         qDebug()<<QString(QString(item->text()+":choose2."));
-    }
 }
 
 static std::vector<Agent> Agents;
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {
-//    managesocket=0;
 	clienton = client_flag;
 	NTList_SendPool = ntlist;
 	NTNumReceieved=0;
@@ -236,8 +230,6 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 }
 
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
-
-
     socket=new QTcpSocket;
 //    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
@@ -268,8 +260,6 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 	}
     qDebug()<<"User:  "<<userName<<".  Connected with server: "<<ip<<" :"<<vr_Port;
 
-//    onConnected();
-	
 	return 1;
 }
 

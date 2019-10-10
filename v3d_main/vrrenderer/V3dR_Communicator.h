@@ -46,12 +46,14 @@ public slots:
     void onReadyRead();
     void send1(QListWidgetItem*);
     void send2(QListWidgetItem*);
+//    void receivedfile(QString anofile);
 protected:
 
 signals:
     void makeMessageSocket(QString ip,QString port,QString username);
 private:
     QString messageport;
+    QString loadfilename;
 
 
 };

@@ -4077,6 +4077,7 @@ void PMain::load()
     {
         if(!cur_win) return ;
         cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
+
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
                 cur_win->getGLWidget()->TeraflyCommunicator,
                 SLOT(SendLoginRequest(QString,QString,QString)));
