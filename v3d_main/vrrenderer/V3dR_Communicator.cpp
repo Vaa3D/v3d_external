@@ -255,7 +255,7 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 //    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleLater()));
+    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
 
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     qDebug()<<"start login messageserver";

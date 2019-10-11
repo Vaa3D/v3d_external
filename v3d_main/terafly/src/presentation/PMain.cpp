@@ -3949,10 +3949,13 @@ void PMain::login()
 
     if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
     {
-        qDebug()<<"test 1";
+
+        qDebug()<<"123";
+        qDebug()<<"test 1,manage point :"<<managesocket;
         if(managesocket->state()==QAbstractSocket::ConnectedState)
         {
-            QMessageBox::information(this, tr("Error"),tr("have been logged."));
+            qDebug()<<"when in login, mansgesocket is connected";
+            QMessageBox::information(0, tr("Error"),tr("have been logged."));
             return;
         }
     }
@@ -4010,10 +4013,12 @@ void PMain::login()
     }
     qDebug()<<"test login ";
     if(managesocket!=0)    delete managesocket;
+    qDebug()<<"tset 2";
     managesocket=new ManageSocket;
     managesocket->ip=serverName;
     managesocket->manageport=manageserver_Port;
     managesocket->name=userName;
+    qDebug()<<"test 3";
 
     managesocket->connectToHost(serverName,manageserver_Port.toInt());
 
@@ -4096,9 +4101,9 @@ void PMain::load()
                 SLOT(SendLoginRequest(QString,QString,QString)));
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
                 managesocket,SLOT(messageMade()));
-//        connect(managesocket,SIGNAL(disconnected()),
-//                cur_win->getGLWidget()->TeraflyCommunicator,
-//                SLOT(deleteLater()));//注意，可能需要修改
+        connect(managesocket,SIGNAL(disconnected()),
+                cur_win->getGLWidget()->TeraflyCommunicator,
+                SLOT(deleteLater()));//注意，可能需要修改
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
@@ -4109,13 +4114,27 @@ void PMain::load()
 void PMain::deleteManageSocket()
 {
     qDebug()<<"delete managesocket";
+    qDebug()<<managesocket;
     managesocket->deleteLater();
+//    delete managesocket;
+
+    qDebug()<<"234";
+//    if(managesocket!=0)
+//        qDebug()<<managesocket;
     loginAction->setText("log in");
+    qDebug()<<"1";
     loginAction->setEnabled(true);
+    qDebug()<<"2";
     logoutAction->setEnabled(false);
+    qDebug()<<"3";
     downAction->setEnabled(false);
+    qDebug()<<"4";
     importAction->setEnabled(false);
+    qDebug()<<"5";
     loadAction->setEnabled(false);
+    managesocket=0;
+    qDebug()<<"6 ";
+    return;
 }
 
 void PMain::ColLoadANO(QString ANOfile)
@@ -4151,6 +4170,32 @@ void PMain::ColLoadANO(QString ANOfile)
         annotationChanged = true;
         updateOverview();
         qDebug()<<"ok";
+
+        QRegExp anoExp("(.*).ano");
+        QString tmp;
+        if(anoExp.indexIn(ANOpath)!=-1)
+        {
+            tmp=anoExp.cap(1);
+        }
+        QFile *f = new QFile(tmp+".ano");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
+
+        f = new QFile(tmp+".ano.eswc");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
+
+        f = new QFile(tmp+".ano.apo");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
+
+
     }
 }
 
