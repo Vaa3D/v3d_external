@@ -19,8 +19,7 @@ class FileSocket_send:public QTcpSocket
 {
     Q_OBJECT
 public:
-    explicit FileSocket_send::FileSocket_send
-    (QString ip,QString port,QString anofile_path,QObject *parent=0);
+    explicit FileSocket_send(QString ip,QString port,QString anofile_path,QObject *parent=0);
 
     void sendFile(QString filepath,QString filename);
 public slots:
@@ -40,7 +39,7 @@ public:
 	QString ip;
 	QString manageport;
 	QString name;
-    QString loadfile_name;
+//    QString loadfile_name;
 
 public slots:
     void onReadyRead();
@@ -54,6 +53,7 @@ protected:
 signals:
     void makeMessageSocket(QString ip,QString port,QString username);
     void loadANO(QString);
+//    void receivefile(QString anofile);
 private:
     QString messageport;
     QString loadfilename;

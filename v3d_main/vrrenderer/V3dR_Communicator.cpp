@@ -21,6 +21,7 @@ FileSocket_send::FileSocket_send(QString ip,QString port,QString anofile_path,QO
     :QTcpSocket (parent)
 {
     connect(this,SIGNAL(readyRead()),this,SLOT(readMSG()));
+    connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
     this->connectToHost(ip,port.toInt());
     QRegExp pathRex("(.*).ano");
     if(pathRex.indexIn(anofile_path)!=-1)
@@ -85,8 +86,8 @@ ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
 
 void ManageSocket::onReadyRead()
 {
-    QRegExp LoginRex("(.*):logged in success.\n");
-    QRegExp LogoutRex("(.*):logged out success.\n");
+    QRegExp LoginRex("(.*):log in success.\n");
+    QRegExp LogoutRex("(.*):log out success.\n");
     QRegExp ImportRex("(.*):import port.\n");
     QRegExp CurrentDirDownExp("(.*):currentDir_down.\n");
     QRegExp CurrentDirLoadExp("(.*):currentDir_load.\n");
@@ -102,12 +103,13 @@ void ManageSocket::onReadyRead()
 		}else if (LogoutRex.indexIn(manageMsg)!=-1)
 		{
             // 需要加内容 V3dR communicator 的注销
+            qDebug()<<"test in logout";
 			this->disconnectFromHost();
 		}else if(ImportRex.indexIn(manageMsg)!=-1)
 		{
             if(this->state()==QAbstractSocket::UnconnectedState)
             {
-                QMessageBox::information(0, tr("Error"),tr("can not connect with fileserver."));
+                QMessageBox::information(0, tr("Error"),tr("can not connect with Manageserver."));
                 return ;
             }
 
@@ -176,14 +178,6 @@ void ManageSocket::onReadyRead()
 	}
 }
 
-//void ManageSocket::receivedfile(QString anofile)
-//{
-//    loadfilename=anofile;
-//    if(!messageport.isEmpty())
-//    {
-//        emit makeMessageSocket(loadfilename,ip,messageport,name);
-//    }
-//}
 
 void ManageSocket::send1(QListWidgetItem *item)
 {
@@ -199,11 +193,9 @@ void ManageSocket::send1(QListWidgetItem *item)
 
 void ManageSocket::send2(QListWidgetItem *item)
 {
-//        this->write(QString(item->text()+":choose2."+"\n").toUtf8());
-//        qDebug()<<QString(QString(item->text()+":choose2."));
-//        loadfilename=anofile;
+    loadfilename.clear();FileRec=0;
         FileServer *fileserver=new FileServer;
-        connect(fileserver,SIGNAL(receivedfile(QString)),this,SIGNAL(receivefile(QString)));
+        connect(fileserver,SIGNAL(receivedfile(QString)),this,SLOT(receivefile(QString)));
         if(fileserver->listen(QHostAddress::Any,9998))
         {
             qDebug()<<"88888";
@@ -216,6 +208,7 @@ void ManageSocket::send2(QListWidgetItem *item)
 
 void ManageSocket::messageMade()
 {
+    qDebug()<<" in messageMade.()";
     MSGsocket=1;
     if(FileRec==1)
         emit loadANO(loadfilename);
@@ -223,7 +216,9 @@ void ManageSocket::messageMade()
 
 void ManageSocket::receivefile(QString anofile)
 {
+    qDebug()<<" in receivefile().";
     FileRec=1;
+
     if(MSGsocket==1)
         emit loadANO(loadfilename);
 }
@@ -260,12 +255,14 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 //    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleLater()));
+
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     qDebug()<<"start login messageserver";
     QSettings settings("HHMI", "Vaa3D");
 
     userName=user;
-    vr_Port=port;
+//    vr_Port=port;
     Agent agent00={
         //with local information
         userName,
@@ -652,6 +649,8 @@ void V3dR_Communicator::onDisconnected() {
 	*clienton = false;
 	//Agents.clear();
 	this->close();
+    deleteLater();
+
 
 }
 

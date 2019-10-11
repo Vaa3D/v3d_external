@@ -3946,10 +3946,15 @@ void PMain::setLockMagnification(bool locked)
 void PMain::login()
 {
     qDebug()<<"in login()";
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+
+    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
     {
-         QMessageBox::information(this, tr("Error"),tr("have been logged."));
-         return;
+        qDebug()<<"test 1";
+        if(managesocket->state()==QAbstractSocket::ConnectedState)
+        {
+            QMessageBox::information(this, tr("Error"),tr("have been logged."));
+            return;
+        }
     }
     qDebug()<<"QSettings settings";
     QSettings settings("HHMI", "Vaa3D");
@@ -4003,12 +4008,12 @@ void PMain::login()
                 settings.setValue("vr_userName", userName);
         }
     }
+    qDebug()<<"test login ";
     if(managesocket!=0)    delete managesocket;
     managesocket=new ManageSocket;
     managesocket->ip=serverName;
     managesocket->manageport=manageserver_Port;
     managesocket->name=userName;
-    managesocket->loadfile_name.clear();
 
     managesocket->connectToHost(serverName,manageserver_Port.toInt());
 
@@ -4072,11 +4077,18 @@ void PMain::download()
 
 void PMain::load()
 {
-	CViewer *cur_win = CViewer::getCurrent();
+    CViewer *cur_win = CViewer::getCurrent();
+    if(!cur_win)
+    {
+        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+        return;
+    }
+
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
+        qDebug()<<"-----------------load annotation----------";
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
-        if(!cur_win) return ;
+
         cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
 
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
@@ -4084,9 +4096,9 @@ void PMain::load()
                 SLOT(SendLoginRequest(QString,QString,QString)));
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
                 managesocket,SLOT(messageMade()));
-        connect(managesocket,SIGNAL(disconnected()),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));//注意，可能需要修改
+//        connect(managesocket,SIGNAL(disconnected()),
+//                cur_win->getGLWidget()->TeraflyCommunicator,
+//                SLOT(deleteLater()));//注意，可能需要修改
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
@@ -4096,11 +4108,12 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
+    qDebug()<<"delete managesocket";
+    managesocket->deleteLater();
     loginAction->setText("log in");
     loginAction->setEnabled(true);
     logoutAction->setEnabled(false);
-
-    logoutAction->setEnabled(false);
+    downAction->setEnabled(false);
     importAction->setEnabled(false);
     loadAction->setEnabled(false);
 }
@@ -4109,9 +4122,11 @@ void PMain::ColLoadANO(QString ANOfile)
 {
     qDebug()<<"load ANO:"<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
-    QString ANOpath="./clouddata"+ANOfile;
+    QString ANOpath="./clouddata/"+ANOfile;
+    qDebug()<<"test path= "<<ANOpath;
     if(!ANOpath.isEmpty())
     {
+
         annotationsPathLRU = ANOpath.toStdString();
         CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
         NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
@@ -4137,44 +4152,5 @@ void PMain::ColLoadANO(QString ANOfile)
         updateOverview();
         qDebug()<<"ok";
     }
-
-
-
-
 }
 
-
-
-/*---------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//=======
-//}
-//>>>>>>> a7e76b9abbe9ee64ccd3cad035eab3c8c918a15e

@@ -15,19 +15,20 @@ void FileServer::incomingConnection(int socketDesc)
 //    connect(filesocket,SIGNAL(receivefile(QString)),this,SIGNAL(receivedfile(QString)));
 //    connect(filesocket,SIGNAL(disconnected()),this,SLOT(Socketdisconnect()));
 
-    connect(filesocket,SIGNAL(receivefile(QString)),this,SIGNAL(Socketdisconnect(QString)));
+//    connect(filesocket,SIGNAL(receivefile(QString)),this,SIGNAL(Socketdisconnect(QString)));
 //    connect(filesocket,SIGNAL(disconnected()),this,SLOT(Socketdisconnect()));
-    clientNum++;
+      connect(filesocket,SIGNAL(receivefile(QString)),this,SLOT(Socketdisconnect(QString)));
+      clientNum++;
 }
 
 void FileServer::Socketdisconnect(QString ANOfile)
 {
     emit receivedfile(ANOfile);
-    if(--clientNum==0)
-    {
-        qDebug()<<"delete";
-        this->deleteLater();
-    }
+
+    qDebug()<<"delete";
+    this->deleteLater();
+    qDebug()<<"file server delete later";
+
 }
 
 FileSocket_receive::FileSocket_receive(int socketDesc,QObject *parent)
@@ -83,8 +84,10 @@ void FileSocket_receive::readFile()
             QRegExp apoRex("(.*).apo");
             if(apoRex.indexIn(filename)!=-1)
             {
-                emit receivefile(apoRex.cap(1)+".ano");
+                emit receivefile(apoRex.cap(1));
+                qDebug()<<apoRex.cap(1)<<"+++++++";
                 qDebug()<<"receive apo .----";
+                disconnectFromHost();
 //                this->disconnectFromHost();
             }
             this->write(QString("received "+filename+"\n").toUtf8());
@@ -121,8 +124,9 @@ void FileSocket_receive::readFile()
                 QRegExp apoRex("(.*).apo");
                 if(apoRex.indexIn(filename)!=-1)
                 {
-                    emit receivefile(apoRex.cap(1)+".ano");
+                    emit receivefile(apoRex.cap(1));
                     qDebug()<<"receive apo .----";
+                    disconnectFromHost();
     //                this->disconnectFromHost();
                 }
                 this->write(QString("received "+filename+"\n").toUtf8());
