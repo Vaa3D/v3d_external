@@ -239,11 +239,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     /*----------------collaborate mdoe-------------------*/
         collaborateMenu=menuBar->addMenu("Collaborate");
-        loginAction=new QAction("log in",this);
-        logoutAction=new QAction("log out",this);
-        importAction=new QAction("import annotation to cloud",this);
+        loginAction=new QAction("Login",this);
+        logoutAction=new QAction("Logout",this);
+        importAction=new QAction("Import annotation to cloud",this);
         downAction=new QAction("Download annotation from cloud",this);
-        loadAction= new QAction("Load annotation and start collaborate",this);
+        loadAction= new QAction("Load annotation and collaborate",this);
 
         collaborateMenu->addAction(loginAction);
         collaborateMenu->addAction(importAction);
@@ -4075,15 +4075,18 @@ void PMain::load()
 	CViewer *cur_win = CViewer::getCurrent();
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
+        connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
         if(!cur_win) return ;
         cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
 
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
                 cur_win->getGLWidget()->TeraflyCommunicator,
                 SLOT(SendLoginRequest(QString,QString,QString)));
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
+                managesocket,SLOT(messageMade()));
         connect(managesocket,SIGNAL(disconnected()),
                 cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deletelater()));//注意，可能需要修改
+                SLOT(deleteLater()));//注意，可能需要修改
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
@@ -4102,7 +4105,43 @@ void PMain::deleteManageSocket()
     loadAction->setEnabled(false);
 }
 
+void PMain::ColLoadANO(QString ANOfile)
+{
+    qDebug()<<"load ANO:"<<ANOfile;
+    CViewer *cur_win = CViewer::getCurrent();
+    QString ANOpath="./clouddata"+ANOfile;
+    if(!ANOpath.isEmpty())
+    {
+        annotationsPathLRU = ANOpath.toStdString();
+        CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
+        NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
 
+        // save current cursor and set wait cursor
+        QCursor cursor = cur_win->view3DWidget->cursor();
+        if(PAnoToolBar::isInstantiated())
+            PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+        CViewer::setCursor(Qt::WaitCursor);
+
+        // load
+        cur_win->loadAnnotations();
+        saveAnnotationsAction->setEnabled(true);
+        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+        virtualSpaceSizeMenu->setEnabled(false);
+        myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
+
+        // reset saved cursor
+        CViewer::setCursor(cursor);
+        if(PAnoToolBar::isInstantiated())
+            PAnoToolBar::instance()->setCursor(cursor);
+        annotationChanged = true;
+        updateOverview();
+        qDebug()<<"ok";
+    }
+
+
+
+
+}
 
 
 

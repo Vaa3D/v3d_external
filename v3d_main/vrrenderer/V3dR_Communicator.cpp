@@ -77,6 +77,7 @@ void FileSocket_send::readMSG()
 }
 ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
 {
+    MSGsocket=0;FileRec=0;
     messageport.clear();
     loadfilename.clear();
     connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
@@ -198,8 +199,33 @@ void ManageSocket::send1(QListWidgetItem *item)
 
 void ManageSocket::send2(QListWidgetItem *item)
 {
-        this->write(QString(item->text()+":choose2."+"\n").toUtf8());
-        qDebug()<<QString(QString(item->text()+":choose2."));
+//        this->write(QString(item->text()+":choose2."+"\n").toUtf8());
+//        qDebug()<<QString(QString(item->text()+":choose2."));
+//        loadfilename=anofile;
+        FileServer *fileserver=new FileServer;
+        connect(fileserver,SIGNAL(receivedfile(QString)),this,SIGNAL(receivefile(QString)));
+        if(fileserver->listen(QHostAddress::Any,9998))
+        {
+            qDebug()<<"88888";
+            qDebug()<<item->text();
+            loadfilename=item->text();
+            this->write(QString(item->text()+":choose2."+"\n").toUtf8());
+            qDebug()<<QString(QString(item->text()+":choose2."));
+        }
+}
+
+void ManageSocket::messageMade()
+{
+    MSGsocket=1;
+    if(FileRec==1)
+        emit loadANO(loadfilename);
+}
+
+void ManageSocket::receivefile(QString anofile)
+{
+    FileRec=1;
+    if(MSGsocket==1)
+        emit loadANO(loadfilename);
 }
 
 static std::vector<Agent> Agents;
@@ -259,6 +285,7 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 		}	
 	}
     qDebug()<<"User:  "<<userName<<".  Connected with server: "<<ip<<" :"<<vr_Port;
+    emit messageMade();
 
 	return 1;
 }

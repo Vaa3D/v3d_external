@@ -8,7 +8,7 @@ class FileServer:public QTcpServer
 public:
     explicit FileServer(QObject *parent=0);
 public slots:
-    void Socketdisconnect();
+    void Socketdisconnect(QString);
 private:
     void incomingConnection(int socketDesc);
 signals:

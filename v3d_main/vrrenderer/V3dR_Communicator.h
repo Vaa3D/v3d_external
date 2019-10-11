@@ -46,14 +46,19 @@ public slots:
     void onReadyRead();
     void send1(QListWidgetItem*);
     void send2(QListWidgetItem*);
+    void messageMade();
 //    void receivedfile(QString anofile);
+    void receivefile(QString anofile);
 protected:
 
 signals:
     void makeMessageSocket(QString ip,QString port,QString username);
+    void loadANO(QString);
 private:
     QString messageport;
     QString loadfilename;
+    bool MSGsocket;
+    bool FileRec;
 
 
 };
@@ -90,6 +95,8 @@ private slots:
     void onReadyRead();
     void onConnected();
     void onDisconnected();
+signals:
+    void messageMade();
 private:
 	
     QTcpSocket* socket;

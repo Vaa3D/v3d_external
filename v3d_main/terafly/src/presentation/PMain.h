@@ -603,7 +603,8 @@ public slots:
         void download();
         void load();
         void deleteManageSocket();
-private:
+public slots:
+        void ColLoadANO(QString ANOfile);
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
 };
