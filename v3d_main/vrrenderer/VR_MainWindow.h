@@ -9,8 +9,9 @@
 //#ifdef _WIN32
 //    #include <windows.h>
 //#endif
-
+#include "V3dR_Communicator.h"
 #include "../basic_c_fun/v3d_interface.h"
+class V3dR_Communicator;
 struct VRoutInfo
 {
 	std::vector<XYZ> deletedcurvespos;
@@ -23,11 +24,11 @@ class VR_MainWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit VR_MainWindow();
+    explicit VR_MainWindow(V3dR_Communicator* TeraflyCommunicator);
     ~VR_MainWindow();
 	void onReadySend(QString &send_MSG);
 	bool SendLoginRequest(bool resume = false);
-	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
+	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator*TeraflyCommunicator, XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
 	XYZ VRVolumeStartPoint;
 	XYZ VRVolumeEndPoint;
 	XYZ VRVolumeCurrentRes;
@@ -47,7 +48,7 @@ public:
 signals:
 	void VRSocketDisconnect();
 private:
-	
+	V3dR_Communicator* VR_Communicator;
     QTcpSocket* socket;
 	QString userName;
 	QString vr_Port;

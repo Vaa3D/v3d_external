@@ -5,12 +5,12 @@
 #include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
-#include"../3drenderer/v3dr_common.h"
+//#include"../3drenderer/v3dr_common.h"
 //#include <QRegExpValidator>
 //#ifdef _WIN32
 //    #include <windows.h>
 //#endif
-
+#include "../neuron_editing/v_neuronswc.h"
 #include "../basic_c_fun/v3d_interface.h"
 
 
@@ -84,7 +84,7 @@ public:
 	void MsgToV_NeuronSWC(QString msg);
 
 //	ManageSocket * managesocket;
-
+	 QTcpSocket* socket;
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
 	//void RunVRMainloop();
@@ -99,7 +99,7 @@ signals:
     void messageMade();
 private:
 	
-    QTcpSocket* socket;
+
 	QString userName;
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;

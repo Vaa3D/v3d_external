@@ -1,5 +1,7 @@
-#include "VR_MainWindow.h"
 #include "v3dr_gl_vr.h"
+#include "VR_MainWindow.h"
+
+
 #include <QRegExp>
 //#include <QMessageBox>
 #include <QtGui>
@@ -7,8 +9,9 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
+
 std::vector<Agent> Agents;
-VR_MainWindow::VR_MainWindow() :
+VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QWidget()
 {
 	if (Agents.size()>0)
@@ -16,9 +19,10 @@ VR_MainWindow::VR_MainWindow() :
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
-    connect(socket, SIGNAL(connected()), this, SLOT(onConnected()));
-    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+	VR_Communicator = TeraflyCommunicator;
+	disconnect(VR_Communicator, SIGNAL(readyRead()), this, SLOT(VR_Communicator->onReadyRead()));
+    connect(VR_Communicator, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+
 	CURRENT_DATA_IS_SENT=false;
     numreceivedmessage=0;//for debug hl
     numsendmessage=0;
@@ -135,15 +139,9 @@ void VR_MainWindow::onReadySend(QString &send_MSG) {
     if (!send_MSG.isEmpty()) {
 		if((send_MSG!="exit")&&(send_MSG!="quit"))
 		{
-            qDebug() <<"send NO."<<numsendmessage<<":"<< QString("/say:" + send_MSG + "\n");
-			socket->write(QString("/say:" + send_MSG + "\n").toUtf8());
+			VR_Communicator->socket->write(QString("/seg:" + send_MSG + "\n").toUtf8());
 		}
-		else
-		{
-			socket->write(QString("/say: GoodBye~\n").toUtf8());
-			socket->disconnectFromHost();
-			return;
-		}
+	
 	}
 	else
 	{
@@ -162,11 +160,11 @@ void VR_MainWindow::onReadyRead() {
 	QRegExp delmarkerRex("^/del_marker:(.*)$");
 	QRegExp dragnodeRex("^/drag_node:(.*)$");
 	QRegExp creatorRex("^/creator:(.*)$");
-    QRegExp messageRex("^(.*):(.*)$");
+    QRegExp messageRex("^/seg:(.*)$");
 	
 
-    while (socket->canReadLine()) {
-        QString line = QString::fromUtf8(socket->readLine()).trimmed();
+    while (VR_Communicator->socket->canReadLine()) {
+        QString line = QString::fromUtf8(VR_Communicator->socket->readLine()).trimmed();
 
         qDebug()<<"receive :"<<line;
 
@@ -453,8 +451,9 @@ void VR_MainWindow::onReadyRead() {
 		//dragnodeRex
         else if (messageRex.indexIn(line) != -1) {
             qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
-            QString user = messageRex.cap(1);
-            QString message = messageRex.cap(2);
+            QStringList MSGs = messageRex.cap(1).split(" ");
+			QString user = MSGs.at(0);
+            QString message = MSGs.at(1);
 			//qDebug()<<"user, "<<user<<" said: "<<message;
 			if(pMainApplication)
 			{
@@ -482,7 +481,7 @@ void VR_MainWindow::onReadyRead() {
 
 void VR_MainWindow::onConnected() {
 
-    socket->write(QString("/login:" +userName + "\n").toUtf8());
+    VR_Communicator->socket->write(QString("/login:" +userName + "\n").toUtf8());
 
 }
 
@@ -498,7 +497,7 @@ void VR_MainWindow::onDisconnected() {
 
 
 
-int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
+int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator* TeraflyCommunicator,XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
 
 	pMainApplication = new CMainApplication(  0, 0 );
 
@@ -571,7 +570,6 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		CreatorPos->z = pMainApplication->CollaborationCreatorPos.z;
 		CreatorRes = pMainApplication->collaboration_creator_res;
 		qDebug()<<"call that function is"<<_call_that_function;
-		socket->disconnectFromHost();
 		Agents.clear();
 		delete pMainApplication;
 		pMainApplication=0;
@@ -584,11 +582,11 @@ void VR_MainWindow::SendHMDPosition()
 	QString PositionStr=pMainApplication->getHMDPOSstr();
 
 	//send hmd position
-	socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
+	VR_Communicator->socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
 	//QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
 	//cout<<"socket resindex"<<ResIndex<<endl;
 	//qDebug()<<"QString resindex"<< QString("%1").arg(ResIndex);
-	socket->write(QString("/ResIndex:" + QString("%1").arg(ResIndex) + "\n").toUtf8());
+	VR_Communicator->socket->write(QString("/ResIndex:" + QString("%1").arg(ResIndex) + "\n").toUtf8());
 }
 void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 {
@@ -632,7 +630,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 				QString ConverteddelcurvePOS = ConvertsendCoords(pMainApplication->delcurvePOS);
 				qDebug()<<"Converted marker position = "<<ConverteddelcurvePOS;
 				QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-				socket->write(QString("/del_curve:" +  ConverteddelcurvePOS+" "+QSCurrentRes + "\n").toUtf8());
+				VR_Communicator->socket->write(QString("/del_curve:" +  ConverteddelcurvePOS+" "+QSCurrentRes + "\n").toUtf8());
 				CURRENT_DATA_IS_SENT=true;
 			}
 
@@ -649,7 +647,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
 			qDebug()<<"Converted marker position = "<<ConvertedmarkerPOS;
 			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-			socket->write(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes + "\n").toUtf8());
+			VR_Communicator->socket->write(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes + "\n").toUtf8());
 			CURRENT_DATA_IS_SENT=true;
 		}
 		//else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
@@ -665,7 +663,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			qDebug()<<"drag node new position = "<<pMainApplication->dragnodePOS;
 			QString ConverteddragnodePOS = ConvertsendCoords(pMainApplication->dragnodePOS);
 			qDebug()<<"Converted delete marker position = "<<ConverteddragnodePOS;
-			socket->write(QString("/drag_node:" + ConverteddragnodePOS + "\n").toUtf8());
+			VR_Communicator->socket->write(QString("/drag_node:" + ConverteddragnodePOS + "\n").toUtf8());
 			CURRENT_DATA_IS_SENT=true;
 		}
 		//if(pMainApplication->READY_TO_SEND==true)
@@ -681,7 +679,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//}
 	if(sendHMDPOScout%20==0)
 	{
-		socket->write(QString("/ask:message \n").toUtf8());
+		VR_Communicator->socket->write(QString("/ask:message \n").toUtf8());
 	}
 	if(sendHMDPOScout%60==0)
 	{
