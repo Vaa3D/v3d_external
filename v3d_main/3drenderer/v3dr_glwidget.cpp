@@ -1034,6 +1034,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					mypluginloader.runPlugin(loader, "settings");
+
+					return;
 				}
 				else v3d_msg("Neuron Assembler plugin instance already exists.");
 			}
