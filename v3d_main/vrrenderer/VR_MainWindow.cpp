@@ -20,8 +20,8 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
 	VR_Communicator = TeraflyCommunicator;
-	disconnect(VR_Communicator, SIGNAL(readyRead()), this, SLOT(VR_Communicator->onReadyRead()));
-    connect(VR_Communicator, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+	disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(VR_Communicator->onReadyRead()));
+    connect(VR_Communicator->socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 
 	CURRENT_DATA_IS_SENT=false;
     numreceivedmessage=0;//for debug hl
