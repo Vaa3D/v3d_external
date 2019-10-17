@@ -3947,18 +3947,19 @@ void PMain::login()
 {
     qDebug()<<"in login()";
 
-    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
-    {
+//    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
+//    {
 
-        qDebug()<<"123";
-        qDebug()<<"test 1,manage point :"<<managesocket;
-        if(managesocket->state()==QAbstractSocket::ConnectedState)
-        {
-            qDebug()<<"when in login, mansgesocket is connected";
-            QMessageBox::information(0, tr("Error"),tr("have been logged."));
-            return;
-        }
-    }
+//        qDebug()<<"123";
+//        qDebug()<<"test 1,manage point :"<<managesocket;
+//        if(managesocket->state()==QAbstractSocket::ConnectedState)
+//        {
+//            qDebug()<<"when in login, mansgesocket is connected";
+//            QMessageBox::information(0, tr("Error"),tr("have been logged."));
+//            return;
+//        }
+
+//    }
     qDebug()<<"QSettings settings";
     QSettings settings("HHMI", "Vaa3D");
     QString serverNameDefault = "";
@@ -4117,8 +4118,9 @@ void PMain::deleteManageSocket()
     qDebug()<<"delete managesocket";
     qDebug()<<managesocket;
 //    managesocket->deleteLater();
-    delete managesocket;
-    managesocket=NULL;
+//    delete managesocket;
+//    managesocket=NULL;
+    managesocket->deleteLater();
 
     qDebug()<<"234";
     loginAction->setText("log in");
