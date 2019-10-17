@@ -4012,7 +4012,7 @@ void PMain::login()
         }
     }
     qDebug()<<"test login ";
-    if(managesocket!=0)    delete managesocket;
+//    if(managesocket!=0)    delete managesocket;
     qDebug()<<"tset 2";
     managesocket=new ManageSocket;
     managesocket->ip=serverName;
@@ -4024,8 +4024,9 @@ void PMain::login()
 
     if( !managesocket->waitForConnected())
     {
-        managesocket->deleteLater();
+//        managesocket->deleteLater();
         QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
+        delete  managesocket;
         return;
     }
     else{
@@ -4115,12 +4116,11 @@ void PMain::deleteManageSocket()
 {
     qDebug()<<"delete managesocket";
     qDebug()<<managesocket;
-    managesocket->deleteLater();
-//    delete managesocket;
+//    managesocket->deleteLater();
+    delete managesocket;
+    managesocket=NULL;
 
     qDebug()<<"234";
-//    if(managesocket!=0)
-//        qDebug()<<managesocket;
     loginAction->setText("log in");
     qDebug()<<"1";
     loginAction->setEnabled(true);
@@ -4132,7 +4132,6 @@ void PMain::deleteManageSocket()
     importAction->setEnabled(false);
     qDebug()<<"5";
     loadAction->setEnabled(false);
-    managesocket=0;
     qDebug()<<"6 ";
     return;
 }

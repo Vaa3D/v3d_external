@@ -54,15 +54,17 @@ void FileSocket_send::sendFile(QString filepath, QString filename)
     dts<<data;
 
     this->write(block);
-    qDebug()<<filepath;
+    qDebug()<<filepath<<"++";
 }
 void FileSocket_send::readMSG()
 {
     while (this->canReadLine()) {
+
         QRegExp anoRex("received (.*).ano\n");
         QRegExp swcRex("received (.*).eswc\n");
         QRegExp apoRex("received (.*).apo\n");
         QString MSG=QString::fromUtf8(this->readLine());
+        qDebug()<<"fileMSG:"<<MSG;
         if(anoRex.indexIn(MSG)!=-1)
         {
             sendFile(anopath+".ano.eswc",anoname+".ano.eswc");
@@ -71,6 +73,7 @@ void FileSocket_send::readMSG()
             sendFile(anopath+".ano.apo",anoname+".ano.apo");
         }else if(apoRex.indexIn(MSG)!=-1)
         {
+            qDebug()<<"file upload is ok.";
             this->disconnectFromHost();
             QMessageBox::information(0, tr("information"),tr("import successfully."));
         }
