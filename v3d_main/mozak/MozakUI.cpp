@@ -68,8 +68,8 @@ MozakUI::MozakUI(V3DPluginCallback2 *callback, QWidget *parent)
     mGeneralProperties.setSectionName("GENERAL");
     mGeneralProperties.setIniFile(&mIniFile);
     mGeneralProperties.add((dsl::BaseProperty*)&mLogLevel.setup("LOG_LEVEL", dsl::lAny));
-    mGeneralProperties.add((dsl::BaseProperty*)&mGameControllerZoomFactor.setup("GAME_CONTROLLER_ZOOM_FACTOR", 10.0));
-    mGeneralProperties.add((dsl::BaseProperty*)&mZoomSpeed.setup("ZOOM_SPEED", 10.0));
+    mGeneralProperties.add((dsl::BaseProperty*)&mGameControllerZoomFactor.setup("GAME_CONTROLLER_ZOOM_FACTOR", 8.5));
+    mGeneralProperties.add((dsl::BaseProperty*)&mZoomSpeed.setup("ZOOM_SPEED", 20.0));
     
     dsl::gLogger.logToFile(dsl::joinPath(mAppDataFolder, "va3d-mozak.log"));
 

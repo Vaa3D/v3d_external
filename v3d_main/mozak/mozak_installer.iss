@@ -1,7 +1,7 @@
 ; Match app version with VERSION.txt file in mozak folder
 
 #define MyAppName           "Vaa3D-Mozak"
-#define MyAppVersion        "0.5.7"
+#define MyAppVersion        "0.5.8"
 #define MyAppPublisher      "Allen Institute"
 #define MyAppURL            "http://www.example.com/"
 #define MyAppExeName        "vaa3d_msvc.exe"
@@ -102,7 +102,7 @@ Source: "C:\CodeGear\Tokyo\bin\vclx250.bpl";                                    
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\ {#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
