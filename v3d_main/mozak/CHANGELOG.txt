@@ -1,0 +1,42 @@
+Release 0.5.7 (Oct 2)
+============================
+* reorganized installed plugins
+
+Release 0.5.6 (September 26)
+============================
+* Updated installer script to bring in plugins
+
+Release 0.5.5 (September 17)
+============================
+* Changed game controller zoom behavior
+
+Release 0.5.4 (September 12)
+============================
+* Changed popping up dialog box into a qDebug message, occurring when changing color, by pressing 'v' in Mozak
+* Mozak starts with game controller disabled by default
+
+Release 0.5.3 (September 10)
+============================
+* Added shortcuts to turn on/off gamecontroller and/or spacemouse (Ctrl-F9 and Ctrl-F10)
+* Added IniFile capabilities
+* Added ability to open a INIfile editor from within Mozak (Ctrl-F11)
+* Added more properties to the Space navigator
+* Added ability to load a modified ini file at runtime (Ctrl-F12)
+
+Release 0.5.2 (September 3)
+============================
+* Added copying of the MOZAK version file to binary folder
+
+Release 0.5.1 (August 28)
+============================
+* Added a simple logger (logs to users folder: %USERPROFILE%\AppData\Local\Mozak
+* Added version file to be read. Version shows on Mozak's window caption
+* Added support for usage of a SpaceNavigator mouse in Mozak UI
+* Added support for usage of a GameController in Mozak UI
+* Added simple installation script for installing Vaa3D
+* Added word document for documenting the usage and implementation of the gamecontroller and the spacenavigator (docs/GameControllerIntegration.docx)
+* Added this (Mozak) Changelog file
+
+Release 0.5.0 (August 5)
+============================
+* Started work on embedding gamecontroller code in Mozak

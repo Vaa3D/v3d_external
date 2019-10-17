@@ -6,11 +6,24 @@
 //#include "../terafly/src/control/CViewer.h"
 //#include "../terafly/src/control/CPlugin.h"
 #include "Mozak3DView.h"
+#include "GameControllerAPI/aiGameControllerRaw.h"
+#include "3DXLib\aiSpaceNavigatorDevice.h"
+#include "dsl/dslIniFile.h"
+#include "dsl/dslProperty.h"
+#include "dsl/dslIniFileProperties.h"
+#include "dsl/dslLogLevel.h"
+#include "Poco/Process.h"
+
+using ai::SpaceNavigatorDevice;
+using dsl::IniFile;
+using dsl::Property;
+using dsl::LogLevel;
+
 
 class mozak::MozakUI : public teramanager::PMain
 {
 	public:
-		MozakUI(){}
+        MozakUI();
 		~MozakUI();
 		MozakUI(V3DPluginCallback2 *callback, QWidget *parent);
 		static void createInstance(V3DPluginCallback2 *callback, QWidget *parent);
@@ -24,6 +37,45 @@ class mozak::MozakUI : public teramanager::PMain
 
 	public:
 		static void onImageTraceHistoryChanged(); //20170803 RZC
+
+        //!Game controller and Spacenavigator integration code by T. Karlsson
+        
+        //!The inifile contain parameters for changing some parameters related to the gamecontroller and the SpaceMouse        
+        string                                  mAppDataFolder;
+        dsl::IniFile                            mIniFile;
+        dsl::IniFileProperties                  mGeneralProperties;
+        dsl::Property<LogLevel>     		    mLogLevel;
+        dsl::Property<double>     	     	    mGameControllerZoomFactor;
+        dsl::Property<double>     	     	    mZoomSpeed;
+        
+        unique_ptr<ai::GameControllerRaw>		mGC;
+        void									onPOV(ai::GameControllerPOV* p);		
+        void									onAxis(ai::JoyStickAxis* axis);	
+        void									onButtonDown(ai::GameControllerButton* btn);
+        void									onButtonUp(ai::GameControllerButton* btn);
+        void									zoom(bool zoomIn);       
+        
+        //!Spacenavigator integration code
+        void									onSpaceMouseAxis(ai::SpaceNavigatorAxis* axis);
+        void                                    openConfigEditor();
+        void                                    loadIniFile();
+        int                                     mConfigEditorProcessID;
+
+        //!When things don't work
+        void                                    toggleSpaceMouseOnOff();
+        void                                    toggleGameControllerOnOff();
+    protected:
+        virtual bool							winEvent(MSG * message, long * result);
+        HWND									mWindowsHandle;
+        Mozak3DView*							mMozak3DView;				  
+        ai::GameControllerPOVState				mLastPOV;
+        SpaceNavigatorDevice                    mSpaceNavigator;
 };
 
 #endif
+
+
+#pragma comment(lib, "aiGameControllerAPI-vs2013")
+#pragma comment(lib, "ai3DXLib-vs2013")
+#pragma comment(lib, "dslFoundation-vs2013")
+#pragma comment(lib, "poco_foundation-vs2013")

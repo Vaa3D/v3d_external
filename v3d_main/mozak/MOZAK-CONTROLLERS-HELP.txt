@@ -1,0 +1,7 @@
+Extra Mozak shortcuts
+
+Enable/Disable GameController....Ctrl-F9
+Enable/Disable Spacemouse........Ctrl-F10
+Open Mozak config file...........Ctrl-F11
+Reload config file...............Ctrl-F12
+

@@ -692,11 +692,42 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 					moz->traslYposClicked();
 				}
 				break;
+
+            case Qt::Key_F9:
+                if (key_evt->modifiers() & Qt::ControlModifier)
+                {
+                    MozakUI* moz = MozakUI::getMozakInstance();
+                    moz->toggleGameControllerOnOff();
+                }
+                break;
+            case Qt::Key_F10:
+                if (key_evt->modifiers() & Qt::ControlModifier)
+                {
+                    MozakUI* moz = MozakUI::getMozakInstance();
+                    moz->toggleSpaceMouseOnOff();
+                }
+                break;
+            case Qt::Key_F12:
+                if (key_evt->modifiers() & Qt::ControlModifier)
+                {
+                    MozakUI* moz = MozakUI::getMozakInstance();
+                    moz->loadIniFile();
+                }
+                break;
+            case Qt::Key_F11:
+                if (key_evt->modifiers() & Qt::ControlModifier)
+                {
+                    MozakUI* moz = MozakUI::getMozakInstance();
+                    moz->openConfigEditor();
+                }
+                break;
+               
             default:
                 changeMode(Renderer::defaultSelectMode, true, true);
 				break;
 		}
 	}
+    
 	else if (event->type() == (QEvent::Type)7)  //2017-6-9 RZC: deal with the #define KeyRelease in X.h of XWindow
 							//QEvent::KeyRelease) // intercept keypress events
 	{
@@ -1250,16 +1281,13 @@ void Mozak3DView::loadAnnotations() throw (itm::RuntimeException)
 
     //20170804 RZC: no more cash after fixed the crash of ~CViewer()
     makeTracedNeuronsEditable();          //20170803 RZC  //crash error message: double free or corruption
-
 }
-
 
 void Mozak3DView::clearAnnotations() throw (itm::RuntimeException)
 {
     teramanager::CViewer::clearAnnotations();
     appendHistory();                     //20170803 RZC
 }
-
 
 const char *typeNamesRow1[] = { "??", "soma", "axon", "dendrite", "apical", "fork", "end", "FixIt!", "FixIt!", "FixIt! " };
 const char *typeNamesRow2[] = { " ", " ", " ", " ", "dendrite", "point", "point", "Axon", "dendrite", " ?? " };
@@ -1497,7 +1525,20 @@ void Mozak3DView::setZSurfaceLimitValues(int ignore){
 		curr_renderer->setBBZ((float) window3D->zcminSlider->value()-zLockLayerSB->value(), (float) window3D->zcmaxSlider->value()+zLockLayerSB->value());
 	}
 }
-
+void Mozak3DView::HideAll3DView()
+{
+	cout<<"come in";
+	MozakUI* moz = MozakUI::getMozakInstance();
+	cout<<"getMozakInstance";
+	if(!moz->V3D_env) cout<<"V3D_env is nullptr"<<endl;
+	QList<V3dR_MainWindow*> windowList =moz->V3D_env->getListAll3DViewers();
+	cout<<"windowListsize"<<windowList.length();
+	for (V3DLONG i=0;i<windowList.length();i++)
+    {
+		cout<<"step"<<i<<endl;
+		windowList[i]->hide();
+    }
+}
 void Mozak3DView::overviewMonitorButtonClicked(bool checked){
 	// test mozak autosave path:
 
