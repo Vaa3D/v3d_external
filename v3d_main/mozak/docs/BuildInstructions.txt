@@ -42,6 +42,18 @@ Use CMake to configure and generate build files (solution files) for Visual Stud
 Step 4:
 Build and install the library
 
+Vaa3D
+=====
+The game controller code was created in a fork of the main Vaa3D repositories. 
+
+Step 1: 
+Clone the repositories from:
+https://github.com/TotteKarlsson/v3d_external and https://github.com/TotteKarlsson/vaa3d_tools
+
+Step 2:
+Build the main program and plugins using the instructions at: https://github.com/Vaa3D/Vaa3D_Wiki/wiki/Build-Vaa3D-on-Windows-with-qmake-using-VS2013-and-Qt4.8.6
+
+
 
 
 
