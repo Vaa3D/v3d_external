@@ -44,7 +44,13 @@ Build and install the library
 
 Vaa3D
 =====
-The game controller code was created in a fork of the main Vaa3D repositories. 
+The game controller code was created in a fork of the main Vaa3D repository. 
+The game controller code is implemented in the v3d_external repository in two branches 1) adding_game_controller_code_to_mozak and 2) game_controller_code_from_master. 
+The 1st branch is forked of the master branch and is up to date with the latest code from around September. 
+The 2nd branch was forked from code that dates back to Vaa3D version 3.475 and the new game controller code from 1) was simply merged into this branch.
+
+The https://github.com/TotteKarlsson/vaa3d_tools repository contain plugin code. Some plugin code was modified in a branch named mozak_allen_institute that was branched of master. 
+This was made in an attempt to get them working as they did in the older 3.475 version.
 
 Step 1: 
 Clone the repositories from:
