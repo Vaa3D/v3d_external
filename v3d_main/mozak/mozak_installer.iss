@@ -38,16 +38,16 @@ Source: "C:\v3d\v3d_external\v3d_main\v3d\release\*.dll";                       
 
 ;Most used plugins
 Source: "C:\v3d\v3d_external\bin\plugins\AllenNeuron_postprocessing\*.dll";                 DestDir: "{app}/plugins/AllenNeuron_postprocessing";         Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\neuron_utilities\assemble_neuron_live\*.dll";      DestDir: "{app}/plugins/assemble_neuron_live";               Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\neuron_utilities\inter_node_pruning\*.dll";        DestDir: "{app}/plugins/inter_node_pruning";                 Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\IVSCC\IVSCC_scaling\*.dll";                        DestDir: "{app}/plugins/IVSCC_scaling";                      Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\assemble_neuron_live\*.dll";      DestDir: "{app}/plugins/assemble_neuron_live";               Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\inter_node_pruning\*.dll";        DestDir: "{app}/plugins/inter_node_pruning";                 Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_scaling\*.dll";                        DestDir: "{app}/plugins/IVSCC_scaling";                      Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_smoothing_swc\*.dll";                        DestDir: "{app}/plugins/IVSCC_smoothing_swc";                Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\IVSCC\IVSCC_sort_swc\*.dll";                       DestDir: "{app}/plugins/IVSCC_sort_swc";                     Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\IVSCC\IVSCC_swc_removal\*.dll";                    DestDir: "{app}/plugins/IVSCC_swc_removal";                  Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_sort_swc\*.dll";                       DestDir: "{app}/plugins/IVSCC_sort_swc";                     Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_swc_removal\*.dll";                    DestDir: "{app}/plugins/IVSCC_swc_removal";                  Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\v3d\v3d_external\bin\plugins\linker_file\*.dll";                                DestDir: "{app}/plugins/linker_file";                        Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
-Source: "C:\v3d\v3d_external\bin\plugins\neuron_utilities\pruning_swc_simple\*.dll";        DestDir: "{app}/plugins/pruning_swc_simple";                 Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\neuron_utilities\resample_swc\*.dll";              DestDir: "{app}/plugins/resample_swc";                       Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
-Source: "C:\v3d\v3d_external\bin\plugins\neuron_utilities\typeset_childbranch\*.dll";       DestDir: "{app}/plugins/typeset_childbranch";                Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
+Source: "C:\v3d\v3d_external\bin\plugins\pruning_swc_simple\*.dll";        DestDir: "{app}/plugins/pruning_swc_simple";                 Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\resample_swc\*.dll";              DestDir: "{app}/plugins/resample_swc";                       Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
+Source: "C:\v3d\v3d_external\bin\plugins\typeset_childbranch\*.dll";       DestDir: "{app}/plugins/typeset_childbranch";                Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
 
 ; ALL plugins
 Source: "C:\v3d\v3d_external\bin\plugins\*.dll";                                            DestDir: "{app}/plugins/Other";                              Flags: ignoreversion recursesubdirs createallsubdirs
