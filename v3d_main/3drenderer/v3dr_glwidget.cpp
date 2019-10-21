@@ -1858,9 +1858,8 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
-		if(VRClientON==false)
+		if(TeraflyCommunicator)
 		{
-			VRClientON = true;
 			if(myvrwin)
 				delete myvrwin;
 			myvrwin = 0;
@@ -1868,8 +1867,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			myvrwin->setWindowTitle("VR MainWindow");
 			//bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			
-			if(!TeraflyCommunicator)  // there is error with linking ,linkerror = 0
-			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); VRClientON = false;return;}
+
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;
@@ -1896,6 +1894,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		}
 		else
 		{
+			qDebug()<<"can't connect to server .unknown wrong ";
 			v3d_msg("The ** client is running.Failed to start VR client.");
 			this->getMainWindow()->show();
 		}
