@@ -21,6 +21,7 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	VR_Communicator = TeraflyCommunicator;
 	//disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(VR_Communicator->onReadyRead()));
     connect(VR_Communicator->socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+	connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySend()));
     userName = TeraflyCommunicator->userName;
 	CURRENT_DATA_IS_SENT=false;
     numreceivedmessage=0;//for debug hl
