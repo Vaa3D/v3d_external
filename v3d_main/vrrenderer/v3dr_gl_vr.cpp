@@ -6708,6 +6708,7 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 	NeuronTree newTempNT;
 	newTempNT.listNeuron.clear();
 	newTempNT.hashNeuron.clear();
+    qDebug()<<"type"<<type<<endl;
 	//each segment has a unique ID storing as its name
 	newTempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
 	for(int i=0;i<str_size;i++)

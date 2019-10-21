@@ -82,6 +82,7 @@ public:
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
 	void MsgToV_NeuronSWC(QString msg);
+    QString userName;
 
 //	ManageSocket * managesocket;
 	 QTcpSocket* socket;
@@ -90,6 +91,7 @@ public slots:
 	//void RunVRMainloop();
 	//void SendHMDPosition();
 	void CollaborationMainloop();
+
 private slots:
 	
     void onReadyRead();
@@ -100,7 +102,7 @@ signals:
 private:
 	
 
-	QString userName;
+
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
 	bool * clienton;

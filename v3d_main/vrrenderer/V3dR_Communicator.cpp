@@ -10,10 +10,10 @@
 
 
 static struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
+    QString name;
+    bool isItSelf;
+    int colorType;
+    float position[16];
 
 };
 
@@ -257,7 +257,7 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
     socket=new QTcpSocket;
 //    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
-    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+ //   connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
 
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -303,6 +303,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
         {
 
             socket->write(QString(send_MSG+"\n").toUtf8());
+            qDebug()<<"send:"<<send_MSG;
         }
         else
         {
@@ -318,261 +319,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
 
 void V3dR_Communicator::onReadyRead() {
 
-
-        qDebug()<<"in read";
-    while(socket->canReadLine())
-    {
-        QString msg=QString::fromUtf8(socket->readLine()).trimmed();
-
-        QRegExp usersRex("^/users:(.*)$");
-        QRegExp systemRex("^/system:(.*)$");// can be deleted ? talk with LQ
-	//QRegExp hmdposRex("^/hmdpos:(.*)$");
-        QRegExp colorRex("^/color:(.*)$");
-	//QRegExp deleteRex("^/del:(.*)$");
-        QRegExp markerRex("^/marker:(.*)$");
-        QRegExp messageRex("^(.*):(.*)$");
-//        QRegExp anoExp("anofile:(.*)");
-//        QRegExp eswcExp("eswcfile:(.*)");
-//        QRegExp apoExp("apofile:(.*)");
-
-/*
-        if(anoExp.indexIn(msg)!=-1)
-        {
-            QString tmp=anoExp.cap(1);
-            QStringList tmplist=tmp.split(";");
-            QRegExp tmpExp("(.*).ano");
-            if(tmpExp.indexIn(this->managesocket->loadfile_name)!=-1)
-            {
-                QFile f("./"+tmpExp.cap(1)+".ano");
-                f.open(QIODevice::WriteOnly|QIODevice::Text);
-                QTextStream out(&f);
-                for (int i=0;i<tmplist.size();i++)
-                {
-
-                    out<<tmplist.at(i).trimmed();
-
-                    if(i!=tmplist.size()-1)
-                        out<<endl;
-                    qDebug()<<tmplist.at(i)<<endl;
-                }
-            qDebug()<<"ano";
-                f.close();
-            }
-        }else if(eswcExp.indexIn(msg)!=-1)
-        {
-			qDebug() << "here 1";
-            QString tmp=eswcExp.cap(1);
-            QStringList tmplist=tmp.split(";");
-            QRegExp tmpExp("(.*).ano");
-            if(tmpExp.indexIn(this->managesocket->loadfile_name)!=-1)
-            {
-                QFile f("C://annotationdata/"+tmpExp.cap(1)+".ano");
-                f.open(QIODevice::WriteOnly|QIODevice::Text);
-                QTextStream out(&f);
-                for (int i=0;i<tmplist.size();i++)
-                {
-                    out<<tmplist.at(i).trimmed();
-                    if(i!=tmplist.size()-1)
-                        out<<endl;
-                }
-                qDebug()<<"swc";
-                f.close();
-            }
-        }else if(apoExp.indexIn(msg)!=-1)
-        {
-            QString tmp=apoExp.cap(1);
-            QStringList tmplist=tmp.split(";");
-            QRegExp tmpExp("(.*).ano");
-            if(tmpExp.indexIn(this->managesocket->loadfile_name)!=-1)
-            {
-                QFile f("C://annotationdata/"+tmpExp.cap(1)+".ano");
-                f.open(QIODevice::WriteOnly|QIODevice::Text);
-                QTextStream out(&f);
-                for (int i=0;i<tmplist.size();i++)
-                {
-                    out<<tmplist.at(i).trimmed();
-                    if(i!=tmplist.size()-1)
-                        out<<endl;
-                    qDebug()<<tmplist.at(i)<<endl;
-                }
-                qDebug()<<"apo";
-                f.close();
-            }
-        }else */if (usersRex.indexIn(msg) != -1) {
-            QStringList users = usersRex.cap(1).split(",");
-        //qDebug()<<"Current users are:";
-            foreach (QString user, users) {
-                if(user==userName) continue;// skip itself
-            //traverse the user list. Create new item for Agents[] if there is a new agent.
-                bool findSameAgent=false;
-                for(int i=0;i<Agents.size();i++)
-                {
-                    if(user==Agents.at(i).name)
-                    {
-                        findSameAgent=true;
-                        break;
-                    }
-                }
-                if(findSameAgent==false)
-                {
-                    Agent agent00={
-                    user,
-                    false,
-                    21,
-                    0
-                };
-                Agents.push_back(agent00);
-            }
-        }
-    }
-    else if (systemRex.indexIn(msg) != -1) {
-        //QString msg = systemRex.cap(1);
-        //qDebug()<<"System's Broadcast:"<<msg;
-        QStringList sysMSGs = systemRex.cap(1).split(" ");
-        if(sysMSGs.size()<2) return;
-        //Update Agents[] on user login/logout
-        QString user=sysMSGs.at(0);
-        QString Action=sysMSGs.at(1);
-
-        if((user!=userName)&&(Action=="joined"))
-        {
-            qDebug()<<"user: "<< user<<"joined";
-            //the message is user ... joined
-            Agent agent00={
-                user,
-                false,
-                21,//colortypr
-                0 //POS
-            };
-            Agents.push_back(agent00);
-        }
-        else if((user!=userName)&&(Action=="left"))
-        {
-            qDebug()<<"user: "<< user<<"left";
-            //the message is user ... left
-            for(int i=0;i<Agents.size();i++)
-            {
-                if(user == Agents.at(i).name)
-                {
-                    //qDebug()<<"before erase "<<Agents.size();
-                    Agents.erase(Agents.begin()+i);
-                    i--;
-                    //qDebug()<<"before erase "<<Agents.size();
-                }
-            }
-        }
-
-    }
-    //else if(hmdposRex.indexIn(line) != -1) {
-    //	//qDebug()<<"run hmd";
-    //	//QString POSofHMD = hmdposRex.cap(1);
-    //	QStringList hmdMSGs = hmdposRex.cap(1).split(" ");
-    //	if(hmdMSGs.size()<17) return;
-
-    //	QString user=hmdMSGs.at(0);
-    //	if(user == userName) return;//the msg is the position of the current user,do nothing
-    //	for(int i=0;i<Agents.size();i++)
-    //	{
-    //		if(user == Agents.at(i).name)// the msg is the position of user[i],update POS
-    //		{
-    //			for(int j=0;j<16;j++)
-    //			{
-    //				Agents.at(i).position[j]=hmdMSGs.at(j+1).toFloat();
-    //				//qDebug("Agents.at(i).position[15]=%f",Agents.at(i).position[i]);
-    //				//qDebug()<<"Agent["<<i<<"] "<<" user: "<<Agents.at(i).name<<"HMD Position ="<<Agents.at(i).position[15];
-    //			}
-    //			break;
-    //		}
-    //	}
-    //}
-    else if(colorRex.indexIn(msg) != -1) {
-        //qDebug()<<"run color";
-        //QString colorFromServer = colorRex.cap(1);
-        //qDebug()<<"the color receieved is :"<<colorFromServer;
-        QStringList clrMSGs = colorRex.cap(1).split(" ");
-
-        if(clrMSGs.size()<2) return;
-        QString user=clrMSGs.at(0);
-        QString clrtype=clrMSGs.at(1);
-        for(int i=0;i<Agents.size();i++)
-        {
-            if(Agents.at(i).name!=user) continue;
-                //update agent color
-            Agents.at(i).colorType=clrtype.toInt();
-            qDebug()<<"user:"<<user<<" receievedColorTYPE="<<Agents.at(i).colorType;
-            qDebug()<< i <<" color "<< Agents.at(i).colorType;
-        }
-    }
-//     else if (deleteRex.indexIn(line) != -1) {
-        //QStringList delMSGs = deleteRex.cap(1).split(" ");
-        //if(delMSGs.size()<2)
-        //{
-        //		qDebug()<<"size < 2";
-        //		return;
-        //}
-//         QString user = delMSGs.at(0);
-//         QString delID = delMSGs.at(1);
-        //qDebug()<<"user, "<<user<<" delete: "<<delID;
-        //if(user==userName)
-        //{
-        //	pMainApplication->READY_TO_SEND=false;
-        //	CURRENT_DATA_IS_SENT=false;
-        //	pMainApplication->ClearSketchNT();
-        //}
-        //bool delerror = pMainApplication->DeleteSegment(delID);
-        //if(delerror==true)
-        //	qDebug()<<"Segment Deleted.";
-        //else
-        //	qDebug()<<"Cannot Find the Segment ";
-        //pMainApplication->MergeNTList2remoteNT();
-//     }
-    else if (markerRex.indexIn(msg) != -1) {
-        QStringList markerMSGs = markerRex.cap(1).split(" ");
-        if(markerMSGs.size()<4)
-        {
-                qDebug()<<"size < 4";
-                return;
-        }
-        QString user = markerMSGs.at(0);
-        float mx = markerMSGs.at(1).toFloat();
-        float my = markerMSGs.at(2).toFloat();
-        float mz = markerMSGs.at(3).toFloat();
-        qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
-        int colortype=3;
-        for(int i=0;i<Agents.size();i++)
-        {
-            if(user == Agents.at(i).name)
-            {
-                colortype=Agents.at(i).colorType;
-                break;
-            }
-        }
-    }
-    else if (messageRex.indexIn(msg) != -1) {
-            qDebug()<<msg;
-        QString user = messageRex.cap(1);
-        QString message = messageRex.cap(2);
-        //qDebug()<<"user, "<<user<<" said: "<<message;
-        int colortype;
-        for(int i=0;i<Agents.size();i++)
-        {
-            if(user == Agents.at(i).name)
-            {
-                colortype=Agents.at(i).colorType;
-                qDebug()<<i<<" color :"<<colortype;
-                break;
-            }
-        }
-        qDebug()<<"receieved message :"<<message<<"  from user: "<<user<<"  type :"<<colortype;
-
-        //trans message to neurontree with colortype
-        //pMainApplication->UpdateNTList(message,colortype);
-        //qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
-        //Update3DViewNTList(message,colortype);
-        //qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
-    }
-    nextblocksize=0;
-    }
+	       
 }
 
 void V3dR_Communicator::CollaborationMainloop(){
@@ -584,7 +331,7 @@ void V3dR_Communicator::onConnected() {
 
 //    socket->write(QString("/login:" +userName + "\n").toUtf8());
     qDebug()<<"gere is onconnected.";
-    onReadySend(QString("/login: " +userName));
+    onReadySend(QString("/login:" +userName));
 
 }
 void V3dR_Communicator::Collaborationsendmessage()

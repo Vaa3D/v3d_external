@@ -20,9 +20,9 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
 	VR_Communicator = TeraflyCommunicator;
-	disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(VR_Communicator->onReadyRead()));
+	//disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(VR_Communicator->onReadyRead()));
     connect(VR_Communicator->socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-
+    userName = TeraflyCommunicator->userName;
 	CURRENT_DATA_IS_SENT=false;
     numreceivedmessage=0;//for debug hl
     numsendmessage=0;
@@ -452,9 +452,22 @@ void VR_MainWindow::onReadyRead() {
         else if (messageRex.indexIn(line) != -1) {
             qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
             QStringList MSGs = messageRex.cap(1).split(" ");
+            for(int i=0;i<MSGs.size();i++)
+            {
+                qDebug()<<MSGs.at(i)<<endl;
+            }
 			QString user = MSGs.at(0);
-            QString message = MSGs.at(1);
-			//qDebug()<<"user, "<<user<<" said: "<<message;
+            QString message;
+            for(int i=1;i<MSGs.size();i++)
+            {
+                message +=MSGs.at(i);
+                if(i != MSGs.size()-1)
+                    message +=" ";
+
+
+                qDebug()<<MSGs.at(i)<<endl;
+            }
+            qDebug()<<"user, "<<user<<" said: "<<message;
 			if(pMainApplication)
 			{
 				if(user==userName)
@@ -462,17 +475,18 @@ void VR_MainWindow::onReadyRead() {
 					pMainApplication->READY_TO_SEND=false;
 					CURRENT_DATA_IS_SENT=false;
 					pMainApplication->ClearCurrentNT();
+                    qDebug()<<"liqiqiqiqiqiqiqi NT "<<endl;
 				}
 
-				int colortype;
-				for(int i=0;i<Agents.size();i++)
-				{
-					if(user == Agents.at(i).name)
-					{
-						colortype=Agents.at(i).colorType;
-						break;
-					}
-				}
+                int colortype;
+                for(int i=0;i<Agents.size();i++)
+                {
+                    if(user == Agents.at(i).name)
+                    {
+                        colortype=Agents.at(i).colorType;
+                        break;
+                    }
+                }
 				pMainApplication->UpdateNTList(message,colortype);
 			}
 		}
