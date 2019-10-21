@@ -99,7 +99,6 @@ void ManageSocket::onReadyRead()
 			QMessageBox::information(0, tr("information"),tr("login successfully."));
 		}else if (LogoutRex.indexIn(manageMsg)!=-1)
 		{
-            // 需要加内容 V3dR communicator 的注销
             qDebug()<<"test in logout";
 			this->disconnectFromHost();
 		}else if(ImportRex.indexIn(manageMsg)!=-1)
