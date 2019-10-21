@@ -14,7 +14,13 @@
 #include "../basic_c_fun/v3d_interface.h"
 
 
+struct Agent {
+	QString name;
+	bool isItSelf;
+	int colorType;
+	float position[16];
 
+};
 class FileSocket_send:public QTcpSocket
 {
     Q_OBJECT
@@ -83,7 +89,7 @@ public:
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
 	void MsgToV_NeuronSWC(QString msg);
     QString userName;
-
+	std::vector<Agent> Agents;
 //	ManageSocket * managesocket;
 	 QTcpSocket* socket;
 public slots:

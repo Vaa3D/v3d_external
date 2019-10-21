@@ -9,13 +9,7 @@
 #include <sstream>
 
 
-static struct Agent {
-    QString name;
-    bool isItSelf;
-    int colorType;
-    float position[16];
 
-};
 
 FileSocket_send::FileSocket_send(QString ip,QString port,QString anofile_path,QObject *parent)
     :QTcpSocket (parent)
@@ -226,7 +220,7 @@ void ManageSocket::receivefile(QString anofile)
         emit loadANO(loadfilename);
 }
 
-static std::vector<Agent> Agents;
+
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {
 	clienton = client_flag;

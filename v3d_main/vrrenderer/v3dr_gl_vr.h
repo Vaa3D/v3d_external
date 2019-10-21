@@ -16,17 +16,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "V3dR_Communicator.h"
 //#include <gltext.hpp>//include freetype and gltest library
 
 #include "mainwindow.h"
 
-struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
-};
 
 
 enum ModelControlR
@@ -289,8 +283,9 @@ private:
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
+	public:
 	NeuronTree currentNT;// currently drawn stroke of neuron
-	
+	private:
 	NeuronTree tempNT;//used somewhere, can be change to a local variable
 	BoundingBox swcBB;
 	QList<ImageMarker> drawnMarkerList;

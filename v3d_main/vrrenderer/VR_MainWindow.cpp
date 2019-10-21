@@ -14,8 +14,7 @@ std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QWidget()
 {
-	if (Agents.size()>0)
-		Agents.clear();
+
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
@@ -134,21 +133,33 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 	return 1;
 }
 
-void VR_MainWindow::onReadySend(QString &send_MSG) {
 
-    if (!send_MSG.isEmpty()) {
+void VR_MainWindow::onReadySend()
+{
+
+	if(!CollaborationSendPool.empty())
+	{
+		cout<<"CollaborationSendPool.size()"<<CollaborationSendPool.size()<<endl;
+		QString send_MSG = *CollaborationSendPool.begin();
+		CollaborationSendPool.erase(CollaborationSendPool.begin());
 		if((send_MSG!="exit")&&(send_MSG!="quit"))
 		{
 			VR_Communicator->socket->write(QString("/seg:" + send_MSG + "\n").toUtf8());
 		}
-	
+		else
+		{
+			socket->write(QString("/say: GoodBye~\n").toUtf8());
+			socket->disconnectFromHost();
+			return;
+		}
 	}
 	else
 	{
-		qDebug()<<"The message is empty!";
-		//on_pbSend_clicked();
+		cout<<"CollaborationSendPool is empty";
+
 	}
 }
+
 
 void VR_MainWindow::onReadyRead() {
     QRegExp usersRex("^/users:(.*)$");
@@ -176,9 +187,9 @@ void VR_MainWindow::onReadyRead() {
 				if(user==userName) continue;// skip itself
 				//traverse the user list. Create new item for Agents[] if there is a new agent.
 				bool findSameAgent=false;
-				for(int i=0;i<Agents.size();i++)
+				for(int i=0;i<VR_Communicator->Agents.size();i++)
 				{
-					if(user==Agents.at(i).name)
+					if(user==VR_Communicator->Agents.at(i).name)
 					{
 						findSameAgent=true;
 						break;
@@ -193,7 +204,7 @@ void VR_MainWindow::onReadyRead() {
 						0
 						
 					};
-					Agents.push_back(agent00);
+					VR_Communicator->Agents.push_back(agent00);
 				}
             }
         }
@@ -215,18 +226,18 @@ void VR_MainWindow::onReadyRead() {
 					21,//colortypr
 					0, //POS
 				};
-				Agents.push_back(agent00);
+				VR_Communicator->Agents.push_back(agent00);
 			}
 			else if((user!=userName)&&(Action=="left"))
 			{
 				qDebug()<<"user: "<< user<<"left";
 				//the message is user ... left
-				for(int i=0;i<Agents.size();i++)
+				for(int i=0;i<VR_Communicator->Agents.size();i++)
 				{
-					if(user == Agents.at(i).name)
+					if(user == VR_Communicator->Agents.at(i).name)
 					{
 						//qDebug()<<"before erase "<<Agents.size();
-						Agents.erase(Agents.begin()+i);
+						VR_Communicator->Agents.erase(VR_Communicator->Agents.begin()+i);
 						i--;
 						//qDebug()<<"before erase "<<Agents.size();
 					}
@@ -243,13 +254,13 @@ void VR_MainWindow::onReadyRead() {
 			QString user=hmdMSGs.at(0);
 			if(user == userName) return;//the msg is the position of the current user,do nothing 
 			qDebug()<<"get user hmd pos info"<<"       "<<user;
-			for(int i=0;i<Agents.size();i++)
+			for(int i=0;i<VR_Communicator->Agents.size();i++)
 			{		
-				if(user == Agents.at(i).name)// the msg is the position of user[i],update POS
+				if(user == VR_Communicator->Agents.at(i).name)// the msg is the position of user[i],update POS
 				{
 					for(int j=0;j<16;j++)
 					{
-						Agents.at(i).position[j]=hmdMSGs.at(j+1).toFloat();
+						VR_Communicator->Agents.at(i).position[j]=hmdMSGs.at(j+1).toFloat();
 						//qDebug("Agents.at(i).position[15]=%f",Agents.at(i).position[i]);
 						//qDebug()<<"Agent["<<i<<"] "<<" user: "<<Agents.at(i).name<<"HMD Position ="<<Agents.at(i).position[15];				
 					}
@@ -266,14 +277,14 @@ void VR_MainWindow::onReadyRead() {
 			if(clrMSGs.size()<2) return;
 			QString user=clrMSGs.at(0);
 			QString clrtype=clrMSGs.at(1);
-			for(int i=0;i<Agents.size();i++)
+			for(int i=0;i<VR_Communicator->Agents.size();i++)
 			{
-				if(Agents.at(i).name!=user) continue;
+				if(VR_Communicator->Agents.at(i).name!=user) continue;
 					//update agent color
-				Agents.at(i).colorType=clrtype.toInt();
-				qDebug()<<"user:"<<user<<" receievedColorTYPE="<<Agents.at(i).colorType;
+				VR_Communicator->Agents.at(i).colorType=clrtype.toInt();
+				qDebug()<<"user:"<<user<<" receievedColorTYPE="<<VR_Communicator->Agents.at(i).colorType;
 				if(user == userName)
-					pMainApplication->SetupCurrentUserInformation(userName.toStdString(), Agents.at(i).colorType);
+					pMainApplication->SetupCurrentUserInformation(userName.toStdString(), VR_Communicator->Agents.at(i).colorType);
 			}
 		}
 		else if(creatorRex.indexIn(line) != -1) {
@@ -283,10 +294,10 @@ void VR_MainWindow::onReadyRead() {
 			QStringList creatorMSGs = creatorRex.cap(1).split(" ");
 			QString user=creatorMSGs.at(0);
 			QString creator_Res = creatorMSGs.at(1);
-			for(int i=0;i<Agents.size();i++)
+			for(int i=0;i<VR_Communicator->Agents.size();i++)
 			{
 				qDebug()<<"creator name is "<<user;
-				if(Agents.at(i).name!=user) continue;
+				if(VR_Communicator->Agents.at(i).name!=user) continue;
 				pMainApplication->collaboration_creator_name = user;
 				pMainApplication->collaboration_creator_res = creator_Res.toInt();
 				qDebug()<<"user:"<<user<<" receievedCreator"<<pMainApplication->collaboration_creator_name;
@@ -376,11 +387,11 @@ void VR_MainWindow::onReadyRead() {
 				pMainApplication->ClearCurrentNT();
 			}
 			int colortype=3;
-			for(int i=0;i<Agents.size();i++)
+			for(int i=0;i<VR_Communicator->Agents.size();i++)
 			{
-				if(user == Agents.at(i).name)
+				if(user == VR_Communicator->Agents.at(i).name)
 				{
-					colortype=Agents.at(i).colorType;
+					colortype=VR_Communicator->Agents.at(i).colorType;
 					break;
 				}
 			}
@@ -414,11 +425,11 @@ void VR_MainWindow::onReadyRead() {
 				pMainApplication->ClearCurrentNT();
 			}
 			int colortype=3;
-			for(int i=0;i<Agents.size();i++)
+			for(int i=0;i<VR_Communicator->Agents.size();i++)
 			{
-				if(user == Agents.at(i).name)
+				if(user == VR_Communicator->Agents.at(i).name)
 				{
-					colortype=Agents.at(i).colorType;
+					colortype=VR_Communicator->Agents.at(i).colorType;
 					break;
 				}
 			}
@@ -479,11 +490,11 @@ void VR_MainWindow::onReadyRead() {
 				}
 
                 int colortype;
-                for(int i=0;i<Agents.size();i++)
+                for(int i=0;i<VR_Communicator->Agents.size();i++)
                 {
-                    if(user == Agents.at(i).name)
+                    if(user == VR_Communicator->Agents.at(i).name)
                     {
-                        colortype=Agents.at(i).colorType;
+                        colortype=VR_Communicator->Agents.at(i).colorType;
                         break;
                     }
                 }
@@ -584,7 +595,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		CreatorPos->z = pMainApplication->CollaborationCreatorPos.z;
 		CreatorRes = pMainApplication->collaboration_creator_res;
 		qDebug()<<"call that function is"<<_call_that_function;
-		Agents.clear();
+
 		delete pMainApplication;
 		pMainApplication=0;
 		return _call_that_function;
@@ -610,8 +621,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	while(!bQuit)
 	{
 	//update agents position if necessary
-	if(Agents.size()>0)
-		pMainApplication->SetupAgentModels(Agents);
+	if(VR_Communicator->Agents.size()>0)
+		pMainApplication->SetupAgentModels(VR_Communicator->Agents);
 
 	//handle one rendering loop, and handle user interaction
 	bQuit=pMainApplication->HandleOneIteration();
@@ -628,7 +639,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	{
 		if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
-			onReadySend(pMainApplication->NT2QString());
+			if(pMainApplication->NT2QString().size()!=0)
+				CollaborationSendPool.emplace_back(pMainApplication->NT2QString());
+			pMainApplication->ClearCurrentNT();
+			//cout<<"pMainApplication->ClearCurrentNT();"<<endl;
+			sendPoolHead();
 			CURRENT_DATA_IS_SENT=true;
 			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
 		}
