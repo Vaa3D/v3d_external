@@ -445,6 +445,8 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     insituZoomOut_z = 0;
     isTranslate = false;
     toRetrieveData = false;
+	volumeCutSbAdjusted = false;
+	xMinAdjusted = false, xMaxAdjusted = false, yMinAdjusted = false, yMaxAdjusted = false, zMinAdjusted = false, zMaxAdjusted = false;
 
     try
     {
@@ -662,6 +664,25 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 event->ignore();
                 return true;
             }
+			else if (mouseEvt->button() == Qt::LeftButton)
+			{
+				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
+				QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;				
+				this->selectedMarkerList.clear();
+				this->selectedLocalMarkerList.clear();
+				for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
+				{
+					if (markerIt->selected)
+					{
+						this->selectedLocalMarkerList.push_back(*markerIt);
+						ImageMarker currMarker = *markerIt;
+						currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+						currMarker.y = coord2global<float>(markerIt->y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+						currMarker.z = coord2global<float>(markerIt->z, iim::depth,      false, -1, false, false, __itm__current__function__);
+						this->selectedMarkerList.push_back(currMarker);
+					}
+				}
+			}
 
             return false;
         }
@@ -2661,10 +2682,13 @@ void CViewer::Vaa3D_changeYCut0(int s)
     #ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
     #endif
-
+	
     disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
     PMain::getInstance()->V0_sbox->setValue(coord2global<int>(s, iim::vertical, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
+	PDialogProofreading::instance()->sbYlb = s + 1;
+	this->volumeCutSbAdjusted = true;
+	this->yMinAdjusted = true;
     connect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
 }
 void CViewer::Vaa3D_changeYCut1(int s)
@@ -2672,10 +2696,13 @@ void CViewer::Vaa3D_changeYCut1(int s)
     #ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
     #endif
-
+	
     disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
     PMain::getInstance()->V1_sbox->setValue(coord2global<int>(s+1, iim::vertical, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
+	PDialogProofreading::instance()->sbYhb = s + 1;
+	this->volumeCutSbAdjusted = true;
+	this->yMaxAdjusted = true;
     connect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
 }
 void CViewer::Vaa3D_changeXCut0(int s)
@@ -2687,6 +2714,9 @@ void CViewer::Vaa3D_changeXCut0(int s)
     disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
     PMain::getInstance()->H0_sbox->setValue(coord2global<int>(s, iim::horizontal, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
+	PDialogProofreading::instance()->sbXlb = s + 1;
+	this->volumeCutSbAdjusted = true;
+	this->xMinAdjusted = true;
     connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
 }
 void CViewer::ShiftToAnotherDirection(int _direction)
@@ -2728,7 +2758,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             PMain::getInstance()->resumeVR = true;
             XYZ point = view3DWidget->teraflyZoomInPOS;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
-            newViewer(point.x, point.y, point.z, volResIndex+1, volT0, volT1);    
+			newViewer(point.x, point.y, point.z,  volResIndex+1, volT0, volT1);    
         }    
     }
     else if(_direction == 8)
@@ -2760,7 +2790,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             PMain::getInstance()->resumeVR = true;
 			XYZ point = view3DWidget->CollaborationCreatorPos;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
-            newViewer(point.x, point.y, point.z, volResIndex, volT0, volT1);    
+            newViewer(point.x, point.y, point.z,view3DWidget->CollaborationCreatorRes, volT0, volT1);    
         }    
     }
 #endif
@@ -2775,6 +2805,9 @@ void CViewer::Vaa3D_changeXCut1(int s)
     disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
     PMain::getInstance()->H1_sbox->setValue(coord2global<int>(s+1, iim::horizontal, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
+	PDialogProofreading::instance()->sbXhb = s + 1;
+	this->volumeCutSbAdjusted = true;
+	this->xMaxAdjusted = true;
     connect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut0(int s)
@@ -2786,6 +2819,9 @@ void CViewer::Vaa3D_changeZCut0(int s)
     disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
     PMain::getInstance()->D0_sbox->setValue(coord2global<int>(s, iim::depth, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
+	PDialogProofreading::instance()->sbZlb = s + 1;
+	this->volumeCutSbAdjusted = true;
+	this->zMinAdjusted = true;
     connect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut1(int s)
@@ -2797,6 +2833,9 @@ void CViewer::Vaa3D_changeZCut1(int s)
     disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
     PMain::getInstance()->D1_sbox->setValue(coord2global<int>(s+1, iim::depth, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
+	PDialogProofreading::instance()->sbZhb = s + 1;
+	this->volumeCutSbAdjusted = true;
+	this->zMaxAdjusted = true;
     connect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
 }
 
@@ -2856,7 +2895,7 @@ void CViewer::PMain_changeV0sbox(int s)
     #ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
     #endif
-
+	
     disconnect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
     view3DWidget->setYCut0(coord2local<int>(s, iim::vertical, true, true));
     PDialogProofreading::instance()->updateBlocks(0);

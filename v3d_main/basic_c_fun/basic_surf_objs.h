@@ -56,6 +56,8 @@ struct P_ObjectFileType
 	QStringList swc_file_list;
 	QStringList pointcloud_file_list;
 	QStringList surface_file_list;
+        // Added by Peng Xie, 2019-06-05
+        QStringList marker_file_list;
 };
 
 bool importKeywordString2FileType(QString ss, QString vv, QString basedir, P_ObjectFileType & cc);

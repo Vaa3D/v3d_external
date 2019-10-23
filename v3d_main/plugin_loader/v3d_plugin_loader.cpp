@@ -497,7 +497,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
             break;
         }
     }
-
+	
     if(flag == 1)
     {
         int currentIndex = 0;
@@ -1058,6 +1058,43 @@ bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt)
 		return v3d_mainwindow->setSWC(image_window, nt);
 	}
 	return false;
+}
+
+int V3d_PluginLoader::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->setSWC_noDecompose(window, fileName);
+	}
+	return -1;
+}
+
+bool V3d_PluginLoader::hideSWC(V3dR_MainWindow* window, int treeIndex)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->hideSWC(window, treeIndex);
+	}
+	return false;
+}
+
+bool V3d_PluginLoader::displaySWC(V3dR_MainWindow* window, int treeIndex)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->displaySWC(window, treeIndex);
+	}
+	return false;
+}
+
+QList<NeuronTree> V3d_PluginLoader::loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces)
+{
+	QList<NeuronTree> emptyList;
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->loadedNeurons(window, loadedSurfaces);
+	}
+	return emptyList;
 }
 
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
@@ -1687,11 +1724,6 @@ bool V3d_PluginLoader::setImageTeraFly(size_t x, size_t y, size_t z)
     return terafly::PluginInterface::setImage(x,y,z);
 }
 
-void V3d_PluginLoader::redrawEditInfo(int editInputNum)
-{
-	terafly::PluginInterface::drawEditInfo(editInputNum);
-}
-
 bool V3d_PluginLoader::checkFragTraceStatus()
 {
 	return terafly::PluginInterface::checkFragTraceStatus();
@@ -1705,6 +1737,26 @@ void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
 void V3d_PluginLoader::getParamsFromFragTraceUI(const string& keyName, const float& value)
 {
 	terafly::PluginInterface::getParamsFromFragTraceUI(keyName, value);
+}
+
+bool V3d_PluginLoader::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
+{
+	return terafly::PluginInterface::getPartialVolumeCoords(globalCoords, localCoords, displayingVolDims);
+}
+
+bool V3d_PluginLoader::teraflyImgInstance()
+{
+	return terafly::PluginInterface::teraflyImgInstance();
+}
+
+void V3d_PluginLoader::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
+{
+	terafly::PluginInterface::getSelectedMarkerList(selectedMarkerList, selectedLocalMarkerList);
+}
+
+void V3d_PluginLoader::refreshSelectedMarkers()
+{
+	terafly::PluginInterface::refreshSelectedMarkers();
 }
 
 #ifdef __ALLOW_VR_FUNCS__

@@ -30,6 +30,7 @@
 #include "v3d_interface.h"
 #include "../presentation/PMain.h"
 #include "../presentation/PConverter.h"
+#include "../presentation/PDialogProofreading.h"
 #include "VirtualVolume.h"
 #include "v3d_message.h"
 #include "CPlugin.h"
@@ -540,6 +541,15 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     }
 }
 
+
+// ------------------------------------ Fragment-based Tracing Related ------------------------------------ //
+//--------------------------------------------------------------------------- MK, Mar, 2019 --------------- //
+bool tf::PluginInterface::teraflyImgInstance()
+{
+	if (!CImport::instance()->isEmpty()) return true;
+	else return false;
+}
+
 void tf::PluginInterface::drawEditInfo(int editNum)
 {
 	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
@@ -554,8 +564,8 @@ bool tf::PluginInterface::checkFragTraceStatus()
 
 void tf::PluginInterface::changeFragTraceStatus(bool newStatus)
 {
-	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
-	thisRenderer->fragmentTrace = newStatus;
+	PMain& pMain = *(PMain::getInstance());
+	pMain.fragTracePluginInstance = newStatus;
 }
 
 void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const float& value)
@@ -563,3 +573,59 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
 	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
 }
+
+bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
+	
+	if (!currViewerPtr->volumeCutSbAdjusted) return false;
+
+	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
+	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
+	globalCoords[2] = PDialogProofreading::instance()->yCoordl;
+	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
+	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
+	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
+
+	displayingVolDims[0] = currViewerPtr->getXDim();
+	displayingVolDims[1] = currViewerPtr->getYDim();
+	displayingVolDims[2] = currViewerPtr->getZDim();
+
+	if (currViewerPtr->xMinAdjusted) localCoords[0] = PDialogProofreading::instance()->sbXlb;
+	else localCoords[0] = 1;
+	if (currViewerPtr->xMaxAdjusted) localCoords[1] = PDialogProofreading::instance()->sbXhb;
+	else localCoords[1] = displayingVolDims[0];
+	if (currViewerPtr->yMinAdjusted) localCoords[2] = PDialogProofreading::instance()->sbYlb;
+	else localCoords[2] = 1;
+	if (currViewerPtr->yMaxAdjusted) localCoords[3] = PDialogProofreading::instance()->sbYhb;
+	else localCoords[3] = displayingVolDims[1];
+	if (currViewerPtr->zMinAdjusted) localCoords[4] = PDialogProofreading::instance()->sbZlb;
+	else localCoords[4] = 1;
+	if (currViewerPtr->zMaxAdjusted) localCoords[5] = PDialogProofreading::instance()->sbZhb;
+	else localCoords[5] = displayingVolDims[2];
+	
+	//cout << "  Image block dimensions: " << displayingVolDims[0] << " " << displayingVolDims[1] << " " << displayingVolDims[2] << endl;
+
+	if (localCoords[1] - localCoords[0] + 1 == displayingVolDims[0] &&
+		localCoords[3] - localCoords[2] + 1 == displayingVolDims[1] &&
+		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) return false;
+	else return true;
+}
+
+void tf::PluginInterface::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	selectedMarkerList = currViewerPtr->selectedMarkerList;
+	selectedLocalMarkerList = currViewerPtr->selectedLocalMarkerList;
+}
+
+void tf::PluginInterface::refreshSelectedMarkers()
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	currViewerPtr->selectedMarkerList.clear();
+	
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+		it->selected = false;
+}
+// -------------------------------------------------------------------------------------------------------- //

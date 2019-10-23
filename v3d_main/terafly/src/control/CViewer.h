@@ -170,8 +170,15 @@ class terafly::CViewer : public QWidget
         bool eventFilter(QObject *object, QEvent *event);
 		NeuronTree treeGlobalCoords;    // preserving global coordinates of SWC, MK, April, 2018
 		NeuronTree convertedTreeCoords; // local coordinates of SWC, used for computing the distance from the place where double-click happens, MK, April, 2018
+		
+		bool volumeCutSbAdjusted;
+		bool xMinAdjusted, xMaxAdjusted, yMinAdjusted, yMaxAdjusted, zMinAdjusted, zMaxAdjusted;
+		inline int getXDim() { return (this->volH1 - this->volH0); }
+		inline int getYDim() { return (this->volV1 - this->volV0); }
+		inline int getZDim() { return (this->volD1 - this->volD0); }
 
-
+		QList<ImageMarker> selectedMarkerList;
+		QList<ImageMarker> selectedLocalMarkerList;
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.
@@ -385,6 +392,7 @@ class terafly::CViewer : public QWidget
         void Vaa3D_changeZCut1(int s);
         void Vaa3D_changeTSlider(int s, bool editingFinished = false);
         void ShiftToAnotherDirection(int direction);
+
 
         /**********************************************************************************
         * Linked to PMain GUI VOI's widgets.

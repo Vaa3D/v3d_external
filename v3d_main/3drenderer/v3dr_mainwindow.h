@@ -210,7 +210,7 @@ public:
     // other control
 	QCheckBox *checkBox_displayAxes, *checkBox_displayBoundingBox, *checkBox_OrthoView;
     QPushButton *colorButton, *brightButton, *reloadDataButton, *backgroundColorSwitchButton;
-    QPushButton *movieSaveButton, *animateButton;
+	QPushButton *movieSaveButton, *animateButton, *resOfOriginalImage, *BrainAtlas;
     QComboBox * comboRotType;
 
     // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
@@ -230,7 +230,7 @@ public:
 
 #ifdef __ALLOW_VR_FUNCS__
     QPushButton *rotVRView;
-	QCheckBox *rotCView;
+	QPushButton *rotCView;
 #endif
 
     QTabWidget *tabRotZoom;

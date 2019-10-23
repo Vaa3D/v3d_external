@@ -56,6 +56,11 @@
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
 # include <algorithm>
+#include <QMessageBox>
+#include <QFile>
+#include "../../../../vrrenderer/V3dR_Communicator.h"
+
+
 
 #include "../../v3d/CustomDefine.h"
 
@@ -104,6 +109,7 @@ PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
             CViewer::getCurrent()->alignToRight(uniqueInstance, 0);
         }
     }
+
 	return uniqueInstance;
 }
 PMain* PMain::getInstance()
@@ -161,6 +167,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     #ifdef Q_OS_LINUX
     tinyFont.setPointSize(9);
     #endif
+
+    //
+    cleanOldAutosavedFiles = true;
 
 
     //initializing menu
@@ -227,6 +236,35 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
+
+    /*----------------collaborate mdoe-------------------*/
+        collaborateMenu=menuBar->addMenu("Collaborate");
+        loginAction=new QAction("Login",this);
+        logoutAction=new QAction("Logout",this);
+        importAction=new QAction("Import annotation to cloud",this);
+        downAction=new QAction("Download annotation from cloud",this);
+        loadAction= new QAction("Load annotation and collaborate",this);
+
+        collaborateMenu->addAction(loginAction);
+        collaborateMenu->addAction(importAction);
+        collaborateMenu->addAction(downAction);
+        collaborateMenu->addAction(loadAction);
+        collaborateMenu->addAction(logoutAction);
+
+        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
+        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
+        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
+        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
+        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
+
+        logoutAction->setEnabled(false);
+        importAction->setEnabled(false);
+        downAction->setEnabled(false);
+        loadAction->setEnabled(false);
+        managesocket=0;
+
+    /*---------------------------------------------------*/
+
     /* ------------------------- "Options" menu -------------------------- */
     optionsMenu = menuBar->addMenu("Options");
     /* ------------------------- "Options" menu: Import ------------------ */
@@ -1084,6 +1122,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
+	this->fragTracePluginInstance = false; // MK, 2019, Sep; for monitoring FragTrace app status.
+
     // signals and slots
     /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);
     connect(CImport::instance(), SIGNAL(sendOperationOutcome(tf::RuntimeException*, qint64)), this, SLOT(importDone(tf::RuntimeException*, qint64)), Qt::QueuedConnection);
@@ -1149,6 +1189,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
 
     /**/tf::debug(tf::LEV1, "object successfully constructed", __itm__current__function__);
+
+
 }
 
 //reset everything
@@ -1551,6 +1593,18 @@ void PMain::closeVolume()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
+    if(saveAnnotationsAction->isEnabled())
+    {
+        switch (QMessageBox::information(this,tr("warning"),tr("Do you want to save annotation file"),tr("yes"),tr("no"),0,1)) {
+        case 0:
+            saveAnnotations();
+            break;
+        case 1:
+            break;
+        }
+    } //by XZ, 20190725
+
+    qDebug()<<"in close volume";
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->releaseTools();
 
@@ -1754,39 +1808,139 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
                 saveAnnotationsAs();
                 return;
             }
+            QDir dir;
 
-            // save current cursor and set wait cursor
-            QCursor cursor = cur_win->view3DWidget->cursor();
-            if(PAnoToolBar::isInstantiated())
-                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-            CViewer::setCursor(Qt::WaitCursor);
+            if(recentlyUsedPath.isEmpty())
+            {
+                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+            }
+            else
+            {
+                dir = QFileInfo(recentlyUsedPath).dir();
+            }
 
-            // save
-            cur_win->storeAnnotations();
+            #ifdef _USE_QT_DIALOGS
+            QString path = "";
+            QFileDialog dialog(0);
+            dialog.setFileMode(QFileDialog::AnyFile);
+            dialog.setAcceptMode(QFileDialog::AcceptSave);
+            dialog.setViewMode(QFileDialog::Detail);
+            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+            dialog.setWindowTitle("Save annotation file as");
+            dialog.setNameFilter(tr("annotation files (*.ano)"));
+            dialog.setDirectory(dir.absolutePath().toStdString().c_str());
+            if(dialog.exec())
+               if(!dialog.selectedFiles().empty())
+                   path = dialog.selectedFiles().front();
 
-            // Choose saving format. Peng Xie: 2019-02-28
-//            QStringList items;
-//            items << tr("swc") << tr("eswc");
+            #else
+            //tf::setWidgetOnTop(cur_win->window3D, false);
+#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+            QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+#else
+            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+            QString annotationsBasename = fileFullName;
+            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+            {
+                QStringList fileNameSplit=fileFullName.split("_stamp_");
+                if(!fileNameSplit.size())
+                    return;
+                annotationsBasename = fileNameSplit[0];
+            }
+#endif
 
-//            bool ok;
-//            QString item = QInputDialog::getItem(this, tr("Choose saving format:"),
-//                                                 tr("Format:"), items, 0, false, &ok);
-//            bool as_swc=false;
-//            if (ok && !item.isEmpty()){
-//                as_swc = (item=="swc") ? true:false;
-//            }
+            QDateTime mytime = QDateTime::currentDateTime();
+//            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm")+"_nodup.ano", tr("annotation files (*.ano)"));
+            QString path = dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm");
+            //tf::setWidgetOnTop(cur_win->window3D, true);
+            #endif
 
-            bool as_swc = false; // Format option is blocked for simplicity.
-            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true, as_swc);
+            if(!path.isEmpty())
+            {
+                string preannotationsPathLRU = annotationsPathLRU;
+                annotationsPathLRU = path.toStdString();
+//#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+//                annotationsPathLRU = path.toStdString();
+//#else
+//                //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+//                string filebasename=QFileInfo(path).baseName().toStdString();
+//                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+//                {
+//                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+//                    if(!fileNameSplit.size())
+//                        return;
+//                    filebasename = fileNameSplit[0].toStdString();
+//                }
+//                qDebug()<<"filebasename"<<filebasename;
+//                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+//#endif
+                if(annotationsPathLRU.find(".ano") == string::npos)
+                    annotationsPathLRU.append(".ano");
 
-            // reset saved cursor
-            CViewer::setCursor(cursor);
-            if(PAnoToolBar::isInstantiated())
-                PAnoToolBar::instance()->setCursor(cursor);
+                // save current cursor and set wait cursor
+                QCursor cursor = cur_win->view3DWidget->cursor();
+                if(PAnoToolBar::isInstantiated())
+                    PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+                CViewer::setCursor(Qt::WaitCursor);
 
-            // disable save button
-            saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
-            saveAnnotationsAction->setEnabled(false);
+                // save
+                cur_win->storeAnnotations();
+                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(), true, false);
+//                saveAnnotationsAction->setEnabled(true);
+//                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+
+                //delete old file
+                if(preannotationsPathLRU.compare(annotationsPathLRU))
+                    CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
+
+                // reset saved cursor
+                CViewer::setCursor(cursor);
+                if(PAnoToolBar::isInstantiated())
+                    PAnoToolBar::instance()->setCursor(cursor);
+
+                // disable save button
+                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+                saveAnnotationsAction->setEnabled(false);
+
+                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                recentlyUsedPath = path;
+
+
+            }
+            else
+                return;
+//            // save current cursor and set wait cursor
+//            QCursor cursor = cur_win->view3DWidget->cursor();
+//            if(PAnoToolBar::isInstantiated())
+//                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+//            CViewer::setCursor(Qt::WaitCursor);
+
+//            // save
+//            cur_win->storeAnnotations();
+
+//            // Choose saving format. Peng Xie: 2019-02-28
+////            QStringList items;
+////            items << tr("swc") << tr("eswc");
+
+////            bool ok;
+////            QString item = QInputDialog::getItem(this, tr("Choose saving format:"),
+////                                                 tr("Format:"), items, 0, false, &ok);
+////            bool as_swc=false;
+////            if (ok && !item.isEmpty()){
+////                as_swc = (item=="swc") ? true:false;
+////            }
+
+//            bool as_swc = false; // Format option is blocked for simplicity.
+//            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true, as_swc);
+
+//            // reset saved cursor
+//            CViewer::setCursor(cursor);
+//            if(PAnoToolBar::isInstantiated())
+//                PAnoToolBar::instance()->setCursor(cursor);
+
+//            // disable save button
+//            saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+//            saveAnnotationsAction->setEnabled(false);
         }
     }
     catch(RuntimeException &ex)
@@ -1820,6 +1974,7 @@ void PMain::autosaveAnnotations()
             QDir dir(qappDirPath);
             dir.mkdir("autosave");
 
+            //
             QString autosavePath;
             if(annotationsPathLRU.compare("")==0)
                 autosavePath = qappDirPath+"/autosave/annotations_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
@@ -1828,6 +1983,62 @@ void PMain::autosaveAnnotations()
                 QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
                 autosavePath = qappDirPath+"/autosave/"+annotationsBasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".ano";
             }
+
+
+            // clean older auto saved files, e.g. longer than 24 hours
+            if(cleanOldAutosavedFiles)
+            {
+                cleanOldAutosavedFiles = false;
+
+                QString curTime = mytime.toString("yyyy_MM_dd_hh_mm");
+
+                QString curYear = curTime.mid(0, 4);
+                QString curMonth = curTime.mid(5, 2);
+                QString curDay = curTime.mid(8, 2);
+
+                int curYearInt = curYear.toInt();
+                int curMonthInt = curMonth.toInt();
+                int curDayInt = curDay.toInt();
+
+                //
+                QDir asDir(qappDirPath + "/autosave/");
+                QStringList fileNames = asDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+
+                foreach (const QString &fileName, fileNames)
+                {
+                    const QString savedFile = qappDirPath + "/autosave/" + fileName;
+
+                    //qDebug()<<savedFile;
+
+                    QString flag = "_stamp_";
+
+                    int idx = savedFile.lastIndexOf(flag) + 7;
+
+                    QString fileTime = savedFile.mid(idx, 10);
+
+                    QString fileYear = fileTime.mid(0, 4);
+                    QString fileMonth = fileTime.mid(5, 2);
+                    QString fileDay = fileTime.mid(8, 2);
+
+                    int fileYearInt = fileYear.toInt();
+                    int fileMonthInt = fileMonth.toInt();
+                    int fileDayInt = fileDay.toInt();
+
+                    //qDebug()<<curYear<<curMonth<<curDay<<" ... "<<fileYear<<fileMonth<<fileDay;
+
+
+                    if(abs(fileYearInt-curYearInt)>0 || abs(fileMonthInt-curMonthInt)>0 || abs(fileDayInt-curDayInt)>0)
+                    {
+                        // qDebug()<<"delete file ...";
+
+                        QFile file2del(savedFile);
+                        file2del.remove();
+                    }
+
+               }
+
+            }
+
 
             CAnnotations::getInstance()->save(autosavePath.toStdString().c_str(),false, false);
 
@@ -1996,7 +2207,6 @@ void PMain::clearAnnotations()
 void PMain::exit()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-
     this->close();
 }
 
@@ -2184,6 +2394,18 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 void PMain::closeEvent(QCloseEvent *evt)
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    if(saveAnnotationsAction->isEnabled())
+    {
+        switch (QMessageBox::information(this,tr("warning"),tr("Do you want to save annotation file"),tr("yes"),tr("no"),0,1)) {
+        case 0:
+            saveAnnotations();
+            break;
+        case 1:
+            break;
+        }
+    } //by XZ, 20190725
+
 
     if(evt)
     {
@@ -2629,7 +2851,11 @@ void PMain::doTeraflyVRView()
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
             if(cur_win->view3DWidget->resumeCollaborationVR)
-			{cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;cur_win->view3DWidget->doimageVRView(true);}
+			{
+				int maxresindex = CImport::instance()->getResolutions()-1;
+				VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
+				cur_win->view3DWidget->collaborationMaxResolution = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
+				cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;cur_win->view3DWidget->doimageVRView(true);}
 			else
 				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
@@ -2652,9 +2878,12 @@ void PMain::doCollaborationVRView()
         if(cur_win&&cur_win->view3DWidget)
         {
  
-			this->setWindowState(Qt::WindowMinimized);
+			this->setWindowState(Qt::WindowMinimized);	
 			//this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
+			int maxresindex = CImport::instance()->getResolutions()-1;
+			VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
+			cur_win->view3DWidget->collaborationMaxResolution = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
 			cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
             //cur_win->storeAnnotations();
@@ -3710,4 +3939,258 @@ void PMain::updateAnnotationStatus()
 void PMain::setLockMagnification(bool locked)
 {
     isMagnificationLocked = locked;
+
 }
+
+/*----------------collaborate mdoe-------------------*/
+void PMain::login()
+{
+    qDebug()<<"in login()";
+
+//    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
+//    {
+
+//        qDebug()<<"123";
+//        qDebug()<<"test 1,manage point :"<<managesocket;
+//        if(managesocket->state()==QAbstractSocket::ConnectedState)
+//        {
+//            qDebug()<<"when in login, mansgesocket is connected";
+//            QMessageBox::information(0, tr("Error"),tr("have been logged."));
+//            return;
+//        }
+
+//    }
+    qDebug()<<"QSettings settings";
+    QSettings settings("HHMI", "Vaa3D");
+    QString serverNameDefault = "";
+    if(!settings.value("vr_serverName").toString().isEmpty())
+        serverNameDefault = settings.value("vr_serverName").toString();
+    bool ok1;
+    QString serverName = QInputDialog::getText(0, "Server Address",
+        "Please enter the server address:", QLineEdit::Normal,
+        serverNameDefault, &ok1);
+    QString manageserver_Port;
+    QString userName;
+
+    if(!ok1||serverName.isEmpty())
+    {
+        qDebug()<<"WRONG!EMPTY! ";
+        return ;
+    }else
+    {
+        settings.setValue("vr_serverName", serverName);
+        QString PortDefault = "";
+        if(!settings.value("vr_PORT").toString().isEmpty())
+            PortDefault = settings.value("vr_PORT").toString();
+        bool ok2;
+         manageserver_Port = QInputDialog::getText(0, "Port",//
+            "Please enter server port:", QLineEdit::Normal,
+            PortDefault, &ok2);
+
+        if(!ok2 || manageserver_Port.isEmpty())//
+        {
+            qDebug()<<"WRONG!EMPTY! ";
+            return ;
+        }
+        else
+        {
+            settings.setValue("vr_PORT", manageserver_Port);//
+            QString userNameDefault = "";
+            if(!settings.value("vr_userName").toString().isEmpty())
+                userNameDefault = settings.value("vr_userName").toString();
+            bool ok3;
+             userName = QInputDialog::getText(0, "Lgoin Name",
+                "Please enter your login name:", QLineEdit::Normal,
+                userNameDefault, &ok3);
+
+            if(!ok3 || userName.isEmpty())
+            {
+                qDebug()<<"WRONG!EMPTY! ";
+                //return SendLoginRequest();
+                return ;
+            }else
+                settings.setValue("vr_userName", userName);
+        }
+    }
+    qDebug()<<"test login ";
+//    if(managesocket!=0)    delete managesocket;
+    qDebug()<<"tset 2";
+    managesocket=new ManageSocket;
+    managesocket->ip=serverName;
+    managesocket->manageport=manageserver_Port;
+    managesocket->name=userName;
+    qDebug()<<"test 3";
+
+    managesocket->connectToHost(serverName,manageserver_Port.toInt());
+
+    if( !managesocket->waitForConnected())
+    {
+//        managesocket->deleteLater();
+        QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
+        delete  managesocket;
+        return;
+    }
+    else{
+        qDebug()<<"send:"<<QString(userName+":login."+"\n");
+        connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
+        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
+        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+
+        managesocket->write(QString(userName+":login."+"\n").toUtf8());
+
+        loginAction->setText(serverName);
+        loginAction->setEnabled(false);
+        logoutAction->setEnabled(true);
+        importAction->setEnabled(true);
+        downAction->setEnabled(true);
+        loadAction->setEnabled(true);
+    }
+}
+
+void PMain::logout()
+{
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+        managesocket->write(QString(managesocket->name+":logout."+"\n").toUtf8());
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+}
+
+void PMain::import()
+{
+
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+        managesocket->write(QString(managesocket->name+":import."+"\n").toUtf8());
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+
+}
+
+void PMain::download()
+{
+
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+
+        managesocket->write(QString(managesocket->name+":down."+"\n").toUtf8());
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+}
+
+void PMain::load()
+{
+    CViewer *cur_win = CViewer::getCurrent();
+    if(!cur_win)
+    {
+        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+        return;
+    }
+
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+        qDebug()<<"-----------------load annotation----------";
+        connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
+
+        cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
+
+        connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
+                cur_win->getGLWidget()->TeraflyCommunicator,
+                SLOT(SendLoginRequest(QString,QString,QString)));
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
+                managesocket,SLOT(messageMade()));
+        connect(managesocket,SIGNAL(disconnected()),
+                cur_win->getGLWidget()->TeraflyCommunicator,
+                SLOT(deleteLater()));//注意，可能需要修改
+        managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+}
+
+void PMain::deleteManageSocket()
+{
+    qDebug()<<"delete managesocket";
+    qDebug()<<managesocket;
+//    managesocket->deleteLater();
+//    delete managesocket;
+//    managesocket=NULL;
+//    managesocket->deleteLater();
+    loginAction->setText("log in");
+    loginAction->setEnabled(true);
+    logoutAction->setEnabled(false);
+    downAction->setEnabled(false);
+    importAction->setEnabled(false);
+    loadAction->setEnabled(false);
+    return;
+}
+
+void PMain::ColLoadANO(QString ANOfile)
+{
+    qDebug()<<"load ANO:"<<ANOfile;
+    CViewer *cur_win = CViewer::getCurrent();
+    QString ANOpath="./clouddata/"+ANOfile;
+    qDebug()<<"test path= "<<ANOpath;
+    if(!ANOpath.isEmpty())
+    {
+
+        annotationsPathLRU = ANOpath.toStdString();
+        CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
+        NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
+
+        // save current cursor and set wait cursor
+        QCursor cursor = cur_win->view3DWidget->cursor();
+        if(PAnoToolBar::isInstantiated())
+            PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+        CViewer::setCursor(Qt::WaitCursor);
+
+        // load
+        cur_win->loadAnnotations();
+        saveAnnotationsAction->setEnabled(true);
+        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+        virtualSpaceSizeMenu->setEnabled(false);
+        myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
+
+        // reset saved cursor
+        CViewer::setCursor(cursor);
+        if(PAnoToolBar::isInstantiated())
+            PAnoToolBar::instance()->setCursor(cursor);
+        annotationChanged = true;
+        updateOverview();
+        qDebug()<<"ok";
+
+        QRegExp anoExp("(.*).ano");
+        QString tmp;
+        if(anoExp.indexIn(ANOpath)!=-1)
+        {
+            tmp=anoExp.cap(1);
+        }
+        QFile *f = new QFile(tmp+".ano");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
+
+        f = new QFile(tmp+".ano.eswc");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
+
+        f = new QFile(tmp+".ano.apo");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
+
+
+    }
+}
+

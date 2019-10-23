@@ -215,6 +215,8 @@ void V3dR_MainWindow::createControlWidgets()
 
     movieSaveButton = new QPushButton("Save Movie", miscDisplayOptGroup);
     animateButton = new QPushButton("Animate >>", miscDisplayOptGroup);
+	resOfOriginalImage = new QPushButton("Set corresponding image voxel size");
+	//BrainAtlas = new QPushButton("Start Brain Atlas");
     //reloadDataButton = new QPushButton("Reload", miscDisplayOptGroup);
 
 	layout_miscDisplayOptGroup->addWidget(checkBox_displayAxes, 1, 0, 1, 20);
@@ -227,6 +229,8 @@ void V3dR_MainWindow::createControlWidgets()
 	//layout_miscDisplayOptGroup->addWidget(reloadDataButton, 3, 1+11, 1, 21-12);
     layout_miscDisplayOptGroup->addWidget(backgroundColorSwitchButton, 3, 1+11, 1, 21-12);
 	layout_miscDisplayOptGroup->addWidget(brightButton, 4, 1+11, 1, 21-12);
+	layout_miscDisplayOptGroup->addWidget(resOfOriginalImage, 5, 0, 1, 21);
+	//layout_miscDisplayOptGroup->addWidget(BrainAtlas, 6, 0, 1, 21);
 
 
     //==============================================================================
@@ -627,6 +631,7 @@ void V3dR_MainWindow::createControlWidgets()
 	//=============================================================================
 	//collaboration 
 	//rotCView = new QCheckBox("Start collaboration mode in 3D view.");
+	//rotCView = new QPushButton("collaborate in VR", controlGroup);
 	//rotCView->setToolTip("You can edit current image in collaboration mode.");
 	//controlLayout->addWidget(rotCView);
 	//VR
@@ -887,7 +892,7 @@ void V3dR_MainWindow::connectSignal()
 		connect(rotVRView, SIGNAL(clicked()), glWidget, SLOT(doimage3DVRView()));
 	}
 	if(rotCView){
-		connect(rotCView, SIGNAL(toggled(bool)), glWidget, SLOT(doclientView(bool)));
+		connect(rotCView, SIGNAL(clicked()), glWidget, SLOT(doimage3DVRView()));
 	}
 #endif
 
@@ -1066,6 +1071,10 @@ void V3dR_MainWindow::connectSignal()
 	{
 		connect(animateButton, SIGNAL(clicked()), this, SLOT(doMenuOfAnimate()));
 	}
+
+	if (resOfOriginalImage) connect(resOfOriginalImage, SIGNAL(clicked()), glWidget, SLOT(setVoxSize()));
+
+	//if (BrainAtlas) connect(BrainAtlas, SIGNAL(clicked()), glWidget, SLOT(callUpBrainAtlas()));
 
 
 	connect(glWidget, SIGNAL(signalVolumeCutRange()), this, SLOT(initVolumeCutRange())); // 081122

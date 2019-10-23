@@ -16,17 +16,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "V3dR_Communicator.h"
 //#include <gltext.hpp>//include freetype and gltest library
 
 #include "mainwindow.h"
 
-struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
-};
 
 
 enum ModelControlR
@@ -37,7 +31,10 @@ enum ModelControlR
 	m_markMode,
     m_delmarkMode,
 	m_splitMode,
-	m_insertnodeMode
+	m_insertnodeMode,
+	m_clipplaneMode,
+	m_ConnectMode
+	//m_slabplaneMode
 };
 enum ModeControlSettings
 {
@@ -58,6 +55,11 @@ enum ModeControlSettings
 	_MovetoCreator,
 	_StretchImage
 };
+enum ModeTouchPadR
+{
+	tr_contrast = 0,
+	tr_clipplane
+};
 enum RGBImageChannel
 {
 	channel_rgb = 1,
@@ -69,7 +71,8 @@ enum RGBImageChannel
 enum SecondeMenu
 {
 	_nothing = 0,
-	_colorPad = 1
+	_colorPad = 1,
+//	_cutplane = 2
 };
 enum FlashType
 {
@@ -123,6 +126,30 @@ private:
 	int step;
 };
 
+class TransferControlPoint
+{
+public:
+	TransferControlPoint(float r,float g,float b,int isovalue)
+	{
+		Color.x = r;
+		Color.y = g;
+		Color.z = b;
+		Color.w = 1.0f;
+		Isovalue = isovalue;
+	}
+	TransferControlPoint(float alpha,int isovalue)
+	{
+		Color.x = 0.0f;
+		Color.y = 0.0f;
+		Color.z = 0.0f;
+		Color.w = alpha;
+		Isovalue = isovalue;
+	}
+	glm::vec4 Color;
+	int Isovalue;
+
+
+};
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
@@ -138,7 +165,7 @@ public:
 
 	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
     QString NT2QString(); // prepare the message to be sent from currentNT.
-	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z);
+	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
 	//bool FlashStuff(FlashType type,XYZ coords);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
@@ -235,6 +262,10 @@ public:
 	XYZ CmainVRVolumeStartPoint;
 	int CmainResIndex;
 	XYZ CollaborationCreatorPos;
+	XYZ CollaborationMaxResolution;
+	XYZ CollaborationCurrentRes;
+	XYZ CollaborationTargetMarkerRes;
+	XYZ collaborationTargetdelcurveRes;
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -252,8 +283,9 @@ private:
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
+	public:
 	NeuronTree currentNT;// currently drawn stroke of neuron
-	
+	private:
 	NeuronTree tempNT;//used somewhere, can be change to a local variable
 	BoundingBox swcBB;
 	QList<ImageMarker> drawnMarkerList;
@@ -263,7 +295,11 @@ private:
 	int curveDrawingTestStatus;
 
 	vr::IVRSystem *m_pHMD;
+	vr::HmdQuad_t *rect;
 	vr::IVRRenderModels *m_pRenderModels;
+	vr::IVRChaperone *m_pChaperone;
+
+	vr::HmdVector3_t HmdQuadImageOffset;
 	std::string m_strDriver;
 	std::string m_strDisplay;
 	vr::TrackedDevicePose_t m_rTrackedDevicePose[ vr::k_unMaxTrackedDeviceCount ]; //note: contain everything: validity, matrix, ...
@@ -301,6 +337,7 @@ private: // OpenGL bookkeeping
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
 	static ModeControlSettings m_modeGrip_L;
+	static ModeTouchPadR m_modeTouchPad_R;
 	static SecondeMenu m_secondMenu;
 	static RGBImageChannel m_rgbChannel;
 	/*FlashType m_flashtype;
@@ -329,7 +366,6 @@ private: // OpenGL bookkeeping
 	glm::vec3 loadedNTCenter;
 	glm::vec3 autoRotationCenter;
 	long int vertexcount, swccount;
-
 	std::string m_strPoseClasses;                            // what classes we saw poses for this frame
 	char m_rDevClassChar[ vr::k_unMaxTrackedDeviceCount ];   // for each device, a character representing its class
 
@@ -376,6 +412,8 @@ private: // OpenGL bookkeeping
 	Sphere* ctrSphere; // indicate the origin for curve drawing
 	glm::vec3 ctrSpherePos;
 	glm::vec3 ctrSphereColor;
+	glm::vec3 u_clipnormal;
+	glm::vec3 u_clippoint;
 
 	GLuint m_unMorphologyLineModeVAO;
 	GLuint m_glMorphologyLineModeVertBuffer;
@@ -402,7 +440,7 @@ private: // OpenGL bookkeeping
 	GLuint m_glControllerVertBuffer;
 	GLuint m_unControllerVAO;//note: axes for controller
 	unsigned int m_uiControllerVertcount;
-	unsigned int m_uiControllerRayVertcount;
+	unsigned int m_uiControllerRayVertcount;//note: used to draw controller ray
 	Matrix4 m_mat4HMDPose;//note: m_rmat4DevicePose[hmd].invert()
 	Matrix4 m_mat4eyePosLeft;
 	Matrix4 m_mat4eyePosRight;
@@ -486,7 +524,7 @@ private: // OpenGL bookkeeping
 ***********************************/
 public:
 	void SetupCubeForImage4D();
-	GLuint initTFF1DTex(const char* filename);
+	GLuint initTFF1DTex();
 	GLuint initFace2DTex(GLuint texWidth, GLuint texHeight);
 	GLuint initVol3DTex();
 	GLuint initVolOctree3DTex(int step,GLuint octreestep);
@@ -522,6 +560,7 @@ private:
 	GLuint g_volTexObj_octree_128;			
 	static float fBrightness;
 	static float fContrast;
+	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
 	__int64 CounterStart;
@@ -548,6 +587,7 @@ private:
 	
 	bool showshootingray;
 	QString collaboration_creator_name;
+	int collaboration_creator_res;
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();

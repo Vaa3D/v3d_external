@@ -66,6 +66,7 @@ struct iDrawExternalParameter
 	QStringList pointcloud_file_list;
 	QString surface_file;
 	QString labelfield_file;
+        QString marker_file;
 
 	//some external controls for the 3d viewer
 	//float zthickness; //the default z-thickness when start the 3d viewer. 100626

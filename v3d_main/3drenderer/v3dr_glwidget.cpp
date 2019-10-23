@@ -51,7 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
 #include "../terafly/src/control/CPlugin.h"
-#include "../vrrenderer/V3dR_Communicator.h"
+#include "../terafly/src/presentation/PMain.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
 #include "renderer.h"
@@ -100,7 +100,6 @@ static bool _isMultipleSampleSupported()
 void V3dR_GLWidget::closeEvent(QCloseEvent* e)
 {
 	qDebug("V3dR_GLWidget::closeEvent");  // never run to here for non-frame window, unless called directly, by RZC 080814
-
 	deleteRenderer();
 
 	/////////////////////////////////////////////////////
@@ -1026,26 +1025,21 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			{
 				//QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-				
-				callFragmentTracing();
-			}
-	  		break;
-
-		case Qt::Key_M:
-			if (renderer)
-			{
-				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				if (thisRenderer->fragmentTrace)
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (!pMain.fragTracePluginInstance)
 				{
 					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-				
+
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					mypluginloader.runPlugin(loader, "settings");
+
+					return;
 				}
+				else v3d_msg("Neuron Assembler plugin instance already exists.");
 			}
-			break;
+	  		break;
 
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
@@ -1075,16 +1069,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (renderer)
 			{
 				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				if (thisRenderer->fragmentTrace)
-				{
-					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-
-					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					mypluginloader.runPlugin(loader, "start_tracing");
-                }
-                else if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
+                if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
                 {
                     thisRenderer->setDeleteKey(2);
                     thisRenderer->deleteMultiNeuronsByStroke();
@@ -1131,7 +1116,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
 
-					if (thisRenderer->fragmentTrace)
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
 					{
 						map<int, vector<int> > labeledSegs;
 						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
@@ -1149,7 +1135,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 							}
 						}
 
-						thisRenderer->connectSameTypeSegs(labeledSegs, curImg);					
+						thisRenderer->connectSameTypeSegs(labeledSegs, curImg);	// This is the segment auto-connecting function.				
 
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
@@ -1162,7 +1148,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				My4DImage* curImg = 0;
 				if (this) curImg = v3dr_getImage4d(_idep);
 
-				if (thisRenderer->fragmentTrace)
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
 				{
 					map<int, vector<int> > labeledSegs;
 					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
@@ -1249,6 +1236,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             break;
 
         case Qt::Key_Q:
+            if(IS_CTRL_MODIFIER){
+                qDebug()<<"call special marker"<<endl<<"---------------------------------------------"<<endl;
+                callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
+            }
+            else
             {
                 callCreateMarkerNearestNode();
             }
@@ -1274,6 +1266,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (IS_ALT_MODIFIER)
 			{
 				callShowConnectedSegs();
+			}
+			else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)
+			{
+				cout << "wp_debug" << __LINE__ << __FUNCTION__ << endl;
+				callShowBreakPoints();
 			}
             break;
 
@@ -1600,6 +1597,9 @@ void V3dR_GLWidget::setThickness(double t) //added by PHC, 090215
 		if (renderer) renderer->setThickness(_thickness);
 		POST_updateGL();
 	}
+
+	Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+	rendererGL1Ptr->zThick = t;
 }
 
 void V3dR_GLWidget::setCurChannel(int t) //100802
@@ -1780,9 +1780,27 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 {
+	qDebug()<<"PMain::doCollaborationVRView()";
+	try
+	{
+			this->setWindowState(Qt::WindowMinimized);	
+			//this->hide();
+			
+			int maxresindex = 1;
+			My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+			
+			this->collaborationMaxResolution = XYZ(img4d->getXDim(),img4d->getYDim(),img4d->getZDim());
+			this->Resindex = -1;
+			cout<<"CViewer::getCurrent()->volResIndex;   "<<this->Resindex<<endl;
+			this->doimageVRView(true);
+			//cur_win->storeAnnotations();
+			//this->show();		
 
-	doimageVRView(bCanCoMode);
-
+	}
+	catch(...)
+	{
+		qDebug()<<"???do3DVRView()";
+	}
 }
 void V3dR_GLWidget::process3Dwindow(bool show)
 {
@@ -1798,16 +1816,18 @@ void V3dR_GLWidget::process3Dwindow(bool show)
 
 	if(show)
 	{
+		cout<<"process3Dwindow show"<<endl;
 		cout<<"windowList"<<windowList.size();
 		for(int i=0;i<visibility.size();++i)
 		{
-
 			windowList[visibility[i]]->show();
 		}
+
 		clearwindowlist = true;
 	}
 	else
 	{
+		cout<<"process3Dwindow hide"<<endl;
 		if(clearwindowlist)
 		visibility.clear();
 		for(int i=0;i<windowList.size();++i)
@@ -1825,9 +1845,10 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
 	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
 	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+	cout<<"vr listNeuronTrees.size()"<<listNeuronTrees->size();
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
     this->getMainWindow()->hide();
-	process3Dwindow(false);
+	//process3Dwindow(false);
     QMessageBox::StandardButton reply;
 	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
@@ -1837,24 +1858,22 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
-		if(VRClientON==false)
+		if(TeraflyCommunicator)
 		{
-			VRClientON = true;
 			if(myvrwin)
 				delete myvrwin;
 			myvrwin = 0;
-			myvrwin = new VR_MainWindow();
+			myvrwin = new VR_MainWindow(TeraflyCommunicator);
 			myvrwin->setWindowTitle("VR MainWindow");
-			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
-			VRClientON = linkerror;
-			if(!linkerror)  // there is error with linking ,linkerror = 0
-			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); return;}
+			//bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
+			
+
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
-			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,TeraflyCommunicator,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
 
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -1875,6 +1894,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		}
 		else
 		{
+			qDebug()<<"can't connect to server .unknown wrong ";
 			v3d_msg("The ** client is running.Failed to start VR client.");
 			this->getMainWindow()->show();
 		}
@@ -1902,51 +1922,71 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		// 	emit(signalCallTerafly());
 		// }
 	}
-		process3Dwindow(true);
+		//process3Dwindow(true);
 
 }
 void V3dR_GLWidget::doclientView(bool check_flag)
 {
 
-	if(check_flag)
+	/*if(check_flag)
 	{
-		qDebug()<<"run true.";
-		if(VRClientON==false)
-		{
-			v3d_msg("Now start Collaboration.");
-			VRClientON = true;
-			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-			if(myclient)
-				delete myclient;
-			myclient = 0;
-			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
-			bool linkerror = myclient->SendLoginRequest();
-			if(!linkerror)
-			{
-				v3d_msg("Error!Cannot link to server!");
-				myclient = 0;
-				VRClientON = false;
-			}
-			else
-				v3d_msg("Successed linking to server! ");
-		}
-		else
-		{
-			v3d_msg("The VR client is running.Failed to start ** client.");
-		}
+	qDebug()<<"run true.";
+	if(VRClientON==false)
+	{
+	v3d_msg("Now start Collaboration.");
+	VRClientON = true;
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+	if(myclient)
+	delete myclient;
+	myclient = 0;
+	myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+	bool linkerror = myclient->SendLoginRequest();
+	XFormWidget *curXWidget = v3dr_getXWidget(_idep);
+	if (!curXWidget)
+	{
+	cout << "curXWidget is nor exist";
+	return;
+	}
+	if (!curXWidget->getMainControlWindow())
+	cout << "main window is nor exist";
+	V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+	QList<V3dR_MainWindow *> windowList = mypluginloader.getListAll3DViewers();
+
+	if(!linkerror)
+	{
+	for (int i = 0; i < windowList.size(); ++i)
+	{
+	if (windowList[i]->rotCView->isChecked())
+	{
+	windowList[i]->rotCView->setChecked(false);
+	}
+	}
+	v3d_msg("Error!Cannot link to server!");
+	myclient = 0;
+	VRClientON = false;
+	}
+	else
+	{v3d_msg("Successed linking to server! ");
+	myclient->CollaborationMainloop();}
 	}
 	else
 	{
-		qDebug()<<"run false.";
-		if(myclient)
-		{
-			qDebug()<<"run disc.";
-			delete myclient;
-			myclient = 0;
-		}
-		VRClientON=false;
+
+	v3d_msg("The VR client is running.Failed to start ** client.");
 	}
+	}
+	else
+	{
+	qDebug()<<"run false.";
+	if(myclient)
+	{
+	qDebug()<<"run disc.";
+	delete myclient;
+	myclient = 0;
+	}
+	VRClientON=false;
+	}*/
 }
 
 void V3dR_GLWidget::OnVRSocketDisConnected()
@@ -2934,6 +2974,53 @@ void V3dR_GLWidget::switchBackgroundColor()
     POST_updateGL();
 }
 
+void V3dR_GLWidget::setVoxSize()
+{
+	terafly::CImport* importCheckPtr = terafly::CImport::instance();
+	if (importCheckPtr->getVMapRawData() != 0)
+	{
+		v3d_msg(tr("There is a terafly UI inhereted from this Vaa3D controls.\n Please adjust the voxel size from terafly control panel instead."));
+		return;
+	}
+
+	QSettings voxSettings("SEU-Allen", "scaleBar_nonTerafly");
+
+	this->setVoxSizeDlg = new QDialog;
+	this->setVoxDlgPtr = new Ui::setVoxSizeDialog;
+	this->setVoxDlgPtr->setupUi(this->setVoxSizeDlg);
+	this->setVoxDlgPtr->doubleSpinBox->setValue(voxSettings.value("x").toDouble());
+	this->setVoxDlgPtr->doubleSpinBox_2->setValue(voxSettings.value("y").toDouble());
+	this->setVoxDlgPtr->doubleSpinBox_3->setValue(voxSettings.value("z").toDouble());
+	this->setVoxSizeDlg->exec();
+		
+	voxSettings.setValue("x", this->setVoxDlgPtr->doubleSpinBox->value());
+	voxSettings.setValue("y", this->setVoxDlgPtr->doubleSpinBox_2->value());
+	voxSettings.setValue("z", this->setVoxDlgPtr->doubleSpinBox_3->value());
+
+	renderer->paint();
+}
+
+void V3dR_GLWidget::callUpBrainAtlas()
+{
+	if (renderer)
+	{
+		renderer->editinput = 13;
+		renderer->drawEditInfo();
+		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
+		cout << "test1" << endl;
+
+		QPluginLoader* loader = new QPluginLoader("plugins/BrainAtlas/BrainAtlas.dll");
+		if (!loader) v3d_msg("BrainAtlas module not found. Do nothing.");
+		cout << "test2" << endl;
+
+		XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+		cout << "test3" << endl;
+		V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow()); 
+		cout << "test4" << endl;
+		mypluginloader.runPlugin(loader, "menu1");
+	}
+}
+
 void V3dR_GLWidget::enableShowAxes(bool s)
 {
 	//qDebug("V3dR_GLWidget::setShowAxes = %i",s);
@@ -3487,6 +3574,15 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
     }
 }
 
+void V3dR_GLWidget::callShowBreakPoints()
+{
+	if (renderer)
+	{
+		renderer->callShowBreakPoints();
+		POST_updateGL();
+	}
+}
+
 void V3dR_GLWidget::callShowSubtree()
 {
 	if (renderer)
@@ -3502,19 +3598,6 @@ void V3dR_GLWidget::callShowConnectedSegs()
 	{
 		renderer->callShowConnectedSegs();
 		POST_updateGL();
-	}
-}
-
-void V3dR_GLWidget::callFragmentTracing()
-{
-	if (renderer)
-	{
-		renderer->editinput = 12;
-		renderer->drawEditInfo();
-		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
-		rendererGL1->fragmentTrace = true;
-		//renderer->callFragmentTracing();
-		//POST_updateGL();
 	}
 }
 
@@ -3636,6 +3719,16 @@ void V3dR_GLWidget::callCreateMarkerNearestNode()
     }
 }
 //end five shortcuts
+
+void V3dR_GLWidget::callCreateSpecialMarkerNearestNode()
+{
+    if(renderer)
+    {
+        QPoint gpos = mapFromGlobal(cursor().pos());
+        renderer->callCreateSpecialMarkerNearestNode(gpos.x(),gpos.y());
+    }
+}
+//add special marker, by XZ, 20190720
 
 
 // For curveline detection , by PHC 20170531

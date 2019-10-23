@@ -177,6 +177,9 @@ public:
 	vector<size_t> segInfoShow;
     virtual void drawScaleBar(float AlineWidth=3);
 
+	// MK, April, 2019  scale bar redesigned --> 3 dimensions, displayed in micrometer, adaptively changes with current terafly::CImport, terafly::CSettings and input voxel dimensions.
+	virtual void drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], int resIndex, float zThickness, float AlineWidth = 3);
+
 	virtual void updateVolCutRange();
 	virtual void updateSurfClipRange();
 
@@ -248,10 +251,12 @@ public:
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
 	virtual void callShowSubtree() {};
+	virtual void callShowBreakPoints() {};//add by wp
 	virtual void callShowConnectedSegs() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
     virtual void callCreateMarkerNearestNode(int x, int y) {};
+    virtual void callCreateSpecialMarkerNearestNode(int x,int y){}; //add special marker, by XZ, 20190720
     virtual void callGDTracing() {};
 
     virtual void toggleEditMode()       {};

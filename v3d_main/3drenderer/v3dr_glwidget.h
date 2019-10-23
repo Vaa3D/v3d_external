@@ -49,6 +49,8 @@ using QOpenGLWidget_proxy = QOpenGLWidget;
 typedef QGLWidget QOpenGLWidget_proxy;
 #endif
 #include "../vrrenderer/VR_MainWindow.h"
+#include "../vrrenderer/V3dR_Communicator.h"
+#include "ui_setVoxSize.h"
 
 class Renderer;
 class V3dR_MainWindow;
@@ -111,10 +113,13 @@ public:
 	void UpdateVRcollaInfo();
 	bool VRClientON;
 	VR_MainWindow * myvrwin;
-	V3dR_Communicator * myclient;
+	V3dR_Communicator * TeraflyCommunicator;
 	XYZ teraflyZoomInPOS;
 	XYZ CollaborationCreatorPos;
+	XYZ collaborationMaxResolution;
+	int CollaborationCreatorRes;
 	int Resindex;
+
 	static bool resumeCollaborationVR;
 #endif
 //protected:
@@ -167,10 +172,11 @@ public:
 public slots:
    	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
 
-
 #define __view3dcontrol_interface__
 public:
 	View3DControl * getView3DControl() {return dynamic_cast<View3DControl *>(this);}
+	QDialog* setVoxSizeDlg;
+	Ui::setVoxSizeDialog* setVoxDlgPtr;
 //----------------------------------------------------------------------------------------
 // begin View3DControl interface
 //----------------------------------------------------------------------------------------
@@ -402,6 +408,8 @@ public slots:
 	virtual void reloadData();
 	virtual void cancelSelect();
 
+	virtual void setVoxSize();
+
     //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
     virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
     virtual void callStrokeRetypeMultiNeurons();//  call multiple segments retyping
@@ -410,13 +418,15 @@ public slots:
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callShowSubtree();
 	virtual void callShowConnectedSegs();
+	virtual void callShowBreakPoints();//add by wp
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode();
+    virtual void callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
     virtual void callGDTracing();
 
-	// Fragmented tracing, MK, Dec 2018
-	virtual void callFragmentTracing();
+	// Brain atlas app, MK, July 2019
+	virtual void callUpBrainAtlas();
 
     virtual void toggleEditMode();
     virtual void setEditMode();
@@ -582,7 +592,7 @@ public:
 #ifdef __ALLOW_VR_FUNCS__
 		VRClientON=false;
 		myvrwin = 0;
-		myclient = 0;
+		//myclient = 0;
 		teraflyZoomInPOS = 0;
 		CollaborationCreatorPos = 0;
 		Resindex = 1;

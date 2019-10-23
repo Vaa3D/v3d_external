@@ -75,7 +75,13 @@
 #include <map>
 #include <algorithm>
 #include <ctime>
-#include <omp.h>
+
+//#include <boost/chrono.hpp>
+//#include <boost/thread/thread.hpp>
+
+#ifndef Q_OS_MAC
+    #include <omp.h>
+#endif
 
 #include <boost/algorithm/string.hpp>
 #endif //test_main_cpp
@@ -93,6 +99,21 @@
 //#include "NeuronStructUtilities.h"
 //#endif
 // -------------------------------------------------------------------------
+#ifdef _WIN32
+    #include <windows.h>
+
+    void my_sleep(unsigned milliseconds)
+    {
+        Sleep(milliseconds);
+    }
+#else
+    #include <unistd.h>
+
+    void my_sleep(unsigned milliseconds)
+    {
+        usleep(milliseconds * 1000); // takes microseconds
+    }
+#endif
 
 #define EPS 0.01
 #define PI 3.14159265
@@ -1368,6 +1389,51 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree)
 	return best_ind; //by PHC, 090209. return the index in the SWC file
 }
 
+V3DLONG Renderer_gl1::findNearestMarker_Loc(XYZ &loc, QList<LocationSimple> &listlandmarks,int mode)
+{
+    if(listlandmarks.empty()) return -1;
+
+    GLdouble ix , iy , iz;
+    V3DLONG best_ind = -1;double best_dist = 100000;
+    bool b_valid = false;
+    for(V3DLONG i = 0; i < listlandmarks.size(); ++i)
+    {
+        b_valid = false;
+        if(mode == 1)//for special marker
+        {
+            if(listlandmarks[i].category == 77)
+                b_valid = true;
+        }
+        else
+        {
+            b_valid = true;
+        }
+
+        if(b_valid)
+        {
+            ix = listlandmarks[i].x - 1;
+            iy = listlandmarks[i].y - 1;
+            iz = listlandmarks[i].z - 1;
+            double cur_dist = (loc.x-ix)*(loc.x-ix)+(loc.y-iy)*(loc.y-iy)+(loc.z-iz)*(loc.z-iz);
+            if(i == 0)
+            {
+                best_dist = cur_dist;
+                best_ind = 0;
+            }
+            else
+            {
+                if(cur_dist < best_dist)
+                {
+                    best_dist = cur_dist;
+                    best_ind = i;
+                }
+            }
+        }
+    }
+
+    return best_ind; //by XZ, 20190720, return the index of the listlandmarks
+}
+
 
 double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //used for marker-pool type curve-generating
                                             vector <XYZ> & loc_vec,  //the ouput 3D curve
@@ -1902,14 +1968,93 @@ if (0)
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
-			if (p_tree)
+
+            bool b_startnodeisspecialmarker=false;
+
+            float ratio = getZoomRatio();
+            int resindex = tf::PluginInterface::getRes();
+
+            double th_times = (7-resindex); //adaptive th_times, by XZ, 20190721
+
+            My4DImage* image4d = v3dr_getImage4d(_idep);
+            if(image4d)
+            {
+                QList <LocationSimple> & listLoc = image4d->listLandmarks;
+                int mode=1;
+                V3DLONG marker_id_start = findNearestMarker_Loc(loc_vec.at(0),listLoc,mode);
+                V3DLONG marker_id_end = findNearestMarker_Loc(loc_vec.at(N-1),listLoc,mode);
+                qDebug("detect nearest special marker [%ld] for the curve-start and marker [%ld] for curve-end",marker_id_start,marker_id_end);
+
+                double th_merge_m = 7;
+
+                bool b_start_merged = false, b_end_merged = false;
+
+                if(marker_id_start>=0)
+                {
+                    XYZ cur_node_xyz = XYZ(listLoc.at(marker_id_start).x-1, listLoc.at(marker_id_start).y-1, listLoc.at(marker_id_start).z-1);
+                    qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z;
+                    qDebug()<<"th_merge_m: "<<th_merge_m<<endl;
+                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(0))<<endl;
+                    if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge_m)
+                    {
+                        loc_vec.at(0) = cur_node_xyz;
+                        b_startnodeisspecialmarker = true;
+                        b_start_merged = true;
+                        qDebug()<<"force set the first point of this curve to the above marker node as they are close.";
+                    }
+                }
+
+                if(marker_id_end>=0)
+                {
+                    XYZ cur_node_xyz = XYZ(listLoc.at(marker_id_end).x-1, listLoc.at(marker_id_end).y-1, listLoc.at(marker_id_end).z-1);
+                    qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z;
+                    qDebug()<<"th_merge_m: "<<th_merge_m<<endl;
+                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(N-1))<<endl;
+                    if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge_m)
+                    {
+                        loc_vec.at(N-1) = cur_node_xyz;
+                        b_startnodeisspecialmarker = true;
+                        b_end_merged = true;
+                        qDebug()<<"force set the last point of this curve to the above marker node as they are close.";
+                    }
+                }
+
+                if(b_start_merged==false && b_end_merged==true)
+                {
+                    vector <XYZ> loc_vec_tmp = loc_vec;
+                    for (int i=0;i<N;i++)
+                        loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
+                }
+
+                if(b_startnodeisspecialmarker)
+                {
+                    QList <LocationSimple> ::iterator it=listLoc.begin();
+                    V3DLONG marker_index = (b_start_merged)?marker_id_start:marker_id_end;
+                    listLoc.erase(it+marker_index);
+                    XYZ loc(loc_vec.at(N-1).x,loc_vec.at(N-1).y,loc_vec.at(N-1).z);
+                    addSpecialMarker(loc);
+                }
+
+            }//add code to deal with the special marker problem, by XZ, 20190720
+
+
+            if (p_tree&&b_startnodeisspecialmarker==false)
 			{
                     // at(0) to at(index) ZJL 110901
                     V3DLONG n_id_start = findNearestNeuronNode_Loc(loc_vec.at(0), p_tree);
                     V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
                     qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-                double th_merge = 5;
+
+//                    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+//                    for(V3DLONG i=0;i<N;++i)
+//                    {
+//                        qDebug()<<"loc_vec "<<i<<" : "<<loc_vec[i].x<<" "<<loc_vec[i].y<<" "<<loc_vec[i].z<<endl;
+//                    }
+//                    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+
+
+                double th_merge = 5;//*th_times;
 
                 bool b_start_merged=false, b_end_merged=false;
                 NeuronSWC cur_node;
@@ -3346,6 +3491,76 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			curImg->tracedNeuron.seg[s].to_be_deleted = curImg->tracedNeuron.seg[s].to_be_deleted && !allUnitsOutsideZCut;
 		}
 	}
+
+    vector <XYZ> specialmarkerloc;
+    vector <V3DLONG> specialmarkerslocindex;
+    QList <LocationSimple> &listloc = curImg->listLandmarks;
+    for(V3DLONG i=0; i<listloc.size(); ++i)
+    {
+        if(listloc[i].category==77)
+        {
+            XYZ tmp(listloc[i].x,listloc[i].y,listloc[i].z);
+            specialmarkerloc.push_back(tmp);
+            specialmarkerslocindex.push_back(i);
+        }
+    }
+    V3DLONG specialmarkersegindex = -1;
+    V3DLONG specialmarkerlocindex = -1;
+    for(V3DLONG i=0; i<nsegs; ++i)
+    {
+        V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(i);
+        const V3DLONG nrows = this_seg.row.size();
+        if(curImg->tracedNeuron.seg[i].to_be_deleted==true)
+        {
+            XYZ segloclast(this_seg.row.at(nrows-1).x+1,this_seg.row.at(nrows-1).y+1,this_seg.row.at(nrows-1).z+1);
+            for(V3DLONG j=0; j<specialmarkerloc.size(); ++j)
+            {
+                if(segloclast==specialmarkerloc.at(j))
+                {
+                    specialmarkerlocindex = specialmarkerslocindex.at(j);
+                    specialmarkersegindex = i;
+                    break;
+                }
+
+            }
+        }
+        if(specialmarkersegindex!=-1)
+            break;
+    }
+    if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
+    {
+        QList <LocationSimple> ::iterator it = listloc.begin();
+        listloc.erase(it+specialmarkerlocindex);
+        bool islastseg = false;
+        while(!islastseg)
+        {
+            bool changed = false;
+            for(V3DLONG i=0; i<nsegs; ++i)
+            {
+                if(curImg->tracedNeuron.seg[i].to_be_deleted==true && i!=specialmarkersegindex)
+                {
+                    XYZ parent(curImg->tracedNeuron.seg[i].row.back().x,curImg->tracedNeuron.seg[i].row.back().y,curImg->tracedNeuron.seg[i].row.back().z);
+                    XYZ child(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
+                    if(parent==child)
+                    {
+                        changed = true;
+                        specialmarkersegindex = i;
+                    }
+                }
+            }
+            if(!changed)
+            {
+                islastseg = true;
+            }
+            changed = false;
+        }
+    }
+    if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
+    {
+        XYZ markerloc(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
+        addSpecialMarker(markerloc);
+    } // by XZ, 20190726
+
     curImg->update_3drenderer_neuron_view(w, this);
     curImg->proj_trace_history_append();
 }
@@ -3910,6 +4125,184 @@ void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4D
 }
 // --------- END of [Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018] ---------
 
+// --------- Remove duplicates and save sorted swc, Peng Xie, June, 2019 --------
+//void VNeuron_to_Neuron(V_NeuronSWC_unit* vS, NeuronSWC* S){
+//    S->n = vS->n;
+//    S->type = vS->type;
+//    S->x = vS->x;
+//    S->y= vS->y;
+//    S->z = vS->z;
+//    S->r = vS->r;
+//    S->pn = vS->parent;
+//    S->seg_id = vS->seg_id;
+//    S->level = vS->level;
+//    S->creatmode = vS->creatmode;  // Creation Mode LMG 8/10/2018
+//    S->timestamp = vS->timestamp;  // Timestamp LMG 27/9/2018
+//    S->tfresindex = vS->tfresindex; // TeraFly resolution index LMG 13/12/2018
+//}
+
+struct SegmentSWC{
+    int name;
+    int parent;
+    int size;
+
+    SegmentSWC () {name=1; parent=-1; size=0;}
+    SegmentSWC (int s_name, int s_parent, int s_size) {name=s_name; parent=s_parent; size=s_size;}
+};
+
+//int whether_reverse_child_segment(vector<V_NeuronSWC_unit> parent_seg, vector<V_NeuronSWC_unit> child_seg){
+//    double phead_x = parent_seg.end().x;
+//    double phead_y = parent_seg.end().y;
+//    double phead_z = parent_seg.end().z;
+//    double chead_x = child_seg.end().x;
+//    double chead_y = child_seg.end().y;
+//    double chead_z = child_seg.end().z;
+//    double ptail_x = parent_seg.begin().x;
+//    double ptail_y = parent_seg.begin().y;
+//    double ptail_z = parent_seg.begin().z;
+//    double ctail_x = child_seg.begin().x;
+//    double ctail_y = child_seg.begin().y;
+//    double ctail_z = child_seg.begin().z;
+//    if (((phead_x==chead_x) && (phead_y==chead_y) && (phead_z==chead_z)) ||
+//            ((ptail_x==chead_x) && (ptail_y==chead_y) && (ptail_z==chead_z)))
+//    {
+//        return true;
+//    }
+//    return false;
+//}
+
+void Renderer_gl1::sort_tracedNeuron(My4DImage* curImg, size_t rootID)
+{
+    // Assert given rootID is valid
+    NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(0)));
+    if(!p_tree)return;
+    QList<NeuronSWC> p_listneuron = p_tree->listNeuron;
+    if(p_tree->hashNeuron.find(rootID)==p_tree->hashNeuron.end())return;
+    v3d_msg(QString("p_tree->hashNeuron.value(rootID): %1").arg(p_tree->hashNeuron.value(rootID)));
+
+    // ----------- Starting from the specified root, traverse the connected components ---------
+    NeuronTree sorted_nt;
+    QList<NeuronSWC> listNeuron;
+    QHash<int, int> hashNeuron;
+    int test_type = 0; // Testing Only
+    int cur_treesize;
+
+    // ----------- Sort tree structure by segments -------------
+
+    // If root is an internal node, then we need to split the segment
+    // To be implemented
+    // ------------ Begin DFS ------------
+    QStack<SegmentSWC> pstack;
+    set<size_t> visited;
+    size_t cur_segID = p_listneuron.at(p_tree->hashNeuron.value(rootID)).seg_id;
+    vector<V_NeuronSWC_unit> curSeg = curImg->tracedNeuron.seg[cur_segID].row;
+    visited.insert(cur_segID);
+    pstack.push(SegmentSWC(cur_segID, -1, curSeg.size()));
+    cur_treesize = listNeuron.size();
+    for (vector<V_NeuronSWC_unit>::iterator unitIt = curSeg.begin(); unitIt != curSeg.end(); ++unitIt)
+    {
+        NeuronSWC S;
+        S.n = unitIt->n + cur_treesize;
+//        S.type = unitIt->type;
+        S.type = test_type;
+        S.x = unitIt->x;
+        S.y= unitIt->y;
+        S.z = unitIt->z;
+        S.r = unitIt->r;
+        S.pn = unitIt==curSeg.begin()? (-1):((unitIt-1)->n + cur_treesize);
+        S.seg_id = unitIt->seg_id;
+//        S.level = unitIt->level;
+        S.level = test_type;
+        S.creatmode = unitIt->creatmode;  // Creation Mode LMG 8/10/2018
+        S.timestamp = unitIt->timestamp;  // Timestamp LMG 27/9/2018
+        S.tfresindex = unitIt->tfresindex; // TeraFly resolution index LMG 13/12/2018
+        listNeuron.append(S);
+        hashNeuron.insert(S.n, listNeuron.size()-1);
+    }
+    test_type++;
+//    v3d_msg(QString("Inserted segment: %1").arg(cur_segID));
+
+    bool new_push;
+    int parent_segID, child_segID;
+    while(!pstack.isEmpty()){
+        new_push = false;
+        /* --------- Find segments that are connected to the head or tail of input segment --------- */
+        cur_segID = pstack.top().name;
+//        v3d_msg(QString("Finding children of: %1").arg(cur_segID));
+        set<size_t> curSegEndRegionSegs;
+        curSegEndRegionSegs.clear();
+        curSegEndRegionSegs = this->segEndRegionCheck(curImg, cur_segID);
+        parent_segID = pstack.top().parent;
+        set<size_t> sibling_segs;
+        sibling_segs.clear();
+        if(parent_segID!=(-1)) sibling_segs = this->segEndRegionCheck(curImg, parent_segID);
+
+        if (!curSegEndRegionSegs.empty())
+        {
+            for (set<size_t>::iterator child_segIDIt = curSegEndRegionSegs.begin(); child_segIDIt != curSegEndRegionSegs.end(); ++child_segIDIt)
+            {
+                child_segID = *child_segIDIt;
+                if (child_segID == cur_segID) continue;
+                else if (visited.find(child_segID) != visited.end())
+                {
+                    // If already visited
+                    continue;
+                }
+                else if (sibling_segs.find(child_segID) != sibling_segs.end()){
+                    // If is the child of the same parent
+                    continue;
+                }
+                else
+                {
+                    vector<V_NeuronSWC_unit> child_seg = curImg->tracedNeuron.seg[child_segID].row;
+                    visited.insert(child_segID);
+                    pstack.push(SegmentSWC(child_segID, cur_segID, child_seg.size()));
+                    new_push = true;
+                    // Whether to reverse the child segment
+
+                    cur_treesize = listNeuron.size();
+                    for (vector<V_NeuronSWC_unit>::iterator unitIt = child_seg.begin(); unitIt != child_seg.end(); ++unitIt)
+                    {
+                        NeuronSWC S;
+                        S.n = unitIt->n + cur_treesize;
+                //        S.type = unitIt->type;
+                        S.type = test_type;
+                        S.x = unitIt->x;
+                        S.y= unitIt->y;
+                        S.z = unitIt->z;
+                        S.r = unitIt->r;
+                        S.pn = unitIt==child_seg.begin()? (-1):((unitIt-1)->n + cur_treesize);
+                        S.seg_id = unitIt->seg_id;
+//                        S.level = unitIt->level;
+                        S.level = test_type;
+                        S.creatmode = unitIt->creatmode;  // Creation Mode LMG 8/10/2018
+                        S.timestamp = unitIt->timestamp;  // Timestamp LMG 27/9/2018
+                        S.tfresindex = unitIt->tfresindex; // TeraFly resolution index LMG 13/12/2018
+                        listNeuron.append(S);
+                        hashNeuron.insert(S.n, listNeuron.size()-1);
+                    }
+                    test_type++;
+                    qDebug()<<QString("Inserted segment: %1").arg(child_segID);
+                    break;
+                }
+            }
+        }
+        if(!new_push){
+            pstack.pop();
+        }
+    }
+
+    // ----------- END: Sort tree structure by segments -------------
+
+    sorted_nt.n = 1; //only one neuron if read from a file
+    sorted_nt.listNeuron = listNeuron;
+    sorted_nt.hashNeuron = hashNeuron;
+    sorted_nt.color = XYZW(0,0,0,0); /// alpha==0 means using default neuron color, 081115
+    writeSWC_file(QString("C:/Users/pengx/Desktop/test.sorted.swc"), sorted_nt);
+
+    return;
+}
+
 // --------- Highlight the selected segment with its downstream subtree, MK, June, 2018 ---------
 void Renderer_gl1::showConnectedSegs()
 {
@@ -3928,7 +4321,8 @@ void Renderer_gl1::showConnectedSegs()
 
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
-	for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
+//    v3d_msg(QString("listNeuronTree.size(): %1").arg(listNeuronTree.size()));
+    for (V3DLONG j = 0; j < listNeuronTree.size(); j++)
 	{
 		NeuronTree* p_tree = (NeuronTree*)(&(listNeuronTree.at(j))); //curEditingNeuron-1
 		if (p_tree && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
@@ -3971,6 +4365,12 @@ void Renderer_gl1::showConnectedSegs()
 			}
 			if (nodeOnStroke.size() == 0) return;
 			/* ------- END of [Only take in the nodes within the rectangle that contains the stroke] ------- */
+//            size_t rootID = nodeOnStroke.at(0).n;
+//            v3d_msg(QString("Root ID: %1").arg(rootID));
+//            this->sort_tracedNeuron(curImg, rootID);
+//            v3d_msg("Sorting finished");
+//            return;
+
 
 			/* ------- Acquire the starting segment ------- */
 			vector<size_t> involvedSegs;
@@ -4025,18 +4425,22 @@ void Renderer_gl1::showConnectedSegs()
 			this->subtreeSegs.clear();
 			this->subtreeSegs.insert(startingSegID);
 			this->rc_findConnectedSegs(curImg, startingSegID);
+            int color_code = 0;
 			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
 			{
 				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
-				//cout << *segIt << " ";
+                cout << *segIt << " "<<curImg->tracedNeuron.seg[*segIt].row.size()<<endl;
 				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
-					unitIt->type = 0;
+                    unitIt->type = color_code;
+//                color_code++;
 				this->highlightedSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
-			}
+//                boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
+//                my_sleep(500);
+            }
 			//cout << endl;
 			/* ----------------- END of [Start finding connected segments] ----------------- */
 
-			curImg->update_3drenderer_neuron_view(w, this);
+            curImg->update_3drenderer_neuron_view(w, this);
 			//curImg->proj_trace_history_append(); // -> Highlighting is for temporary checking purpose, should not be appended to the history.
 		}
 	}
@@ -4198,7 +4602,6 @@ void Renderer_gl1::loopDetection()
 	this->segTail2segIDmap.clear();
 	for (set<size_t>::iterator it = subtreeSegs.begin(); it != subtreeSegs.end(); ++it)
 	{
-		//cout << *it << ":";
 		set<size_t> connectedSegs;
 		connectedSegs.clear();
 		if (curImg->tracedNeuron.seg[*it].row.size() <= 1)
@@ -4250,15 +4653,6 @@ void Renderer_gl1::loopDetection()
 		}
 	}
 
-	/*for (map<size_t, set<size_t> >::iterator seg2SegsIt = this->seg2SegsMap.begin(); seg2SegsIt != this->seg2SegsMap.end(); ++seg2SegsIt)
-	{
-		cout << seg2SegsIt->first << ":";
-		for (set<size_t>::iterator it = seg2SegsIt->second.begin(); it != seg2SegsIt->second.end(); ++it)
-			cout << *it << " ";
-
-		cout << endl;
-	}*/
-
 	w->progressBarPtr = new QProgressBar;
 	w->progressBarPtr->show();
 	w->progressBarPtr->move(w->x() + w->width() - w->progressBarPtr->width() / 2, w->y() + w->height() - w->progressBarPtr->height() / 2);
@@ -4272,10 +4666,10 @@ void Renderer_gl1::loopDetection()
 	this->detectedLoopsSet.clear();
 	this->finalizedLoopsSet.clear();
 	this->nonLoopErrors.clear();
-#ifdef Q_OS_WIN32
-#pragma omp parallel num_threads(numProcs)
-	{
-#endif
+//#ifdef Q_OS_WIN32
+//#pragma omp parallel num_threads(numProcs)
+//	{
+//#endif
 		for (map<size_t, set<size_t> >::iterator it = this->seg2SegsMap.begin(); it != this->seg2SegsMap.end(); ++it)
 		{
 			double progressBarValue = (double(it->first) / segSize) * 100;
@@ -4302,9 +4696,9 @@ void Renderer_gl1::loopDetection()
 			if (this->finalizedLoopsSet.size() - loopCount == 0) cout << " -- no loops detected with this starting seg." << endl;
 			else cout << this->finalizedLoopsSet.size() - loopCount << " loops detected with seg " << it->first << endl << endl;
 		}
-#ifdef Q_OS_WIN32
-	}
-#endif
+//#ifdef Q_OS_WIN32
+//	}
+//#endif
 	w->progressBarPtr->setValue(100);
 	w->progressBarPtr->setFormat(QString::number(100) + "%");
 	w->progressBarPtr->close();
@@ -4529,7 +4923,7 @@ void Renderer_gl1::rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWal
 				else
 				{
 					this->finalizedLoopsSet.insert(detectedLoopPathSet);
-					cout << "  Loop detected ----> (" << *it << ") ";
+					cout << "  Topological loop identified ----> (" << *it << ") ";
 					for (set<size_t>::iterator thisLoopIt = detectedLoopPathSet.begin(); thisLoopIt != detectedLoopPathSet.end(); ++thisLoopIt)
 						cout << *thisLoopIt << " ";
 					cout << endl << endl;
@@ -6296,15 +6690,17 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                 }
             }
             curImg->update_3drenderer_neuron_view(w, this);
-            int soma_cnt=0;
-            curImg->proj_trace_history_append();
+            QHash<QString, int>  soma_cnt;
+;           curImg->proj_trace_history_append();
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
-                if(p_listneuron->at(i).type == 1 && (i==0 || (p_listneuron->at(i).x != p_listneuron->at(i-1).x && p_listneuron->at(i).y != p_listneuron->at(i-1).y &&
-                                                              p_listneuron->at(i).z != p_listneuron->at(i-1).z)))
-                    soma_cnt++;
+                if(p_listneuron->at(i).type == 1)
+                {
+                    QString soma_str = QString("(%1,%2,%3)").arg(p_listneuron->at(i).x).arg(p_listneuron->at(i).y).arg(p_listneuron->at(i).z);
+                    soma_cnt[soma_str]++;
+                }
             }
-            if(soma_cnt>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt));
+            if(soma_cnt.size()>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt.size()));
         }
     }
 }

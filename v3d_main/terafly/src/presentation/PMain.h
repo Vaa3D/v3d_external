@@ -42,6 +42,13 @@
 #include "QGLRefSys.h"
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
+#include "fileserver.h"
+
+
+/*----------------collaborate mdoe-------------------*/
+class ManageSocket;
+class V3dR_Communicator;
+/*---------------------------------------------------*/
 
 class terafly::PMain : public QWidget
 {
@@ -356,6 +363,13 @@ class terafly::PMain : public QWidget
         bool annotationChanged;
         bool isMagnificationLocked;
 
+        bool cleanOldAutosavedFiles; // e.g. longer than 24 hours
+
+		/****************** Fragment tracing related *****************/
+		// MK, Sep, 2019
+		bool fragTracePluginInstance;
+		int globalXlb, globalXhb, globalYlb, globalYhb, globalZlb, globalZhb;
+		/*************************************************************/
 
     public slots:
 
@@ -572,7 +586,27 @@ class terafly::PMain : public QWidget
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 
-
+/*----------------collaborate mdoe-------------------*/
+public:
+        ManageSocket * managesocket;
+protected:
+        QMenu* collaborateMenu;
+        QAction* loginAction;
+        QAction* logoutAction;
+        QAction* importAction;
+        QAction* downAction;
+        QAction* loadAction;
+public slots:
+        void login();
+        void logout();
+        void import();
+        void download();
+        void load();
+        void deleteManageSocket();
+public slots:
+        void ColLoadANO(QString ANOfile);
+        //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
+/*---------------------------------------------------*/
 };
 
 #endif // PMAIN_GUI_H

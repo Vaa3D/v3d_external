@@ -417,7 +417,8 @@ FORMS += landmark_property.ui \
     dialog_update_list.ui \
     dialog_update_options.ui \
     dialog_update_downloading.ui \
-    dialog_update_checking.ui
+    dialog_update_checking.ui \
+    ../3drenderer/setVoxSize.ui
 
 
 

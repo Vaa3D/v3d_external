@@ -171,7 +171,14 @@ tf::PDialogProofreading::PDialogProofreading(tf::PMain *_parent) : QWidget(0)
     QLabel *instructionsLabel = new QLabel("TeraFly will guide you through a stoppable/resumable block-by-block scan of the entire """
                                            "volume (or a VOI) to proofread automatic cell counts or neuron reconstructions.\n\n\n"
                                            "Use the settings below and the Vaa3D and TeraFly controls (e.g. Vaa3D volume cut scrollbars, TeraFly's 3D viewer max dims) to set up your proofreading session.");
-    instructionsLabel->setWordWrap(true);
+	this->sbXlb = 1;
+	this->sbXhb = CSettings::instance()->getVOIdimH();
+	this->sbYlb = 1;
+	this->sbYhb = CSettings::instance()->getVOIdimV();
+	this->sbZlb = 1;
+	this->sbZhb = CSettings::instance()->getVOIdimD();
+		
+	instructionsLabel->setWordWrap(true);
     //instructionsLabel->setFont(QApplication::font());
     layout->addWidget(instructionsLabel);
     layout->addSpacing(20);
@@ -245,15 +252,23 @@ void tf::PDialogProofreading::updateBlocks(int)
         int VOIye_cr = CVolume::scaleCoord<int>(parent->V1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::vertical, true);
         int VOIzs_cr = CVolume::scaleCoord<int>(parent->D0_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::depth, true);
         int VOIze_cr = CVolume::scaleCoord<int>(parent->D1_sbox->value()-1, CImport::instance()->getResolutions()-1, resolution_cbox->currentIndex(), iim::depth, true);
+        //printf("VOI is X=[%d,%d], Y=[%d,%d], Z=[%d,%d]\n", VOIxs_cr, VOIxe_cr, VOIys_cr, VOIye_cr, VOIzs_cr, VOIze_cr);
 
-//        printf("VOI is X=[%d,%d], Y=[%d,%d], Z=[%d,%d]\n", VOIxs_cr, VOIxe_cr, VOIys_cr, VOIye_cr, VOIzs_cr, VOIze_cr);
+		this->xCoordl = VOIxs_cr;
+		this->xCoordh = VOIxe_cr;
+		this->yCoordl = VOIys_cr;
+		this->yCoordh = VOIye_cr;
+		this->zCoordl = VOIzs_cr;
+		this->zCoordh = VOIze_cr;
+
         int dimX   = VOIxe_cr-VOIxs_cr+1;
         int dimY   = VOIye_cr-VOIys_cr+1;
         int dimZ   = VOIze_cr-VOIzs_cr+1;
         int blockX = parent->Hdim_sbox->value();
         int blockY = parent->Vdim_sbox->value();
         int blockZ = parent->Ddim_sbox->value();
-        int ovlX  = ( overlap_sbox->value()/100.0f )*parent->Hdim_sbox->value();
+
+		int ovlX  = ( overlap_sbox->value()/100.0f )*parent->Hdim_sbox->value();
         int ovlY  = ( overlap_sbox->value()/100.0f )*parent->Vdim_sbox->value();
         int ovlZ  = ( overlap_sbox->value()/100.0f )*parent->Ddim_sbox->value();
         int tolerance = 30;
