@@ -168,6 +168,7 @@ void ManageSocket::onReadyRead()
         }else if(MessagePortExp.indexIn(manageMsg)!=-1)
         {
             messageport=MessagePortExp.cap(1);
+            qDebug()<<"messageport is "<<messageport;
             emit makeMessageSocket(ip,MessagePortExp.cap(1),name);
         }
 

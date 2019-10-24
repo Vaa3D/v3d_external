@@ -4033,7 +4033,7 @@ void PMain::login()
     else{
         qDebug()<<"send:"<<QString(userName+":login."+"\n");
         connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
+//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
 
         managesocket->write(QString(userName+":login."+"\n").toUtf8());
@@ -4044,6 +4044,7 @@ void PMain::login()
         importAction->setEnabled(true);
         downAction->setEnabled(true);
         loadAction->setEnabled(true);
+//        managesocket->deleteLater()
     }
 }
 
@@ -4122,7 +4123,7 @@ void PMain::deleteManageSocket()
 //    managesocket->deleteLater();
 //    delete managesocket;
 //    managesocket=NULL;
-//    managesocket->deleteLater();
+    managesocket->deleteLater();
     loginAction->setText("log in");
     loginAction->setEnabled(true);
     logoutAction->setEnabled(false);

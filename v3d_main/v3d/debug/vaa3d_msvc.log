@@ -1,5 +1,5 @@
-﻿Build started 2019/9/29 1:41:47.
-     1>Project "I:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" on node 2 (Build target(s)).
+﻿Build started 2019/10/23 14:49:02.
+     1>Project "D:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" on node 2 (Build target(s)).
      1>CustomBuild:
          MOC ..\neuron_annotator\gui\AngleWidget.h
          MOC ..\neuron_annotator\gui\trees\AnnotatedBranchTreeModel.h
@@ -20,7 +20,6 @@
          MOC ..\neuron_annotator\microCT\CutPlanner.h
          MOC ..\neuron_annotator\data_model\DataColorModel.h
          MOC ..\neuron_annotator\DataFlowModel.h
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
          MOC ..\neuron_annotator\utility\DataThread.h
          MOC DownloadManager.h
          MOC ..\neuron_annotator\gui\DynamicRangeTool.h
@@ -31,6 +30,7 @@
          ..\neuron_annotator\data_model\Fast3DTexture.h(0): Note: No relevant classes found. No output generated.
          MOC ..\neuron_annotator\utility\FooDebug.h
          MOC ..\neuron_annotator\gui\FragmentGalleryWidget.h
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
          MOC ..\neuron_annotator\gui\GalleryButton.h
          MOC ..\neuron_annotator\data_model\GalleryMipImages.h
          MOC ..\neuron_annotator\gui\GammaWidget.h
@@ -58,7 +58,6 @@
          MOC ..\neuron_annotator\gui\trees\OntologyTreeView.h
          MOC ..\terafly\src\presentation\PAbout.h
          MOC ..\terafly\src\presentation\PAnoToolBar.h
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
          MOC ..\terafly\src\presentation\PConverter.h
          MOC ..\terafly\src\presentation\PDialogImport.h
          MOC ..\terafly\src\presentation\PDialogProofreading.h
@@ -69,6 +68,7 @@
          MOC ..\neuron_annotator\gui\PreferencesDialog.h
          MOC ..\terafly\src\presentation\QArrowButton.h
          MOC ..\terafly\src\presentation\QGLRefSys.h
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
          MOC ..\terafly\src\presentation\QGradientBar.h
          MOC ..\terafly\src\presentation\QHelpBox.h
          MOC ..\terafly\src\presentation\QPixmapToolTip.h
@@ -92,8 +92,8 @@
          MOC dialog_keypoint_features.h
          MOC dialog_maskroi.h
          MOC dialog_rotate.h
+         MOC ..\terafly\src\presentation\fileserver.h
          MOC ..\3drenderer\gradients.h
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
          MOC import_filelist_dialog.h
          MOC import_images_tool_dialog.h
          MOC landmark_property_dialog.h
@@ -111,6 +111,7 @@
          MOC ..\mozak\m_terafly\src\presentation\m_PMain.h
          MOC ..\mozak\m_terafly\src\presentation\m_QArrowButton.h
          MOC ..\mozak\m_terafly\src\presentation\m_QGLRefSys.h
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
          MOC ..\mozak\m_terafly\src\presentation\m_QGradientBar.h
          MOC ..\mozak\m_terafly\src\presentation\m_QHelpBox.h
          MOC ..\mozak\m_terafly\src\presentation\m_QPixmapToolTip.h
@@ -124,7 +125,6 @@
          MOC v3d_application.h
          MOC v3d_core.h
          MOC ..\custom_toolbar\v3d_custom_toolbar.h
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
          MOC v3d_global_preference_dialog.h
          MOC ..\plugin_loader\v3d_plugin_loader.h
          MOC v3d_version_info.h
@@ -178,8 +178,8 @@
          RCC ..\mozak\mozak.qrc
          RCC ..\neuron_annotator\resources.qrc
          RCC v3d.qrc
-     1>Done Building Project "I:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" (Build target(s)) -- FAILED.
+     1>Done Building Project "D:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" (Build target(s)) -- FAILED.
 
 Build FAILED.
 
-Time Elapsed 00:00:58.02
+Time Elapsed 00:00:49.09
