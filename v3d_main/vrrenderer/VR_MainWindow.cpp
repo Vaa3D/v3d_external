@@ -507,8 +507,10 @@ void VR_MainWindow::onReadyRead() {
 
 void VR_MainWindow::onConnected() {
 
-    VR_Communicator->socket->write(QString("/login:" +userName + "\n").toUtf8());
+    float m_globalScale=pMainApplication->get_mglobalScal();
 
+    VR_Communicator->socket->write(QString("/login:" +userName + "\n").toUtf8());
+    VR_Communicator->socket->write(QString("/global:" +QString("%1").arg(m_globalScale) +"\n").toUtf8());
 }
 
 void VR_MainWindow::onDisconnected() {

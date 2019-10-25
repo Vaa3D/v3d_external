@@ -266,6 +266,8 @@ public:
 	XYZ CollaborationCurrentRes;
 	XYZ CollaborationTargetMarkerRes;
 	XYZ collaborationTargetdelcurveRes;
+
+
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -591,6 +593,9 @@ private:
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();
+
+public:
+        float get_mglobalScal()const;
 };
 
 //Help Function

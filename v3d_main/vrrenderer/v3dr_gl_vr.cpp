@@ -8330,3 +8330,8 @@ void CMainApplication::bindTexturePara()
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 }
+
+float CMainApplication::get_mglobalScal() const
+{
+    return m_globalScale;
+}
