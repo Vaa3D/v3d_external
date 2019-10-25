@@ -238,6 +238,7 @@ public:
 	void SetupRenderModelForTrackedDevice( vr::TrackedDeviceIndex_t unTrackedDeviceIndex );
 	CGLRenderModel *FindOrLoadRenderModel( const char *pchRenderModelName );
 
+	float GetGlobalScale();
 public:
 
 	MainWindow *mainwindow;

@@ -584,6 +584,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		pMainApplication->Shutdown();
 		return 0;
 	}
+	SendVRconfigInfo();
 	RunVRMainloop(zoomPOS);
 	//pMainApplication->Shutdown();
 		qDebug()<<"Now quit VR";
@@ -619,6 +620,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	qDebug()<<"get into RunMainloop";
 	bool bQuit = false;
 	int sendHMDPOScout = 0;
+
+
 	while(!bQuit)
 	{
 	//update agents position if necessary
@@ -862,6 +865,14 @@ QString VR_MainWindow::ConvertsendCoords(QString coords)
 	z*=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
 	return QString("%1 %2 %3").arg(x).arg(y).arg(z);
 }
+
+void VR_MainWindow::SendVRconfigInfo()
+{
+	float globalscale = pMainApplication->GetGlobalScale();
+	QString QSglobalscale = QString("%1").arg(globalscale); 
+	VR_Communicator->socket->write(QString("/Scale:" +  userName+" "+QSglobalscale + "\n").toUtf8());
+}
+
 XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 {
 	//QString str1 = coords.section(' ',0, 0);  // str == "bin/myapp"
