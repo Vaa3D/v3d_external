@@ -52,6 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_mainwindow.h"
 #include "../terafly/src/control/CPlugin.h"
 #include "../terafly/src/presentation/PMain.h"
+#include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
 #include "renderer.h"
@@ -1845,7 +1846,6 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
 	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
 	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-	cout<<"vr listNeuronTrees.size()"<<listNeuronTrees->size();
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
     this->getMainWindow()->hide();
 	//process3Dwindow(false);
@@ -1858,22 +1858,24 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
-		if(TeraflyCommunicator)
+		if(VRClientON==false)
 		{
+			VRClientON = true;
 			if(myvrwin)
 				delete myvrwin;
 			myvrwin = 0;
-			myvrwin = new VR_MainWindow(TeraflyCommunicator);
+			myvrwin = new VR_MainWindow();
 			myvrwin->setWindowTitle("VR MainWindow");
-			//bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
-			
-
+			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
+			VRClientON = linkerror;
+			if(!linkerror)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
-			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,TeraflyCommunicator,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,CollaborationCreatorRes,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
 
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -1894,7 +1896,6 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		}
 		else
 		{
-			qDebug()<<"can't connect to server .unknown wrong ";
 			v3d_msg("The ** client is running.Failed to start VR client.");
 			this->getMainWindow()->show();
 		}
