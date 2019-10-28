@@ -4120,7 +4120,7 @@ void PMain::deleteManageSocket()
 {
     qDebug()<<"delete managesocket";
     qDebug()<<managesocket;
-//    managesocket->deleteLater();
+    managesocket->deleteLater();
 //    delete managesocket;
 //    managesocket=NULL;
     managesocket->deleteLater();

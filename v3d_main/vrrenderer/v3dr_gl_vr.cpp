@@ -3543,7 +3543,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				{
 					ClearUndoRedoVectors();
 					IsmarkerValid = RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
-					if(!IsmarkerValid)
+					cout<<"m_v4DevicePose.x"<<m_v4DevicePose.x<<"m_v4DevicePose.y"<<m_v4DevicePose.y<<"m_v4DevicePose.z"<<m_v4DevicePose.z<<endl;
+					cout<<"img4d->getYDim()"<<img4d->getYDim()<<"img4d->getXDim()"<<img4d->getXDim()<<"img4d->getZDim()"<<img4d->getZDim()<<endl;
+
+					bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
+						||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
+						||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
+
+					if((!IsmarkerValid)&&(!IsOutofBounds))
 					{
 						SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
 					}
@@ -5827,6 +5834,7 @@ void CMainApplication::SetupGlobalMatrix()
 	qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
 	m_globalScale = 1 / maxD * 2; // these numbers are related to room size
+	
 	float trans_x = 0.6 ;
 	float trans_y = 1.5 ;
 	float trans_z = 0.4 ;
@@ -6977,6 +6985,11 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 	return pRenderModel;
 }
 
+
+float CMainApplication::GetGlobalScale()
+{
+	return m_globalScale;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Create/destroy GL a Render Model for a single tracked device
