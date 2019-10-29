@@ -350,6 +350,9 @@ public:
     QTime triviewTimer;  //added on 20120702.
     bool b_triviewTimerON;
 
+	//collaboration 20191028 liqi
+	bool b_addnewSWC;
+
 	bool compute_rgn_stat(LocationSimple & pt, int channo);
 	void loadLandmarkFromFile();
 	void saveLandmarkToFile();

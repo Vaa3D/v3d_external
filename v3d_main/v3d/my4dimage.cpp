@@ -404,7 +404,7 @@ My4DImage::My4DImage()
 	trace_z_thickness=1; //090727 RZC: weight for z-distance of graph
 
     b_triviewTimerON = false;
-
+	b_addnewSWC = false;
 	connect(this, SIGNAL(focusFeatureViewTextUpdated()), this, SLOT(setText2FocusPointFeatureWidget()) );
 }
 

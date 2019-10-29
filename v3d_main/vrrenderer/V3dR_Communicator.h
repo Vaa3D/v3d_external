@@ -88,6 +88,9 @@ public:
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
 	void MsgToV_NeuronSWC(QString msg);
+
+public:
+	float VR_globalScale;//used to 
     QString userName;
 	std::vector<Agent> Agents;
 //	ManageSocket * managesocket;
