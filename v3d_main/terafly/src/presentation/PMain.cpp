@@ -4098,8 +4098,8 @@ void PMain::load()
     {
         qDebug()<<"-----------------load annotation----------";
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
-
-        cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
+		Communicator = new V3dR_Communicator;
+        cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
                 cur_win->getGLWidget()->TeraflyCommunicator,
@@ -4108,7 +4108,7 @@ void PMain::load()
                 managesocket,SLOT(messageMade()));
         connect(managesocket,SIGNAL(disconnected()),
                 cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));//注意，可能需要修改
+                SLOT(deleteLater()));//注意，可能需要修�?
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));

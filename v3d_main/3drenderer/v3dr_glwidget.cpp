@@ -132,7 +132,8 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 	this->data_title = title;
 	this->renderer = 0;
     this->show_progress_bar = true;
-
+	terafly::PMain& pMain = *(terafly::PMain::getInstance());
+	this->TeraflyCommunicator = pMain.Communicator;
 	///////////////////////////////////////////////////////////////
 	init_members();
 	///////////////////////////////////////////////////////////////
