@@ -6593,7 +6593,11 @@ update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
 	if(b_addnewSWC)
 	{
 		if(tracedNeuron.seg.size()>0)
+		{
 			glwidget->TeraflyCommunicator->UpdateSendPoolNTList(tracedNeuron.seg.back());
+			b_addnewSWC = false;
+		}
+
 	}
 	//if(this->tracedNeuron.seg.size()>0)
 	//for(int i = 0;i<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row.size();i++)

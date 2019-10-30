@@ -881,6 +881,7 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     cur_seg.name = qPrintable(tmpss);
     cur_seg.b_linegraph=true; //donot forget to do this
     tracedNeuron.append(cur_seg);
+	b_addnewSWC = true;
     tracedNeuron.name = TRACED_NAME;
     tracedNeuron.file = TRACED_FILE;
 
