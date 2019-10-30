@@ -292,12 +292,14 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 
 void V3dR_Communicator::onReadySend(QString send_MSG) {
 
+    qDebug()<<endl<<send_MSG<<endl;
     if (!send_MSG.isEmpty()) {
         if((send_MSG!="exit")&&(send_MSG!="quit"))
         {
 
             socket->write(QString(send_MSG+"\n").toUtf8());
-            qDebug()<<"send:"<<send_MSG;
+            qDebug()<<"111111send:\n"<<send_MSG;
+
         }
         else
         {
@@ -578,7 +580,8 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 	messageBuff += seg.comment;
 	messageBuff+=" ";
 	messageBuff += seg.file;
-	messageBuff+=" ";
+//	messageBuff+=" ";
+    messageBuff+="_";
 
 	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
 	{
@@ -586,9 +589,15 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 		char packetbuff[300];
 
 		
-		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",curSWCunit.n,curSWCunit.type,curSWCunit.x,curSWCunit.y,curSWCunit.z,curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,curSWCunit.tfresindex);
+        sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
+       curSWCunit.n,curSWCunit.type,curSWCunit.x,curSWCunit.y,curSWCunit.z,
+       curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
+                curSWCunit.tfresindex);
+
 		messageBuff +=packetbuff;
 	}
+
+
 
 	QString str=QString::fromStdString(messageBuff);
 	return str;
