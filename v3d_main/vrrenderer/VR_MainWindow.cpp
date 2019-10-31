@@ -883,7 +883,7 @@ void VR_MainWindow::SendVRconfigInfo()
 {
 	float globalscale = pMainApplication->GetGlobalScale();
 	QString QSglobalscale = QString("%1").arg(globalscale); 
-	VR_Communicator->socket->write(QString("/Scale:" +  userName+" "+QSglobalscale + "\n").toUtf8());
+    VR_Communicator->socket->write(QString("/scale:" +  QSglobalscale + "\n").toUtf8());
 }
 
 XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)

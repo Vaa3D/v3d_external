@@ -421,6 +421,12 @@ void V3dR_Communicator::onReadyRead() {
 
             QString username=deletecurveRex.cap(1);
             QString delPOS=deletecurveRex.cap(2).trimmed();
+
+
+
+
+
+
 		//	qDebug() << "------------"<<line;
 		//	QStringList delMSGs = deletecurveRex.cap(1).split(" ");
 		//	if(delMSGs.size()<2) 
@@ -534,6 +540,15 @@ void V3dR_Communicator::onReadyRead() {
             QString user=messageRex.cap(1);
             QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
+//            chno
+//                    createmode
+
+            vector <XYZ> LOC;//point (x,y,z) list
+            for (int i=0;i<curvePOSList.size();i++)//3,4,5
+            {
+                QStringList pointMSG=curvePOSList.at(i).split(" ");
+                LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
+            }
 
             //			QStringList MSGs = messageRex.cap(1).split(" ");
 //			for(int i=0;i<MSGs.size();i++)
