@@ -352,6 +352,8 @@ public:
 
 	//collaboration 20191028 liqi
 	bool b_addnewSWC;
+	int cur_chno;
+	double cur_createmode;
 
 	bool compute_rgn_stat(LocationSimple & pt, int channo);
 	void loadLandmarkFromFile();

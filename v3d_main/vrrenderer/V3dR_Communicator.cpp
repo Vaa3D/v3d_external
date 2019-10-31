@@ -177,29 +177,29 @@ void ManageSocket::onReadyRead()
 
 void ManageSocket::send1(QListWidgetItem *item)
 {
-    FileServer *fileserver=new FileServer;
-    if(fileserver->listen(QHostAddress::Any,9998))
-    {
-        qDebug()<<"88888";
-        qDebug()<<item->text();
-        this->write(QString(item->text()+":choose1."+"\n").toUtf8());
-        qDebug()<<QString(QString(item->text()+":choose1."));
-    }
+	FileServer *fileserver=new FileServer;
+	if(fileserver->listen(QHostAddress::Any,9998))
+	{
+		qDebug()<<"88888";
+		qDebug()<<item->text();
+		this->write(QString(item->text()+":choose1."+"\n").toUtf8());
+		qDebug()<<QString(QString(item->text()+":choose1."));
+	}
 }
 
 void ManageSocket::send2(QListWidgetItem *item)
 {
-    loadfilename.clear();FileRec=0;
-        FileServer *fileserver=new FileServer;
-        connect(fileserver,SIGNAL(receivedfile(QString)),this,SLOT(receivefile(QString)));
-        if(fileserver->listen(QHostAddress::Any,9998))
-        {
-            qDebug()<<"88888";
-            qDebug()<<item->text();
-            loadfilename=item->text();
-            this->write(QString(item->text()+":choose2."+"\n").toUtf8());
-            qDebug()<<QString(QString(item->text()+":choose2."));
-        }
+	loadfilename.clear();FileRec=0;
+	FileServer *fileserver=new FileServer;
+	connect(fileserver,SIGNAL(receivedfile(QString)),this,SLOT(receivefile(QString)));
+	if(fileserver->listen(QHostAddress::Any,9998))
+	{
+		qDebug()<<"88888";
+		qDebug()<<item->text();
+		loadfilename=item->text();
+		this->write(QString(item->text()+":choose2."+"\n").toUtf8());
+		qDebug()<<QString(QString(item->text()+":choose2."));
+	}
 }
 
 void ManageSocket::messageMade()
@@ -573,6 +573,7 @@ void V3dR_Communicator::Collaborationaskmessage()
 
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 {
+	char extramsg[300];
 	string messageBuff="";
 	//add seg extra msg
 	messageBuff += seg.name;
@@ -580,9 +581,8 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 	messageBuff += seg.comment;
 	messageBuff+=" ";
 	messageBuff += seg.file;
-//	messageBuff+=" ";
-    messageBuff+="_";
-
+	messageBuff+=" ";
+	sprintf(extramsg,"%d %5.3f_",cur_chno,cur_createmode);
 	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
 	{
 		V_NeuronSWC_unit curSWCunit = seg.row[i];

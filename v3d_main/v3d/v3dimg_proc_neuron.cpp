@@ -882,6 +882,9 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     cur_seg.b_linegraph=true; //donot forget to do this
     tracedNeuron.append(cur_seg);
 	b_addnewSWC = true;
+	cur_chno = chno;
+	cur_createmode = creatmode;
+
     tracedNeuron.name = TRACED_NAME;
     tracedNeuron.file = TRACED_FILE;
 

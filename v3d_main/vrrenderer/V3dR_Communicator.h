@@ -95,6 +95,8 @@ public:
 	std::vector<Agent> Agents;
 //	ManageSocket * managesocket;
 	 QTcpSocket* socket;
+	 double cur_createmode;
+	 int cur_chno;
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
 	//void RunVRMainloop();
@@ -110,7 +112,7 @@ signals:
     void messageMade();
 private:
 	
-
+	
 
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
