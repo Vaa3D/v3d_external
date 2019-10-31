@@ -4173,23 +4173,25 @@ void PMain::ColLoadANO(QString ANOfile)
         {
             tmp=anoExp.cap(1);
         }
-        QFile *f = new QFile(tmp+".ano");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
 
-        f = new QFile(tmp+".ano.eswc");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
+        //删除加载的文件
+//        QFile *f = new QFile(tmp+".ano");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
 
-        f = new QFile(tmp+".ano.apo");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
+//        f = new QFile(tmp+".ano.eswc");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
+
+//        f = new QFile(tmp+".ano.apo");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
 
 
     }
