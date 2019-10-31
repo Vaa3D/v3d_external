@@ -369,19 +369,20 @@ void VR_MainWindow::onReadyRead() {
 			// pMainApplication->MergeNeuronTrees();
         }
         else if (markerRex.indexIn(line) != -1) {
+            QString user = markerRex.cap(1);
             QStringList markerMSGs = markerRex.cap(2).split(" ");
 			if(markerMSGs.size()<4) 
 			{
 					qDebug()<<"size < 4";
 					return;
 			}
-            QString user = markerRex.cap(1);
-            float mx = markerMSGs.at(1).toFloat();
-			float my = markerMSGs.at(2).toFloat();
-			float mz = markerMSGs.at(3).toFloat();
-			int resx = markerMSGs.at(4).toFloat();
-			int resy = markerMSGs.at(5).toFloat();
-			int resz = markerMSGs.at(6).toFloat();	
+
+            float mx = markerMSGs.at(0).toFloat();
+            float my = markerMSGs.at(1).toFloat();
+            float mz = markerMSGs.at(2).toFloat();
+            int resx = markerMSGs.at(3).toFloat();
+            int resy = markerMSGs.at(4).toFloat();
+            int resz = markerMSGs.at(5).toFloat();
 			qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
 			qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
 			pMainApplication->CollaborationTargetMarkerRes = XYZ(resx,resy,resz);
@@ -472,7 +473,7 @@ void VR_MainWindow::onReadyRead() {
             qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
 
             QString user=messageRex.cap(1);
-            QStringList MSGs = messageRex.cap(2).split("_");//点信息的列表  （seg头信息）_(点信息)_(点信息).....
+            QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 //            for(int i=0;i<MSGs.size();i++)
 //            {
 //                qDebug()<<MSGs.at(i)<<endl;
@@ -480,7 +481,7 @@ void VR_MainWindow::onReadyRead() {
             //QString user = MSGs.at(0);
             qDebug()<<MSGs[0];
             QString message;
-            for(int i=1;i<MSGs.size();i++)
+            for(int i=0;i<MSGs.size();i++)
             {
                 message +=MSGs.at(i);
                 if(i != MSGs.size()-1)

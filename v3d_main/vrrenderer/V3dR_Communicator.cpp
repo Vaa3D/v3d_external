@@ -318,9 +318,9 @@ void V3dR_Communicator::onReadyRead() {
 	QRegExp systemRex("^/system:(.*)$");
 	QRegExp hmdposRex("^/hmdpos:(.*)$");
 	QRegExp colorRex("^/color:(.*)$");
-	QRegExp deletecurveRex("^/del_curve:(.*)$");
-	QRegExp markerRex("^/marker:(.*)$");
-	QRegExp delmarkerRex("^/del_marker:(.*)$");
+    QRegExp deletecurveRex("^/del_curve:(.*)__(.*)$");
+    QRegExp markerRex("^/marker:(.*)__(.*)$");
+    QRegExp delmarkerRex("^/del_marker:(.*)__(.*)$");
 	QRegExp dragnodeRex("^/drag_node:(.*)$");
 	QRegExp creatorRex("^/creator:(.*)$");
     QRegExp messageRex("^/seg:(.*)__(.*)$");
@@ -417,6 +417,10 @@ void V3dR_Communicator::onReadyRead() {
 			//}
 		}
 		else if (deletecurveRex.indexIn(line) != -1) {
+
+
+            QString username=deletecurveRex.cap(1);
+            QString delPOS=deletecurveRex.cap(2).trimmed();
 		//	qDebug() << "------------"<<line;
 		//	QStringList delMSGs = deletecurveRex.cap(1).split(" ");
 		//	if(delMSGs.size()<2) 
@@ -473,19 +477,20 @@ void V3dR_Communicator::onReadyRead() {
 		//	// pMainApplication->MergeNeuronTrees();
 		}
 		else if (markerRex.indexIn(line) != -1) {
-			QStringList markerMSGs = markerRex.cap(1).split(" ");
-			if(markerMSGs.size()<4) 
+
+            QString user=markerRex.cap(1);
+            QStringList markerMSGs = markerRex.cap(2).split(" ");
+            if(markerMSGs.size()<3)
 			{
 				qDebug()<<"size < 4";
 				return;
 			}
-			QString user = markerMSGs.at(0);
-			float mx = markerMSGs.at(1).toFloat();
-			float my = markerMSGs.at(2).toFloat();
-			float mz = markerMSGs.at(3).toFloat();
-			int resx = markerMSGs.at(4).toFloat();
-			int resy = markerMSGs.at(5).toFloat();
-			int resz = markerMSGs.at(6).toFloat();	
+            float mx = markerMSGs.at(0).toFloat();
+            float my = markerMSGs.at(1).toFloat();
+            float mz = markerMSGs.at(2).toFloat();
+            int resx = markerMSGs.at(3).toFloat();
+            int resy = markerMSGs.at(4).toFloat();
+            int resz = markerMSGs.at(5).toFloat();
 			qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
 			qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
 			/*pMainApplication->CollaborationTargetMarkerRes = XYZ(resx,resy,resz);
@@ -501,13 +506,14 @@ void V3dR_Communicator::onReadyRead() {
 
 		}
 		else if (delmarkerRex.indexIn(line) != -1) {
-			QStringList delmarkerPOS = delmarkerRex.cap(1).split(" ");
+            QString user = delmarkerRex.cap(1);
+            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
 			if(delmarkerPOS.size()<4) 
 			{
-				qDebug()<<"size < 4";
+                qDebug()<<"size < 3";
 				return;
 			}
-			QString user = delmarkerPOS.at(0);
+
 			float mx = delmarkerPOS.at(1).toFloat();
 			float my = delmarkerPOS.at(2).toFloat();
 			float mz = delmarkerPOS.at(3).toFloat();
@@ -526,19 +532,7 @@ void V3dR_Communicator::onReadyRead() {
 		else if (messageRex.indexIn(line) != -1) {
 
             QString user=messageRex.cap(1);
-            QStringList MSGs = messageRex.cap(2).split("_");//点信息的列表  （seg头信息）_(点信息)_(点信息).....
-            QString message;
-            for(int i=1;i<MSGs.size();i++)
-            {
-                message +=MSGs.at(i);
-                if(i != MSGs.size()-1)
-                    message +=" ";
-
-
-                qDebug()<<MSGs.at(i)<<endl;
-            }
-
-            /////////
+            QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
 
             //			QStringList MSGs = messageRex.cap(1).split(" ");
@@ -618,9 +612,6 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 
 		messageBuff +=packetbuff;
 	}
-
-
-
 	QString str=QString::fromStdString(messageBuff);
 	return str;
 }
