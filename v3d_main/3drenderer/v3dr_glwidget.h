@@ -122,6 +122,8 @@ public:
 
 	static bool resumeCollaborationVR;
 #endif
+	//Collaboration mode
+	void SetupCollaborateInfo();
 //protected:
 	virtual void choiceRenderer();
 	virtual void settingRenderer(); // for setting the default renderer state when initialize

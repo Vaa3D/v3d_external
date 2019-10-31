@@ -262,7 +262,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         downAction->setEnabled(false);
         loadAction->setEnabled(false);
         managesocket=0;
-
+		Communicator=nullptr;
     /*---------------------------------------------------*/
 
     /* ------------------------- "Options" menu -------------------------- */
@@ -4110,6 +4110,10 @@ void PMain::load()
                 cur_win->getGLWidget()->TeraflyCommunicator,
                 SLOT(deleteLater()));//注意，可能需要修�?
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
+		//Set up Communicator Resolution info  for  convert Croods
+		int maxresindex = CImport::instance()->getResolutions()-1;
+		VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
+		Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;

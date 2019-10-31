@@ -134,6 +134,8 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
     this->show_progress_bar = true;
 	terafly::PMain& pMain = *(terafly::PMain::getInstance());
 	this->TeraflyCommunicator = pMain.Communicator;
+	SetupCollaborateInfo();
+	
 	///////////////////////////////////////////////////////////////
 	init_members();
 	///////////////////////////////////////////////////////////////
@@ -205,6 +207,17 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 //////////////////////////////////////////////////////
 void V3dR_GLWidget::deleteRenderer() {makeCurrent(); DELETE_AND_ZERO(renderer);} //090710 RZC: to delete renderer before ~V3dR_GLWidget()
 void V3dR_GLWidget::createRenderer() {makeCurrent(); deleteRenderer(); initializeGL();} //090710 RZC: to create renderer at any time
+
+void V3dR_GLWidget::SetupCollaborateInfo()
+{
+	QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
+	if(rx.indexIn(data_title) != -1 && (TeraflyCommunicator !=nullptr))
+	{
+		TeraflyCommunicator->ImageStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
+		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
+
+	}
+}
 
 void V3dR_GLWidget::choiceRenderer()
 {

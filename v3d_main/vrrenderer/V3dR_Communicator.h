@@ -97,6 +97,12 @@ public:
 	 QTcpSocket* socket;
 	 double cur_createmode;
 	 int cur_chno;
+
+	 XYZ ImageMaxRes;
+	 XYZ ImageCurRes;
+	 XYZ ImageStartPoint;
+
+
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
 	//void RunVRMainloop();
@@ -110,7 +116,9 @@ private slots:
     void onDisconnected();
 signals:
     void messageMade();
+
 private:
+	
 	
 	
 
@@ -122,6 +130,9 @@ private:
 	int NTNumReceieved;
 	int NTNumcurrentUser;
     quint64 nextblocksize;
+private:
+	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
+	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
 };
 
 

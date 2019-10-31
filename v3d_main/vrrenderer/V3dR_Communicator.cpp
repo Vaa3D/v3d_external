@@ -600,15 +600,22 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 		char packetbuff[300];
 
         if(i!=seg.row.size()-1)
-        sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
-       curSWCunit.n,curSWCunit.type,curSWCunit.x,curSWCunit.y,curSWCunit.z,
-       curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
-                curSWCunit.tfresindex);
+		{
+			XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+			sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
+				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
+				curSWCunit.tfresindex);
+		}       
         else
-            sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
-           curSWCunit.n,curSWCunit.type,curSWCunit.x,curSWCunit.y,curSWCunit.z,
-           curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
-                    curSWCunit.tfresindex);
+		{
+			XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+			sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
+				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
+				curSWCunit.tfresindex);
+		}
+           
 
 		messageBuff +=packetbuff;
 	}
@@ -657,6 +664,28 @@ void V3dR_Communicator::onDisconnected() {
 
 }
 
+
+XYZ V3dR_Communicator::ConvertGlobaltoLocalCroods(double x,double y,double z)
+{
+	x/=(ImageMaxRes.x/ImageCurRes.x);
+	y/=(ImageMaxRes.y/ImageCurRes.y);
+	z/=(ImageMaxRes.z/ImageCurRes.z);
+	x-=(ImageStartPoint.x-1);
+	y-=(ImageStartPoint.y-1);
+	z-=(ImageStartPoint.z-1);
+	return XYZ(x,y,z);
+}
+
+XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
+{
+	x+=(ImageStartPoint.x-1);
+	y+=(ImageStartPoint.y-1);
+	z+=(ImageStartPoint.z-1);
+	x*=(ImageMaxRes.x/ImageCurRes.x);
+	y*=(ImageMaxRes.y/ImageCurRes.y);
+	z*=(ImageMaxRes.z/ImageCurRes.z);
+	return XYZ(x,y,z);
+}
 
 //void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
 //{	
