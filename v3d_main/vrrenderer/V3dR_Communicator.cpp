@@ -10,7 +10,7 @@
 
 
 
-
+std::vector<Agent> Agents(0);
 FileSocket_send::FileSocket_send(QString ip,QString port,QString anofile_path,QObject *parent)
     :QTcpSocket (parent)
 {
@@ -323,13 +323,13 @@ void V3dR_Communicator::onReadyRead() {
 	QRegExp delmarkerRex("^/del_marker:(.*)$");
 	QRegExp dragnodeRex("^/drag_node:(.*)$");
 	QRegExp creatorRex("^/creator:(.*)$");
-	QRegExp messageRex("^/seg:(.*)$");
+    QRegExp messageRex("^/seg:(.*)__(.*)$");
 
 
 	while (socket->canReadLine()) {
 		QString line = QString::fromUtf8(socket->readLine()).trimmed();
 
-		qDebug()<<"receive :"<<line;
+        qDebug()<<"receive : in Terafly"<<line;
 
 		if (usersRex.indexIn(line) != -1) {
 			QStringList users = usersRex.cap(1).split(",");
@@ -524,23 +524,40 @@ void V3dR_Communicator::onReadyRead() {
 		}
 		//dragnodeRex
 		else if (messageRex.indexIn(line) != -1) {
-			QStringList MSGs = messageRex.cap(1).split(" ");
-			for(int i=0;i<MSGs.size();i++)
-			{
-				qDebug()<<MSGs.at(i)<<endl;
-			}
-			QString user = MSGs.at(0);
-			QString message;
-			for(int i=1;i<MSGs.size();i++)
-			{
-				message +=MSGs.at(i);
-				if(i != MSGs.size()-1)
-					message +=" ";
+
+            QString user=messageRex.cap(1);
+            QStringList MSGs = messageRex.cap(2).split("_");//点信息的列表  （seg头信息）_(点信息)_(点信息).....
+            QString message;
+            for(int i=1;i<MSGs.size();i++)
+            {
+                message +=MSGs.at(i);
+                if(i != MSGs.size()-1)
+                    message +=" ";
 
 
-				qDebug()<<MSGs.at(i)<<endl;
-			}
-			qDebug()<<"user, "<<user<<" said: "<<message;
+                qDebug()<<MSGs.at(i)<<endl;
+            }
+
+            /////////
+
+
+            //			QStringList MSGs = messageRex.cap(1).split(" ");
+//			for(int i=0;i<MSGs.size();i++)
+//			{
+//				qDebug()<<MSGs.at(i)<<endl;
+//			}
+//			QString user = MSGs.at(0);
+//			QString message;
+//			for(int i=1;i<MSGs.size();i++)
+//			{
+//				message +=MSGs.at(i);
+//				if(i != MSGs.size()-1)
+//					message +=" ";
+
+
+//				qDebug()<<MSGs.at(i)<<endl;
+//			}
+//			qDebug()<<"user, "<<user<<" said: "<<message;
 			
 			
 		}
@@ -588,11 +605,16 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 		V_NeuronSWC_unit curSWCunit = seg.row[i];
 		char packetbuff[300];
 
-		
+        if(i!=seg.row.size()-1)
         sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
        curSWCunit.n,curSWCunit.type,curSWCunit.x,curSWCunit.y,curSWCunit.z,
        curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
                 curSWCunit.tfresindex);
+        else
+            sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
+           curSWCunit.n,curSWCunit.type,curSWCunit.x,curSWCunit.y,curSWCunit.z,
+           curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
+                    curSWCunit.tfresindex);
 
 		messageBuff +=packetbuff;
 	}

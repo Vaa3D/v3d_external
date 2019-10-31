@@ -10,7 +10,8 @@
 #include <sstream>
 #include <math.h>
 
-std::vector<Agent> Agents;
+extern std::vector<Agent> Agents;
+//std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QWidget()
 {
@@ -145,11 +146,17 @@ void VR_MainWindow::onReadySend()
 		CollaborationSendPool.erase(CollaborationSendPool.begin());
 		if((send_MSG!="exit")&&(send_MSG!="quit"))
 		{
-			VR_Communicator->socket->write(QString("/seg:" + send_MSG + "\n").toUtf8());
+//			VR_Communicator->socket->write(QString("/seg:" + send_MSG + "\n").toUtf8());
+//            qDebug()<<"\nin mainwindow onreadysend\n";
+
+
+            VR_Communicator->onReadySend("/seg:" + send_MSG);
 		}
 		else
 		{
-			socket->write(QString("/say: GoodBye~\n").toUtf8());
+//			socket->write(QString("/say: GoodBye~\n").toUtf8());
+
+            VR_Communicator->onReadySend(QString("/say: GoodBye~"));
 			socket->disconnectFromHost();
 			return;
 		}
@@ -167,18 +174,18 @@ void VR_MainWindow::onReadyRead() {
     QRegExp systemRex("^/system:(.*)$");
 	QRegExp hmdposRex("^/hmdpos:(.*)$");
 	QRegExp colorRex("^/color:(.*)$");
-	QRegExp deletecurveRex("^/del_curve:(.*)$");
-	QRegExp markerRex("^/marker:(.*)$");
-	QRegExp delmarkerRex("^/del_marker:(.*)$");
+    QRegExp deletecurveRex("^/del_curve:(.*)__(.*)$");
+    QRegExp markerRex("^/marker:(.*)__(.*)$");
+    QRegExp delmarkerRex("^/del_marker:(.*)__(.*)$");
 	QRegExp dragnodeRex("^/drag_node:(.*)$");
 	QRegExp creatorRex("^/creator:(.*)$");
-    QRegExp messageRex("^/seg:(.*)$");
+    QRegExp messageRex("^/seg:(.*)__(.*)$");
 	
 
     while (VR_Communicator->socket->canReadLine()) {
         QString line = QString::fromUtf8(VR_Communicator->socket->readLine()).trimmed();
 
-        qDebug()<<"receive :"<<line;
+        qDebug()<<"receive : in VR\n"<<line;
 
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
@@ -307,19 +314,19 @@ void VR_MainWindow::onReadyRead() {
 		}
         else if (deletecurveRex.indexIn(line) != -1) {
 			qDebug() << "------------"<<line;
-			QStringList delMSGs = deletecurveRex.cap(1).split(" ");
+            QStringList delMSGs = deletecurveRex.cap(2).split(" ");
 			if(delMSGs.size()<2) 
 			{
 					qDebug()<<"size < 2";
 					return;
 			}
-            QString user = delMSGs.at(0);
-            float dx = delMSGs.at(1).toFloat();
-			float dy = delMSGs.at(2).toFloat();
-			float dz = delMSGs.at(3).toFloat();
-            float resx = delMSGs.at(4).toFloat();
-			float resy = delMSGs.at(5).toFloat();
-			float resz = delMSGs.at(6).toFloat();
+            QString user = deletecurveRex.cap(1);
+            float dx = delMSGs.at(0).toFloat();
+            float dy = delMSGs.at(1).toFloat();
+            float dz = delMSGs.at(2).toFloat();
+            float resx = delMSGs.at(3).toFloat();
+            float resy = delMSGs.at(4).toFloat();
+            float resz = delMSGs.at(5).toFloat();
 
 			pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);
 			
@@ -362,13 +369,13 @@ void VR_MainWindow::onReadyRead() {
 			// pMainApplication->MergeNeuronTrees();
         }
         else if (markerRex.indexIn(line) != -1) {
-			QStringList markerMSGs = markerRex.cap(1).split(" ");
+            QStringList markerMSGs = markerRex.cap(2).split(" ");
 			if(markerMSGs.size()<4) 
 			{
 					qDebug()<<"size < 4";
 					return;
 			}
-            QString user = markerMSGs.at(0);
+            QString user = markerRex.cap(1);
             float mx = markerMSGs.at(1).toFloat();
 			float my = markerMSGs.at(2).toFloat();
 			float mz = markerMSGs.at(3).toFloat();
@@ -407,13 +414,13 @@ void VR_MainWindow::onReadyRead() {
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
-			QStringList delmarkerPOS = delmarkerRex.cap(1).split(" ");
+            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
 			if(delmarkerPOS.size()<4) 
 			{
 					qDebug()<<"size < 4";
 					return;
 			}
-            QString user = delmarkerPOS.at(0);
+            QString user = delmarkerRex.cap(1);
             float mx = delmarkerPOS.at(1).toFloat();
 			float my = delmarkerPOS.at(2).toFloat();
 			float mz = delmarkerPOS.at(3).toFloat();
@@ -463,12 +470,15 @@ void VR_MainWindow::onReadyRead() {
 		//dragnodeRex
         else if (messageRex.indexIn(line) != -1) {
             qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
-            QStringList MSGs = messageRex.cap(1).split(" ");
-            for(int i=0;i<MSGs.size();i++)
-            {
-                qDebug()<<MSGs.at(i)<<endl;
-            }
-			QString user = MSGs.at(0);
+
+            QString user=messageRex.cap(1);
+            QStringList MSGs = messageRex.cap(2).split("_");//点信息的列表  （seg头信息）_(点信息)_(点信息).....
+//            for(int i=0;i<MSGs.size();i++)
+//            {
+//                qDebug()<<MSGs.at(i)<<endl;
+//            }
+            //QString user = MSGs.at(0);
+            qDebug()<<MSGs[0];
             QString message;
             for(int i=1;i<MSGs.size();i++)
             {
