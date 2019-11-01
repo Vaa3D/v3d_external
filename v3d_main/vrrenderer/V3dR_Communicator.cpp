@@ -223,7 +223,7 @@ void ManageSocket::receivefile(QString anofile)
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {
 	clienton = client_flag;
-	NTList_SendPool = ntlist;
+//	NTList_SendPool = ntlist;
 	NTNumReceieved=0;
 	NeuronTree  nt = terafly::PluginInterface::getSWC();
 	int tempntsize = nt.listNeuron.size();
@@ -285,7 +285,7 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 
 void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 {
-	NTList_SendPool->append(seg);
+//	NTList_SendPool->append(seg);
 
     onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg)));
 }

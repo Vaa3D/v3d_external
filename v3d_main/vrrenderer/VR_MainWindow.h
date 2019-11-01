@@ -38,7 +38,7 @@ public:
 public slots:
 	void RunVRMainloop(XYZ* zoomPOS = 0);
 	void SendHMDPosition();
-	void onReadySend();
+//	void onReadySend();
 private slots:
 
     void onReadyRead();
@@ -48,7 +48,7 @@ public:
 	CMainApplication *pMainApplication;
 signals:
 	void VRSocketDisconnect();
-	void sendPoolHead();
+//	void sendPoolHead();
 private:
 	V3dR_Communicator* VR_Communicator;
     QTcpSocket* socket;
@@ -63,7 +63,7 @@ private:
     int numreceivedmessage;//for debug HL
     int numsendmessage;
 	//Prevent receiving/sending conflicts  LiQi
-	vector<QString> CollaborationSendPool;
+//	vector<QString> CollaborationSendPool;
 	void SendVRconfigInfo();
 };
 

@@ -125,7 +125,7 @@ private:
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
 	bool * clienton;
-	V_NeuronSWC_list * NTList_SendPool;	
+//	V_NeuronSWC_list * NTList_SendPool;
 	vector<vector<XYZ>> loc_ReceivePool;
 	int NTNumReceieved;
 	int NTNumcurrentUser;

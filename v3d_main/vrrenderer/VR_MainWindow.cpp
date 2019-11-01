@@ -22,7 +22,7 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	VR_Communicator = TeraflyCommunicator;
 	//disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(VR_Communicator->onReadyRead()));
     connect(VR_Communicator->socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-	connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySend()));
+//	connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySend()));
     userName = TeraflyCommunicator->userName;
 	CURRENT_DATA_IS_SENT=false;
     numreceivedmessage=0;//for debug hl
@@ -136,37 +136,37 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 }
 
 
-void VR_MainWindow::onReadySend()
-{
+//void VR_MainWindow::onReadySend()
+//{
 
-	if(!CollaborationSendPool.empty())
-	{
-		cout<<"CollaborationSendPool.size()"<<CollaborationSendPool.size()<<endl;
-		QString send_MSG = *CollaborationSendPool.begin();
-		CollaborationSendPool.erase(CollaborationSendPool.begin());
-		if((send_MSG!="exit")&&(send_MSG!="quit"))
-		{
-//			VR_Communicator->socket->write(QString("/seg:" + send_MSG + "\n").toUtf8());
-//            qDebug()<<"\nin mainwindow onreadysend\n";
+//	if(!CollaborationSendPool.empty())
+//	{
+//		cout<<"CollaborationSendPool.size()"<<CollaborationSendPool.size()<<endl;
+//		QString send_MSG = *CollaborationSendPool.begin();
+//		CollaborationSendPool.erase(CollaborationSendPool.begin());
+//		if((send_MSG!="exit")&&(send_MSG!="quit"))
+//		{
+////			VR_Communicator->socket->write(QString("/seg:" + send_MSG + "\n").toUtf8());
+////            qDebug()<<"\nin mainwindow onreadysend\n";
 
 
-            VR_Communicator->onReadySend("/seg:" + send_MSG);
-		}
-		else
-		{
-//			socket->write(QString("/say: GoodBye~\n").toUtf8());
+//            VR_Communicator->onReadySend("/seg:" + send_MSG);
+//		}
+//		else
+//		{
+////			socket->write(QString("/say: GoodBye~\n").toUtf8());
 
-            VR_Communicator->onReadySend(QString("/say: GoodBye~"));
-			socket->disconnectFromHost();
-			return;
-		}
-	}
-	else
-	{
-		cout<<"CollaborationSendPool is empty";
+//            VR_Communicator->onReadySend(QString("/say: GoodBye~"));
+//			socket->disconnectFromHost();
+//			return;
+//		}
+//	}
+//	else
+//	{
+//		cout<<"CollaborationSendPool is empty";
 
-	}
-}
+//	}
+//}
 
 
 void VR_MainWindow::onReadyRead() {
@@ -521,7 +521,7 @@ void VR_MainWindow::onConnected() {
     float m_globalScale=pMainApplication->get_mglobalScal();
 
     VR_Communicator->socket->write(QString("/login:" +userName + "\n").toUtf8());
-    VR_Communicator->socket->write(QString("/global:" +QString("%1").arg(m_globalScale) +"\n").toUtf8());
+//    VR_Communicator->socket->write(QString("/global:" +QString("%1").arg(m_globalScale) +"\n").toUtf8());
 }
 
 void VR_MainWindow::onDisconnected() {
@@ -657,10 +657,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
 			if(pMainApplication->NT2QString().size()!=0)
-				CollaborationSendPool.emplace_back(pMainApplication->NT2QString());
+//				CollaborationSendPool.emplace_back("/seg"+pMainApplication->NT2QString());
+                VR_Communicator->onReadySend("/seg:"+pMainApplication->NT2QString());
 			pMainApplication->ClearCurrentNT();
 			//cout<<"pMainApplication->ClearCurrentNT();"<<endl;
-			sendPoolHead();
+//			sendPoolHead();
 			CURRENT_DATA_IS_SENT=true;
 			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
 		}
@@ -676,7 +677,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 				QString ConverteddelcurvePOS = ConvertsendCoords(pMainApplication->delcurvePOS);
 				qDebug()<<"Converted marker position = "<<ConverteddelcurvePOS;
 				QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-				VR_Communicator->socket->write(QString("/del_curve:" +  ConverteddelcurvePOS+" "+QSCurrentRes + "\n").toUtf8());
+                VR_Communicator->onReadySend(QString("/del_curve:" +  ConverteddelcurvePOS+" "+QSCurrentRes ));
 				CURRENT_DATA_IS_SENT=true;
 			}
 
@@ -693,7 +694,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
 			qDebug()<<"Converted marker position = "<<ConvertedmarkerPOS;
 			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-			VR_Communicator->socket->write(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes + "\n").toUtf8());
+            VR_Communicator->onReadySend(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes ));
 			CURRENT_DATA_IS_SENT=true;
 		}
 		//else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
@@ -709,7 +710,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			qDebug()<<"drag node new position = "<<pMainApplication->dragnodePOS;
 			QString ConverteddragnodePOS = ConvertsendCoords(pMainApplication->dragnodePOS);
 			qDebug()<<"Converted delete marker position = "<<ConverteddragnodePOS;
-			VR_Communicator->socket->write(QString("/drag_node:" + ConverteddragnodePOS + "\n").toUtf8());
+            VR_Communicator->onReadySend(QString("/drag_node:" + ConverteddragnodePOS ));
 			CURRENT_DATA_IS_SENT=true;
 		}
 		//if(pMainApplication->READY_TO_SEND==true)
@@ -725,7 +726,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//}
 	if(sendHMDPOScout%20==0)
 	{
-		VR_Communicator->socket->write(QString("/ask:message \n").toUtf8());
+        VR_Communicator->onReadySend(QString("/ask:message \n"));
 	}
 	if(sendHMDPOScout%60==0)
 	{
