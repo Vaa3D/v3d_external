@@ -481,16 +481,23 @@ void VR_MainWindow::onReadyRead() {
             //QString user = MSGs.at(0);
             qDebug()<<MSGs[0];
             QString message;
-            for(int i=0;i<MSGs.size();i++)
+
+            qDebug()<<"======================messageindex in TeraVr begin=================";
+            for(int i=1;i<MSGs.size();i++)
             {
-                message +=MSGs.at(i);
-                if(i != MSGs.size()-1)
-                    message +=" ";
-
-
                 qDebug()<<MSGs.at(i)<<endl;
+
+                QString PointMSG=MSGs.at(i);
+                QStringList poingmsg=PointMSG.trimmed().split(" ");
+                message=QString(QString::number(i)+" "+poingmsg[1]+" "+poingmsg[2]
+                        +" "+poingmsg[3]+" "+poingmsg[4]+" "+poingmsg[5]+" ");
+                if(i==1) message+=QString::number(-1);
+                else message+=QString::number(i-1);
+
+                if(i!=MSGs.size()-1) message+=" ";
             }
-            qDebug()<<"user, "<<user<<" said: "<<message;
+            qDebug()<<"======================messageindex in TeraVr end=================";
+//            qDebug()<<"user, "<<user<<" said: "<<message;
 			if(pMainApplication)
 			{
 				if(user==userName)

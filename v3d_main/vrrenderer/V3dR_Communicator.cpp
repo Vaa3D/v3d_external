@@ -544,12 +544,15 @@ void V3dR_Communicator::onReadyRead() {
 //                    createmode
 
             vector <XYZ> LOC;//point (x,y,z) list
-            for (int i=0;i<curvePOSList.size();i++)//3,4,5
+            qDebug()<<"======================messageRex in Terafly begin============";
+            for (int i=1;i<curvePOSList.size();i++)//3,4,5
             {
+
                 QStringList pointMSG=curvePOSList.at(i).split(" ");
+                qDebug()<<curvePOSList.at(i).split(" ");
                 LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
             }
-
+            qDebug()<<"======================messageRex in Terafly end============";
             //			QStringList MSGs = messageRex.cap(1).split(" ");
 //			for(int i=0;i<MSGs.size();i++)
 //			{
@@ -600,15 +603,17 @@ void V3dR_Communicator::Collaborationaskmessage()
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 {
 	char extramsg[300];
-	string messageBuff="";
+    string messageBuff="TeraFly ";
 	//add seg extra msg
 	messageBuff += seg.name;
+
 	messageBuff+=" ";
 	messageBuff += seg.comment;
 	messageBuff+=" ";
 	messageBuff += seg.file;
 	messageBuff+=" ";
 	sprintf(extramsg,"%d %5.3f_",cur_chno,cur_createmode);
+    messageBuff+=extramsg;
 	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
 	{
 		V_NeuronSWC_unit curSWCunit = seg.row[i];

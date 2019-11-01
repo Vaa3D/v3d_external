@@ -6692,7 +6692,7 @@ QString CMainApplication::NT2QString()
 	//QString str=QString::fromStdString(str_temp);
 	////QString str="hello world";
 	//return str;
-	string messageBuff="";
+    string messageBuff="TeraVR_";
 	for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
 	{
 		char packetbuff[300];

@@ -1,185 +1,117 @@
-﻿Build started 2019/10/23 14:49:02.
+﻿Build started 2019/11/1 19:50:48.
      1>Project "D:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" on node 2 (Build target(s)).
-     1>CustomBuild:
-         MOC ..\neuron_annotator\gui\AngleWidget.h
-         MOC ..\neuron_annotator\gui\trees\AnnotatedBranchTreeModel.h
-         MOC ..\neuron_annotator\gui\trees\AnnotatedBranchTreeView.h
-         MOC ..\neuron_annotator\gui\AnnotationWidget.h
-         MOC ..\terafly\src\control\CConverter.h
-         MOC ..\terafly\src\control\CImport.h
-         MOC ..\terafly\src\control\CPlugin.h
-         MOC ..\terafly\src\control\CViewer.h
-         MOC ..\terafly\src\control\CVolume.h
-         MOC ..\neuron_annotator\geometry\CameraModel.h
-         MOC ChannelTable.h
-         MOC ..\neuron_annotator\gui\ColorRangeSliderWidget.h
-         MOC ..\neuron_annotator\gui\CompartmentMapComboBox.h
-         MOC ..\neuron_annotator\gui\CompartmentMapWidget.h
-         MOC ..\neuron_annotator\utility\ConsoleObserver.h
-         MOC ..\webservice\impl\ConsoleObserverServiceImpl.h
-         MOC ..\neuron_annotator\microCT\CutPlanner.h
-         MOC ..\neuron_annotator\data_model\DataColorModel.h
-         MOC ..\neuron_annotator\DataFlowModel.h
-         MOC ..\neuron_annotator\utility\DataThread.h
-         MOC DownloadManager.h
-         MOC ..\neuron_annotator\gui\DynamicRangeTool.h
-         MOC ..\neuron_annotator\gui\trees\EntityTreeModel.h
-         MOC ..\neuron_annotator\gui\trees\EntityTreeView.h
-         MOC ..\neuron_annotator\ExportFile.h
-         MOC ..\neuron_annotator\data_model\Fast3DTexture.h
-         ..\neuron_annotator\data_model\Fast3DTexture.h(0): Note: No relevant classes found. No output generated.
-         MOC ..\neuron_annotator\utility\FooDebug.h
-         MOC ..\neuron_annotator\gui\FragmentGalleryWidget.h
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
-         MOC ..\neuron_annotator\gui\GalleryButton.h
-         MOC ..\neuron_annotator\data_model\GalleryMipImages.h
-         MOC ..\neuron_annotator\gui\GammaWidget.h
-         MOC ..\neuron_annotator\utility\ImageLoader.h
-         MOC ..\3drenderer\ItemEditor.h
-         MOC ..\neuron_annotator\data_model\MipFragmentColors.h
-         MOC ..\neuron_annotator\data_model\MipFragmentData.h
-         MOC ..\neuron_annotator\data_model\MipMergedData.h
-         MOC ..\neuron_annotator\gui\MouseClickManager.h
-         MOC ..\mozak\Mozak3DView.h
-         MOC ..\neuron_annotator\gui\Na2DViewer.h
-         MOC ..\neuron_annotator\gui\Na3DWidget.h
-         MOC ..\neuron_annotator\gui\NaLargeMIPWidget.h
-         MOC ..\neuron_annotator\data_model\NaLockableData.h
-         MOC ..\neuron_annotator\gui\NaMainWindow.h
-         MOC ..\neuron_annotator\data_model\NaSharedDataSignaller.h
-         MOC ..\neuron_annotator\data_model\NaVolumeData.h
-         MOC ..\neuron_annotator\gui\NaZStackWidget.h
-         MOC ..\neuron_annotator\gui\NeuronContextMenu.h
-         MOC ..\neuron_annotator\data_model\NeuronFragmentData.h
-         MOC ..\neuron_annotator\gui\NeuronQAction.h
-         MOC ..\neuron_annotator\data_model\NeuronSelectionModel.h
-         MOC ..\neuron_annotator\NeuronSelector.h
-         MOC ..\neuron_annotator\gui\trees\OntologyTreeModel.h
-         MOC ..\neuron_annotator\gui\trees\OntologyTreeView.h
-         MOC ..\terafly\src\presentation\PAbout.h
-         MOC ..\terafly\src\presentation\PAnoToolBar.h
-         MOC ..\terafly\src\presentation\PConverter.h
-         MOC ..\terafly\src\presentation\PDialogImport.h
-         MOC ..\terafly\src\presentation\PDialogProofreading.h
-         MOC ..\terafly\src\presentation\PDialogVirtualPyramid.h
-         MOC ..\terafly\src\presentation\PLog.h
-         MOC ..\terafly\src\presentation\PMain.h
-         MOC ..\terafly\src\presentation\PTabVolumeInfo.h
-         MOC ..\neuron_annotator\gui\PreferencesDialog.h
-         MOC ..\terafly\src\presentation\QArrowButton.h
-         MOC ..\terafly\src\presentation\QGLRefSys.h
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
-         MOC ..\terafly\src\presentation\QGradientBar.h
-         MOC ..\terafly\src\presentation\QHelpBox.h
-         MOC ..\terafly\src\presentation\QPixmapToolTip.h
-         MOC ..\terafly\src\presentation\QPrefixSuffixLineEdit.h
-         MOC ..\terafly\src\terarepo\src\common\QProgressSender.h
-         MOC ..\neuron_annotator\gui\RendererNeuronAnnotator.h
-         MOC ..\neuron_annotator\microCT\SingleCut.h
-         MOC ..\neuron_annotator\data_model\StagedFileLoader.h
-         MOC ..\terafly\src\control\V3Dsubclasses.h, MOC ..\terafly\src\control\V3Dsubclasses.h
-         MOC ..\vrrenderer\V3dR_Communicator.h
-         MOC ..\vrrenderer\VR_MainWindow.h
-         MOC ..\neuron_annotator\data_model\VolumeTexture.h
-         MOC ..\neuron_annotator\data_model\ZSliceColors.h
-         MOC ..\neuron_annotator\gui\ZoomSpinBox.h
-         MOC ..\neuron_annotator\gui\ZoomWidget.h
-         MOC atlas_viewer.h
-         MOC ..\basic_c_fun\basic_thread.h
-         MOC dialog_curve_trace_para.h
-         MOC dialog_imagecrop_bbox.h
-         MOC dialog_imageresample.h
-         MOC dialog_keypoint_features.h
-         MOC dialog_maskroi.h
-         MOC dialog_rotate.h
-         MOC ..\terafly\src\presentation\fileserver.h
-         MOC ..\3drenderer\gradients.h
-         MOC import_filelist_dialog.h
-         MOC import_images_tool_dialog.h
-         MOC landmark_property_dialog.h
-         MOC ..\mozak\m_terafly\src\control\m_CConverter.h
-         MOC ..\mozak\m_terafly\src\control\m_CImport.h
-         MOC ..\mozak\m_terafly\src\control\m_CPlugin.h
-         MOC ..\mozak\m_terafly\src\control\m_CViewer.h
-         MOC ..\mozak\m_terafly\src\control\m_CVolume.h
-         MOC ..\mozak\m_terafly\src\presentation\m_PAbout.h
-         MOC ..\mozak\m_terafly\src\presentation\m_PAnoToolBar.h
-         MOC ..\mozak\m_terafly\src\presentation\m_PConverter.h
-         MOC ..\mozak\m_terafly\src\presentation\m_PDialogImport.h
-         MOC ..\mozak\m_terafly\src\presentation\m_PDialogProofreading.h
-         MOC ..\mozak\m_terafly\src\presentation\m_PLog.h
-         MOC ..\mozak\m_terafly\src\presentation\m_PMain.h
-         MOC ..\mozak\m_terafly\src\presentation\m_QArrowButton.h
-         MOC ..\mozak\m_terafly\src\presentation\m_QGLRefSys.h
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): warning MSB4220: 等待当前正在执行的任务“CustomBuild”取消。
-         MOC ..\mozak\m_terafly\src\presentation\m_QGradientBar.h
-         MOC ..\mozak\m_terafly\src\presentation\m_QHelpBox.h
-         MOC ..\mozak\m_terafly\src\presentation\m_QPixmapToolTip.h
-         MOC ..\mozak\m_terafly\src\control\m_V3Dsubclasses.h, MOC ..\mozak\m_terafly\src\control\m_V3Dsubclasses.h
-         MOC mainwindow.h
-         MOC ..\plugin_loader\pluginDialog.h
-         MOC surfaceobj_annotation_dialog.h
-         MOC surfaceobj_geometry_dialog.h
-         MOC template_matching_cellseg_dialog.h
-         MOC v3d_actions.h
-         MOC v3d_application.h
-         MOC v3d_core.h
-         MOC ..\custom_toolbar\v3d_custom_toolbar.h
-         MOC v3d_global_preference_dialog.h
-         MOC ..\plugin_loader\v3d_plugin_loader.h
-         MOC v3d_version_info.h
-         MOC ..\3drenderer\v3dr_colormapDialog.h
-         MOC ..\3drenderer\v3dr_glwidget.h
-         MOC ..\3drenderer\v3dr_mainwindow.h
-         MOC ..\3drenderer\v3dr_surfaceDialog.h
-         MOC vano_linker_loader_dialog.h
-         MOC xformwidget.h
-         UIC ..\neuron_annotator\gui\AngleWidget.ui
-         UIC ..\neuron_annotator\gui\AnnotationWidget.ui
-         UIC ..\neuron_annotator\gui\DynamicRangeTool.ui
-         UIC ..\neuron_annotator\gui\GammaWidget.ui
-         UIC ..\neuron_annotator\gui\NaMainWindow.ui
-         UIC ..\neuron_annotator\gui\PreferencesNa.ui
-         UIC ..\neuron_annotator\gui\ZoomWidget.ui
-         UIC dialog_curve_trace.ui
-         UIC dialog_imagecrop_bbox.ui
-     1>dialog_imagecrop_bbox.ui : warning : Z-order assignment: '' is not a valid widget.
-         UIC dialog_imageresample.ui
-         UIC dialog_keypoint_features.ui
-     1>dialog_keypoint_features.ui : warning : The name 'gridLayout' (QGridLayout) is already in use, defaulting to 'gridLayout1'.
-         UIC dialog_maskroi.ui
-     1>dialog_maskroi.ui : warning : The name 'layoutWidget' (QWidget) is already in use, defaulting to 'layoutWidget1'.
-         UIC dialog_pointcloudatlas_linkerloader.ui
-         UIC dialog_update_checking.ui
-         UIC dialog_update_downloading.ui
-         UIC dialog_update_list.ui
-         UIC dialog_update_options.ui
-         UIC dialog_update_v3d.ui
-         UIC dialog_url_entry.ui
-         UIC dialog_vano_linkerloader.ui
-         UIC import_filelist_dialog.ui
-         UIC import_images_tool.ui
-         UIC landmark_property.ui
-     1>landmark_property.ui : warning : The name 'gridLayout' (QGridLayout) is already in use, defaulting to 'gridLayout1'.
-         UIC ..\neuron_annotator\microCT\micro_ct.ui
-         UIC ..\3drenderer\setVoxSize.ui
-         UIC ..\neuron_annotator\microCT\single_cut.ui
-         UIC surface_obj_annotation.ui
-         UIC surfaceobj_geometry_dialog.ui
-         UIC template_matching_cellseg.ui
-         UIC v3d_global_preference.ui
-     1>v3d_global_preference.ui : warning : The name 'layoutWidget' (QWidget) is already in use, defaulting to 'layoutWidget1'.
-     1>v3d_global_preference.ui : warning : The name 'layoutWidget' (QWidget) is already in use, defaulting to 'layoutWidget2'.
-     1>v3d_global_preference.ui : warning : The name 'layoutWidget' (QWidget) is already in use, defaulting to 'layoutWidget3'.
-     1>v3d_global_preference.ui : warning : The name 'gridLayout' (QGridLayout) is already in use, defaulting to 'gridLayout1'.
-     1>v3d_global_preference.ui : warning : The name 'layoutWidget' (QWidget) is already in use, defaulting to 'layoutWidget4'.
-         RCC ..\3drenderer\3drenderer.qrc
-         RCC ..\terafly\icons.qrc
-         RCC ..\mozak\mozak.qrc
-         RCC ..\neuron_annotator\resources.qrc
-         RCC v3d.qrc
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /Ic:\Qt\4.8.6\include\QtCore /Ic:\Qt\4.8.6\include\QtNetwork /Ic:\Qt\4.8.6\include\QtGui /Ic:\Qt\4.8.6\include\QtOpenGL /Ic:\Qt\4.8.6\include\QtXml /Ic:\Qt\4.8.6\include\QtSvg /Ic:\Qt\4.8.6\include /I. /I..\common_lib\include /Ic:\Qt\4.8.6\demos\shared /I..\common_lib\include\SDL /I..\common_lib\include\glew /I..\common_lib\include\openvr /I..\common_lib\include /I..\common_lib\include\hdf5 /I"..\common_lib\include\hdf5-win64" /Ic:\Qt\4.8.6\demos\shared /I..\basic_c_fun /I..\3drenderer /I..\basic_c_fun\customary_structs /I.. /I..\v3d /I..\terafly\src\terarepo\src\iomanager /I..\terafly\src\terarepo\src\imagemanager /I..\terafly\src\terarepo\src\stitcher /I..\terafly\src\terarepo\src\utils\volumeconverter /I..\terafly\src\terarepo\src\volumemanager /I..\terafly\src\terarepo\src\crossmips /I..\terafly\src\terarepo\src\3rdparty\tinyxml /I..\terafly\src\terarepo\src\common /I..\terafly\src\control /I..\terafly\src\presentation /I..\mozak\m_terafly\src\control /I..\mozak\m_terafly\src\presentation /I..\basic_c_fun\include /I..\common_lib\include /Ic:\local\boost_1_61_0 /Ic:\Qt\4.8.6\include\ActiveQt /Idebug /I. /I"c:\Qt\4.8.6\mkspecs\win32-msvc2013" /Zi /nologo /W0 /WX- /MP /Od /D TEEM_STATIC /D WITH_NONAMESPACES /D WITH_PURE_VIRTUAL /D TEEMSTATIC /D _CONSOLE /D UNICODE /D WIN32 /D __ALLOW_VR_FUNCS__ /D TEEM_STATIC /D _VAA3D_TERAFLY_PLUGIN_MODE /D USE_EXPERIMENTAL_FEATURES /D WITH_QT /D ENABLE_BDV_HDF5 /D ENABLE_IMS_HDF5 /D TERASTITCHER_MAJOR /D TERASTITCHER_MINOR /D TERASTITCHER_PATCH /D TERASTITCHER2_MAJOR /D TERASTITCHER2_MINOR /D TERASTITCHER2_PATCH /D TERACONVERTER_MAJOR /D TERACONVERTER_MINOR /D TERACONVERTER_PATCH /D __NAWEBSERVICE__ /D _ALLOW_WORKMODE_MENU_ /D QT_THREAD_SUPPORT /D QT_DLL /D QT_SVG_LIB /D QT_XML_LIB /D QT_OPENGL_LIB /D QT_GUI_LIB /D QT_NETWORK_LIB /D QT_CORE_LIB /D QT_HAVE_MMX /D QT_HAVE_3DNOW /D QT_HAVE_SSE /D QT_HAVE_MMXEXT /D QT_HAVE_SSE2 /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t- /Zc:forScope /GR /Fo"debug\\" /Fd".\vc120.pdb" /Gd /TP /errorReport:prompt -Zm200 -FS ..\3drenderer\ItemEditor.cpp ..\3drenderer\barFigureDialog.cpp ..\3drenderer\gradients.cpp ..\3drenderer\nstroke.cpp ..\3drenderer\nstroke_tracing.cpp ..\3drenderer\renderer.cpp ..\3drenderer\renderer_gl2.cpp ..\3drenderer\renderer_hit.cpp ..\3drenderer\renderer_labelfield.cpp ..\3drenderer\renderer_obj.cpp ..\3drenderer\renderer_tex.cpp ..\3drenderer\v3dr_colormapDialog.cpp ..\3drenderer\v3dr_glwidget.cpp ..\3drenderer\v3dr_mainwindow.cpp ..\3drenderer\v3dr_surfaceDialog.cpp ..\basic_c_fun\basic_4dimage.cpp ..\basic_c_fun\basic_4dimage_create.cpp ..\basic_c_fun\basic_surf_objs.cpp ..\basic_c_fun\mg_image_lib.cpp ..\basic_c_fun\mg_utilities.cpp ..\basic_c_fun\stackutil.cpp ..\basic_c_fun\v3d_message.cpp ..\basic_c_fun\vcdiff.cpp ..\cell_counter\CellCounter3D.cpp ..\cellseg\template_matching_seg.cpp ..\custom_toolbar\v3d_custom_toolbar.cpp ..\gmm\fit_gmm.cpp ..\graph\dijk.cpp ..\imaging\v3d_imaging.cpp ..\io\asc_to_swc.cpp ..\io\io_bioformats.cpp ..\io\v3d_nrrd.cpp ..\jba\c++\histeq.cpp ..\mozak\Mozak3DView.cpp ..\mozak\MozakUI.cpp ..\mozak\m_terafly\src\control\m_CAnnotations.cpp ..\mozak\m_terafly\src\control\m_CConverter.cpp ..\mozak\m_terafly\src\control\m_CImageUtils.cpp ..\mozak\m_terafly\src\control\m_CImport.cpp ..\mozak\m_terafly\src\control\m_COperation.cpp ..\mozak\m_terafly\src\control\m_CPlugin.cpp ..\mozak\m_terafly\src\control\m_CSettings.cpp ..\mozak\m_terafly\src\control\m_CViewer.cpp ..\mozak\m_terafly\src\control\m_CVolume.cpp ..\mozak\m_terafly\src\control\m_QUndoMarkerCreate.cpp ..\mozak\m_terafly\src\control\m_QUndoMarkerDelete.cpp ..\mozak\m_terafly\src\control\m_QUndoMarkerDeleteROI.cpp ..\mozak\m_terafly\src\control\m_V3Dsubclasses.cpp ..\mozak\m_terafly\src\presentation\m_PAbout.cpp ..\mozak\m_terafly\src\presentation\m_PAnoToolBar.cpp ..\mozak\m_terafly\src\presentation\m_PConverter.cpp ..\mozak\m_terafly\src\presentation\m_PDialogImport.cpp ..\mozak\m_terafly\src\presentation\m_PDialogProofreading.cpp ..\mozak\m_terafly\src\presentation\m_PLog.cpp ..\mozak\m_terafly\src\presentation\m_PMain.cpp ..\mozak\m_terafly\src\presentation\m_QArrowButton.cpp ..\mozak\m_terafly\src\presentation\m_QGLRefSys.cpp ..\mozak\m_terafly\src\presentation\m_QGradientBar.cpp ..\mozak\m_terafly\src\presentation\m_QHelpBox.cpp ..\mozak\m_terafly\src\presentation\m_QPixmapToolTip.cpp ..\multithreadimageIO\v3d_multithreadimageIO.cpp ..\neuron_annotator\DataFlowModel.cpp ..\neuron_annotator\ExportFile.cpp ..\neuron_annotator\MultiColorImageStackNode.cpp ..\neuron_annotator\NeuronAnnotatorResultNode.cpp ..\neuron_annotator\NeuronSelector.cpp ..\neuron_annotator\TimebasedIdentifierGenerator.cpp ..\neuron_annotator\analysis\AlignerUtils.cpp ..\neuron_annotator\analysis\AnalysisTools.cpp ..\neuron_annotator\analysis\DilationErosion.cpp ..\neuron_annotator\analysis\MaskChan.cpp ..\neuron_annotator\analysis\NeuronFragmentEditor.cpp ..\neuron_annotator\analysis\ScreenPatternAnnotator.cpp ..\neuron_annotator\analysis\SleepThread.cpp ..\neuron_annotator\analysis\VolumeIndex.cpp ..\neuron_annotator\analysis\VolumePatternIndex.cpp ..\neuron_annotator\animation\interpolate.cpp ..\neuron_annotator\data_model\CustomClipPlanes.cpp ..\neuron_annotator\data_model\DataColorModel.cpp ..\neuron_annotator\data_model\Dimension.cpp ..\neuron_annotator\data_model\Fast3DTexture.cpp ..\neuron_annotator\data_model\GalleryMipImages.cpp ..\neuron_annotator\data_model\MipFragmentColors.cpp ..\neuron_annotator\data_model\MipFragmentData.cpp ..\neuron_annotator\data_model\MipMergedData.cpp ..\neuron_annotator\data_model\NaLockableData.cpp ..\neuron_annotator\data_model\NaSharedDataSignaller.cpp ..\neuron_annotator\data_model\NaVolumeData.cpp ..\neuron_annotator\data_model\NeuronFragmentData.cpp ..\neuron_annotator\data_model\NeuronSelectionModel.cpp ..\neuron_annotator\data_model\PrivateDataColorModel.cpp ..\neuron_annotator\data_model\PrivateNeuronFragmentData.cpp ..\neuron_annotator\data_model\PrivateVolumeTexture.cpp ..\neuron_annotator\data_model\SampledVolumeMetadata.cpp ..\neuron_annotator\data_model\SlotMerger.cpp ..\neuron_annotator\data_model\StagedFileLoader.cpp ..\neuron_annotator\data_model\VolumeTexture.cpp ..\neuron_annotator\data_model\ZSliceColors.cpp ..\neuron_annotator\entity_model\Entity.cpp ..\neuron_annotator\entity_model\EntityData.cpp ..\neuron_annotator\entity_model\Ontology.cpp ..\neuron_annotator\entity_model\OntologyAnnotation.cpp ..\neuron_annotator\geometry\CameraModel.cpp ..\neuron_annotator\geometry\Rotation3D.cpp ..\neuron_annotator\geometry\Vector3D.cpp ..\neuron_annotator\gui\AngleWidget.cpp ..\neuron_annotator\gui\AnnotationWidget.cpp ..\neuron_annotator\gui\ColorRangeSliderWidget.cpp ..\neuron_annotator\gui\CompartmentMapComboBox.cpp ..\neuron_annotator\gui\CompartmentMapWidget.cpp ..\neuron_annotator\gui\DynamicRangeTool.cpp ..\neuron_annotator\gui\FragmentGalleryWidget.cpp ..\neuron_annotator\gui\GalleryButton.cpp ..\neuron_annotator\gui\GammaWidget.cpp ..\neuron_annotator\gui\MouseClickManager.cpp ..\neuron_annotator\gui\Na2DViewer.cpp ..\neuron_annotator\gui\Na3DWidget.cpp ..\neuron_annotator\gui\NaLargeMIPWidget.cpp ..\neuron_annotator\gui\NaMainWindow.cpp ..\neuron_annotator\gui\NaViewer.cpp ..\neuron_annotator\gui\NaZStackWidget.cpp ..\neuron_annotator\gui\NeuronContextMenu.cpp ..\neuron_annotator\gui\NeuronQAction.cpp ..\neuron_annotator\gui\PreferencesDialog.cpp ..\neuron_annotator\gui\RendererNeuronAnnotator.cpp ..\neuron_annotator\gui\ScaleBar.cpp ..\neuron_annotator\gui\Stereo3DMode.cpp ..\neuron_annotator\gui\ZoomSpinBox.cpp ..\neuron_annotator\gui\ZoomWidget.cpp ..\neuron_annotator\gui\trees\EntityTreeItem.cpp ..\neuron_annotator\gui\trees\EntityTreeModel.cpp ..\neuron_annotator\gui\trees\EntityTreeView.cpp ..\neuron_annotator\gui\trees\OntologyTreeModel.cpp ..\neuron_annotator\gui\trees\OntologyTreeView.cpp ..\neuron_annotator\microCT\CutPlanner.cpp ..\neuron_annotator\microCT\SingleCut.cpp ..\neuron_annotator\render\CameraTransformGL.cpp ..\neuron_annotator\render\CubeTestActorGL.cpp ..\neuron_annotator\render\LegacyVolumeActor.cpp ..\neuron_annotator\render\ShaderProgramGL.cpp ..\neuron_annotator\render\VoxelRayCastShader.cpp ..\neuron_annotator\render\WireCube.cpp ..\neuron_annotator\utility\ColorSeparatorConsolidator.cpp ..\neuron_annotator\utility\ConsoleObserver.cpp ..\neuron_annotator\utility\DataThread.cpp ..\neuron_annotator\utility\FileTreeSearcher.cpp ..\neuron_annotator\utility\FooDebug.cpp ..\neuron_annotator\utility\Icons.cpp ..\neuron_annotator\utility\ImageLoader.cpp ..\neuron_annotator\utility\ImageLoaderBasic.cpp ..\neuron_annotator\utility\JacsUtil.cpp ..\neuron_annotator\utility\NeuronMaskEntry.cpp ..\neuron_annotator\utility\SingleNeuronLsmSetReader.cpp ..\neuron_annotator\utility\StitchedFileUtility.cpp ..\neuron_annotator\utility\url_tools.cpp ..\neuron_editing\apo_xforms.cpp ..\neuron_editing\global_feature_compute.cpp ..\neuron_editing\neuron_format_converter.cpp ..\neuron_editing\neuron_sim_scores.cpp ..\neuron_editing\neuron_xforms.cpp ..\neuron_editing\v_neuronswc.cpp ..\neuron_toolbox\vaa3d_neurontoolbox.cpp ..\neuron_tracing\dij_bgl.cpp ..\plugin_loader\pluginDialog.cpp ..\plugin_loader\v3d_plugin_loader.cpp ..\terafly\src\TiledVolume_partialdata.cpp ..\terafly\src\control\CAnnotations.cpp ..\terafly\src\control\CConverter.cpp ..\terafly\src\control\CImageUtils.cpp ..\terafly\src\control\CImport.cpp ..\terafly\src\control\COperation.cpp ..\terafly\src\control\CPlugin.cpp ..\terafly\src\control\CSettings.cpp ..\terafly\src\control\CViewer.cpp ..\terafly\src\control\CVolume.cpp ..\terafly\src\control\QUndoMarkerCreate.cpp ..\terafly\src\control\QUndoMarkerDelete.cpp ..\terafly\src\control\QUndoMarkerDeleteROI.cpp ..\terafly\src\control\V3Dsubclasses.cpp ..\terafly\src\control\VirtualPyramid.cpp ..\terafly\src\presentation\PAbout.cpp ..\terafly\src\presentation\PAnoToolBar.cpp ..\terafly\src\presentation\PConverter.cpp ..\terafly\src\presentation\PDialogImport.cpp ..\terafly\src\presentation\PDialogProofreading.cpp ..\terafly\src\presentation\PDialogVirtualPyramid.cpp ..\terafly\src\presentation\PLog.cpp ..\terafly\src\presentation\PMain.cpp ..\terafly\src\presentation\PTabVolumeInfo.cpp ..\terafly\src\presentation\QArrowButton.cpp ..\terafly\src\presentation\QGLRefSys.cpp ..\terafly\src\presentation\QGradientBar.cpp ..\terafly\src\presentation\QHelpBox.cpp ..\terafly\src\presentation\QPixmapToolTip.cpp ..\terafly\src\presentation\QPrefixSuffixLineEdit.cpp ..\terafly\src\presentation\fileserver.cpp ..\terafly\src\terarepo\src\3rdparty\tinyxml\tinystr.cpp ..\terafly\src\terarepo\src\3rdparty\tinyxml\tinyxml.cpp ..\terafly\src\terarepo\src\3rdparty\tinyxml\tinyxmlerror.cpp ..\terafly\src\terarepo\src\3rdparty\tinyxml\tinyxmlparser.cpp ..\terafly\src\terarepo\src\common\ProgressBar.cpp ..\terafly\src\terarepo\src\common\QProgressSender.cpp ..\terafly\src\terarepo\src\common\config.cpp ..\terafly\src\terarepo\src\crossmips\compute_funcs.cpp ..\terafly\src\terarepo\src\crossmips\libcrossmips.cpp ..\terafly\src\terarepo\src\imagemanager\HDF5Mngr.cpp ..\terafly\src\terarepo\src\imagemanager\IMS_HDF5Mngr.cpp ..\terafly\src\terarepo\src\imagemanager\IM_config.cpp ..\terafly\src\terarepo\src\imagemanager\RawFmtMngr.cpp ..\terafly\src\terarepo\src\imagemanager\RawVolume.cpp ..\terafly\src\terarepo\src\imagemanager\SimpleVolume.cpp ..\terafly\src\terarepo\src\imagemanager\SimpleVolumeRaw.cpp ..\terafly\src\terarepo\src\imagemanager\Stack.cpp ..\terafly\src\terarepo\src\imagemanager\StackRaw.cpp ..\terafly\src\terarepo\src\imagemanager\StackedVolume.cpp ..\terafly\src\terarepo\src\imagemanager\Tiff3DMngr.cpp ..\terafly\src\terarepo\src\imagemanager\TiledMCVolume.cpp ..\terafly\src\terarepo\src\imagemanager\TimeSeries.cpp ..\terafly\src\terarepo\src\imagemanager\UnstitchedVolume.cpp ..\terafly\src\terarepo\src\imagemanager\VirtualFmtMngr.cpp ..\terafly\src\terarepo\src\imagemanager\VirtualVolume.cpp ..\terafly\src\terarepo\src\imagemanager\imBlock.cpp ..\terafly\src\terarepo\src\iomanager\iomanager.config.cpp ..\terafly\src\terarepo\src\iomanager\plugins\IMS_HDF5\IMS_HDF5.cpp ..\terafly\src\terarepo\src\iomanager\plugins\dcimg\dcimg.cpp ..\terafly\src\terarepo\src\iomanager\plugins\exampleplugin2D\exampleplugin2D.cpp ..\terafly\src\terarepo\src\iomanager\plugins\tiff2D\tiff2D.cpp ..\terafly\src\terarepo\src\iomanager\plugins\tiff3D\tiff3D.cpp ..\terafly\src\terarepo\src\stitcher\Displacement.cpp ..\terafly\src\terarepo\src\stitcher\DisplacementMIPNCC.cpp ..\terafly\src\terarepo\src\stitcher\MergeTiles.cpp ..\terafly\src\terarepo\src\stitcher\PDAlgo.cpp ..\terafly\src\terarepo\src\stitcher\PDAlgoMIPNCC.cpp ..\terafly\src\terarepo\src\stitcher\StackRestorer.cpp ..\terafly\src\terarepo\src\stitcher\StackStitcher.cpp ..\terafly\src\terarepo\src\stitcher\TPAlgo.cpp ..\terafly\src\terarepo\src\stitcher\TPAlgoMST.cpp ..\terafly\src\terarepo\src\stitcher\resumer.cpp ..\terafly\src\terarepo\src\utils\volumeconverter\VolumeConverter.cpp ..\terafly\src\terarepo\src\utils\volumeconverter\vcresumer.cpp ..\terafly\src\terarepo\src\volumemanager\vmBlock.cpp ..\terafly\src\terarepo\src\volumemanager\vmBlockVolume.cpp ..\terafly\src\terarepo\src\volumemanager\vmCacheManager.cpp ..\terafly\src\terarepo\src\volumemanager\vmMCVolume.cpp ..\terafly\src\terarepo\src\volumemanager\vmStack.cpp ..\terafly\src\terarepo\src\volumemanager\vmStackedVolume.cpp ..\terafly\src\terarepo\src\volumemanager\vmVirtualStack.cpp ..\terafly\src\terarepo\src\volumemanager\vmVirtualVolume.cpp ..\terafly\src\terarepo\src\volumemanager\volumemanager.config.cpp ..\vrrenderer\Cylinder.cpp ..\vrrenderer\Matrices.cpp ..\vrrenderer\RenderableObject.cpp ..\vrrenderer\Sphere.cpp ..\vrrenderer\V3dR_Communicator.cpp ..\vrrenderer\VRFinger.cpp ..\vrrenderer\VR_MainWindow.cpp ..\vrrenderer\lodepng.cpp ..\vrrenderer\v3dr_gl_vr.cpp ..\webservice\console\cdsC.cpp ..\webservice\console\cdsConsoleDataServiceProxy.cpp ..\webservice\console\envC.cpp ..\webservice\console\obsC.cpp ..\webservice\console\obsConsoleObserverService.cpp ..\webservice\gsoap2\stdsoap2.cpp ..\webservice\impl\ConsoleObserverServiceImpl.cpp ..\webservice\impl\EntityAdapter.cpp ..\worm_straighten_c\bdb_minus.cpp ..\worm_straighten_c\bfs_1root.cpp ..\worm_straighten_c\mst_prim_c.cpp ..\worm_straighten_c\spline_cubic.cpp ChannelTable.cpp CommandManager.cpp DownloadManager.cpp atlas_viewer.cpp colormap.cpp debug\moc_AngleWidget.cpp debug\moc_AnnotatedBranchTreeModel.cpp debug\moc_AnnotatedBranchTreeView.cpp debug\moc_AnnotationWidget.cpp debug\moc_CConverter.cpp debug\moc_CImport.cpp debug\moc_CPlugin.cpp debug\moc_CViewer.cpp debug\moc_CVolume.cpp debug\moc_CameraModel.cpp debug\moc_ChannelTable.cpp debug\moc_ColorRangeSliderWidget.cpp debug\moc_CompartmentMapComboBox.cpp debug\moc_CompartmentMapWidget.cpp debug\moc_ConsoleObserver.cpp debug\moc_ConsoleObserverServiceImpl.cpp debug\moc_CutPlanner.cpp debug\moc_DataColorModel.cpp debug\moc_DataFlowModel.cpp debug\moc_DataThread.cpp debug\moc_DownloadManager.cpp debug\moc_DynamicRangeTool.cpp debug\moc_EntityTreeModel.cpp debug\moc_EntityTreeView.cpp debug\moc_ExportFile.cpp debug\moc_Fast3DTexture.cpp debug\moc_FooDebug.cpp debug\moc_FragmentGalleryWidget.cpp debug\moc_GalleryButton.cpp debug\moc_GalleryMipImages.cpp debug\moc_GammaWidget.cpp debug\moc_ImageLoader.cpp debug\moc_ItemEditor.cpp debug\moc_MipFragmentColors.cpp debug\moc_MipFragmentData.cpp debug\moc_MipMergedData.cpp debug\moc_MouseClickManager.cpp debug\moc_Mozak3DView.cpp debug\moc_Na2DViewer.cpp debug\moc_Na3DWidget.cpp debug\moc_NaLargeMIPWidget.cpp debug\moc_NaLockableData.cpp debug\moc_NaMainWindow.cpp debug\moc_NaSharedDataSignaller.cpp debug\moc_NaVolumeData.cpp debug\moc_NaZStackWidget.cpp debug\moc_NeuronContextMenu.cpp debug\moc_NeuronFragmentData.cpp debug\moc_NeuronQAction.cpp debug\moc_NeuronSelectionModel.cpp debug\moc_NeuronSelector.cpp debug\moc_OntologyTreeModel.cpp debug\moc_OntologyTreeView.cpp debug\moc_PAbout.cpp debug\moc_PAnoToolBar.cpp debug\moc_PConverter.cpp debug\moc_PDialogImport.cpp debug\moc_PDialogProofreading.cpp debug\moc_PDialogVirtualPyramid.cpp debug\moc_PLog.cpp debug\moc_PMain.cpp debug\moc_PTabVolumeInfo.cpp debug\moc_PreferencesDialog.cpp debug\moc_QArrowButton.cpp debug\moc_QGLRefSys.cpp debug\moc_QGradientBar.cpp debug\moc_QHelpBox.cpp debug\moc_QPixmapToolTip.cpp debug\moc_QPrefixSuffixLineEdit.cpp debug\moc_QProgressSender.cpp debug\moc_RendererNeuronAnnotator.cpp debug\moc_SingleCut.cpp debug\moc_StagedFileLoader.cpp debug\moc_V3Dsubclasses.cpp debug\moc_V3dR_Communicator.cpp debug\moc_VR_MainWindow.cpp debug\moc_VolumeTexture.cpp debug\moc_ZSliceColors.cpp debug\moc_ZoomSpinBox.cpp debug\moc_ZoomWidget.cpp debug\moc_atlas_viewer.cpp debug\moc_basic_thread.cpp debug\moc_dialog_curve_trace_para.cpp debug\moc_dialog_imagecrop_bbox.cpp debug\moc_dialog_imageresample.cpp debug\moc_dialog_keypoint_features.cpp debug\moc_dialog_maskroi.cpp debug\moc_dialog_rotate.cpp debug\moc_fileserver.cpp debug\moc_gradients.cpp debug\moc_import_filelist_dialog.cpp debug\moc_import_images_tool_dialog.cpp debug\moc_landmark_property_dialog.cpp debug\moc_m_CConverter.cpp debug\moc_m_CImport.cpp debug\moc_m_CPlugin.cpp debug\moc_m_CViewer.cpp debug\moc_m_CVolume.cpp debug\moc_m_PAbout.cpp debug\moc_m_PAnoToolBar.cpp debug\moc_m_PConverter.cpp debug\moc_m_PDialogImport.cpp debug\moc_m_PDialogProofreading.cpp debug\moc_m_PLog.cpp debug\moc_m_PMain.cpp debug\moc_m_QArrowButton.cpp debug\moc_m_QGLRefSys.cpp debug\moc_m_QGradientBar.cpp debug\moc_m_QHelpBox.cpp debug\moc_m_QPixmapToolTip.cpp debug\moc_m_V3Dsubclasses.cpp debug\moc_mainwindow.cpp debug\moc_pluginDialog.cpp debug\moc_surfaceobj_annotation_dialog.cpp debug\moc_surfaceobj_geometry_dialog.cpp debug\moc_template_matching_cellseg_dialog.cpp debug\moc_v3d_actions.cpp debug\moc_v3d_application.cpp debug\moc_v3d_core.cpp debug\moc_v3d_custom_toolbar.cpp debug\moc_v3d_global_preference_dialog.cpp debug\moc_v3d_plugin_loader.cpp debug\moc_v3d_version_info.cpp debug\moc_v3dr_colormapDialog.cpp debug\moc_v3dr_glwidget.cpp debug\moc_v3dr_mainwindow.cpp debug\moc_v3dr_surfaceDialog.cpp debug\moc_vano_linker_loader_dialog.cpp debug\moc_xformwidget.cpp debug\qrc_3drenderer.cpp debug\qrc_icons.cpp debug\qrc_mozak.cpp debug\qrc_resources.cpp debug\qrc_v3d.cpp dialog_keypoint_features.cpp dialog_rotate.cpp histogramsimple.cpp import_filelistname.cpp import_tiffseries.cpp landmark_property_dialog.cpp main.cpp mainwindow.cpp mainwindow_interface.cpp mapview.cpp my4dimage.cpp pluginfunchandler.cpp rotate_image.cpp surfaceobj_geometry_dialog.cpp v3d_actions.cpp v3d_application.cpp v3d_commandlineparser.cpp v3d_core.cpp v3d_version_info.cpp v3dimg_proc_neuron.cpp v3dimgproc_entry.cpp vano_linker_loader_dialog.cpp vr_vaa3d_call.cpp
+         ItemEditor.cpp
+         barFigureDialog.cpp
+         gradients.cpp
+         nstroke.cpp
+         nstroke_tracing.cpp
+         renderer.cpp
+         renderer_gl2.cpp
+         renderer_hit.cpp
+         renderer_labelfield.cpp
+         renderer_obj.cpp
+         renderer_tex.cpp
+         v3dr_colormapDialog.cpp
+         v3dr_glwidget.cpp
+         v3dr_mainwindow.cpp
+         v3dr_surfaceDialog.cpp
+         basic_4dimage.cpp
+         basic_4dimage_create.cpp
+         basic_surf_objs.cpp
+         mg_image_lib.cpp
+         mg_utilities.cpp
+         stackutil.cpp
+         v3d_message.cpp
+         vcdiff.cpp
+         CellCounter3D.cpp
+         template_matching_seg.cpp
+         v3d_custom_toolbar.cpp
+         fit_gmm.cpp
+         dijk.cpp
+         v3d_imaging.cpp
+         asc_to_swc.cpp
+         io_bioformats.cpp
+         v3d_nrrd.cpp
+     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data (..\3drenderer\nstroke_tracing.cpp)
+                 d:\vaa3d\v3d_external\v3d_main\3drenderer\../neuron_tracing/fastmarching_linker.h(1461) : see reference to function template instantiation 'std::pair<MyMarker *,float>::pair<MyMarker*&,double,void>(_Other1,_Other2 &&)' being compiled
+                 with
+                 [
+                     _Other1=MyMarker *&
+         ,            _Other2=double
+                 ]
+                 d:\vaa3d\v3d_external\v3d_main\3drenderer\../neuron_tracing/fastmarching_linker.h(1461) : see reference to function template instantiation 'std::pair<MyMarker *,float>::pair<MyMarker*&,double,void>(_Other1,_Other2 &&)' being compiled
+                 with
+                 [
+                     _Other1=MyMarker *&
+         ,            _Other2=double
+                 ]
+                 ..\3drenderer\nstroke_tracing.cpp(1886) : see reference to function template instantiation 'bool fastmarching_drawing_dynamic<unsigned char>(std::vector<MyMarker,std::allocator<_Ty>> &,std::vector<_Ty,std::allocator<_Ty>> &,T *,std::vector<MyMarker *,std::allocator<MyMarker>> &,int,int,int,int,int,bool)' being compiled
+                 with
+                 [
+                     _Ty=MyMarker
+         ,            T=unsigned char
+                 ]
+         histeq.cpp
+         Mozak3DView.cpp
+     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data (..\3drenderer\v3dr_glwidget.cpp)
+                 ..\3drenderer\v3dr_glwidget.cpp(1146) : see reference to function template instantiation 'std::pair<int,std::vector<int,std::allocator<_Ty>>>::pair<double&,std::vector<_Ty,std::allocator<_Ty>>&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Ty=int
+         ,            _Other1=double &
+         ,            _Other2=std::vector<int,std::allocator<int>> &
+                 ]
+                 ..\3drenderer\v3dr_glwidget.cpp(1146) : see reference to function template instantiation 'std::pair<int,std::vector<int,std::allocator<_Ty>>>::pair<double&,std::vector<_Ty,std::allocator<_Ty>>&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Ty=int
+         ,            _Other1=double &
+         ,            _Other2=std::vector<int,std::allocator<int>> &
+                 ]
+         MozakUI.cpp
+         m_CAnnotations.cpp
+         m_CConverter.cpp
+         m_CImageUtils.cpp
+         m_CImport.cpp
+         m_COperation.cpp
+         m_CPlugin.cpp
+         m_CSettings.cpp
+         m_CViewer.cpp
+         m_CVolume.cpp
+         m_QUndoMarkerCreate.cpp
+         m_QUndoMarkerDelete.cpp
+         m_QUndoMarkerDeleteROI.cpp
+         m_V3Dsubclasses.cpp
+         m_PAbout.cpp
+         m_PAnoToolBar.cpp
+         m_PConverter.cpp
+         m_PDialogImport.cpp
+         m_PDialogProofreading.cpp
+         m_PLog.cpp
+         m_PMain.cpp
+         m_QArrowButton.cpp
+         m_QGLRefSys.cpp
+         m_QGradientBar.cpp
+         m_QHelpBox.cpp
+         m_QPixmapToolTip.cpp
+         v3d_multithreadimageIO.cpp
+         DataFlowModel.cpp
+         ExportFile.cpp
+         MultiColorImageStackNode.cpp
+         NeuronAnnotatorResultNode.cpp
+         NeuronSelector.cpp
+         TimebasedIdentifierGenerator.cpp
+         AlignerUtils.cpp
+         AnalysisTools.cpp
+         DilationErosion.cpp
+         MaskChan.cpp
+         NeuronFragmentEditor.cpp
+         ScreenPatternAnnotator.cpp
+         SleepThread.cpp
      1>Done Building Project "D:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" (Build target(s)) -- FAILED.
 
 Build FAILED.
 
-Time Elapsed 00:00:49.09
+Time Elapsed 00:00:22.61
