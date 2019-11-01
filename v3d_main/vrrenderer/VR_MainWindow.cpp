@@ -489,8 +489,9 @@ void VR_MainWindow::onReadyRead() {
 
                 QString PointMSG=MSGs.at(i);
                 QStringList poingmsg=PointMSG.trimmed().split(" ");
-                message=QString(QString::number(i)+" "+poingmsg[1]+" "+poingmsg[2]
-                        +" "+poingmsg[3]+" "+poingmsg[4]+" "+poingmsg[5]+" ");
+                XYZ LocCoords=ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
+                message=QString(QString::number(i)+" "+poingmsg[1]+" "+QString::number(LocCoords.x)
+                        +" "+QString::number(LocCoords.y)+" "+QString::number(LocCoords.z)+" "+poingmsg[5]+" ");
                 if(i==1) message+=QString::number(-1);
                 else message+=QString::number(i-1);
 
