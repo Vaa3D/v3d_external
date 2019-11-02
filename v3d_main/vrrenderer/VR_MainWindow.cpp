@@ -470,7 +470,7 @@ void VR_MainWindow::onReadyRead() {
         }
 		//dragnodeRex
         else if (messageRex.indexIn(line) != -1) {
-            qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
+            //qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
 
             QString user=messageRex.cap(1);
             QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
@@ -490,15 +490,17 @@ void VR_MainWindow::onReadyRead() {
                 QString PointMSG=MSGs.at(i);
                 QStringList poingmsg=PointMSG.trimmed().split(" ");
                 XYZ LocCoords=ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                message=QString(QString::number(i)+" "+poingmsg[1]+" "+QString::number(LocCoords.x)
+                message+=QString(QString::number(i)+" "+poingmsg[1]+" "+QString::number(LocCoords.x)
                         +" "+QString::number(LocCoords.y)+" "+QString::number(LocCoords.z)+" "+poingmsg[5]+" ");
                 if(i==1) message+=QString::number(-1);
                 else message+=QString::number(i-1);
 
                 if(i!=MSGs.size()-1) message+=" ";
+
+                qDebug()<<"message:"<<message;
             }
             qDebug()<<"======================messageindex in TeraVr end=================";
-//            qDebug()<<"user, "<<user<<" said: "<<message;
+            qDebug()<<"user, "<<user<<" said: "<<message;
 			if(pMainApplication)
 			{
 				if(user==userName)
@@ -664,9 +666,10 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	{
 		if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
-			if(pMainApplication->NT2QString().size()!=0)
+            QString waitsend=pMainApplication->NT2QString();
+            if(waitsend.size()!=0)
 //				CollaborationSendPool.emplace_back("/seg"+pMainApplication->NT2QString());
-                VR_Communicator->onReadySend("/seg:"+pMainApplication->NT2QString());
+                VR_Communicator->onReadySend("/seg:"+waitsend);
 			pMainApplication->ClearCurrentNT();
 			//cout<<"pMainApplication->ClearCurrentNT();"<<endl;
 //			sendPoolHead();
@@ -907,7 +910,7 @@ XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 	x/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
 	y/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
 	z/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
-	cout<<" x = "<<"y = "<<y<<"z = "<<z<<endl;
+    cout<<" x = "<<x<<"y = "<<y<<"z = "<<z<<endl;
 	x-=(VRVolumeStartPoint.x-1);
 	y-=(VRVolumeStartPoint.y-1);
 	z-=(VRVolumeStartPoint.z-1);

@@ -298,7 +298,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
         {
 
             socket->write(QString(send_MSG+"\n").toUtf8());
-            qDebug()<<"111111send:\n"<<send_MSG;
+//            qDebug()<<"111111send:\n"<<send_MSG;
 
         }
         else
