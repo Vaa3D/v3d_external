@@ -20,7 +20,7 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
 	VR_Communicator = TeraflyCommunicator;
-	//disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(VR_Communicator->onReadyRead()));
+    disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(onReadyRead()));
     connect(VR_Communicator->socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 //	connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySend()));
     userName = TeraflyCommunicator->userName;
@@ -497,7 +497,6 @@ void VR_MainWindow::onReadyRead() {
 
                 if(i!=MSGs.size()-1) message+=" ";
 
-                qDebug()<<"message:"<<message;
             }
             qDebug()<<"======================messageindex in TeraVr end=================";
             qDebug()<<"user, "<<user<<" said: "<<message;
@@ -737,7 +736,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//}
 	if(sendHMDPOScout%20==0)
 	{
-        VR_Communicator->onReadySend(QString("/ask:message \n"));
+        VR_Communicator->onReadySend(QString("/ask:message"));
 	}
 	if(sendHMDPOScout%60==0)
 	{
@@ -840,7 +839,7 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution)
 {
 	qDebug()<<"GetResindexandStartPointfromVRInfo........";
-	qDebug()<<VRinfo;
+    qDebug()<<"VRinfo"<<VRinfo;
 	QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
 	if (rx.indexIn(VRinfo) != -1 && (ResIndex != -1)) {
 		qDebug()<<"get  VRResindex and VRVolume Start point ";
@@ -869,7 +868,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 	}
 	//pass Resindex and VRvolumeStartPoint to PMAIN  to  offer parameter to NT2QString
 	pMainApplication->CmainResIndex = ResIndex;
-	pMainApplication->CmainVRVolumeStartPoint = XYZ(1,1,1);
+    pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
 	pMainApplication->collaboration_creator_res = ResIndex;
 	cout<<"pMainApplication->collaboration_creator_res = "<<pMainApplication->collaboration_creator_res<<endl;
 	pMainApplication->CollaborationMaxResolution = CollaborationMaxResolution;

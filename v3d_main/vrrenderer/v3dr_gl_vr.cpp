@@ -6759,10 +6759,10 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 		{
 			S_temp.pn = qsl[i].toInt();
 			//converted received NT XYZ coords
-			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);
-			S_temp.x = tempxyz.x;
-			S_temp.y = tempxyz.y;
-			S_temp.z = tempxyz.z;
+//			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);//转化为全局变量？
+//			S_temp.x = tempxyz.x;
+//			S_temp.y = tempxyz.y;
+//			S_temp.z = tempxyz.z;
 			newTempNT.listNeuron.append(S_temp);
 			newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
 		}

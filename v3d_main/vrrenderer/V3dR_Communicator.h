@@ -114,13 +114,14 @@ private slots:
     void onReadyRead();
     void onConnected();
     void onDisconnected();
+    void askserver();
 signals:
     void messageMade();
 
 private:
 	
 	
-	
+        QTimer *asktimer;
 
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;

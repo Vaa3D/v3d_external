@@ -236,9 +236,10 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 	QRegExp regex("^[a-zA-Z]\\w+");
     socket = 0;
 
-//	connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 //	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
+    asktimer=nullptr;
 //    nextblocksize=0;
 }
 
@@ -289,6 +290,13 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 
     onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg)));
 }
+
+void V3dR_Communicator::askserver()
+{
+    onReadySend(QString("/ask:message"));
+    asktimer->start(5);
+}
+
 
 void V3dR_Communicator::onReadySend(QString send_MSG) {
 
@@ -359,6 +367,12 @@ void V3dR_Communicator::onReadyRead() {
 					Agents.push_back(agent00);
 				}
 			}
+            if(asktimer==nullptr)
+            {
+                asktimer=new QTimer;
+                connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
+                asktimer->start(5);
+            }
 		}
 		else if (systemRex.indexIn(line) != -1) {
 			//QString msg = systemRex.cap(1);

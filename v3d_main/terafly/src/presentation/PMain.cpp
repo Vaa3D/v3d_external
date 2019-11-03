@@ -4015,7 +4015,7 @@ void PMain::login()
     qDebug()<<"test login ";
 //    if(managesocket!=0)    delete managesocket;
     qDebug()<<"tset 2";
-    managesocket=new ManageSocket;
+    managesocket=new ManageSocket(this);
     managesocket->ip=serverName;
     managesocket->manageport=manageserver_Port;
     managesocket->name=userName;
