@@ -236,7 +236,7 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 	QRegExp regex("^[a-zA-Z]\\w+");
     socket = 0;
 
-    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+
 //	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
     asktimer=nullptr;
@@ -249,6 +249,7 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
     socket=new QTcpSocket;
+    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 //    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
  //   connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
@@ -294,24 +295,22 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 void V3dR_Communicator::askserver()
 {
     onReadySend(QString("/ask:message"));
-    asktimer->start(5);
+//    asktimer->start(500);
 }
 
 
 void V3dR_Communicator::onReadySend(QString send_MSG) {
 
-    qDebug()<<endl<<send_MSG<<endl;
+//    qDebug()<<endl<<send_MSG<<endl;
     if (!send_MSG.isEmpty()) {
         if((send_MSG!="exit")&&(send_MSG!="quit"))
         {
 
             socket->write(QString(send_MSG+"\n").toUtf8());
 //            qDebug()<<"111111send:\n"<<send_MSG;
-
         }
         else
         {
-
             socket->write(QString("/say: GoodBye~\n").toUtf8());
         }
 	}
@@ -335,10 +334,10 @@ void V3dR_Communicator::onReadyRead() {
 
 
 	while (socket->canReadLine()) {
+
+
 		QString line = QString::fromUtf8(socket->readLine()).trimmed();
-
         qDebug()<<"receive : in Terafly"<<line;
-
 		if (usersRex.indexIn(line) != -1) {
 			QStringList users = usersRex.cap(1).split(",");
 			//qDebug()<<"Current users are:";
@@ -369,7 +368,7 @@ void V3dR_Communicator::onReadyRead() {
 			}
             if(asktimer==nullptr)
             {
-                asktimer=new QTimer;
+                asktimer=new QTimer(this);
                 connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
                 asktimer->start(5);
             }
@@ -554,8 +553,11 @@ void V3dR_Communicator::onReadyRead() {
             QString user=messageRex.cap(1);
             QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
-//            chno
-//                    createmode
+            QString LOChead=curvePOSList[0].trimmed();
+            QStringList LOCheadList=LOChead.split(" ",QString::SkipEmptyParts);
+
+            int chno=LOCheadList[LOCheadList.size()-2].toInt();
+            double createmode=LOCheadList[LOCheadList.size()-1].toDouble();
 
             vector <XYZ> LOC;//point (x,y,z) list
             qDebug()<<"======================messageRex in Terafly begin============";
@@ -567,6 +569,10 @@ void V3dR_Communicator::onReadyRead() {
                 LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
             }
             qDebug()<<"======================messageRex in Terafly end============";
+
+
+            //parameters:LOC,chno,createmode addCurveSWC(LOC,chno,createmode)
+
             //			QStringList MSGs = messageRex.cap(1).split(" ");
 //			for(int i=0;i<MSGs.size();i++)
 //			{
