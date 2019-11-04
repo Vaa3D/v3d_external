@@ -577,6 +577,7 @@ void V3dR_Communicator::onReadyRead() {
 				vec_convertcoords.emplace_back(convertcoords);
 			}
 
+            if(user==this->userName) return;
 			CollaAddcurveSWC(vec_convertcoords, chno, cur_createmode);
             qDebug()<<"======================messageRex in Terafly end============";
 
