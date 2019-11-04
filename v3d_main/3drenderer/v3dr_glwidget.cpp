@@ -217,12 +217,17 @@ void V3dR_GLWidget::SetupCollaborateInfo()
 		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
 	}
 	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CallAddCurveSWC));
-
+	cout << "connection success!!! liqi " << endl;
 }
 
 void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double createmode)
 {
+	cout << "call addcurveswc success" << endl;
 	Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+	for (int i = 0; i < loc_list.size; i++)
+	{
+		cout << "loc_list " << i << loc_list.at(i).x << " " << loc_list.at(i).y << " " << loc_list.at(i).z << endl;
+	}
 	rendererGL1Ptr->addCurveSWC(loc_list, chno, createmode);
 }
 
