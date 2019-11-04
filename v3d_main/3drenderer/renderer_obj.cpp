@@ -1681,7 +1681,7 @@ void Renderer_gl1::updateNeuronBoundingBox()
 
 
 #define __add_curve_SWC_with_default_type___
-void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode)
+void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode,bool fromserver)
 {
 #define CURVE_NAME "curve_segment"
 #define CURVE_FILE "curve_segment"
@@ -1725,7 +1725,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd,creatmode);
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
-            curImg->update_3drenderer_neuron_view(w, this);
+			curImg->update_3drenderer_neuron_view(w, this, fromserver);
         }
     }
 
