@@ -1264,6 +1264,11 @@ void Renderer_gl1::updateLandmark()
 			S.name = listLoc[i].name.c_str();
 			S.comment = listLoc[i].comments.c_str();
 			listMarker.append(S);
+            qDebug()<<" marker :x,y,z"<<S.x<<"\t"<<S.y<<"\t"<<S.z;
+
+
+            V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+//            w->TeraflyCommunicator->onReadySend()
 		}
 	}
 #endif

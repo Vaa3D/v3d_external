@@ -3963,7 +3963,7 @@ void V3dR_GLWidget::updateWithTriView()
 	if (renderer)
 	try //080927
 	{
-		renderer->updateLandmark();
+        renderer->updateLandmark();
 		renderer->updateTracedNeuron();
 		//updateTool(); //assume has called in above functions
 		POST_updateGL();

@@ -180,8 +180,11 @@ bool MainWindow::setLandmark(void* window, QList<LocationSimple>& landmark_list)
 	XFormWidget* w = validateImageWindow(window);
 	if (w)
 	{
+        qDebug()<<"dasdadkashfkjdhfjh";
 		qDebug()<<"MainWindow setLandmark: "<< w << &landmark_list;
+
 		w->getImageData()->listLandmarks = landmark_list;
+        qDebug()<<"54658432456841";
 		//missing update?, by Hanchuan Peng, 100602 //updateImageWindow
 		return true;
 	}
@@ -429,12 +432,16 @@ void XFormWidget::pushObjectIn3DWindow()
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D
 			&& (w = mypara_3Dview.window3D->getGLWidget()))
 	{
+        qDebug()<<"jdgfshjasgfhj";
 		w->updateWithTriView();
+        qDebug()<<"fascdfugjafdasd";
 	}
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
+        qDebug()<<"gashjfghjcdgsystgfwtg";
 		w->updateWithTriView();
+        qDebug()<<"sadbhafghjacfhjgcdhjas";
 	}
 }
 void XFormWidget::pushImageIn3DWindow()

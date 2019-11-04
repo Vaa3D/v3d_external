@@ -1020,7 +1020,9 @@ bool V3d_PluginLoader::setLandmark(v3dhandle image_window, LandmarkList& landmar
 {
 	if (v3d_mainwindow)
 	{
+        qDebug()<<"ftgdfyghasfdtyfasdty";
 		return v3d_mainwindow->setLandmark(image_window, landmark_list);
+        qDebug()<<"after v3d_mainwindow->setLandmark(image_window, landmark_list);";
 	}
 	return false;
 }
