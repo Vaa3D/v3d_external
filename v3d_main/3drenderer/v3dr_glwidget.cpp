@@ -228,7 +228,7 @@ void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double create
 	{
 		cout << "loc_list " << i << loc_list.at(i).x << " " << loc_list.at(i).y << " " << loc_list.at(i).z << endl;
 	}
-	rendererGL1Ptr->addCurveSWC(loc_list, chno, createmode);
+	rendererGL1Ptr->addCurveSWC(loc_list, chno, createmode,true);
 }
 
 void V3dR_GLWidget::choiceRenderer()
