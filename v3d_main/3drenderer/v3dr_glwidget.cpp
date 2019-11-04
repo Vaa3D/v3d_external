@@ -224,7 +224,7 @@ void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double create
 {
 	cout << "call addcurveswc success" << endl;
 	Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
-	for (int i = 0; i < loc_list.size; i++)
+	for (int i = 0; i < loc_list.size(); i++)
 	{
 		cout << "loc_list " << i << loc_list.at(i).x << " " << loc_list.at(i).y << " " << loc_list.at(i).z << endl;
 	}
