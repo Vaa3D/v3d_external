@@ -215,8 +215,15 @@ void V3dR_GLWidget::SetupCollaborateInfo()
 	{
 		TeraflyCommunicator->ImageStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
 		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
-
 	}
+	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CallAddCurveSWC));
+
+}
+
+void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double createmode)
+{
+	Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+	rendererGL1Ptr->addCurveSWC(loc_list, chno, createmode);
 }
 
 void V3dR_GLWidget::choiceRenderer()

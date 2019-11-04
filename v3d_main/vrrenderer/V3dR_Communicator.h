@@ -117,7 +117,7 @@ private slots:
     void askserver();
 signals:
     void messageMade();
-
+	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
 private:
 	
 	
