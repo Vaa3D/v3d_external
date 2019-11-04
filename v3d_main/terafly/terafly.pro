@@ -85,9 +85,9 @@ DEFINES += TERACONVERTER_PATCH
 
 #setup iomanager
 INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
-HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h \
-    src/presentation/fileserver.h \
-    src/presentation/fileserver.h
+HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h #\
+#    src/presentation/fileserver.h \
+#    src/presentation/fileserver.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/ioplugins.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/IOPluginAPI.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/exampleplugin2D/exampleplugin2D.h

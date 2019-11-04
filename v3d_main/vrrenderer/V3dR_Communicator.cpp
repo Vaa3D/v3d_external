@@ -8,9 +8,6 @@
 #include <iostream>
 #include <sstream>
 
-
-
-std::vector<Agent> Agents(0);
 FileSocket_send::FileSocket_send(QString ip,QString port,QString anofile_path,QObject *parent)
     :QTcpSocket (parent)
 {
@@ -231,12 +228,9 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 
 	// NTNumcurrentUser = (*ntlist).size();
 	// std::cout<<"NTNumcurrentUser "<<NTNumcurrentUser<<std::endl;
-
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
     socket = 0;
-
-
 //	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
     asktimer=nullptr;
@@ -370,7 +364,7 @@ void V3dR_Communicator::onReadyRead() {
             {
                 asktimer=new QTimer(this);
                 connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
-                asktimer->start(5);
+                asktimer->start(1000);
             }
 		}
 		else if (systemRex.indexIn(line) != -1) {
@@ -419,19 +413,19 @@ void V3dR_Communicator::onReadyRead() {
 			if(clrMSGs.size()<2) return;
 			QString user=clrMSGs.at(0);
 			QString clrtype=clrMSGs.at(1);
-			//for(int i=0;i<VR_Communicator->Agents.size();i++)
-			//{
-			//	if(VR_Communicator->Agents.at(i).name!=user) continue;
-			//	//update agent color
-			//	VR_Communicator->Agents.at(i).colorType=clrtype.toInt();
-			//	qDebug()<<"user:"<<user<<" receievedColorTYPE="<<VR_Communicator->Agents.at(i).colorType;
-			//	if(user == userName)
-			//		pMainApplication->SetupCurrentUserInformation(userName.toStdString(), VR_Communicator->Agents.at(i).colorType);
-			//}
+            for(int i=0;i<this->Agents.size();i++)
+            {
+                if(this->Agents.at(i).name!=user) continue;
+                //update agent color
+                this->Agents.at(i).colorType=clrtype.toInt();
+                qDebug()<<"user:"<<user<<" receievedColorTYPE="<<this->Agents.at(i).colorType;
+//				if(user == userName)
+//					pMainApplication->SetupCurrentUserInformation(userName.toStdString(), VR_Communicator->Agents.at(i).colorType);
+            }
+
+
 		}
 		else if (deletecurveRex.indexIn(line) != -1) {
-
-
             QString username=deletecurveRex.cap(1);
             QString delPOS=deletecurveRex.cap(2).trimmed();
 
@@ -551,6 +545,14 @@ void V3dR_Communicator::onReadyRead() {
 		else if (messageRex.indexIn(line) != -1) {
 
             QString user=messageRex.cap(1);
+            int colortype=21;
+            for(int i=0;i<Agents.size();i++)
+                {
+                if(Agents[i].name==user)
+                {
+                    colortype=Agents[i].colorType;
+                }
+            }
             QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
             QString LOChead=curvePOSList[0].trimmed();

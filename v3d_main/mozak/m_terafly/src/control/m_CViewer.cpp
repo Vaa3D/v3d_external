@@ -1618,47 +1618,69 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
 void CViewer::createMarkerAt(int x, int y) throw (itm::RuntimeException)
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s, point = (%x, %y)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
+    qDebug()<<"1-00";
     view3DWidget->getRenderer()->hitPen(x, y);
+    qDebug()<<"1-01";
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
+    qDebug()<<"1-02";
     undoStack.beginMacro("create marker");
+    qDebug()<<"1-03";
     undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
+    qDebug()<<"1-04";
     undoStack.endMacro();
+    qDebug()<<"1-05";
     if (PAnoToolBar::instance()->buttonUndo != 0)
         PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+    qDebug()<<"1-06";
     // all markers have the same color when they are created
     vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
+    qDebug()<<"1-07";
     V3D_env->setLandmark(window, vaa3dMarkers);
+    qDebug()<<"1-08";
     V3D_env->pushObjectIn3DWindow(window);
-
+    qDebug()<<"1-09";
     //update visible markers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+    qDebug()<<"1-10";
 }
 
 void CViewer::createMarker2At(int x, int y) throw (itm::RuntimeException)
 {
     /**/itm::debug(itm::LEV1, strprintf("title = %s, point = (%x, %y)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
+    qDebug()<<"2-00";
     view3DWidget->getRenderer()->hitPen(x, y);
-
+    qDebug()<<"2-01";
     static bool every_two_clicks_flag = true;
+    qDebug()<<"2-02";
     every_two_clicks_flag = !every_two_clicks_flag;
+    qDebug()<<"2-03";
     if(every_two_clicks_flag)
     {
+        qDebug()<<"2-04";
         QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
+        qDebug()<<"2-05";
         undoStack.beginMacro("create marker");
+        qDebug()<<"2-06";
         undoStack.push(new QUndoMarkerCreate(this, vaa3dMarkers.back()));
+        qDebug()<<"2-07";
         undoStack.endMacro();
+        qDebug()<<"2-08";
         if (PAnoToolBar::instance()->buttonUndo != 0)
             PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+        qDebug()<<"2-09";
         // all markers have the same color when they are created
         vaa3dMarkers.back().color = CImageUtils::vaa3D_color(0,0,255);
+        qDebug()<<"2-10";
         V3D_env->setLandmark(window, vaa3dMarkers);
+        qDebug()<<"2-11";
         V3D_env->pushObjectIn3DWindow(window);
-
+qDebug()<<"2-12";
         //update visible markers
         PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
-
+qDebug()<<"2-13";
         // start another operation
         PAnoToolBar::instance()->buttonMarkerCreate2Checked(true);
+qDebug()<<"2-14";
     }
 }
 

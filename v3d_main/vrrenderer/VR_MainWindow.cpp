@@ -10,7 +10,7 @@
 #include <sstream>
 #include <math.h>
 
-extern std::vector<Agent> Agents;
+//extern std::vector<Agent> Agents;
 //std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QWidget()
@@ -95,7 +95,7 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 			21,
 			0,
 		};
-		Agents.push_back(agent00);
+        VR_Communicator->Agents.push_back(agent00);
 
 	}
 
@@ -119,7 +119,7 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 			21,
 			0
 		};
-		Agents.push_back(agent00);
+        VR_Communicator->Agents.push_back(agent00);
 
 	}
     socket->connectToHost(serverName, vr_Port.toUInt());
