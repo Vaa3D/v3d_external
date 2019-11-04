@@ -331,7 +331,7 @@ void V3dR_Communicator::onReadyRead() {
 
 
 		QString line = QString::fromUtf8(socket->readLine()).trimmed();
-        qDebug()<<"receive : in Terafly"<<line;
+//        qDebug()<<"receive : in Terafly"<<line;
 		if (usersRex.indexIn(line) != -1) {
 			QStringList users = usersRex.cap(1).split(",");
 			//qDebug()<<"Current users are:";
@@ -567,7 +567,7 @@ void V3dR_Communicator::onReadyRead() {
             {
 
                 QStringList pointMSG=curvePOSList.at(i).split(" ");
-                qDebug()<<curvePOSList.at(i).split(" ");
+//                qDebug()<<curvePOSList.at(i).split(" ");
                 LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
             }
 			vector<XYZ> vec_convertcoords;
