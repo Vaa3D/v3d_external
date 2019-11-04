@@ -570,6 +570,14 @@ void V3dR_Communicator::onReadyRead() {
                 qDebug()<<curvePOSList.at(i).split(" ");
                 LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
             }
+			vector<XYZ> vec_convertcoords;
+			for (int i = 0; i < LOC.size(); i++)
+			{
+				XYZ convertcoords = ConvertGlobaltoLocalCroods(LOC[i].x, LOC[i].y, LOC[i].z);
+				vec_convertcoords.emplace_back(convertcoords);
+			}
+
+			CollaAddcurveSWC(vec_convertcoords, chno, cur_createmode);
             qDebug()<<"======================messageRex in Terafly end============";
 
 
