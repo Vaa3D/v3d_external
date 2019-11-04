@@ -242,12 +242,12 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 }
 
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
-    socket=new QTcpSocket;
+    socket=new QTcpSocket(this);
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 //    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
  //   connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
+//    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
 
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     qDebug()<<"start login messageserver";
@@ -709,7 +709,7 @@ void V3dR_Communicator::onDisconnected() {
     qDebug("Now disconnect with the server."); 
 	*clienton = false;
 	//Agents.clear();
-	this->close();
+//	this->close();
     deleteLater();
 
 
