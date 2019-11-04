@@ -185,7 +185,7 @@ void VR_MainWindow::onReadyRead() {
     while (VR_Communicator->socket->canReadLine()) {
         QString line = QString::fromUtf8(VR_Communicator->socket->readLine()).trimmed();
 
-        qDebug()<<"receive : in VR\n"<<line;
+//        qDebug()<<"receive : in VR\n"<<line;
 
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
@@ -485,7 +485,7 @@ void VR_MainWindow::onReadyRead() {
             qDebug()<<"======================messageindex in TeraVr begin=================";
             for(int i=1;i<MSGs.size();i++)
             {
-                qDebug()<<MSGs.at(i)<<endl;
+//                qDebug()<<MSGs.at(i)<<endl;
 
                 QString PointMSG=MSGs.at(i);
                 QStringList poingmsg=PointMSG.trimmed().split(" ");
