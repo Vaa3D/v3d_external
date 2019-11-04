@@ -473,7 +473,7 @@ void VR_MainWindow::onReadyRead() {
             //qDebug()<<"recive NO."<<numreceivedmessage<<" :"<<line;     //hl debug
 
             QString user=messageRex.cap(1);
-            QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
+            QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//list of nodes: seg header_node 1_node 2.....
 //            for(int i=0;i<MSGs.size();i++)
 //            {
 //                qDebug()<<MSGs.at(i)<<endl;
