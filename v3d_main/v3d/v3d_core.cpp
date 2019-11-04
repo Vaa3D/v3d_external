@@ -6635,9 +6635,10 @@ update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer,bo
 				glwidget->TeraflyCommunicator->cur_createmode = cur_createmode;
 				glwidget->TeraflyCommunicator->UpdateSendPoolNTList(tracedNeuron.seg.back());
 
-				b_addnewSWC = false;
+				
 			}
 		}
+		b_addnewSWC = false;
 
 	}
 	//if(this->tracedNeuron.seg.size()>0)
