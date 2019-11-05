@@ -83,6 +83,7 @@ public:
 	//void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
 	//void Update3DViewNTList(QString &msg, int type);
 	void UpdateSendPoolNTList(V_NeuronSWC seg);
+    void UpdateSendPoolNode(float,float,float);
 	void Collaborationsendmessage();
 	void Collaborationaskmessage();
 	//trans func
@@ -105,6 +106,7 @@ public:
 
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
+
 	//void RunVRMainloop();
 	//void SendHMDPosition();
 	void CollaborationMainloop();
@@ -118,6 +120,7 @@ private slots:
 signals:
     void messageMade();
 	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
+    void CollAddMarker(XYZ);
 private:
 	
 	
@@ -130,7 +133,8 @@ private:
 	vector<vector<XYZ>> loc_ReceivePool;
 	int NTNumReceieved;
 	int NTNumcurrentUser;
-    quint64 nextblocksize;
+public:
+    quint16 nextblocksize;
 private:
 	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
 	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
