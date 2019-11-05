@@ -1730,6 +1730,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 
 				if (w->TeraflyCommunicator && curImg->colla_cur_seg.row.size() > 0)
 				{
+					cout << "Send msg success" << endl;
 					w->TeraflyCommunicator->cur_chno = curImg->cur_chno;
 					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
 					w->TeraflyCommunicator->UpdateSendPoolNTList(curImg->colla_cur_seg);
