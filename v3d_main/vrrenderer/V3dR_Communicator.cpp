@@ -544,6 +544,7 @@ void V3dR_Communicator::onReadyRead() {
 		//dragnodeRex
 		else if (messageRex.indexIn(line) != -1) {
 
+            qDebug()<<"======================messageRex in Terafly begin============";
             QString user=messageRex.cap(1);
             int colortype=21;
             for(int i=0;i<Agents.size();i++)
@@ -562,7 +563,7 @@ void V3dR_Communicator::onReadyRead() {
             double createmode=LOCheadList[LOCheadList.size()-1].toDouble();
 
             vector <XYZ> LOC;//point (x,y,z) list
-            qDebug()<<"======================messageRex in Terafly begin============";
+
             for (int i=1;i<curvePOSList.size();i++)//3,4,5
             {
 
