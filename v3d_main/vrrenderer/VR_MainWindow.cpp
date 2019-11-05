@@ -314,59 +314,83 @@ void VR_MainWindow::onReadyRead() {
 		}
         else if (deletecurveRex.indexIn(line) != -1) {
 			qDebug() << "------------"<<line;
-            QStringList delMSGs = deletecurveRex.cap(2).split(" ");
-			if(delMSGs.size()<2) 
-			{
-					qDebug()<<"size < 2";
-					return;
-			}
             QString user = deletecurveRex.cap(1);
-            float dx = delMSGs.at(0).toFloat();
-            float dy = delMSGs.at(1).toFloat();
-            float dz = delMSGs.at(2).toFloat();
-            float resx = delMSGs.at(3).toFloat();
-            float resy = delMSGs.at(4).toFloat();
-            float resz = delMSGs.at(5).toFloat();
+            QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
+            if(delMSGs.size()<1)
+            {
+                    qDebug()<<"size < 2";
+                    return;
+            }
 
-			pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);
-			
-            qDebug()<<"pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);";
-			qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
-			XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
-			qDebug()<<"user, "<<user<<" Converted Receive curve: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
-			XYZ TeraflyglobalPos =XYZ(dx ,dy,dz);
+            QStringList delIDList;
+            for(int i=0;i<delMSGs.size();i++)
+            {
+                QStringList tempnodeList=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
 
-			dx/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
-			dy/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
-			dz/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
+                if(tempnodeList.size()<4) continue;
+                float dx = tempnodeList.at(0).toFloat();
+                float dy = tempnodeList.at(1).toFloat();
+                float dz = tempnodeList.at(2).toFloat();
+                float resx = tempnodeList.at(3).toFloat();
+                float resy = tempnodeList.at(4).toFloat();
+                float resz = tempnodeList.at(5).toFloat();
+
+                pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);
+
+                XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
+                XYZ TeraflyglobalPos =XYZ(dx ,dy,dz);
+
+                QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
+                delIDList.append(delID);
+
+            }
+
+            for(int i=0;i<delIDList.size();i++)
+            {
+                pMainApplication->DeleteSegment(delIDList.at(i));
+            }
+
+
+
 			
-			if(TeraflyglobalPos.x<VRVolumeStartPoint.x || 
-			TeraflyglobalPos.y<VRVolumeStartPoint.y||
-			TeraflyglobalPos.z<VRVolumeStartPoint.z||
-			TeraflyglobalPos.x>VRVolumeEndPoint.x||
-			TeraflyglobalPos.y>VRVolumeEndPoint.y||
-			TeraflyglobalPos.z>VRVolumeEndPoint.z
-			)
-			{
-				qDebug()<<"push_back test delete point ";
-				VROutinfo.deletedcurvespos.push_back(TeraflyglobalPos);
-			}
-			qDebug()<<"deletedcurvespos"<<dx<<" "<<dy<<" "<<dz;
-			if(user==userName)
-			{
-				pMainApplication->READY_TO_SEND=false;
-				CURRENT_DATA_IS_SENT=false;
-				pMainApplication->ClearCurrentNT();
-			}
-			QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
-            qDebug()<<"delete ID"<<delID<<"++++++++++++++++++++";
-			bool delerror = pMainApplication->DeleteSegment(delID);
+//            qDebug()<<"pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);";
+//			qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
+
+//			qDebug()<<"user, "<<user<<" Converted Receive curve: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
+
+
+//			dx/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
+//			dy/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
+//			dz/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
+			
+//			if(TeraflyglobalPos.x<VRVolumeStartPoint.x ||
+//			TeraflyglobalPos.y<VRVolumeStartPoint.y||
+//			TeraflyglobalPos.z<VRVolumeStartPoint.z||
+//			TeraflyglobalPos.x>VRVolumeEndPoint.x||
+//			TeraflyglobalPos.y>VRVolumeEndPoint.y||
+//			TeraflyglobalPos.z>VRVolumeEndPoint.z
+//			)
+//			{
+//				qDebug()<<"push_back test delete point ";
+//				VROutinfo.deletedcurvespos.push_back(TeraflyglobalPos);
+//			}
+//			qDebug()<<"deletedcurvespos"<<dx<<" "<<dy<<" "<<dz;
+
+
+//            qDebug()<<"delete ID"<<delID<<"++++++++++++++++++++";
+//			bool delerror = pMainApplication->DeleteSegment(delID);
             qDebug()<<".................................";
-			if(delerror==true)
-				qDebug()<<"Segment Deleted.";
-			else
-				qDebug()<<"Cannot Find the Segment ";
+//			if(delerror==true)
+//				qDebug()<<"Segment Deleted.";
+//			else
+//				qDebug()<<"Cannot Find the Segment ";
 			// pMainApplication->MergeNeuronTrees();
+            if(user==userName)
+            {
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+                pMainApplication->ClearCurrentNT();
+            }
         }
         else if (markerRex.indexIn(line) != -1) {
             QString user = markerRex.cap(1);
