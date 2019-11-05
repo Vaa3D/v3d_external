@@ -888,6 +888,7 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
 	for (V3DLONG k = 0; k < (V3DLONG)cur_seg.nrows(); k++){
 		colla_cur_seg.append(cur_seg.row[k]);
 	}
+	colla_cur_seg.name = cur_seg.name;
     tracedNeuron.name = TRACED_NAME;
     tracedNeuron.file = TRACED_FILE;
 

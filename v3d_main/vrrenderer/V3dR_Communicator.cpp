@@ -284,6 +284,7 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 //	NTList_SendPool->append(seg);
 
     onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg)));
+	cout << "send over success" << endl;
 }
 
 void V3dR_Communicator::askserver()
