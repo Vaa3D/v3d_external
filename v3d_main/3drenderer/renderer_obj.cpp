@@ -1725,7 +1725,17 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd,creatmode);
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
-			curImg->update_3drenderer_neuron_view(w, this, fromserver);
+			if (!fromserver)
+			{
+
+				if (w->TeraflyCommunicator && curImg->colla_cur_seg.row.size() > 0)
+				{
+					w->TeraflyCommunicator->cur_chno = curImg->cur_chno;
+					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
+					w->TeraflyCommunicator->UpdateSendPoolNTList(curImg->colla_cur_seg);
+				}
+			}	
+			curImg->update_3drenderer_neuron_view(w, this);
         }
     }
 

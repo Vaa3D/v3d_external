@@ -6621,26 +6621,11 @@ void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 //}
 
 void My4DImage::
-update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer,bool b_fromserver)
+update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
 {
 	cout << "pos3 " << endl;
 	LOAD_traced_neuron(this, renderer);
-	if (b_addnewSWC && !b_fromserver)
-	{
-		if (tracedNeuron.seg.size() > 0)
-		{
-			if (glwidget->TeraflyCommunicator)
-			{
-				glwidget->TeraflyCommunicator->cur_chno = cur_chno;
-				glwidget->TeraflyCommunicator->cur_createmode = cur_createmode;
-				glwidget->TeraflyCommunicator->UpdateSendPoolNTList(tracedNeuron.seg.back());
 
-				
-			}
-		}
-		b_addnewSWC = false;
-
-	}
 	//if(this->tracedNeuron.seg.size()>0)
 	//for(int i = 0;i<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row.size();i++)
 	//{
