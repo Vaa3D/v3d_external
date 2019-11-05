@@ -111,7 +111,7 @@ public:
 
 // link to Rendering function
 //protected:
-	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
+        virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. the x and y parameters by Hanchuan Peng,090204
 
 	virtual void loadObj();  	// called by initialize()  	// makeCurrent
 	virtual void cleanObj(); 	// called by ~Renderer_gl1	// makeCurrent
@@ -332,7 +332,7 @@ public:
 	void refineMarkerCenter();
 	void refineMarkerLocal(int marker_id);
 
-	void addMarker(XYZ &loc);
+        void addMarker(XYZ &loc,bool fromserver=0);
 	void addMarkerUnique(XYZ &loc);
     void addSpecialMarker(XYZ &loc); //add special marker, by XZ, 20190720
 	void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120

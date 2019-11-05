@@ -315,7 +315,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
             send_MSG="/say: GoodBye~";
         }
 
-        qDebug()<<"in communicator _ onreadysend____"<<send_MSG;
+//        qDebug()<<"in communicator _ onreadysend____"<<send_MSG;
 
         QByteArray block;
         QDataStream dts(&block,QIODevice::WriteOnly);
@@ -461,6 +461,7 @@ void V3dR_Communicator::onReadyRead() {
         }
         else if (markerRex.indexIn(line) != -1) {
 
+            qDebug()<<"+============marker process begin========";
             QString user=markerRex.cap(1);
             QStringList markerMSGs = markerRex.cap(2).split(" ");
             if(markerMSGs.size()<3)
@@ -480,6 +481,7 @@ void V3dR_Communicator::onReadyRead() {
 
             if(user!=userName)
                 emit CollAddMarker(localNode);
+            qDebug()<<"==================marker process end====================";
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {

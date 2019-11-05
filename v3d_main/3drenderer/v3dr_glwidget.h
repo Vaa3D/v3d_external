@@ -126,6 +126,7 @@ public:
 	void SetupCollaborateInfo();
 	public slots:
 	void CallAddCurveSWC(vector<XYZ>loc_list,int chno,double createmode);
+    void CallAddMarker(XYZ);
 public:
 //protected:
 	virtual void choiceRenderer();

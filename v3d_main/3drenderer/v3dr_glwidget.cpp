@@ -218,6 +218,7 @@ void V3dR_GLWidget::SetupCollaborateInfo()
 		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
 	}
 	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CallAddCurveSWC(vector<XYZ>, int, double)));
+    connect(TeraflyCommunicator,SIGNAL(CollAddMarker(XYZ)),this,SLOT(CallAddMarker(XYZ)));
 	cout << "connection success!!! liqi " << endl;
 }
 
@@ -232,6 +233,12 @@ void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double create
 	rendererGL1Ptr->addCurveSWC(loc_list, chno, createmode,true);
 }
 
+void V3dR_GLWidget::CallAddMarker(XYZ local_node)
+{
+    cout << "call addmarker success" << endl;
+    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+    rendererGL1Ptr->addMarker(local_node,true);
+}
 void V3dR_GLWidget::choiceRenderer()
 {
 	qDebug("V3dR_GLWidget::choiceRenderer");
@@ -1890,7 +1897,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			if(myvrwin)
 				delete myvrwin;
 			myvrwin = 0;
-			myvrwin = new VR_MainWindow();
+            myvrwin = new VR_MainWindow(TeraflyCommunicator);
 			myvrwin->setWindowTitle("VR MainWindow");
 			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			VRClientON = linkerror;
@@ -1901,7 +1908,10 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
-			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,CollaborationCreatorRes,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
+            int _call_that_func =
+      myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),
+      linkerror,VRinfo,CollaborationCreatorRes,TeraflyCommunicator,
+     &teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
 
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -4183,17 +4193,18 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 				++indexinNewNT;
 			}
 			qDebug()<<"pos 2";
-			if(deleteindex>=deletedcurvesindex.size()&&indexinNewNT<nt.listNeuron.size())//process last delete point then copy rest SWC into NewNT
-			{
-				qDebug()<<"pos 3";
-				while(indexinNewNT<nt.listNeuron.size())
-				{
-				qDebug()<<"NewNT.listNeuron.append"<<indexinNewNT;
-				NewNT.listNeuron.append(nt.listNeuron.at(indexinNewNT));
-        		NewNT.hashNeuron.insert(nt.listNeuron.at(indexinNewNT).n, nt.listNeuron.size()-1);
-				++indexinNewNT;
-				}
-			}
+            //mul indexs
+            if(deleteindex>=deletedcurvesindex.size()&&indexinNewNT<nt.listNeuron.size())//process last delete point then copy rest SWC into NewNT
+            {
+                qDebug()<<"pos 3";
+                while(indexinNewNT<nt.listNeuron.size())
+                {
+                qDebug()<<"NewNT.listNeuron.append"<<indexinNewNT;
+                NewNT.listNeuron.append(nt.listNeuron.at(indexinNewNT));
+                NewNT.hashNeuron.insert(nt.listNeuron.at(indexinNewNT).n, nt.listNeuron.size()-1);
+                ++indexinNewNT;
+                }
+            }
 		}
 		if(NewNT.listNeuron.size())
 		terafly::PluginInterface::setSWC(NewNT);
