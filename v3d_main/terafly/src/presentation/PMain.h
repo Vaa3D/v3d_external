@@ -589,6 +589,7 @@ class terafly::PMain : public QWidget
 /*----------------collaborate mdoe-------------------*/
 public:
         ManageSocket * managesocket;
+		V3dR_Communicator * Communicator;
 protected:
         QMenu* collaborateMenu;
         QAction* loginAction;

@@ -881,6 +881,14 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     cur_seg.name = qPrintable(tmpss);
     cur_seg.b_linegraph=true; //donot forget to do this
     tracedNeuron.append(cur_seg);
+	b_addnewSWC = true;
+	cur_chno = chno;
+	cur_createmode = creatmode;
+	this->colla_cur_seg.clear();
+	for (V3DLONG k = 0; k < (V3DLONG)cur_seg.nrows(); k++){
+		colla_cur_seg.append(cur_seg.row[k]);
+	}
+	colla_cur_seg.name = cur_seg.name;
     tracedNeuron.name = TRACED_NAME;
     tracedNeuron.file = TRACED_FILE;
 

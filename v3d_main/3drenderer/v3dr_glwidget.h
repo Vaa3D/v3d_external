@@ -122,6 +122,11 @@ public:
 
 	static bool resumeCollaborationVR;
 #endif
+	//Collaboration mode
+	void SetupCollaborateInfo();
+	public slots:
+	void CallAddCurveSWC(vector<XYZ>loc_list,int chno,double createmode);
+public:
 //protected:
 	virtual void choiceRenderer();
 	virtual void settingRenderer(); // for setting the default renderer state when initialize
@@ -171,7 +176,7 @@ public:
 
 public slots:
    	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
-
+	
 #define __view3dcontrol_interface__
 public:
 	View3DControl * getView3DControl() {return dynamic_cast<View3DControl *>(this);}

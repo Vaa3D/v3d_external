@@ -6572,8 +6572,10 @@ void load_segment_neuron(My4DImage* curImg, Renderer_gl1* curRen) // 090622 RZC:
 void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 {
 	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
+	cout<<"liqi  curImag->tracedNeuron.size "<<curImg->tracedNeuron.seg.size()<<endl;
 	merged_neuron.name = curImg->tracedNeuron.name;
 	merged_neuron.file = curImg->tracedNeuron.file;
+	cout<<"liqi load_merged_neuron" << endl;
     curRen->updateNeuronTree(merged_neuron);
 
 	for (size_t i = 0; i < curImg->tracedNeuron.seg.size(); ++i) // Generate a branchID -> segID map, MK, May, 2018
@@ -6583,11 +6585,60 @@ void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 	}
 }
 
+//void My4DImage::
+//update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
+//{
+//	cout<<"pos3 "<<endl;
+//    LOAD_traced_neuron(this, renderer);
+//	if(b_addnewSWC)
+//	{
+//		if(tracedNeuron.seg.size()>0)
+//		{
+//            if(glwidget->TeraflyCommunicator)
+//            {
+//                glwidget->TeraflyCommunicator->cur_chno = cur_chno;
+//                glwidget->TeraflyCommunicator->cur_createmode  = cur_createmode;
+//                glwidget->TeraflyCommunicator->UpdateSendPoolNTList(tracedNeuron.seg.back());
+//
+//                b_addnewSWC = false;
+//            }
+//		}
+//
+//	}
+//	//if(this->tracedNeuron.seg.size()>0)
+//	//for(int i = 0;i<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row.size();i++)
+//	//{
+//
+//	//	cout<<"x = "<<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row[i].x;
+//	//	cout<<"y = "<<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row[i].y;
+//	//	cout<<"z = "<<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row[i].z;
+//	//}
+//	//if(glwidget->TeraflyCommunicator && this->tracedNeuron.seg.size()>=1)
+//	//{
+//	//	glwidget->TeraflyCommunicator->UpdateSendPoolNTList(this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1]);
+//	//}
+//    glwidget->updateTool();
+//}
+
 void My4DImage::
 update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
 {
-    LOAD_traced_neuron(this, renderer);
-    glwidget->updateTool();
+	cout << "pos3 " << endl;
+	LOAD_traced_neuron(this, renderer);
+
+	//if(this->tracedNeuron.seg.size()>0)
+	//for(int i = 0;i<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row.size();i++)
+	//{
+
+	//	cout<<"x = "<<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row[i].x;
+	//	cout<<"y = "<<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row[i].y;
+	//	cout<<"z = "<<this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1].row[i].z;
+	//}
+	//if(glwidget->TeraflyCommunicator && this->tracedNeuron.seg.size()>=1)
+	//{
+	//	glwidget->TeraflyCommunicator->UpdateSendPoolNTList(this->tracedNeuron.seg[this->tracedNeuron.seg.size()-1]);
+	//}
+	glwidget->updateTool();
 }
 
 void My4DImage::update_3drenderer_neuron_view()
@@ -6598,7 +6649,7 @@ void My4DImage::update_3drenderer_neuron_view()
 	if (xwidget->mypara_3Dview.b_still_open && xwidget->mypara_3Dview.window3D)
 	{
 		Renderer_gl1 * cur_renderer = (Renderer_gl1 *)(xwidget->mypara_3Dview.window3D->getGLWidget()->getRenderer());
-
+		cout<<"pos2 "<<endl;
 		LOAD_traced_neuron(this, cur_renderer);
 
 		xwidget->mypara_3Dview.window3D->getGLWidget()->updateTool(); // 090622 RZC
@@ -6608,7 +6659,7 @@ void My4DImage::update_3drenderer_neuron_view()
 	if (xwidget->mypara_3Dlocalview.b_still_open && xwidget->mypara_3Dlocalview.window3D)
 	{
 		Renderer_gl1 * cur_renderer = (Renderer_gl1 *)(xwidget->mypara_3Dlocalview.window3D->getGLWidget()->getRenderer());
-
+		cout<<"pos1 "<<endl;
 		LOAD_traced_neuron(this, cur_renderer);
 
 		xwidget->mypara_3Dlocalview.window3D->getGLWidget()->updateTool();

@@ -6692,18 +6692,21 @@ QString CMainApplication::NT2QString()
 	//QString str=QString::fromStdString(str_temp);
 	////QString str="hello world";
 	//return str;
-	string messageBuff="";
+    string messageBuff="TeraVR_";
 	for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
 	{
 		char packetbuff[300];
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
+        qDebug()<<"before convert :(x,y,z):"<<S_temp.x<<S_temp.y<<S_temp.z;
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
-		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
+
+		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld_",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
 		messageBuff +=packetbuff;
 	}
 
 	QString str=QString::fromStdString(messageBuff);
+    qDebug()<<"NT2QString:"<<str;
 	return str;
 }
 
@@ -6756,10 +6759,10 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 		{
 			S_temp.pn = qsl[i].toInt();
 			//converted received NT XYZ coords
-			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);
-			S_temp.x = tempxyz.x;
-			S_temp.y = tempxyz.y;
-			S_temp.z = tempxyz.z;
+//			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);//转化为全局变量？
+//			S_temp.x = tempxyz.x;
+//			S_temp.y = tempxyz.y;
+//			S_temp.z = tempxyz.z;
 			newTempNT.listNeuron.append(S_temp);
 			newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
 		}
@@ -8144,6 +8147,8 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes)//localtogolbal
 {
+    qDebug()<<"1:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
+    qDebug()<<"2:"<<(targetRes.x/CollaborationCurrentRes.x)<<targetRes.y/CollaborationCurrentRes.y<<targetRes.z/CollaborationCurrentRes.z;
 	x+= (CmainVRVolumeStartPoint.x-1);
 	y+= (CmainVRVolumeStartPoint.y-1);
 	z+= (CmainVRVolumeStartPoint.z-1);
@@ -8160,7 +8165,8 @@ XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 	x-= (CmainVRVolumeStartPoint.x-1);
 	y-= (CmainVRVolumeStartPoint.y-1);
 	z-= (CmainVRVolumeStartPoint.z-1);
-
+    qDebug()<<"3:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
+    qDebug()<<"4:"<<(CollaborationMaxResolution.x/CollaborationCurrentRes.x)<<CollaborationMaxResolution.y/CollaborationCurrentRes.y<<CollaborationMaxResolution.z/CollaborationCurrentRes.z;
 	return XYZ(x,y,z);
 }
 //bool CMainApplication::FlashStuff(FlashType type,XYZ coords)
@@ -8342,4 +8348,9 @@ void CMainApplication::bindTexturePara()
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+}
+
+float CMainApplication::get_mglobalScal() const
+{
+    return m_globalScale;
 }

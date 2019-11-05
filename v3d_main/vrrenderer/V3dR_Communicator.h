@@ -88,10 +88,21 @@ public:
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
 	void MsgToV_NeuronSWC(QString msg);
+
+public:
+	float VR_globalScale;//used to 
     QString userName;
 	std::vector<Agent> Agents;
 //	ManageSocket * managesocket;
 	 QTcpSocket* socket;
+	 double cur_createmode;
+	 int cur_chno;
+
+	 XYZ ImageMaxRes;
+	 XYZ ImageCurRes;
+	 XYZ ImageStartPoint;
+
+
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
 	//void RunVRMainloop();
@@ -103,20 +114,26 @@ private slots:
     void onReadyRead();
     void onConnected();
     void onDisconnected();
+    void askserver();
 signals:
     void messageMade();
+	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
 private:
 	
-
+	
+        QTimer *asktimer;
 
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
 	bool * clienton;
-	V_NeuronSWC_list * NTList_SendPool;	
+//	V_NeuronSWC_list * NTList_SendPool;
 	vector<vector<XYZ>> loc_ReceivePool;
 	int NTNumReceieved;
 	int NTNumcurrentUser;
     quint64 nextblocksize;
+private:
+	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
+	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
 };
 
 

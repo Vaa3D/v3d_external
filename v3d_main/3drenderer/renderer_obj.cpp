@@ -1264,6 +1264,11 @@ void Renderer_gl1::updateLandmark()
 			S.name = listLoc[i].name.c_str();
 			S.comment = listLoc[i].comments.c_str();
 			listMarker.append(S);
+            qDebug()<<" marker :x,y,z"<<S.x<<"\t"<<S.y<<"\t"<<S.z;
+
+
+            V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+//            w->TeraflyCommunicator->onReadySend()
 		}
 	}
 #endif
@@ -1676,7 +1681,7 @@ void Renderer_gl1::updateNeuronBoundingBox()
 
 
 #define __add_curve_SWC_with_default_type___
-void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode)
+void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode,bool fromserver)
 {
 #define CURVE_NAME "curve_segment"
 #define CURVE_FILE "curve_segment"
@@ -1720,7 +1725,18 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd,creatmode);
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
-            curImg->update_3drenderer_neuron_view(w, this);
+			if (!fromserver)
+			{
+
+				if (w->TeraflyCommunicator && curImg->colla_cur_seg.row.size() > 0)
+				{
+					cout << "Send msg success" << endl;
+					w->TeraflyCommunicator->cur_chno = curImg->cur_chno;
+					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
+					w->TeraflyCommunicator->UpdateSendPoolNTList(curImg->colla_cur_seg);
+				}
+			}	
+			curImg->update_3drenderer_neuron_view(w, this);
         }
     }
 

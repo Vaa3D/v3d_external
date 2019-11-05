@@ -262,7 +262,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         downAction->setEnabled(false);
         loadAction->setEnabled(false);
         managesocket=0;
-
+		Communicator=nullptr;
     /*---------------------------------------------------*/
 
     /* ------------------------- "Options" menu -------------------------- */
@@ -4015,7 +4015,7 @@ void PMain::login()
     qDebug()<<"test login ";
 //    if(managesocket!=0)    delete managesocket;
     qDebug()<<"tset 2";
-    managesocket=new ManageSocket;
+    managesocket=new ManageSocket(this);
     managesocket->ip=serverName;
     managesocket->manageport=manageserver_Port;
     managesocket->name=userName;
@@ -4033,7 +4033,7 @@ void PMain::login()
     else{
         qDebug()<<"send:"<<QString(userName+":login."+"\n");
         connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
+//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
 
         managesocket->write(QString(userName+":login."+"\n").toUtf8());
@@ -4044,6 +4044,7 @@ void PMain::login()
         importAction->setEnabled(true);
         downAction->setEnabled(true);
         loadAction->setEnabled(true);
+//        managesocket->deleteLater()
     }
 }
 
@@ -4097,8 +4098,8 @@ void PMain::load()
     {
         qDebug()<<"-----------------load annotation----------";
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
-
-        cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
+		Communicator = new V3dR_Communicator;
+        cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
                 cur_win->getGLWidget()->TeraflyCommunicator,
@@ -4107,8 +4108,12 @@ void PMain::load()
                 managesocket,SLOT(messageMade()));
         connect(managesocket,SIGNAL(disconnected()),
                 cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));//注意，可能需要修改
+                SLOT(deleteLater()));//注意，可能需要修�?
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
+		//Set up Communicator Resolution info  for  convert Croods
+		int maxresindex = CImport::instance()->getResolutions()-1;
+		VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
+		Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4119,10 +4124,10 @@ void PMain::deleteManageSocket()
 {
     qDebug()<<"delete managesocket";
     qDebug()<<managesocket;
-//    managesocket->deleteLater();
+    managesocket->deleteLater();
 //    delete managesocket;
 //    managesocket=NULL;
-//    managesocket->deleteLater();
+    managesocket->deleteLater();
     loginAction->setText("log in");
     loginAction->setEnabled(true);
     logoutAction->setEnabled(false);
@@ -4172,23 +4177,25 @@ void PMain::ColLoadANO(QString ANOfile)
         {
             tmp=anoExp.cap(1);
         }
-        QFile *f = new QFile(tmp+".ano");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
 
-        f = new QFile(tmp+".ano.eswc");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
+        //ɾ�����ص��ļ�
+//        QFile *f = new QFile(tmp+".ano");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
 
-        f = new QFile(tmp+".ano.apo");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
+//        f = new QFile(tmp+".ano.eswc");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
+
+//        f = new QFile(tmp+".ano.apo");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
 
 
     }

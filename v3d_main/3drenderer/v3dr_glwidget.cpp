@@ -133,7 +133,10 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 	this->data_title = title;
 	this->renderer = 0;
     this->show_progress_bar = true;
-
+	terafly::PMain& pMain = *(terafly::PMain::getInstance());
+	this->TeraflyCommunicator = pMain.Communicator;
+	SetupCollaborateInfo();
+	
 	///////////////////////////////////////////////////////////////
 	init_members();
 	///////////////////////////////////////////////////////////////
@@ -205,6 +208,29 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 //////////////////////////////////////////////////////
 void V3dR_GLWidget::deleteRenderer() {makeCurrent(); DELETE_AND_ZERO(renderer);} //090710 RZC: to delete renderer before ~V3dR_GLWidget()
 void V3dR_GLWidget::createRenderer() {makeCurrent(); deleteRenderer(); initializeGL();} //090710 RZC: to create renderer at any time
+
+void V3dR_GLWidget::SetupCollaborateInfo()
+{
+	QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
+	if(rx.indexIn(data_title) != -1 && (TeraflyCommunicator !=nullptr))
+	{
+		TeraflyCommunicator->ImageStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
+		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
+	}
+	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CallAddCurveSWC(vector<XYZ>, int, double)));
+	cout << "connection success!!! liqi " << endl;
+}
+
+void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double createmode)
+{
+	cout << "call addcurveswc success" << endl;
+	Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+	for (int i = 0; i < loc_list.size(); i++)
+	{
+		cout << "loc_list " << i << loc_list.at(i).x << " " << loc_list.at(i).y << " " << loc_list.at(i).z << endl;
+	}
+	rendererGL1Ptr->addCurveSWC(loc_list, chno, createmode,true);
+}
 
 void V3dR_GLWidget::choiceRenderer()
 {
@@ -3943,7 +3969,7 @@ void V3dR_GLWidget::updateWithTriView()
 	if (renderer)
 	try //080927
 	{
-		renderer->updateLandmark();
+        renderer->updateLandmark();
 		renderer->updateTracedNeuron();
 		//updateTool(); //assume has called in above functions
 		POST_updateGL();
