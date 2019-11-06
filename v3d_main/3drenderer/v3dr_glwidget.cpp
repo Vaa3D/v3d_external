@@ -4270,6 +4270,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 {
     qDebug()<<"in CollaAddMarker";
+    qDebug()<<markerPOS;
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
