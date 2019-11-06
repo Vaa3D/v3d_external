@@ -51,7 +51,7 @@ signals:
 //	void sendPoolHead();
 private:
 	V3dR_Communicator* VR_Communicator;
-    QTcpSocket* socket;
+//    QTcpSocket* socket;
 	QString userName;
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;

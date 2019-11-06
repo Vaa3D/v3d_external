@@ -18,7 +18,7 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
-	socket = new QTcpSocket(this);
+//	socket = new QTcpSocket(this);
 	VR_Communicator = TeraflyCommunicator;
     disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(onReadyRead()));
     connect(VR_Communicator->socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
@@ -35,104 +35,104 @@ VR_MainWindow::~VR_MainWindow() {
 
 bool VR_MainWindow::SendLoginRequest(bool resume) {
 
-    QSettings settings("HHMI", "Vaa3D");
-    QString serverNameDefault = "";
-	if(!settings.value("vr_serverName").toString().isEmpty())
-		serverNameDefault = settings.value("vr_serverName").toString();
-	QString serverName;
-	bool ok1;
-	if(!resume)
-	{serverName = QInputDialog::getText(0, "Server Address",
-		"Please enter the server address:", QLineEdit::Normal,
-		serverNameDefault, &ok1);
-	if(!ok1 || serverName.isEmpty())
-		{
-			qDebug()<<"WRONG!EMPTY! ";
-			//return SendLoginRequest();
-			return 0;
-	}
-	else
-	{
-		settings.setValue("vr_serverName", serverName);
-		QString PortDefault = "";
-		if(!settings.value("vr_PORT").toString().isEmpty())
-			PortDefault = settings.value("vr_PORT").toString();
-		bool ok2;
-		vr_Port = QInputDialog::getText(0, "Port",
-			"Please enter server port:", QLineEdit::Normal,
-			PortDefault, &ok2);
+//    QSettings settings("HHMI", "Vaa3D");
+//    QString serverNameDefault = "";
+//	if(!settings.value("vr_serverName").toString().isEmpty())
+//		serverNameDefault = settings.value("vr_serverName").toString();
+//	QString serverName;
+//	bool ok1;
+//	if(!resume)
+//	{serverName = QInputDialog::getText(0, "Server Address",
+//		"Please enter the server address:", QLineEdit::Normal,
+//		serverNameDefault, &ok1);
+//	if(!ok1 || serverName.isEmpty())
+//		{
+//			qDebug()<<"WRONG!EMPTY! ";
+//			//return SendLoginRequest();
+//			return 0;
+//	}
+//	else
+//	{
+//		settings.setValue("vr_serverName", serverName);
+//		QString PortDefault = "";
+//		if(!settings.value("vr_PORT").toString().isEmpty())
+//			PortDefault = settings.value("vr_PORT").toString();
+//		bool ok2;
+//		vr_Port = QInputDialog::getText(0, "Port",
+//			"Please enter server port:", QLineEdit::Normal,
+//			PortDefault, &ok2);
 
-		if(!ok2 || vr_Port.isEmpty())
-		{
-			qDebug()<<"WRONG!EMPTY! ";
-			//return SendLoginRequest();
-			return 0;
-		}
-		else
-		{
-			settings.setValue("vr_PORT", vr_Port);
-			QString userNameDefault = "";
-			if(!settings.value("vr_userName").toString().isEmpty())
-				userNameDefault = settings.value("vr_userName").toString();
-			bool ok3;
-			userName = QInputDialog::getText(0, "Lgoin Name",
-				"Please enter your login name:", QLineEdit::Normal,
-				userNameDefault, &ok3);
+//		if(!ok2 || vr_Port.isEmpty())
+//		{
+//			qDebug()<<"WRONG!EMPTY! ";
+//			//return SendLoginRequest();
+//			return 0;
+//		}
+//		else
+//		{
+//			settings.setValue("vr_PORT", vr_Port);
+//			QString userNameDefault = "";
+//			if(!settings.value("vr_userName").toString().isEmpty())
+//				userNameDefault = settings.value("vr_userName").toString();
+//			bool ok3;
+//			userName = QInputDialog::getText(0, "Lgoin Name",
+//				"Please enter your login name:", QLineEdit::Normal,
+//				userNameDefault, &ok3);
 
-			if(!ok3 || userName.isEmpty())
-			{
-				qDebug()<<"WRONG!EMPTY! ";
-				//return SendLoginRequest();
-				return 0;
-			}else
-				settings.setValue("vr_userName", userName);
-		}
+//			if(!ok3 || userName.isEmpty())
+//			{
+//				qDebug()<<"WRONG!EMPTY! ";
+//				//return SendLoginRequest();
+//				return 0;
+//			}else
+//				settings.setValue("vr_userName", userName);
+//		}
 
-		Agent agent00={
-			//with local information
-			userName,
-			true,//means this struct point to itself,no need to render
-			21,
-			0,
-		};
-        VR_Communicator->Agents.push_back(agent00);
+//		Agent agent00={
+//			//with local information
+//			userName,
+//			true,//means this struct point to itself,no need to render
+//			21,
+//			0,
+//		};
+//        VR_Communicator->Agents.push_back(agent00);
 
-	}
+//	}
 
-	}
-	else
-	{
-		serverName = serverNameDefault;
-		QString PortDefault = "";
-		if(!settings.value("vr_PORT").toString().isEmpty())
-			PortDefault = settings.value("vr_PORT").toString();
-		vr_Port = PortDefault;
-		QString userNameDefault = "";
-			if(!settings.value("vr_userName").toString().isEmpty())
-				userNameDefault = settings.value("vr_userName").toString();
-			userName = userNameDefault;
-			settings.setValue("vr_userName", userName);
-			Agent agent00={
-			//with local information
-			userName,
-			true,//means this struct point to itself,no need to render
-			21,
-			0
-		};
-        VR_Communicator->Agents.push_back(agent00);
+//	}
+//	else
+//	{
+//		serverName = serverNameDefault;
+//		QString PortDefault = "";
+//		if(!settings.value("vr_PORT").toString().isEmpty())
+//			PortDefault = settings.value("vr_PORT").toString();
+//		vr_Port = PortDefault;
+//		QString userNameDefault = "";
+//			if(!settings.value("vr_userName").toString().isEmpty())
+//				userNameDefault = settings.value("vr_userName").toString();
+//			userName = userNameDefault;
+//			settings.setValue("vr_userName", userName);
+//			Agent agent00={
+//			//with local information
+//			userName,
+//			true,//means this struct point to itself,no need to render
+//			21,
+//			0
+//		};
+//        VR_Communicator->Agents.push_back(agent00);
 
-	}
-    socket->connectToHost(serverName, vr_Port.toUInt());
-	if(!socket->waitForConnected(15000))
-	{
-		if(socket->state()==QAbstractSocket::UnconnectedState)
-		{
-			qDebug()<<"Cannot connect with Server. Unknown error.";
-			return 0;
-		}	
-	}
-	qDebug()<<"User:  "<<userName<<".  Connected with server: "<<serverName<<" :"<<vr_Port;
-	return 1;
+//	}
+//    socket->connectToHost(serverName, vr_Port.toUInt());
+//	if(!socket->waitForConnected(15000))
+//	{
+//		if(socket->state()==QAbstractSocket::UnconnectedState)
+//		{
+//			qDebug()<<"Cannot connect with Server. Unknown error.";
+//			return 0;
+//		}
+//	}
+//	qDebug()<<"User:  "<<userName<<".  Connected with server: "<<serverName<<" :"<<vr_Port;
+    return 1;
 }
 
 
@@ -189,7 +189,7 @@ void VR_MainWindow::onReadyRead() {
     {
         if(VR_Communicator->nextblocksize==0)
         {
-            if(socket->bytesAvailable()>=sizeof (quint64))
+            if(VR_Communicator->socket->bytesAvailable()>=sizeof (quint64))
             {
                 in>>VR_Communicator->nextblocksize;
             }
@@ -199,7 +199,7 @@ void VR_MainWindow::onReadyRead() {
             }
         }
 
-        if(socket->bytesAvailable()>=VR_Communicator->nextblocksize)
+        if(VR_Communicator->socket->bytesAvailable()>=VR_Communicator->nextblocksize)
         {
             in >>line;
         }else
@@ -208,6 +208,7 @@ void VR_MainWindow::onReadyRead() {
         }
 
         line=line.trimmed();
+        qDebug()<<"in VR:"<<line;
 
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
@@ -335,7 +336,7 @@ void VR_MainWindow::onReadyRead() {
             }
         }
         else if (deletecurveRex.indexIn(line) != -1) {
-            qDebug() << "------------"<<line;
+            qDebug() << "deletecurve:"<<line;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
             if(delMSGs.size()<1)
@@ -461,7 +462,7 @@ void VR_MainWindow::onReadyRead() {
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
-            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
+            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
             if(delmarkerPOS.size()<3)
             {
                 qDebug()<<"size < 4";
