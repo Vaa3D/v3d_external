@@ -4250,6 +4250,7 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 {
+    qDebug()<<"in CollaDelMarker";
     qDebug()<<"call delete marker "<< markerPOS;
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
@@ -4268,7 +4269,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 {
-
+    qDebug()<<"in CollaAddMarker";
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
@@ -4288,6 +4289,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
 void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
+    qDebug()<<"in CollaDelSeg";
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
 
     NeuronTree  nt = terafly::PluginInterface::getSWC();
@@ -4318,6 +4320,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 {
+    qDebug()<<"in collaAddseg";
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
 
     NeuronTree newTempNT;

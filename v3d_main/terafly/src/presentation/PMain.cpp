@@ -4100,7 +4100,7 @@ void PMain::load()
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
 		Communicator = new V3dR_Communicator;
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString，int)),
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollaAddSeg(QString,int)));
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
