@@ -461,6 +461,7 @@ void V3dR_Communicator::onReadyRead() {
 
         }
         else if(colorRex.indexIn(line) != -1) {
+            qDebug()<<"incolor";
             QStringList clrMSGs = colorRex.cap(1).split(" ");
 
             if(clrMSGs.size()<2) return;
@@ -479,6 +480,8 @@ void V3dR_Communicator::onReadyRead() {
 //            QString delPOS=deletecurveRex.cap(2).trimmed();
             if(user!=userName)
                 emit delSeg(deletecurveRex.cap(2).trimmed());
+            else
+                qDebug()<<"user:"<<user<<"==userName"<<userName;
             qDebug()<<"+============delseg process end========";
 
 //            qDebug()<<"delete curve:"<<line;
@@ -493,12 +496,16 @@ void V3dR_Communicator::onReadyRead() {
             {
                 if(Agents[i].name==user)
                 {
-                    colortype=Agents[i].colorType;break;
+                    colortype=Agents[i].colorType;
+                    qDebug()<<"marker color"<<colortype;
+                    break;
                 }
             }
 
             if(user!=userName)
                  emit addMarker(messageRex.cap(2).trimmed(),colortype);
+            else
+                qDebug()<<"user:"<<user<<"==userName"<<userName;
 
 //            QStringList markerMSGs = markerRex.cap(2).split(" ");
 //            if(markerMSGs.size()<3)
@@ -522,9 +529,12 @@ void V3dR_Communicator::onReadyRead() {
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
+            qDebug()<<"in delmarker";
             QString user = delmarkerRex.cap(1);
             if(user!=userName)
                  emit delMarker(messageRex.cap(2).trimmed());
+            else
+                qDebug()<<"user:"<<user<<"==userName"<<userName;
 //            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
 //            if(delmarkerPOS.size()<4)
 //            {
@@ -542,6 +552,7 @@ void V3dR_Communicator::onReadyRead() {
         else if (messageRex.indexIn(line) != -1) {
 
             qDebug()<<"======================messageRex in Terafly begin============";
+            qDebug()<<line;
             QString user=messageRex.cap(1);
             int colortype=21;
             for(int i=0;i<Agents.size();i++)
@@ -554,6 +565,8 @@ void V3dR_Communicator::onReadyRead() {
 
             if(user!=userName)
                  emit addSeg(messageRex.cap(2).trimmed(),colortype);
+            else
+                qDebug()<<"user:"<<user<<"==userName"<<userName;
 //            QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
 //            QString LOChead=curvePOSList[0].trimmed();
