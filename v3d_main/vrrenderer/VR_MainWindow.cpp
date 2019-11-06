@@ -471,7 +471,11 @@ void VR_MainWindow::onReadyRead() {
             float mx = delmarkerPOS.at(1).toFloat();
             float my = delmarkerPOS.at(2).toFloat();
             float mz = delmarkerPOS.at(3).toFloat();
+            int resx = delmarkerPOS.at(3).toFloat();
+            int resy = delmarkerPOS.at(4).toFloat();
+            int resz = delmarkerPOS.at(5).toFloat();
             qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
+            pMainApplication->CollaborationTargetMarkerRes = XYZ(resx,resy,resz);
             XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
             if(user==userName)
             {
