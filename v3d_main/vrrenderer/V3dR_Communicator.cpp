@@ -289,7 +289,7 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 
 void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 {
-	onReadySend(QString("/del_curve: " + V_XYZToSendMSG(deleteLocNode)));
+	onReadySend(QString("/del_curve: " + V_DeleteNodeToSendMSG(deleteLocNode)));
 	cout << "send delete over success" << endl;
 }
 
@@ -653,14 +653,14 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 	return str;
 }
 
-QString V3dR_Communicator::V_XYZToSendMSG(vector<XYZ> loc_list)
+QString V3dR_Communicator::V_DeleteNodeToSendMSG(vector<XYZ> loc_list)
 {
 	string messageBuff = "Terafly ";
 	for (int i = 0; i < loc_list.size(); ++i)
 	{
 		char packetbuff[300];
 		XYZ GlobalCroods = ConvertLocaltoGlobalCroods(loc_list[i].x, loc_list[i].y, loc_list[i].z);
-		sprintf(packetbuff, "%%5.3f %5.3f %5.3f_", GlobalCroods.x, GlobalCroods.y, GlobalCroods.z);
+		sprintf(packetbuff, "%%5.3f %5.3f %5.3f %5.3f %5.3f %5.3f_", GlobalCroods.x, GlobalCroods.y, GlobalCroods.z, ImageCurRes.x, ImageCurRes.y, ImageCurRes.z);
 
 		messageBuff += packetbuff;
 	}

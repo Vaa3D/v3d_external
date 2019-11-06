@@ -90,7 +90,7 @@ public:
 	void Collaborationaskmessage();
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
-	QString V_XYZToSendMSG(vector<XYZ> loc_list);
+	QString V_DeleteNodeToSendMSG(vector<XYZ> loc_list);
 	void MsgToV_NeuronSWC(QString msg);
 
 public:
