@@ -111,6 +111,8 @@ public:
     virtual void preparingRenderer();
 #ifdef __ALLOW_VR_FUNCS__
 	void UpdateVRcollaInfo();
+
+
 	bool VRClientON;
 	VR_MainWindow * myvrwin;
 	V3dR_Communicator * TeraflyCommunicator;
@@ -126,6 +128,7 @@ public:
 	void SetupCollaborateInfo();
 	public slots:
 	void CallAddCurveSWC(vector<XYZ>loc_list,int chno,double createmode);
+    void CallAddMarker(XYZ);
 public:
 //protected:
 	virtual void choiceRenderer();
@@ -604,7 +607,17 @@ public:
 		CollaborationCreatorPos = 0;
 		Resindex = 1;
 #endif
-	}
+    }
+#ifdef __ALLOW_VR_FUNCS__
+    //for collaborate
+public slots:
+    void CollaAddSeg(QString segInfo,int colortype);
+    void CollaDelSeg(QString markerPOS);
+    void CollaAddMarker(QString markerPOS,int colortype);
+    void CollaDelMarker(QString markerPOS);
+    //end
+#endif
+
 };
 
 #endif

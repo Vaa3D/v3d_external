@@ -84,6 +84,7 @@ public:
 	//void Update3DViewNTList(QString &msg, int type);
 	void UpdateSendPoolNTList(V_NeuronSWC seg);
 	void UpdateDeleteMsg(vector<XYZ> deleteLocNode);//this node is second node of seg,because this is esay to delete correct seg
+    void UpdateSendPoolNode(float,float,float);
 	void Collaborationsendmessage();
 	void Collaborationaskmessage();
 	//trans func
@@ -107,6 +108,7 @@ public:
 
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
+
 	//void RunVRMainloop();
 	//void SendHMDPosition();
 	void CollaborationMainloop();
@@ -120,6 +122,12 @@ private slots:
 signals:
     void messageMade();
 	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
+    void CollAddMarker(XYZ);
+
+    void addSeg(QString,int);
+    void delSeg(QString);
+    void addMarker(QString,int);
+    void delMarker(QString);
 private:
 	
 	
@@ -132,7 +140,8 @@ private:
 	vector<vector<XYZ>> loc_ReceivePool;
 	int NTNumReceieved;
 	int NTNumcurrentUser;
-    quint64 nextblocksize;
+public:
+    quint16 nextblocksize;
 private:
 	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
 	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);

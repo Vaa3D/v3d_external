@@ -4184,7 +4184,7 @@ void Renderer_gl1::refineMarkerLocal(int marker_id)
 	//added by PHC, 090120. update the marker location in both views
 	updateMarkerLocation(marker_id, loc);
 }
-void Renderer_gl1::addMarker(XYZ &loc)
+void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 {
 	XYZ pt(loc.x+1, loc.y+1, loc.z+1); // marker position is 1-based
 #ifndef test_main_cpp
@@ -4224,8 +4224,8 @@ void Renderer_gl1::addMarker(XYZ &loc)
         qDebug()<<"ADD MARKER:"<<S.x<<","<<S.y<<","<<S.z;
 
         //convert local to global (S.x,S.y,S.z)
-        QString poswaitsend="/marker:"+QString::number(S.x)+" "+QString::number(S.y)+" "+QString::number(S.z);
-        w->TeraflyCommunicator->onReadySend(poswaitsend);
+//        QString poswaitsend="/marker:"+QString::number(S.x)+" "+QString::number(S.y)+" "+QString::number(S.z);
+//        w->TeraflyCommunicator->onReadySend(poswaitsend);
 
 
 
@@ -4233,6 +4233,12 @@ void Renderer_gl1::addMarker(XYZ &loc)
 			S.radius = V3Dmainwindow->global_setting.default_marker_radius;
 		S.on = true;
 		listLoc.append(S);
+        if(!fromserver)
+        {
+            w->TeraflyCommunicator->UpdateSendPoolNode(S.x,S.y,S.z);
+        }
+
+
 
         qDebug()<<"addMarker listLoc.append(S);";
 		updateLandmark();
