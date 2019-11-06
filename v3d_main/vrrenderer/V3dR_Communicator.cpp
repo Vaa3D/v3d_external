@@ -297,7 +297,9 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
 {
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
-                            +QString::number(global_node.y)+" "+QString::number(global_node.z));
+                            +QString::number(global_node.y)+" "+QString::number(global_node.z)
+                            +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
+                            +" "+QString::number(ImageCurRes.z));
     qDebug()<<nodeMSG;
     onReadySend(nodeMSG);
     qDebug()<<"send node success";
@@ -308,7 +310,9 @@ void V3dR_Communicator::UpdateSendDelMarkerInfo(float x,float y,float z)
     qDebug()<<"UpdateSendDelMarkerInfo";
     XYZ global_node=ConvertLocaltoGlobalCroods(x,y,z);
     QString nodeMSG=QString("/del_marker:"+QString::number(global_node.x)+" "
-                            +QString::number(global_node.y)+" "+QString::number(global_node.z));
+                            +QString::number(global_node.y)+" "+QString::number(global_node.z)
+                            +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
+                            +" "+QString::number(ImageCurRes.z));
     onReadySend(nodeMSG);
 }
 void V3dR_Communicator::askserver()
@@ -655,7 +659,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 
 QString V3dR_Communicator::V_DeleteNodeToSendMSG(vector<XYZ> loc_list)
 {
-	string messageBuff = "Terafly ";
+    string messageBuff ;
 	for (int i = 0; i < loc_list.size(); ++i)
 	{
 		char packetbuff[300];
