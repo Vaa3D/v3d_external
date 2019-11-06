@@ -3980,8 +3980,10 @@ void V3dR_GLWidget::testgetswc()
 
 void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double createmode)
 {
+	cout << "begin set swc" << endl;
 	NeuronTree GlobalNT = terafly::PluginInterface::getSWC();
 	int StartN = 1;
+	cout << "current swc size is " << GlobalNT.listNeuron.size();
 	if (GlobalNT.listNeuron.size()>0)
 	{
 		int tempN = GlobalNT.listNeuron.back().n;
@@ -4002,7 +4004,8 @@ void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double creat
 	}
 
 	terafly::PluginInterface::setSWC(GlobalNT);
-
+	GlobalNT = terafly::PluginInterface::getSWC();
+	cout << "current swc size is " << GlobalNT.listNeuron.size();
 }
 
 void V3dR_GLWidget::updateWithTriView()
