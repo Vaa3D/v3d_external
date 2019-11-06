@@ -84,6 +84,7 @@ public:
 	//void Update3DViewNTList(QString &msg, int type);
 	void UpdateSendPoolNTList(V_NeuronSWC seg);
     void UpdateSendPoolNode(float,float,float);
+    void UpdateSendDelMarkerInfo(float x,float y,float z);
 	void Collaborationsendmessage();
 	void Collaborationaskmessage();
 	//trans func

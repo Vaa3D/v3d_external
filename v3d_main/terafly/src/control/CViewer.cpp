@@ -1912,6 +1912,8 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
 
     // select marker (if any) at the clicked location
     QList <ImageMarker> imageMarkers1 = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+
+    qDebug()<<"befor 1===============";
     for(int i=0;i<imageMarkers1.size();i++)
     {
         qDebug()<<i<<"\t(x,y,z)"<<imageMarkers1[i].x<<","<<imageMarkers1[i].y<<","<<imageMarkers1[i].z<<"\t"<<imageMarkers1[i].selected;
@@ -1930,7 +1932,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
         qDebug()<<"(x,y,z)"<<vaa3dMarkers[i].x<<","<<vaa3dMarkers[i].y<<","<<vaa3dMarkers[i].z;
     }
 
-    qDebug()<<"imageMarkers size:"<<imageMarkers.size();
+    qDebug()<<"imageMarkers size:"<<imageMarkers.size()<<"\n+++++++++++++++++++++++++++++++++++";
     for(int i=0;i<imageMarkers.size();i++)
     {
         qDebug()<<i<<"\t(x,y,z)"<<imageMarkers[i].x<<","<<imageMarkers[i].y<<","<<imageMarkers[i].z<<"\t"<<imageMarkers[i].selected;
@@ -1949,6 +1951,17 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                    vaa3dMarkers[j].z == imageMarkers[i].z &&
                    !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this))
                     vaa3dMarkers_tbd.push_back(j);
+            //send this imagemarkers[i];
+
+            if(view3DWidget->TeraflyCommunicator!=nullptr)
+            {
+                qDebug()<<"kldasdaskljdaskljdaskljdasklj";
+                view3DWidget->TeraflyCommunicator->UpdateSendDelMarkerInfo(imageMarkers[i].x,
+                               imageMarkers[i].y,imageMarkers[i].z);
+            }else
+            {
+                qDebug()<<"cdkjsbgkjcvdskjv";
+            }
 
         }
     }

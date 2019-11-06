@@ -4225,7 +4225,8 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 			S.radius = V3Dmainwindow->global_setting.default_marker_radius;
 		S.on = true;
 		listLoc.append(S);
-        if(!fromserver)
+        qDebug()<<"befor if ";
+        if(!fromserver&&w->TeraflyCommunicator!=nullptr)
         {
             w->TeraflyCommunicator->UpdateSendPoolNode(S.x,S.y,S.z);
         }

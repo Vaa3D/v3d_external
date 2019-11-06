@@ -1,4 +1,4 @@
-﻿Build started 2019/11/5 17:50:57.
+﻿Build started 2019/11/6 14:05:55.
      1>Project "D:\vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj" on node 2 (Rebuild target(s)).
      1>CustomBuild:
          MOC ..\neuron_annotator\gui\AngleWidget.h
@@ -278,6 +278,7 @@
          OntologyTreeView.cpp
          PAbout.cpp
          PAnoToolBar.cpp
+         PConverter.cpp
      1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data (..\neuron_annotator\data_model\NeuronFragmentData.cpp)
                  ..\neuron_annotator\data_model\NeuronFragmentData.cpp(51) : see reference to function template instantiation 'std::pair<float,float>::pair<double,double,void>(_Other1 &&,_Other2 &&)' being compiled
                  with
@@ -291,7 +292,6 @@
                      _Other1=double
          ,            _Other2=double
                  ]
-         PConverter.cpp
          PDAlgo.cpp
          PDAlgoMIPNCC.cpp
          PDialogImport.cpp
@@ -402,19 +402,6 @@
          lodepng.cpp
          m_CAnnotations.cpp
          m_CConverter.cpp
-         m_CImageUtils.cpp
-         m_CImport.cpp
-         m_COperation.cpp
-         m_CPlugin.cpp
-         m_CSettings.cpp
-         m_CViewer.cpp
-         m_CVolume.cpp
-         m_PAbout.cpp
-         m_PAnoToolBar.cpp
-         m_PConverter.cpp
-         m_PDialogImport.cpp
-         m_PDialogProofreading.cpp
-         m_PLog.cpp
      1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from '__int64' to 'Node', possible loss of data (..\neuron_tracing\dij_bgl.cpp)
                  ..\neuron_tracing\dij_bgl.cpp(473) : see reference to function template instantiation 'std::pair<Node,Node>::pair<__int64&,__int64&,void>(_Other1,_Other2)' being compiled
                  with
@@ -428,6 +415,19 @@
                      _Other1=__int64 &
          ,            _Other2=__int64 &
                  ]
+         m_CImageUtils.cpp
+         m_CImport.cpp
+         m_COperation.cpp
+         m_CPlugin.cpp
+         m_CSettings.cpp
+         m_CViewer.cpp
+         m_CVolume.cpp
+         m_PAbout.cpp
+         m_PAnoToolBar.cpp
+         m_PConverter.cpp
+         m_PDialogImport.cpp
+         m_PDialogProofreading.cpp
+         m_PLog.cpp
          m_PMain.cpp
          m_QArrowButton.cpp
          m_QGLRefSys.cpp
@@ -484,9 +484,6 @@
          v3d_message.cpp
          v3d_multithreadimageIO.cpp
          v3d_nrrd.cpp
-         v3d_plugin_loader.cpp
-         v3d_version_info.cpp
-         v3dimg_proc_neuron.cpp
      1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data (..\3drenderer\nstroke_tracing.cpp)
                  d:\vaa3d\v3d_external\v3d_main\3drenderer\../neuron_tracing/fastmarching_linker.h(1461) : see reference to function template instantiation 'std::pair<MyMarker *,float>::pair<MyMarker*&,double,void>(_Other1,_Other2 &&)' being compiled
                  with
@@ -506,6 +503,9 @@
                      _Ty=MyMarker
          ,            T=unsigned char
                  ]
+         v3d_plugin_loader.cpp
+         v3d_version_info.cpp
+         v3dimg_proc_neuron.cpp
          v3dimgproc_entry.cpp
          v3dr_colormapDialog.cpp
          v3dr_gl_vr.cpp
@@ -538,21 +538,6 @@
          vmStackedVolume.cpp
          vmVirtualStack.cpp
          vmVirtualVolume.cpp
-     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data (..\3drenderer\v3dr_glwidget.cpp)
-                 ..\3drenderer\v3dr_glwidget.cpp(1166) : see reference to function template instantiation 'std::pair<int,std::vector<int,std::allocator<_Ty>>>::pair<double&,std::vector<_Ty,std::allocator<_Ty>>&,void>(_Other1,_Other2)' being compiled
-                 with
-                 [
-                     _Ty=int
-         ,            _Other1=double &
-         ,            _Other2=std::vector<int,std::allocator<int>> &
-                 ]
-                 ..\3drenderer\v3dr_glwidget.cpp(1166) : see reference to function template instantiation 'std::pair<int,std::vector<int,std::allocator<_Ty>>>::pair<double&,std::vector<_Ty,std::allocator<_Ty>>&,void>(_Other1,_Other2)' being compiled
-                 with
-                 [
-                     _Ty=int
-         ,            _Other1=double &
-         ,            _Other2=std::vector<int,std::allocator<int>> &
-                 ]
      1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data (..\vrrenderer\v3dr_gl_vr.cpp)
                  d:\vaa3d\v3d_external\v3d_main\vrrenderer\../neuron_tracing/fastmarching_linker.h(1461) : see reference to function template instantiation 'std::pair<MyMarker *,float>::pair<MyMarker*&,double,void>(_Other1,_Other2 &&)' being compiled
                  with
@@ -573,6 +558,21 @@
          ,            T=unsigned char
                  ]
          volumemanager.config.cpp
+     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\utility(144): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data (..\3drenderer\v3dr_glwidget.cpp)
+                 ..\3drenderer\v3dr_glwidget.cpp(1167) : see reference to function template instantiation 'std::pair<int,std::vector<int,std::allocator<_Ty>>>::pair<double&,std::vector<_Ty,std::allocator<_Ty>>&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Ty=int
+         ,            _Other1=double &
+         ,            _Other2=std::vector<int,std::allocator<int>> &
+                 ]
+                 ..\3drenderer\v3dr_glwidget.cpp(1167) : see reference to function template instantiation 'std::pair<int,std::vector<int,std::allocator<_Ty>>>::pair<double&,std::vector<_Ty,std::allocator<_Ty>>&,void>(_Other1,_Other2)' being compiled
+                 with
+                 [
+                     _Ty=int
+         ,            _Other1=double &
+         ,            _Other2=std::vector<int,std::allocator<int>> &
+                 ]
          vr_vaa3d_call.cpp
          moc_AngleWidget.cpp
          moc_AnnotatedBranchTreeModel.cpp
@@ -585,23 +585,6 @@
          moc_CVolume.cpp
          moc_CameraModel.cpp
          moc_ChannelTable.cpp
-         moc_ColorRangeSliderWidget.cpp
-         moc_CompartmentMapComboBox.cpp
-         moc_CompartmentMapWidget.cpp
-         moc_ConsoleObserver.cpp
-         moc_ConsoleObserverServiceImpl.cpp
-         moc_CutPlanner.cpp
-         moc_DataColorModel.cpp
-         moc_DataFlowModel.cpp
-         moc_DataThread.cpp
-         moc_DownloadManager.cpp
-         moc_DynamicRangeTool.cpp
-         moc_EntityTreeModel.cpp
-         moc_EntityTreeView.cpp
-         moc_ExportFile.cpp
-         moc_Fast3DTexture.cpp
-         moc_FooDebug.cpp
-         moc_FragmentGalleryWidget.cpp
      1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2715): warning C4996: 'std::_Fill_n': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators' (..\terafly\src\terarepo\src\volumemanager\vmBlock.cpp)
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2701) : see declaration of 'std::_Fill_n'
                  c:\local\boost_1_61_0\boost/xpressive/detail/utility/sequence_stack.hpp(235) : see reference to function template instantiation '_OutIt std::fill_n<T*,size_t,T>(_OutIt,_Diff,const _Ty &)' being compiled
@@ -650,6 +633,36 @@
                      BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
                  ]
                  ..\terafly\src\terarepo\src\volumemanager\vmBlock.cpp(257) : see reference to class template instantiation 'boost::xpressive::match_results<std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>>' being compiled
+         moc_ColorRangeSliderWidget.cpp
+                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2701) : see declaration of 'std::_Fill_n'
+     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2132): warning C4996: 'std::_Copy_impl': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators' (..\terafly\src\terarepo\src\volumemanager\vmBlock.cpp)
+                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2113) : see declaration of 'std::_Copy_impl'
+                 c:\local\boost_1_61_0\boost/xpressive/detail/core/sub_match_vector.hpp(162) : see reference to function template instantiation '_OutIt std::copy<boost::xpressive::detail::sub_match_impl<BidiIter>*,boost::xpressive::detail::sub_match_impl<BidiIter>*>(_InIt,_InIt,_OutIt)' being compiled
+                 with
+                 [
+                     _OutIt=boost::xpressive::detail::sub_match_impl<std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>> *
+         ,            BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
+         ,            _InIt=boost::xpressive::detail::sub_match_impl<std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>> *
+                 ]
+                 c:\local\boost_1_61_0\boost/xpressive/detail/core/sub_match_vector.hpp(158) : while compiling class template member function 'void boost::xpressive::detail::sub_match_vector<BidiIter>::init_(boost::xpressive::detail::sub_match_impl<BidiIter> *,boost::xpressive::detail::sub_match_vector<BidiIter>::size_type,const boost::xpressive::detail::sub_match_vector<BidiIter> &)'
+                 with
+                 [
+                     BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
+                 ]
+                 c:\local\boost_1_61_0\boost/xpressive/detail/core/access.hpp(68) : see reference to function template instantiation 'void boost::xpressive::detail::sub_match_vector<BidiIter>::init_(boost::xpressive::detail::sub_match_impl<BidiIter> *,boost::xpressive::detail::sub_match_vector<BidiIter>::size_type,const boost::xpressive::detail::sub_match_vector<BidiIter> &)' being compiled
+                 with
+                 [
+                     BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
+                 ]
+                 c:\local\boost_1_61_0\boost/xpressive/match_results.hpp(369) : see reference to class template instantiation 'boost::xpressive::detail::sub_match_vector<BidiIter>' being compiled
+                 with
+                 [
+                     BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
+                 ]
+         moc_CompartmentMapComboBox.cpp
+         moc_CompartmentMapWidget.cpp
+         moc_ConsoleObserver.cpp
+         moc_ConsoleObserverServiceImpl.cpp
      1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2715): warning C4996: 'std::_Fill_n': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators' (..\terafly\src\terarepo\src\volumemanager\vmStack.cpp)
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2701) : see declaration of 'std::_Fill_n'
                  c:\local\boost_1_61_0\boost/xpressive/detail/utility/sequence_stack.hpp(235) : see reference to function template instantiation '_OutIt std::fill_n<T*,size_t,T>(_OutIt,_Diff,const _Ty &)' being compiled
@@ -698,37 +711,10 @@
                      BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
                  ]
                  ..\terafly\src\terarepo\src\volumemanager\vmStack.cpp(204) : see reference to class template instantiation 'boost::xpressive::match_results<std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>>' being compiled
-         moc_GalleryButton.cpp
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2701) : see declaration of 'std::_Fill_n'
-                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2701) : see declaration of 'std::_Fill_n'
-         moc_GalleryMipImages.cpp
-         moc_GammaWidget.cpp
-         moc_ImageLoader.cpp
-         moc_ItemEditor.cpp
-     1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2132): warning C4996: 'std::_Copy_impl': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators' (..\terafly\src\terarepo\src\volumemanager\vmBlock.cpp)
-                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2113) : see declaration of 'std::_Copy_impl'
-                 c:\local\boost_1_61_0\boost/xpressive/detail/core/sub_match_vector.hpp(162) : see reference to function template instantiation '_OutIt std::copy<boost::xpressive::detail::sub_match_impl<BidiIter>*,boost::xpressive::detail::sub_match_impl<BidiIter>*>(_InIt,_InIt,_OutIt)' being compiled
-                 with
-                 [
-                     _OutIt=boost::xpressive::detail::sub_match_impl<std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>> *
-         ,            BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
-         ,            _InIt=boost::xpressive::detail::sub_match_impl<std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>> *
-                 ]
-                 c:\local\boost_1_61_0\boost/xpressive/detail/core/sub_match_vector.hpp(158) : while compiling class template member function 'void boost::xpressive::detail::sub_match_vector<BidiIter>::init_(boost::xpressive::detail::sub_match_impl<BidiIter> *,boost::xpressive::detail::sub_match_vector<BidiIter>::size_type,const boost::xpressive::detail::sub_match_vector<BidiIter> &)'
-                 with
-                 [
-                     BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
-                 ]
-                 c:\local\boost_1_61_0\boost/xpressive/detail/core/access.hpp(68) : see reference to function template instantiation 'void boost::xpressive::detail::sub_match_vector<BidiIter>::init_(boost::xpressive::detail::sub_match_impl<BidiIter> *,boost::xpressive::detail::sub_match_vector<BidiIter>::size_type,const boost::xpressive::detail::sub_match_vector<BidiIter> &)' being compiled
-                 with
-                 [
-                     BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
-                 ]
-                 c:\local\boost_1_61_0\boost/xpressive/match_results.hpp(369) : see reference to class template instantiation 'boost::xpressive::detail::sub_match_vector<BidiIter>' being compiled
-                 with
-                 [
-                     BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
-                 ]
+         moc_CutPlanner.cpp
+         moc_DataColorModel.cpp
+         moc_DataFlowModel.cpp
      1>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2132): warning C4996: 'std::_Copy_impl': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators' (..\terafly\src\terarepo\src\volumemanager\vmStack.cpp)
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\xutility(2113) : see declaration of 'std::_Copy_impl'
                  c:\local\boost_1_61_0\boost/xpressive/detail/core/sub_match_vector.hpp(162) : see reference to function template instantiation '_OutIt std::copy<boost::xpressive::detail::sub_match_impl<BidiIter>*,boost::xpressive::detail::sub_match_impl<BidiIter>*>(_InIt,_InIt,_OutIt)' being compiled
@@ -753,6 +739,20 @@
                  [
                      BidiIter=std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>
                  ]
+         moc_DataThread.cpp
+         moc_DownloadManager.cpp
+         moc_DynamicRangeTool.cpp
+         moc_EntityTreeModel.cpp
+         moc_EntityTreeView.cpp
+         moc_ExportFile.cpp
+         moc_Fast3DTexture.cpp
+         moc_FooDebug.cpp
+         moc_FragmentGalleryWidget.cpp
+         moc_GalleryButton.cpp
+         moc_GalleryMipImages.cpp
+         moc_GammaWidget.cpp
+         moc_ImageLoader.cpp
+         moc_ItemEditor.cpp
          moc_MipFragmentColors.cpp
          moc_MipFragmentData.cpp
          moc_MipMergedData.cpp
@@ -1343,4 +1343,4 @@
 
 Build FAILED.
 
-Time Elapsed 00:02:48.22
+Time Elapsed 00:03:35.61

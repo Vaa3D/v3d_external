@@ -296,6 +296,15 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
     onReadySend(nodeMSG);
     qDebug()<<"send node success";
 }
+
+void V3dR_Communicator::UpdateSendDelMarkerInfo(float x,float y,float z)
+{
+    qDebug()<<"UpdateSendDelMarkerInfo";
+    XYZ global_node=ConvertLocaltoGlobalCroods(x,y,z);
+    QString nodeMSG=QString("/del_marker:"+QString::number(global_node.x)+" "
+                            +QString::number(global_node.y)+" "+QString::number(global_node.z));
+    onReadySend(nodeMSG);
+}
 void V3dR_Communicator::askserver()
 {
     onReadySend(QString("/ask:message"));
