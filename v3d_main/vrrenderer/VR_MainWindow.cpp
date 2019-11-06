@@ -202,6 +202,7 @@ void VR_MainWindow::onReadyRead() {
         if(VR_Communicator->socket->bytesAvailable()>=VR_Communicator->nextblocksize)
         {
             in >>line;
+            qDebug()<<"next:"<<VR_Communicator->nextblocksize<<":"<<line;
         }else
         {
             return ;
