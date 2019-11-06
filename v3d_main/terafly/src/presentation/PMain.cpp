@@ -4100,6 +4100,17 @@ void PMain::load()
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
 		Communicator = new V3dR_Communicator;
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
+                cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
+                cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
+                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
+                cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
 
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
                 cur_win->getGLWidget()->TeraflyCommunicator,
@@ -4108,7 +4119,7 @@ void PMain::load()
                 managesocket,SLOT(messageMade()));
         connect(managesocket,SIGNAL(disconnected()),
                 cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));//æ³¨æ„ï¼Œå¯èƒ½éœ€è¦ä¿®æ”?
+                SLOT(deleteLater()));
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
 		//Set up Communicator Resolution info  for  convert Croods
 		int maxresindex = CImport::instance()->getResolutions()-1;
@@ -4178,7 +4189,7 @@ void PMain::ColLoadANO(QString ANOfile)
             tmp=anoExp.cap(1);
         }
 
-        //É¾³ý¼ÓÔØµÄÎÄ¼þ
+        //delete load .ANO
 //        QFile *f = new QFile(tmp+".ano");
 //        if(f->exists())
 //            f->remove();

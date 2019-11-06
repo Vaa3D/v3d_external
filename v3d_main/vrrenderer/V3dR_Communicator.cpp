@@ -455,48 +455,68 @@ void V3dR_Communicator::onReadyRead() {
             }
         }
         else if (deletecurveRex.indexIn(line) != -1) {
-            QString username=deletecurveRex.cap(1);
-            QString delPOS=deletecurveRex.cap(2).trimmed();
-            qDebug()<<"delete curve:"<<line;
+            QString user=deletecurveRex.cap(1);
+            qDebug()<<"+============delseg process begin========";
+//            QString delPOS=deletecurveRex.cap(2).trimmed();
+            if(user!=userName)
+                emit delSeg(deletecurveRex.cap(2).trimmed());
+            qDebug()<<"+============delseg process end========";
+
+//            qDebug()<<"delete curve:"<<line;
         }
         else if (markerRex.indexIn(line) != -1) {
 
             qDebug()<<"+============marker process begin========";
             QString user=markerRex.cap(1);
-            QStringList markerMSGs = markerRex.cap(2).split(" ");
-            if(markerMSGs.size()<3)
+
+            int colortype=21;
+            for(int i=0;i<Agents.size();i++)
             {
-                qDebug()<<"size < 4";
-                return;
+                if(Agents[i].name==user)
+                {
+                    colortype=Agents[i].colorType;break;
+                }
             }
-            float mx = markerMSGs.at(0).toFloat();
-            float my = markerMSGs.at(1).toFloat();
-            float mz = markerMSGs.at(2).toFloat();
-            //        int resx = markerMSGs.at(3).toFloat();
-            //        int resy = markerMSGs.at(4).toFloat();
-            //        int resz = markerMSGs.at(5).toFloat();
-            qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
-            //        qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
-            XYZ localNode=ConvertGlobaltoLocalCroods(mx,my,mz);
 
             if(user!=userName)
-                emit CollAddMarker(localNode);
+                 emit addMarker(messageRex.cap(2).trimmed(),colortype);
+
+//            QStringList markerMSGs = markerRex.cap(2).split(" ");
+//            if(markerMSGs.size()<3)
+//            {
+//                qDebug()<<"size < 4";
+//                return;
+//            }
+//            float mx = markerMSGs.at(0).toFloat();
+//            float my = markerMSGs.at(1).toFloat();
+//            float mz = markerMSGs.at(2).toFloat();
+//            //        int resx = markerMSGs.at(3).toFloat();
+//            //        int resy = markerMSGs.at(4).toFloat();
+//            //        int resz = markerMSGs.at(5).toFloat();
+//            qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
+//            //        qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
+//            XYZ localNode=ConvertGlobaltoLocalCroods(mx,my,mz);
+
+//            if(user!=userName)
+//                emit CollAddMarker(localNode);
             qDebug()<<"==================marker process end====================";
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
             QString user = delmarkerRex.cap(1);
-            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
-            if(delmarkerPOS.size()<4)
-            {
-                qDebug()<<"size < 3";
-                return;
-            }
+            if(user!=userName)
+                 emit delMarker(messageRex.cap(2).trimmed());
+//            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
+//            if(delmarkerPOS.size()<4)
+//            {
+//                qDebug()<<"size < 3";
+//                return;
+//            }
 
-            float mx = delmarkerPOS.at(1).toFloat();
-            float my = delmarkerPOS.at(2).toFloat();
-            float mz = delmarkerPOS.at(3).toFloat();
-            qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
+//            float mx = delmarkerPOS.at(1).toFloat();
+//            float my = delmarkerPOS.at(2).toFloat();
+//            float mz = delmarkerPOS.at(3).toFloat();
+//            qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
 
         }
         //dragnodeRex
@@ -509,38 +529,41 @@ void V3dR_Communicator::onReadyRead() {
             {
                 if(Agents[i].name==user)
                 {
-                    colortype=Agents[i].colorType;
+                    colortype=Agents[i].colorType;break;
                 }
             }
-            QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
-            QString LOChead=curvePOSList[0].trimmed();
-            QStringList LOCheadList=LOChead.split(" ",QString::SkipEmptyParts);
+            if(user!=userName)
+                 emit addSeg(messageRex.cap(2).trimmed(),colortype);
+//            QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
-            int chno=LOCheadList[LOCheadList.size()-2].toInt();
-            double createmode=LOCheadList[LOCheadList.size()-1].toDouble();
+//            QString LOChead=curvePOSList[0].trimmed();
+//            QStringList LOCheadList=LOChead.split(" ",QString::SkipEmptyParts);
 
-            vector <XYZ> LOC;//point (x,y,z) list
+//            int chno=LOCheadList[LOCheadList.size()-2].toInt();
+//            double createmode=LOCheadList[LOCheadList.size()-1].toDouble();
 
-            for (int i=1;i<curvePOSList.size();i++)//3,4,5
-            {
+//            vector <XYZ> LOC;//point (x,y,z) list
 
-                QStringList pointMSG=curvePOSList.at(i).split(" ");
-                //                qDebug()<<curvePOSList.at(i).split(" ");
-                LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
-            }
-            vector<XYZ> vec_convertcoords;
-            for (int i = 0; i < LOC.size(); i++)
-            {
-                XYZ convertcoords = ConvertGlobaltoLocalCroods(LOC[i].x, LOC[i].y, LOC[i].z);
-                vec_convertcoords.emplace_back(convertcoords);
-            }
+//            for (int i=1;i<curvePOSList.size();i++)//3,4,5
+//            {
 
-            qDebug()<<"get user name from message:"<<user;
-            qDebug()<<"user name in my communicator "<<this->userName;
-            if(user!=this->userName)
-                emit CollaAddcurveSWC(vec_convertcoords, chno, cur_createmode);
-            qDebug()<<"======================messageRex in Terafly end============";
+//                QStringList pointMSG=curvePOSList.at(i).split(" ");
+//                //                qDebug()<<curvePOSList.at(i).split(" ");
+//                LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
+//            }
+//            vector<XYZ> vec_convertcoords;
+//            for (int i = 0; i < LOC.size(); i++)
+//            {
+//                XYZ convertcoords = ConvertGlobaltoLocalCroods(LOC[i].x, LOC[i].y, LOC[i].z);
+//                vec_convertcoords.emplace_back(convertcoords);
+//            }
+
+//            qDebug()<<"get user name from message:"<<user;
+//            qDebug()<<"user name in my communicator "<<this->userName;
+//            if(user!=this->userName)
+//                emit CollaAddcurveSWC(vec_convertcoords, chno, cur_createmode);
+//            qDebug()<<"======================messageRex in Terafly end============";
 
 
         }

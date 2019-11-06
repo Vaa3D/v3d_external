@@ -121,6 +121,11 @@ signals:
     void messageMade();
 	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
     void CollAddMarker(XYZ);
+
+    void addSeg(QString,int);
+    void delSeg(QString);
+    void addMarker(QString,int);
+    void delMarker(QString);
 private:
 	
 	

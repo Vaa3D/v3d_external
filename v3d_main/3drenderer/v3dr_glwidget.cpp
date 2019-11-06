@@ -59,6 +59,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "renderer_gl1.h"
 #include "renderer_gl2.h"
 #include <QtGui>
+#include "basic_landmark.h"
 
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
@@ -4119,7 +4120,7 @@ void V3dR_GLWidget::cancelSelect()
 {
 	if (renderer) renderer->endSelectMode();
 }
-#ifdef __ALLOW_VR_FUNCS_
+//#ifdef __ALLOW_VR_FUNCS_
 void V3dR_GLWidget::UpdateVRcollaInfo()
 {
 	if(myvrwin->VROutinfo.deletedcurvespos.size())
@@ -4213,7 +4214,135 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 	}
 
 }
-#endif
+
+void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
+{
+    qDebug()<<"call delete marker "<< markerPOS;
+    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+    for(int i=0;i<markers.size();i++)
+    {
+       LocationSimple markerI=markers.at(i);
+       float dist = glm::sqrt((markerI.x-markerXYZ.at(0).toFloat())*(markerI.x-markerXYZ.at(0).toFloat())+
+                              (markerI.y-markerXYZ.at(1).toFloat())*(markerI.y-markerXYZ.at(1).toFloat())+
+                              (markerI.z-markerXYZ.at(2).toFloat())*(markerI.z-markerXYZ.at(2).toFloat()));
+       if(dist<8.0)
+       {
+           markers.removeAt(i);break;
+       }
+    }
+    terafly::PluginInterface::setLandmark(markers);
+}
+void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
+{
+
+    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+
+    LocationSimple marker;
+    marker=markers.at(0);//need to modifiy
+    marker.x=markerXYZ.at(0).toFloat();
+    marker.y=markerXYZ.at(1).toFloat();
+    marker.z=markerXYZ.at(2).toFloat();
+//    marker.color=markers.at(0).color;
+
+    markers.append(marker);
+
+    terafly::PluginInterface::setLandmark(markers);
+
+
+}
+
+void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
+{
+    QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
+
+    for(int i=0;i<delMarkerPosList.size();i++)
+    {
+        QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
+        XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
+
+        NeuronTree  nt = terafly::PluginInterface::getSWC();
+        V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+        for(int i=0;i<v_ns_list.seg.size();i++)
+        {
+            int v_ns_size=v_ns_list.seg.at(i).row.size();
+            if((v_ns_list.seg.at(i).row.at(1).x==delcurve.x&&v_ns_list.seg.at(i).row.at(1).y==delcurve.y&&v_ns_list.seg.at(i).row.at(1).z==delcurve.z)||
+               (v_ns_list.seg.at(i).row.at(v_ns_size-2).x==delcurve.x&&v_ns_list.seg.at(i).row.at(v_ns_size-2).y==delcurve.y&&v_ns_list.seg.at(i).row.at(v_ns_size-2).z==delcurve.z))
+            {
+                break;
+            }
+
+        }
+        v_ns_list.seg.erase(v_ns_list.seg.begin()+i);
+    }
+
+}
+
+void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
+{
+    QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+
+    for(int i=1;i<qsl.size();i++)
+    {
+        qDebug()<<qsl[i]<<endl;
+        NeuronSWC S_temp;
+        QStringList temp=qsl[i].trimmed().split(" ");
+
+        if(temp.size()==11)//use message head to judge
+        {
+//            S_temp.n=temp[0].toLongLong();
+            S_temp.n=i;
+            S_temp.type=colortype;
+            S_temp.x=temp[2].toFloat();
+            S_temp.y=temp[3].toFloat();
+            S_temp.z=temp[4].toFloat();
+            S_temp.r=temp[5].toFloat();
+
+//            S_temp.pn=temp[6].toLongLong();
+            if(i==1)
+                S_temp.pn=-1;
+            else
+                S_temp.pn=i-1;
+
+            S_temp.level=temp[7].toFloat();
+            S_temp.creatmode=temp[8].toFloat();
+            S_temp.timestamp=temp[9].toFloat();
+            S_temp.tfresindex=temp[10].toFloat();
+
+        }else if(temp.size()==7)
+        {
+            S_temp.n=temp[0].toLongLong();
+            S_temp.type=colortype;
+            S_temp.x=temp[2].toFloat();
+            S_temp.y=temp[3].toFloat();
+            S_temp.z=temp[4].toFloat();
+            S_temp.r=temp[5].toFloat();
+            S_temp.pn=temp[6].toLongLong();
+            S_temp.level=0;
+            S_temp.creatmode=0;
+            S_temp.timestamp=0;
+            S_temp.tfresindex=0;
+        }
+//        S_temp
+        newTempNT.listNeuron.append(S_temp);
+        newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
+    }
+    V_NeuronSWC temp=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
+    NeuronTree nt=terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(nt);
+
+    testVNL.append(temp);
+    NeuronTree newNT=V_NeuronSWC_list__2__NeuronTree(testVNL);
+    terafly::PluginInterface::setSWC(newNT);
+
+}
+//#endif
 ///////////////////////////////////////////////////////////////////////////////////////////
 #define __end_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////
