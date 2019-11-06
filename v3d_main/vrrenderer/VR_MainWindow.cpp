@@ -208,10 +208,6 @@ void VR_MainWindow::onReadyRead() {
         }
 
         line=line.trimmed();
-        //    while (VR_Communicator->socket->canReadLine()) {
-        //        QString line = QString::fromUtf8(VR_Communicator->socket->readLine()).trimmed();
-
-        //        qDebug()<<"receive : in VR\n"<<line;
 
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
@@ -421,7 +417,7 @@ void VR_MainWindow::onReadyRead() {
         else if (markerRex.indexIn(line) != -1) {
             QString user = markerRex.cap(1);
             QStringList markerMSGs = markerRex.cap(2).split(" ");
-            if(markerMSGs.size()<4)
+            if(markerMSGs.size()<3)
             {
                 qDebug()<<"size < 4";
                 return;
@@ -466,7 +462,7 @@ void VR_MainWindow::onReadyRead() {
         }
         else if (delmarkerRex.indexIn(line) != -1) {
             QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
-            if(delmarkerPOS.size()<4)
+            if(delmarkerPOS.size()<3)
             {
                 qDebug()<<"size < 4";
                 return;
@@ -524,11 +520,6 @@ void VR_MainWindow::onReadyRead() {
 
             QString user=messageRex.cap(1);
             QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//list of nodes: seg header_node 1_node 2.....
-            //            for(int i=0;i<MSGs.size();i++)
-            //            {
-            //                qDebug()<<MSGs.at(i)<<endl;
-            //            }
-            //QString user = MSGs.at(0);
             qDebug()<<MSGs[0];
             QString message;
 
