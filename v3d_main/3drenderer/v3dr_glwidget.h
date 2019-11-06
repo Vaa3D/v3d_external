@@ -407,12 +407,14 @@ public slots:
 	virtual void toggleShader();
 	virtual void showGLinfo();
 
+	void testgetswc();
+	void CollabolateSetSWC(vector<XYZ> Loc_list, int chno, double createmode);
 	virtual void updateWithTriView();
     virtual void updateLandmark();
     virtual void updateImageData();
 	virtual void reloadData();
 	virtual void cancelSelect();
-
+	
 	virtual void setVoxSize();
 
     //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018

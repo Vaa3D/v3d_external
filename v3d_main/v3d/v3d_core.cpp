@@ -6641,6 +6641,20 @@ update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
 	glwidget->updateTool();
 }
 
+vector<XYZ> My4DImage::ExtractDeletingNode()
+{
+	vector<XYZ> out_LocList;
+	std::vector<V_NeuronSWC>::iterator iter = tracedNeuron.seg.begin();
+	while (iter != tracedNeuron.seg.end())
+	{
+		if (iter->to_be_deleted)
+			out_LocList.push_back(XYZ(iter->row[1].x, iter->row[1].y, iter->row[1].z));
+			iter++;
+	}
+
+	return out_LocList; 
+}
+
 void My4DImage::update_3drenderer_neuron_view()
 {
 	XFormWidget* xwidget = getXWidget();

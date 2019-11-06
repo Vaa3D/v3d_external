@@ -83,10 +83,12 @@ public:
 	//void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
 	//void Update3DViewNTList(QString &msg, int type);
 	void UpdateSendPoolNTList(V_NeuronSWC seg);
+	void UpdateDeleteMsg(vector<XYZ> deleteLocNode);//this node is second node of seg,because this is esay to delete correct seg
 	void Collaborationsendmessage();
 	void Collaborationaskmessage();
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
+	QString V_XYZToSendMSG(vector<XYZ> loc_list);
 	void MsgToV_NeuronSWC(QString msg);
 
 public:

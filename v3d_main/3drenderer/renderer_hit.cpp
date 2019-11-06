@@ -2374,6 +2374,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             {
                 qDebug()<<"000000000-0000007";
                 deleteMultiNeuronsByStroke();
+				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+				My4DImage* curImg = 0;
+				if (w) curImg = v3dr_getImage4d(_idep);
+				curImg->ExtractDeletingNode(); 
+				if (w->TeraflyCommunicator)
+				{
+
+				}
                 qDebug()<<"000000000-0000008";
             }
             else if (selectMode == smRetypeMultiNeurons)

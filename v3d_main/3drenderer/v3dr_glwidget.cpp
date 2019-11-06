@@ -216,7 +216,7 @@ void V3dR_GLWidget::SetupCollaborateInfo()
 		TeraflyCommunicator->ImageStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
 		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
 	}
-	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CallAddCurveSWC(vector<XYZ>, int, double)));
+	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CollabolateSetSWC(vector<XYZ>, int, double)));
 	cout << "connection success!!! liqi " << endl;
 }
 
@@ -228,6 +228,7 @@ void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double create
 	{
 		cout << "loc_list " << i << loc_list.at(i).x << " " << loc_list.at(i).y << " " << loc_list.at(i).z << endl;
 	}
+	
 	rendererGL1Ptr->addCurveSWC(loc_list, chno, createmode,true);
 }
 
@@ -1023,6 +1024,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 {
                     thisRenderer->setDeleteKey(1);
                     thisRenderer->deleteMultiNeuronsByStroke();
+					cout << "deleteMultiNeuronsByStroke pos 2" << endl;
                 }
             }
 	  		break;
@@ -1099,6 +1101,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 {
                     thisRenderer->setDeleteKey(2);
                     thisRenderer->deleteMultiNeuronsByStroke();
+					cout << "deleteMultiNeuronsByStroke pos 3" << endl;
                 }
 			}
 			else
@@ -1147,19 +1150,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					{
 						map<int, vector<int> > labeledSegs;
 						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
-						{
-							if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
-							else
-							{
-								if (labeledSegs.find(segIt->row.begin()->type) == labeledSegs.end())
-								{
-									vector<int> pickedSegs;
-									pickedSegs.push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
-									labeledSegs.insert(pair<int, vector<int> >(segIt->row.begin()->type, pickedSegs));
-								}
-								else labeledSegs.at(segIt->row.begin()->type).push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
-							}
-						}
+
+
+
 
 						thisRenderer->connectSameTypeSegs(labeledSegs, curImg);	// This is the segment auto-connecting function.				
 
@@ -3962,6 +3955,43 @@ void V3dR_GLWidget::showGLinfo()
 	p->resize(700, 700);
 }
 
+
+void V3dR_GLWidget::testgetswc()
+{
+	NeuronTree testswc = terafly::PluginInterface::getSWC();
+	if (testswc.listNeuron.size() > 0)
+	{
+		for (int i = 0; i < testswc.listNeuron.size(); ++i)
+			cout << "listNeuron  " << testswc.listNeuron[i].n<< " pos x " << testswc.listNeuron.at(i).x << " pos y " << testswc.listNeuron.at(i).y << " pos z " << testswc.listNeuron.at(i).z << endl;
+	}
+}
+
+void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double createmode)
+{
+	NeuronTree GlobalNT = terafly::PluginInterface::getSWC();
+	int StartN = 1;
+	if (GlobalNT.listNeuron.size()>0)
+	{
+		int tempN = GlobalNT.listNeuron.back().n;
+	}
+	for (int i = 0; i < Loc_list.size(); ++i)
+	{
+		NeuronSWC SL0;
+		SL0.x = Loc_list[i].x;
+		SL0.y = Loc_list[i].y;
+		SL0.z = Loc_list[i].z;
+		SL0.r = 1;
+		SL0.n = StartN + i;
+		if (i = 0) SL0.pn = -1;
+		else SL0.pn = StartN + i - 1;
+		SL0.creatmode = 618;
+		GlobalNT.listNeuron.append(SL0);
+		GlobalNT.hashNeuron.insert(SL0.n, GlobalNT.listNeuron.size() - 1);
+	}
+
+	terafly::PluginInterface::setSWC(GlobalNT);
+
+}
 
 void V3dR_GLWidget::updateWithTriView()
 {

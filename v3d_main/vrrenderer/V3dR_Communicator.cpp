@@ -287,6 +287,12 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 	cout << "send over success" << endl;
 }
 
+void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
+{
+	onReadySend(QString("/del_curve: " + V_XYZToSendMSG(deleteLocNode)));
+	cout << "send delete over success" << endl;
+}
+
 void V3dR_Communicator::askserver()
 {
     onReadySend(QString("/ask:message"));
@@ -433,62 +439,6 @@ void V3dR_Communicator::onReadyRead() {
 
 
 
-
-
-		//	qDebug() << "------------"<<line;
-		//	QStringList delMSGs = deletecurveRex.cap(1).split(" ");
-		//	if(delMSGs.size()<2) 
-		//	{
-		//		qDebug()<<"size < 2";
-		//		return;
-		//	}
-		//	QString user = delMSGs.at(0);
-		//	float dx = delMSGs.at(1).toFloat();
-		//	float dy = delMSGs.at(2).toFloat();
-		//	float dz = delMSGs.at(3).toFloat();
-		//	float resx = delMSGs.at(4).toFloat();
-		//	float resy = delMSGs.at(5).toFloat();
-		//	float resz = delMSGs.at(6).toFloat();
-
-		//	pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);
-
-		//	qDebug()<<"pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);";
-		//	qDebug()<<"user, "<<user<<" delete: "<<dx<<dy<<dz;
-		//	XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
-		//	qDebug()<<"user, "<<user<<" Converted Receive curve: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
-		//	XYZ TeraflyglobalPos =XYZ(dx ,dy,dz);
-
-		//	dx/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
-		//	dy/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
-		//	dz/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
-
-		//	if(TeraflyglobalPos.x<VRVolumeStartPoint.x || 
-		//		TeraflyglobalPos.y<VRVolumeStartPoint.y||
-		//		TeraflyglobalPos.z<VRVolumeStartPoint.z||
-		//		TeraflyglobalPos.x>VRVolumeEndPoint.x||
-		//		TeraflyglobalPos.y>VRVolumeEndPoint.y||
-		//		TeraflyglobalPos.z>VRVolumeEndPoint.z
-		//		)
-		//	{
-		//		qDebug()<<"push_back test delete point ";
-		//		VROutinfo.deletedcurvespos.push_back(TeraflyglobalPos);
-		//	}
-		//	qDebug()<<"deletedcurvespos"<<dx<<" "<<dy<<" "<<dz;
-		//	if(user==userName)
-		//	{
-		//		pMainApplication->READY_TO_SEND=false;
-		//		CURRENT_DATA_IS_SENT=false;
-		//		pMainApplication->ClearCurrentNT();
-		//	}
-		//	QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
-		//	qDebug()<<"delete ID"<<delID<<"++++++++++++++++++++";
-		//	bool delerror = pMainApplication->DeleteSegment(delID);
-		//	qDebug()<<".................................";
-		//	if(delerror==true)
-		//		qDebug()<<"Segment Deleted.";
-		//	else
-		//		qDebug()<<"Cannot Find the Segment ";
-		//	// pMainApplication->MergeNeuronTrees();
 		}
 		else if (markerRex.indexIn(line) != -1) {
 
@@ -507,16 +457,7 @@ void V3dR_Communicator::onReadyRead() {
             int resz = markerMSGs.at(5).toFloat();
 			qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
 			qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
-			/*pMainApplication->CollaborationTargetMarkerRes = XYZ(resx,resy,resz);
-			XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
-			qDebug()<<"user, "<<user<<" Converted Receive marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
-			if(user==userName)
-			{
-				pMainApplication->READY_TO_SEND=false;
-				CURRENT_DATA_IS_SENT=false;
-				qDebug()<<"get message CURRENT_DATA_IS_SENT=false;";
-				pMainApplication->ClearCurrentNT();
-			}*/
+
 
 		}
 		else if (delmarkerRex.indexIn(line) != -1) {
@@ -532,15 +473,7 @@ void V3dR_Communicator::onReadyRead() {
 			float my = delmarkerPOS.at(2).toFloat();
 			float mz = delmarkerPOS.at(3).toFloat();
 			qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
-			/*XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
-			if(user==userName)
-			{
-				pMainApplication->READY_TO_SEND=false;
-				CURRENT_DATA_IS_SENT=false;
-				pMainApplication->ClearCurrentNT();
-			}
 
-			pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);*/
 		}
 		//dragnodeRex
 		else if (messageRex.indexIn(line) != -1) {
@@ -572,41 +505,11 @@ void V3dR_Communicator::onReadyRead() {
 //                qDebug()<<curvePOSList.at(i).split(" ");
                 LOC.push_back(XYZ(pointMSG[2].toFloat(),pointMSG[3].toFloat(),pointMSG[4].toFloat()));
             }
-			vector<XYZ> vec_convertcoords;
-			for (int i = 0; i < LOC.size(); i++)
-			{
-				XYZ convertcoords = ConvertGlobaltoLocalCroods(LOC[i].x, LOC[i].y, LOC[i].z);
-				vec_convertcoords.emplace_back(convertcoords);
-			}
 
-            qDebug()<<"get user name from message:"<<user;
-            qDebug()<<"user name in my communicator "<<this->userName;
             if(user==this->userName) return;
-            emit CollaAddcurveSWC(vec_convertcoords, chno, cur_createmode);
+            emit CollaAddcurveSWC(LOC, chno, cur_createmode);
             qDebug()<<"======================messageRex in Terafly end============";
 
-
-            //parameters:LOC,chno,createmode addCurveSWC(LOC,chno,createmode)
-
-            //			QStringList MSGs = messageRex.cap(1).split(" ");
-//			for(int i=0;i<MSGs.size();i++)
-//			{
-//				qDebug()<<MSGs.at(i)<<endl;
-//			}
-//			QString user = MSGs.at(0);
-//			QString message;
-//			for(int i=1;i<MSGs.size();i++)
-//			{
-//				message +=MSGs.at(i);
-//				if(i != MSGs.size()-1)
-//					message +=" ";
-
-
-//				qDebug()<<MSGs.at(i)<<endl;
-//			}
-//			qDebug()<<"user, "<<user<<" said: "<<message;
-			
-			
 		}
 	}      
 }
@@ -678,6 +581,21 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 	return str;
 }
 
+QString V3dR_Communicator::V_XYZToSendMSG(vector<XYZ> loc_list)
+{
+	string messageBuff = "Terafly ";
+	for (int i = 0; i < loc_list.size(); ++i)
+	{
+		char packetbuff[300];
+		XYZ GlobalCroods = ConvertLocaltoGlobalCroods(loc_list[i].x, loc_list[i].y, loc_list[i].z);
+		sprintf(packetbuff, "%%5.3f %5.3f %5.3f_", GlobalCroods.x, GlobalCroods.y, GlobalCroods.z);
+
+		messageBuff += packetbuff;
+	}
+	QString out_MSG = QString::fromStdString(messageBuff);
+	return out_MSG;
+}
+
 void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)
 {
 	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
@@ -741,125 +659,3 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 	z*=(ImageMaxRes.z/ImageCurRes.z);
 	return XYZ(x,y,z);
 }
-
-//void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
-//{	
-//	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
-//	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
-//	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
-//	NeuronSWC S_temp;
-//	NeuronTree tempNT;
-//	tempNT.listNeuron.clear();
-//	tempNT.hashNeuron.clear();
-//	//each segment has a unique ID storing as its name
-//	tempNT.name  = "sketch_"+ QString("%1").arg(NTNumReceieved++);
-//	for(int i=0;i<str_size;i++)
-//	{
-//		qsl[i].truncate(99);
-//		//qDebug()<<qsl[i];
-//		int iy = i%7;
-//		if (iy==0)
-//		{
-//			S_temp.n = qsl[i].toInt();
-//		}
-//		else if (iy==1)
-//		{
-//			S_temp.type = type;
-//		}
-//		else if (iy==2)
-//		{
-//			S_temp.x = qsl[i].toFloat();
-//
-//		}
-//		else if (iy==3)
-//		{
-//			S_temp.y = qsl[i].toFloat();
-//
-//		}
-//		else if (iy==4)
-//		{
-//			S_temp.z = qsl[i].toFloat();
-//
-//		}
-//		else if (iy==5)
-//		{
-//			S_temp.r = qsl[i].toFloat();
-//
-//		}
-//		else if (iy==6)
-//		{
-//			S_temp.pn = qsl[i].toInt();
-//
-//			tempNT.listNeuron.append(S_temp);
-//			tempNT.hashNeuron.insert(S_temp.n, tempNT.listNeuron.size()-1);
-//		}
-//	}//*/
-//	//RGBA8 tmp= {(unsigned int)type};
-//	//tempNT.color = tmp;
-//	tempNT.color.i=type;
-//	NTList_3Dview->push_back(tempNT);
-//	qDebug()<<"receieved nt name is "<<tempNT.name;
-//	//updateremoteNT
-//}
-
-
-
-
-//void V3dR_Communicator::SendHMDPosition()
-//{
-//	if(!pMainApplication) return;
-//	//get hmd position
-//	QString PositionStr=pMainApplication->getHMDPOSstr();
-//
-//	//send hmd position
-//	socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
-//
-//	QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
-//}
-//void V3dR_Communicator::RunVRMainloop()
-//{
-//
-//	//handle one rendering loop, and handle user interaction
-//	bool bQuit;//=HandleOneIteration();
-//
-//	if(bQuit==true)
-//	{
-//		qDebug()<<"Now quit VR";
-//		socket->disconnectFromHost();
-//		Agents.clear();
-//		return;
-//	}
-//
-//	//send local data to server
-//	if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
-//	{
-//		if(pMainApplication->m_modeGrip_R==m_drawMode)
-//			onReadySend(pMainApplication->NT2QString());
-//		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
-//		{
-//			qDebug()<<"delname = "<<pMainApplication->delName;
-//			if(pMainApplication->delName!="")
-//				socket->write(QString("/del:" + pMainApplication->delName + "\n").toUtf8());
-//			else
-//			{
-//				pMainApplication->READY_TO_SEND=false;
-//				CURRENT_DATA_IS_SENT=false;
-//				pMainApplication->ClearSketchNT();
-//			}
-//		}
-//		else if(pMainApplication->m_modeGrip_R==m_markMode)
-//		{
-//			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
-//			socket->write(QString("/marker:" + pMainApplication->markerPOS + "\n").toUtf8());
-//		}
-//		if(pMainApplication->READY_TO_SEND==true)
-//			CURRENT_DATA_IS_SENT=true;
-//	}
-//
-//
-//	QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
-//}
-
-//
-
-
