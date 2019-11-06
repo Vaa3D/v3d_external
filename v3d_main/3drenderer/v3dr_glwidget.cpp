@@ -4287,13 +4287,14 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
 
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
     for(int i=0;i<delMarkerPosList.size();i++)
     {
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
         XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
 
-        NeuronTree  nt = terafly::PluginInterface::getSWC();
-        V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
 
         for(int i=0;i<v_ns_list.seg.size();i++)
         {
@@ -4307,6 +4308,8 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
         }
         v_ns_list.seg.erase(v_ns_list.seg.begin()+i);
     }
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt);
 
 }
 
