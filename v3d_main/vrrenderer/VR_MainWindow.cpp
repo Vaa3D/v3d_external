@@ -132,11 +132,10 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 //		}
 //	}
 //	qDebug()<<"User:  "<<userName<<".  Connected with server: "<<serverName<<" :"<<vr_Port;
-//<<<<<<< HEAD
-//	return 1;
-//=======
-//    return 1;
-//>>>>>>> 12d009f735b270dee28518e46a04181df7ccbfdc
+
+    return 1;
+
+
 }
 
 
