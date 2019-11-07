@@ -2072,13 +2072,14 @@ void CViewer::loadAnnotations() throw (RuntimeException)
   
     //obtaining the annotations within the current window
 	updateAnnotationSpace();
+    qDebug()<<"213213213";
 	interval_t x_range(anoH0, anoH1);
 	interval_t y_range(anoV0, anoV1);
 	interval_t z_range(anoD0, anoD1);
     /**/tf::debug(tf::LEV3, strprintf("obtaining the annotations within the current window").c_str(), __itm__current__function__);
     CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, vaa3dMarkers);
     CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, vaa3dCurves.listNeuron);
-	
+    qDebug()<<"dasd";
 	// MK, April, 25, 2018 /////////////////////////////////////
 	this->treeGlobalCoords.listNeuron.clear();
 	this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;

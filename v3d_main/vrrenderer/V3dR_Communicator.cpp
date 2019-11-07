@@ -332,7 +332,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
             send_MSG="/say: GoodBye~";
         }
 
-//        qDebug()<<"in communicator _ onreadysend____"<<send_MSG;
+        qDebug()<<"in communicator _ onreadysend____"<<send_MSG;
 
         QByteArray block;
         QDataStream dts(&block,QIODevice::WriteOnly);
@@ -536,7 +536,7 @@ void V3dR_Communicator::TFProcess(QString line) {
             }
 
             if(user!=userName)
-                 emit addMarker(messageRex.cap(2).trimmed(),colortype);
+                 emit addMarker(markerRex.cap(2).trimmed(),colortype);
             else
                 qDebug()<<"user:"<<user<<"==userName"<<userName;
 
@@ -565,7 +565,7 @@ void V3dR_Communicator::TFProcess(QString line) {
             qDebug()<<"in delmarker";
             QString user = delmarkerRex.cap(1);
             if(user!=userName)
-                 emit delMarker(messageRex.cap(2).trimmed());
+                 emit delMarker(delmarkerRex.cap(2).trimmed());
             else
                 qDebug()<<"user:"<<user<<"==userName"<<userName;
 //            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");

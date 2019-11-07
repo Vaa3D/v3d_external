@@ -18,7 +18,7 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
-	socket = new QTcpSocket(this);
+//	socket = new QTcpSocket(this);
 	VR_Communicator = TeraflyCommunicator;
     disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
@@ -132,7 +132,11 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 //		}
 //	}
 //	qDebug()<<"User:  "<<userName<<".  Connected with server: "<<serverName<<" :"<<vr_Port;
-	return 1;
+//<<<<<<< HEAD
+//	return 1;
+//=======
+//    return 1;
+//>>>>>>> 12d009f735b270dee28518e46a04181df7ccbfdc
 }
 
 
@@ -185,6 +189,7 @@ void VR_MainWindow::TVProcess(QString line)
     QRegExp messageRex("^/seg:(.*)__(.*)$");
 	
 
+
 //    QDataStream in(VR_Communicator->socket);
 //    in.setVersion(QDataStream::Qt_4_7);
 //    QString line;
@@ -214,6 +219,7 @@ void VR_MainWindow::TVProcess(QString line)
 
 //        line=line.trimmed();
         qDebug()<<"TVProcess:"<<line;
+
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             //qDebug()<<"Current users are:";
@@ -340,7 +346,7 @@ void VR_MainWindow::TVProcess(QString line)
             }
         }
         else if (deletecurveRex.indexIn(line) != -1) {
-            qDebug() << "------------"<<line;
+            qDebug() << "deletecurve:"<<line;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
             if(delMSGs.size()<1)
@@ -466,7 +472,7 @@ void VR_MainWindow::TVProcess(QString line)
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
-            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
+            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
             if(delmarkerPOS.size()<3)
             {
                 qDebug()<<"size < 4";

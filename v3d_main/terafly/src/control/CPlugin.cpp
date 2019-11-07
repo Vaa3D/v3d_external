@@ -288,6 +288,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resoluti
         interval_t y_range(0, std::numeric_limits<int>::max());
         interval_t z_range(0, std::numeric_limits<int>::max());
         CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, landmark_list);
+        qDebug()<<"CViewer::getCurrent()->loadAnnotations();";
 
         // push content to viewer
         CViewer::getCurrent()->loadAnnotations();

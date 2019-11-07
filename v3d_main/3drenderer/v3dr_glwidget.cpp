@@ -218,8 +218,8 @@ void V3dR_GLWidget::SetupCollaborateInfo()
 		TeraflyCommunicator->ImageStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
 		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
 	}
-	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CollabolateSetSWC(vector<XYZ>, int, double)));
-    connect(TeraflyCommunicator,SIGNAL(CollAddMarker(XYZ)),this,SLOT(CallAddMarker(XYZ)));
+//	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CollabolateSetSWC(vector<XYZ>, int, double)));
+//    connect(TeraflyCommunicator,SIGNAL(CollAddMarker(XYZ)),this,SLOT(CallAddMarker(XYZ)));
 	cout << "connection success!!! liqi " << endl;
 }
 
@@ -1885,19 +1885,18 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
-		if(VRClientON==false)
+		if (TeraflyCommunicator )
 		{
-			VRClientON = true;
 			if(myvrwin)
 				delete myvrwin;
 			myvrwin = 0;
             myvrwin = new VR_MainWindow(TeraflyCommunicator);
 			myvrwin->setWindowTitle("VR MainWindow");
-			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
-			VRClientON = linkerror;
-			if(!linkerror)  // there is error with linking ,linkerror = 0
+			bool linkerror = (TeraflyCommunicator == nullptr);
+			//VRClientON = linkerror;
+			if (linkerror)  // there is error with linking ,linkerror = 0
 			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); return;}
-			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
+			//connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
@@ -3980,8 +3979,10 @@ void V3dR_GLWidget::testgetswc()
 
 void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double createmode)
 {
+	cout << "begin set swc" << endl;
 	NeuronTree GlobalNT = terafly::PluginInterface::getSWC();
 	int StartN = 1;
+	cout << "current swc size is " << GlobalNT.listNeuron.size();
 	if (GlobalNT.listNeuron.size()>0)
 	{
 		int tempN = GlobalNT.listNeuron.back().n;
@@ -4002,7 +4003,8 @@ void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double creat
 	}
 
 	terafly::PluginInterface::setSWC(GlobalNT);
-
+	GlobalNT = terafly::PluginInterface::getSWC();
+	cout << "current swc size is " << GlobalNT.listNeuron.size();
 }
 
 void V3dR_GLWidget::updateWithTriView()
@@ -4247,6 +4249,7 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 {
+    qDebug()<<"in CollaDelMarker";
     qDebug()<<"call delete marker "<< markerPOS;
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
@@ -4265,7 +4268,8 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 {
-
+    qDebug()<<"in CollaAddMarker";
+    qDebug()<<markerPOS;
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
@@ -4285,6 +4289,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
 void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
+    qDebug()<<"in CollaDelSeg";
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
 
     NeuronTree  nt = terafly::PluginInterface::getSWC();
@@ -4315,6 +4320,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 {
+    qDebug()<<"in collaAddseg";
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
 
     NeuronTree newTempNT;
