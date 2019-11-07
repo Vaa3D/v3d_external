@@ -1477,7 +1477,14 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
          if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
          {
              deleteMultiNeuronsByStroke();
+			 cout << "call delete muti seg pos 1" << endl;
+			 if (w->TeraflyCommunicator)
+			 {
+				 vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
+				 w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+			 }
              curImg->tracedNeuron.deleteMultiSeg();
+
          }
      }
 
@@ -3303,7 +3310,9 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
+
     curImg->tracedNeuron.deleteMultiSeg();
+
     //curImg->proj_trace_history_append();          // no need to update the history
     curImg->update_3drenderer_neuron_view(w, this);
 }
@@ -3367,6 +3376,7 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 // @ADDED by Alessandro on 2015-05-07.
 void Renderer_gl1::deleteMultiNeuronsByStroke()
 {
+	cout << "delete pos find success" << endl;
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -3375,6 +3385,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	//v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
 	const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
 
+	// 没跑进去
     if(deleteKey==1)
     {
         qDebug()<<"type i to delete isolated node(s)";
@@ -3392,7 +3403,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 
         return;
     }
-
+	//没跑进去
     if(deleteKey==2)
     {
         qDebug()<<"type t to delete type is not 2 or 3";
@@ -3427,7 +3438,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	QPolygon poly;
 	for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
 		poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
-
+	// 把划线的点全都放到多边形中去
     qDebug()<<"deleteMultiNeuronsByStroke-3";
 	const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
 
@@ -3439,10 +3450,11 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
 			break;
 		}
+		//如果这条线已经要被删除了 那就不做处理
 		if (curImg->tracedNeuron.seg[s].to_be_deleted)
 			continue;
 
-
+		//拿到traced_neuron 的第i条 seg
 		V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(s);
 		const V3DLONG nrows = this_seg.row.size();
 
@@ -3457,7 +3469,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			iy = this_unit.y;
 			iz = this_unit.z;
 			allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
-
+			//只要有一个点在swcBB外面 这个Bool值就是true
 			if (curImg->tracedNeuron.seg[s].to_be_deleted)
                 break;    //保证 ？ L3438???
 
@@ -3466,20 +3478,25 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			{
 				py = viewport[3]-py; //the Y axis is reversed
 				QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
-
+				
                 if(contour_mode == 1)
 				{
+					cout << "contour_mode == 1" << endl;
                     if(poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)&& !allUnitsOutsideZCut)
 						curImg->tracedNeuron.seg[s].to_be_deleted = true;
+					//如果这个点在 投影得到的多边形中 并且没有超出Z范围 那就删除这个线段
                 }else if (contour_mode == 2)
                 {
+					cout << "contour_mode == 2" << endl;
                     if(!poly.boundingRect().contains(p) || !pointInPolygon(p.x(), p.y(), poly)&& !allUnitsOutsideZCut)
                         curImg->tracedNeuron.seg[s].to_be_deleted = true;
                 }
 				else
 				{
+					cout << "contour_mode ==  else " << endl;
 					for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
 					{
+						//对画的这条线的每个点取xy 来构成一个点 如果距离小于阈值 那就把这个片段标记为to be deleted
 						QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
                         if( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  && !allUnitsOutsideZCut)
 						{
@@ -3499,7 +3516,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 			curImg->tracedNeuron.seg[s].to_be_deleted = curImg->tracedNeuron.seg[s].to_be_deleted && !allUnitsOutsideZCut;
 		}
 	}
-
+	//以上就是把距离判断做了一遍 看看是不是要删除某个seg 以及判断有没有Zcut
 
     qDebug()<<"deleteMultiNeuronsByStroke-4";
     vector <XYZ> specialmarkerloc;
@@ -3514,7 +3531,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
             specialmarkerslocindex.push_back(i);
         }
     }
-
+	//把 category的Landmarker放到Special里面去？
     qDebug()<<"deleteMultiNeuronsByStroke-5";
     V3DLONG specialmarkersegindex = -1;
     V3DLONG specialmarkerlocindex = -1;
@@ -3524,6 +3541,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
         const V3DLONG nrows = this_seg.row.size();
         if(curImg->tracedNeuron.seg[i].to_be_deleted==true)
         {
+			//取当前seg的最后一个点 如果这个位置和之前的special marker的位置相同  记录下当前的seg的索引
             XYZ segloclast(this_seg.row.at(nrows-1).x+1,this_seg.row.at(nrows-1).y+1,this_seg.row.at(nrows-1).z+1);
             for(V3DLONG j=0; j<specialmarkerloc.size(); ++j)
             {
@@ -3540,11 +3558,12 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
             break;
     }
 
-
+	//如果当前记录的special marker 和 special seg都不为空
     if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
     {
         QList <LocationSimple> ::iterator it = listloc.begin();
         listloc.erase(it+specialmarkerlocindex);
+		//把当前的那个specialmarker删掉？
         bool islastseg = false;
         while(!islastseg)
         {
@@ -3553,6 +3572,11 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
             {
                 if(curImg->tracedNeuron.seg[i].to_be_deleted==true && i!=specialmarkersegindex)
                 {
+					//对于要被删除的线段 并且它不是special seg
+					//如果这条线是special seg的前一条线
+					//把i设置成这条线 changed为true
+					//从seg index开始 一直往前删除
+					//直到没的删除为止
                     XYZ parent(curImg->tracedNeuron.seg[i].row.back().x,curImg->tracedNeuron.seg[i].row.back().y,curImg->tracedNeuron.seg[i].row.back().z);
                     XYZ child(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
                     if(parent==child)
