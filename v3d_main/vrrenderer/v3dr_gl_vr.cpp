@@ -3085,7 +3085,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				delName = "";
 				delcurvePOS  ="";
 				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+				SegNode_tobedeleted = GetSegtobedelete_Node(delName);
 				if(isOnline==false)	
 				{
 					NTL temp_NTL = sketchedNTList;
@@ -6821,6 +6823,26 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 	//if cannot find any matches, return ""
 	return ntnametofind;
 }
+
+XYZ CMainApplication::GetSegtobedelete_Node(QString name)
+{
+	XYZ Node_tobedeleted(0,0,0);
+	
+	if (name == "") return Node_tobedeleted;
+	for (int i = 0; i < sketchedNTList.size(); i++)
+	{
+		NeuronTree nt = sketchedNTList.at(i);
+		if (name == nt.name)
+		{
+			Node_tobedeleted.x = nt.listNeuron.at(1).x;
+			Node_tobedeleted.y = nt.listNeuron.at(1).y;
+			Node_tobedeleted.z = nt.listNeuron.at(1).z;
+			return Node_tobedeleted; 
+		}
+	}
+	return Node_tobedeleted;
+}
+
 NeuronSWC CMainApplication::FindNearestNode(NeuronTree NT,glm::vec3 dPOS)//lq
 {		
 	NeuronSWC SS0;
