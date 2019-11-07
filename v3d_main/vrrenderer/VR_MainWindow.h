@@ -43,8 +43,8 @@ public slots:
 private slots:
 
 //    void onReadyRead();
-    void onConnected();
-    void onDisconnected();
+//    void onConnected();
+//    void onDisconnected();
 public:
 	CMainApplication *pMainApplication;
 signals:

@@ -33,7 +33,8 @@ VR_MainWindow::~VR_MainWindow() {
 
 }
 
-bool VR_MainWindow::SendLoginRequest(bool resume) {
+bool VR_MainWindow::SendLoginRequest(bool resume) //return 1;
+{
 
 //    QSettings settings("HHMI", "Vaa3D");
 //    QString serverNameDefault = "";
@@ -583,23 +584,23 @@ void VR_MainWindow::TVProcess(QString line)
 //    }
 }
 
-void VR_MainWindow::onConnected() {
+//void VR_MainWindow::onConnected() {
 
-    float m_globalScale=pMainApplication->get_mglobalScal();
+//    float m_globalScale=pMainApplication->get_mglobalScal();
 
-    VR_Communicator->onReadySend(QString("/login:" +userName ));
-//    VR_Communicator->socket->write(QString("/global:" +QString("%1").arg(m_globalScale) +"\n").toUtf8());
-}
+//    VR_Communicator->onReadySend(QString("/login:" +userName ));
+////    VR_Communicator->socket->write(QString("/global:" +QString("%1").arg(m_globalScale) +"\n").toUtf8());
+//}
 
-void VR_MainWindow::onDisconnected() {
-    qDebug("Now disconnect with the server."); 
-	//Agents.clear();
-	emit VRSocketDisconnect();
-	if(pMainApplication)
-		pMainApplication->isOnline = false;
-	this->close();
+//void VR_MainWindow::onDisconnected() {
+//    qDebug("Now disconnect with the server.");
+//	//Agents.clear();
+//	emit VRSocketDisconnect();
+//	if(pMainApplication)
+//		pMainApplication->isOnline = false;
+//	this->close();
 	
-}
+//}
 
 
 

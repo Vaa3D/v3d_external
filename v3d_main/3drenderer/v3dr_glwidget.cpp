@@ -4289,31 +4289,37 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
 void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
-    qDebug()<<"in CollaDelSeg";
+    qDebug()<<"in CollaDelSeg:"<<markerPOS;
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
+    qDebug()<<delMarkerPosList;
 
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
     for(int i=0;i<delMarkerPosList.size();i++)
     {
+
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
+        qDebug()<<nodeXYZ<<":nodeXYZ";
         XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
 
 
-
-        for(int i=0;i<v_ns_list.seg.size();i++)
+        int J=0;
+        for(J=0;J<v_ns_list.seg.size();J++)
         {
-            int v_ns_size=v_ns_list.seg.at(i).row.size();
-            if((v_ns_list.seg.at(i).row.at(1).x==delcurve.x&&v_ns_list.seg.at(i).row.at(1).y==delcurve.y&&v_ns_list.seg.at(i).row.at(1).z==delcurve.z)||
-               (v_ns_list.seg.at(i).row.at(v_ns_size-2).x==delcurve.x&&v_ns_list.seg.at(i).row.at(v_ns_size-2).y==delcurve.y&&v_ns_list.seg.at(i).row.at(v_ns_size-2).z==delcurve.z))
+            int v_ns_size=v_ns_list.seg.at(J).row.size();
+            if((v_ns_list.seg.at(J).row.at(1).x==delcurve.x&&v_ns_list.seg.at(J).row.at(1).y==delcurve.y&&v_ns_list.seg.at(J).row.at(1).z==delcurve.z)||
+               (v_ns_list.seg.at(J).row.at(v_ns_size-2).x==delcurve.x&&v_ns_list.seg.at(J).row.at(v_ns_size-2).y==delcurve.y&&v_ns_list.seg.at(J).row.at(v_ns_size-2).z==delcurve.z))
             {
+                qDebug()<<"FIND J="<<J;
                 break;
             }
 
         }
-        v_ns_list.seg.erase(v_ns_list.seg.begin()+i);
+
+        v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
     }
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    qDebug()<<"khjidshkljashdl";
     terafly::PluginInterface::setSWC(nt);
 
 }
