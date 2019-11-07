@@ -246,7 +246,8 @@ void VR_MainWindow::TVProcess(QString line)
                 {
                     QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
                     if(xyz.size()<3) continue;
-                    pMainApplication->DeleteSegment(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
+                    XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
+                    pMainApplication->DeleteSegment(node.x,node.y,node.z);
                 }
             }
 
