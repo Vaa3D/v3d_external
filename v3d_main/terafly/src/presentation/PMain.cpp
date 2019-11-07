@@ -4101,13 +4101,13 @@ void PMain::load()
 		Communicator = new V3dR_Communicator;
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
-                cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
+                cur_win->getGLWidget(),SLOT(CollaAddSeg(QString，int)));
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
-                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
+                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString,int)));
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));

@@ -370,7 +370,7 @@ void V3dR_Communicator::onReadyRead() {
     in.setVersion(QDataStream::Qt_4_7);
     QString line;
 
-    qDebug()<<"in MessageSocketSlot_Read:\n";
+    qDebug()<<"in MessageSocketSlot_Read tf:\n";
 
     while(1)
     {
@@ -397,7 +397,7 @@ void V3dR_Communicator::onReadyRead() {
         }
 
         line=line.trimmed();
-        qDebug()<<"receive :"<<line;
+        qDebug()<<" TF receive :"<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             foreach (QString user, users) {
