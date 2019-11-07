@@ -1907,9 +1907,9 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-#ifdef __ALLOW_VR_FUNCS_
+
 			UpdateVRcollaInfo();
-#endif
+
 			updateWithTriView();
 
 			if (_call_that_func > 0)
@@ -4154,7 +4154,7 @@ void V3dR_GLWidget::cancelSelect()
 //#ifdef __ALLOW_VR_FUNCS_
 void V3dR_GLWidget::UpdateVRcollaInfo()
 {
-	if(myvrwin->VROutinfo.deletedcurvespos.size())
+	if(myvrwin->VROutinfo.deletedcurvespos.size()) 
 	{
 		NeuronTree  nt = terafly::PluginInterface::getSWC();
 		std::vector<XYZ> deletedcurves = myvrwin->VROutinfo.deletedcurvespos;

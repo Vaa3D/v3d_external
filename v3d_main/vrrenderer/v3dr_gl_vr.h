@@ -175,6 +175,7 @@ public:
 	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
+	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
@@ -267,7 +268,7 @@ public:
 	XYZ CollaborationCurrentRes;
 	XYZ CollaborationTargetMarkerRes;
 	XYZ collaborationTargetdelcurveRes;
-
+	XYZ SegNode_tobedeleted;//second node of seg , same to terafly collaboration delete seg
 
 private: 
 	std::string current_agent_color;
