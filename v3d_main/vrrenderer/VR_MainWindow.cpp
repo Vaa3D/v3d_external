@@ -252,21 +252,27 @@ void VR_MainWindow::TVProcess(QString line)
                 float resx = tempnodeList.at(3).toFloat();
                 float resy = tempnodeList.at(4).toFloat();
                 float resz = tempnodeList.at(5).toFloat();
+				if (pMainApplication)
+				{
+					pMainApplication->collaborationTargetdelcurveRes = XYZ(resx, resy, resz);
 
-                pMainApplication->collaborationTargetdelcurveRes = XYZ(resx,resy,resz);
+					XYZ  converreceivexyz = ConvertreceiveCoords(dx, dy, dz);
+					XYZ TeraflyglobalPos = XYZ(dx, dy, dz);
 
-                XYZ  converreceivexyz = ConvertreceiveCoords(dx,dy,dz);
-                XYZ TeraflyglobalPos =XYZ(dx ,dy,dz);
-
-                QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z));
-                delIDList.append(delID);
+					QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z));
+					delIDList.append(delID);
+				}
+                
 
             }
-
-            for(int i=0;i<delIDList.size();i++)
-            {
-                pMainApplication->DeleteSegment(delIDList.at(i));
-            }
+			if (pMainApplication)
+			{
+				for (int i = 0; i < delIDList.size(); i++)
+				{
+					pMainApplication->DeleteSegment(delIDList.at(i));
+				}
+			}
+          
 
 
 
