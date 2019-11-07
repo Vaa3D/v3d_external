@@ -38,6 +38,7 @@ VR_MainWindow::~VR_MainWindow() {
 void VR_MainWindow::onReadySend()
 {
 
+    qDebug()<<"VR_MainWindow::onReadySend()";
 	if(!CollaborationSendPool.empty())
 	{
 		cout<<"CollaborationSendPool.size()"<<CollaborationSendPool.size()<<endl;
@@ -609,9 +610,9 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			qDebug() << pMainApplication->currentNT.listNeuron.size() << endl;
             QString waitsend=pMainApplication->NT2QString();
             if(waitsend.size()!=0)
-				CollaborationSendPool.emplace_back("/seg"+pMainApplication->NT2QString());
+                CollaborationSendPool.emplace_back(pMainApplication->NT2QString());
 			pMainApplication->ClearCurrentNT();
-			emit(sendPoolHead());
+            emit sendPoolHead();
 			CURRENT_DATA_IS_SENT=true;
 			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
 		}

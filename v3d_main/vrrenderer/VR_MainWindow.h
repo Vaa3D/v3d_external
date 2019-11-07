@@ -26,7 +26,7 @@ class VR_MainWindow : public QWidget
 public:
     explicit VR_MainWindow(V3dR_Communicator* TeraflyCommunicator);
     ~VR_MainWindow();
-	void onReadySend();
+//	void onReadySend();
 	bool SendLoginRequest(bool resume = false);
 	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator*TeraflyCommunicator, XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
 	XYZ VRVolumeStartPoint;
@@ -39,7 +39,7 @@ public slots:
 	void RunVRMainloop(XYZ* zoomPOS = 0);
 	void SendHMDPosition();
     void TVProcess(QString);
-//	void onReadySend();
+    void onReadySend();
 private slots:
 
 //    void onReadyRead();
