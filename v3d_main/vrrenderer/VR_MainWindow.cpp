@@ -326,32 +326,36 @@ void VR_MainWindow::TVProcess(QString line)
             int resz = markerMSGs.at(5).toFloat();
             qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
             qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
-            pMainApplication->CollaborationTargetMarkerRes = XYZ(resx,resy,resz);
-            XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
-            qDebug()<<"user, "<<user<<" Converted Receive marker: "<<converreceivexyz.x<<" "<<converreceivexyz.y<<" "<<converreceivexyz.z;
-            if(user==userName)
-            {
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-                qDebug()<<"get message CURRENT_DATA_IS_SENT=false;";
-            }
-            int colortype=3;
-            for(int i=0;i<VR_Communicator->Agents.size();i++)
-            {
-                if(user == VR_Communicator->Agents.at(i).name)
-                {
-                    colortype=VR_Communicator->Agents.at(i).colorType;
-                    break;
-                }
-            }
-            //pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
-            bool IsmarkerValid = false;
-            IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z);
-            cout<<"IsmarkerValid is "<<IsmarkerValid<<endl;
-            if(!IsmarkerValid)
-            {
-                pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
-            }
+			if (pMainApplication)
+			{
+				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
+				cout << "pos 1" << endl;
+				XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
+				qDebug() << "user, " << user << " Converted Receive marker: " << converreceivexyz.x << " " << converreceivexyz.y << " " << converreceivexyz.z;
+				if (user == userName)
+				{
+					pMainApplication->READY_TO_SEND = false;
+					CURRENT_DATA_IS_SENT = false;
+					qDebug() << "get message CURRENT_DATA_IS_SENT=false;";
+				}
+				int colortype = 3;
+				for (int i = 0; i < VR_Communicator->Agents.size(); i++)
+				{
+					if (user == VR_Communicator->Agents.at(i).name)
+					{
+						colortype = VR_Communicator->Agents.at(i).colorType;
+						break;
+					}
+				}
+				//pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+				bool IsmarkerValid = false;
+				IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+				cout << "IsmarkerValid is " << IsmarkerValid << endl;
+				if (!IsmarkerValid)
+				{
+					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+				}
+			}
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
@@ -843,7 +847,12 @@ XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 	//QString str1 = coords.section(' ',0, 0);  // str == "bin/myapp"
 	//QString str2 = coords.section(' ',1, 1);  // str == "bin/myapp"
 	//QString str3 = coords.section(' ',2, 2);  // str == "bin/myapp"
+	cout << "pos 2" << endl;
+	cout << "current x = " << VRVolumeCurrentRes.x << "current y = " << VRVolumeCurrentRes.y << "current z = " << VRVolumeCurrentRes.z << endl;
+	cout << "max x = " << VRvolumeMaxRes.x << "max y = " << VRvolumeMaxRes.y << "max z = " << VRvolumeMaxRes.z << endl;
 	float dividex = VRvolumeMaxRes.x/VRVolumeCurrentRes.x;
+	cout << "dividex =" << dividex;
+
 	float dividey = VRvolumeMaxRes.y/VRVolumeCurrentRes.y;
 	float dividez = VRvolumeMaxRes.z/VRVolumeCurrentRes.z;
 	cout<<"dividex = "<<dividex<<"dividey = "<<dividey<<"dividez = "<<dividez<<endl;

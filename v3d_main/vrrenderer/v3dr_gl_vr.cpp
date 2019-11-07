@@ -742,6 +742,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, curveDrawingTestStatus (-1)
 	, showshootingray(false)
 	, replacetexture(false)
+	, CollaborationTargetMarkerRes(1,1,1)
 	//, font_VR (NULL)
 
 {

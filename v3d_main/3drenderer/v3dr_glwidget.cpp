@@ -1901,8 +1901,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
-            int _call_that_func =
-      myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),
+            int _call_that_func =myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),
       !linkerror,VRinfo,CollaborationCreatorRes,TeraflyCommunicator,
      &teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
 
