@@ -8148,8 +8148,8 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes)//localtogolbal
 {
-    qDebug()<<"1:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
-    qDebug()<<"2:"<<(targetRes.x/CollaborationCurrentRes.x)<<targetRes.y/CollaborationCurrentRes.y<<targetRes.z/CollaborationCurrentRes.z;
+//    qDebug()<<"1:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
+//    qDebug()<<"2:"<<(targetRes.x/CollaborationCurrentRes.x)<<targetRes.y/CollaborationCurrentRes.y<<targetRes.z/CollaborationCurrentRes.z;
 	x+= (CmainVRVolumeStartPoint.x-1);
 	y+= (CmainVRVolumeStartPoint.y-1);
 	z+= (CmainVRVolumeStartPoint.z-1);
@@ -8166,8 +8166,8 @@ XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 	x-= (CmainVRVolumeStartPoint.x-1);
 	y-= (CmainVRVolumeStartPoint.y-1);
 	z-= (CmainVRVolumeStartPoint.z-1);
-    qDebug()<<"3:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
-    qDebug()<<"4:"<<(CollaborationMaxResolution.x/CollaborationCurrentRes.x)<<CollaborationMaxResolution.y/CollaborationCurrentRes.y<<CollaborationMaxResolution.z/CollaborationCurrentRes.z;
+  //  qDebug()<<"3:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
+  //  qDebug()<<"4:"<<(CollaborationMaxResolution.x/CollaborationCurrentRes.x)<<CollaborationMaxResolution.y/CollaborationCurrentRes.y<<CollaborationMaxResolution.z/CollaborationCurrentRes.z;
 	return XYZ(x,y,z);
 }
 //bool CMainApplication::FlashStuff(FlashType type,XYZ coords)
