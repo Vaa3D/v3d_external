@@ -2377,10 +2377,11 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 				My4DImage* curImg = 0;
 				if (w) curImg = v3dr_getImage4d(_idep);
-				curImg->ExtractDeletingNode(); 
+				
 				if (w->TeraflyCommunicator)
 				{
-
+					vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
+					w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
 				}
                 qDebug()<<"000000000-0000008";
             }
