@@ -1478,11 +1478,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
          {
              deleteMultiNeuronsByStroke();
 			 cout << "call delete muti seg pos 1" << endl;
-			 if (w->TeraflyCommunicator)
-			 {
-				 vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
-				 w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
-			 }
+
              curImg->tracedNeuron.deleteMultiSeg();
 
          }
@@ -3310,7 +3306,11 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
-
+	if (w->TeraflyCommunicator)
+	{
+		vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
+		w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+	}
     curImg->tracedNeuron.deleteMultiSeg();
 
     //curImg->proj_trace_history_append();          // no need to update the history
