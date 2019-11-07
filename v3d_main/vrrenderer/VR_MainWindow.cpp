@@ -611,7 +611,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             if(waitsend.size()!=0)
 				CollaborationSendPool.emplace_back("/seg"+pMainApplication->NT2QString());
 			pMainApplication->ClearCurrentNT();
-			sendPoolHead();
+			emit(sendPoolHead());
 			CURRENT_DATA_IS_SENT=true;
 			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
 		}
