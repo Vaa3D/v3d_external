@@ -38,10 +38,11 @@ public:
 public slots:
 	void RunVRMainloop(XYZ* zoomPOS = 0);
 	void SendHMDPosition();
+    void TVProcess(QString);
 //	void onReadySend();
 private slots:
 
-    void onReadyRead();
+//    void onReadyRead();
     void onConnected();
     void onDisconnected();
 public:

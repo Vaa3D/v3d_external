@@ -20,8 +20,8 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QRegExp regex("^[a-zA-Z]\\w+");
 	socket = new QTcpSocket(this);
 	VR_Communicator = TeraflyCommunicator;
-    disconnect(VR_Communicator->socket, SIGNAL(readyRead()), VR_Communicator, SLOT(onReadyRead()));
-    connect(VR_Communicator->socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
+    connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
 //	connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySend()));
     userName = TeraflyCommunicator->userName;
 	CURRENT_DATA_IS_SENT=false;
@@ -169,7 +169,10 @@ bool VR_MainWindow::SendLoginRequest(bool resume) {
 //}
 
 
-void VR_MainWindow::onReadyRead() {
+//void VR_MainWindow::onReadyRead()
+void VR_MainWindow::TVProcess(QString line)
+
+{
     QRegExp usersRex("^/users:(.*)$");
     QRegExp systemRex("^/system:(.*)$");
 	QRegExp hmdposRex("^/hmdpos:(.*)$");
@@ -182,35 +185,35 @@ void VR_MainWindow::onReadyRead() {
     QRegExp messageRex("^/seg:(.*)__(.*)$");
 	
 
-    QDataStream in(VR_Communicator->socket);
-    in.setVersion(QDataStream::Qt_4_7);
-    QString line;
+//    QDataStream in(VR_Communicator->socket);
+//    in.setVersion(QDataStream::Qt_4_7);
+//    QString line;
 
-    qDebug()<<"in MessageSocketSlot_Read TV:\n";
-    while(1)
-    {
-        if(VR_Communicator->nextblocksize==0)
-        {
-            if(VR_Communicator->socket->bytesAvailable()>=sizeof (quint64))
-            {
-                in>>VR_Communicator->nextblocksize;
-            }
-            else
-            {
-                return;
-            }
-        }
+//    qDebug()<<"in MessageSocketSlot_Read TV:\n";
+//    while(1)
+//    {
+//        if(VR_Communicator->nextblocksize==0)
+//        {
+//            if(VR_Communicator->socket->bytesAvailable()>=sizeof (quint64))
+//            {
+//                in>>VR_Communicator->nextblocksize;
+//            }
+//            else
+//            {
+//                return;
+//            }
+//        }
 
-        if(VR_Communicator->socket->bytesAvailable()>=VR_Communicator->nextblocksize)
-        {
-            in >>line;
-        }else
-        {
-            return ;
-        }
+//        if(VR_Communicator->socket->bytesAvailable()>=VR_Communicator->nextblocksize)
+//        {
+//            in >>line;
+//        }else
+//        {
+//            return ;
+//        }
 
 //        line=line.trimmed();
-        qDebug()<<"TV receive:"<<line;
+        qDebug()<<"TVProcess:"<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             //qDebug()<<"Current users are:";
@@ -570,8 +573,8 @@ void VR_MainWindow::onReadyRead() {
             }
         }
 
-        VR_Communicator->nextblocksize=0;
-    }
+//        VR_Communicator->nextblocksize=0;
+//    }
 //    }
 }
 

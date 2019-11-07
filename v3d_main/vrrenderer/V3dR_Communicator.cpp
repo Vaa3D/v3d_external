@@ -244,10 +244,8 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
     socket=new QTcpSocket(this);
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-//    connect(this->managesocket,SIGNAL(disconnected()),socket,SLOT(disconnectFromHost()));
+    connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
- //   connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-//    connect(socket,SIGNAL(disconnected()),socket,SLOT(deleteLater()));
 
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     qDebug()<<"start login messageserver";
@@ -354,23 +352,11 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
 
 }
 
-void V3dR_Communicator::onReadyRead() {
-	QRegExp usersRex("^/users:(.*)$");
-	QRegExp systemRex("^/system:(.*)$");
-	QRegExp hmdposRex("^/hmdpos:(.*)$");
-	QRegExp colorRex("^/color:(.*)$");
-    QRegExp deletecurveRex("^/del_curve:(.*)__(.*)$");
-    QRegExp markerRex("^/marker:(.*)__(.*)$");
-    QRegExp delmarkerRex("^/del_marker:(.*)__(.*)$");
-	QRegExp dragnodeRex("^/drag_node:(.*)$");
-	QRegExp creatorRex("^/creator:(.*)$");
-    QRegExp messageRex("^/seg:(.*)__(.*)$");
-
+void V3dR_Communicator::onReadyRead()
+{
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_7);
     QString line;
-
-    qDebug()<<"in MessageSocketSlot_Read tf:\n";
 
     while(1)
     {
@@ -390,14 +376,61 @@ void V3dR_Communicator::onReadyRead() {
         if(socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
+            emit msgtoprocess(line);
         }else
         {
             qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
             return ;
         }
+        nextblocksize=0;
+    }
+}
+
+
+void V3dR_Communicator::TFProcess(QString line) {
+    QRegExp usersRex("^/users:(.*)$");
+    QRegExp systemRex("^/system:(.*)$");
+    QRegExp hmdposRex("^/hmdpos:(.*)$");
+    QRegExp colorRex("^/color:(.*)$");
+    QRegExp deletecurveRex("^/del_curve:(.*)__(.*)$");
+    QRegExp markerRex("^/marker:(.*)__(.*)$");
+    QRegExp delmarkerRex("^/del_marker:(.*)__(.*)$");
+    QRegExp dragnodeRex("^/drag_node:(.*)$");
+    QRegExp creatorRex("^/creator:(.*)$");
+    QRegExp messageRex("^/seg:(.*)__(.*)$");
+
+//    QDataStream in(socket);
+//    in.setVersion(QDataStream::Qt_4_7);
+//    QString line;
+
+//    qDebug()<<"in MessageSocketSlot_Read tf:\n";
+
+//    while(1)
+//    {
+//        if(nextblocksize==0)
+//        {
+//            if(socket->bytesAvailable()>=sizeof (quint16))
+//            {
+//                in>>nextblocksize;
+//            }
+//            else
+//            {
+//                qDebug()<<"bytes <quint16";
+//                return;
+//            }
+//        }
+
+//        if(socket->bytesAvailable()>=nextblocksize)
+//        {
+//            in >>line;
+//        }else
+//        {
+//            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
+//            return ;
+//        }
 
         line=line.trimmed();
-        qDebug()<<" TF receive :"<<line;
+        qDebug()<<" TFProcess:"<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             foreach (QString user, users) {
@@ -599,8 +632,8 @@ void V3dR_Communicator::onReadyRead() {
 
 
         }
-        nextblocksize=0;
-    }
+//        nextblocksize=0;
+//    }
 }
 
 void V3dR_Communicator::CollaborationMainloop(){

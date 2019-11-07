@@ -54,6 +54,7 @@ public slots:
     void messageMade();
 //    void receivedfile(QString anofile);
     void receivefile(QString anofile);
+//    void TFProcess(QString msg);
 protected:
 
 signals:
@@ -113,6 +114,7 @@ public slots:
 	//void RunVRMainloop();
 	//void SendHMDPosition();
 	void CollaborationMainloop();
+    void TFProcess(QString msg);
 
 private slots:
 	
@@ -129,6 +131,7 @@ signals:
     void delSeg(QString);
     void addMarker(QString,int);
     void delMarker(QString);
+    void msgtoprocess(QString);
 private:
 	
 	
