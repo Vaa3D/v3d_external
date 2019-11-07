@@ -26,7 +26,7 @@ class VR_MainWindow : public QWidget
 public:
     explicit VR_MainWindow(V3dR_Communicator* TeraflyCommunicator);
     ~VR_MainWindow();
-	//void onReadySend(QString &send_MSG);
+	void onReadySend();
 	bool SendLoginRequest(bool resume = false);
 	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator*TeraflyCommunicator, XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
 	XYZ VRVolumeStartPoint;
@@ -49,7 +49,7 @@ public:
 	CMainApplication *pMainApplication;
 signals:
 	void VRSocketDisconnect();
-//	void sendPoolHead();
+	void sendPoolHead();
 private:
 	V3dR_Communicator* VR_Communicator;
 //    QTcpSocket* socket;
@@ -64,7 +64,7 @@ private:
     int numreceivedmessage;//for debug HL
     int numsendmessage;
 	//Prevent receiving/sending conflicts  LiQi
-//	vector<QString> CollaborationSendPool;
+	vector<QString> CollaborationSendPool;
 	void SendVRconfigInfo();
 };
 
