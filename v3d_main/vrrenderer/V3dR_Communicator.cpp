@@ -536,7 +536,10 @@ void V3dR_Communicator::TFProcess(QString line) {
             }
 
             if(user!=userName)
-                 emit addMarker(markerRex.cap(2).trimmed(),colortype);
+            {
+                emit addMarker(markerRex.cap(2).trimmed(),colortype);
+                qDebug()<<"siagnal add marker";
+            }
             else
                 qDebug()<<"user:"<<user<<"==userName"<<userName;
 

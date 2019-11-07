@@ -4109,6 +4109,8 @@ void PMain::load()
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
 
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString,int)),
+                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString,int)));
 
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
