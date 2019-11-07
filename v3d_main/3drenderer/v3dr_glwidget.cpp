@@ -4255,7 +4255,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
     for(int i=0;i<markers.size();i++)
     {
        LocationSimple markerI=markers.at(i);
-       float dist = glm::sqrt((markerI.x-markerXYZ.at(0).toFloat())*(markerI.x-markerXYZ.at(0).toFloat())+
+       float dist = /*glm::*/sqrt((markerI.x-markerXYZ.at(0).toFloat())*(markerI.x-markerXYZ.at(0).toFloat())+
                               (markerI.y-markerXYZ.at(1).toFloat())*(markerI.y-markerXYZ.at(1).toFloat())+
                               (markerI.z-markerXYZ.at(2).toFloat())*(markerI.z-markerXYZ.at(2).toFloat()));
        if(dist<8.0)
@@ -4302,20 +4302,22 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
         XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
 
 
-        int J=0;
-        for(J=0;J<v_ns_list.seg.size();J++)
+        for(int J=0;J<v_ns_list.seg.size();J++)
         {
+
             int v_ns_size=v_ns_list.seg.at(J).row.size();
+
             if((v_ns_list.seg.at(J).row.at(1).x==delcurve.x&&v_ns_list.seg.at(J).row.at(1).y==delcurve.y&&v_ns_list.seg.at(J).row.at(1).z==delcurve.z)||
                (v_ns_list.seg.at(J).row.at(v_ns_size-2).x==delcurve.x&&v_ns_list.seg.at(J).row.at(v_ns_size-2).y==delcurve.y&&v_ns_list.seg.at(J).row.at(v_ns_size-2).z==delcurve.z))
             {
                 qDebug()<<"FIND J="<<J;
+                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
 
         }
 
-        v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
+//        v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
     }
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
     qDebug()<<"khjidshkljashdl";

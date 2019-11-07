@@ -176,6 +176,7 @@ public:
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
 	bool DeleteSegment(QString segName);
+    void DeleteSegment(float x,float y,float z);
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);

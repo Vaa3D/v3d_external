@@ -6872,6 +6872,20 @@ bool CMainApplication::DeleteSegment(QString segName)
 	return false;
 }
 
+void CMainApplication::DeleteSegment(float x,float y,float z)
+{
+    for(int i=0;i<sketchedNTList.size();i++)
+    {
+        NeuronTree nt0=sketchedNTList.at(i);
+        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
+        NeuronSWC ss0=nt0.listNeuron.at(1);
+        if(ss.x==x&&ss.y==y&&ss.z==z||ss0.x==x&&ss0.y==y&&ss0.z==z)
+        {
+            sketchedNTList.removeAt(i);break;
+        }
+    }
+}
+
 void CMainApplication::UndoLastSketchedNT()
 {
 	if(!bIsUndoEnable) return;

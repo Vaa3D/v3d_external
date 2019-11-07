@@ -240,38 +240,50 @@ void VR_MainWindow::TVProcess(QString line)
                 return;
             }
 
-            QStringList delIDList;
             for(int i=0;i<delMSGs.size();i++)
             {
-                QStringList tempnodeList=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
+                if(pMainApplication)
+                {
+                    QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
+                    if(xyz.size()<3) continue;
+                    pMainApplication->DeleteSegment(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
+                }
+            }
 
-                if(tempnodeList.size()<4) continue;
-                float dx = tempnodeList.at(0).toFloat();
-                float dy = tempnodeList.at(1).toFloat();
-                float dz = tempnodeList.at(2).toFloat();
-                float resx = tempnodeList.at(3).toFloat();
-                float resy = tempnodeList.at(4).toFloat();
-                float resz = tempnodeList.at(5).toFloat();
-				if (pMainApplication)
-				{
-					pMainApplication->collaborationTargetdelcurveRes = XYZ(resx, resy, resz);
+//            QStringList delIDList;
+//            for(int i=0;i<delMSGs.size();i++)
+//            {
+//                QStringList tempnodeList=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
 
-					XYZ  converreceivexyz = ConvertreceiveCoords(dx, dy, dz);
-					XYZ TeraflyglobalPos = XYZ(dx, dy, dz);
+//                if(tempnodeList.size()<4) continue;
+//                float dx = tempnodeList.at(0).toFloat();
+//                float dy = tempnodeList.at(1).toFloat();
+//                float dz = tempnodeList.at(2).toFloat();
+//                float resx = tempnodeList.at(3).toFloat();
+//                float resy = tempnodeList.at(4).toFloat();
+//                float resz = tempnodeList.at(5).toFloat();
+//                if (pMainApplication)
+////				{
+////					pMainApplication->collaborationTargetdelcurveRes = XYZ(resx, resy, resz);
 
-					QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z));
-					delIDList.append(delID);
-				}
+////					XYZ  converreceivexyz = ConvertreceiveCoords(dx, dy, dz);
+////					XYZ TeraflyglobalPos = XYZ(dx, dy, dz);
+
+////					QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z));
+////					delIDList.append(delID);
+
+//                    pMainApplication->DeleteSegment(delIDList.at(i));
+//                }
                 
 
-            }
-			if (pMainApplication)
-			{
-				for (int i = 0; i < delIDList.size(); i++)
-				{
-					pMainApplication->DeleteSegment(delIDList.at(i));
-				}
-			}
+//            }
+//			if (pMainApplication)
+//			{
+//				for (int i = 0; i < delIDList.size(); i++)
+//				{
+//					pMainApplication->DeleteSegment(delIDList.at(i));
+//				}
+//			}
           
 
 
