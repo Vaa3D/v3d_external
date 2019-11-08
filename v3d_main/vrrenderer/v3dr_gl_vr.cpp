@@ -1428,6 +1428,7 @@ void CMainApplication::Shutdown()
 		m_pCompanionWindow = NULL;
 	}
 	SDL_Quit();
+
 }
 
 //-----------------------------------------------------------------------------
