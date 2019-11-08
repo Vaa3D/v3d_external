@@ -177,7 +177,7 @@ public:
 	QString FindNearestSegment(glm::vec3 dPOS);
 	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
-    void DeleteSegment(float x,float y,float z);
+    bool DeleteSegment(float x,float y,float z);
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);

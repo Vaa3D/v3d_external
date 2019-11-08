@@ -247,9 +247,22 @@ void VR_MainWindow::TVProcess(QString line)
                     QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
                     if(xyz.size()<3) continue;
                     XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-                    pMainApplication->DeleteSegment(node.x,node.y,node.z);
+                    if(pMainApplication->DeleteSegment(node.x,node.y,node.z))
+                    {
+
+
+                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
+                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
+                        )
+                        {
+
+                            VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
+                        }
+
+                    }
                 }
             }
+
 
 //            QStringList delIDList;
 //            for(int i=0;i<delMSGs.size();i++)

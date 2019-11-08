@@ -307,7 +307,7 @@ void V3dR_Communicator::UpdateSendDelMarkerInfo(float x,float y,float z)
 {
     qDebug()<<"UpdateSendDelMarkerInfo";
     XYZ global_node=ConvertLocaltoGlobalCroods(x,y,z);
-    QString nodeMSG=QString("/del_marker:"+QString::number(global_node.x)+" "
+    QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
                             +" "+QString::number(ImageCurRes.z));

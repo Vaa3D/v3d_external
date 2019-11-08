@@ -6894,9 +6894,10 @@ bool CMainApplication::DeleteSegment(QString segName)
 	return false;
 }
 
-void CMainApplication::DeleteSegment(float x,float y,float z)
+bool CMainApplication::DeleteSegment(float x,float y,float z)
 {
     qDebug()<<"node:"<<x<<" "<<y<<" "<<z;
+    bool res=0;
     for(int i=0;i<sketchedNTList.size();i++)
     {
         NeuronTree nt0=sketchedNTList.at(i);
@@ -6910,8 +6911,10 @@ void CMainApplication::DeleteSegment(float x,float y,float z)
         if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
         {
             sketchedNTList.removeAt(i);break;
+            res=1;
         }
     }
+    return res;
 }
 
 void CMainApplication::UndoLastSketchedNT()
