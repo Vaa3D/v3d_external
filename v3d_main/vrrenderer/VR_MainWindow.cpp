@@ -383,6 +383,10 @@ void VR_MainWindow::TVProcess(QString line)
 					}
 				}
 
+
+                        qDebug()<<"markerpos: "<<QString("%1 %2 %3").arg(mx).arg(my).arg(mz);
+                        qDebug()<<"VR START: "<<QString("%1 %2 %3").arg(VRVolumeStartPoint.x).arg(VRVolumeStartPoint.y).arg(VRVolumeStartPoint.z);
+                        qDebug()<<"VR END: "<<QString("%1 %2 %3").arg(VRVolumeEndPoint.x).arg(VRVolumeEndPoint.y).arg(VRVolumeEndPoint.z);
                 if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
                 {
                     qDebug()<<"marker out of size";
