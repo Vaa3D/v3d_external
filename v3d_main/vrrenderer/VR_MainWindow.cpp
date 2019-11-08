@@ -382,6 +382,19 @@ void VR_MainWindow::TVProcess(QString line)
 						break;
 					}
 				}
+
+                if(converreceivexyz.x<VRVolumeStartPoint.x ||
+                converreceivexyz.y<VRVolumeStartPoint.y||
+                converreceivexyz.z<VRVolumeStartPoint.z||
+                converreceivexyz.x>VRVolumeEndPoint.x||
+                converreceivexyz.y>VRVolumeEndPoint.y||
+                converreceivexyz.z>VRVolumeEndPoint.z
+                )
+                {
+
+                    VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(colortype));
+                    return;
+                }
 				//pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
 				bool IsmarkerValid = false;
 				IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
@@ -416,17 +429,6 @@ void VR_MainWindow::TVProcess(QString line)
                 pMainApplication->READY_TO_SEND=false;
                 CURRENT_DATA_IS_SENT=false;
             }
-            if(converreceivexyz.x<VRVolumeStartPoint.x ||
-            converreceivexyz.y<VRVolumeStartPoint.y||
-            converreceivexyz.z<VRVolumeStartPoint.z||
-            converreceivexyz.x>VRVolumeEndPoint.x||
-            converreceivexyz.y>VRVolumeEndPoint.y||
-            converreceivexyz.z>VRVolumeEndPoint.z
-            )
-            {
-                VROutinfo.deletemarkerspos.push_back(XYZ(mx,my,mz));
-                return;
-            }
             int colortype=3;
             for(int i=0;i<VR_Communicator->Agents.size();i++)
             {
@@ -436,6 +438,9 @@ void VR_MainWindow::TVProcess(QString line)
                     break;
                 }
             }
+
+
+
             qDebug()<<"1126:current type ="<<colortype;
             pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
         }

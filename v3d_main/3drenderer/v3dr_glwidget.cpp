@@ -4181,16 +4181,18 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
     {
         for(int i=0;i<__size;i++)
         {
-            __string+=QString("%1 %2 %3_").arg(myvrwin->VROutinfo.deletemarkerspos.at(i).x)
-                    .arg(myvrwin->VROutinfo.deletemarkerspos.at(i).y)
-                    .arg(myvrwin->VROutinfo.deletemarkerspos.at(i).z);
+            QStringList temp=myvrwin->VROutinfo.deletemarkerspos.at(i).split(" ",QString::SkipEmptyParts);
+            QStringList tmp;
+            tmp[0]=temp[0];
+            tmp[1]=temp[1];
+            tmp[2]=temp[2];
+            QString markerPos=tmp.join(" ");
+
+            CollaAddMarker(markerPos,temp[3].toInt());
         }
     }
 
-    if(!__string.isEmpty())
-    {
-        CollaDelMarker(__string);
-    }
+
     qDebug()<<"hjofihedfhdshf=====dfesaf====";
 
 
