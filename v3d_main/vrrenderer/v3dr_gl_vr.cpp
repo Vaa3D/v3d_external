@@ -672,42 +672,42 @@ void dprintf( const char *fmt, ... )
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMainApplication::CMainApplication( int argc, char *argv[] )
+CMainApplication::CMainApplication(int argc, char *argv[])
 	: m_pCompanionWindow(NULL)
 	, m_pContext(NULL)
 	, m_nCompanionWindowWidth(3200)//( 1600 )//(640)//
 	, m_nCompanionWindowHeight(1600)//(800)//( 320 )//
-	, morphologyShader ( NULL )
-	, raycastingShader ( NULL )
-	, clipPatchShader (NULL)
-	, backfaceShader ( NULL )
-	, m_unCompanionWindowProgramID( 0 )
-	, m_unControllerTransformProgramID( 0 )
-	, m_unRenderModelProgramID( 0 )
-	, m_unControllerRayProgramID( 0 )
-	, m_pHMD( NULL )
-	, m_pRenderModels( NULL )
-	, m_pChaperone( NULL )
-	, m_bDebugOpenGL( false )
-	, m_bVerbose( false )
-	, m_bPerf( false )
-	, m_bVblank( false )
-	, m_bGlFinishHack( true )
-	, m_glControllerVertBuffer( 0 )
-	, m_unControllerVAO( 0 )
-	, m_unMorphologyLineModeVAO( 0 )
+	, morphologyShader(NULL)
+	, raycastingShader(NULL)
+	, clipPatchShader(NULL)
+	, backfaceShader(NULL)
+	, m_unCompanionWindowProgramID(0)
+	, m_unControllerTransformProgramID(0)
+	, m_unRenderModelProgramID(0)
+	, m_unControllerRayProgramID(0)
+	, m_pHMD(NULL)
+	, m_pRenderModels(NULL)
+	, m_pChaperone(NULL)
+	, m_bDebugOpenGL(false)
+	, m_bVerbose(false)
+	, m_bPerf(false)
+	, m_bVblank(false)
+	, m_bGlFinishHack(true)
+	, m_glControllerVertBuffer(0)
+	, m_unControllerVAO(0)
+	, m_unMorphologyLineModeVAO(0)
 	, m_uiMorphologyLineModeVertcount(0)
-	, m_unSketchMorphologyLineModeVAO( 0 )
+	, m_unSketchMorphologyLineModeVAO(0)
 	, m_uiSketchMorphologyLineModeVertcount(0)
-	, m_VolumeImageVAO (0)
-	, m_clipPatchVAO (0)
-	, m_nControllerMatrixLocation( -1 )
-	, m_nControllerRayMatrixLocation( -1 )
-	, m_nRenderModelMatrixLocation( -1 )
-	, m_iTrackedControllerCount( 0 )
-	, m_iTrackedControllerCount_Last( -1 )
-	, m_iValidPoseCount( 0 )
-	, m_iValidPoseCount_Last( -1 )
+	, m_VolumeImageVAO(0)
+	, m_clipPatchVAO(0)
+	, m_nControllerMatrixLocation(-1)
+	, m_nControllerRayMatrixLocation(-1)
+	, m_nRenderModelMatrixLocation(-1)
+	, m_iTrackedControllerCount(0)
+	, m_iTrackedControllerCount_Last(-1)
+	, m_iValidPoseCount(0)
+	, m_iValidPoseCount_Last(-1)
 	, m_strPoseClasses("")
 	, m_bShowMorphologyLine(true)
 	, m_bShowMorphologySurface(false)
@@ -715,34 +715,35 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_bControllerModelON(true)
 	, m_modeControlTouchPad_R(0)
 	, m_modeControlGrip_R(0)
-	, m_contrastMode (true)//right touch_pad only control contrast
-	, m_rotateMode (false)
-	, m_zoomMode (false)
-	, m_autoRotateON (false)
-	, m_TouchFirst (true)
-	, m_fTouchOldX( 0 )
-	, m_fTouchOldY( 0 )
+	, m_contrastMode(true)//right touch_pad only control contrast
+	, m_rotateMode(false)
+	, m_zoomMode(false)
+	, m_autoRotateON(false)
+	, m_TouchFirst(true)
+	, m_fTouchOldX(0)
+	, m_fTouchOldY(0)
 	, m_pickUpState(false)
-	, pick_point_index_A (-1)
-	, pick_point_index_B (-1)
-	, m_ControllerTexVAO( 0 )
-	, m_iControllerRayVAO( 0 )
-	, m_nCtrTexMatrixLocation( -1 )
-	, m_unCtrTexProgramID( 0 )
-	, m_bHasImage4D( false)
+	, pick_point_index_A(-1)
+	, pick_point_index_B(-1)
+	, m_ControllerTexVAO(0)
+	, m_iControllerRayVAO(0)
+	, m_nCtrTexMatrixLocation(-1)
+	, m_unCtrTexProgramID(0)
+	, m_bHasImage4D(false)
 	, mainwindow(NULL)
 	, img4d(NULL)
 	, READY_TO_SEND(false)
 	, sketchNum(0)
-	, bIsUndoEnable (false)
-	, bIsRedoEnable (false)
+	, bIsUndoEnable(false)
+	, bIsRedoEnable(false)
 	, _call_assemble_plugin(false)
 	, _startdragnode(false)
-	, postVRFunctionCallMode (0)
-	, curveDrawingTestStatus (-1)
+	, postVRFunctionCallMode(0)
+	, curveDrawingTestStatus(-1)
 	, showshootingray(false)
 	, replacetexture(false)
-	, CollaborationTargetMarkerRes(1,1,1)
+	, CollaborationTargetMarkerRes(1, 1, 1)
+	, collaborationTargetdelcurveRes(1, 1, 1)
 	//, font_VR (NULL)
 
 {
@@ -3093,6 +3094,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				SegNode_tobedeleted = GetSegtobedelete_Node(delName);
+				cout << "SegNode_tobedeleted" << SegNode_tobedeleted.x << " " << SegNode_tobedeleted.y << " " << SegNode_tobedeleted.z << " " << endl;
 				if(isOnline==false)	
 				{
 					NTL temp_NTL = sketchedNTList;
@@ -6815,6 +6817,8 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			{
 				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x,dPOS.y,dPOS.z,collaborationTargetdelcurveRes);
 				XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,collaborationTargetdelcurveRes);
+				cout << "TargetresdPOS" << "x = " << TargetresdPOS.x << "y = "<<TargetresdPOS.y << "z = "TargetresdPOS.z;
+				cout << "TargetresSS0POS" << "x = " << TargetresSS0POS.x << "y = " << TargetresSS0POS.y << "z = "TargetresSS0POS.z;
 				dist = glm::sqrt((TargetresdPOS.x-TargetresSS0POS.x)*(TargetresdPOS.x-TargetresSS0POS.x)+(TargetresdPOS.y-TargetresSS0POS.y)*(TargetresdPOS.y-TargetresSS0POS.y)+(TargetresdPOS.z-TargetresSS0POS.z)*(TargetresdPOS.z-TargetresSS0POS.z));
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
@@ -6822,6 +6826,7 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			{
 				//once dist between pos & node < threshold, return the segment/neurontree' name that current node belong to 
 				ntnametofind = nt.name;
+				qDebug() << "nt.name = " << nt.name;
 				return ntnametofind;
 			}
 		}
