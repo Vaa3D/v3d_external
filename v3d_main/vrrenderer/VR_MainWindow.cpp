@@ -387,6 +387,7 @@ void VR_MainWindow::TVProcess(QString line)
 				cout << "IsmarkerValid is " << IsmarkerValid << endl;
 				if (!IsmarkerValid)
 				{
+                        qDebug()<<"kljkllk";
 					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
 				}
 			}
