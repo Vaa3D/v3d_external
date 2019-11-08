@@ -1956,6 +1956,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
             if(view3DWidget->TeraflyCommunicator!=nullptr)
             {
                 qDebug()<<"kldasdaskljdaskljdaskljdasklj";
+                view3DWidget->SetupCollaborateInfo();
                 view3DWidget->TeraflyCommunicator->UpdateSendDelMarkerInfo(imageMarkers[i].x,
                                imageMarkers[i].y,imageMarkers[i].z);
             }else

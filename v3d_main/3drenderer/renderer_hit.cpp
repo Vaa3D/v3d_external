@@ -4237,6 +4237,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
         qDebug()<<"befor if ";
         if(!fromserver&&w->TeraflyCommunicator!=nullptr)
         {
+            w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateSendPoolNode(S.x,S.y,S.z);
         }
 

@@ -293,7 +293,9 @@ void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 
 void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
 {
+
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
+
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
@@ -785,6 +787,9 @@ XYZ V3dR_Communicator::ConvertGlobaltoLocalCroods(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 {
+    qDebug()<<"ImageStartPoint:(x,y,z):"<<ImageStartPoint.x<<" "<<ImageStartPoint.y<<" "<<ImageStartPoint.z;
+     qDebug()<<"ImageMaxRes:(x,y,z):"<<ImageMaxRes.x<<" "<<ImageMaxRes.y<<" "<<ImageMaxRes.z;
+     qDebug()<<"ImageCurRes:(x,y,z):"<<ImageCurRes.x<<" "<<ImageCurRes.y<<" "<<ImageCurRes.z;
 	x+=(ImageStartPoint.x-1);
 	y+=(ImageStartPoint.y-1);
 	z+=(ImageStartPoint.z-1);
