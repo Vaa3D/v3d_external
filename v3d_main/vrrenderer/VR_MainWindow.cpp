@@ -383,13 +383,7 @@ void VR_MainWindow::TVProcess(QString line)
 					}
 				}
 
-                if(converreceivexyz.x<VRVolumeStartPoint.x ||
-                converreceivexyz.y<VRVolumeStartPoint.y||
-                converreceivexyz.z<VRVolumeStartPoint.z||
-                converreceivexyz.x>VRVolumeEndPoint.x||
-                converreceivexyz.y>VRVolumeEndPoint.y||
-                converreceivexyz.z>VRVolumeEndPoint.z
-                )
+                if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
                 {
                     qDebug()<<"marker out of size";
                     VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(colortype));
