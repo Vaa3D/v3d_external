@@ -15,6 +15,7 @@ class V3dR_Communicator;
 struct VRoutInfo
 {
 	std::vector<XYZ> deletedcurvespos;
+    std::vector<XYZ> deletemarkerspos;
 };
 class CMainApplication;
 class My4DImage;

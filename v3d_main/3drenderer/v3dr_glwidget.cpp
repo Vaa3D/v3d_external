@@ -4172,6 +4172,29 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
         CollaDelSeg(_string);
     }
     qDebug()<<"hjofihedfhdshf=========";
+
+    int __size=0;
+    QString __string;
+
+    __size=myvrwin->VROutinfo.deletemarkerspos.size();
+    if(__size>0)
+    {
+        for(int i=0;i<__size;i++)
+        {
+            __string+=QString("%1 %2 %3_").arg(myvrwin->VROutinfo.deletemarkerspos.at(i).x)
+                    .arg(myvrwin->VROutinfo.deletemarkerspos.at(i).y)
+                    .arg(myvrwin->VROutinfo.deletemarkerspos.at(i).z);
+        }
+    }
+
+    if(!__string.isEmpty())
+    {
+        CollaDelMarker(__string);
+    }
+    qDebug()<<"hjofihedfhdshf=====dfesaf====";
+
+
+
 //	if(myvrwin->VROutinfo.deletedcurvespos.size())
 //	{
 //		NeuronTree  nt = terafly::PluginInterface::getSWC();
@@ -4268,19 +4291,26 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 {
     qDebug()<<"in CollaDelMarker";
     qDebug()<<"call delete marker "<< markerPOS;
-    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
+
+    QStringList delXYZ=markerPOS.split("_",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
-    for(int i=0;i<markers.size();i++)
+    for(int j=0;j<delXYZ.size();j++)
     {
-       LocationSimple markerI=markers.at(i);
-       float dist = /*glm::*/sqrt((markerI.x-markerXYZ.at(0).toFloat())*(markerI.x-markerXYZ.at(0).toFloat())+
-                              (markerI.y-markerXYZ.at(1).toFloat())*(markerI.y-markerXYZ.at(1).toFloat())+
-                              (markerI.z-markerXYZ.at(2).toFloat())*(markerI.z-markerXYZ.at(2).toFloat()));
-       if(dist<8.0)
-       {
-           markers.removeAt(i);break;
-       }
+
+        QStringList markerXYZ0=delXYZ.at(j).split(" ",QString::SkipEmptyParts);
+        for(int i=0;i<markers.size();i++)
+        {
+           LocationSimple markerI=markers.at(i);
+           float dist = /*glm::*/sqrt((markerI.x-markerXYZ0.at(0).toFloat())*(markerI.x-markerXYZ0.at(0).toFloat())+
+                                  (markerI.y-markerXYZ0.at(1).toFloat())*(markerI.y-markerXYZ0.at(1).toFloat())+
+                                  (markerI.z-markerXYZ0.at(2).toFloat())*(markerI.z-markerXYZ0.at(2).toFloat()));
+           if(dist<8.0)
+           {
+               markers.removeAt(i);break;
+           }
+        }
     }
+
     terafly::PluginInterface::setLandmark(markers);
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)

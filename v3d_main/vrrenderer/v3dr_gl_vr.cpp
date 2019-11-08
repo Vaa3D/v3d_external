@@ -2254,7 +2254,7 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
 				dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
-			if(dist < (dist_thres/m_globalScale*5))
+            if(dist < /*(dist_thres/m_globalScale*5)*/8.0)
 			{
 				drawnMarkerList.removeAt(i);
 				markerVisibility.erase(markerVisibility.begin()+i);

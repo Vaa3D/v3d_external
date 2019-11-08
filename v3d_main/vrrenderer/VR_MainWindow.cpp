@@ -104,7 +104,7 @@ void VR_MainWindow::TVProcess(QString line)
 //        }
 
 //        line=line.trimmed();
-        qDebug()<<"===TVProcess:"<<line;
+//        qDebug()<<"===TVProcess:"<<line;
 
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
@@ -415,6 +415,17 @@ void VR_MainWindow::TVProcess(QString line)
             {
                 pMainApplication->READY_TO_SEND=false;
                 CURRENT_DATA_IS_SENT=false;
+            }
+            if(converreceivexyz.x<VRVolumeStartPoint.x ||
+            converreceivexyz.y<VRVolumeStartPoint.y||
+            converreceivexyz.z<VRVolumeStartPoint.z||
+            converreceivexyz.x>VRVolumeEndPoint.x||
+            converreceivexyz.y>VRVolumeEndPoint.y||
+            converreceivexyz.z>VRVolumeEndPoint.z
+            )
+            {
+                VROutinfo.deletemarkerspos.push_back(XYZ(mx,my,mz));
+                return;
             }
             int colortype=3;
             for(int i=0;i<VR_Communicator->Agents.size();i++)
