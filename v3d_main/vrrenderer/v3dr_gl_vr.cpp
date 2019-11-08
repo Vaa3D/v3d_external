@@ -6799,6 +6799,9 @@ void CMainApplication::ClearCurrentNT()
 }
 QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 {
+
+    qDebug()<<"=========================fIND nearest segment=====================";
+    qDebug()<<"DPOS:"<<dPOS.x<<","<<dPOS.y<<" "<<dPOS.z;
 	QString ntnametofind="";
 	//qDebug()<<sketchedNTList.size();
 	if(sketchedNTList.size()<1) return ntnametofind;
@@ -6806,6 +6809,14 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
 		NeuronTree nt=sketchedNTList.at(i);
+        for(int j=0;j<nt.listNeuron.size();j++)
+        {
+            NeuronSWC SS0=nt.listNeuron.at(j);
+            qDebug()<<"segment :"<<nt.name;
+            qDebug()<<SS0.x<<" "<<SS0.y<<" "<<SS0.z;
+
+        }
+
 		for(int j=0;j<nt.listNeuron.size();j++)
 		{
 			NeuronSWC SS0;
@@ -6825,6 +6836,7 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			if(dist < (dist_thres/m_globalScale*5))
 			{
 				//once dist between pos & node < threshold, return the segment/neurontree' name that current node belong to 
+                qDebug()<<"=======================End==========================";
 				ntnametofind = nt.name;
 				qDebug() << "nt.name = " << nt.name;
 				return ntnametofind;
@@ -6832,6 +6844,8 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 		}
 	}
 	//if cannot find any matches, return ""
+
+    qDebug()<<"=======================End==========================";
 	return ntnametofind;
 }
 
@@ -6907,6 +6921,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 
 bool CMainApplication::DeleteSegment(float x,float y,float z)
 {
+    qDebug()<<"==================deletesegmentg============================";
     qDebug()<<"node:"<<x<<" "<<y<<" "<<z;
     bool res=0;
     qDebug()<<sketchedNTList.size();
@@ -6915,15 +6930,24 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
         NeuronTree nt0=sketchedNTList.at(i);
         NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
         qDebug()<<"ss:"<<ss.x<<" "<<ss.y<<" "<<ss.z;
-
         NeuronSWC ss0=nt0.listNeuron.at(1);
         qDebug()<<"ss0:"<<ss0.x<<" "<<ss0.y<<" "<<ss0.z;
 
-//        pow(ss.x-x,2)
+    }
+
+    qDebug()<<"==================deletesegmentg============================";
+
+    for(int i=0;i<sketchedNTList.size();i++)
+    {
+        NeuronTree nt0=sketchedNTList.at(i);
+        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
+
+        NeuronSWC ss0=nt0.listNeuron.at(1);
+
         if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
         {
-            sketchedNTList.removeAt(i);break;
-            res=1;
+            sketchedNTList.removeAt(i);
+            res=1;break;
         }
     }
     return res;
