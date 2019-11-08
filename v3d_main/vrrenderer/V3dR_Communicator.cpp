@@ -357,6 +357,7 @@ void V3dR_Communicator::onReadyRead()
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_7);
     QString line;
+    int i=0;
 
     while(1)
     {
@@ -376,7 +377,9 @@ void V3dR_Communicator::onReadyRead()
         if(nextblocksize>0&&socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
+            i++;
             nextblocksize=0;
+            qDebug()<<"V3dR_Communicator::onReadyRead "<<i<<" "<<line;
             emit msgtoprocess(line);
         }else
         {
