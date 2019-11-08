@@ -249,7 +249,11 @@ void VR_MainWindow::TVProcess(QString line)
                 {
                     QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
                     qDebug()<<"xyz lsit::"<<xyz;
-                    if(xyz.size()<3) continue;
+                    if(xyz.size()<6) continue;
+					float resx = xyz.at(3).toFloat();
+					float resy = xyz.at(4).toFloat();
+					float resz = xyz.at(5).toFloat();
+					pMainApplication->collaborationTargetdelcurveRes = XYZ(resx, resy, resz);
                     if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
                             ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
                     )
@@ -258,6 +262,7 @@ void VR_MainWindow::TVProcess(QString line)
                         VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
                         continue;
                     }
+
                     XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
 
                     pMainApplication->DeleteSegment(node.x,node.y,node.z);
@@ -275,9 +280,7 @@ void VR_MainWindow::TVProcess(QString line)
 //                float dx = tempnodeList.at(0).toFloat();
 //                float dy = tempnodeList.at(1).toFloat();
 //                float dz = tempnodeList.at(2).toFloat();
-//                float resx = tempnodeList.at(3).toFloat();
-//                float resy = tempnodeList.at(4).toFloat();
-//                float resz = tempnodeList.at(5).toFloat();
+
 //                if (pMainApplication)
 ////				{
 ////					pMainApplication->collaborationTargetdelcurveRes = XYZ(resx, resy, resz);
