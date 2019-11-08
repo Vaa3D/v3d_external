@@ -4154,6 +4154,7 @@ void V3dR_GLWidget::cancelSelect()
 //#ifdef __ALLOW_VR_FUNCS_
 void V3dR_GLWidget::UpdateVRcollaInfo()
 {
+    qDebug()<<"UpdateVRcollaInfo";
     int _size=myvrwin->VROutinfo.deletedcurvespos.size();
     QString _string;
     if(_size>0)
@@ -4170,6 +4171,7 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
     {
         CollaDelSeg(_string);
     }
+    qDebug()<<"hjofihedfhdshf=========";
 //	if(myvrwin->VROutinfo.deletedcurvespos.size())
 //	{
 //		NeuronTree  nt = terafly::PluginInterface::getSWC();

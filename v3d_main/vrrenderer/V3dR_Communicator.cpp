@@ -376,13 +376,15 @@ void V3dR_Communicator::onReadyRead()
         if(socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
+            nextblocksize=0;
             emit msgtoprocess(line);
         }else
         {
             qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
             return ;
         }
-        nextblocksize=0;
+
+//        qDebug()
     }
 }
 

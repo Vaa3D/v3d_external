@@ -6898,6 +6898,7 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
 {
     qDebug()<<"node:"<<x<<" "<<y<<" "<<z;
     bool res=0;
+    qDebug()<<sketchedNTList.size();
     for(int i=0;i<sketchedNTList.size();i++)
     {
         NeuronTree nt0=sketchedNTList.at(i);

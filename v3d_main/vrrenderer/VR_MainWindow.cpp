@@ -103,7 +103,7 @@ void VR_MainWindow::TVProcess(QString line)
 //        }
 
 //        line=line.trimmed();
-        qDebug()<<"TVProcess:"<<line;
+        qDebug()<<"===TVProcess:"<<line;
 
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
@@ -240,29 +240,30 @@ void VR_MainWindow::TVProcess(QString line)
                 return;
             }
 
+
+
             for(int i=0;i<delMSGs.size();i++)
             {
                 if(pMainApplication)
                 {
                     QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
+                    qDebug()<<"xyz lsit::"<<xyz;
                     if(xyz.size()<3) continue;
-                    XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-                    if(pMainApplication->DeleteSegment(node.x,node.y,node.z))
+                    if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
+                            ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
+                    )
                     {
-
-
-                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
-                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
-                        )
-                        {
-
-                            VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
-                        }
-
+                        qDebug()<<"====================out =====================";
+                        VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
+                        continue;
                     }
-                }
-            }
+                    XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
 
+                    pMainApplication->DeleteSegment(node.x,node.y,node.z);
+                }
+             }
+
+                    qDebug()<<".................................";
 
 //            QStringList delIDList;
 //            for(int i=0;i<delMSGs.size();i++)
@@ -330,7 +331,7 @@ void VR_MainWindow::TVProcess(QString line)
 
             //            qDebug()<<"delete ID"<<delID<<"++++++++++++++++++++";
             //			bool delerror = pMainApplication->DeleteSegment(delID);
-            qDebug()<<".................................";
+
             //			if(delerror==true)
             //				qDebug()<<"Segment Deleted.";
             //			else
