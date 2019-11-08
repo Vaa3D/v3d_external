@@ -6797,6 +6797,9 @@ void CMainApplication::ClearCurrentNT()
 }
 QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 {
+
+    qDebug()<<"=========================fIND nearest segment=====================";
+    qDebug()<<"DPOS:"<<dPOS.x<<","<<dPOS.y<<" "<<dPOS.z;
 	QString ntnametofind="";
 	//qDebug()<<sketchedNTList.size();
 	if(sketchedNTList.size()<1) return ntnametofind;
@@ -6804,6 +6807,14 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
 		NeuronTree nt=sketchedNTList.at(i);
+        for(int j=0;j<nt.listNeuron.size();j++)
+        {
+            NeuronSWC SS0=nt.listNeuron.at(j);
+            qDebug()<<"segment :"<<nt.name;
+            qDebug()<<SS0.x<<" "<<SS0.y<<" "<<SS0.z;
+
+        }
+
 		for(int j=0;j<nt.listNeuron.size();j++)
 		{
 			NeuronSWC SS0;
@@ -6821,12 +6832,15 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			if(dist < (dist_thres/m_globalScale*5))
 			{
 				//once dist between pos & node < threshold, return the segment/neurontree' name that current node belong to 
+                qDebug()<<"=======================End==========================";
 				ntnametofind = nt.name;
 				return ntnametofind;
 			}
 		}
 	}
 	//if cannot find any matches, return ""
+
+    qDebug()<<"=======================End==========================";
 	return ntnametofind;
 }
 
@@ -6917,8 +6931,8 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
 //        pow(ss.x-x,2)
         if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
         {
-            sketchedNTList.removeAt(i);break;
-            res=1;
+            sketchedNTList.removeAt(i);
+            res=1;break;
         }
     }
     return res;
