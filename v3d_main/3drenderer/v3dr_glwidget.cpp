@@ -4185,13 +4185,17 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
         {
             qDebug()<<"cdnkjshfckah";
             QStringList temp=myvrwin->VROutinfo.deletemarkerspos.at(i).split(" ",QString::SkipEmptyParts);
-
+            qDebug()<<"temp:";
+            qDebug()<<temp;
             QStringList tmp;
-            tmp[0]=temp[0];
-            tmp[1]=temp[1];
-            tmp[2]=temp[2];
+            tmp.append(temp[0]);
+            tmp.append(temp[1]);
+            tmp.append(temp[2]);
+//            tmp[0]=temp[0];
+//            tmp[1]=temp[1];
+//            tmp[2]=temp[2];
             QString markerPos=tmp.join(" ");
-
+            qDebug()<<"hgadahjsdghjas";
             CollaAddMarker(markerPos,temp[3].toInt());
         }
     }
