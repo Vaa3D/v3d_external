@@ -373,7 +373,7 @@ void V3dR_Communicator::onReadyRead()
             }
         }
 
-        if(socket->bytesAvailable()>=nextblocksize)
+        if(nextblocksize>0&&socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
             nextblocksize=0;
