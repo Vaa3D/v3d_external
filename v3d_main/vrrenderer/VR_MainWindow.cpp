@@ -391,7 +391,7 @@ void VR_MainWindow::TVProcess(QString line)
                 converreceivexyz.z>VRVolumeEndPoint.z
                 )
                 {
-
+                    qDebug()<<"marker out of size";
                     VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(colortype));
                     return;
                 }

@@ -4173,15 +4173,19 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
     }
     qDebug()<<"hjofihedfhdshf=========";
 
-    int __size=0;
+    int __size=myvrwin->VROutinfo.deletemarkerspos.size();
     QString __string;
+    qDebug()<<"hgkjdhskadhkjahs";
 
-    __size=myvrwin->VROutinfo.deletemarkerspos.size();
+//    __size=myvrwin->VROutinfo.deletemarkerspos.size();
     if(__size>0)
     {
+        qDebug()<<"__size:"<<__size;
         for(int i=0;i<__size;i++)
         {
+            qDebug()<<"cdnkjshfckah";
             QStringList temp=myvrwin->VROutinfo.deletemarkerspos.at(i).split(" ",QString::SkipEmptyParts);
+
             QStringList tmp;
             tmp[0]=temp[0];
             tmp[1]=temp[1];

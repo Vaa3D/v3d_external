@@ -5245,6 +5245,7 @@ void CMainApplication::SetupControllerRay()
 	{
 		glBufferData(GL_ARRAY_BUFFER,  sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STREAM_DRAW );
 	}	
+//    qDebug()<<"hkjdhjashkj";
 }
 //void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 //{
