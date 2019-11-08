@@ -6828,8 +6828,8 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			{
 				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x,dPOS.y,dPOS.z,collaborationTargetdelcurveRes);
 				XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,collaborationTargetdelcurveRes);
-				cout << "TargetresdPOS" << "x = " << TargetresdPOS.x << "y = "<<TargetresdPOS.y << "z = "TargetresdPOS.z;
-				cout << "TargetresSS0POS" << "x = " << TargetresSS0POS.x << "y = " << TargetresSS0POS.y << "z = "TargetresSS0POS.z;
+				cout << "TargetresdPOS" << "x = " << TargetresdPOS.x << "y = "<<TargetresdPOS.y << "z = "<<TargetresdPOS.z;
+				cout << "TargetresSS0POS" << "x = " << TargetresSS0POS.x << "y = " << TargetresSS0POS.y << "z = "<<TargetresSS0POS.z;
 				dist = glm::sqrt((TargetresdPOS.x-TargetresSS0POS.x)*(TargetresdPOS.x-TargetresSS0POS.x)+(TargetresdPOS.y-TargetresSS0POS.y)*(TargetresdPOS.y-TargetresSS0POS.y)+(TargetresdPOS.z-TargetresSS0POS.z)*(TargetresdPOS.z-TargetresSS0POS.z));
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
