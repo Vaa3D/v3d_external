@@ -770,6 +770,10 @@ void V3dR_Communicator::onDisconnected() {
 
 XYZ V3dR_Communicator::ConvertGlobaltoLocalCroods(double x,double y,double z)
 {
+	cout << "ImageCurRes" << endl;
+	cout << ImageCurRes.x << endl;
+	cout << ImageCurRes.y << endl;
+	cout << ImageCurRes.z << endl;
 	x/=(ImageMaxRes.x/ImageCurRes.x);
 	y/=(ImageMaxRes.y/ImageCurRes.y);
 	z/=(ImageMaxRes.z/ImageCurRes.z);

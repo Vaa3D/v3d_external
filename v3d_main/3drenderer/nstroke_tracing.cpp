@@ -3309,6 +3309,8 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 	if (w->TeraflyCommunicator)
 	{
 		vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
+		cout << "DeleteNodes.size = " << DeleteNodes.size() << endl;
+		w->SetupCollaborateInfo();
 		w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
 	}
     curImg->tracedNeuron.deleteMultiSeg();
