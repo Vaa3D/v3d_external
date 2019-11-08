@@ -1172,6 +1172,17 @@ void CMainApplication::Shutdown()
 		// img4d->update_3drenderer_neuron_view();
 
 	}
+	if (m_bHasImage4D && (sketchedNTList.size() == 0))
+	{
+		NeuronTree SS;
+		SS.name = "vaa3d_traced_neuron";
+		SS.file = "vaa3d_traced_neuron";
+		SS.color = XYZW(0, 0, 0, 0);
+		img4d->tracedNeuron_old = img4d->tracedNeuron;
+		img4d->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(SS);
+		img4d->tracedNeuron.name = "vaa3d_traced_neuron";
+		img4d->tracedNeuron.file = "vaa3d_traced_neuron";
+	}
 	//if(drawnMarkerList.size()>0)//In all cases ,we should copy markerlist into img4d,liqi 2018_12_9
 		if (m_bHasImage4D)
 		{
