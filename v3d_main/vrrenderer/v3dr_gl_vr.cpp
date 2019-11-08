@@ -6916,6 +6916,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 
 bool CMainApplication::DeleteSegment(float x,float y,float z)
 {
+    qDebug()<<"==================deletesegmentg============================";
     qDebug()<<"node:"<<x<<" "<<y<<" "<<z;
     bool res=0;
     qDebug()<<sketchedNTList.size();
@@ -6924,11 +6925,20 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
         NeuronTree nt0=sketchedNTList.at(i);
         NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
         qDebug()<<"ss:"<<ss.x<<" "<<ss.y<<" "<<ss.z;
-
         NeuronSWC ss0=nt0.listNeuron.at(1);
         qDebug()<<"ss0:"<<ss0.x<<" "<<ss0.y<<" "<<ss0.z;
 
-//        pow(ss.x-x,2)
+    }
+
+    qDebug()<<"==================deletesegmentg============================";
+
+    for(int i=0;i<sketchedNTList.size();i++)
+    {
+        NeuronTree nt0=sketchedNTList.at(i);
+        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
+
+        NeuronSWC ss0=nt0.listNeuron.at(1);
+
         if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
         {
             sketchedNTList.removeAt(i);

@@ -241,8 +241,6 @@ void VR_MainWindow::TVProcess(QString line)
                 return;
             }
 
-
-
             for(int i=0;i<delMSGs.size();i++)
             {
                 if(pMainApplication)
@@ -264,7 +262,7 @@ void VR_MainWindow::TVProcess(QString line)
                     }
 
                     XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-
+                    qDebug()<<"delcurve:==="<<node.x<<" "<<node.y<<" "<<node.z;
                     pMainApplication->DeleteSegment(node.x,node.y,node.z);
                 }
              }
