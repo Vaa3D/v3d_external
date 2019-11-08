@@ -718,7 +718,7 @@ QString V3dR_Communicator::V_DeleteNodeToSendMSG(vector<XYZ> loc_list)
 	{
 		char packetbuff[300];
 		XYZ GlobalCroods = ConvertLocaltoGlobalCroods(loc_list[i].x, loc_list[i].y, loc_list[i].z);
-		sprintf(packetbuff, "%%5.3f %5.3f %5.3f %5.3f %5.3f %5.3f_", GlobalCroods.x, GlobalCroods.y, GlobalCroods.z, ImageCurRes.x, ImageCurRes.y, ImageCurRes.z);
+        sprintf(packetbuff, "%5.3f %5.3f %5.3f %5.3f %5.3f %5.3f_", GlobalCroods.x, GlobalCroods.y, GlobalCroods.z, ImageCurRes.x, ImageCurRes.y, ImageCurRes.z);
 
 		messageBuff += packetbuff;
 	}
