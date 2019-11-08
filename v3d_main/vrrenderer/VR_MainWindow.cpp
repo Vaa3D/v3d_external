@@ -586,6 +586,10 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 	if (!pMainApplication->BInit())
 	{
 		pMainApplication->Shutdown();
+        qDebug()<<"pMainApplication->Shutdown();123";
+//        disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
+//        connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
+        qDebug()<<"pMainApplication->Shutdown();1234";
 		return 0;
 	}
 	SendVRconfigInfo();
@@ -601,9 +605,13 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		CreatorPos->z = pMainApplication->CollaborationCreatorPos.z;
 		CreatorRes = pMainApplication->collaboration_creator_res;
 		qDebug()<<"call that function is"<<_call_that_function;
-
+        disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
+        connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
 		delete pMainApplication;
 		pMainApplication=0;
+
+
+
 		return _call_that_function;
 }
 void VR_MainWindow::SendHMDPosition()

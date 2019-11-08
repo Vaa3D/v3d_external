@@ -1425,8 +1425,12 @@ void CMainApplication::Shutdown()
 	//	font_VR = NULL;
 	//	qDebug()<<"deleted font of VR";
 		SDL_DestroyWindow(m_pCompanionWindow);
+
+
 		m_pCompanionWindow = NULL;
 	}
+
+
 	SDL_Quit();
 
 }
