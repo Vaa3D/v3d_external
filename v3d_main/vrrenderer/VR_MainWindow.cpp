@@ -251,7 +251,12 @@ void VR_MainWindow::TVProcess(QString line)
 					float resx = xyz.at(3).toFloat();
 					float resy = xyz.at(4).toFloat();
 					float resz = xyz.at(5).toFloat();
-					pMainApplication->collaborationTargetdelcurveRes = XYZ(resx, resy, resz);
+					pMainApplication->collaborationTargetdelcurveRes.x = resx;
+					pMainApplication->collaborationTargetdelcurveRes.y = resy;
+					pMainApplication->collaborationTargetdelcurveRes.z = resz;
+					cout << "pMainApplication->collaborationTargetdelcurveRes.x" << pMainApplication->collaborationTargetdelcurveRes.x << endl;
+					cout << "pMainApplication->collaborationTargetdelcurveRes.y" << pMainApplication->collaborationTargetdelcurveRes.y << endl;
+					cout << "pMainApplication->collaborationTargetdelcurveRes.z" << pMainApplication->collaborationTargetdelcurveRes.z << endl;
                     if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
                             ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
                     )
@@ -873,6 +878,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 
 	}
 	//pass Resindex and VRvolumeStartPoint to PMAIN  to  offer parameter to NT2QString
+	pMainApplication->collaborationTargetdelcurveRes = VRvolumeMaxRes;
 	pMainApplication->CmainResIndex = ResIndex;
     pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
 	pMainApplication->collaboration_creator_res = ResIndex;

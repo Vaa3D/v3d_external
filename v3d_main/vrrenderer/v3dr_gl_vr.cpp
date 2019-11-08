@@ -743,7 +743,6 @@ CMainApplication::CMainApplication(int argc, char *argv[])
 	, showshootingray(false)
 	, replacetexture(false)
 	, CollaborationTargetMarkerRes(1, 1, 1)
-	, collaborationTargetdelcurveRes(1, 1, 1)
 	//, font_VR (NULL)
 
 {
@@ -6826,7 +6825,10 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
 			else 
 			{
-				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x,dPOS.y,dPOS.z,collaborationTargetdelcurveRes);
+				cout << "pMainApplication->collaborationTargetdelcurveRes.x" << collaborationTargetdelcurveRes.x << endl;
+				cout << "pMainApplication->collaborationTargetdelcurveRes.x" << collaborationTargetdelcurveRes.y << endl;
+				cout << "pMainApplication->collaborationTargetdelcurveRes.x" << collaborationTargetdelcurveRes.z << endl;
+				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x, dPOS.y, dPOS.z, collaborationTargetdelcurveRes);
 				XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,collaborationTargetdelcurveRes);
 				cout << "TargetresdPOS" << "x = " << TargetresdPOS.x << "y = "<<TargetresdPOS.y << "z = "<<TargetresdPOS.z;
 				cout << "TargetresSS0POS" << "x = " << TargetresSS0POS.x << "y = " << TargetresSS0POS.y << "z = "<<TargetresSS0POS.z;
@@ -8229,8 +8231,8 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes)//localtogolbal
 {
-//    qDebug()<<"1:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
-//    qDebug()<<"2:"<<(targetRes.x/CollaborationCurrentRes.x)<<targetRes.y/CollaborationCurrentRes.y<<targetRes.z/CollaborationCurrentRes.z;
+    qDebug()<<"1:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
+    qDebug()<<"2:"<<(targetRes.x/CollaborationCurrentRes.x)<<targetRes.y/CollaborationCurrentRes.y<<targetRes.z/CollaborationCurrentRes.z;
 	x+= (CmainVRVolumeStartPoint.x-1);
 	y+= (CmainVRVolumeStartPoint.y-1);
 	z+= (CmainVRVolumeStartPoint.z-1);
