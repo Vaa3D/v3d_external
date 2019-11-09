@@ -6971,6 +6971,7 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
         {
             qDebug()<<"i:"<<i<<" "<<sketchedNTList.at(i).name;
             sketchedNTList.removeAt(i);
+			SetupSingleMorphologyLine(i, 2);
             res=1;break;
         }
     }
