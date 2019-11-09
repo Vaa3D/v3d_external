@@ -3107,7 +3107,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
-				SegNode_tobedeleted = GetSegtobedelete_Node(delName);
+				//SegNode_tobedeleted = GetSegtobedelete_Node(delName);
 				cout << "SegNode_tobedeleted" << SegNode_tobedeleted.x << " " << SegNode_tobedeleted.y << " " << SegNode_tobedeleted.z << " " << endl;
 				if(isOnline==false)	
 				{
@@ -6822,12 +6822,13 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
+		cout << "i = " << i<<endl;
 		NeuronTree nt=sketchedNTList.at(i);
         for(int j=0;j<nt.listNeuron.size();j++)
         {
             NeuronSWC SS0=nt.listNeuron.at(j);
             qDebug()<<"segment :"<<nt.name;
-            qDebug()<<SS0.x<<" "<<SS0.y<<" "<<SS0.z;
+            qDebug()<<"j = "<<j<<" "<<SS0.x<<" "<<SS0.y<<" "<<SS0.z;
 
         }
 
@@ -6856,6 +6857,9 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
                 qDebug()<<"=======================End==========================";
 				ntnametofind = nt.name;
 				qDebug() << "nt.name = " << nt.name;
+				SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
+				SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
+				SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
 				return ntnametofind;
 			}
 		}
@@ -6869,16 +6873,18 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 XYZ CMainApplication::GetSegtobedelete_Node(QString name)
 {
 	XYZ Node_tobedeleted(0,0,0);
-	
+	cout << "GetSegtobedelete" << endl;
 	if (name == "") return Node_tobedeleted;
 	for (int i = 0; i < sketchedNTList.size(); i++)
 	{
+		cout << i << endl;
 		NeuronTree nt = sketchedNTList.at(i);
 		if (name == nt.name)
 		{
 			Node_tobedeleted.x = nt.listNeuron.at(1).x;
 			Node_tobedeleted.y = nt.listNeuron.at(1).y;
 			Node_tobedeleted.z = nt.listNeuron.at(1).z;
+			cout << "Node_tobedeleted" << Node_tobedeleted.x << " " << Node_tobedeleted.y << " " << Node_tobedeleted.z << endl;
 			return Node_tobedeleted; 
 		}
 	}
