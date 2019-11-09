@@ -517,7 +517,9 @@ void VR_MainWindow::TVProcess(QString line)
                     }
                 }
                 pMainApplication->UpdateNTList(message,colortype);
+
             }
+//        qDebug()<<"receive a message";
         }
 
 //        VR_Communicator->nextblocksize=0;

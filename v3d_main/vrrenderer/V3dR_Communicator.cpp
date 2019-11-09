@@ -334,7 +334,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
             send_MSG="/say: GoodBye~";
         }
 
-        qDebug()<<"in communicator _ onreadysend____"<<send_MSG;
+//        qDebug()<<"in communicator _ onreadysend____"<<send_MSG;
 
         QByteArray block;
         QDataStream dts(&block,QIODevice::WriteOnly);
@@ -381,7 +381,7 @@ void V3dR_Communicator::onReadyRead()
             in >>line;
             i++;
             nextblocksize=0;
-            qDebug()<<"V3dR_Communicator::onReadyRead "<<i<<" "<<line;
+//            qDebug()<<"V3dR_Communicator::onReadyRead "<<i<<" "<<line;
             emit msgtoprocess(line);
         }else
         {
