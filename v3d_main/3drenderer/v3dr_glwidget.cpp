@@ -4290,8 +4290,8 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             V_NeuronSWC_unit node0,node1;
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0/*||
-               sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0*/)
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||
+               sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0)
             {
                 qDebug()<<"FIND J="<<J;
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
