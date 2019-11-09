@@ -4452,6 +4452,8 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
     }
     V_NeuronSWC temp=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
+	temp.name = "vaa3d_traced_neuron";
+	temp.file = "vaa3d_traced_neuron";
     NeuronTree nt=terafly::PluginInterface::getSWC();
     V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(nt);
 

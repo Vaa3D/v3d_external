@@ -1174,6 +1174,7 @@ void CMainApplication::Shutdown()
 	}
 	if (m_bHasImage4D && (sketchedNTList.size() == 0))
 	{
+		cout << "come in to zero" << endl;
 		NeuronTree SS;
 		SS.name = "vaa3d_traced_neuron";
 		SS.file = "vaa3d_traced_neuron";
