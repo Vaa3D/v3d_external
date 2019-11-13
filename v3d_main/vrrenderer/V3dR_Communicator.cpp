@@ -437,7 +437,7 @@ void V3dR_Communicator::TFProcess(QString line) {
 //        }
 
         line=line.trimmed();
-        qDebug()<<" TFProcess:"<<line;
+//        qDebug()<<" TFProcess:"<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             foreach (QString user, users) {
@@ -595,7 +595,7 @@ void V3dR_Communicator::TFProcess(QString line) {
         else if (messageRex.indexIn(line) != -1) {
 
             qDebug()<<"======================messageRex in Terafly begin============";
-            qDebug()<<line;
+//            qDebug()<<line;
             QString user=messageRex.cap(1);
             int colortype=21;
             for(int i=0;i<Agents.size();i++)
@@ -772,7 +772,7 @@ void V3dR_Communicator::onDisconnected() {
 
 XYZ V3dR_Communicator::ConvertGlobaltoLocalCroods(double x,double y,double z)
 {
-	cout << "ImageCurRes" << endl;
+//	cout << "ImageCurRes" << endl;
 	cout << ImageCurRes.x << endl;
 	cout << ImageCurRes.y << endl;
 	cout << ImageCurRes.z << endl;
@@ -787,9 +787,9 @@ XYZ V3dR_Communicator::ConvertGlobaltoLocalCroods(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 {
-    qDebug()<<"ImageStartPoint:(x,y,z):"<<ImageStartPoint.x<<" "<<ImageStartPoint.y<<" "<<ImageStartPoint.z;
-     qDebug()<<"ImageMaxRes:(x,y,z):"<<ImageMaxRes.x<<" "<<ImageMaxRes.y<<" "<<ImageMaxRes.z;
-     qDebug()<<"ImageCurRes:(x,y,z):"<<ImageCurRes.x<<" "<<ImageCurRes.y<<" "<<ImageCurRes.z;
+//    qDebug()<<"ImageStartPoint:(x,y,z):"<<ImageStartPoint.x<<" "<<ImageStartPoint.y<<" "<<ImageStartPoint.z;
+//     qDebug()<<"ImageMaxRes:(x,y,z):"<<ImageMaxRes.x<<" "<<ImageMaxRes.y<<" "<<ImageMaxRes.z;
+//     qDebug()<<"ImageCurRes:(x,y,z):"<<ImageCurRes.x<<" "<<ImageCurRes.y<<" "<<ImageCurRes.z;
 	x+=(ImageStartPoint.x-1);
 	y+=(ImageStartPoint.y-1);
 	z+=(ImageStartPoint.z-1);
