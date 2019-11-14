@@ -574,10 +574,10 @@ void V3dR_Communicator::TFProcess(QString line) {
         else if (delmarkerRex.indexIn(line) != -1) {
             qDebug()<<"in delmarker";
             QString user = delmarkerRex.cap(1);
-            if(user!=userName)
+//            if(user!=userName)
                  emit delMarker(delmarkerRex.cap(2).trimmed());
-            else
-                qDebug()<<"user:"<<user<<"==userName"<<userName;
+//            else
+//                qDebug()<<"user:"<<user<<"==userName"<<userName;
 //            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
 //            if(delmarkerPOS.size()<4)
 //            {
@@ -606,10 +606,10 @@ void V3dR_Communicator::TFProcess(QString line) {
                 }
             }
 
-            if(user!=userName)
+//            if(user!=userName)
                  emit addSeg(messageRex.cap(2).trimmed(),colortype);
-            else
-                qDebug()<<"user:"<<user<<"==userName"<<userName;
+//            else
+//                qDebug()<<"user:"<<user<<"==userName"<<userName;
 //            QStringList curvePOSList = messageRex.cap(2).split("_",QString::SkipEmptyParts);//点信息的列表  （seg头信息）_(点信息)_(点信息).....
 
 //            QString LOChead=curvePOSList[0].trimmed();

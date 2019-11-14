@@ -1737,7 +1737,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 					w->TeraflyCommunicator->UpdateSendPoolNTList(curImg->colla_cur_seg);
 				}
 			}	
-			curImg->update_3drenderer_neuron_view(w, this);
+//			curImg->update_3drenderer_neuron_view(w, this);
         }
     }
 
