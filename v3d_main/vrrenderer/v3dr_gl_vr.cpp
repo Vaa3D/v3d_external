@@ -1174,7 +1174,6 @@ void CMainApplication::Shutdown()
 	}
 	if (m_bHasImage4D && (sketchedNTList.size() == 0))
 	{
-		cout << "come in to zero" << endl;
 		NeuronTree SS;
 		SS.name = "vaa3d_traced_neuron";
 		SS.file = "vaa3d_traced_neuron";
@@ -3108,7 +3107,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				//SegNode_tobedeleted = GetSegtobedelete_Node(delName);
-				cout << "SegNode_tobedeleted" << SegNode_tobedeleted.x << " " << SegNode_tobedeleted.y << " " << SegNode_tobedeleted.z << " " << endl;
 				if(isOnline==false)	
 				{
 					NTL temp_NTL = sketchedNTList;
@@ -3160,7 +3158,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			NeuronTree connectTree;
 			for(V3DLONG  i = 0;i<sketchedNTList.size();i++)
 			{
-				cout<<"sketchedNTList"<<"   "<<i<<endl;
 				NeuronTree* p_tree = (NeuronTree*)(&(sketchedNTList.at(i)));
 				QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
 
@@ -3243,10 +3240,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}							
 				else
 				{
-					cout<<"come into else "<<endl;
 					bool repeat = false;
 					if(std::find(segInfo.begin(),segInfo.end(),i)!=segInfo.end())repeat = true;
-					cout<<"step 1"<<endl;
 					if(repeat ==false&&matchdistance<=tolerance)
 					{
 						segInfo.push_back(i);
@@ -3256,7 +3251,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						//SL0.n = 2;
 						connectTree.listNeuron.append(SL0);
 						connectTree.hashNeuron.insert(SL0.n,connectTree.listNeuron.size()-1);
-						cout<<"segInfo.size == 2 now"<<endl;
 					}
 				}//for each sketchlist
 
@@ -3270,30 +3264,22 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				int index1 = connectTree.listNeuron.at(0).n;
 				int index2 = connectTree.listNeuron.at(1).n;
-				cout<<"index1 is "<<index1<<endl;
-				cout<<"index2 is "<<index2<<endl;
 				
 				NeuronTree * p_connectNT1 = &sketchedNTList[segInfo[0]];
 				NeuronTree * p_connectNT2 = &sketchedNTList[segInfo[1]];
-				cout<<"p_connectNT1.list size is "<<p_connectNT1->listNeuron.size();
-				cout<<"p_connectNT2.list size is "<<p_connectNT2->listNeuron.size();
 				if((index1==1&&index2==p_connectNT2->listNeuron.size())//head to tail
 					||(index1==p_connectNT1->listNeuron.size()&&index2==1)//tail to head 
 					||(index1==1&&index2==1)//head to head
 					||(index1==p_connectNT1->listNeuron.size()&&index2 ==p_connectNT2->listNeuron.size()))//tail to tail
 				{
-					cout<<"connect head to tail !!! come into here"<<endl;
 					for(int j = 0;j<2;j++)
 					{
-						cout<<"pos 1 "<<j<<endl;
 						int index = connectTree.listNeuron.at(j).n;
 						NeuronTree * connectedNT = &sketchedNTList[segInfo[j]];
 						if((index==1&&j==0)||(index==connectedNT->listNeuron.size()&&j==1))
 						{
-							cout<<"pos 3 "<<j<<endl;
 							for(int i = connectedNT->listNeuron.size()-1;i>=0;i--)//add first segment to connectNT
 							{
-								cout<<"pos 4 "<<i<<endl;
 								NeuronSWC SL0  = connectedNT->listNeuron.at(i);
 								SL0.n = curNT.listNeuron.size()+1;
 								if(i==connectedNT->listNeuron.size()-1&&j==0)
@@ -3308,7 +3294,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						}	
 						else if((index==connectedNT->listNeuron.size()&&j==0)||(index==1&&j==1))
 						{
-							cout<<"pos 2 "<<j<<endl;
 							for(int i = 0;i<connectedNT->listNeuron.size();i++)//add first segment to connectNT
 							{
 
@@ -3362,7 +3347,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				else if(index1==1||index1==p_connectNT1->listNeuron.size()
 						||index2==1||index2==p_connectNT2->listNeuron.size())
 				{
-					cout<<"come into connect branch to begin/end"<<endl;
 					/*
 					|	|
 					|	|
@@ -3376,7 +3360,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					
 					if(index2==1||index2==p_connectNT2->listNeuron.size())
 					{
-						cout<<"tranverse index1 and index2"<<endl;
 						NeuronTree* p_tempNT = p_connectNT2;
 						p_connectNT2 = p_connectNT1;
 						p_connectNT1 = p_tempNT;
@@ -3385,7 +3368,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						index1 = tempindex;
 					}
 					NeuronTree result_NT1,result_NT2,result_NT3;
-					cout<<"begin to add result NT1"<<endl;
 					for(int i=0;i<index2;i++)
 					{
 						NeuronSWC SL0  = p_connectNT2->listNeuron.at(i);
@@ -3399,7 +3381,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						result_NT1.listNeuron.append(SL0);
 						result_NT1.hashNeuron.insert(SL0.n,result_NT1.listNeuron.size()-1);
 					}
-					cout<<"begin to add result NT2"<<endl;
 					for(int i=index2-1;i<p_connectNT2->listNeuron.size();i++)
 					{
 						NeuronSWC SL0  = p_connectNT2->listNeuron.at(i);
@@ -3419,10 +3400,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					SL0.pn = -1;
 					result_NT3.listNeuron.append(SL0);
 					result_NT3.hashNeuron.insert(SL0.n,result_NT3.listNeuron.size()-1);
-					cout<<"begin to add result NT3"<<endl;
 					if(index1 == 1)
 					{
-						cout<<"connect to NT3begin"<<endl;
 						for(int i=0;i<p_connectNT1->listNeuron.size();i++)
 						{
 							NeuronSWC SL0  = p_connectNT1->listNeuron.at(i);
@@ -3446,7 +3425,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 					if(isOnline==false)
 					{
-						cout<<"add result NT 1 2 3 to sketchlist"<<endl;
 						if(currentNT.listNeuron.size()>0)
 						{
 							bIsUndoEnable = true;
@@ -6723,7 +6701,6 @@ QString CMainApplication::NT2QString()
 		char packetbuff[300];
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
-        qDebug()<<"before convert :(x,y,z):"<<S_temp.x<<S_temp.y<<S_temp.z;
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
 
 		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld_",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
@@ -6731,7 +6708,6 @@ QString CMainApplication::NT2QString()
 	}
 
 	QString str=QString::fromStdString(messageBuff);
-    qDebug()<<"NT2QString:"<<str;
 	return str;
 }
 
@@ -6822,13 +6798,10 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
-		cout << "i = " << i<<endl;
 		NeuronTree nt=sketchedNTList.at(i);
         for(int j=0;j<nt.listNeuron.size();j++)
         {
             NeuronSWC SS0=nt.listNeuron.at(j);
-            qDebug()<<"segment :"<<nt.name;
-            qDebug()<<"j = "<<j<<" "<<SS0.x<<" "<<SS0.y<<" "<<SS0.z;
 
         }
 
@@ -6841,22 +6814,16 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
 			else 
 			{
-				cout << "pMainApplication->collaborationTargetdelcurveRes.x" << collaborationTargetdelcurveRes.x << endl;
-				cout << "pMainApplication->collaborationTargetdelcurveRes.x" << collaborationTargetdelcurveRes.y << endl;
-				cout << "pMainApplication->collaborationTargetdelcurveRes.x" << collaborationTargetdelcurveRes.z << endl;
 				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x, dPOS.y, dPOS.z, collaborationTargetdelcurveRes);
 				XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,collaborationTargetdelcurveRes);
-				cout << "TargetresdPOS" << "x = " << TargetresdPOS.x << "y = "<<TargetresdPOS.y << "z = "<<TargetresdPOS.z;
-				cout << "TargetresSS0POS" << "x = " << TargetresSS0POS.x << "y = " << TargetresSS0POS.y << "z = "<<TargetresSS0POS.z;
 				dist = glm::sqrt((TargetresdPOS.x-TargetresSS0POS.x)*(TargetresdPOS.x-TargetresSS0POS.x)+(TargetresdPOS.y-TargetresSS0POS.y)*(TargetresdPOS.y-TargetresSS0POS.y)+(TargetresdPOS.z-TargetresSS0POS.z)*(TargetresdPOS.z-TargetresSS0POS.z));
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
 			if(dist < (dist_thres/m_globalScale*5))
 			{
 				//once dist between pos & node < threshold, return the segment/neurontree' name that current node belong to 
-                qDebug()<<"=======================End==========================";
+                //qDebug()<<"=======================End==========================";
 				ntnametofind = nt.name;
-				qDebug() << "nt.name = " << nt.name;
 				SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
 				SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
 				SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
@@ -6873,7 +6840,6 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 XYZ CMainApplication::GetSegtobedelete_Node(QString name)
 {
 	XYZ Node_tobedeleted(0,0,0);
-	cout << "GetSegtobedelete" << endl;
 	if (name == "") return Node_tobedeleted;
 	for (int i = 0; i < sketchedNTList.size(); i++)
 	{
@@ -6884,7 +6850,6 @@ XYZ CMainApplication::GetSegtobedelete_Node(QString name)
 			Node_tobedeleted.x = nt.listNeuron.at(1).x;
 			Node_tobedeleted.y = nt.listNeuron.at(1).y;
 			Node_tobedeleted.z = nt.listNeuron.at(1).z;
-			cout << "Node_tobedeleted" << Node_tobedeleted.x << " " << Node_tobedeleted.y << " " << Node_tobedeleted.z << endl;
 			return Node_tobedeleted; 
 		}
 	}
@@ -6923,7 +6888,7 @@ void CMainApplication::UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,f
 bool CMainApplication::DeleteSegment(QString segName)
 {
 	//delete the segment that match with segName
-	cout<<"segname is "<<endl;
+	//cout<<"segname is "<<endl;
 	if(segName=="") return false;//segName="" will do nothing
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
@@ -6931,7 +6896,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 		NTname = sketchedNTList.at(i).name;
 		if(segName==NTname)
 		{
-			cout<<"find delete seg!@!!@"<<endl;
+			//cout<<"find delete seg!@!!@"<<endl;
 			//delete the segment in NTList,then return
 			sketchedNTList.removeAt(i);
 			SetupSingleMorphologyLine(i,2);
@@ -6944,21 +6909,16 @@ bool CMainApplication::DeleteSegment(QString segName)
 
 bool CMainApplication::DeleteSegment(float x,float y,float z)
 {
-    qDebug()<<"==================deletesegmentg============================";
-    qDebug()<<"node:"<<x<<" "<<y<<" "<<z;
     bool res=0;
     qDebug()<<sketchedNTList.size();
     for(int i=0;i<sketchedNTList.size();i++)
     {
         NeuronTree nt0=sketchedNTList.at(i);
         NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
-        qDebug()<<"ss:"<<ss.x<<" "<<ss.y<<" "<<ss.z;
         NeuronSWC ss0=nt0.listNeuron.at(1);
-        qDebug()<<"ss0:"<<ss0.x<<" "<<ss0.y<<" "<<ss0.z;
 
     }
 
-    qDebug()<<"==================deletesegmentg============================";
 
     for(int i=0;i<sketchedNTList.size();i++)
     {
@@ -6969,7 +6929,6 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
 
         if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
         {
-            qDebug()<<"i:"<<i<<" "<<sketchedNTList.at(i).name;
             sketchedNTList.removeAt(i);
 			SetupSingleMorphologyLine(i, 2);
             res=1;break;
@@ -8254,8 +8213,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes)//localtogolbal
 {
-    qDebug()<<"1:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
-    qDebug()<<"2:"<<(targetRes.x/CollaborationCurrentRes.x)<<targetRes.y/CollaborationCurrentRes.y<<targetRes.z/CollaborationCurrentRes.z;
+
 	x+= (CmainVRVolumeStartPoint.x-1);
 	y+= (CmainVRVolumeStartPoint.y-1);
 	z+= (CmainVRVolumeStartPoint.z-1);

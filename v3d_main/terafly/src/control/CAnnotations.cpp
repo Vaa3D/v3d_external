@@ -1087,6 +1087,7 @@ void CAnnotations::clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range
 }
 
 void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, NeuronTree& nt) throw (tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 

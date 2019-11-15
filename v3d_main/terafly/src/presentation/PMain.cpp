@@ -2859,7 +2859,7 @@ void PMain::doTeraflyVRView()
 			else
 				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
-            this->show();		
+            this->show();	
 
         }
     }
