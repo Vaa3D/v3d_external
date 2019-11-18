@@ -4045,16 +4045,16 @@ double Renderer_gl1::solveMarkerCenter()
 	{
 		addMarker(loc);
         qDebug()<<"solveMarkerCenter addMarker(loc);";
-		if (b_ablation)
-		{
-			loc_vec.push_back(loc);
-			ablate3DLocationSeries(loc_vec);
-		}
-		if (b_imaging || b_grabhighrez)
-		{
-			loc_vec.push_back(loc);
-			produceZoomViewOf3DRoi(loc_vec);
-		}
+//		if (b_ablation)
+//		{
+//			loc_vec.push_back(loc);
+//			ablate3DLocationSeries(loc_vec);
+//		}
+//		if (b_imaging || b_grabhighrez)
+//		{
+//			loc_vec.push_back(loc);
+//			produceZoomViewOf3DRoi(loc_vec);
+//		}
 	}
 	else //then zoom-in, 100822, PHC
 	{
@@ -4244,7 +4244,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 
 
         qDebug()<<"addMarker listLoc.append(S);";
-		updateLandmark();
+//		updateLandmark();
     }
 #else
     ImageMarker S;

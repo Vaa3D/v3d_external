@@ -4175,15 +4175,13 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 
     int __size=myvrwin->VROutinfo.deletemarkerspos.size();
     QString __string;
-    qDebug()<<"hgkjdhskadhkjahs";
 
-//    __size=myvrwin->VROutinfo.deletemarkerspos.size();
     if(__size>0)
     {
-        qDebug()<<"__size:"<<__size;
+
         for(int i=0;i<__size;i++)
         {
-            qDebug()<<"cdnkjshfckah";
+
             QStringList temp=myvrwin->VROutinfo.deletemarkerspos.at(i).split(" ",QString::SkipEmptyParts);
             qDebug()<<"temp:";
             qDebug()<<temp;
@@ -4279,7 +4277,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
     {
 
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
-        qDebug()<<nodeXYZ<<":nodeXYZ";
+//        qDebug()<<nodeXYZ<<":nodeXYZ";
         XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
 
 
@@ -4293,7 +4291,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||
                sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0)
             {
-                qDebug()<<"FIND J="<<J;
+//                qDebug()<<"FIND J="<<J;
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
