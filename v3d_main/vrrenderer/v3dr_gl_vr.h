@@ -177,6 +177,7 @@ public:
 	QString FindNearestSegment(glm::vec3 dPOS);
 	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
+	void SetDeleteSegmentColor(QString segName);
     bool DeleteSegment(float x,float y,float z);
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
@@ -283,7 +284,8 @@ private:
 	bool m_bShowMorphologySurface;
 	bool m_bControllerModelON;
 	bool m_bShowMorphologyMarker;
-
+	QString line_tobedeleted;
+	int color_origin;
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
