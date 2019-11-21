@@ -368,6 +368,8 @@ class terafly::PMain : public QWidget
 		/****************** Fragment tracing related *****************/
 		// MK, Sep, 2019
 		bool fragTracePluginInstance;
+		QPluginLoader* FragTracerQPluginPtr;
+		V3d_PluginLoader* FragTracerPluginLoaderPtr;
 		int globalXlb, globalXhb, globalYlb, globalYhb, globalZlb, globalZhb;
 		/*************************************************************/
 
