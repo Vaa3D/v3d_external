@@ -4285,18 +4285,13 @@ void PMain::startAutoTrace()
             QString v3drawName="tempV3DRAW.v3draw";
             V3DLONG in_sz[4]={blockszie,blockszie,blockszie,1};//channel =1;
             simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
-//            saveImage(v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
-
-//            QList <ImageMarker> tmp1;
-//            tmp1.push_back(ImageMarker(0,0,0));
-//            writeMarker_file("temp.marker",tmp1);
 
 //            QProcess p;
 //            p.start("./release/vaa3d_msvc.exe /x D:/vaa3d_tools/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i  D:\soamdata\6\most\test\18454-1.v3draw /p \"tip.marker\" 0 -1");
 
 //            p.waitForFinished();
 //            QDir f(path+".eswc");
-
+               system("./release/vaa3d_msvc.exe /x D:/Vaa3D_SYY//plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i tempV3DRAW.v3draw  /p \"./temp.marker\" 0 -1");
 //            if(!f.exists()) return;
             emit signal_communicator_read_res(v3drawName,tempPara);
         }
