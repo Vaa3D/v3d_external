@@ -613,7 +613,9 @@ public slots:
         void ColLoadANO(QString ANOfile);
 
 signals:
-        void signal_communicator_read_res(QString path ,XYZ tempPara[3]);
+        void signal_communicator_read_res(QString ,XYZ*);
+private:
+        QString currentPath;
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
 };

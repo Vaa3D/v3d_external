@@ -1403,9 +1403,12 @@ void PMain::openImage(std::string path /*= ""*/)
             if(dialog.exec())
                 path = dialog.directory().absolutePath().toStdString().c_str();
             #else
+            qDebug()<<"dhuaskjdhkjsahdkjsahd\n";
             path = QFileDialog::getExistingDirectory(this, title.c_str(),
                                                      CSettings::instance()->getVolumePathLRU().c_str(),
                                                      QFileDialog::ShowDirsOnly).toStdString();
+
+            qDebug()<<"path="+QString::fromStdString(path);
             #endif
 
             /**/tf::debug(tf::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
@@ -1576,6 +1579,7 @@ void PMain::openImage(std::string path /*= ""*/)
         CImport::instance()->setPath(path);
         CImport::instance()->updateMaxDims();
         CImport::instance()->start();
+       currentPath=QString::fromStdString(path);
     }
     catch(iim::IOException &ex)
     {
@@ -4115,7 +4119,7 @@ void PMain::load()
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
         connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
-                Communicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
+                cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
 
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString,int)),
@@ -4236,6 +4240,7 @@ void PMain::ColLoadANO(QString ANOfile)
 
 void PMain::startAutoTrace()
 {
+    const int blockszie=64;
     qDebug()<<"start auto trace.\n the first is get .v3draw=========";
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win->getGLWidget()->TeraflyCommunicator)
@@ -4247,14 +4252,51 @@ void PMain::startAutoTrace()
         }
 
         XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;
-        XYZ tempPara[3]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+        XYZ tempPara[4]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
                         cur_win->getGLWidget()->TeraflyCommunicator->ImageCurRes,
-                        cur_win->getGLWidget()->TeraflyCommunicator->ImageStartPoint};
-        QString path="tmp_wait_del.v3draw";
-        if(V3D_env->getSubVolumeTeraFly(path.toStdString(),tempNode.x,tempNode.x+64,tempNode.y,tempNode.y+64,
-                                     tempNode.z,tempNode.z+64)!=NULL)
+                        cur_win->getGLWidget()->TeraflyCommunicator->ImageStartPoint,
+                        cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode};
+        qDebug()<<"currentPath:"<<currentPath;
+        QRegExp v3DrawPath("(.*)\RES(.*)");
+        QString path;
+
+        if(v3DrawPath.indexIn(currentPath)!=-1)
         {
-            emit signal_communicator_read_res(path,tempPara);
+
+            path=v3DrawPath.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara[0].y).arg(tempPara[0].x).arg(tempPara[0].z);
+        }else {
+            return;
+        }
+        qDebug()<<path;
+        unsigned char * cropped_image = 0;
+        cropped_image=V3D_env->getSubVolumeTeraFly(path.toStdString(),
+                                                   tempNode.x,tempNode.x+blockszie-1,
+                                                   tempNode.y,tempNode.y+blockszie-1,
+                                                   tempNode.z,tempNode.z+blockszie-1);
+        qDebug()<<tempNode.x<<tempNode.x+blockszie-1<<tempNode.y<<tempNode.y+blockszie-1<<tempNode.z<<tempNode.z+blockszie-1;
+        qDebug()<<"Size of cropped_image:"<<sizeof (*cropped_image);
+        if(cropped_image!=NULL)
+        {
+            QString v3drawName="tempV3DRAW.v3draw";
+            V3DLONG in_sz[4]={blockszie,blockszie,blockszie,1};//channel =1;
+//            simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
+            saveImage(v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
+
+
+            QProcess p;
+            p.start("D:/v3d_external/bin/vaa3d_msvc.exe /x D:/vaa3d_tools/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i  D:\soamdata\6\most\test\18454-1.v3draw /p \"tip.marker\" 0 -1");
+
+            p.waitForFinished();
+            QDir f(path+".eswc");
+
+            if(!f.exists()) return;
+
+
+            NeuronTree auto_trace_NT=readSWC_file(path+".eswc");
+
+
+
+            emit signal_communicator_read_res(v3drawName,tempPara);
         }
     }
 
