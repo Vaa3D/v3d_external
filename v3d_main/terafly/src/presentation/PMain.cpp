@@ -4240,7 +4240,7 @@ void PMain::ColLoadANO(QString ANOfile)
 
 void PMain::startAutoTrace()
 {
-    const int blockszie=64;
+    const int blockszie=256;
     qDebug()<<"start auto trace.\n the first is get .v3draw=========";
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win->getGLWidget()->TeraflyCommunicator)
@@ -4274,28 +4274,30 @@ void PMain::startAutoTrace()
                                                    tempNode.y,tempNode.y+blockszie-1,
                                                    tempNode.z,tempNode.z+blockszie-1);
         qDebug()<<tempNode.x<<tempNode.x+blockszie-1<<tempNode.y<<tempNode.y+blockszie-1<<tempNode.z<<tempNode.z+blockszie-1;
+
+        QList <ImageMarker> tmp1;
+        tmp1.push_back(ImageMarker(0,0,0));
+        writeMarker_file("temp.marker",tmp1);
         qDebug()<<"Size of cropped_image:"<<sizeof (*cropped_image);
+
         if(cropped_image!=NULL)
         {
             QString v3drawName="tempV3DRAW.v3draw";
             V3DLONG in_sz[4]={blockszie,blockszie,blockszie,1};//channel =1;
-//            simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
-            saveImage(v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
+            simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
+//            saveImage(v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
 
+//            QList <ImageMarker> tmp1;
+//            tmp1.push_back(ImageMarker(0,0,0));
+//            writeMarker_file("temp.marker",tmp1);
 
-            QProcess p;
-            p.start("D:/v3d_external/bin/vaa3d_msvc.exe /x D:/vaa3d_tools/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i  D:\soamdata\6\most\test\18454-1.v3draw /p \"tip.marker\" 0 -1");
+//            QProcess p;
+//            p.start("./release/vaa3d_msvc.exe /x D:/vaa3d_tools/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i  D:\soamdata\6\most\test\18454-1.v3draw /p \"tip.marker\" 0 -1");
 
-            p.waitForFinished();
-            QDir f(path+".eswc");
+//            p.waitForFinished();
+//            QDir f(path+".eswc");
 
-            if(!f.exists()) return;
-
-
-            NeuronTree auto_trace_NT=readSWC_file(path+".eswc");
-
-
-
+//            if(!f.exists()) return;
             emit signal_communicator_read_res(v3drawName,tempPara);
         }
     }
