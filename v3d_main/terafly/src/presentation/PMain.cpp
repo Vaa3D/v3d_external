@@ -964,14 +964,24 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	/* --------------------- forth row ---------------------- */
 	teraflyVRView = new QPushButton("See in VR",0);
 	teraflyVRView->setToolTip("You can see current image in VR environment.");
-	collaborationVRView = new QPushButton("Collaborate in VR",0);
-	collaborationVRView->setToolTip("Start collaboration mode with VR.");
+
+    collaborationVRView = new QPushButton("Collaborate in VR",0);
+    collaborationVRView->setToolTip("Start collaboration mode with VR.");
 	
+    collautotrace=new QPushButton("start autotrace",0);//HL
+    collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
+
 	QWidget* VR_buttons = new QWidget();
 	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
-	VR_buttons_layout->addWidget(teraflyVRView, 1);
+    VR_buttons_layout->addWidget(teraflyVRView, 1);//HL
     VR_buttons_layout->addWidget(collaborationVRView, 1);
-	VR_buttons->setLayout(VR_buttons_layout);
+
+    QVBoxLayout *col_trace_layout=new QVBoxLayout();
+    col_trace_layout->addLayout(VR_buttons_layout);
+    col_trace_layout->addWidget(collautotrace,1);
+
+    VR_buttons->setLayout(col_trace_layout);
+//	VR_buttons->setLayout(VR_buttons_layout);
 	localviewer_panel_layout->addWidget(VR_buttons,0);
 #endif
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
@@ -1156,6 +1166,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
 	if(collaborationVRView)
 	    connect(collaborationVRView, SIGNAL(clicked()), this, SLOT(doCollaborationVRView()));
+
+    if(collautotrace)
+        connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
 #endif
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
@@ -4101,6 +4114,9 @@ void PMain::load()
 		Communicator = new V3dR_Communicator;
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
+        connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
+                Communicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
+
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollaAddSeg(QString,int)));
@@ -4193,6 +4209,8 @@ void PMain::ColLoadANO(QString ANOfile)
             tmp=anoExp.cap(1);
         }
 
+
+
         //delete load .ANO
 //        QFile *f = new QFile(tmp+".ano");
 //        if(f->exists())
@@ -4215,4 +4233,63 @@ void PMain::ColLoadANO(QString ANOfile)
 
     }
 }
+
+void PMain::startAutoTrace()
+{
+    qDebug()<<"start auto trace.\n the first is get .v3draw=========";
+    CViewer *cur_win = CViewer::getCurrent();
+    if(cur_win->getGLWidget()->TeraflyCommunicator)
+    {
+        if(cur_win->getGLWidget()->TeraflyCommunicator->socket->state()!=QAbstractSocket::ConnectedState)
+        {
+            QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+            return;
+        }
+
+        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;
+        XYZ tempPara[3]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+                        cur_win->getGLWidget()->TeraflyCommunicator->ImageCurRes,
+                        cur_win->getGLWidget()->TeraflyCommunicator->ImageStartPoint};
+        QString path="tmp_wait_del.v3draw";
+        if(V3D_env->getSubVolumeTeraFly(path.toStdString(),tempNode.x,tempNode.x+64,tempNode.y,tempNode.y+64,
+                                     tempNode.z,tempNode.z+64)!=NULL)
+        {
+            emit signal_communicator_read_res(path,tempPara);
+        }
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

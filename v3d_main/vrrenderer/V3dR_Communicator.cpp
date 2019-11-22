@@ -233,11 +233,18 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 	CURRENT_DATA_IS_SENT=false;
     asktimer=nullptr;
     nextblocksize=0;
+    AutoTraceNode=XYZ(-1);
 }
 
 	V3dR_Communicator::~V3dR_Communicator() {
 
 }
+
+
+//void V3dR_Communicator::startautotrace()
+//{
+//    qDebug()<<"start auto trace\n=================";
+//}
 
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
     socket=new QTcpSocket(this);
@@ -291,6 +298,7 @@ void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 
 void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
 {
+    AutoTraceNode=XYZ(X,Y,Z);
 
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
 
@@ -743,4 +751,9 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 	y*=(ImageMaxRes.y/ImageCurRes.y);
 	z*=(ImageMaxRes.z/ImageCurRes.z);
 	return XYZ(x,y,z);
+}
+
+void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
+{
+    qDebug()<<"void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)";
 }

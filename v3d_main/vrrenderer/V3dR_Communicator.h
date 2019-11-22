@@ -116,12 +116,15 @@ public slots:
 	void CollaborationMainloop();
     void TFProcess(QString msg);
 
+    void read_autotrace(QString,XYZ*);
 private slots:
 	
     void onReadyRead();
     void onConnected();
     void onDisconnected();
     void askserver();
+
+
 signals:
     void messageMade();
 	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
@@ -149,6 +152,10 @@ public:
 private:
 	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
 	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
+
+public:
+    XYZ AutoTraceNode;
+
 };
 
 

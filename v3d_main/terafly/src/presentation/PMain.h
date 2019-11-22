@@ -214,6 +214,9 @@ class terafly::PMain : public QWidget
 #ifdef __ALLOW_VR_FUNCS__
 		QPushButton* teraflyVRView;
 		QPushButton* collaborationVRView;
+
+        //huanglei
+        QPushButton* collautotrace;
 #endif
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
@@ -604,8 +607,13 @@ public slots:
         void download();
         void load();
         void deleteManageSocket();
+
+        void startAutoTrace();
 public slots:
         void ColLoadANO(QString ANOfile);
+
+signals:
+        void signal_communicator_read_res(QString path ,XYZ tempPara[3]);
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
 };
