@@ -4240,7 +4240,7 @@ void PMain::ColLoadANO(QString ANOfile)
 
 void PMain::startAutoTrace()
 {
-    const int blockszie=256;
+    const int blocksize=256;
     qDebug()<<"start auto trace.\n the first is get .v3draw=========";
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win->getGLWidget()->TeraflyCommunicator)
@@ -4278,30 +4278,27 @@ void PMain::startAutoTrace()
 
 
         cropped_image=V3D_env->getSubVolumeTeraFly(path.toStdString(),
-                                                   tempNode.x,tempNode.x+blockszie-1,
-                                                   tempNode.y,tempNode.y+blockszie-1,
-                                                   tempNode.z,tempNode.z+blockszie-1);
-        qDebug()<<tempNode.x<<tempNode.x+blockszie-1<<tempNode.y<<tempNode.y+blockszie-1<<tempNode.z<<tempNode.z+blockszie-1;
+                                                   tempNode.x,tempNode.x+blocksize-1,
+                                                   tempNode.y,tempNode.y+blocksize-1,
+                                                   tempNode.z,tempNode.z+blocksize-1);
+        qDebug()<<tempNode.x<<tempNode.x+blocksize-1<<tempNode.y<<tempNode.y+blocksize-1<<tempNode.z<<tempNode.z+blocksize-1;
 
-//        QList <ImageMarker> tmp1;
-//        tmp1.push_back(ImageMarker(0,0,0));
-//        writeMarker_file("temp.marker",tmp1);
+
 
         if(cropped_image!=NULL)
         {
-            QString v3drawName="D:\\temp.v3draw";
-            V3DLONG in_sz[4]={blockszie,blockszie,blockszie,1};//channel =1;
+            QString v3drawName="./temp.v3draw";
+            V3DLONG in_sz[4]={blocksize,blocksize,blocksize,1};//channel =1;
             int datatype = 1;
-            qDebug()<<"blocksize "<<blockszie;
+            qDebug()<<"blocksize "<<blocksize;
             simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,datatype);
 
+            QList <ImageMarker> tmp1;
+            tmp1.push_back(ImageMarker(0,0,0));
+            writeMarker_file("./tmp.marker",tmp1);
 
-
-//            p.waitForFinished();
-            system("D:/Vaa3D_SYY/vaa3d_msvc.exe /x D:/Vaa3D_SYY/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i \"D:/Vaa3D_SYY/test.v3draw\"  /p \"D:/Vaa3D_SYY/temp.marker\" 0 -1");
-
-
-            emit signal_communicator_read_res(v3drawName,tempPara);
+            system("./release/vaa3d_msvc.exe /x D:/Vaa3D_SYY/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i \"./temp.v3draw\"  /p \"./tmp.marker\" 0 -1");
+            emit signal_communicator_read_res(v3drawName,tempPara);//para 1 :need modify
         }
     }
 

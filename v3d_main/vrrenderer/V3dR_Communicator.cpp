@@ -807,7 +807,7 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ
 void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
 {
     qDebug()<<"void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)";
-    NeuronTree auto_res=readSWC_file(path+".eswc");
+    NeuronTree auto_res=readSWC_file(path);
     V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(auto_res);
 
     for(int i=0;i<testVNL.seg.size();i++)
