@@ -4295,12 +4295,10 @@ void PMain::startAutoTrace()
             qDebug()<<"blocksize "<<blockszie;
             simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,datatype);
 
-//            QProcess p;
-//            p.start("./release/vaa3d_msvc.exe /x D:/vaa3d_tools/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i  D:\soamdata\6\most\test\18454-1.v3draw /p \"tip.marker\" 0 -1");
+
 
 //            p.waitForFinished();
-            //system("./release/vaa3d_msvc.exe /x D:/Vaa3D_SYY//plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i tempV3DRAW.v3draw  /p \"./temp.marker\" 0 -1");
-//          if(!f.exists()) return;
+            system("D:/Vaa3D_SYY/vaa3d_msvc.exe /x D:/Vaa3D_SYY/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i \"D:/Vaa3D_SYY/test.v3draw\"  /p \"D:/Vaa3D_SYY/temp.marker\" 0 -1");
 
 
             emit signal_communicator_read_res(v3drawName,tempPara);
