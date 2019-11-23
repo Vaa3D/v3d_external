@@ -597,10 +597,12 @@ void V3dR_Communicator::TFProcess(QString line) {
                 }
             }
 
-            if(user!=userName)
-                 emit addSeg(messageRex.cap(2).trimmed(),colortype);
-            else
+            QString temp1=messageRex.cap(2).trimmed();
+            QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
+            if(user==userName&&temp=="TeraFly")
                 qDebug()<<"user:"<<user<<"==userName"<<userName;
+            else
+                emit addSeg(temp1,colortype);
 
         }
 }
@@ -634,14 +636,14 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 	char extramsg[300];
     string messageBuff="TeraFly ";
 	//add seg extra msg
-	messageBuff += seg.name;
+    messageBuff += seg.name;
 
-	messageBuff+=" ";
-	messageBuff += seg.comment;
-	messageBuff+=" ";
-	messageBuff += seg.file;
-	messageBuff+=" ";
-	sprintf(extramsg,"%d %5.3f_",cur_chno,cur_createmode);
+    messageBuff+=" ";
+    messageBuff += seg.comment;
+    messageBuff+=" ";
+    messageBuff += seg.file;
+    messageBuff+=" ";
+    sprintf(extramsg,"%d %5.3f_",cur_chno,cur_createmode);
     messageBuff+=extramsg;
 	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
 	{
@@ -671,6 +673,42 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 	QString str=QString::fromStdString(messageBuff);
 	return str;
 }
+
+QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
+{
+    char extramsg[300];
+    string messageBuff="TeraFly_";
+
+    for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
+    {
+        V_NeuronSWC_unit curSWCunit = seg.row[i];
+        char packetbuff[300];
+
+        if(i!=seg.row.size()-1)
+        {
+            XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z,para);
+            sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
+                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+                curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
+                curSWCunit.tfresindex);
+        }
+        else
+        {
+            XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z,para);
+            sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
+                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+                curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
+                curSWCunit.tfresindex);
+        }
+
+
+        messageBuff +=packetbuff;
+    }
+    QString str=QString::fromStdString(messageBuff);
+    return str;
+}
+
+
 
 QString V3dR_Communicator::V_DeleteNodeToSendMSG(vector<XYZ> loc_list)
 {
@@ -754,10 +792,32 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 	return XYZ(x,y,z);
 }
 
+XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para)
+{
+
+    x+=(para[2].x-1);
+    y+=(para[2].y-1);
+    z+=(para[2].z-1);
+    x*=(para[0].x/para[1].x);
+    y*=(para[0].y/para[1].y);
+    z*=(para[0].z/para[1].z);
+    return XYZ(x,y,z);
+}
+
 void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
 {
     qDebug()<<"void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)";
+    NeuronTree auto_res=readSWC_file(path+".eswc");
+    V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(auto_res);
 
+    for(int i=0;i<testVNL.seg.size();i++)
+    {
 
+        V_NeuronSWC seg_temp =  testVNL.seg.at(i);
+        onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
+
+    }
 
 }
+
+

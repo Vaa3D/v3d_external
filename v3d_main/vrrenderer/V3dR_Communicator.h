@@ -91,6 +91,7 @@ public:
 	void Collaborationaskmessage();
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
+    QString V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para);
 	QString V_DeleteNodeToSendMSG(vector<XYZ> loc_list);
 	void MsgToV_NeuronSWC(QString msg);
 
@@ -152,7 +153,7 @@ public:
 private:
 	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
 	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
-
+    XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
 public:
     XYZ AutoTraceNode;
 
