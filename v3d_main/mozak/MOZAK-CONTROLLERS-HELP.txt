@@ -1,7 +1,25 @@
 Extra Mozak shortcuts
 
 Enable/Disable GameController....Ctrl-F9
-Enable/Disable Spacemouse........Ctrl-F10
-Open Mozak config file...........Ctrl-F11
+Enable/Disable SpaceNavigator....Ctrl-F10
+Open Mozak config file and help..Ctrl-F11
 Reload config file...............Ctrl-F12
+
+
+Setup Instructions
+==================
+In order to use a game controller (PS4) and a 3D mouse (SpaceNavigator) with Mozak, the following applications/drivers need to
+be downloaded and installed:
+
+1) DS4 windows program https://ryochan7.github.io/ds4windows-site/ 
+2) 3D mouse drivers from: https://www.3dconnexion.com/service/drivers.html
+
+The 3D mouse should not need any extra setup and work 'out of the box'. Parameters to change its behavior are accessed and can be changed on the config UI's
+'Configs' tab and the space navigators setup application.
+
+The GameController do need to be configured (profile setup) using the DS4 Windows program. A starting point is a bundled profile script found on the 
+DS4Windows tab in the ConfigUI. The text on that tab can be saved to a profile file and loaded in to the DS4 Windows program.
+
+
+
 
