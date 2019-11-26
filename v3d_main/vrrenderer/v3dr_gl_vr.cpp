@@ -3543,14 +3543,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				{
 					ClearUndoRedoVectors();
 					IsmarkerValid = RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
-					cout<<"m_v4DevicePose.x"<<m_v4DevicePose.x<<"m_v4DevicePose.y"<<m_v4DevicePose.y<<"m_v4DevicePose.z"<<m_v4DevicePose.z<<endl;
-					cout<<"img4d->getYDim()"<<img4d->getYDim()<<"img4d->getXDim()"<<img4d->getXDim()<<"img4d->getZDim()"<<img4d->getZDim()<<endl;
-
-					bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
-						||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
-						||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
-
-					if((!IsmarkerValid)&&(!IsOutofBounds))
+					if(!IsmarkerValid)
 					{
 						SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
 					}
