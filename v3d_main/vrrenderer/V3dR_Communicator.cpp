@@ -234,6 +234,7 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
     asktimer=nullptr;
     nextblocksize=0;
     AutoTraceNode=XYZ(0);
+    flag_x=0;flag_y=0;flag_z=0;
 }
 
 	V3dR_Communicator::~V3dR_Communicator() {
@@ -301,7 +302,7 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
 
 
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
-
+    qDebug()<<"global_node"<<global_node.x<<" "<<global_node.y<<" "<<global_node.z;
     AutoTraceNode=global_node;
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)

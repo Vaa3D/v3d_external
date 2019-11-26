@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -968,8 +968,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborationVRView = new QPushButton("Collaborate in VR",0);
     collaborationVRView->setToolTip("Start collaboration mode with VR.");
 	
-//    collautotrace=new QPushButton("start autotrace",0);//HL
-//    collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
+    collautotrace=new QPushButton("start autotrace",0);//HL
+    collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
 
 	QWidget* VR_buttons = new QWidget();
 	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
@@ -983,9 +983,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     VR_buttons->setLayout(col_trace_layout);
 //	VR_buttons->setLayout(VR_buttons_layout);
 	localviewer_panel_layout->addWidget(VR_buttons,0);
+
 #endif
-        collautotrace=new QPushButton("start autotrace",0);//HL
-        collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
+
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
     localViewer_panel->setLayout(localviewer_panel_layout);
     #ifdef Q_OS_LINUX
@@ -1169,11 +1169,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	if(collaborationVRView)
 	    connect(collaborationVRView, SIGNAL(clicked()), this, SLOT(doCollaborationVRView()));
 
-//    if(collautotrace)
-//        connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
-#endif
     if(collautotrace)
         connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
+#endif
+
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
@@ -4255,11 +4254,15 @@ void PMain::startAutoTrace()
         }
 
         XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;
+
         XYZ center;
+
         //判断起点位置
-        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0) center.x=tempNode.x+128; else center.x=tempNode.x-128;
-        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0) center.x=tempNode.y+128; else center.x=tempNode.y-128;
-        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0) center.x=tempNode.z+128; else center.x=tempNode.z-128;
+        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0)) center.x=tempNode.x-128; else center.x=tempNode.x+128;
+        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0)) center.y=tempNode.y-128; else center.y=tempNode.y+128;
+        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0)) center.z=tempNode.z-128; else center.z=tempNode.z+128;
+
+        qDebug()<<"center:"<<center.x<<" "<<center.y<<" "<<center.z;
 
         CellAPO centerAPO;
         centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
@@ -4269,9 +4272,9 @@ void PMain::startAutoTrace()
 
         QList <ImageMarker> tmp1;
         ImageMarker startPoint;
-        startPoint.x=abs(tempNode.x-center.x);
-        startPoint.y=abs(tempNode.y-center.y);
-        startPoint.z=abs(tempNode.z-center.z);
+        startPoint.x=(tempNode.x-center.x)+128;
+        startPoint.y=(tempNode.y-center.y)+128;
+        startPoint.z=(tempNode.z-center.z)+128;
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
 
@@ -4284,19 +4287,25 @@ void PMain::startAutoTrace()
         QString path;
         if(pathEXP.indexIn(currentPath)!=-1)
         {
-            path=pathEXP.cap(1)+QString("%1x%2x%3").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
+            path=pathEXP.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
         }
+
+        qDebug()<<"path:"<<path;
 
         QProcess p;
         p.execute("D:/cmy_test/bin/vaa3d_msvc.exe",QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
                   <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./"
                   <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
 
-        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
-                  <<"/f"<<"app2"<<"/i"<< QString("./%1_%2_%3.v3draw").arg(center.x).arg(center.y).arg(center.z) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString(-1));
+//        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+//                  <<"/f"<<"app2"<<"/i"<< QString("./%1_%2_%3.v3draw").arg(center.x).arg(center.y).arg(center.z) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString(-1));
 
-        emit signal_communicator_read_res(QString("./%1_%2_%3.v3draw_app2.swc").arg(center.x).arg(center.y).arg(center.z),tempPara);
+//        emit signal_communicator_read_res(QString("./%1_%2_%3.v3draw_app2.swc").arg(center.x).arg(center.y).arg(center.z),tempPara);
 
+
+
+
+        //STOP
 //        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe /x D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll /f cropTerafly "
 //                  "/i Z:/TeraconvertedBrain/mouse18454_teraconvert/RES(26298x35000x11041) D:/Vaa3D_SYY/18454.apo D:/xyz /p 256 256 256");
 
