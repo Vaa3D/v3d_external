@@ -5834,7 +5834,6 @@ void CMainApplication::SetupGlobalMatrix()
 	qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
 	m_globalScale = 1 / maxD * 2; // these numbers are related to room size
-	
 	float trans_x = 0.6 ;
 	float trans_y = 1.5 ;
 	float trans_z = 0.4 ;
@@ -6985,11 +6984,6 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 	return pRenderModel;
 }
 
-
-float CMainApplication::GetGlobalScale()
-{
-	return m_globalScale;
-}
 
 //-----------------------------------------------------------------------------
 // Purpose: Create/destroy GL a Render Model for a single tracked device

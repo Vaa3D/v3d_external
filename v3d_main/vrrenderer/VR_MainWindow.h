@@ -64,7 +64,6 @@ private:
     int numsendmessage;
 	//Prevent receiving/sending conflicts  LiQi
 	vector<QString> CollaborationSendPool;
-	void SendVRconfigInfo();
 };
 
 // bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);
