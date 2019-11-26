@@ -1,4 +1,4 @@
-#ifndef V3DR_COMMUNICATOR_H
+﻿#ifndef V3DR_COMMUNICATOR_H
 #define V3DR_COMMUNICATOR_H
 
 #include <QWidget>
@@ -156,6 +156,7 @@ private:
     XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
 public:
     XYZ AutoTraceNode;
+    int flag_x,flag_y,flag_z;
 
 };
 

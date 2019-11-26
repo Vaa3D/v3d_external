@@ -4261,7 +4261,7 @@ void PMain::startAutoTrace()
         if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0) center.x=tempNode.y+128; else center.x=tempNode.y-128;
         if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0) center.x=tempNode.z+128; else center.x=tempNode.z-128;
 
-        CellAPO centerAPO;;
+        CellAPO centerAPO;
         centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
         QList <CellAPO> List_APO_Write;
         List_APO_Write.push_back(centerAPO);

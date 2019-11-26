@@ -1,4 +1,4 @@
-#include "V3dR_Communicator.h"
+﻿#include "V3dR_Communicator.h"
 #include "../terafly/src/control/CPlugin.h"
 #include "../terafly/src/presentation/PMain.h"
 #include <QRegExp>
@@ -670,7 +670,14 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 
 		messageBuff +=packetbuff;
 	}
-	QString str=QString::fromStdString(messageBuff);
+    QString str=QString::fromStdString(messageBuff);
+    if(seg.row.size()<=5) return str;
+    if(seg.row[5].x-seg.row[0].x>0) flag_x=1;
+    else flag_x=-1;
+    if(seg.row[5].y-seg.row[0].y>0) flag_y=1;
+    else flag_y=-1;
+    if(seg.row[5].z-seg.row[0].z>0) flag_z=1;
+    else flag_z=-1;
 	return str;
 }
 
