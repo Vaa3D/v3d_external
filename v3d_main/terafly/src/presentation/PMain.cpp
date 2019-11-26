@@ -968,8 +968,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborationVRView = new QPushButton("Collaborate in VR",0);
     collaborationVRView->setToolTip("Start collaboration mode with VR.");
 	
-    collautotrace=new QPushButton("start autotrace",0);//HL
-    collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
+//    collautotrace=new QPushButton("start autotrace",0);//HL
+//    collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
 
 	QWidget* VR_buttons = new QWidget();
 	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
@@ -984,6 +984,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 //	VR_buttons->setLayout(VR_buttons_layout);
 	localviewer_panel_layout->addWidget(VR_buttons,0);
 #endif
+        collautotrace=new QPushButton("start autotrace",0);//HL
+        collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
     localViewer_panel->setLayout(localviewer_panel_layout);
     #ifdef Q_OS_LINUX
@@ -1167,9 +1169,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	if(collaborationVRView)
 	    connect(collaborationVRView, SIGNAL(clicked()), this, SLOT(doCollaborationVRView()));
 
+//    if(collautotrace)
+//        connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
+#endif
     if(collautotrace)
         connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
-#endif
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
@@ -4241,7 +4245,6 @@ void PMain::ColLoadANO(QString ANOfile)
 void PMain::startAutoTrace()
 {
     const int blocksize=256;
-    qDebug()<<"start auto trace.\n the first is get .v3draw=========";
     CViewer *cur_win = CViewer::getCurrent();
     if(cur_win->getGLWidget()->TeraflyCommunicator)
     {
@@ -4252,56 +4255,74 @@ void PMain::startAutoTrace()
         }
 
         XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;
-        XYZ tempPara[4]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
-                        cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
-                        cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode,
+        XYZ center;
+        //判断起点位置
+        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0) center.x=tempNode.x+128; else center.x=tempNode.x-128;
+        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0) center.x=tempNode.y+128; else center.x=tempNode.y-128;
+        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0) center.x=tempNode.z+128; else center.x=tempNode.z-128;
+
+        CellAPO centerAPO;;
+        centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
+        QList <CellAPO> List_APO_Write;
+        List_APO_Write.push_back(centerAPO);
+        writeAPO_file("V3APO.apo",List_APO_Write);//get .apo to get .v3draw
+
+        QList <ImageMarker> tmp1;
+        ImageMarker startPoint;
+        startPoint.x=abs(tempNode.x-center.x);
+        startPoint.y=abs(tempNode.y-center.y);
+        startPoint.z=abs(tempNode.z-center.z);
+        tmp1.push_back(startPoint);
+        writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
+
+        XYZ tempPara[3]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+                        cur_win->getGLWidget()->TeraflyCommunicator->ImageCurRes,
+                        startPoint
                         };
-        qDebug()<<"currentPath:"<<currentPath;
-        QRegExp v3DrawPath("(.*)RES(.*)");
+
+        QRegExp pathEXP("(.*)RES(.*)");
         QString path;
-
-        if(v3DrawPath.indexIn(currentPath)!=-1)
+        if(pathEXP.indexIn(currentPath)!=-1)
         {
-
-            path=v3DrawPath.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara[1].y).arg(tempPara[1].x).arg(tempPara[1].z);
-        }else {
-            return;
+            path=pathEXP.cap(1)+QString("%1x%2x%3").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
         }
 
-        qDebug()<<"path"<<path;
-        unsigned char *cropped_image = 0;
+        QProcess p;
+        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe",QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
+                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./"
+                  <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
 
-//        size_t x0=100, x1=x0+blockszie-1, y0=100, y1=y0+blockszie-1,z0=100,z1=z0+blockszie-1;
-//        qDebug()<<x0<<x1<<y0<<y1<<z0<<z1;
-//        cropped_image=V3D_env->getSubVolumeTeraFly(path.toStdString(),x0,x1,y0,y1,z0,z1);
+        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+                  <<"/f"<<"app2"<<"/i"<< QString("./%1_%2_%3.v3draw").arg(center.x).arg(center.y).arg(center.z) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString(-1));
 
+        emit signal_communicator_read_res(QString("./%1_%2_%3.v3draw_app2.swc").arg(center.x).arg(center.y).arg(center.z),tempPara);
 
-
-        cropped_image=V3D_env->getSubVolumeTeraFly(path.toStdString(),
-                                                   tempNode.x,tempNode.x+blocksize-1,
-                                                   tempNode.y,tempNode.y+blocksize-1,
-                                                   tempNode.z,tempNode.z+blocksize-1);
-        qDebug()<<tempNode.x<<tempNode.x+blocksize-1<<tempNode.y<<tempNode.y+blocksize-1<<tempNode.z<<tempNode.z+blocksize-1;
+//        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe /x D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll /f cropTerafly "
+//                  "/i Z:/TeraconvertedBrain/mouse18454_teraconvert/RES(26298x35000x11041) D:/Vaa3D_SYY/18454.apo D:/xyz /p 256 256 256");
 
 
+//        QList <ImageMarker> tmp1;
+//        ImageMarker startPoint(0,0,0);
+//                //判断起点位置
+////        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0) startPoint.x=blocksize-1;
+////        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0) startPoint.y=blocksize-1;
+////        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0) startPoint.y=blocksize-1;
+//        tmp1.push_back(startPoint);
+//        writeMarker_file("./tmp.marker",tmp1);
 
-        if(cropped_image!=NULL)
-        {
-            QString v3drawName="./temp.v3draw";
-            V3DLONG in_sz[4]={blocksize,blocksize,blocksize,1};//channel =1;
-            int datatype = 1;
-            qDebug()<<"blocksize "<<blocksize;
-            simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,datatype);
+//        qDebug()<<"cropped image:"<<cropped_image;
+//        if(cropped_image!=NULL)
+//        {
+//            QString v3drawName="./temp.v3draw";
+//            V3DLONG in_sz[4]={blocksize,blocksize,blocksize,1};//channel =1;
+//            qDebug()<<"blocksize "<<blocksize;
+//            simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
+//        }
 
-            QList <ImageMarker> tmp1;
-            tmp1.push_back(ImageMarker(0,0,0));
-            writeMarker_file("./tmp.marker",tmp1);
-
-            system("./release/vaa3d_msvc.exe /x D:/Vaa3D_SYY/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i \"./temp.v3draw\"  /p \"./tmp.marker\" 0 -1");
-            emit signal_communicator_read_res(v3drawName,tempPara);//para 1 :need modify
-        }
+//        QProcess p;
+//        p.execute("D:/Vaa3D_SYY/vaa3d_msvc.exe /x D:/Vaa3D_SYY/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i \"./temp.v3draw\"  /p \"./tmp.marker\"  0 -1");
+//        emit signal_communicator_read_res("temp.v3draw_app2.swc",tempPara);
     }
-
 
 }
 
@@ -4313,7 +4334,8 @@ void PMain::startAutoTrace()
 
 
 
-
+//D:/Vaa3D_SYY/vaa3d_msvc.exe /x D:\Vaa3D_SYY\plugins\image_geometry\crop3d_image_series/cropped3DImageSeries.dll -f cropTerafly  -i
+//"Z:\TeraconvertedBrain\mouse18454_teraconvert\RES(26298x35000x11041)" "D:\Vaa3D_SYY\18454.apo" "D:\Vaa3D_SYY\18454.v3draw" -p 256 256 256
 
 
 
