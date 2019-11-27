@@ -685,7 +685,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
 {
     char extramsg[300];
-    string messageBuff="TeraFly_";
+    string messageBuff="TeraAI_";
 
     for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
     {
@@ -802,9 +802,10 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para)
 {
-    x+=para[1].x-128;
-    y+=(para[1].y-128);
-    z+=(para[1].z-128);
+    //Para={MaxRes, start_global,start_local}
+    x+=para[1].x-para[2].x;
+    y+=para[1].y-para[2].y;
+    z+=para[1].z-para[2].z;
     return XYZ(x,y,z);
 }
 
@@ -818,6 +819,7 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
     {
 
         V_NeuronSWC seg_temp =  testVNL.seg.at(i);
+        qDebug()<<"AI send to server:"<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
         onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
 
     }

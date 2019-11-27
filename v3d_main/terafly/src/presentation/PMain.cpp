@@ -4253,16 +4253,41 @@ void PMain::startAutoTrace()
             return;
         }
 
-        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;
-
-        XYZ center;
+        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
+        XYZ endPoint;//Global
+        XYZ center;//Global
 
         //判断起点位置
-        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0)) center.x=tempNode.x-128; else center.x=tempNode.x+128;
-        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0)) center.y=tempNode.y-128; else center.y=tempNode.y+128;
-        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0)) center.z=tempNode.z-128; else center.z=tempNode.z+128;
-
-
+        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0))
+        {
+            center.x=tempNode.x-128;
+            endPoint.x=tempNode.x-256;
+        }
+        else
+        {
+            center.x=tempNode.x+128;
+            endPoint.x=tempNode.x+256;
+        }
+        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
+        {
+            center.y=tempNode.y-128;
+            endPoint.y=tempNode.y-256;
+        }
+        else
+        {
+            center.y=tempNode.y+128;
+            endPoint.y=tempNode.y+256;
+        }
+        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0))
+        {
+            center.z=tempNode.z-128;
+            endPoint.z=tempNode.z-256;
+        }
+        else
+        {
+            center.z=tempNode.z+128;
+            endPoint.z=tempNode.z+256;
+        }
 
         CellAPO centerAPO;
         centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
@@ -4271,19 +4296,25 @@ void PMain::startAutoTrace()
         writeAPO_file("V3APO.apo",List_APO_Write);//get .apo to get .v3draw
 
         QList <ImageMarker> tmp1;
-        ImageMarker startPoint;
-        startPoint.x=(tempNode.x-center.x)+128;
-        startPoint.y=(tempNode.y-center.y)+128;
-        startPoint.z=(tempNode.z-center.z)+128;
+        ImageMarker startPoint;//Local
+
+        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=254;
+        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=254;
+        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=254;
+//        startPoint.x=(tempNode.x-center.x)+127;
+//        startPoint.y=(tempNode.y-center.y)+127;
+//        startPoint.z=(tempNode.z-center.z)+127;
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
+        qDebug()<<"tempNode:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
+        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
+        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
 
         qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
-        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
 
-        XYZ tempPara[2]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
-                        center,
-
+        XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+                        tempNode,
+                        startPoint
                         };
 
         QRegExp pathEXP("(.*)RES(.*)");
@@ -4312,18 +4343,27 @@ void PMain::startAutoTrace()
             QString v3drawpath=file_list.at(0).absolutePath()+"/"+file_list.at(0).fileName();
             p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
                       <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
+            //delete v3draw
             QFile *f=new QFile(v3drawpath);
-            if(f->exists())
-            {
-                f->remove();
-                delete  f;
-            }
+//            if(f->exists())
+//            {
+//                f->remove();
+//                delete  f;
+//            }
+
+             file_list=dir.entryInfoList(QDir::Files);
+             QRegExp APP2Exp("(.*)_app2.swc");
+             for(int i=0;i<file_list.size();i++)
+             {
+                 if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1)
+                 {
+                     emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
+                 }
+             }
+
+
+
         }
-
-
-//        emit signal_communicator_read_res(QString("./%1_%2_%3.v3draw_app2.swc").arg(center.x).arg(center.y).arg(center.z),tempPara);
-
-
 
 
         //STOP
