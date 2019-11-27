@@ -4298,18 +4298,18 @@ void PMain::startAutoTrace()
         QList <ImageMarker> tmp1;
         ImageMarker startPoint;//Local
 
-        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=254;
-        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=254;
-        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=254;
+        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=blocksize-2;
+        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=blocksize-2;
+        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=blocksize-2;
 //        startPoint.x=(tempNode.x-center.x)+127;
 //        startPoint.y=(tempNode.y-center.y)+127;
 //        startPoint.z=(tempNode.z-center.z)+127;
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
+
         qDebug()<<"tempNode:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
         qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
         qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
-
         qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
 
         XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
@@ -4333,7 +4333,6 @@ void PMain::startAutoTrace()
 
         QDir dir("./testV3draw/");
         QFileInfoList file_list=dir.entryInfoList(QDir::Files);
-
 
         if(file_list.size()!=1) {qDebug()<<"error:file not 1";return;}
         QRegExp v3drawExp("(.*).v3draw");
@@ -4360,9 +4359,6 @@ void PMain::startAutoTrace()
                      emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
                  }
              }
-
-
-
         }
 
 
