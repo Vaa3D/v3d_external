@@ -683,6 +683,7 @@ CMainApplication::CMainApplication(int argc, char *argv[])
 	, backfaceShader(NULL)
 	, m_unCompanionWindowProgramID(0)
 	, m_unControllerTransformProgramID(0)
+	, m_unImageAxesProgramID(0)
 	, m_unRenderModelProgramID(0)
 	, m_unControllerRayProgramID(0)
 	, m_pHMD(NULL)
@@ -695,6 +696,7 @@ CMainApplication::CMainApplication(int argc, char *argv[])
 	, m_bGlFinishHack(true)
 	, m_glControllerVertBuffer(0)
 	, m_unControllerVAO(0)
+	, m_unImageAxesVAO(0)
 	, m_unMorphologyLineModeVAO(0)
 	, m_uiMorphologyLineModeVertcount(0)
 	, m_unSketchMorphologyLineModeVAO(0)
@@ -703,6 +705,7 @@ CMainApplication::CMainApplication(int argc, char *argv[])
 	, m_clipPatchVAO(0)
 	, m_nControllerMatrixLocation(-1)
 	, m_nControllerRayMatrixLocation(-1)
+	, m_nImageAxesMatrixLocation(-1)
 	, m_nRenderModelMatrixLocation(-1)
 	, m_iTrackedControllerCount(0)
 	, m_iTrackedControllerCount_Last(-1)
@@ -1260,7 +1263,10 @@ void CMainApplication::Shutdown()
 		{
 			glDeleteProgram( m_unControllerRayProgramID );
 		}
-
+		if (m_unImageAxesProgramID)
+		{
+			glDeleteProgram(m_unImageAxesProgramID);
+		}
 		glDeleteRenderbuffers( 1, &leftEyeDesc.m_nDepthBufferId );
 		glDeleteTextures( 1, &leftEyeDesc.m_nRenderTextureId );
 		glDeleteFramebuffers( 1, &leftEyeDesc.m_nRenderFramebufferId );
@@ -4207,6 +4213,7 @@ void CMainApplication::RenderFrame()
 		RenderControllerAxes();
 		SetupControllerTexture();
 		SetupControllerRay();
+		SetupImageAxes();
 		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
 		//FlashStuff(m_flashtype,FlashCoords);
 		//for all (synchronized) sketched strokes
@@ -4434,6 +4441,37 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 		dprintf( "Unable to find matrix uniform in render model shader\n" );
 		return false;
 	}
+	//for image axes
+	m_unImageAxesProgramID = CompileGLShader(
+		"ImageAxes",//note: for Imageaxes
+
+		// vertex shader
+		"#version 410\n"
+		"uniform mat4 matrix;\n"
+		"layout(location = 0) in vec4 position;\n"
+		"layout(location = 1) in vec3 v3ColorIn;\n"
+		"out vec4 v4Color;\n"
+		"void main()\n"
+		"{\n"
+		"	v4Color.xyz = v3ColorIn; v4Color.a = 1.0;\n"
+		"	gl_Position = matrix * position;\n"
+		"}\n",
+
+		// fragment shader
+		"#version 410\n"
+		"in vec4 v4Color;\n"
+		"out vec4 outputColor;\n"
+		"void main()\n"
+		"{\n"
+		"   outputColor = v4Color;\n"
+		"}\n"
+		);
+	m_nImageAxesMatrixLocation = glGetUniformLocation(m_unImageAxesProgramID, "matrix");
+	if (m_nImageAxesMatrixLocation == -1)
+	{
+		dprintf("Unable to find matrix uniform in ImageAxes shader\n");
+		return false;
+	}
 
 	m_unCompanionWindowProgramID = CompileGLShader(
 		"CompanionWindow",
@@ -4494,7 +4532,8 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 	return m_unControllerTransformProgramID != 0
 		&& m_unRenderModelProgramID != 0
 		&& m_unCompanionWindowProgramID != 0
-		&& m_unControllerRayProgramID!= 0;
+		&& m_unControllerRayProgramID!= 0
+		&& m_unImageAxesProgramID!= 0;
 }
 bool CMainApplication::SetupTexturemaps()
 {
@@ -5238,7 +5277,7 @@ void CMainApplication::SetupControllerRay()
 {	
 	if ( !m_pHMD )
 		return;
-
+	
 	std::vector<float> vcVerts;
 	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
 	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
@@ -5298,6 +5337,72 @@ void CMainApplication::SetupControllerRay()
 	}	
 //    qDebug()<<"hkjdhjashkj";
 }
+
+void CMainApplication::SetupImageAxes()
+{
+	if (!m_pHMD)
+		return;
+
+	Matrix4 globalMatrix_M = Matrix4();
+	for (size_t i = 0; i < 4; i++)
+	{
+		for (size_t j = 0; j < 4; j++)
+		{
+			globalMatrix_M[i * 4 + j] = m_globalMatrix[i][j];
+		}
+	}
+	if (!m_bHasImage4D)
+		return;
+	std::vector<float> vcVerts;
+	std::vector<float> vertdataarray;
+
+	Vector4 start = globalMatrix_M * Vector4(0, 0, 0, 1);
+	Vector4 endX = globalMatrix_M * Vector4(img4d->getXDim(), 0, 0, 1);
+	Vector4 endY = globalMatrix_M * Vector4(0, img4d->getYDim(), 0, 1);
+	Vector4 endZ = globalMatrix_M * Vector4(0, 0, img4d->getZDim(), 1);
+	Vector3 colorX(1.0f, 0.0f, 0.0f);
+	Vector3 colorY(0.0f, 1.0f, 0.0f);
+	Vector3 colorZ(0.0f, 0.0f, 1.0f);
+	m_uiImageAxesVertcount = 0;
+
+
+	{
+		AddrayVertex(start.x, start.y, start.z, colorX.x, colorX.y, colorX.z, vertdataarray);
+		AddrayVertex(endX.x, endX.y, endX.z, colorX.x, colorX.y, colorX.z, vertdataarray);
+		m_uiImageAxesVertcount += 2;
+		AddrayVertex(start.x, start.y, start.z, colorY.x, colorY.y, colorY.z, vertdataarray);
+		AddrayVertex(endY.x, endY.y, endY.z, colorY.x, colorY.y, colorY.z, vertdataarray);
+		m_uiImageAxesVertcount += 2;
+		AddrayVertex(start.x, start.y, start.z, colorZ.x, colorZ.y, colorZ.z, vertdataarray);
+		AddrayVertex(endZ.x, endZ.y, endZ.z, colorZ.x, colorZ.y, colorZ.z, vertdataarray);
+		m_uiImageAxesVertcount += 2;
+	}
+
+	if (m_unImageAxesVAO == 0)
+	{
+		glGenVertexArrays(1, &m_unImageAxesVAO);
+
+		glGenBuffers(1, &m_unImageAxesVBO);
+
+		glBindVertexArray(m_unImageAxesVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_unImageAxesVBO);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void *)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void *)(3 * sizeof(float)));
+		glBindVertexArray(0);
+		qDebug() << "set up image axes VAO ";
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, m_unImageAxesVBO);
+
+	if (vertdataarray.size() > 0)
+	{
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STREAM_DRAW);
+	}
+}
+
 //void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 //{
 //	NeuronSWC S0,S1;
@@ -6486,6 +6591,17 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glLineWidth(9);
 		glDrawArrays( GL_LINES, 0, m_uiControllerVertcount );
 		glBindVertexArray( 0 );
+		glLineWidth(iLineWid);
+	}
+	//=================== draw the image axis lines ======================
+	if (!bIsInputCapturedByAnotherProcess)
+	{
+		glUseProgram(m_unImageAxesProgramID);
+		glUniformMatrix4fv(m_nImageAxesMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(nEye).get());
+		glBindVertexArray(m_unImageAxesVAO);
+		glLineWidth(3);
+		glDrawArrays(GL_LINES, 0, m_uiImageAxesVertcount);
+		glBindVertexArray(0);
 		glLineWidth(iLineWid);
 	}
 	//=================== draw the controller shooting ray ======================
