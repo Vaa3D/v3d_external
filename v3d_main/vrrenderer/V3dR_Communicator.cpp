@@ -802,13 +802,9 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para)
 {
-
-    x+=(para[2].x-1);
-    y+=(para[2].y-1);
-    z+=(para[2].z-1);
-    x*=(para[0].x/para[1].x);
-    y*=(para[0].y/para[1].y);
-    z*=(para[0].z/para[1].z);
+    x+=para[1].x-128;
+    y+=(para[1].y-128);
+    z+=(para[1].z-128);
     return XYZ(x,y,z);
 }
 

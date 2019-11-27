@@ -4262,7 +4262,7 @@ void PMain::startAutoTrace()
         if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0)) center.y=tempNode.y-128; else center.y=tempNode.y+128;
         if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0)) center.z=tempNode.z-128; else center.z=tempNode.z+128;
 
-        qDebug()<<"center:"<<center.x<<" "<<center.y<<" "<<center.z;
+
 
         CellAPO centerAPO;
         centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
@@ -4278,9 +4278,12 @@ void PMain::startAutoTrace()
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
 
-        XYZ tempPara[3]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
-                        cur_win->getGLWidget()->TeraflyCommunicator->ImageCurRes,
-                        startPoint
+        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
+        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
+
+        XYZ tempPara[2]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+                        center,
+
                         };
 
         QRegExp pathEXP("(.*)RES(.*)");
@@ -4294,11 +4297,29 @@ void PMain::startAutoTrace()
 
         QProcess p;
         p.execute("D:/cmy_test/bin/vaa3d_msvc.exe",QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
-                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./"
+                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
                   <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
 
-//        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
-//                  <<"/f"<<"app2"<<"/i"<< QString("./%1_%2_%3.v3draw").arg(center.x).arg(center.y).arg(center.z) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString(-1));
+        QDir dir("./testV3draw/");
+        QFileInfoList file_list=dir.entryInfoList(QDir::Files);
+
+
+        if(file_list.size()!=1) {qDebug()<<"error:file not 1";return;}
+        QRegExp v3drawExp("(.*).v3draw");
+        if(v3drawExp.indexIn(file_list.at(0).fileName())!=-1)
+        {
+            qDebug()<<file_list.at(0).absolutePath();
+            QString v3drawpath=file_list.at(0).absolutePath()+"/"+file_list.at(0).fileName();
+            p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+                      <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
+            QFile *f=new QFile(v3drawpath);
+            if(f->exists())
+            {
+                f->remove();
+                delete  f;
+            }
+        }
+
 
 //        emit signal_communicator_read_res(QString("./%1_%2_%3.v3draw_app2.swc").arg(center.x).arg(center.y).arg(center.z),tempPara);
 
