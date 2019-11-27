@@ -4344,11 +4344,9 @@ void PMain::startAutoTrace()
                       <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
             //delete v3draw
             QFile *f=new QFile(v3drawpath);
-//            if(f->exists())
-//            {
-//                f->remove();
-//                delete  f;
-//            }
+            if(f->exists()) f->remove();
+            delete  f;
+
 
              file_list=dir.entryInfoList(QDir::Files);
              QRegExp APP2Exp("(.*)_app2.swc");
@@ -4358,6 +4356,9 @@ void PMain::startAutoTrace()
                  {
                      emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
                  }
+                 f=new QFile(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName());
+                 if(f->exists()) f->remove();
+                 delete f;
              }
         }
 
