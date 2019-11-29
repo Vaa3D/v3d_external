@@ -3622,6 +3622,122 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
+		case m_reducenodeMode:
+		{
+			if (isOnline == false)
+			{
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
+					}
+				}
+				mat = glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space		
+				delName = "";
+				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+				NeuronTree nearestNT;
+				NeuronSWC nearestNode;
+				if (delName == "") break; //segment not found
+				int reduceNT_index = -1;
+				int reducenode_index = -1;
+				float minvalue = 999;
+
+				for (int i = 0; i < sketchedNTList.size(); i++)//get target NT,nearest node
+				{
+					QString NTname = "";
+					NTname = sketchedNTList.at(i).name;
+					if (NTname == delName)
+					{
+						nearestNT = sketchedNTList[i];
+						if (nearestNT.listNeuron.size() <= 2) return;						for (int j = 0; j<nearestNT.listNeuron.size(); j++)
+						{
+							NeuronSWC SS0;
+							SS0 = nearestNT.listNeuron.at(j);
+							float dist = glm::sqrt((m_v4DevicePose.x - SS0.x)*(m_v4DevicePose.x - SS0.x) + (m_v4DevicePose.y - SS0.y)*(m_v4DevicePose.y - SS0.y) + (m_v4DevicePose.z - SS0.z)*(m_v4DevicePose.z - SS0.z));
+							//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
+							if (dist >(dist_thres / m_globalScale * 5))
+								continue;
+							minvalue = glm::min(minvalue, dist);
+							if (minvalue == dist)
+							{
+								nearestNode = sketchedNTList[i].listNeuron[j+1];//modify nearest node's child pos
+								reduceNT_index = i;
+								reducenode_index = j+1;
+							}
+						}
+						break;
+					}
+				}
+				if (reducenode_index != -1 && (reducenode_index < nearestNT.listNeuron.size() - 1))
+				{
+					if (isOnline == false)
+					{
+						NTL temp_NTL = sketchedNTList;
+						bool delerror = DeleteSegment(delName);
+						if (delerror == true)
+						{
+							bIsUndoEnable = true;
+							if (vUndoList.size() == MAX_UNDO_COUNT)
+							{
+								vUndoList.erase(vUndoList.begin());
+							}
+							vUndoList.push_back(temp_NTL);
+							if (vRedoList.size() > 0)
+								vRedoList.clear();
+							bIsRedoEnable = false;
+							vRedoList.clear();
+							qDebug() << "Segment Deleted.";
+						}
+						else
+							qDebug() << "Cannot Find the Segment ";
+					}
+					NeuronTree NewNT;
+					for (int i = 0,k=0; i < nearestNT.listNeuron.size(); ++i)
+					{
+						if (i != reducenode_index)
+						{
+							NeuronSWC curSWC = nearestNT.listNeuron.at(i);
+							NeuronSWC SS0;
+							SS0.n = k + 1;
+							SS0.pn = k;
+							SS0.type = curSWC.type;
+							SS0.color = curSWC.color;
+							SS0.timestamp = curSWC.timestamp;
+							SS0.creatmode = curSWC.creatmode;
+							SS0.x = curSWC.x;
+							SS0.y = curSWC.y;
+							SS0.z = curSWC.z;
+							if (i == 0) SS0.pn = -1;
+							NewNT.listNeuron.append(SS0);
+							NewNT.hashNeuron.insert(SS0.n, NewNT.listNeuron.size() - 1);
+							++k;
+
+						}
+					}
+					cout << "new nt " << endl;
+					for (int i = 0; i < NewNT.listNeuron.size(); ++i)
+					{
+						cout << "n"<<NewNT.listNeuron.at(i).n;
+						cout << "pn" << NewNT.listNeuron.at(i).pn;
+					}
+					qDebug() << "insert node finished!";
+					//add the  new NT to NTList
+					NewNT.name = "sketch_" + QString("%1").arg(sketchNum++);
+					qDebug() << NewNT.name;
+					sketchedNTList.push_back(NewNT);
+					int lIndex = sketchedNTList.size() - 1;
+					qDebug() << "index = " << lIndex;
+					SetupSingleMorphologyLine(lIndex, 0);
+					break;
+				}
+
+			}
+			break;
+		}
 		case m_insertnodeMode:
 			{
 				if(isOnline == false)
@@ -5215,7 +5331,15 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_P.x,point_P.y,point_P.z,0.335,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0.625f,vcVerts);
 			}
-
+		case m_reducenodeMode:
+		{//split line mode
+			AddVertex(point_M.x, point_M.y, point_M.z, 0.25, 0.75f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.335, 0.75f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.25, 0.875f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.25, 0.875f, vcVerts);
+			AddVertex(point_P.x, point_P.y, point_P.z, 0.335, 0.875f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.335, 0.75f, vcVerts);
+		}
 		default:
 			break;
 		}
@@ -8388,7 +8512,6 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
 			m_modeGrip_R = m_insertnodeMode;
-			//m_modeGrip_R = m_markMode;
 		}
 		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
@@ -8411,10 +8534,10 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		{
 			m_modeGrip_L = _Contrast;
 		}
-		//else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
-		//{
-		//	m_modeGrip_R = m_clipplaneMode;
-		//}
+		else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
+		{
+			m_modeGrip_R = m_reducenodeMode;
+		}
 		//else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		//{
 		//	m_modeGrip_R = m_slabplaneMode;

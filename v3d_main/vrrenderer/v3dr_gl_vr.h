@@ -32,6 +32,7 @@ enum ModelControlR
     m_delmarkMode,
 	m_splitMode,
 	m_insertnodeMode,
+	m_reducenodeMode,
 	m_clipplaneMode,
 	m_ConnectMode
 	//m_slabplaneMode
