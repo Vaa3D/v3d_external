@@ -7197,12 +7197,12 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
 //        NeuronSWC ss0=nt0.listNeuron.at(1);
 //        qDebug()<<"ss0:"<<ss0.x<<" "<<ss0.y<<" "<<ss0.z;
 //=======
-    qDebug()<<sketchedNTList.size();
-    for(int i=0;i<sketchedNTList.size();i++)
-    {
-        NeuronTree nt0=sketchedNTList.at(i);
-        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
-        NeuronSWC ss0=nt0.listNeuron.at(1);
+//    qDebug()<<sketchedNTList.size();
+//    for(int i=0;i<sketchedNTList.size();i++)
+//    {
+//        NeuronTree nt0=sketchedNTList.at(i);
+//        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
+//        NeuronSWC ss0=nt0.listNeuron.at(1);
 //>>>>>>> auto_test
 
 //    }
@@ -7224,6 +7224,7 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
     }
     return res;
 }
+
 
 void CMainApplication::SetDeleteSegmentColor(QString segName)
 {

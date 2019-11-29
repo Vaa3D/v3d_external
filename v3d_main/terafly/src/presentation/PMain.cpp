@@ -4254,49 +4254,55 @@ void PMain::startAutoTrace()
         }
 
         XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
-        XYZ endPoint;//Global
+//        XYZ endPoint;//Global
         XYZ center;//Global
 
+        center.x=tempNode.x;center.y=tempNode.y;
+
+        center.z=tempNode.z+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_z);
+
         //判断起点位置
-        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x<0))
-        {
-            center.x=tempNode.x-128;
-            endPoint.x=tempNode.x-256;
-        }
-        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0))
-        {
-            center.x=tempNode.x+128;
-            endPoint.x=tempNode.x+256;
-        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x==0))
-        {
-            center.x=tempNode.x;
-        }
-        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y<0))
-        {
-            center.y=tempNode.y-128;
-            endPoint.y=tempNode.y-256;
-        }
-        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
-        {
-            center.y=tempNode.y+128;
-            endPoint.y=tempNode.y+256;
-        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
-        {
-            center.y=tempNode.y;
-        }
-        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z<0))
-        {
-            center.z=tempNode.z-128;
-            endPoint.z=tempNode.z-256;
-        }
-        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0))
-        {
-            center.z=tempNode.z+128;
-            endPoint.z=tempNode.z+256;
-        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z==0))
-        {
-            center.z=tempNode.z;
-        }
+//        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x<0))
+//        {
+//            center.x=tempNode.x-128;
+//            endPoint.x=tempNode.x-256;
+//        }
+//        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0))
+//        {
+//            center.x=tempNode.x+128;
+//            endPoint.x=tempNode.x+256;
+//        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x==0))
+//        {
+//            center.x=tempNode.x;
+//        }
+
+//        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y<0))
+//        {
+//            center.y=tempNode.y-128;
+//            endPoint.y=tempNode.y-256;
+//        }
+//        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
+//        {
+//            center.y=tempNode.y+128;
+//            endPoint.y=tempNode.y+256;
+//        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
+//        {
+//            center.y=tempNode.y;
+//        }
+
+//        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z<0))
+//        {
+//            center.z=tempNode.z-128;
+//            endPoint.z=tempNode.z-256;
+//        }
+//        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0))
+//        {
+//            center.z=tempNode.z+128;
+//            endPoint.z=tempNode.z+256;
+//        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z==0))
+//        {
+//            center.z=tempNode.z;
+//        }
 
         CellAPO centerAPO;
         centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
@@ -4307,18 +4313,22 @@ void PMain::startAutoTrace()
         QList <ImageMarker> tmp1;
         ImageMarker startPoint;//Local
 
-        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=blocksize-2;
-        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=blocksize-2;
-        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=blocksize-2;
+//        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=blocksize-2;
+//        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=blocksize-2;
+//        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=blocksize-2;
 //        startPoint.x=(tempNode.x-center.x)+127;
 //        startPoint.y=(tempNode.y-center.y)+127;
 //        startPoint.z=(tempNode.z-center.z)+127;
+
+        startPoint.x=blocksize/2;startPoint.y=blocksize/2;
+        startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
 
-        qDebug()<<"tempNode:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
+        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
         qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
-        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
+        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
+//        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
         qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
 
         XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
