@@ -4258,35 +4258,44 @@ void PMain::startAutoTrace()
         XYZ center;//Global
 
         //判断起点位置
-        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0))
+        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x<0))
         {
             center.x=tempNode.x-128;
             endPoint.x=tempNode.x-256;
         }
-        else
+        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0))
         {
             center.x=tempNode.x+128;
             endPoint.x=tempNode.x+256;
+        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x==0))
+        {
+            center.x=tempNode.x;
         }
-        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
+        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y<0))
         {
             center.y=tempNode.y-128;
             endPoint.y=tempNode.y-256;
         }
-        else
+        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
         {
             center.y=tempNode.y+128;
             endPoint.y=tempNode.y+256;
+        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
+        {
+            center.y=tempNode.y;
         }
-        if(!(cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0))
+        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z<0))
         {
             center.z=tempNode.z-128;
             endPoint.z=tempNode.z-256;
         }
-        else
+        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0))
         {
             center.z=tempNode.z+128;
             endPoint.z=tempNode.z+256;
+        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z==0))
+        {
+            center.z=tempNode.z;
         }
 
         CellAPO centerAPO;
@@ -4333,6 +4342,7 @@ void PMain::startAutoTrace()
 
         QDir dir("./testV3draw/");
         QFileInfoList file_list=dir.entryInfoList(QDir::Files);
+        qDebug()<<dir.absolutePath();
 
         if(file_list.size()!=1) {qDebug()<<"error:file not 1";return;}
         QRegExp v3drawExp("(.*).v3draw");
@@ -4361,48 +4371,10 @@ void PMain::startAutoTrace()
                  delete f;
              }
         }
-
-
-        //STOP
-//        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe /x D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll /f cropTerafly "
-//                  "/i Z:/TeraconvertedBrain/mouse18454_teraconvert/RES(26298x35000x11041) D:/Vaa3D_SYY/18454.apo D:/xyz /p 256 256 256");
-
-
-//        QList <ImageMarker> tmp1;
-//        ImageMarker startPoint(0,0,0);
-//                //判断起点位置
-////        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0) startPoint.x=blocksize-1;
-////        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0) startPoint.y=blocksize-1;
-////        if(!cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0) startPoint.y=blocksize-1;
-//        tmp1.push_back(startPoint);
-//        writeMarker_file("./tmp.marker",tmp1);
-
-//        qDebug()<<"cropped image:"<<cropped_image;
-//        if(cropped_image!=NULL)
-//        {
-//            QString v3drawName="./temp.v3draw";
-//            V3DLONG in_sz[4]={blocksize,blocksize,blocksize,1};//channel =1;
-//            qDebug()<<"blocksize "<<blocksize;
-//            simple_saveimage_wrapper(*V3D_env,v3drawName.toStdString().c_str(),cropped_image,in_sz,1);
-//        }
-
-//        QProcess p;
-//        p.execute("D:/Vaa3D_SYY/vaa3d_msvc.exe /x D:/Vaa3D_SYY/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll /f app2 /i \"./temp.v3draw\"  /p \"./tmp.marker\"  0 -1");
-//        emit signal_communicator_read_res("temp.v3draw_app2.swc",tempPara);
     }
 
 }
 
-
-
-
-
-
-
-
-
-//D:/Vaa3D_SYY/vaa3d_msvc.exe /x D:\Vaa3D_SYY\plugins\image_geometry\crop3d_image_series/cropped3DImageSeries.dll -f cropTerafly  -i
-//"Z:\TeraconvertedBrain\mouse18454_teraconvert\RES(26298x35000x11041)" "D:\Vaa3D_SYY\18454.apo" "D:\Vaa3D_SYY\18454.v3draw" -p 256 256 256
 
 
 
