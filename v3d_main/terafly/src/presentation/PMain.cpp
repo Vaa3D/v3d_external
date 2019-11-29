@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -964,16 +964,28 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	/* --------------------- forth row ---------------------- */
 	teraflyVRView = new QPushButton("See in VR",0);
 	teraflyVRView->setToolTip("You can see current image in VR environment.");
-	collaborationVRView = new QPushButton("Collaborate in VR",0);
-	collaborationVRView->setToolTip("Start collaboration mode with VR.");
+
+    collaborationVRView = new QPushButton("Collaborate in VR",0);
+    collaborationVRView->setToolTip("Start collaboration mode with VR.");
 	
+    collautotrace=new QPushButton("start autotrace",0);//HL
+    collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
+
 	QWidget* VR_buttons = new QWidget();
 	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
-	VR_buttons_layout->addWidget(teraflyVRView, 1);
+    VR_buttons_layout->addWidget(teraflyVRView, 1);//HL
     VR_buttons_layout->addWidget(collaborationVRView, 1);
-	VR_buttons->setLayout(VR_buttons_layout);
+
+    QVBoxLayout *col_trace_layout=new QVBoxLayout();
+    col_trace_layout->addLayout(VR_buttons_layout);
+    col_trace_layout->addWidget(collautotrace,1);
+
+    VR_buttons->setLayout(col_trace_layout);
+//	VR_buttons->setLayout(VR_buttons_layout);
 	localviewer_panel_layout->addWidget(VR_buttons,0);
+
 #endif
+
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
     localViewer_panel->setLayout(localviewer_panel_layout);
     #ifdef Q_OS_LINUX
@@ -1156,7 +1168,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	    connect(teraflyVRView, SIGNAL(clicked()), this, SLOT(doTeraflyVRView()));
 	if(collaborationVRView)
 	    connect(collaborationVRView, SIGNAL(clicked()), this, SLOT(doCollaborationVRView()));
+
+    if(collautotrace)
+        connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
 #endif
+
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
     connect(PR_spbox, SIGNAL(valueChanged(int)), this, SLOT(PRblockSpinboxChanged(int)));
     connect(this, SIGNAL(sendProgressBarChanged(int, int, int, const char*)), this, SLOT(progressBarChanged(int, int, int, const char*)), Qt::QueuedConnection);
@@ -1390,9 +1406,12 @@ void PMain::openImage(std::string path /*= ""*/)
             if(dialog.exec())
                 path = dialog.directory().absolutePath().toStdString().c_str();
             #else
+            qDebug()<<"dhuaskjdhkjsahdkjsahd\n";
             path = QFileDialog::getExistingDirectory(this, title.c_str(),
                                                      CSettings::instance()->getVolumePathLRU().c_str(),
                                                      QFileDialog::ShowDirsOnly).toStdString();
+
+            qDebug()<<"path="+QString::fromStdString(path);
             #endif
 
             /**/tf::debug(tf::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
@@ -1563,6 +1582,7 @@ void PMain::openImage(std::string path /*= ""*/)
         CImport::instance()->setPath(path);
         CImport::instance()->updateMaxDims();
         CImport::instance()->start();
+       currentPath=QString::fromStdString(path);
     }
     catch(iim::IOException &ex)
     {
@@ -2859,7 +2879,7 @@ void PMain::doTeraflyVRView()
 			else
 				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
-            this->show();		
+            this->show();	
 
         }
     }
@@ -4101,6 +4121,9 @@ void PMain::load()
 		Communicator = new V3dR_Communicator;
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
+        connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
+                cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
+
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollaAddSeg(QString,int)));
@@ -4193,6 +4216,8 @@ void PMain::ColLoadANO(QString ANOfile)
             tmp=anoExp.cap(1);
         }
 
+
+
         //delete load .ANO
 //        QFile *f = new QFile(tmp+".ano");
 //        if(f->exists())
@@ -4215,4 +4240,161 @@ void PMain::ColLoadANO(QString ANOfile)
 
     }
 }
+
+void PMain::startAutoTrace()
+{
+    const int blocksize=256;
+    CViewer *cur_win = CViewer::getCurrent();
+    if(cur_win->getGLWidget()->TeraflyCommunicator)
+    {
+        if(cur_win->getGLWidget()->TeraflyCommunicator->socket->state()!=QAbstractSocket::ConnectedState)
+        {
+            QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+            return;
+        }
+
+        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
+        XYZ endPoint;//Global
+        XYZ center;//Global
+
+        //判断起点位置
+        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x<0))
+        {
+            center.x=tempNode.x-128;
+            endPoint.x=tempNode.x-256;
+        }
+        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x>0))
+        {
+            center.x=tempNode.x+128;
+            endPoint.x=tempNode.x+256;
+        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_x==0))
+        {
+            center.x=tempNode.x;
+        }
+        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y<0))
+        {
+            center.y=tempNode.y-128;
+            endPoint.y=tempNode.y-256;
+        }
+        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
+        {
+            center.y=tempNode.y+128;
+            endPoint.y=tempNode.y+256;
+        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_y>0))
+        {
+            center.y=tempNode.y;
+        }
+        if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z<0))
+        {
+            center.z=tempNode.z-128;
+            endPoint.z=tempNode.z-256;
+        }
+        else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z>0))
+        {
+            center.z=tempNode.z+128;
+            endPoint.z=tempNode.z+256;
+        }else if((cur_win->getGLWidget()->TeraflyCommunicator->flag_z==0))
+        {
+            center.z=tempNode.z;
+        }
+
+        CellAPO centerAPO;
+        centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
+        QList <CellAPO> List_APO_Write;
+        List_APO_Write.push_back(centerAPO);
+        writeAPO_file("V3APO.apo",List_APO_Write);//get .apo to get .v3draw
+
+        QList <ImageMarker> tmp1;
+        ImageMarker startPoint;//Local
+
+        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=blocksize-2;
+        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=blocksize-2;
+        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=blocksize-2;
+//        startPoint.x=(tempNode.x-center.x)+127;
+//        startPoint.y=(tempNode.y-center.y)+127;
+//        startPoint.z=(tempNode.z-center.z)+127;
+        tmp1.push_back(startPoint);
+        writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
+
+        qDebug()<<"tempNode:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
+        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
+        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
+        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
+
+        XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+                        tempNode,
+                        startPoint
+                        };
+
+        QRegExp pathEXP("(.*)RES(.*)");
+        QString path;
+        if(pathEXP.indexIn(currentPath)!=-1)
+        {
+            path=pathEXP.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
+        }
+
+        qDebug()<<"path:"<<path;
+
+        QProcess p;
+        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe",QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
+                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
+                  <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
+
+        QDir dir("./testV3draw/");
+        QFileInfoList file_list=dir.entryInfoList(QDir::Files);
+        qDebug()<<dir.absolutePath();
+
+        if(file_list.size()!=1) {qDebug()<<"error:file not 1";return;}
+        QRegExp v3drawExp("(.*).v3draw");
+        if(v3drawExp.indexIn(file_list.at(0).fileName())!=-1)
+        {
+            qDebug()<<file_list.at(0).absolutePath();
+            QString v3drawpath=file_list.at(0).absolutePath()+"/"+file_list.at(0).fileName();
+            p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+                      <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
+            //delete v3draw
+            QFile *f=new QFile(v3drawpath);
+            if(f->exists()) f->remove();
+            delete  f;
+
+
+             file_list=dir.entryInfoList(QDir::Files);
+             QRegExp APP2Exp("(.*)_app2.swc");
+             for(int i=0;i<file_list.size();i++)
+             {
+                 if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1)
+                 {
+                     emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
+                 }
+                 f=new QFile(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName());
+                 if(f->exists()) f->remove();
+                 delete f;
+             }
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

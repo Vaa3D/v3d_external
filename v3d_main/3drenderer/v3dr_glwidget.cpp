@@ -4317,11 +4317,12 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 	qDebug() << "qsl.size()" << qsl.size() << endl;
     for(int i=1;i<qsl.size();i++)
     {
-        qDebug()<<qsl[i]<<endl;
+//        qDebug()<<qsl[i]<<endl;
         NeuronSWC S_temp;
         QStringList temp=qsl[i].trimmed().split(" ");
 
-        if(temp.size()==11)//use message head to judge
+//        if(temp.size()==11)//use message head to judge
+        if(qsl[0].trimmed().split(" ").at(0)=="TeraFly")
         {
 //            S_temp.n=temp[0].toLongLong();
             S_temp.n=i;
@@ -4342,7 +4343,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.timestamp=temp[9].toFloat();
             S_temp.tfresindex=temp[10].toFloat();
 
-        }else if(temp.size()==7)
+        }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
             S_temp.n=temp[0].toLongLong();
             S_temp.type=colortype;
@@ -4355,6 +4356,27 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=0;
             S_temp.timestamp=0;
             S_temp.tfresindex=0;
+        }else if(qsl[0].trimmed().split(" ").at(0)=="TeraAI")
+        {
+//            S_temp.n=temp[0].toLongLong();
+            S_temp.n=i;
+            S_temp.type=colortype;
+            S_temp.x=temp[2].toFloat();
+            S_temp.y=temp[3].toFloat();
+            S_temp.z=temp[4].toFloat();
+            S_temp.r=temp[5].toFloat();
+
+//            S_temp.pn=temp[6].toLongLong();
+            if(i==1)
+                S_temp.pn=-1;
+            else
+                S_temp.pn=i-1;
+
+            S_temp.level=0;
+            S_temp.creatmode=0;
+            S_temp.timestamp=0;
+            S_temp.tfresindex=0;
+
         }
 //        S_temp
         newTempNT.listNeuron.append(S_temp);

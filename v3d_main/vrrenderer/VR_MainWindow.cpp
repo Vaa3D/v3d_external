@@ -180,7 +180,6 @@ void VR_MainWindow::TVProcess(QString line)
 
             QString user=hmdMSGs.at(0);
             if(user == userName) return;//the msg is the position of the current user,do nothing
-            qDebug()<<"get user hmd pos info"<<"       "<<user;
             for(int i=0;i<VR_Communicator->Agents.size();i++)
             {
                 if(user == VR_Communicator->Agents.at(i).name)// the msg is the position of user[i],update POS
@@ -196,9 +195,6 @@ void VR_MainWindow::TVProcess(QString line)
             }
         }
         else if(colorRex.indexIn(line) != -1) {
-            //qDebug()<<"run color";
-            //QString colorFromServer = colorRex.cap(1);
-            //qDebug()<<"the color receieved is :"<<colorFromServer;
             QStringList clrMSGs = colorRex.cap(1).split(" ");
 
             if(clrMSGs.size()<2) return;
@@ -497,14 +493,12 @@ void VR_MainWindow::TVProcess(QString line)
 
             }
             qDebug()<<"======================messageindex in TeraVr end=================";
-            qDebug()<<"user, "<<user<<" said: "<<message;
             if(pMainApplication)
             {
                 if(user==userName)
                 {
                     pMainApplication->READY_TO_SEND=false;
                     CURRENT_DATA_IS_SENT=false;
-                    qDebug()<<"liqiqiqiqiqiqiqi NT "<<endl;
                 }
 
                 int colortype;
@@ -517,9 +511,7 @@ void VR_MainWindow::TVProcess(QString line)
                     }
                 }
                 pMainApplication->UpdateNTList(message,colortype);
-
             }
-//        qDebug()<<"receive a message";
         }
 
 //        VR_Communicator->nextblocksize=0;
@@ -689,8 +681,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
 
-			qDebug()<<"delname = "<<pMainApplication->delName;
-			qDebug()<<"delcurvePOS = "<<pMainApplication->delcurvePOS;
+			qDebug() << "delname = " << pMainApplication->delName;
+			qDebug() << "delcurvePOS = " << pMainApplication->delcurvePOS;
 			if (pMainApplication->SegNode_tobedeleted.x != 0 || pMainApplication->SegNode_tobedeleted.y != 0 || pMainApplication->SegNode_tobedeleted.z != 0)
 				//socket->write(QString("/del_curve:" + pMainApplication->delName + "\n").toUtf8());
 			//else
@@ -713,26 +705,15 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		}
 		else if(pMainApplication->m_modeGrip_R==m_markMode)
 		{
-			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
 			QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
-			qDebug()<<"Converted marker position = "<<ConvertedmarkerPOS;
 			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
             VR_Communicator->onReadySend(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes ));
 			CURRENT_DATA_IS_SENT=true;
 		}
-		//else if(pMainApplication->m_modeGrip_R==m_delmarkMode)
-		//{
-		//	qDebug()<<"marker to be delete position = "<<pMainApplication->delmarkerPOS;
-		//	QString ConverteddelmarkerPOS = ConvertsendCoords(pMainApplication->delmarkerPOS);
-		//	qDebug()<<"Converted delete marker position = "<<ConverteddelmarkerPOS;
-		//	socket->write(QString("/del_marker:" + ConverteddelmarkerPOS + "\n").toUtf8());
-		//	CURRENT_DATA_IS_SENT=true;
-		//}
+
 		else if(pMainApplication->m_modeGrip_R==m_dragMode)
 		{
-			qDebug()<<"drag node new position = "<<pMainApplication->dragnodePOS;
 			QString ConverteddragnodePOS = ConvertsendCoords(pMainApplication->dragnodePOS);
-			qDebug()<<"Converted delete marker position = "<<ConverteddragnodePOS;
             VR_Communicator->onReadySend(QString("/drag_node:" + ConverteddragnodePOS ));
 			CURRENT_DATA_IS_SENT=true;
 		}
@@ -851,7 +832,7 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 }
 void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution)
 {
-	qDebug()<<"GetResindexandStartPointfromVRInfo........";
+	qDebug() << "GetResindexandStartPointfromVRInfo........";
     qDebug()<<"VRinfo"<<VRinfo;
 	QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
 	if (rx.indexIn(VRinfo) != -1 && (ResIndex != -1)) {
@@ -860,11 +841,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 		VRVolumeEndPoint = XYZ(rx.cap(5).toInt(),rx.cap(7).toInt(),rx.cap(9).toInt());
 		VRVolumeCurrentRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
 		VRvolumeMaxRes = CollaborationMaxResolution;
-		qDebug()<<"get Resindex = "<<ResIndex;
-		qDebug()<<"Start X = "<<VRVolumeStartPoint.x<<"Start Y = "<<VRVolumeStartPoint.y<<"Start Z = "<<VRVolumeStartPoint.z;
-		qDebug()<<"End X = "<<VRVolumeEndPoint.x<<"End Y = "<<VRVolumeEndPoint.y<<"End Z = "<<VRVolumeEndPoint.z;
-		qDebug()<<"current Res X = "<<VRVolumeCurrentRes.x<<"current Res Y = "<<VRVolumeCurrentRes.y<<"current Res Z = "<<VRVolumeCurrentRes.z;
-		qDebug()<<"Collaboration Max Res X = "<<CollaborationMaxResolution.x<<"Collaboration Max Y = "<<CollaborationMaxResolution.y<<"Collaboration Max Z = "<<CollaborationMaxResolution.z;
+
 	}
 	else
 	{
@@ -872,11 +849,6 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 		VRVolumeEndPoint = CollaborationMaxResolution;
 		VRVolumeCurrentRes = CollaborationMaxResolution;
 		VRvolumeMaxRes = CollaborationMaxResolution;
-		qDebug()<<"get Resindex = "<<ResIndex;
-		qDebug()<<"Start X = "<<VRVolumeStartPoint.x<<"Start Y = "<<VRVolumeStartPoint.y<<"Start Z = "<<VRVolumeStartPoint.z;
-		qDebug()<<"End X = "<<VRVolumeEndPoint.x<<"End Y = "<<VRVolumeEndPoint.y<<"End Z = "<<VRVolumeEndPoint.z;
-		qDebug()<<"current Res X = "<<VRVolumeCurrentRes.x<<"current Res Y = "<<VRVolumeCurrentRes.y<<"current Res Z = "<<VRVolumeCurrentRes.z;
-		qDebug()<<"Collaboration Max Res X = "<<CollaborationMaxResolution.x<<"Collaboration Max Y = "<<CollaborationMaxResolution.y<<"Collaboration Max Z = "<<CollaborationMaxResolution.z;
 
 	}
 	//pass Resindex and VRvolumeStartPoint to PMAIN  to  offer parameter to NT2QString
@@ -884,7 +856,6 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 	pMainApplication->CmainResIndex = ResIndex;
     pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
 	pMainApplication->collaboration_creator_res = ResIndex;
-	cout<<"pMainApplication->collaboration_creator_res = "<<pMainApplication->collaboration_creator_res<<endl;
 	pMainApplication->CollaborationMaxResolution = CollaborationMaxResolution;
 	pMainApplication->CollaborationCurrentRes = VRVolumeCurrentRes;
 
@@ -916,19 +887,14 @@ XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 	//QString str1 = coords.section(' ',0, 0);  // str == "bin/myapp"
 	//QString str2 = coords.section(' ',1, 1);  // str == "bin/myapp"
 	//QString str3 = coords.section(' ',2, 2);  // str == "bin/myapp"
-	cout << "pos 2" << endl;
-	cout << "current x = " << VRVolumeCurrentRes.x << "current y = " << VRVolumeCurrentRes.y << "current z = " << VRVolumeCurrentRes.z << endl;
-	cout << "max x = " << VRvolumeMaxRes.x << "max y = " << VRvolumeMaxRes.y << "max z = " << VRvolumeMaxRes.z << endl;
+
 	float dividex = VRvolumeMaxRes.x/VRVolumeCurrentRes.x;
-	cout << "dividex =" << dividex;
 
 	float dividey = VRvolumeMaxRes.y/VRVolumeCurrentRes.y;
 	float dividez = VRvolumeMaxRes.z/VRVolumeCurrentRes.z;
-	cout<<"dividex = "<<dividex<<"dividey = "<<dividey<<"dividez = "<<dividez<<endl;
 	x/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
 	y/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
 	z/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
-    cout<<" x = "<<x<<"y = "<<y<<"z = "<<z<<endl;
 	x-=(VRVolumeStartPoint.x-1);
 	y-=(VRVolumeStartPoint.y-1);
 	z-=(VRVolumeStartPoint.z-1);

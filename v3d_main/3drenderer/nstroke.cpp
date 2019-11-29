@@ -1278,7 +1278,7 @@ void Renderer_gl1::callStrokeCurveDrawingBBoxes()
 {
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
-
+	cout << "delete pos find success 1" << endl;
     selectMode = smCurveTiltedBB_fm_sbbox;
     b_addthiscurve = true;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -1295,7 +1295,7 @@ void Renderer_gl1::callStrokeCurveDrawingGlobal()
 {
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
-
+	cout << "delete pos find success 2" << endl;
     selectMode = smCurveTiltedBB_fm;
     b_addthiscurve = true;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -1312,7 +1312,7 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
 {
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
-
+	cout << "delete pos find success 4" << endl;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
@@ -1370,7 +1370,7 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
 {
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
-
+	cout << "delete pos find success 3" << endl;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
@@ -1389,7 +1389,7 @@ void Renderer_gl1::callStrokeConnectMultiNeurons()
 void Renderer_gl1::callShowSubtree()
 {
 	if (editinput == 3) deleteMultiNeuronsByStrokeCommit();
-
+	cout << "delete pos find success 5" << endl;
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	if (w && listNeuronTree.size()>0)
 	{

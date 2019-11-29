@@ -1,4 +1,4 @@
-#ifndef V3DR_COMMUNICATOR_H
+﻿#ifndef V3DR_COMMUNICATOR_H
 #define V3DR_COMMUNICATOR_H
 
 #include <QWidget>
@@ -91,6 +91,7 @@ public:
 	void Collaborationaskmessage();
 	//trans func
 	QString V_NeuronSWCToSendMSG(V_NeuronSWC seg);
+    QString V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para);
 	QString V_DeleteNodeToSendMSG(vector<XYZ> loc_list);
 	void MsgToV_NeuronSWC(QString msg);
 
@@ -116,12 +117,15 @@ public slots:
 	void CollaborationMainloop();
     void TFProcess(QString msg);
 
+    void read_autotrace(QString,XYZ*);
 private slots:
 	
     void onReadyRead();
     void onConnected();
     void onDisconnected();
     void askserver();
+
+
 signals:
     void messageMade();
 	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
@@ -149,6 +153,11 @@ public:
 private:
 	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
 	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
+    XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
+public:
+    XYZ AutoTraceNode;
+    int flag_x,flag_y,flag_z;
+
 };
 
 
