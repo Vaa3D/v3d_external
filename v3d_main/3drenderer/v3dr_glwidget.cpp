@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -4346,7 +4346,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
             S_temp.n=temp[0].toLongLong();
-            S_temp.type=colortype;
+            S_temp.type=18;
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();

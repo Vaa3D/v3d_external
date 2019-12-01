@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -1972,31 +1972,31 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
 //        qDebug()<<vaa3dMarkers_tbd[i]<<"\t";
 //    }
 
-//    // remove selected markers
-//    for(int i=0; i<vaa3dMarkers_tbd.size(); i++)
-//    {
-//        if(deletedMarkers)
-//            deletedMarkers->push_back(vaa3dMarkers[vaa3dMarkers_tbd[i]]);
-//        else
-//        {
-//            undoStack.beginMacro("delete marker");
-//            undoStack.push(new QUndoMarkerDelete(this, vaa3dMarkers[vaa3dMarkers_tbd[i]]));
-//            undoStack.endMacro();
-//            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-//        }
+    // remove selected markers
+    for(int i=0; i<vaa3dMarkers_tbd.size(); i++)
+    {
+        if(deletedMarkers)
+            deletedMarkers->push_back(vaa3dMarkers[vaa3dMarkers_tbd[i]]);
+        else
+        {
+            undoStack.beginMacro("delete marker");
+            undoStack.push(new QUndoMarkerDelete(this, vaa3dMarkers[vaa3dMarkers_tbd[i]]));
+            undoStack.endMacro();
+            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+        }
 
-//        vaa3dMarkers.removeAt(vaa3dMarkers_tbd[i]);
-//    }
+        vaa3dMarkers.removeAt(vaa3dMarkers_tbd[i]);
+    }
 
-//    // set new markers
-//    V3D_env->setLandmark(window, vaa3dMarkers);
-//    V3D_env->pushObjectIn3DWindow(window);
+    // set new markers
+    V3D_env->setLandmark(window, vaa3dMarkers);
+    V3D_env->pushObjectIn3DWindow(window);
 
-//    // end select mode
-//    view3DWidget->getRenderer()->endSelectMode();
+    // end select mode
+    view3DWidget->getRenderer()->endSelectMode();
 
-//    //update visible markers
-//    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+    //update visible markers
+    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
 void CViewer::updateAnnotationSpace() throw (tf::RuntimeException)

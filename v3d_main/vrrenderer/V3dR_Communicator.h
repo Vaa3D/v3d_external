@@ -56,7 +56,6 @@ public slots:
     void receivefile(QString anofile);
 //    void TFProcess(QString msg);
 protected:
-
 signals:
     void makeMessageSocket(QString ip,QString port,QString username);
     void loadANO(QString);
@@ -66,11 +65,7 @@ private:
     QString loadfilename;
     bool MSGsocket;
     bool FileRec;
-
-
 };
-
-
 
 class V3dR_Communicator : public QWidget
 {
@@ -103,29 +98,21 @@ public:
 	 QTcpSocket* socket;
 	 double cur_createmode;
 	 int cur_chno;
-
 	 XYZ ImageMaxRes;
 	 XYZ ImageCurRes;
 	 XYZ ImageStartPoint;
-
-
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
-
 	//void RunVRMainloop();
 	//void SendHMDPosition();
 	void CollaborationMainloop();
     void TFProcess(QString msg);
-
     void read_autotrace(QString,XYZ*);
-private slots:
-	
+private slots:	
     void onReadyRead();
     void onConnected();
     void onDisconnected();
     void askserver();
-
-
 signals:
     void messageMade();
 	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
@@ -137,10 +124,7 @@ signals:
     void delMarker(QString);
     void msgtoprocess(QString);
 private:
-	
-	
-        QTimer *asktimer;
-
+    QTimer *asktimer;
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
 	bool * clienton;

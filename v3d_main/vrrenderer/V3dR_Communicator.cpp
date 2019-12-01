@@ -410,38 +410,8 @@ void V3dR_Communicator::TFProcess(QString line) {
     QRegExp creatorRex("^/creator:(.*)$");
     QRegExp messageRex("^/seg:(.*)__(.*)$");
 
-//    QDataStream in(socket);
-//    in.setVersion(QDataStream::Qt_4_7);
-//    QString line;
-
-//    qDebug()<<"in MessageSocketSlot_Read tf:\n";
-
-//    while(1)
-//    {
-//        if(nextblocksize==0)
-//        {
-//            if(socket->bytesAvailable()>=sizeof (quint16))
-//            {
-//                in>>nextblocksize;
-//            }
-//            else
-//            {
-//                qDebug()<<"bytes <quint16";
-//                return;
-//            }
-//        }
-
-//        if(socket->bytesAvailable()>=nextblocksize)
-//        {
-//            in >>line;
-//        }else
-//        {
-//            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
-//            return ;
-//        }
 
         line=line.trimmed();
-//        qDebug()<<" TFProcess:"<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             foreach (QString user, users) {
@@ -826,14 +796,27 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
     NeuronTree auto_res=readSWC_file(path);
     V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(auto_res);
 
-    for(int i=0;i<testVNL.seg.size();i++)
+    if(testVNL.seg.size()!=0)
     {
+        for(int i=0;i<testVNL.seg.size();i++)
+        {
 
-        V_NeuronSWC seg_temp =  testVNL.seg.at(i);
-        qDebug()<<"AI send to server:"<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
-        onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
+            V_NeuronSWC seg_temp =  testVNL.seg.at(i);
+            qDebug()<<"AI send to server:"<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
+            onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
 
+        }
+//        if(AutoTraceNode.x>0&&AutoTraceNode.y>0&AutoTraceNode.z>0)
+//        {
+//            QString nodeMSG=QString("/marker:"+QString::number(AutoTraceNode.x)+" "
+//                                    +QString::number(AutoTraceNode.y)+" "+QString::number(AutoTraceNode.z)
+//                                    +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
+//                                    +" "+QString::number(ImageCurRes.z));
+//            onReadySend(nodeMSG);
+//        }
     }
+
+
 
 }
 
