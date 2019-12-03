@@ -4142,11 +4142,10 @@ void PMain::load()
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
                 cur_win->getGLWidget()->TeraflyCommunicator,
                 SLOT(SendLoginRequest(QString,QString,QString)));
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
-                managesocket,SLOT(messageMade()));
-        connect(managesocket,SIGNAL(disconnected()),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),managesocket,SLOT(messageMade()));
+
+        connect(managesocket,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
 		//Set up Communicator Resolution info  for  convert Croods
 		int maxresindex = CImport::instance()->getResolutions()-1;
