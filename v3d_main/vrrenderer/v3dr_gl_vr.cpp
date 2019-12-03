@@ -2276,7 +2276,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 	for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
 	Markers_spheresColor.push_back(agentclr);
 
-
+	
 }
 
 bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type)
@@ -6483,6 +6483,30 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			sphr->Render();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+		for (int i = 0; i < sketchedNTList.size(); ++i)
+		{
+			NeuronTree curNT = sketchedNTList[i];
+			for (int j = 0; j < curNT.listNeuron.size(); ++j)
+			{
+				glm::mat4 model;
+				NeuronSWC SS0 = curNT.listNeuron.at(j);
+				Sphere* sphr = new Sphere(0.005f / m_globalScale, 5, 5);
+				glm::vec3 sPos = glm::vec3(SS0.x, SS0.y, SS0.z);
+				glm::vec3 scolor = glm::vec3(0, 0, 1);
+				model = glm::translate(glm::mat4(), sPos);
+
+				model = m_globalMatrix * model;
+
+				morphologyShader->setMat4("model", model);
+				morphologyShader->setVec3("objectColor", scolor);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				sphr->Render();
+				morphologyShader->setVec3("objectColor", surfcolor);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				sphr->Render();
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
 		}
 	}
 	//=================== draw morphology in tube mode ======================
