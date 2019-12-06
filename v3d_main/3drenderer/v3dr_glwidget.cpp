@@ -1154,7 +1154,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 							}
 						}
 
-						thisRenderer->connectSameTypeSegs(labeledSegs, curImg);	// This is the segment auto-connecting function.				
+						//thisRenderer->connectSameTypeSegs(labeledSegs, curImg);	// This is the segment auto-connecting function.				
 
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
