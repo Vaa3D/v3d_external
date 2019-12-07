@@ -385,7 +385,7 @@ void V3dR_Communicator::onReadyRead()
             in >>line;
             i++;
             nextblocksize=0;
-//            qDebug()<<"V3dR_Communicator::onReadyRead "<<i<<" "<<line;
+            qDebug()<<"receive:=+-:"<<line;
             emit msgtoprocess(line);
         }else
         {
