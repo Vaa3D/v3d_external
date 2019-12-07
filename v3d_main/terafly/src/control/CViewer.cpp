@@ -2053,7 +2053,7 @@ void CViewer::updateAnnotationSpace() throw (tf::RuntimeException)
 
 }
 
-void CViewer::loadAnnotations() throw (RuntimeException)
+void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
 {
 	myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
@@ -2123,7 +2123,9 @@ void CViewer::loadAnnotations() throw (RuntimeException)
     V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
-    view3DWidget->getRenderer()->endSelectMode();
+
+    if(!collaborate)
+         view3DWidget->getRenderer()->endSelectMode();
 
     //end curve editing mode
     QList<NeuronTree>* listNeuronTree = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->getHandleNeuronTrees();

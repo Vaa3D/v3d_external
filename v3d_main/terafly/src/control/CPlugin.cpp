@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
     return nt;
 }
 
-bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
+bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate,int resolution)
 {
     try
     {
@@ -227,7 +227,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
         CAnnotations::getInstance()->addCurves(x_range, y_range, z_range, nt);
 
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
     }
     catch (tf::RuntimeException & e)
     {
@@ -269,7 +269,7 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
     return markers;
 }
 
-bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resolution)
+bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collaborate,int resolution)
 {
     try
     {
@@ -291,7 +291,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resoluti
         qDebug()<<"CViewer::getCurrent()->loadAnnotations();";
 
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
     }
     catch (tf::RuntimeException & e)
     {

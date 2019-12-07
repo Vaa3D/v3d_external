@@ -4001,7 +4001,7 @@ void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double creat
 		GlobalNT.hashNeuron.insert(SL0.n, GlobalNT.listNeuron.size() - 1);
 	}
 
-	terafly::PluginInterface::setSWC(GlobalNT);
+    terafly::PluginInterface::setSWC(GlobalNT,true);
 	GlobalNT = terafly::PluginInterface::getSWC();
 	cout << "current swc size is " << GlobalNT.listNeuron.size();
 }
@@ -4171,7 +4171,6 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
     {
         CollaDelSeg(_string);
     }
-    qDebug()<<"hjofihedfhdshf=========";
 
     int __size=myvrwin->VROutinfo.deletemarkerspos.size();
     QString __string;
@@ -4193,13 +4192,12 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 //            tmp[1]=temp[1];
 //            tmp[2]=temp[2];
             QString markerPos=tmp.join(" ");
-            qDebug()<<"hgadahjsdghjas";
             CollaAddMarker(markerPos,temp[3].toInt());
         }
     }
 
 
-    qDebug()<<"hjofihedfhdshf=====dfesaf====";
+
 
 
 
@@ -4230,7 +4228,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
         }
     }
 
-    terafly::PluginInterface::setLandmark(markers);
+    terafly::PluginInterface::setLandmark(markers,true);
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 {
@@ -4260,7 +4258,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
     markers.append(marker);
 
-   L: terafly::PluginInterface::setLandmark(markers);
+   L: terafly::PluginInterface::setLandmark(markers,true);
 
 
 }
@@ -4291,7 +4289,6 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||
                sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0)
             {
-//                qDebug()<<"FIND J="<<J;
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
@@ -4301,8 +4298,8 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 //        v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
     }
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
-    qDebug()<<"khjidshkljashdl";
-    terafly::PluginInterface::setSWC(nt);
+
+    terafly::PluginInterface::setSWC(nt,true);
 
 }
 
@@ -4390,7 +4387,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 
     testVNL.append(temp);
     NeuronTree newNT=V_NeuronSWC_list__2__NeuronTree(testVNL);
-    terafly::PluginInterface::setSWC(newNT);
+    terafly::PluginInterface::setSWC(newNT,true);
 
 }
 //#endif
