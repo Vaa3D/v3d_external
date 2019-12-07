@@ -75,7 +75,7 @@ ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
     MSGsocket=0;FileRec=0;
     messageport.clear();
     loadfilename.clear();
-    connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
+//    connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 }
 
 void ManageSocket::onReadyRead()
@@ -200,15 +200,14 @@ void ManageSocket::send2(QListWidgetItem *item)
 
 void ManageSocket::messageMade()
 {
-    qDebug()<<" in messageMade.()";
     MSGsocket=1;
+
     if(FileRec==1)
         emit loadANO(loadfilename);
 }
 
 void ManageSocket::receivefile(QString anofile)
 {
-    qDebug()<<" in receivefile().";
     FileRec=1;
 
     if(MSGsocket==1)
@@ -224,12 +223,9 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 	NeuronTree  nt = terafly::PluginInterface::getSWC();
 	int tempntsize = nt.listNeuron.size();
 
-	// NTNumcurrentUser = (*ntlist).size();
-	// std::cout<<"NTNumcurrentUser "<<NTNumcurrentUser<<std::endl;
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
     socket = 0;
-//	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
     asktimer=nullptr;
     nextblocksize=0;
@@ -237,24 +233,18 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
     flag_x=0;flag_y=0;flag_z=0;
 }
 
-	V3dR_Communicator::~V3dR_Communicator() {
+V3dR_Communicator::~V3dR_Communicator() {
 
 }
 
-
-//void V3dR_Communicator::startautotrace()
-//{
-//    qDebug()<<"start auto trace\n=================";
-//}
-
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
+
     socket=new QTcpSocket(this);
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
 
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-    qDebug()<<"start login messageserver";
+//    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     QSettings settings("HHMI", "Vaa3D");
 
     userName=user;
@@ -324,7 +314,6 @@ void V3dR_Communicator::UpdateSendDelMarkerInfo(float x,float y,float z)
 void V3dR_Communicator::askserver()
 {
     onReadySend(QString("/ask:message"));
-//    asktimer->start(500);
 }
 
 
@@ -451,7 +440,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 asktimer=new QTimer(this);
                 connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
                 asktimer->start(1000);
-
             }
         }
         else if (systemRex.indexIn(line) != -1) {
@@ -587,6 +575,7 @@ void V3dR_Communicator::Collaborationaskmessage()
 
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 {
+
 	char extramsg[300];
     string messageBuff="TeraFly ";
 	//add seg extra msg
@@ -611,6 +600,8 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
 				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
 				curSWCunit.tfresindex);
+            if(i==0)
+                 emit (QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
 		}       
         else
 		{
@@ -619,8 +610,9 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
 				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
 				curSWCunit.tfresindex);
+            emit (QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
 		}
-           
+
 
 		messageBuff +=packetbuff;
 	}
@@ -718,11 +710,7 @@ void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)
 void V3dR_Communicator::onDisconnected() {
     qDebug("Now disconnect with the server."); 
 	*clienton = false;
-	//Agents.clear();
-//	this->close();
     deleteLater();
-
-
 }
 
 
@@ -764,7 +752,7 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ
 
 void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
 {
-    qDebug()<<"void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)";
+
     NeuronTree auto_res=readSWC_file(path);
     V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(auto_res);
 

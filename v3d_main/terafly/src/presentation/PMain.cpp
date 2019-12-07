@@ -4018,9 +4018,7 @@ void PMain::login()
                 settings.setValue("vr_userName", userName);
         }
     }
-    qDebug()<<"test login ";
-//    if(managesocket!=0)    delete managesocket;
-    qDebug()<<"tset 2";
+
     managesocket=new ManageSocket(this);
     managesocket->ip=serverName;
     managesocket->manageport=manageserver_Port;
@@ -4031,7 +4029,6 @@ void PMain::login()
 
     if( !managesocket->waitForConnected())
     {
-//        managesocket->deleteLater();
         QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
         delete  managesocket;
         return;
@@ -4039,9 +4036,7 @@ void PMain::login()
     else{
         qDebug()<<"send:"<<QString(userName+":login."+"\n");
         connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-
         managesocket->write(QString(userName+":login."+"\n").toUtf8());
 
         loginAction->setText(serverName);
@@ -4105,22 +4100,27 @@ void PMain::load()
         qDebug()<<"-----------------load annotation----------";
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
 		Communicator = new V3dR_Communicator;
+
+        disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+        connect(Communicator,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
+        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+//        disconnect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
+//        connect(Communicator,SIGNAL(disconnected()),Communicator,SLOT(message_Disconnected()));
+//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
+
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
         connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
                 cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
 
-
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollaAddSeg(QString,int)));
-
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollaAddMarker(QString,int)));
-
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
@@ -4145,11 +4145,10 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
-    qDebug()<<"delete managesocket";
-    qDebug()<<managesocket;
+    QMessageBox::information(this,tr("Connection is out!"),
+                     tr("Data has been safely stored.\nPlease restart vaa3d"),
+                     QMessageBox::Ok);
     managesocket->deleteLater();
-//    delete managesocket;
-//    managesocket=NULL;
     managesocket->deleteLater();
     loginAction->setText("log in");
     loginAction->setEnabled(true);

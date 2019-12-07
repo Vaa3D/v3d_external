@@ -188,6 +188,7 @@ void VR_MainWindow::TVProcess(QString line)
                 qDebug()<<"user:"<<user<<" receievedCreator"<<pMainApplication->collaboration_creator_name;
                 qDebug()<<"user:"<<user<<" receievedCreator res"<<pMainApplication->collaboration_creator_res;
             }
+
         }
         else if (deletecurveRex.indexIn(line) != -1) {
             qDebug() << "deletecurve:"<<line;
@@ -252,14 +253,14 @@ void VR_MainWindow::TVProcess(QString line)
             int resx = markerMSGs.at(3).toFloat();
             int resy = markerMSGs.at(4).toFloat();
             int resz = markerMSGs.at(5).toFloat();
-            qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
-            qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
+//            qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
+//            qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
 			if (pMainApplication)
 			{
 				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
-				cout << "pos 1" << endl;
+//				cout << "pos 1" << endl;
 				XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
-				qDebug() << "user, " << user << " Converted Receive marker: " << converreceivexyz.x << " " << converreceivexyz.y << " " << converreceivexyz.z;
+//				qDebug() << "user, " << user << " Converted Receive marker: " << converreceivexyz.x << " " << converreceivexyz.y << " " << converreceivexyz.z;
 				if (user == userName)
 				{
 					pMainApplication->READY_TO_SEND = false;
@@ -275,9 +276,9 @@ void VR_MainWindow::TVProcess(QString line)
 						break;
 					}
 				}
-                        qDebug()<<"markerpos: "<<QString("%1 %2 %3").arg(mx).arg(my).arg(mz);
-                        qDebug()<<"VR START: "<<QString("%1 %2 %3").arg(VRVolumeStartPoint.x).arg(VRVolumeStartPoint.y).arg(VRVolumeStartPoint.z);
-                        qDebug()<<"VR END: "<<QString("%1 %2 %3").arg(VRVolumeEndPoint.x).arg(VRVolumeEndPoint.y).arg(VRVolumeEndPoint.z);
+//                        qDebug()<<"markerpos: "<<QString("%1 %2 %3").arg(mx).arg(my).arg(mz);
+//                        qDebug()<<"VR START: "<<QString("%1 %2 %3").arg(VRVolumeStartPoint.x).arg(VRVolumeStartPoint.y).arg(VRVolumeStartPoint.z);
+//                        qDebug()<<"VR END: "<<QString("%1 %2 %3").arg(VRVolumeEndPoint.x).arg(VRVolumeEndPoint.y).arg(VRVolumeEndPoint.z);
                 if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
                 {
                     qDebug()<<"marker out of size";
@@ -290,7 +291,6 @@ void VR_MainWindow::TVProcess(QString line)
 				cout << "IsmarkerValid is " << IsmarkerValid << endl;
 				if (!IsmarkerValid)
 				{
-                        qDebug()<<"kljkllk";
 					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
 				}
 			}
@@ -352,7 +352,6 @@ void VR_MainWindow::TVProcess(QString line)
             }
             pMainApplication->UpdateDragNodeinNTList(ntnum,swcnum,converreceivexyz.x,converreceivexyz.y,converreceivexyz.z);
         }
-        //dragnodeRex
         else if (messageRex.indexIn(line) != -1) {
 
             QString user=messageRex.cap(1);
@@ -365,13 +364,23 @@ void VR_MainWindow::TVProcess(QString line)
             {
                 QString PointMSG=MSGs.at(i);
                 QStringList poingmsg=PointMSG.trimmed().split(" ");
+
                 XYZ LocCoords=ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
                 message+=QString(QString::number(i)+" "+poingmsg[1]+" "+QString::number(LocCoords.x)
                         +" "+QString::number(LocCoords.y)+" "+QString::number(LocCoords.z)+" "+poingmsg[5]+" ");
-                if(i==1) message+=QString::number(-1);
-                else message+=QString::number(i-1);
+                if(i==1)
+                {
+                    message+=QString::number(-1);
+                    TVProcess(QString("/marker:%1__%2 %3 %4").arg(userName).arg(poingmsg[2].toFloat()).arg(poingmsg[3].toFloat()).arg(poingmsg[4].toFloat()));
+                }
+                else
+                    message+=QString::number(i-1);
 
-                if(i!=MSGs.size()-1) message+=" ";
+                if(i!=MSGs.size()-1)
+                {
+                    message+=" ";
+                    TVProcess(QString("/marker:%1__%2 %3 %4").arg(userName).arg(poingmsg[2].toFloat()).arg(poingmsg[3].toFloat()).arg(poingmsg[4].toFloat()));
+                }
 
             }
             qDebug()<<"======================messageindex in TeraVr end=================";

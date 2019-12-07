@@ -7033,7 +7033,7 @@ void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be chan
 		}
 		else if (iy==1)
 		{
-			S_temp.type = type;
+            S_temp.type = qsl[i].toInt();
 		}
 		else if (iy==2)
 		{

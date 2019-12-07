@@ -145,6 +145,7 @@ public:
     XYZ AutoTraceNode;
     int flag_x,flag_y,flag_z;
 
+
 };
 
 
