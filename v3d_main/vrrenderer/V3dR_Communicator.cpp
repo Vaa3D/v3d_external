@@ -441,7 +441,12 @@ void V3dR_Communicator::TFProcess(QString line) {
             {
                 asktimer=new QTimer(this);
                 connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
-                asktimer->start(1000);
+                asktimer->start(50);
+                QTimer *timer_changeask=new QTimer(this);
+
+                timer_changeask->setSingleShot(true);
+                connect(timer_changeask,SIGNAL(timeout()),asktimer,SLOT(start(1000)));
+                timer_changeask->start(30*1000);
             }
         }
         else if (systemRex.indexIn(line) != -1) {
