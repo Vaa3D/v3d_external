@@ -3966,21 +3966,6 @@ void PMain::setLockMagnification(bool locked)
 void PMain::login()
 {
     qDebug()<<"in login()";
-
-//    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
-//    {
-
-//        qDebug()<<"123";
-//        qDebug()<<"test 1,manage point :"<<managesocket;
-//        if(managesocket->state()==QAbstractSocket::ConnectedState)
-//        {
-//            qDebug()<<"when in login, mansgesocket is connected";
-//            QMessageBox::information(0, tr("Error"),tr("have been logged."));
-//            return;
-//        }
-
-//    }
-    qDebug()<<"QSettings settings";
     QSettings settings("HHMI", "Vaa3D");
     QString serverNameDefault = "";
     if(!settings.value("vr_serverName").toString().isEmpty())
@@ -3992,6 +3977,7 @@ void PMain::login()
     QString manageserver_Port;
     QString userName;
 
+    teraflyVRView->setDisabled(true);
     if(!ok1||serverName.isEmpty())
     {
         qDebug()<<"WRONG!EMPTY! ";
@@ -4064,7 +4050,7 @@ void PMain::login()
         importAction->setEnabled(true);
         downAction->setEnabled(true);
         loadAction->setEnabled(true);
-//        managesocket->deleteLater()
+
     }
 }
 
@@ -4179,7 +4165,6 @@ void PMain::ColLoadANO(QString ANOfile)
     qDebug()<<"load ANO:"<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
     QString ANOpath="./clouddata/"+ANOfile;
-    qDebug()<<"test path= "<<ANOpath;
     if(!ANOpath.isEmpty())
     {
 
@@ -4312,23 +4297,18 @@ void PMain::startAutoTrace()
         QList <ImageMarker> tmp1;
         ImageMarker startPoint;//Local
 
-//        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=blocksize-2;
-//        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=blocksize-2;
-//        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=blocksize-2;
-//        startPoint.x=(tempNode.x-center.x)+127;
-//        startPoint.y=(tempNode.y-center.y)+127;
-//        startPoint.z=(tempNode.z-center.z)+127;
+
 
         startPoint.x=blocksize/2;startPoint.y=blocksize/2;
         startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
 
-        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
-        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
-        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
-//        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
-        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
+//        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
+//        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
+//        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
+////        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
+//        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
 
         XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
                         tempNode,

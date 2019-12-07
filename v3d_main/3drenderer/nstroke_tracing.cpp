@@ -3312,6 +3312,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 		cout << "DeleteNodes.size = " << DeleteNodes.size() << endl;
 		w->SetupCollaborateInfo();
 		w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+
 	}
     curImg->tracedNeuron.deleteMultiSeg();
 
@@ -3495,7 +3496,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                 }
 				else
 				{
-					cout << "contour_mode ==  else " << endl;
+//					cout << "contour_mode ==  else " << endl;
 					for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
 					{
 						//对画的这条线的每个点取xy 来构成一个点 如果距离小于阈值 那就把这个片段标记为to be deleted
@@ -3504,7 +3505,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 						{
 							if (s >= curImg->tracedNeuron.seg.size())
 							{
-								qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
+//								qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
 								break;
 							}
 							curImg->tracedNeuron.seg[s].to_be_deleted = true;

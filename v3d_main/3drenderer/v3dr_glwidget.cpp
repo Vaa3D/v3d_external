@@ -1876,14 +1876,14 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
     this->getMainWindow()->hide();
 	//process3Dwindow(false);
-    QMessageBox::StandardButton reply;
-	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
-		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
-		reply = QMessageBox::Yes;
-	else
-		reply = QMessageBox::No;
-	if (reply == QMessageBox::Yes)
+//    QMessageBox::StandardButton reply;
+//	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
+//		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+//	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+//		reply = QMessageBox::Yes;
+//	else
+//		reply = QMessageBox::No;
+    if (/*reply == QMessageBox::Yes*/true)
 	{
 		if (TeraflyCommunicator )
 		{
@@ -4242,6 +4242,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
     marker.x=markerXYZ.at(0).toFloat();
     marker.y=markerXYZ.at(1).toFloat();
     marker.z=markerXYZ.at(2).toFloat();
+//    marker.
 //    marker.color=markers.at(0).color;
 
     for(int i=0;i<markers.size();i++)
@@ -4323,7 +4324,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         {
 //            S_temp.n=temp[0].toLongLong();
             S_temp.n=i;
-            S_temp.type=colortype;
+            S_temp.type=temp[1].toInt();
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();
@@ -4357,7 +4358,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         {
 //            S_temp.n=temp[0].toLongLong();
             S_temp.n=i;
-            S_temp.type=colortype;
+            S_temp.type=temp[1].toInt();
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();
