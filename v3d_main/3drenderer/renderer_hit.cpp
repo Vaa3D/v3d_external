@@ -2350,29 +2350,29 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 //        		 ? 1 : (selectMode == smCurveCreate2)? 2 : 3;
 		int N = (selectMode == smCurveCreate3)? 3 : (selectMode == smCurveCreate2)? 2 : 1; //20170731 RZC: more simple expression for less bugs
 
-        qDebug()<<"000000000-0000001";
+//        qDebug()<<"000000000-0000001";
 		if (list_listCurvePos.size() >= N)
 		{
 			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
-            qDebug()<<"000000000-0000002";
+//            qDebug()<<"000000000-0000002";
 			if (selectMode == smCurveCreate1)
 			{
 				vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
-                qDebug()<<"000000000-0000003";
+//                qDebug()<<"000000000-0000003";
 				solveCurveCenter(loc_vec_input);
-                qDebug()<<"000000000-0000004";
+//                qDebug()<<"000000000-0000004";
 			}
             else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
             {
-                qDebug()<<"000000000-0000005";
+//                qDebug()<<"000000000-0000005";
                 solveCurveViews();
-                qDebug()<<"000000000-0000006";
+//                qDebug()<<"000000000-0000006";
             }
 
             // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
             else if (selectMode == smDeleteMultiNeurons)
             {
-                qDebug()<<"000000000-0000007";
+//                qDebug()<<"000000000-0000007";
                 deleteMultiNeuronsByStroke();
 				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 				My4DImage* curImg = 0;
@@ -2384,7 +2384,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
                     w->getRenderer()->endSelectMode()
 ;                }
-//                qDebug()<<"000000000-0000008";
+                qDebug()<<"000000000-0000008";
             }
             else if (selectMode == smRetypeMultiNeurons)
             {

@@ -3387,7 +3387,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-    qDebug()<<"deleteMultiNeuronsByStroke-1";
+//    qDebug()<<"deleteMultiNeuronsByStroke-1";
 	//v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
 	const float tolerance_squared = 100; // tolerance distance squared (for faster dist computation) from the backprojected neuron to the curve point
 
@@ -3439,13 +3439,13 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
             contour_mode = 2; //press "ctrl"
     }
 
-    qDebug()<<"deleteMultiNeuronsByStroke-2";
+//    qDebug()<<"deleteMultiNeuronsByStroke-2";
 	// contour 2 polygon
 	QPolygon poly;
 	for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
 		poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
 	// 把划线的点全都放到多边形中去
-    qDebug()<<"deleteMultiNeuronsByStroke-3";
+//    qDebug()<<"deleteMultiNeuronsByStroke-3";
 	const V3DLONG nsegs = curImg->tracedNeuron.seg.size();
 
 
@@ -3524,7 +3524,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 	}
 	//以上就是把距离判断做了一遍 看看是不是要删除某个seg 以及判断有没有Zcut
 
-    qDebug()<<"deleteMultiNeuronsByStroke-4";
+//    qDebug()<<"deleteMultiNeuronsByStroke-4";
     vector <XYZ> specialmarkerloc;
     vector <V3DLONG> specialmarkerslocindex;
     QList <LocationSimple> &listloc = curImg->listLandmarks;
@@ -3538,7 +3538,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
         }
     }
 	//把 category的Landmarker放到Special里面去？
-    qDebug()<<"deleteMultiNeuronsByStroke-5";
+//    qDebug()<<"deleteMultiNeuronsByStroke-5";
     V3DLONG specialmarkersegindex = -1;
     V3DLONG specialmarkerlocindex = -1;
     for(V3DLONG i=0; i<nsegs; ++i)
@@ -3604,7 +3604,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
         XYZ markerloc(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
         addSpecialMarker(markerloc);
     } // by XZ, 20190726
-    qDebug()<<"deleteMultiNeuronsByStroke-11";
+//    qDebug()<<"deleteMultiNeuronsByStroke-11";
     curImg->update_3drenderer_neuron_view(w, this);
     curImg->proj_trace_history_append();
 }

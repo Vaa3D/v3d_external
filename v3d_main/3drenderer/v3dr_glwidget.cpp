@@ -4319,7 +4319,11 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         NeuronSWC S_temp;
         QStringList temp=qsl[i].trimmed().split(" ");
 
-        if(i==1||i==qsl.size()-1)
+        if(i==1)
+        {
+            CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
+        }
+        if(i==qsl.size()-1)
         {
             CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
         }

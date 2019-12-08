@@ -360,6 +360,16 @@ void VR_MainWindow::TVProcess(QString line)
             QString message;
 
             qDebug()<<"======================messageindex in TeraVr begin=================";
+
+            int colortype;
+            for(int i=0;i<VR_Communicator->Agents.size();i++)
+            {
+                if(user == VR_Communicator->Agents.at(i).name)
+                {
+                    colortype=VR_Communicator->Agents.at(i).colorType;
+                    break;
+                }
+            }
             for(int i=1;i<MSGs.size();i++)
             {
                 QString PointMSG=MSGs.at(i);
@@ -371,15 +381,25 @@ void VR_MainWindow::TVProcess(QString line)
                 if(i==1)
                 {
                     message+=QString::number(-1);
-                    TVProcess(QString("/marker:%1__%2 %3 %4").arg(userName).arg(poingmsg[2].toFloat()).arg(poingmsg[3].toFloat()).arg(poingmsg[4].toFloat()));
+                    XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
+                    pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+                    qDebug()<<"jbdgkashfkjh";
                 }
                 else
                     message+=QString::number(i-1);
-
+                qDebug()<<"hkkg:"<<i;
                 if(i!=MSGs.size()-1)
                 {
                     message+=" ";
-                    TVProcess(QString("/marker:%1__%2 %3 %4").arg(userName).arg(poingmsg[2].toFloat()).arg(poingmsg[3].toFloat()).arg(poingmsg[4].toFloat()));
+
+
+                }else
+                {
+                    qDebug()<<"hjdvgfshjcdfsbhndkjis";
+
+                    XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
+                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+//                    TVProcess(QString("/marker:%1__%2 %3 %4").arg(userName).arg(poingmsg[2].toFloat()).arg(poingmsg[3].toFloat()).arg(poingmsg[4].toFloat()));
                 }
 
             }
@@ -392,15 +412,7 @@ void VR_MainWindow::TVProcess(QString line)
                     CURRENT_DATA_IS_SENT=false;
                 }
 
-                int colortype;
-                for(int i=0;i<VR_Communicator->Agents.size();i++)
-                {
-                    if(user == VR_Communicator->Agents.at(i).name)
-                    {
-                        colortype=VR_Communicator->Agents.at(i).colorType;
-                        break;
-                    }
-                }
+
                 pMainApplication->UpdateNTList(message,colortype);
             }
         }
