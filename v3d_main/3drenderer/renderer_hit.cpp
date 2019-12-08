@@ -2378,11 +2378,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				My4DImage* curImg = 0;
 				if (w) curImg = v3dr_getImage4d(_idep);
 				
-//				if (w->TeraflyCommunicator)
-//				{
-//					vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
-//					w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
-//				}
+                if (w->TeraflyCommunicator)
+                {
+                    vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
+                    w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+                    w->getRenderer()->endSelectMode()
+;                }
 //                qDebug()<<"000000000-0000008";
             }
             else if (selectMode == smRetypeMultiNeurons)
