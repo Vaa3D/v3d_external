@@ -90,7 +90,7 @@
 #include "line_box_intersection_check.h"
 
 #include "../terafly/src/control/CPlugin.h"
-
+//#include "../terafly/src/control/CViewer.h"
 
 // ------- Conditional inclusion for fragment tracing, MK, Mar, 2019 -------
 //#include "../v3d/CustomDefine.h"
@@ -3312,15 +3312,15 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 		cout << "DeleteNodes.size = " << DeleteNodes.size() << endl;
 		w->SetupCollaborateInfo();
 		w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
-
+        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
 	}
     curImg->tracedNeuron.deleteMultiSeg();
 
     //curImg->proj_trace_history_append();          // no need to update the history
     curImg->update_3drenderer_neuron_view(w, this);
-    NeuronTree nt= terafly::PluginInterface::getSWC();
-    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
+//    NeuronTree nt= terafly::PluginInterface::getSWC();
+//    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
 }
 
 // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
