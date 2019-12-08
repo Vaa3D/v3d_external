@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ class terafly::CViewer : public QWidget
         * Annotations are stored/loaded to/from the <CAnnotations> object
         ***********************************************************************************/
         void storeAnnotations() throw (tf::RuntimeException);
-        void loadAnnotations() throw (tf::RuntimeException);
+        void loadAnnotations(bool collaborate=false) throw (tf::RuntimeException);
         void clearAnnotations() throw (tf::RuntimeException);
         void deleteSelectedMarkers() throw (tf::RuntimeException);
         void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (tf::RuntimeException);

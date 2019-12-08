@@ -75,7 +75,7 @@ ManageSocket::ManageSocket(QObject *parent):QTcpSocket (parent)
     MSGsocket=0;FileRec=0;
     messageport.clear();
     loadfilename.clear();
-    connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
+//    connect(this,SIGNAL(disconnected()),this,SLOT(deleteLater()));
 }
 
 void ManageSocket::onReadyRead()
@@ -200,15 +200,14 @@ void ManageSocket::send2(QListWidgetItem *item)
 
 void ManageSocket::messageMade()
 {
-    qDebug()<<" in messageMade.()";
     MSGsocket=1;
+
     if(FileRec==1)
         emit loadANO(loadfilename);
 }
 
 void ManageSocket::receivefile(QString anofile)
 {
-    qDebug()<<" in receivefile().";
     FileRec=1;
 
     if(MSGsocket==1)
@@ -224,12 +223,9 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 	NeuronTree  nt = terafly::PluginInterface::getSWC();
 	int tempntsize = nt.listNeuron.size();
 
-	// NTNumcurrentUser = (*ntlist).size();
-	// std::cout<<"NTNumcurrentUser "<<NTNumcurrentUser<<std::endl;
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
     socket = 0;
-//	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	CURRENT_DATA_IS_SENT=false;
     asktimer=nullptr;
     nextblocksize=0;
@@ -237,24 +233,18 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
     flag_x=0;flag_y=0;flag_z=0;
 }
 
-	V3dR_Communicator::~V3dR_Communicator() {
+V3dR_Communicator::~V3dR_Communicator() {
 
 }
 
-
-//void V3dR_Communicator::startautotrace()
-//{
-//    qDebug()<<"start auto trace\n=================";
-//}
-
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
+
     socket=new QTcpSocket(this);
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
 
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-    qDebug()<<"start login messageserver";
+//    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     QSettings settings("HHMI", "Vaa3D");
 
     userName=user;
@@ -324,7 +314,6 @@ void V3dR_Communicator::UpdateSendDelMarkerInfo(float x,float y,float z)
 void V3dR_Communicator::askserver()
 {
     onReadySend(QString("/ask:message"));
-//    asktimer->start(500);
 }
 
 
@@ -385,7 +374,17 @@ void V3dR_Communicator::onReadyRead()
             in >>line;
             i++;
             nextblocksize=0;
-//            qDebug()<<"V3dR_Communicator::onReadyRead "<<i<<" "<<line;
+            qDebug()<<"receive:=+-:"<<line;
+            QStringList iniaial_list=line.split(",");
+
+            int cnt=iniaial_list.size();
+            if(cnt>1)
+            {
+                for(int i=0;i<cnt;i++)
+                {
+                    TFProcess(iniaial_list.at(i));
+                }
+            }
             emit msgtoprocess(line);
         }else
         {
@@ -393,7 +392,6 @@ void V3dR_Communicator::onReadyRead()
             return ;
         }
 
-//        qDebug()
     }
 }
 
@@ -445,7 +443,7 @@ void V3dR_Communicator::TFProcess(QString line) {
             }
         }
         else if (systemRex.indexIn(line) != -1) {
-            qDebug()<<"in systemRex";
+
             QStringList sysMSGs = systemRex.cap(1).split(" ");
             if(sysMSGs.size()<2) return;
             QString user=sysMSGs.at(0);
@@ -491,14 +489,12 @@ void V3dR_Communicator::TFProcess(QString line) {
         else if (deletecurveRex.indexIn(line) != -1) {
             QString user=deletecurveRex.cap(1);
             qDebug()<<"+============delseg process begin========";
-//            QString delPOS=deletecurveRex.cap(2).trimmed();
             if(user!=userName)
                 emit delSeg(deletecurveRex.cap(2).trimmed());
             else
                 qDebug()<<"user:"<<user<<"==userName"<<userName;
             qDebug()<<"+============delseg process end========";
 
-//            qDebug()<<"delete curve:"<<line;
         }
         else if (markerRex.indexIn(line) != -1) {
 
@@ -524,53 +520,12 @@ void V3dR_Communicator::TFProcess(QString line) {
             else
                 qDebug()<<"user:"<<user<<"==userName"<<userName;
 
-//            QStringList markerMSGs = markerRex.cap(2).split(" ");
-//            if(markerMSGs.size()<3)
-//            {
-//                qDebug()<<"size < 4";
-//                return;
-//            }
-//            float mx = markerMSGs.at(0).toFloat();
-//            float my = markerMSGs.at(1).toFloat();
-//            float mz = markerMSGs.at(2).toFloat();
-//            //        int resx = markerMSGs.at(3).toFloat();
-//            //        int resy = markerMSGs.at(4).toFloat();
-//            //        int resz = markerMSGs.at(5).toFloat();
-//            qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
-//            //        qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
-//            XYZ localNode=ConvertGlobaltoLocalCroods(mx,my,mz);
-
-//            if(user!=userName)
-//                emit CollAddMarker(localNode);
             qDebug()<<"==================marker process end====================";
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
-//            qDebug()<<"in delmarker";
-//            QString user = delmarkerRex.cap(1);
-////            if(user!=userName)
-//                 emit delMarker(delmarkerRex.cap(2).trimmed());
-//<<<<<<< HEAD
-////            else
-////                qDebug()<<"user:"<<user<<"==userName"<<userName;
-////            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ");
-////            if(delmarkerPOS.size()<4)
-////            {
-////                qDebug()<<"size < 3";
-////                return;
-////            }
-
-////            float mx = delmarkerPOS.at(1).toFloat();
-////            float my = delmarkerPOS.at(2).toFloat();
-////            float mz = delmarkerPOS.at(3).toFloat();
-////            qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
-//=======
-//            else
-//                qDebug()<<"user:"<<user<<"==userName"<<userName;
-//>>>>>>> auto_test
 
         }
-        //dragnodeRex
         else if (messageRex.indexIn(line) != -1) {
 
             qDebug()<<"======================messageRex in Terafly begin============";
@@ -589,7 +544,10 @@ void V3dR_Communicator::TFProcess(QString line) {
             if(user==userName&&temp=="TeraFly")
                 qDebug()<<"user:"<<user<<"==userName"<<userName;
             else
+            {
                 emit addSeg(temp1,colortype);
+            }
+
         }
 }
 
@@ -617,6 +575,7 @@ void V3dR_Communicator::Collaborationaskmessage()
 
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 {
+
 	char extramsg[300];
     string messageBuff="TeraFly ";
 	//add seg extra msg
@@ -641,6 +600,8 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
 				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
 				curSWCunit.tfresindex);
+            if(i==0)
+                 emit (QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
 		}       
         else
 		{
@@ -649,17 +610,20 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
 				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
 				curSWCunit.tfresindex);
+            emit (QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
 		}
-           
+
 
 		messageBuff +=packetbuff;
 	}
     QString str=QString::fromStdString(messageBuff);
-    if(seg.row.size()<=5) return str;
-    if(seg.row[5].x-seg.row[0].x>0) flag_x=1;else flag_x=-1;
-    if(seg.row[5].y-seg.row[0].y>0) flag_y=1;else flag_y=-1;
-    if(seg.row[5].z-seg.row[0].z>0) flag_z=1;else flag_z=-1;
-    qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
+    if(seg.row.size()>5)
+    {
+        if(seg.row[5].x-seg.row[0].x>0) flag_x=1;else flag_x=-1;
+        if(seg.row[5].y-seg.row[0].y>0) flag_y=1;else flag_y=-1;
+        if(seg.row[5].z-seg.row[0].z>0) flag_z=1;else flag_z=-1;
+        qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
+    }
 	return str;
 }
 
@@ -746,11 +710,7 @@ void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)
 void V3dR_Communicator::onDisconnected() {
     qDebug("Now disconnect with the server."); 
 	*clienton = false;
-	//Agents.clear();
-//	this->close();
     deleteLater();
-
-
 }
 
 
@@ -792,7 +752,7 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ
 
 void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
 {
-    qDebug()<<"void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)";
+
     NeuronTree auto_res=readSWC_file(path);
     V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(auto_res);
 
@@ -806,18 +766,9 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
             onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
 
         }
-//        if(AutoTraceNode.x>0&&AutoTraceNode.y>0&AutoTraceNode.z>0)
-//        {
-//            QString nodeMSG=QString("/marker:"+QString::number(AutoTraceNode.x)+" "
-//                                    +QString::number(AutoTraceNode.y)+" "+QString::number(AutoTraceNode.z)
-//                                    +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
-//                                    +" "+QString::number(ImageCurRes.z));
-//            onReadySend(nodeMSG);
-//        }
     }
-
-
-
 }
+
+
 
 

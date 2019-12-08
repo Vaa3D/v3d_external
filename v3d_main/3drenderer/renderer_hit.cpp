@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -2378,12 +2378,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				My4DImage* curImg = 0;
 				if (w) curImg = v3dr_getImage4d(_idep);
 				
-				if (w->TeraflyCommunicator)
-				{
-					vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
-					w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
-				}
-                qDebug()<<"000000000-0000008";
+//				if (w->TeraflyCommunicator)
+//				{
+//					vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
+//					w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+//				}
+//                qDebug()<<"000000000-0000008";
             }
             else if (selectMode == smRetypeMultiNeurons)
             {
@@ -2417,16 +2417,16 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			// MK, 2017 June ----------------------------------------------------------
 			else if (selectMode == smCutNeurons) cutNeuronsByStroke();
 			// ------------------------------------------------------------------------
-            qDebug()<<"000000000-0000009";
+
 			list_listCurvePos.clear();
-            qDebug()<<"000000000-0000010";
+
 			if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode
             {
-                qDebug()<<"000000000-0000011";
+
                 endSelectMode();
             }
 
-            qDebug()<<"000000000-00000012";
+
 		}
 	}
 

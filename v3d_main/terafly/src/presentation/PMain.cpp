@@ -3966,21 +3966,6 @@ void PMain::setLockMagnification(bool locked)
 void PMain::login()
 {
     qDebug()<<"in login()";
-
-//    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
-//    {
-
-//        qDebug()<<"123";
-//        qDebug()<<"test 1,manage point :"<<managesocket;
-//        if(managesocket->state()==QAbstractSocket::ConnectedState)
-//        {
-//            qDebug()<<"when in login, mansgesocket is connected";
-//            QMessageBox::information(0, tr("Error"),tr("have been logged."));
-//            return;
-//        }
-
-//    }
-    qDebug()<<"QSettings settings";
     QSettings settings("HHMI", "Vaa3D");
     QString serverNameDefault = "";
     if(!settings.value("vr_serverName").toString().isEmpty())
@@ -3992,6 +3977,7 @@ void PMain::login()
     QString manageserver_Port;
     QString userName;
 
+    teraflyVRView->setDisabled(true);
     if(!ok1||serverName.isEmpty())
     {
         qDebug()<<"WRONG!EMPTY! ";
@@ -4032,9 +4018,7 @@ void PMain::login()
                 settings.setValue("vr_userName", userName);
         }
     }
-    qDebug()<<"test login ";
-//    if(managesocket!=0)    delete managesocket;
-    qDebug()<<"tset 2";
+
     managesocket=new ManageSocket(this);
     managesocket->ip=serverName;
     managesocket->manageport=manageserver_Port;
@@ -4045,7 +4029,6 @@ void PMain::login()
 
     if( !managesocket->waitForConnected())
     {
-//        managesocket->deleteLater();
         QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
         delete  managesocket;
         return;
@@ -4053,9 +4036,7 @@ void PMain::login()
     else{
         qDebug()<<"send:"<<QString(userName+":login."+"\n");
         connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-
         managesocket->write(QString(userName+":login."+"\n").toUtf8());
 
         loginAction->setText(serverName);
@@ -4064,7 +4045,7 @@ void PMain::login()
         importAction->setEnabled(true);
         downAction->setEnabled(true);
         loadAction->setEnabled(true);
-//        managesocket->deleteLater()
+
     }
 }
 
@@ -4119,15 +4100,21 @@ void PMain::load()
         qDebug()<<"-----------------load annotation----------";
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
 		Communicator = new V3dR_Communicator;
+
+        disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+        connect(Communicator,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
+        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+//        disconnect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
+//        connect(Communicator,SIGNAL(disconnected()),Communicator,SLOT(message_Disconnected()));
+//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
+
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
         connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
                 cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
 
-
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollaAddSeg(QString,int)));
-
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
@@ -4135,18 +4122,16 @@ void PMain::load()
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollaAddMarker(QString,int)));
 
-
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
 
         connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
                 cur_win->getGLWidget()->TeraflyCommunicator,
                 SLOT(SendLoginRequest(QString,QString,QString)));
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
-                managesocket,SLOT(messageMade()));
-        connect(managesocket,SIGNAL(disconnected()),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),managesocket,SLOT(messageMade()));
+
+        connect(managesocket,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
 		//Set up Communicator Resolution info  for  convert Croods
 		int maxresindex = CImport::instance()->getResolutions()-1;
@@ -4160,11 +4145,10 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
-    qDebug()<<"delete managesocket";
-    qDebug()<<managesocket;
+    QMessageBox::information(this,tr("Connection is out!"),
+                     tr("Data has been safely stored.\nPlease restart vaa3d"),
+                     QMessageBox::Ok);
     managesocket->deleteLater();
-//    delete managesocket;
-//    managesocket=NULL;
     managesocket->deleteLater();
     loginAction->setText("log in");
     loginAction->setEnabled(true);
@@ -4180,7 +4164,6 @@ void PMain::ColLoadANO(QString ANOfile)
     qDebug()<<"load ANO:"<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
     QString ANOpath="./clouddata/"+ANOfile;
-    qDebug()<<"test path= "<<ANOpath;
     if(!ANOpath.isEmpty())
     {
 
@@ -4313,23 +4296,18 @@ void PMain::startAutoTrace()
         QList <ImageMarker> tmp1;
         ImageMarker startPoint;//Local
 
-//        if(tempNode.x<center.x) startPoint.x=2;else startPoint.x=blocksize-2;
-//        if(tempNode.y<center.y) startPoint.y=2;else startPoint.y=blocksize-2;
-//        if(tempNode.z<center.z) startPoint.z=2;else startPoint.z=blocksize-2;
-//        startPoint.x=(tempNode.x-center.x)+127;
-//        startPoint.y=(tempNode.y-center.y)+127;
-//        startPoint.z=(tempNode.z-center.z)+127;
+
 
         startPoint.x=blocksize/2;startPoint.y=blocksize/2;
         startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
 
-        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
-        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
-        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
-//        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
-        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
+//        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
+//        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
+//        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
+////        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
+//        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
 
         XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
                         tempNode,

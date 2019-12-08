@@ -90,6 +90,7 @@ public:
 	QString V_DeleteNodeToSendMSG(vector<XYZ> loc_list);
 	void MsgToV_NeuronSWC(QString msg);
 
+
 public:
 	float VR_globalScale;//used to 
     QString userName;
@@ -101,6 +102,8 @@ public:
 	 XYZ ImageMaxRes;
 	 XYZ ImageCurRes;
 	 XYZ ImageStartPoint;
+
+
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
 	//void RunVRMainloop();
@@ -141,6 +144,7 @@ private:
 public:
     XYZ AutoTraceNode;
     int flag_x,flag_y,flag_z;
+
 
 };
 

@@ -1876,14 +1876,14 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
     this->getMainWindow()->hide();
 	//process3Dwindow(false);
-    QMessageBox::StandardButton reply;
-	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
-		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
-		reply = QMessageBox::Yes;
-	else
-		reply = QMessageBox::No;
-	if (reply == QMessageBox::Yes)
+//    QMessageBox::StandardButton reply;
+//	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
+//		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+//	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+//		reply = QMessageBox::Yes;
+//	else
+//		reply = QMessageBox::No;
+    if (/*reply == QMessageBox::Yes*/true)
 	{
 		if (TeraflyCommunicator )
 		{
@@ -4001,7 +4001,7 @@ void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double creat
 		GlobalNT.hashNeuron.insert(SL0.n, GlobalNT.listNeuron.size() - 1);
 	}
 
-	terafly::PluginInterface::setSWC(GlobalNT);
+    terafly::PluginInterface::setSWC(GlobalNT,true);
 	GlobalNT = terafly::PluginInterface::getSWC();
 	cout << "current swc size is " << GlobalNT.listNeuron.size();
 }
@@ -4171,7 +4171,6 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
     {
         CollaDelSeg(_string);
     }
-    qDebug()<<"hjofihedfhdshf=========";
 
     int __size=myvrwin->VROutinfo.deletemarkerspos.size();
     QString __string;
@@ -4193,13 +4192,12 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 //            tmp[1]=temp[1];
 //            tmp[2]=temp[2];
             QString markerPos=tmp.join(" ");
-            qDebug()<<"hgadahjsdghjas";
             CollaAddMarker(markerPos,temp[3].toInt());
         }
     }
 
 
-    qDebug()<<"hjofihedfhdshf=====dfesaf====";
+
 
 
 
@@ -4230,7 +4228,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
         }
     }
 
-    terafly::PluginInterface::setLandmark(markers);
+    terafly::PluginInterface::setLandmark(markers,true);
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 {
@@ -4244,6 +4242,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
     marker.x=markerXYZ.at(0).toFloat();
     marker.y=markerXYZ.at(1).toFloat();
     marker.z=markerXYZ.at(2).toFloat();
+//    marker.
 //    marker.color=markers.at(0).color;
 
     for(int i=0;i<markers.size();i++)
@@ -4260,7 +4259,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
     markers.append(marker);
 
-   L: terafly::PluginInterface::setLandmark(markers);
+   L: terafly::PluginInterface::setLandmark(markers,true);
 
 
 }
@@ -4291,7 +4290,6 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||
                sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0)
             {
-//                qDebug()<<"FIND J="<<J;
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
@@ -4301,8 +4299,8 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 //        v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
     }
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
-    qDebug()<<"khjidshkljashdl";
-    terafly::PluginInterface::setSWC(nt);
+
+    terafly::PluginInterface::setSWC(nt,true);
 
 }
 
@@ -4321,18 +4319,18 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         NeuronSWC S_temp;
         QStringList temp=qsl[i].trimmed().split(" ");
 
-//        if(temp.size()==11)//use message head to judge
+        if(i==1||i==qsl.size()-1)
+        {
+            CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
+        }
         if(qsl[0].trimmed().split(" ").at(0)=="TeraFly")
         {
-//            S_temp.n=temp[0].toLongLong();
             S_temp.n=i;
-            S_temp.type=colortype;
+            S_temp.type=temp[1].toInt();
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();
             S_temp.r=temp[5].toFloat();
-
-//            S_temp.pn=temp[6].toLongLong();
             if(i==1)
                 S_temp.pn=-1;
             else
@@ -4342,7 +4340,6 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=temp[8].toFloat();
             S_temp.timestamp=temp[9].toFloat();
             S_temp.tfresindex=temp[10].toFloat();
-
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
             S_temp.n=temp[0].toLongLong();
@@ -4356,17 +4353,16 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=0;
             S_temp.timestamp=0;
             S_temp.tfresindex=0;
+
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraAI")
         {
-//            S_temp.n=temp[0].toLongLong();
             S_temp.n=i;
-            S_temp.type=colortype;
+            S_temp.type=temp[1].toInt();
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();
             S_temp.r=temp[5].toFloat();
 
-//            S_temp.pn=temp[6].toLongLong();
             if(i==1)
                 S_temp.pn=-1;
             else
@@ -4376,9 +4372,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=0;
             S_temp.timestamp=0;
             S_temp.tfresindex=0;
-
         }
-//        S_temp
         newTempNT.listNeuron.append(S_temp);
         newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
     }
@@ -4390,7 +4384,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 
     testVNL.append(temp);
     NeuronTree newNT=V_NeuronSWC_list__2__NeuronTree(testVNL);
-    terafly::PluginInterface::setSWC(newNT);
+    terafly::PluginInterface::setSWC(newNT,true);
 
 }
 //#endif

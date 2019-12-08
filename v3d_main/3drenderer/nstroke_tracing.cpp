@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -58,7 +58,6 @@
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"
 #include "v3d_application.h"
-
 #ifndef test_main_cpp
 
 #include "../v3d/v3d_compile_constraints.h"
@@ -91,6 +90,7 @@
 #include "line_box_intersection_check.h"
 
 #include "../terafly/src/control/CPlugin.h"
+//#include "../terafly/src/control/CViewer.h"
 
 // ------- Conditional inclusion for fragment tracing, MK, Mar, 2019 -------
 //#include "../v3d/CustomDefine.h"
@@ -3312,11 +3312,15 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 		cout << "DeleteNodes.size = " << DeleteNodes.size() << endl;
 		w->SetupCollaborateInfo();
 		w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+        w->getRenderer()->endSelectMode();
+//        CViewer::getCurrent()->loadAnnotations(false);
 	}
     curImg->tracedNeuron.deleteMultiSeg();
 
     //curImg->proj_trace_history_append();          // no need to update the history
     curImg->update_3drenderer_neuron_view(w, this);
+//    NeuronTree nt= terafly::PluginInterface::getSWC();
+//    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
 }
 
 // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
@@ -3495,7 +3499,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                 }
 				else
 				{
-					cout << "contour_mode ==  else " << endl;
+//					cout << "contour_mode ==  else " << endl;
 					for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
 					{
 						//对画的这条线的每个点取xy 来构成一个点 如果距离小于阈值 那就把这个片段标记为to be deleted
@@ -3504,7 +3508,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 						{
 							if (s >= curImg->tracedNeuron.seg.size())
 							{
-								qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
+//								qDebug() << "WARNING! curImg->tracedNeuron.size() was changed during call to Renderer_gl1::deleteMultiNeuronsByStroke()";
 								break;
 							}
 							curImg->tracedNeuron.seg[s].to_be_deleted = true;
