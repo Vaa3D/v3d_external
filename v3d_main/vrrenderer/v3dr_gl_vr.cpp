@@ -6995,22 +6995,24 @@ QStringList CMainApplication::NT2QString()
 	////QString str="hello world";
 	//return str;
 //    string messageBuff="TeraVR";
-    string messageBuff;
+    QString messageBuff;
 	for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
 	{
-		char packetbuff[300];
+        QString packetbuff;
+        packetbuff.clear();
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
-
-		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld_",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
+        packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11_").arg(S_temp.n).arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z)
+                .arg(S_temp.r).arg(S_temp.parent);
+//		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld_",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
 		messageBuff +=packetbuff;
 	}
 
-	QString str=QString::fromStdString(messageBuff);
+//	QString str=QString::fromStdString(messageBuff);
     QStringList resQSL;
     resQSL.push_back(QString("TeraVR"));
-    resQSL.push_back(str);
+    resQSL.push_back(messageBuff);
     return resQSL;
 }
 

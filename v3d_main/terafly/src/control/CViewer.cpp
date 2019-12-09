@@ -2073,7 +2073,7 @@ void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
   
     //obtaining the annotations within the current window
 	updateAnnotationSpace();
-    qDebug()<<"213213213";
+
 	interval_t x_range(anoH0, anoH1);
 	interval_t y_range(anoV0, anoV1);
 	interval_t z_range(anoD0, anoD1);

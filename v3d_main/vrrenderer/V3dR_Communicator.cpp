@@ -574,49 +574,35 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 {
 
 
-    string messageBuff="TeraFly ";
-	//add seg extra msg
+    QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
-
-//    messageBuff += seg.name;
-
-//    messageBuff+=" ";
-//    messageBuff += seg.comment;
-//    messageBuff+=" ";
-//    messageBuff += seg.file;
-//    messageBuff+=" ";
-//    sprintf(extramsg,"%d %5.3f_",cur_chno,cur_createmode);
-    char resmsg[300];
-    sprintf(resmsg,"%d %d %d_",ImageCurRes.x,ImageCurRes.y,ImageCurRes.z);
-
-    messageBuff+=resmsg;
 	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
 	{
-		V_NeuronSWC_unit curSWCunit = seg.row[i];
-		char packetbuff[300];
 
+		V_NeuronSWC_unit curSWCunit = seg.row[i];
+        QString packetbuff;
+        packetbuff.clear();
         if(i!=seg.row.size()-1)
-		{
-			XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-			sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
-                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
-				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
-				curSWCunit.tfresindex);
+        {
+            XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
+
+            qDebug()<<curSWCunit.type;
+            qDebug()<<packetbuff;
             if(i==0)
                  emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
-		}       
+        }
         else
-		{
-			XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-			sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
-                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
-				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
-				curSWCunit.tfresindex);
+        {
+            XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
             emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
-		}
-		messageBuff +=packetbuff;
+        }
+        messageBuff +=packetbuff;
 	}
-    QString str=QString::fromStdString(messageBuff);
+
     if(seg.row.size()>5)
     {
         if(seg.row[5].x-seg.row[0].x>0) flag_x=1;else flag_x=-1;
@@ -624,7 +610,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
         if(seg.row[5].z-seg.row[0].z>0) flag_z=1;else flag_z=-1;
         qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
     }
-	return str;
+    return messageBuff;
 }
 
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
