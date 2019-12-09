@@ -1,4 +1,4 @@
-//last touch by Hanchuan Peng, 20170615.
+﻿//last touch by Hanchuan Peng, 20170615.
 
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
@@ -165,7 +165,7 @@ public:
 	bool BInitCompositor();
 
 	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
-    QString NT2QString(); // prepare the message to be sent from currentNT.
+    QStringList NT2QString(); // prepare the message to be sent from currentNT.
 	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
 	//bool FlashStuff(FlashType type,XYZ coords);

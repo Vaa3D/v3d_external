@@ -4312,21 +4312,10 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
     NeuronTree newTempNT;
     newTempNT.listNeuron.clear();
     newTempNT.hashNeuron.clear();
-	qDebug() << "qsl.size()" << qsl.size() << endl;
     for(int i=1;i<qsl.size();i++)
     {
-//        qDebug()<<qsl[i]<<endl;
         NeuronSWC S_temp;
         QStringList temp=qsl[i].trimmed().split(" ");
-
-        if(i==1)
-        {
-            CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
-        }
-        if(i==qsl.size()-1)
-        {
-            CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
-        }
         if(qsl[0].trimmed().split(" ").at(0)=="TeraFly")
         {
             S_temp.n=i;
@@ -4344,6 +4333,14 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=temp[8].toFloat();
             S_temp.timestamp=temp[9].toFloat();
             S_temp.tfresindex=temp[10].toFloat();
+            if(i==1)
+            {
+                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
+            }
+            if(i==qsl.size()-1)
+            {
+                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
+            }
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
             S_temp.n=temp[0].toLongLong();
@@ -4376,6 +4373,14 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=0;
             S_temp.timestamp=0;
             S_temp.tfresindex=0;
+            if(i==1)
+            {
+                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
+            }
+            if(i==qsl.size()-1)
+            {
+                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
+            }
         }
         newTempNT.listNeuron.append(S_temp);
         newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);

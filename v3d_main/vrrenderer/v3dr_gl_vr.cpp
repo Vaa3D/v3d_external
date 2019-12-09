@@ -6979,7 +6979,7 @@ QString  CMainApplication::getHMDPOSstr()
 
 
 
-QString CMainApplication::NT2QString()
+QStringList CMainApplication::NT2QString()
 {
 	//char messageBuff[8000]="";
 	//for(int i=0;(i<sketchNT.listNeuron.size())&&(i<120);i++)
@@ -6994,7 +6994,8 @@ QString CMainApplication::NT2QString()
 	//QString str=QString::fromStdString(str_temp);
 	////QString str="hello world";
 	//return str;
-    string messageBuff="TeraVR_";
+//    string messageBuff="TeraVR";
+    string messageBuff;
 	for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
 	{
 		char packetbuff[300];
@@ -7007,7 +7008,10 @@ QString CMainApplication::NT2QString()
 	}
 
 	QString str=QString::fromStdString(messageBuff);
-	return str;
+    QStringList resQSL;
+    resQSL.push_back(QString("TeraVR"));
+    resQSL.push_back(str);
+    return resQSL;
 }
 
 void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )

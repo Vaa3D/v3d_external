@@ -327,8 +327,6 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
         {
             send_MSG="/say: GoodBye~";
         }
-
-
         QByteArray block;
         QDataStream dts(&block,QIODevice::WriteOnly);
         dts.setVersion(QDataStream::Qt_4_7);
@@ -515,7 +513,7 @@ void V3dR_Communicator::TFProcess(QString line) {
 
             if(user!=userName)
             {
-                emit addMarker(markerRex.cap(2).trimmed(),colortype);
+                emit addMarker(markerRex.cap(2).trimmed(),colortype);//marker用3号色
                 qDebug()<<"siagnal add marker";
             }
             else
@@ -577,18 +575,23 @@ void V3dR_Communicator::Collaborationaskmessage()
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 {
 
-	char extramsg[300];
+
     string messageBuff="TeraFly ";
 	//add seg extra msg
-    messageBuff += seg.name;
 
-    messageBuff+=" ";
-    messageBuff += seg.comment;
-    messageBuff+=" ";
-    messageBuff += seg.file;
-    messageBuff+=" ";
-    sprintf(extramsg,"%d %5.3f_",cur_chno,cur_createmode);
-    messageBuff+=extramsg;
+
+//    messageBuff += seg.name;
+
+//    messageBuff+=" ";
+//    messageBuff += seg.comment;
+//    messageBuff+=" ";
+//    messageBuff += seg.file;
+//    messageBuff+=" ";
+//    sprintf(extramsg,"%d %5.3f_",cur_chno,cur_createmode);
+    char resmsg[300];
+    sprintf(resmsg,"%d %d %d_",ImageCurRes.x,ImageCurRes.y,ImageCurRes.z);
+
+    messageBuff+=resmsg;
 	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
 	{
 		V_NeuronSWC_unit curSWCunit = seg.row[i];
@@ -598,7 +601,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 		{
 			XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
 			sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
-				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
 				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
 				curSWCunit.tfresindex);
             if(i==0)
@@ -608,13 +611,11 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 		{
 			XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
 			sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
-				curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
 				curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
 				curSWCunit.tfresindex);
             emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
 		}
-
-
 		messageBuff +=packetbuff;
 	}
     QString str=QString::fromStdString(messageBuff);
@@ -630,8 +631,12 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
 {
-    char extramsg[300];
+//    char extramsg[300];
     string messageBuff="TeraAI_";
+
+    char resmsg[300];
+    sprintf(resmsg,"%d %d %d_",ImageCurRes.x,ImageCurRes.y,ImageCurRes.z);
+    messageBuff+=resmsg;
 
     for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
     {
@@ -642,21 +647,18 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z,para);
             sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
-                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+                curSWCunit.n,18,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
                 curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
                 curSWCunit.tfresindex);
-
         }
         else
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z,para);
             sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
-                curSWCunit.n,curSWCunit.type,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
+                curSWCunit.n,18,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
                 curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
                 curSWCunit.tfresindex);
         }
-
-
         messageBuff +=packetbuff;
     }
     QString str=QString::fromStdString(messageBuff);

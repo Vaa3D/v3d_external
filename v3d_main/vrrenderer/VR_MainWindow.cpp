@@ -253,14 +253,10 @@ void VR_MainWindow::TVProcess(QString line)
             int resx = markerMSGs.at(3).toFloat();
             int resy = markerMSGs.at(4).toFloat();
             int resz = markerMSGs.at(5).toFloat();
-//            qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
-//            qDebug()<<"user, "<<user<<" Res: "<<resx<<" "<<resy<<" "<<resz;
 			if (pMainApplication)
 			{
 				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
-//				cout << "pos 1" << endl;
 				XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
-//				qDebug() << "user, " << user << " Converted Receive marker: " << converreceivexyz.x << " " << converreceivexyz.y << " " << converreceivexyz.z;
 				if (user == userName)
 				{
 					pMainApplication->READY_TO_SEND = false;
@@ -276,16 +272,12 @@ void VR_MainWindow::TVProcess(QString line)
 						break;
 					}
 				}
-//                        qDebug()<<"markerpos: "<<QString("%1 %2 %3").arg(mx).arg(my).arg(mz);
-//                        qDebug()<<"VR START: "<<QString("%1 %2 %3").arg(VRVolumeStartPoint.x).arg(VRVolumeStartPoint.y).arg(VRVolumeStartPoint.z);
-//                        qDebug()<<"VR END: "<<QString("%1 %2 %3").arg(VRVolumeEndPoint.x).arg(VRVolumeEndPoint.y).arg(VRVolumeEndPoint.z);
                 if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
                 {
                     qDebug()<<"marker out of size";
                     VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(colortype));
                     return;
                 }
-				//pMainApplication->SetupMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
 				bool IsmarkerValid = false;
 				IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
 				cout << "IsmarkerValid is " << IsmarkerValid << endl;
@@ -294,7 +286,6 @@ void VR_MainWindow::TVProcess(QString line)
 					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
 				}
 			}
-
         }
         else if (delmarkerRex.indexIn(line) != -1) {
             QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
@@ -370,6 +361,7 @@ void VR_MainWindow::TVProcess(QString line)
                     break;
                 }
             }
+
             for(int i=1;i<MSGs.size();i++)
             {
                 QString PointMSG=MSGs.at(i);
@@ -381,25 +373,28 @@ void VR_MainWindow::TVProcess(QString line)
                 if(i==1)
                 {
                     message+=QString::number(-1);
-                    XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                    pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
-                    qDebug()<<"jbdgkashfkjh";
+                    if(MSGs[0].split(" ").at(0)=="TeraVR"||MSGs[0].split(" ").at(0)=="TeraFly")
+                    {
+                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
+                        XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
+                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+                    }
                 }
                 else
                     message+=QString::number(i-1);
-                qDebug()<<"hkkg:"<<i;
+
                 if(i!=MSGs.size()-1)
                 {
                     message+=" ";
-
-
                 }else
                 {
-                    qDebug()<<"hjdvgfshjcdfsbhndkjis";
 
-                    XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
-//                    TVProcess(QString("/marker:%1__%2 %3 %4").arg(userName).arg(poingmsg[2].toFloat()).arg(poingmsg[3].toFloat()).arg(poingmsg[4].toFloat()));
+                    if(MSGs[0].split(" ").at(0)=="TeraVR"||MSGs[0].split(" ").at(0)=="TeraFly")
+                    {
+                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
+                        XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
+                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+                    }
                 }
 
             }
@@ -411,8 +406,6 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->READY_TO_SEND=false;
                     CURRENT_DATA_IS_SENT=false;
                 }
-
-
                 pMainApplication->UpdateNTList(message,colortype);
             }
         }
@@ -553,9 +546,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
 			qDebug() << pMainApplication->currentNT.listNeuron.size() << endl;
-            QString waitsend=pMainApplication->NT2QString();
-            if(waitsend.size()!=0)
-                CollaborationSendPool.emplace_back(pMainApplication->NT2QString());
+            QStringList waitsend=pMainApplication->NT2QString();
+            QString send_string=waitsend[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
+                    +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+waitsend[1];
+            if(send_string.size()!=0)
+                CollaborationSendPool.emplace_back(send_string);
 			pMainApplication->ClearCurrentNT();
             emit sendPoolHead();
 			CURRENT_DATA_IS_SENT=true;
