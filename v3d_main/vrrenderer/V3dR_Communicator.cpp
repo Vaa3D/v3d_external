@@ -107,7 +107,7 @@ void ManageSocket::onReadyRead()
             }
 
             QString anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
-            qDebug()<<anofile_path;
+            if(anofile_path.isEmpty()) return;
             FileSocket_send *filesocket_send=new FileSocket_send(ip,ImportRex.cap(1),anofile_path);
 
         }else if(CurrentDirDownExp.indexIn(manageMsg)!=-1)
@@ -267,7 +267,7 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 			return 0;
 		}	
 	}
-    qDebug()<<"User:  "<<userName<<".  Connected with server: "<<ip<<" :"<<vr_Port;
+    qDebug()<<"User:  "<<userName<<".  Connected with server: "<<ip<<" :"<<port;
     emit messageMade();
 
 	return 1;
@@ -378,7 +378,8 @@ void V3dR_Communicator::onReadyRead()
             {
                 for(int i=0;i<cnt;i++)
                 {
-                    TFProcess(iniaial_list.at(i));
+                    qDebug()<<"1232";
+                    TFProcess(iniaial_list.at(i),1);
                 }
             }
             else
@@ -393,7 +394,7 @@ void V3dR_Communicator::onReadyRead()
 }
 
 
-void V3dR_Communicator::TFProcess(QString line) {
+void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     QRegExp usersRex("^/users:(.*)$");
     QRegExp systemRex("^/system:(.*)$");
     QRegExp hmdposRex("^/hmdpos:(.*)$");
@@ -486,10 +487,15 @@ void V3dR_Communicator::TFProcess(QString line) {
         else if (deletecurveRex.indexIn(line) != -1) {
             QString user=deletecurveRex.cap(1);
             qDebug()<<"+============delseg process begin========";
-            if(user!=userName)
+            if(flag_init==0)
+            {
+                if(user!=userName)
+                    emit delSeg(deletecurveRex.cap(2).trimmed());
+                else
+                    qDebug()<<"user:"<<user<<"==userName"<<userName;
+            }else {
                 emit delSeg(deletecurveRex.cap(2).trimmed());
-            else
-                qDebug()<<"user:"<<user<<"==userName"<<userName;
+            }
             qDebug()<<"+============delseg process end========";
 
         }
@@ -508,14 +514,18 @@ void V3dR_Communicator::TFProcess(QString line) {
                     break;
                 }
             }
-
-            if(user!=userName)
+            if(flag_init==0)
             {
+                if(user!=userName)
+                {
+                    emit addMarker(markerRex.cap(2).trimmed(),colortype);//marker用3号色
+                    qDebug()<<"siagnal add marker";
+                }
+                else
+                    qDebug()<<"user:"<<user<<"==userName"<<userName;
+            }else {
                 emit addMarker(markerRex.cap(2).trimmed(),colortype);//marker用3号色
-                qDebug()<<"siagnal add marker";
             }
-            else
-                qDebug()<<"user:"<<user<<"==userName"<<userName;
 
             qDebug()<<"==================marker process end====================";
 
@@ -538,10 +548,15 @@ void V3dR_Communicator::TFProcess(QString line) {
             }
             QString temp1=messageRex.cap(2).trimmed();
             QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
-            if(user==userName&&temp=="TeraFly")
-                qDebug()<<"user:"<<user<<"==userName"<<userName;
-            else
+            if(flag_init==0)
             {
+                if(user==userName&&temp=="TeraFly")
+                    qDebug()<<"user:"<<user<<"==userName"<<userName;
+                else
+                {
+                    emit addSeg(temp1,colortype);
+                }
+            }else {
                 emit addSeg(temp1,colortype);
             }
 
@@ -588,8 +603,6 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
             packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
                     .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
 
-            qDebug()<<curSWCunit.type;
-            qDebug()<<packetbuff;
             if(i==0)
                  emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
         }
@@ -608,7 +621,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
         if(seg.row[5].x-seg.row[0].x>0) flag_x=1;else flag_x=-1;
         if(seg.row[5].y-seg.row[0].y>0) flag_y=1;else flag_y=-1;
         if(seg.row[5].z-seg.row[0].z>0) flag_z=1;else flag_z=-1;
-        qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
+//        qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
     }
     return messageBuff;
 }

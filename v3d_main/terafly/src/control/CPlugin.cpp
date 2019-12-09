@@ -280,13 +280,15 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collabo
         // check preconditions
         if(resolution != CImport::instance()->getResolutions() - 1)
             throw tf::RuntimeException(tf::strprintf("Accessing curve/marker structures at lower resolutions (res index = %d) not yet implemented", resolution));
+        qDebug()<<"@3543";
         if(CViewer::getCurrent() == 0)
             throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
-
+        qDebug()<<"@sad2";
         // set entire octree content
         interval_t x_range(0, std::numeric_limits<int>::max());
         interval_t y_range(0, std::numeric_limits<int>::max());
         interval_t z_range(0, std::numeric_limits<int>::max());
+        qDebug()<<"@22";
         CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, landmark_list);
         qDebug()<<"CViewer::getCurrent()->loadAnnotations();";
 

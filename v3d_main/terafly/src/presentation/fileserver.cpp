@@ -91,14 +91,8 @@ void FileSocket_receive::readFile()
 //                this->disconnectFromHost();
             }
             this->write(QString("received "+filename+"\n").toUtf8());
-            qDebug()<<QString("received "+filename+"\n");
-            qDebug()<<"hghjghjg";
-//            QRegExp apoRex("(.*).apo");
-//            if(apoRex.indexIn(filename)!=-1)
-//            {
-//                emit receivefile(apoRex.cap(1)+".ano");
-//                this->disconnectFromHost();
-//            }
+
+
         }
     }else {
             if(this->bytesAvailable()+m_bytesreceived>=totalsize)
@@ -127,18 +121,8 @@ void FileSocket_receive::readFile()
                     emit receivefile(apoRex.cap(1));
                     qDebug()<<"receive apo .----";
                     disconnectFromHost();
-    //                this->disconnectFromHost();
                 }
                 this->write(QString("received "+filename+"\n").toUtf8());
-                qDebug()<<QString("received "+filename+"\n");
-                qDebug()<<"hghjghjg";
-//                QRegExp apoRex("(.*).apo");
-//                if(apoRex.indexIn(filename)!=-1)
-//                {
-//                    QMessageBox::information(0, tr("information"),tr("Download successfully."));
-//                    this->disconnectFromHost();
-//                }
-
             }
         }
 }

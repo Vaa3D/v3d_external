@@ -109,7 +109,7 @@ public slots:
 	//void RunVRMainloop();
 	//void SendHMDPosition();
 	void CollaborationMainloop();
-    void TFProcess(QString msg);
+    void TFProcess(QString msg,bool flag_init=0);
     void read_autotrace(QString,XYZ*);
 private slots:	
     void onReadyRead();

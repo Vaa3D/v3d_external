@@ -4223,6 +4223,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
                                   (markerI.z-markerXYZ0.at(2).toFloat())*(markerI.z-markerXYZ0.at(2).toFloat()));
            if(dist<8.0)
            {
+               qDebug()<<"find del marker";
                markers.removeAt(i);break;
            }
         }
@@ -4233,17 +4234,28 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 {
     qDebug()<<"in CollaAddMarker";
-    qDebug()<<markerPOS;
+
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
-
+        qDebug()<<markerPOS;
     LocationSimple marker;
-    marker=markers.at(0);//need to modifiy
-    marker.x=markerXYZ.at(0).toFloat();
-    marker.y=markerXYZ.at(1).toFloat();
-    marker.z=markerXYZ.at(2).toFloat();
-//    marker.
-//    marker.color=markers.at(0).color;
+    if(markers.size()!=0)
+    {
+        marker=markers.at(0);//need to modifiy
+        marker.x=markerXYZ.at(0).toFloat();
+        marker.y=markerXYZ.at(1).toFloat();
+        marker.z=markerXYZ.at(2).toFloat();
+    }else {
+        marker.x=markerXYZ.at(0).toFloat();
+        marker.y=markerXYZ.at(1).toFloat();
+        marker.z=markerXYZ.at(2).toFloat();
+
+        marker.color.r=255;
+        marker.color.g=0;
+        marker.color.b=0;
+        marker.color.a=0;
+    }
+
 
     for(int i=0;i<markers.size();i++)
     {
@@ -4254,6 +4266,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         {
             markers.removeAt(i);
             goto L;
+
         }
     }
 
