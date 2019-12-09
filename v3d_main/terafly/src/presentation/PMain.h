@@ -607,13 +607,12 @@ public slots:
         void download();
         void load();
         void deleteManageSocket();
-
         void startAutoTrace();
-public slots:
         void ColLoadANO(QString ANOfile);
 
 signals:
         void signal_communicator_read_res(QString ,XYZ*);
+        void startASK(int);
 private:
         QString currentPath;
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h

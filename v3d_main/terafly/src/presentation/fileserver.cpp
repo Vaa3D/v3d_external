@@ -24,11 +24,7 @@ void FileServer::incomingConnection(int socketDesc)
 void FileServer::Socketdisconnect(QString ANOfile)
 {
     emit receivedfile(ANOfile);
-
-    qDebug()<<"delete";
     this->deleteLater();
-    qDebug()<<"file server delete later";
-
 }
 
 FileSocket_receive::FileSocket_receive(int socketDesc,QObject *parent)
@@ -85,8 +81,7 @@ void FileSocket_receive::readFile()
             if(apoRex.indexIn(filename)!=-1)
             {
                 emit receivefile(apoRex.cap(1));
-                qDebug()<<apoRex.cap(1)<<"+++++++";
-                qDebug()<<"receive apo .----";
+
                 disconnectFromHost();
 //                this->disconnectFromHost();
             }
@@ -119,7 +114,6 @@ void FileSocket_receive::readFile()
                 if(apoRex.indexIn(filename)!=-1)
                 {
                     emit receivefile(apoRex.cap(1));
-                    qDebug()<<"receive apo .----";
                     disconnectFromHost();
                 }
                 this->write(QString("received "+filename+"\n").toUtf8());

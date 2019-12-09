@@ -103,7 +103,7 @@ public:
 	 XYZ ImageCurRes;
 	 XYZ ImageStartPoint;
 
-
+    QTimer *asktimer;
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);
 	//void RunVRMainloop();
@@ -127,7 +127,7 @@ signals:
     void delMarker(QString);
     void msgtoprocess(QString);
 private:
-    QTimer *asktimer;
+
 	QString vr_Port;
 	bool CURRENT_DATA_IS_SENT;
 	bool * clienton;

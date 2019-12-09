@@ -1406,12 +1406,10 @@ void PMain::openImage(std::string path /*= ""*/)
             if(dialog.exec())
                 path = dialog.directory().absolutePath().toStdString().c_str();
             #else
-            qDebug()<<"dhuaskjdhkjsahdkjsahd\n";
+
             path = QFileDialog::getExistingDirectory(this, title.c_str(),
                                                      CSettings::instance()->getVolumePathLRU().c_str(),
                                                      QFileDialog::ShowDirsOnly).toStdString();
-
-            qDebug()<<"path="+QString::fromStdString(path);
             #endif
 
             /**/tf::debug(tf::LEV3, strprintf("selected path = %s", path.c_str()).c_str(), __itm__current__function__);
@@ -4102,7 +4100,7 @@ void PMain::load()
 		Communicator = new V3dR_Communicator;
 
         disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-        connect(Communicator,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
+        connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
 //        disconnect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
 //        connect(Communicator,SIGNAL(disconnected()),Communicator,SLOT(message_Disconnected()));
@@ -4130,6 +4128,8 @@ void PMain::load()
                 SLOT(SendLoginRequest(QString,QString,QString)));
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),managesocket,SLOT(messageMade()));
+        connect(this,SIGNAL(startASK(int)),cur_win->getGLWidget()->TeraflyCommunicator->asktimer,
+                SLOT(start(int)));
 
         connect(managesocket,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
@@ -4149,7 +4149,7 @@ void PMain::deleteManageSocket()
                      tr("Data has been safely stored.\nPlease restart vaa3d"),
                      QMessageBox::Ok);
     managesocket->deleteLater();
-    managesocket->deleteLater();
+
     loginAction->setText("log in");
     loginAction->setEnabled(true);
     logoutAction->setEnabled(false);
@@ -4190,7 +4190,6 @@ void PMain::ColLoadANO(QString ANOfile)
             PAnoToolBar::instance()->setCursor(cursor);
         annotationChanged = true;
         updateOverview();
-        qDebug()<<"ok";
 
         QRegExp anoExp("(.*).ano");
         QString tmp;
@@ -4219,7 +4218,7 @@ void PMain::ColLoadANO(QString ANOfile)
 //            f->remove();
 //        delete f;
 //        f=0;
-
+        emit startASK(1000);
 
     }
 }

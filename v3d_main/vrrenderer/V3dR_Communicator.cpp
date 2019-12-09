@@ -231,6 +231,12 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
     nextblocksize=0;
     AutoTraceNode=XYZ(0);
     flag_x=0;flag_y=0;flag_z=0;
+    if(asktimer==nullptr)
+    {
+        asktimer=new QTimer(this);
+        connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
+//                asktimer->start(1000);
+    }
 }
 
 V3dR_Communicator::~V3dR_Communicator() {
@@ -370,7 +376,6 @@ void V3dR_Communicator::onReadyRead()
             in >>line;
             i++;
             nextblocksize=0;
-            qDebug()<<"receive:=+-:"<<line;
             QStringList iniaial_list=line.split(",");
 
             int cnt=iniaial_list.size();
@@ -378,7 +383,6 @@ void V3dR_Communicator::onReadyRead()
             {
                 for(int i=0;i<cnt;i++)
                 {
-                    qDebug()<<"1232";
                     TFProcess(iniaial_list.at(i),1);
                 }
             }
@@ -433,12 +437,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                     Agents.push_back(agent00);
                 }
             }
-            if(asktimer==nullptr)
-            {
-                asktimer=new QTimer(this);
-                connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
-                asktimer->start(1000);
-            }
+
         }
         else if (systemRex.indexIn(line) != -1) {
 

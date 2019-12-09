@@ -3078,7 +3078,6 @@ int Renderer_gl1::hitPen(int x, int y)
 		qDebug("\t click ( %i, %i ) to define Marker", x,y);
 		_appendMarkerPos(x,y);
 		int N = (selectMode == smMarkerCreate1)? 1 : (selectMode == smMarkerCreate2)? 2 : 3;
-        qDebug()<<"1========================";
 		if (listMarkerPos.size() >= N)
 		{
 			//qDebug("\t %i clicks to solve Marker", listMarkerPos.size());
@@ -3086,14 +3085,14 @@ int Renderer_gl1::hitPen(int x, int y)
 				total_etime += solveMarkerCenter(); //////////
 			else
 				solveMarkerViews(); //////////
-            qDebug()<<"@;";
+
             listMarkerPos.clear();
 			if (selectMode != smMarkerCreate1) // make 1-click continue selected mode
             {
                 endSelectMode();
-                qDebug()<<"123124;";
+
             }
-            qDebug()<<"@;12";
+
 		}
 		return 1;
 	}
@@ -4039,13 +4038,13 @@ double Renderer_gl1::solveMarkerCenter()
 	const MarkerPos & pos = listMarkerPos.at(0);
 	XYZ loc = getCenterOfMarkerPos(pos);
 	vector <XYZ> loc_vec;
-    qDebug()<<"090====================";
+
 	if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
 		dataViewProcBox.clamp(loc); //100722 RZC
 	if (b_addthismarker) //100822, PHC, 120506
 	{
 		addMarker(loc);
-        qDebug()<<"solveMarkerCenter addMarker(loc);";
+
 //		if (b_ablation)
 //		{
 //			loc_vec.push_back(loc);
@@ -4223,28 +4222,16 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
         S.x = pt.x;
 		S.y = pt.y;
 		S.z = pt.z;
-        qDebug()<<"ADD MARKER:"<<S.x<<","<<S.y<<","<<S.z;
-
-        //convert local to global (S.x,S.y,S.z)
-//        QString poswaitsend="/marker:"+QString::number(S.x)+" "+QString::number(S.y)+" "+QString::number(S.z);
-//        w->TeraflyCommunicator->onReadySend(poswaitsend);
-
-
-
 		if (V3Dmainwindow)
 			S.radius = V3Dmainwindow->global_setting.default_marker_radius;
 		S.on = true;
 		listLoc.append(S);
-        qDebug()<<"befor if ";
+
         if(!fromserver&&w->TeraflyCommunicator!=nullptr)
         {
             w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateSendPoolNode(S.x,S.y,S.z);
         }
-
-
-
-        qDebug()<<"addMarker listLoc.append(S);";
 //		updateLandmark();
     }
 #else
