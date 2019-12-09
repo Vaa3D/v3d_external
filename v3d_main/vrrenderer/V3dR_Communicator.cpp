@@ -341,8 +341,6 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
 	{
 		qDebug()<<"The message is empty!";
 	}
-
-
 }
 
 void V3dR_Communicator::onReadyRead()
