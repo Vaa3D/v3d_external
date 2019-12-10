@@ -4302,11 +4302,11 @@ void PMain::startAutoTrace()
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
 
-//        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
-//        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
-//        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
-////        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
-//        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
+        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
+        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
+        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
+//        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
+        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
 
         XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
                         tempNode,
@@ -4341,7 +4341,7 @@ void PMain::startAutoTrace()
                       <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
             //delete v3draw
             QFile *f=new QFile(v3drawpath);
-            if(f->exists()) f->remove();
+//            if(f->exists()) f->remove();
             delete  f;
 
 
@@ -4354,7 +4354,7 @@ void PMain::startAutoTrace()
                      emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
                  }
                  f=new QFile(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName());
-                 if(f->exists()) f->remove();
+//                 if(f->exists()) f->remove();
                  delete f;
              }
         }

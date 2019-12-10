@@ -627,7 +627,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
 {
 //    char extramsg[300];
-    QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+    QString messageBuff=QString("TeraAI %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
     for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
     {
@@ -637,16 +637,18 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
         if(i!=seg.row.size()-1)
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
-                    .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
+
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent);
 
         }
         else
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
-                    .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent);
         }
+        messageBuff+=packetbuff;
     }
     return messageBuff;
 }
@@ -752,6 +754,7 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
         {
 
             V_NeuronSWC seg_temp =  testVNL.seg.at(i);
+            qDebug()<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
             onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
         }
     }
