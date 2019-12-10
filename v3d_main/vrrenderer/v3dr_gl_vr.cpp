@@ -7003,8 +7003,7 @@ QStringList CMainApplication::NT2QString()
 		NeuronSWC S_temp;
 		S_temp=currentNT.listNeuron.at(i);
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
-        packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11_").arg(S_temp.n).arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z)
-                .arg(S_temp.r).arg(S_temp.parent);
+        packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(S_temp.n).arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z).arg(S_temp.r).arg(S_temp.parent);
 //		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld_",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
 		messageBuff +=packetbuff;
 	}
