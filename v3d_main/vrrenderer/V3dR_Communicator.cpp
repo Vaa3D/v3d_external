@@ -140,17 +140,20 @@ void ManageSocket::onReadyRead()
             qDebug()<<"2";
             QString currentDir=CurrentDirLoadExp.cap(1);
             QStringList file_list=currentDir.split(";");
-            QWidget *widget=new QWidget(0);
-            widget->setWindowTitle("choose annotation file ");
-            QListWidget *filelistWidget=new QListWidget;
-            QVBoxLayout mainlayout(widget);
 
-            mainlayout.addWidget(filelistWidget);
+//            QWidget *widget=new QWidget(0);
+
+            QListWidget *filelistWidget=new QListWidget;
+            filelistWidget->setWindowTitle("choose annotation file ");
+            filelistWidget->setGeometry(400,400,500,700);
+//            QVBoxLayout mainlayout(widget);
+
+//            mainlayout.addWidget(filelistWidget);
             connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                 this,SLOT(send2(QListWidgetItem*)));
 
             connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-                widget,SLOT(close()));
+                filelistWidget,SLOT(close()));
 
             filelistWidget->clear();
             for(uint i=0;i<file_list.size();i++)
@@ -160,7 +163,7 @@ void ManageSocket::onReadyRead()
                 qDebug()<<file_list.at(i);
                 filelistWidget->addItem(tmp);
             }
-            widget->show();
+            filelistWidget->show();
         }else if(MessagePortExp.indexIn(manageMsg)!=-1)
         {
             messageport=MessagePortExp.cap(1);
@@ -299,7 +302,6 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
 
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
     qDebug()<<"global_node"<<global_node.x<<" "<<global_node.y<<" "<<global_node.z;
-    AutoTraceNode=global_node;
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
@@ -366,7 +368,7 @@ void V3dR_Communicator::onReadyRead()
             }
             else
             {
-                qDebug()<<"bytes <quint16";
+//                qDebug()<<"bytes <quint16";
                 return;
             }
         }
@@ -553,6 +555,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
                 else
                 {
+                    qDebug()<<"hgh";
                     emit addSeg(temp1,colortype);
                 }
             }else {
@@ -586,8 +589,6 @@ void V3dR_Communicator::Collaborationaskmessage()
 
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 {
-
-
     QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
 	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
@@ -611,6 +612,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
             packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
                     .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
             emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
+            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
         }
         messageBuff +=packetbuff;
 	}
@@ -628,37 +630,30 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
 {
 //    char extramsg[300];
-    string messageBuff="TeraAI_";
-
-    char resmsg[300];
-    sprintf(resmsg,"%d %d %d_",ImageCurRes.x,ImageCurRes.y,ImageCurRes.z);
-    messageBuff+=resmsg;
+    QString messageBuff=QString("TeraAI %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
     for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
     {
         V_NeuronSWC_unit curSWCunit = seg.row[i];
-        char packetbuff[300];
-
+        QString packetbuff;
+        packetbuff.clear();
         if(i!=seg.row.size()-1)
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z,para);
-            sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f_",
-                curSWCunit.n,18,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
-                curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
-                curSWCunit.tfresindex);
+
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent);
+
         }
         else
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z,para);
-            sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld %5.3f %5.3f %5.3f %5.3f",
-                curSWCunit.n,18,GlobalCroods.x,GlobalCroods.y,GlobalCroods.z,
-                curSWCunit.r,curSWCunit.parent,curSWCunit.level,curSWCunit.creatmode,curSWCunit.timestamp,
-                curSWCunit.tfresindex);
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent);
         }
-        messageBuff +=packetbuff;
+        messageBuff+=packetbuff;
     }
-    QString str=QString::fromStdString(messageBuff);
-    return str;
+    return messageBuff;
 }
 
 
@@ -762,9 +757,8 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
         {
 
             V_NeuronSWC seg_temp =  testVNL.seg.at(i);
-            qDebug()<<"AI send to server:"<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
+            qDebug()<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
             onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
-
         }
     }
 }
