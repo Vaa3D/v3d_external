@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -58,8 +58,9 @@
 # include <algorithm>
 #include <QMessageBox>
 #include <QFile>
+#ifdef __ALLOW_VR_FUNCS__
 #include "../../../../vrrenderer/V3dR_Communicator.h"
-
+#endif
 
 
 #include "../../v3d/CustomDefine.h"
@@ -236,7 +237,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
-
+#ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
         collaborateMenu=menuBar->addMenu("Collaborate");
         loginAction=new QAction("Login",this);
@@ -262,7 +263,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         downAction->setEnabled(false);
         loadAction->setEnabled(false);
         managesocket=0;
-
+#endif
     /*---------------------------------------------------*/
 
     /* ------------------------- "Options" menu -------------------------- */
@@ -3941,7 +3942,7 @@ void PMain::setLockMagnification(bool locked)
     isMagnificationLocked = locked;
 
 }
-
+#ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
 {
@@ -4193,4 +4194,6 @@ void PMain::ColLoadANO(QString ANOfile)
 
     }
 }
+
+#endif
 
