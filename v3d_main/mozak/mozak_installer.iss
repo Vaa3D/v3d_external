@@ -1,7 +1,7 @@
 ; Match app version with VERSION.txt file in mozak folder
 
 #define MyAppName           "Vaa3D-Mozak"
-#define MyAppVersion        "0.5.8"
+#define MyAppVersion        "0.5.9"
 #define MyAppPublisher      "Allen Institute"
 #define MyAppURL            "http://www.example.com/"
 #define MyAppExeName        "vaa3d_msvc.exe"
@@ -24,6 +24,9 @@ OutputBaseFilename                    = {#MyAppName}-{#MyAppVersion}
 OutputDir                             = \\aibsfileprint\public\MozakReleases
 Compression                           = lzma
 SolidCompression                      = yes
+#define BDS                           "c:\Program Files (x86)\Embarcadero\Studio\20.0"
+#define BUILD_BCC32                   "c:\cg_build\bcc32"
+#define BUILD_VS                      "c:\vsbuild"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -35,19 +38,18 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "C:\v3d\v3d_external\bin\vaa3d_msvc.exe";                                           DestDir: "{app}";                                           Flags: ignoreversion
 Source: "C:\v3d\v3d_external\v3d_main\v3d\release\*.dll";                                   DestDir: "{app}";                                           Flags: ignoreversion 
 
-
 ;Most used plugins
 Source: "C:\v3d\v3d_external\bin\plugins\AllenNeuron_postprocessing\*.dll";                 DestDir: "{app}/plugins/AllenNeuron_postprocessing";         Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\assemble_neuron_live\*.dll";      DestDir: "{app}/plugins/assemble_neuron_live";               Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\inter_node_pruning\*.dll";        DestDir: "{app}/plugins/inter_node_pruning";                 Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_scaling\*.dll";                        DestDir: "{app}/plugins/IVSCC_scaling";                      Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\assemble_neuron_live\*.dll";                       DestDir: "{app}/plugins/assemble_neuron_live";               Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\inter_node_pruning\*.dll";                         DestDir: "{app}/plugins/inter_node_pruning";                 Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_scaling\*.dll";                              DestDir: "{app}/plugins/IVSCC_scaling";                      Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_smoothing_swc\*.dll";                        DestDir: "{app}/plugins/IVSCC_smoothing_swc";                Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_sort_swc\*.dll";                       DestDir: "{app}/plugins/IVSCC_sort_swc";                     Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_swc_removal\*.dll";                    DestDir: "{app}/plugins/IVSCC_swc_removal";                  Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_sort_swc\*.dll";                             DestDir: "{app}/plugins/IVSCC_sort_swc";                     Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\IVSCC_swc_removal\*.dll";                          DestDir: "{app}/plugins/IVSCC_swc_removal";                  Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\v3d\v3d_external\bin\plugins\linker_file\*.dll";                                DestDir: "{app}/plugins/linker_file";                        Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
-Source: "C:\v3d\v3d_external\bin\plugins\pruning_swc_simple\*.dll";        DestDir: "{app}/plugins/pruning_swc_simple";                 Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\v3d\v3d_external\bin\plugins\resample_swc\*.dll";              DestDir: "{app}/plugins/resample_swc";                       Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
-Source: "C:\v3d\v3d_external\bin\plugins\typeset_childbranch\*.dll";       DestDir: "{app}/plugins/typeset_childbranch";                Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
+Source: "C:\v3d\v3d_external\bin\plugins\pruning_swc_simple\*.dll";                         DestDir: "{app}/plugins/pruning_swc_simple";                 Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\v3d\v3d_external\bin\plugins\resample_swc\*.dll";                               DestDir: "{app}/plugins/resample_swc";                       Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
+Source: "C:\v3d\v3d_external\bin\plugins\typeset_childbranch\*.dll";                        DestDir: "{app}/plugins/typeset_childbranch";                Flags: ignoreversion recursesubdirs createallsubdirs                                                                             
 
 ; ALL plugins
 Source: "C:\v3d\v3d_external\bin\plugins\*.dll";                                            DestDir: "{app}/plugins/Other";                              Flags: ignoreversion recursesubdirs createallsubdirs
@@ -74,30 +76,30 @@ Source: "C:\pDisk\libs\QT\4.8.6\plugins\imageformats\qtga4.dll";                
 Source: "C:\pDisk\libs\QT\4.8.6\plugins\imageformats\qtiff4.dll";                           DestDir: "{app}";                                            Flags: ignoreversion 
 
 ;Game controlle and Space Mouse 
-Source: "C:\pDisk\vsbuild\bin\aiGameControllerAPI-vs2013.dll";                              DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "C:\pDisk\vsbuild\bin\ai3DXLib-vs2013.dll";                                         DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "C:\pDisk\vsbuild\bin\dslFoundation-vs2013.dll";                                    DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "C:\pDisk\vsbuild\bin\poco_foundation-vs2013.dll";                                  DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "C:\pDisk\vsbuild\bin\tinyxml2-vs2013.dll";                                         DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\aiGameControllerAPI.dll";                                          DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\ai3DXLib.dll";                                                     DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\dslFoundation.dll";                                                DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\poco_foundation.dll";                                              DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\tinyxml2.dll";                                                      DestDir: "{app}";                                            Flags: ignoreversion 
 
 
 ; The configFile UI and related DLL's, BPL's needed for
 ; the game controller
-Source: "C:\pDisk\build\bin\configFileUI.exe";                                              DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\pDisk\build\bin\dslFoundation.dll";                                             DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\pDisk\build\bin\dslVCLCommon.dll";                                              DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\pDisk\build\BPL\dslVCLComponents.bpl";                                          DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\pDisk\build\BPL\dslVCLVisualComponents.bpl";                                    DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\pDisk\build\bin\poco_foundation.dll";                                           DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\pDisk\build\bin\tinyxml2.dll";                                                  DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\pDisk\build\bin\sqlite.dll";                                                    DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\CodeGear\Tokyo\bin\borlndmm.dll";                                               DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\CodeGear\Tokyo\bin\cc32250mt.dll";                                              DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\CodeGear\Tokyo\bin\rtl250.bpl";                                                 DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\CodeGear\Tokyo\bin\vcl250.bpl";                                                 DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\CodeGear\Tokyo\bin\vclactnband250.bpl";                                         DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\CodeGear\Tokyo\bin\vclimg250.bpl";                                              DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "C:\CodeGear\Tokyo\bin\vclx250.bpl";                                                DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\bin\configFileUI.exe";                                              DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\bin\dslFoundation.dll";                                             DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\bin\dslVCLCommon.dll";                                              DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\BPL\dslVCLComponents.bpl";                                          DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\BPL\dslVCLVisualComponents.bpl";                                    DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\bin\poco_foundation.dll";                                           DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\bin\tinyxml2.dll";                                                  DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\bin\sqlite.dll";                                                    DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\borlndmm.dll";                                                          DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\cc32250mt.dll";                                                         DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\\bin\rtl250.bpl";                                                           DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vcl250.bpl";                                                            DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vclactnband250.bpl";                                                    DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vclimg250.bpl";                                                         DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vclx250.bpl";                                                           DestDir: "{app}";                                             Flags: ignoreversion 
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 [Icons]

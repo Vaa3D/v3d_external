@@ -92,6 +92,9 @@ MozakUI::MozakUI(V3DPluginCallback2 *callback, QWidget *parent)
 		mGC->mButton7.assignButtonEvents(bind(&MozakUI::onButtonDown, this, _1), NULL);
 		mGC->mButton8.assignButtonEvents(bind(&MozakUI::onButtonDown, this, _1), NULL);
 		mGC->mButton9.assignButtonEvents(bind(&MozakUI::onButtonDown, this, _1), NULL);        
+        mGC->mButton10.assignButtonEvents(bind(&MozakUI::onButtonDown, this, _1), NULL);
+        mGC->mButton11.assignButtonEvents(bind(&MozakUI::onButtonDown, this, _1), NULL);
+        mGC->mButton12.assignButtonEvents(bind(&MozakUI::onButtonDown, this, _1), NULL);
 	}
 
     //The space navigator
@@ -272,73 +275,51 @@ void MozakUI::onAxis(JoyStickAxis* axis)
         return;
     }
 
-	if (axis == &mGC->mFrontLeftAxis || axis == &mGC->mFrontRightAxis)
-	{       
+	//if (axis == &mGC->mFrontLeftAxis || axis == &mGC->mFrontRightAxis)
+	//{       
+ //       static float delta = 0;
+ //       double pos = (mGC->mFrontLeftAxis.getPosition() / 65408.0) - 0.5; 
+ //       static Stopwatch watch;        
+ //       double elapsed = watch.elapsed() / 1000;
+ //       
+ //       if (elapsed < mZoomSpeed && watch.elapsed() != 0)
+ //       {
+ //           return;
+ //       }      
+ //       
+ //       
+ //       int sliderPosition = mMozak3DView->window3D->zoomSlider->sliderPosition();
+
+ //       delta = (pos > 0) ? 1 : -1;             
+ //       float newPosition = sliderPosition + round(delta) ;
+ //       //Log(lDebug3) << "Scaled zoom position: " << pos <<"\t Slider position: " << sliderPosition;
+ //      
+ //       mMozak3DView->getGLWidget()->setZoom(newPosition);
+
+ //       //Control the speed.. could be more finegrained. faster with small steps?
+ //       watch.restart();
+	//}
+
+	if (axis == &mGC->mJoyStick1.mYAxis)//For scrolling
+	{		
         static float delta = 0;
+        int y = (mGC->mJoyStick1.mYAxis.getPosition()) / 32768;
+		        
+		Log(lInfo) << "(y) -> (" <<y<< ")";
 
-        double pos = (mGC->mFrontLeftAxis.getPosition() / 65408.0) - 0.5; 
-
-        static Stopwatch watch;        
-        double elapsed = watch.elapsed() / 1000;
-        
-        if (elapsed < mZoomSpeed && watch.elapsed() != 0)
-        {
-            return;
-        }      
-        
-        
         int sliderPosition = mMozak3DView->window3D->zoomSlider->sliderPosition();
 
-        delta = (pos > 0) ? 1 : -1;
-
-        
-        
+        delta = (y > 0) ? 1 : -1;             
         float newPosition = sliderPosition + round(delta) ;
-        //Log(lDebug3) << "Scaled zoom position: " << pos <<"\t Slider position: " << sliderPosition;
-       
+        Log(lDebug3) << "zoom position: " << newPosition <<"\t Slider position: " << sliderPosition;
+              
         mMozak3DView->getGLWidget()->setZoom(newPosition);
-
-        //Control the speed.. could be more finegrained. faster with small steps?
-        watch.restart();
-	}
-
-	if (axis == &mGC->mJoyStick2.mXAxis || axis == &mGC->mJoyStick2.mYAxis && mLastPOV)
-	{
-		int x = (mGC->mJoyStick2.mXAxis.getPosition() - 32768) ;
-		int y = (mGC->mJoyStick2.mYAxis.getPosition() - 32768) * -1;
-
-		double magnitude = sqrt(pow(x, 2) + pow(y, 2));
-
-        //Skip if less than 85% of movement
-        if ((double)(magnitude / 32768) < 0.85)
-        {
-            return;
-        }
-
-		double theta = dsl::toDegree( std::atan2(y, x)); 
-		theta = fmod(theta + 270, 360);
-		Log(lInfo) << "(x,y) -> (" << x << "," << y << ")\t" << "Theta: " << theta << "\tMagn" << magnitude << "POV: " << mGC->mPOV.getState();
 						
-        //This functionality is pretty useless
-		if (mLastPOV == povWest )
-		{				
-			mMozak3DView->window3D->xRotBox->setValue(theta);											
-		}
-		else if (mLastPOV == povNorth)
-		{
-			mMozak3DView->window3D->yRotBox->setValue(theta);
-		}
-
-		else if (mLastPOV == povEast)
-		{
-			mMozak3DView->window3D->zRotBox->setValue(theta);
-		}
-		else
-		{                
-			QPoint p = mMozak3DView->view3DWidget->mapFromGlobal(QCursor::pos());
-			QMouseEvent eve(QEvent::MouseButtonDblClick, p, Qt::RightButton, Qt::NoButton, Qt::NoModifier);
-			mMozak3DView->eventFilter(mMozak3DView->view3DWidget, &eve);
-		}				
+  	//{                
+		//	QPoint p = mMozak3DView->view3DWidget->mapFromGlobal(QCursor::pos());
+		//	QMouseEvent eve(QEvent::MouseButtonDblClick, p, Qt::RightButton, Qt::NoButton, Qt::NoModifier);
+		//	mMozak3DView->eventFilter(mMozak3DView->view3DWidget, &eve);
+		//}				
 	}
 }
 
@@ -375,6 +356,19 @@ void MozakUI::onButtonDown(ai::GameControllerButton* btn)
 		QMouseEvent eve(QEvent::MouseButtonDblClick, p, (btn == &mGC->mButton6 ? Qt::LeftButton : Qt::RightButton), Qt::NoButton, Qt::NoModifier);
 		mMozak3DView->eventFilter(mMozak3DView->view3DWidget, &eve);		
 	}	
+
+    if (btn == &mGC->mButton9)
+    {
+        	QPoint p = mMozak3DView->view3DWidget->mapFromGlobal(QCursor::pos());
+        	QMouseEvent eve(QEvent::MouseButtonDblClick, p, Qt::RightButton, Qt::NoButton, Qt::NoModifier);
+        	mMozak3DView->eventFilter(mMozak3DView->view3DWidget, &eve);        
+    }
+    if (btn == &mGC->mButton10)
+    {
+        QPoint p = mMozak3DView->view3DWidget->mapFromGlobal(QCursor::pos());
+        QMouseEvent eve(QEvent::MouseButtonDblClick, p, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+        mMozak3DView->eventFilter(mMozak3DView->view3DWidget, &eve);
+    }
 }
 
 void MozakUI::zoom(bool zoomIn)
