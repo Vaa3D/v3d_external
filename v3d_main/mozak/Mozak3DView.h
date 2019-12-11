@@ -153,6 +153,8 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 	    int cur_history;
 
 	public:
+        void scrollInRegularMode(int delta, int x = 0, int y = 0);
+        void scrollInPolyLineMode(int delta);
 
 		// helping functions copied from renderer_gl2.h
 		inline void set_colormap_curve(QPolygonF &curve, qreal x, int iy) // 0.0<=(x)<=1.0, 0<=(iy)<=255

@@ -269,11 +269,17 @@ void MozakUI::onSpaceMouseAxis(ai::SpaceNavigatorAxis* axis)
 }
 
 void MozakUI::onAxis(JoyStickAxis* axis)
-{
+{    
     if (!mMozak3DView)
     {
         return;
     }
+    static float delta = 0;
+    int y = (mGC->mJoyStick1.mYAxis.getPosition()) / 32768;
+    
+    delta = (y > 0) ? 1 : -1;
+    int wheelDelta(20);
+    wheelDelta = wheelDelta * delta;
 
 	//if (axis == &mGC->mFrontLeftAxis || axis == &mGC->mFrontRightAxis)
 	//{       
@@ -302,24 +308,33 @@ void MozakUI::onAxis(JoyStickAxis* axis)
 
 	if (axis == &mGC->mJoyStick1.mYAxis)//For scrolling
 	{		
-        static float delta = 0;
-        int y = (mGC->mJoyStick1.mYAxis.getPosition()) / 32768;
-		        
-		Log(lInfo) << "(y) -> (" <<y<< ")";
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(mMozak3DView->view3DWidget->getRenderer());
+        Renderer::SelectMode currentMode = curr_renderer->selectMode;
 
-        int sliderPosition = mMozak3DView->window3D->zoomSlider->sliderPosition();
+        if (currentMode == Renderer::smCurveCreate_pointclick || currentMode == Renderer::smCurveCreate_pointclickAutoZ)
+        {
+            mMozak3DView->scrollInPolyLineMode(wheelDelta);           
+        }       
+        else
+        {
+		    //Log(lInfo) << "(y) -> (" <<y<< ")";
+            int sliderPosition = mMozak3DView->window3D->zoomSlider->sliderPosition();     
+            //QWheelEvent * event;
+            //if (delta > 0)
+            //{
+            //    event = new QWheelEvent(QPoint(10, 10), wheelDelta, Qt::NoButton, Qt::NoModifier);            
+            //}
+            //else
+            //{
+            //    event = new QWheelEvent(QPoint(10, 10), -1*wheelDelta, Qt::NoButton, Qt::NoModifier);            
+            //}
+            //QApplication::postEvent(mMozak3DView->view3DWidget, event);
 
-        delta = (y > 0) ? 1 : -1;             
-        float newPosition = sliderPosition + round(delta) ;
-        Log(lDebug3) << "zoom position: " << newPosition <<"\t Slider position: " << sliderPosition;
-              
-        mMozak3DView->getGLWidget()->setZoom(newPosition);
-						
-  	//{                
-		//	QPoint p = mMozak3DView->view3DWidget->mapFromGlobal(QCursor::pos());
-		//	QMouseEvent eve(QEvent::MouseButtonDblClick, p, Qt::RightButton, Qt::NoButton, Qt::NoModifier);
-		//	mMozak3DView->eventFilter(mMozak3DView->view3DWidget, &eve);
-		//}				
+
+            float newPosition = sliderPosition + round(delta) ;
+            Log(lDebug3) << "zoom position: " << newPosition <<"\t Slider position: " << sliderPosition;
+            mMozak3DView->getGLWidget()->setZoom(newPosition);		
+        }				  	
 	}
 }
 

@@ -76,11 +76,11 @@ Source: "C:\pDisk\libs\QT\4.8.6\plugins\imageformats\qtga4.dll";                
 Source: "C:\pDisk\libs\QT\4.8.6\plugins\imageformats\qtiff4.dll";                           DestDir: "{app}";                                            Flags: ignoreversion 
 
 ;Game controlle and Space Mouse 
-Source: "{#BUILD_VS}\bin\aiGameControllerAPI.dll";                                          DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "{#BUILD_VS}\bin\ai3DXLib.dll";                                                     DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "{#BUILD_VS}\bin\dslFoundation.dll";                                                DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "{#BUILD_VS}\bin\poco_foundation.dll";                                              DestDir: "{app}";                                            Flags: ignoreversion 
-Source: "{#BUILD_VS}\bin\tinyxml2.dll";                                                      DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\aiGameControllerAPI-vs2013.dll";                                          DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\ai3DXLib-vs2013.dll";                                                     DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\dslFoundation-vs2013.dll";                                                DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\poco_foundation-vs2013.dll";                                              DestDir: "{app}";                                            Flags: ignoreversion 
+Source: "{#BUILD_VS}\bin\tinyxml2-vs2013.dll";                                                      DestDir: "{app}";                                            Flags: ignoreversion 
 
 
 ; The configFile UI and related DLL's, BPL's needed for
@@ -89,17 +89,17 @@ Source: "{#BUILD_BCC32}\bin\configFileUI.exe";                                  
 Source: "{#BUILD_BCC32}\bin\dslFoundation.dll";                                             DestDir: "{app}";                                             Flags: ignoreversion 
 Source: "{#BUILD_BCC32}\bin\dslVCLCommon.dll";                                              DestDir: "{app}";                                             Flags: ignoreversion 
 Source: "{#BUILD_BCC32}\BPL\dslVCLComponents.bpl";                                          DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "{#BUILD_BCC32}\BPL\dslVCLVisualComponents.bpl";                                    DestDir: "{app}";                                             Flags: ignoreversion 
 Source: "{#BUILD_BCC32}\bin\poco_foundation.dll";                                           DestDir: "{app}";                                             Flags: ignoreversion 
 Source: "{#BUILD_BCC32}\bin\tinyxml2.dll";                                                  DestDir: "{app}";                                             Flags: ignoreversion 
 Source: "{#BUILD_BCC32}\bin\sqlite.dll";                                                    DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BUILD_BCC32}\bin\boost_thread-bcb-mt-1_39.dll";                                                    DestDir: "{app}";                                             Flags: ignoreversion 
 Source: "{#BDS}\bin\borlndmm.dll";                                                          DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "{#BDS}\bin\cc32250mt.dll";                                                         DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "{#BDS}\\bin\rtl250.bpl";                                                           DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "{#BDS}\bin\vcl250.bpl";                                                            DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "{#BDS}\bin\vclactnband250.bpl";                                                    DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "{#BDS}\bin\vclimg250.bpl";                                                         DestDir: "{app}";                                             Flags: ignoreversion 
-Source: "{#BDS}\bin\vclx250.bpl";                                                           DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\cc32260mt.dll";                                                         DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\\bin\rtl260.bpl";                                                           DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vcl260.bpl";                                                            DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vclactnband260.bpl";                                                    DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vclimg260.bpl";                                                         DestDir: "{app}";                                             Flags: ignoreversion 
+Source: "{#BDS}\bin\vclx260.bpl";                                                           DestDir: "{app}";                                             Flags: ignoreversion 
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 [Icons]

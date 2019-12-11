@@ -344,7 +344,6 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 			int volumeMinSliderDown = prevVal - zoff - volumeDelta;
 			int volumeMaxSliderDown = prevVal + zoff - volumeDelta;
 
-
             if (wheelEvt->delta() > 0)
 			{
                 if (volumeMinSliderUp >= window3D->zcminSlider->minimum() && 
@@ -352,9 +351,6 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 {
 				    window3D->zcminSlider->setValue(volumeMinSliderUp);
 				    window3D->zcmaxSlider->setValue(volumeMaxSliderUp);
-
-
-
                 }
 			}
 			else
@@ -364,9 +360,6 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
                 {
 				    window3D->zcminSlider->setValue(volumeMinSliderDown);
 				    window3D->zcmaxSlider->setValue(volumeMaxSliderDown);
-
-
-
                 }
 			}
 		}
@@ -936,6 +929,106 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 		return res;
 	}
 	return false;
+}
+
+void Mozak3DView::scrollInRegularMode(int delta, int x, int y)
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    Renderer::SelectMode currentMode = curr_renderer->selectMode;
+
+    int prevZoom = view3DWidget->zoom();
+
+    lastWheelFocus = getRenderer3DPoint(x, y);
+    useLastWheelFocus = true;
+
+    // Calculate amount that the point being mouse over moves on the sceen
+    // in order to offset this and keep that point centered after zoom
+    GLdouble p0x, p0y, p0z, p1x, p1y, p1z, ix, iy, iz;
+
+    ix = lastWheelFocus.x;
+    iy = lastWheelFocus.y;
+    iz = lastWheelFocus.z;
+
+    // Project the moused-over 3D point to the screen coordinates
+    gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p0x, &p0y, &p0z);
+    p0y = curr_renderer->viewport[3] - p0y; //the Y axis is reversed
+
+    // Handle this ourselves rather than passing to Terafly (which would change resolutions)
+    //processWheelEvt(wheelEvt);
+
+    float d = delta / 100;  // ~480
+#define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
+#define MOUSE_ZROT(dz)    (int(dz*8* MOUSE_SENSITIVE));
+
+    int zoomStep = MOUSE_ZOOM(d);
+    int newZoom = zoomStep + prevZoom; // wheeling up should zoom IN, not out
+    int wheelX = x;
+    int wheelY = y;
+    float prevZoomRatio = curr_renderer->zoomRatio;
+
+    // Change zoom
+    view3DWidget->setZoom(newZoom);
+    curr_renderer->paint(); // updates the projection matrix
+
+    // Project the previously moused-over 3D point to its new screen coordinates (after zoom)
+    gluProject(ix, iy, iz, curr_renderer->markerViewMatrix, curr_renderer->projectionMatrix, curr_renderer->viewport, &p1x, &p1y, &p1z);
+    p1y = curr_renderer->viewport[3] - p1y; //the Y axis is reversed
+
+    float newZoomRatio = curr_renderer->zoomRatio;
+    float viewW = float(view3DWidget->viewW);
+    float viewH = float(view3DWidget->viewH);;
+    float dxPctOfScreen = float(p0x - p1x) / viewW;
+    float dyPctOfScreen = float(p1y - p0y) / viewH;
+
+    float screenWidthInXShifts = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
+    float screenHeightInYShifts = 2.0f * float(SHIFT_RANGE) * newZoomRatio;
+}
+
+void Mozak3DView::scrollInPolyLineMode(int delta)
+{
+    Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+    Renderer::SelectMode currentMode = curr_renderer->selectMode;
+
+    // If polyline mode(s), use mouse wheel to change the current z-slice (and restrict to one or NUM_POLY_AUTO_Z_PLANES)
+    int zoff = (currentMode == Renderer::smCurveCreate_pointclick) ? 0 : ((NUM_POLY_AUTO_Z_PLANES - 1) / 2);
+
+    int volumeDelta = 1;
+    int prevVal = (window3D->zcminSlider->value() + window3D->zcmaxSlider->value()) / 2;
+    float zSliderScaleFactor = ((float)(window3D->zSminSlider->maximum() - window3D->zSminSlider->minimum() + 1)) / ((float)(window3D->zcminSlider->maximum() - window3D->zcminSlider->minimum() + 1 - zoff));
+    qDebug() << " zSliderScaleFactor: " << zSliderScaleFactor;
+    qDebug() << " prevVal : " << prevVal;
+    qDebug() << " vol max, minimum " << window3D->zcminSlider->maximum() << ", " << window3D->zcminSlider->minimum();
+    qDebug() << " S max, minimum " << window3D->zSminSlider->maximum() << ", " << window3D->zSminSlider->minimum();
+
+    // this is doing what I want it to with the sliders, it's just that the sliders are fundamentally different. it's stupid.
+    // first, the sliders are scaled differently. the surface slider is "0 to 200" regardless of input volume size
+    // second, sometimes the z range for the vector objects spans the entire slider range, other times it doesn't. 
+    // maybe the solution is to just set the min and max myself upon stack loading...
+
+    int volumeMinSliderUp = prevVal - zoff + volumeDelta;
+    int volumeMaxSliderUp = prevVal + zoff + volumeDelta;
+    int volumeMinSliderDown = prevVal - zoff - volumeDelta;
+    int volumeMaxSliderDown = prevVal + zoff - volumeDelta;
+
+
+    if (delta > 0)
+    {
+        if (volumeMinSliderUp >= window3D->zcminSlider->minimum() &&
+            volumeMaxSliderUp <= window3D->zcmaxSlider->maximum())
+        {
+            window3D->zcminSlider->setValue(volumeMinSliderUp);
+            window3D->zcmaxSlider->setValue(volumeMaxSliderUp);
+        }
+    }
+    else
+    {
+        if (volumeMinSliderDown >= window3D->zcminSlider->minimum() &&
+            volumeMaxSliderDown <= window3D->zcmaxSlider->maximum())
+        {
+            window3D->zcminSlider->setValue(volumeMinSliderDown);
+            window3D->zcmaxSlider->setValue(volumeMaxSliderDown);
+        }
+    }
 }
 
 void Mozak3DView::show()
