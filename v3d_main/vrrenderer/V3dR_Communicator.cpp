@@ -140,17 +140,20 @@ void ManageSocket::onReadyRead()
             qDebug()<<"2";
             QString currentDir=CurrentDirLoadExp.cap(1);
             QStringList file_list=currentDir.split(";");
-            QWidget *widget=new QWidget(0);
-            widget->setWindowTitle("choose annotation file ");
-            QListWidget *filelistWidget=new QListWidget;
-            QVBoxLayout mainlayout(widget);
 
-            mainlayout.addWidget(filelistWidget);
+//            QWidget *widget=new QWidget(0);
+
+            QListWidget *filelistWidget=new QListWidget;
+            filelistWidget->setWindowTitle("choose annotation file ");
+            filelistWidget->setGeometry(400,400,100,200);
+//            QVBoxLayout mainlayout(widget);
+
+//            mainlayout.addWidget(filelistWidget);
             connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                 this,SLOT(send2(QListWidgetItem*)));
 
             connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-                widget,SLOT(close()));
+                filelistWidget,SLOT(close()));
 
             filelistWidget->clear();
             for(uint i=0;i<file_list.size();i++)
@@ -160,7 +163,7 @@ void ManageSocket::onReadyRead()
                 qDebug()<<file_list.at(i);
                 filelistWidget->addItem(tmp);
             }
-            widget->show();
+            filelistWidget->show();
         }else if(MessagePortExp.indexIn(manageMsg)!=-1)
         {
             messageport=MessagePortExp.cap(1);
