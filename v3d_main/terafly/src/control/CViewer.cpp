@@ -689,8 +689,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					QObject* plugin = pMain.FragTracerQPluginPtr->instance();
 					V3DPluginInterface2_1* interface = qobject_cast<V3DPluginInterface2_1*>(plugin);
 					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(pMain.FragTracerPluginLoaderPtr);
-					string x = to_string(mouseEvt->x());
-					string y = to_string(mouseEvt->y());
+//					string x = to_string(mouseEvt->x());
+//					string y = to_string(mouseEvt->y());
 					
 					V3DPluginArgList pluginInputList, pluginOutputList;
 					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
