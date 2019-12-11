@@ -96,7 +96,6 @@ void ManageSocket::onReadyRead()
 			QMessageBox::information(0, tr("information"),tr("login successfully."));
 		}else if (LogoutRex.indexIn(manageMsg)!=-1)
 		{
-            qDebug()<<"test in logout";
 			this->disconnectFromHost();
 		}else if(ImportRex.indexIn(manageMsg)!=-1)
 		{
@@ -392,7 +391,7 @@ void V3dR_Communicator::onReadyRead()
                 emit msgtoprocess(line);
         }else
         {
-            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
+//            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
             return ;
         }
 

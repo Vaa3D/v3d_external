@@ -1925,22 +1925,22 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     vector<int> vaa3dMarkers_tbd;
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
     QList <ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
-    qDebug()<<"========================================================================";
-    qDebug()<<"vaa3dMarkers size:"<<vaa3dMarkers.size();
-    for(int i=0;i<vaa3dMarkers.size();i++)
-    {
-        qDebug()<<"(x,y,z)"<<vaa3dMarkers[i].x<<","<<vaa3dMarkers[i].y<<","<<vaa3dMarkers[i].z;
-    }
+//    qDebug()<<"========================================================================";
+//    qDebug()<<"vaa3dMarkers size:"<<vaa3dMarkers.size();
+//    for(int i=0;i<vaa3dMarkers.size();i++)
+//    {
+//        qDebug()<<"(x,y,z)"<<vaa3dMarkers[i].x<<","<<vaa3dMarkers[i].y<<","<<vaa3dMarkers[i].z;
+//    }
 
-    qDebug()<<"imageMarkers size:"<<imageMarkers.size()<<"\n+++++++++++++++++++++++++++++++++++";
-    for(int i=0;i<imageMarkers.size();i++)
-    {
-        qDebug()<<i<<"\t(x,y,z)"<<imageMarkers[i].x<<","<<imageMarkers[i].y<<","<<imageMarkers[i].z<<"\t"<<imageMarkers[i].selected;
-    }
-    qDebug()<<"=========================================================================";
+//    qDebug()<<"imageMarkers size:"<<imageMarkers.size()<<"\n+++++++++++++++++++++++++++++++++++";
+//    for(int i=0;i<imageMarkers.size();i++)
+//    {
+//        qDebug()<<i<<"\t(x,y,z)"<<imageMarkers[i].x<<","<<imageMarkers[i].y<<","<<imageMarkers[i].z<<"\t"<<imageMarkers[i].selected;
+//    }
+//    qDebug()<<"=========================================================================";
     for(int i=0; i<imageMarkers.size(); i++)
     {
-        qDebug()<<i<<"\t(x,y,z)"<<imageMarkers[i].x<<","<<imageMarkers[i].y<<","<<imageMarkers[i].z<<"\t"<<imageMarkers[i].selected;
+//        qDebug()<<i<<"\t(x,y,z)"<<imageMarkers[i].x<<","<<imageMarkers[i].y<<","<<imageMarkers[i].z<<"\t"<<imageMarkers[i].selected;
 
         if(imageMarkers[i].selected)
         {
@@ -1955,13 +1955,13 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
 
             if(view3DWidget->TeraflyCommunicator!=nullptr)
             {
-                qDebug()<<"kldasdaskljdaskljdaskljdasklj";
+//                qDebug()<<"kldasdaskljdaskljdaskljdasklj";
                 view3DWidget->SetupCollaborateInfo();
                 view3DWidget->TeraflyCommunicator->UpdateSendDelMarkerInfo(imageMarkers[i].x,
                                imageMarkers[i].y,imageMarkers[i].z);
             }else
             {
-                qDebug()<<"cdkjsbgkjcvdskjv";
+//                qDebug()<<"cdkjsbgkjcvdskjv";
             }
 
         }
