@@ -2865,6 +2865,7 @@ void PMain::doTeraflyVRView()
         CViewer *cur_win = CViewer::getCurrent();
         if(cur_win&&cur_win->view3DWidget)
         {
+			qDebug() << "PMain hide";
             this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
@@ -2878,7 +2879,7 @@ void PMain::doTeraflyVRView()
 				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
             this->show();	
-
+			qDebug() << "PMain show";
         }
     }
     catch(...)
@@ -2898,6 +2899,7 @@ void PMain::doCollaborationVRView()
  
 			this->setWindowState(Qt::WindowMinimized);	
 			this->hide();
+			qDebug() << "PMain hide";
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 			int maxresindex = CImport::instance()->getResolutions()-1;
 			VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
@@ -2905,7 +2907,8 @@ void PMain::doCollaborationVRView()
 			cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
             //cur_win->storeAnnotations();
-            this->show();		
+            this->show();
+			qDebug() << "PMain Show";
 
         }
     }
