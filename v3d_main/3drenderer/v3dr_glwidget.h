@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -48,17 +48,20 @@ using QOpenGLWidget_proxy = QOpenGLWidget;
 #include <QGLWidget>
 typedef QGLWidget QOpenGLWidget_proxy;
 #endif
+#ifdef __ALLOW_VR_FUNCS__
 #include "../vrrenderer/VR_MainWindow.h"
 #include "../vrrenderer/V3dR_Communicator.h"
+#endif
 #include "ui_setVoxSize.h"
 
-class Renderer;
-class V3dR_MainWindow;
 class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
-class V3dR_Communicator;
+
 #ifdef __ALLOW_VR_FUNCS__
 	class VR_MainWindow;
+    class Renderer;
+    class V3dR_MainWindow;
+    class V3dR_Communicator;
 #endif
 //class SurfaceObjGeometryDialog;
 
