@@ -1883,7 +1883,11 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 //		reply = QMessageBox::Yes;
 //	else
 //		reply = QMessageBox::No;
-    if (/*reply == QMessageBox::Yes*/true)
+//    QPushButton* btn = (QPushButton*)sender();
+
+
+//    if (/*reply == QMessageBox::Yes*/true)
+    if(bCanCoMode)
 	{
 		if (TeraflyCommunicator )
 		{
