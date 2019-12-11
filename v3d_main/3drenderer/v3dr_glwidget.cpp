@@ -1029,10 +1029,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				if (!pMain.fragTracePluginInstance)
 				{
 					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+					pMain.FragTracerQPluginPtr = loader;
 					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+					pMain.FragTracerPluginLoaderPtr = &mypluginloader;
 					mypluginloader.runPlugin(loader, "settings");
 
 					return;
@@ -1046,6 +1048,55 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 toggleEditMode();
             }
+			else if (IS_SHIFT_MODIFIER)
+			{
+				if (this->getRenderer())
+				{
+					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
+					{
+						QObject* plugin = pMain.FragTracerQPluginPtr->instance();
+						V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
+						V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(pMain.FragTracerPluginLoaderPtr);
+						V3DPluginArgList pluginInputList, pluginOutputList;
+						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+						vector<char*> pluginInputArgList;
+						vector<char*> pluginOutputArgList;
+						dummyInput.type = "dummy";
+						dummyInput.p = (void*)(&pluginInputArgList);
+						inputParam.type = "shift_e";
+						inputParam.p = (void*)(&pluginInputArgList);
+						pluginInputList.push_back(dummyInput);
+						pluginInputList.push_back(inputParam);
+						dummyOutput.type = "dummy";
+						dummyOutput.p = (void*)(&pluginOutputArgList);
+						iface->dofunc("hotKey", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget
+
+						map<int, vector<int> > labeledSegs;
+						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+						{
+							/*if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
+							else
+							{
+								if (labeledSegs.find(segIt->row.begin()->type) == labeledSegs.end())
+								{
+									vector<int> pickedSegs;
+									pickedSegs.push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
+									labeledSegs.insert(pair<int, vector<int> >(segIt->row.begin()->type, pickedSegs));
+								}
+								else labeledSegs.at(segIt->row.begin()->type).push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
+							}*/
+						}				
+
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+						curImg->proj_trace_history_append();
+					}
+				}
+			}
             else
             {
                 callcheckmode();
@@ -1121,42 +1172,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					{
 						map<int, vector<int> > labeledSegs;
 						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
-						{
 							if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
-							else
-							{
-								if (labeledSegs.find(segIt->row.begin()->type) == labeledSegs.end())
-								{
-									vector<int> pickedSegs;
-									pickedSegs.push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
-									labeledSegs.insert(pair<int, vector<int> >(segIt->row.begin()->type, pickedSegs));
-								}
-								else labeledSegs.at(segIt->row.begin()->type).push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
-							}
-						}
-
-						thisRenderer->connectSameTypeSegs(labeledSegs, curImg);	// This is the segment auto-connecting function.				
 
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
 					}
-				}
-			}
-			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
-			{
-				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				My4DImage* curImg = 0;
-				if (this) curImg = v3dr_getImage4d(_idep);
-
-				terafly::PMain& pMain = *(terafly::PMain::getInstance());
-				if (pMain.fragTracePluginInstance)
-				{
-					map<int, vector<int> > labeledSegs;
-					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
-						if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
-
-					curImg->update_3drenderer_neuron_view(this, thisRenderer);
-					curImg->proj_trace_history_append();
 				}
 			}
 			else
@@ -1184,6 +1204,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
+			else if (IS_SHIFT_MODIFIER)
+			{
+				// reserved for future fragment tracer use
+			}
             else
             {
                 neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
@@ -1858,8 +1882,9 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		reply = QMessageBox::No;
 	if (reply == QMessageBox::Yes)
 	{
-		if(TeraflyCommunicator)
+		if(VRClientON==false)
 		{
+			VRClientON = true;
 			if(myvrwin)
 				delete myvrwin;
 			myvrwin = 0;
@@ -1867,7 +1892,8 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			myvrwin->setWindowTitle("VR MainWindow");
 			//bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 			
-
+			if(!TeraflyCommunicator)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); VRClientON = false;return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;
@@ -1894,7 +1920,6 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		}
 		else
 		{
-			qDebug()<<"can't connect to server .unknown wrong ";
 			v3d_msg("The ** client is running.Failed to start VR client.");
 			this->getMainWindow()->show();
 		}

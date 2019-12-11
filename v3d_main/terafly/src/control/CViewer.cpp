@@ -682,6 +682,30 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 						this->selectedMarkerList.push_back(currMarker);
 					}
 				}
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					QObject* plugin = pMain.FragTracerQPluginPtr->instance();
+					V3DPluginInterface2_1* interface = qobject_cast<V3DPluginInterface2_1*>(plugin);
+					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(pMain.FragTracerPluginLoaderPtr);
+					string x = to_string(mouseEvt->x());
+					string y = to_string(mouseEvt->y());
+					
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "left";
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					interface->dofunc("mouse_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0);
+				}
 			}
 
             return false;
@@ -752,7 +776,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             else
             {
 				// ----------------- The following is intended to solve erroneous zoomed-in block when mouse is clicked outside the image cube. ---------------------------
-				// ----------------- The original approach has been disabled. (Ln 739 - Ln 775), only used when double-click event is far from the nearest SWC node ------- 
 				// ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
 				NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
 				double dist;
@@ -760,44 +783,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
 				cout << " === distance: " << dist << endl;
 				// --------------------------------------------------------------------------------------------------------------------------------------------------------
-
-                /*XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
-                XYZ convertedSWC;
-                convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
-                QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
-                QList<NeuronSWC>::iterator globalSWCIt = this->treeGlobalCoords.listNeuron.begin();
-                float distSqr = 100000000; // <======= change distance threshold parameter here
-                float selectedSWCX = 0, selectedSWCY = 0, selectedSWCZ = 0;
-                cout << "  Start examining SWC node (current distance threshold on 2D local plane: 10)";
-
-                long int count = 0;
-                for (QList<NeuronSWC>::iterator it = localNodeList.begin(); it != localNodeList.end(); ++it)
-                {
-                    ++count;
-                    if (count % 1000 == 0) cout << ".";
-                    float currDistSqr = (it->x - localMouse.x) * (it->x - localMouse.x) + (it->y - localMouse.y) * (it->y - localMouse.y);
-                    if (currDistSqr < distSqr)
-                    {
-                        //cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
-                        //cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
-                        
-						distSqr = currDistSqr;
-                        convertedSWC.x = it->x;
-                        convertedSWC.y = it->y;
-                        convertedSWC.z = it->z;
-                        selectedSWCX = globalSWCIt->x;
-                        selectedSWCY = globalSWCIt->y;
-                        selectedSWCZ = globalSWCIt->z;
-                    }
-
-                    ++globalSWCIt;
-                }
-                cout << endl << "  SWC node examination done." << endl;
-				cout << " === original mouse event x: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
-                cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
-                cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
-				cout << " === converted SWC node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
-				cout << " === nearest distance to mouse click: " << distSqr << endl;*/
 		
                 if (dist > 100)
                 {
