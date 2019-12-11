@@ -145,7 +145,7 @@ void ManageSocket::onReadyRead()
 
             QListWidget *filelistWidget=new QListWidget;
             filelistWidget->setWindowTitle("choose annotation file ");
-            filelistWidget->setGeometry(400,400,100,200);
+            filelistWidget->setGeometry(400,400,500,700);
 //            QVBoxLayout mainlayout(widget);
 
 //            mainlayout.addWidget(filelistWidget);
