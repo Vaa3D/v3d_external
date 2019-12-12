@@ -119,7 +119,7 @@ PMain* PMain::getInstance()
     else
     {
         tf::warning("TeraFly not yet instantiated", __itm__current__function__);
-        QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
+        //QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
 		return 0;
     }
 }

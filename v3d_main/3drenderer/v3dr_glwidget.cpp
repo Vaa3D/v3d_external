@@ -134,8 +134,10 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 	this->data_title = title;
 	this->renderer = 0;
     this->show_progress_bar = true;
-	terafly::PMain& pMain = *(terafly::PMain::getInstance());
-	this->TeraflyCommunicator = pMain.Communicator;
+
+	terafly::PMain* pMain = terafly::PMain::getInstance();
+	if (pMain)
+		this->TeraflyCommunicator = pMain->Communicator;
 	SetupCollaborateInfo();
 	
 	///////////////////////////////////////////////////////////////
@@ -1820,7 +1822,7 @@ void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 			this->collaborationMaxResolution = XYZ(img4d->getXDim(),img4d->getYDim(),img4d->getZDim());
 			this->Resindex = -1;
 			cout<<"CViewer::getCurrent()->volResIndex;   "<<this->Resindex<<endl;
-			this->doimageVRView(true);
+			this->doimageVRView(false);
 			//cur_win->storeAnnotations();
 			//this->show();		
 
