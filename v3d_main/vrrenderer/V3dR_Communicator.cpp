@@ -305,6 +305,7 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
                             +" "+QString::number(ImageCurRes.z));
+    AutoTraceNode=XYZ(global_node.x,global_node.y,global_node.z);
     onReadySend(nodeMSG);
 
 }
