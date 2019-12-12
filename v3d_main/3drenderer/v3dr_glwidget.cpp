@@ -4325,6 +4325,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 {
     qDebug()<<"in collaAddseg";
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
+    if (qsl.size()<=1) return;
 
     NeuronTree newTempNT;
     newTempNT.listNeuron.clear();

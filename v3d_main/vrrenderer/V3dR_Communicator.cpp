@@ -547,6 +547,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 }
             }
             QString temp1=messageRex.cap(2).trimmed();
+
             QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
             if(flag_init==0)
             {
@@ -554,7 +555,6 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
                 else
                 {
-                    qDebug()<<"hgh";
                     emit addSeg(temp1,colortype);
                 }
             }else {
