@@ -392,7 +392,6 @@ void V3dR_Communicator::onReadyRead()
                 emit msgtoprocess(line);
         }else
         {
-//            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
             return ;
         }
 
