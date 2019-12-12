@@ -354,19 +354,11 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//list of nodes: seg header_node 1_node 2.....
             qDebug()<<MSGs[0];
             QString message;
+            if(MSGs.size()<=1) return;
 
             qDebug()<<"======================messageindex in TeraVr begin=================";
 
             int colortype=21;
-//            for(int i=0;i<VR_Communicator->Agents.size();i++)
-//            {
-//                if(user == VR_Communicator->Agents.at(i).name)
-//                {
-//                    colortype=VR_Communicator->Agents.at(i).colorType;
-//                    break;
-//                }
-//            }
-
             for(int i=1;i<MSGs.size();i++)
             {
                 QString PointMSG=MSGs.at(i);
