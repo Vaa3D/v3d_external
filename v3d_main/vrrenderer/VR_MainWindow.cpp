@@ -243,16 +243,21 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList markerMSGs = markerRex.cap(2).split(" ");
             if(markerMSGs.size()<3)
             {
-                qDebug()<<"size < 4";
+                qDebug()<<"size < 3";
                 return;
             }
 
             float mx = markerMSGs.at(0).toFloat();
             float my = markerMSGs.at(1).toFloat();
             float mz = markerMSGs.at(2).toFloat();
-            int resx = markerMSGs.at(3).toFloat();
-            int resy = markerMSGs.at(4).toFloat();
-            int resz = markerMSGs.at(5).toFloat();
+            int resx,resy,resz;
+
+            if(markerMSGs.size()>3)
+            {
+                 resx = markerMSGs.at(3).toFloat();
+                 resy = markerMSGs.at(4).toFloat();
+                 resz = markerMSGs.at(5).toFloat();
+            }
 			if (pMainApplication)
 			{
 				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
@@ -291,7 +296,7 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
             if(delmarkerPOS.size()<3)
             {
-                qDebug()<<"size < 4";
+                qDebug()<<"size < 3";
                 return;
             }
             QString user = delmarkerRex.cap(1);
@@ -349,19 +354,11 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//list of nodes: seg header_node 1_node 2.....
             qDebug()<<MSGs[0];
             QString message;
+            if(MSGs.size()<=1) return;
 
             qDebug()<<"======================messageindex in TeraVr begin=================";
 
             int colortype=21;
-//            for(int i=0;i<VR_Communicator->Agents.size();i++)
-//            {
-//                if(user == VR_Communicator->Agents.at(i).name)
-//                {
-//                    colortype=VR_Communicator->Agents.at(i).colorType;
-//                    break;
-//                }
-//            }
-
             for(int i=1;i<MSGs.size();i++)
             {
                 QString PointMSG=MSGs.at(i);
@@ -372,13 +369,14 @@ void VR_MainWindow::TVProcess(QString line)
                         +" "+QString::number(LocCoords.y)+" "+QString::number(LocCoords.z)+" "+poingmsg[5]+" ");
                 if(i==1)
                 {
-                    colortype=poingmsg[1].toInt();
                     message+=QString::number(-1);
+                    colortype=poingmsg[1].toInt();
                     if(MSGs[0].split(" ").at(0)=="TeraVR"||MSGs[0].split(" ").at(0)=="TeraFly")
                     {
+
 //                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
                         XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype,1);
                     }
                 }
                 else

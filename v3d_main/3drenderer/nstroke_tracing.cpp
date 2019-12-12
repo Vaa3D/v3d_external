@@ -3311,7 +3311,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 		vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
 		cout << "DeleteNodes.size = " << DeleteNodes.size() << endl;
 		w->SetupCollaborateInfo();
-        w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+//        w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);//ask QiLi
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
 	}

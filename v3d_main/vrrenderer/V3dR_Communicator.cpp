@@ -96,7 +96,6 @@ void ManageSocket::onReadyRead()
 			QMessageBox::information(0, tr("information"),tr("login successfully."));
 		}else if (LogoutRex.indexIn(manageMsg)!=-1)
 		{
-            qDebug()<<"test in logout";
 			this->disconnectFromHost();
 		}else if(ImportRex.indexIn(manageMsg)!=-1)
 		{
@@ -392,7 +391,7 @@ void V3dR_Communicator::onReadyRead()
                 emit msgtoprocess(line);
         }else
         {
-            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
+//            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
             return ;
         }
 
@@ -548,6 +547,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 }
             }
             QString temp1=messageRex.cap(2).trimmed();
+
             QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
             if(flag_init==0)
             {
@@ -555,7 +555,6 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
                 else
                 {
-                    qDebug()<<"hgh";
                     emit addSeg(temp1,colortype);
                 }
             }else {

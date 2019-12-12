@@ -1889,7 +1889,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 
 
 //    if (/*reply == QMessageBox::Yes*/true)
-    if(bCanCoMode)
+    if(bCanCoMode&&TeraflyCommunicator)
 	{
 		if (TeraflyCommunicator )
 		{
@@ -4327,6 +4327,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 {
     qDebug()<<"in collaAddseg";
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
+    if (qsl.size()<=1) return;
 
     NeuronTree newTempNT;
     newTempNT.listNeuron.clear();
@@ -4363,7 +4364,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
             S_temp.n=temp[0].toLongLong();
-            S_temp.type=18;
+            S_temp.type=temp[1].toInt();
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();
@@ -4385,7 +4386,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraAI")
         {
             S_temp.n=i;
-            S_temp.type=temp[1].toInt();
+            S_temp.type=18;
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();
@@ -4400,14 +4401,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=0;
             S_temp.timestamp=0;
             S_temp.tfresindex=0;
-            if(i==1)
-            {
-                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
-            }
-            if(i==qsl.size()-1)
-            {
-                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
-            }
+
         }
         newTempNT.listNeuron.append(S_temp);
         newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);

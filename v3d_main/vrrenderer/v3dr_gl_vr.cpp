@@ -2279,21 +2279,34 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 	
 }
 
-bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type)
+bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type,bool asg)
 {
 	// bool deletedmarker=false;
 	//remove the marker in list 
+    qDebug()<<"(x,y,z)"<<x<<" "<<y<<" "<<z;
 		for(int i=0;i<drawnMarkerList.size();i++)
 		{
 			ImageMarker markertemp = drawnMarkerList.at(i);
-			float dist;
+            float dist=10000;
 			if(isOnline == false )
-				dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+            {
+                qDebug()<<"jkhkjhjk";
+                dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+            }
 			else 
 			{
-				XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
-				XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
-				dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+                qDebug()<<"123ada";
+                if(!asg)
+                {
+                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+                    dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+                }else
+                {
+//                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+                    dist = glm::sqrt((TaegetMarkx.x- x)*(TaegetMarkx.x- x)+(TaegetMarkx.y- y)*(TaegetMarkx.y- y)+(TaegetMarkx.z- z)*(TaegetMarkx.z- z));
+                }
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
             if(dist < /*(dist_thres/m_globalScale*5)*/8.0)

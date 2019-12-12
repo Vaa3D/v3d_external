@@ -966,11 +966,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	teraflyVRView->setToolTip("You can see current image in VR environment.");
 
     collaborationVRView = new QPushButton("Collaborate in VR",0);
+    collaborationVRView->setDisabled(true);
     collaborationVRView->setToolTip("Start collaboration mode with VR.");
 	
     collautotrace=new QPushButton("start autotrace",0);//HL
     collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
-
+    collautotrace->setDisabled(true);
 	QWidget* VR_buttons = new QWidget();
 	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
     VR_buttons_layout->addWidget(teraflyVRView, 1);//HL
@@ -3978,7 +3979,7 @@ void PMain::login()
     QString manageserver_Port;
     QString userName;
 
-    teraflyVRView->setDisabled(true);
+
     if(!ok1||serverName.isEmpty())
     {
         qDebug()<<"WRONG!EMPTY! ";
@@ -4098,11 +4099,15 @@ void PMain::load()
 
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
+        teraflyVRView->setDisabled(true);
+        collaborationVRView->setEnabled(true);
+        collautotrace->setEnabled(1);
         qDebug()<<"-----------------load annotation----------";
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
 		Communicator = new V3dR_Communicator;
 
         disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+        connect(managesocket,SIGNAL(disconnected()),Communicator->socket,SLOT(disconnectFromHost()));
         connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
 //        disconnect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
@@ -4140,6 +4145,7 @@ void PMain::load()
 		int maxresindex = CImport::instance()->getResolutions()-1;
 		VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
 		Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
+
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4159,6 +4165,9 @@ void PMain::deleteManageSocket()
     downAction->setEnabled(false);
     importAction->setEnabled(false);
     loadAction->setEnabled(false);
+    collaborationVRView->setDisabled(true);
+    collautotrace->setDisabled(1);
+    teraflyVRView->setEnabled(true);
     return;
 }
 
