@@ -356,7 +356,7 @@ void V3dR_Communicator::onReadyRead()
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_7);
     QString line;
-    int i=0;
+//    int i=0;
 
     while(1)
     {
@@ -376,7 +376,8 @@ void V3dR_Communicator::onReadyRead()
         if(nextblocksize>0&&socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
-            i++;
+            qDebug()<<line;
+//            i++;
             nextblocksize=0;
             QStringList iniaial_list=line.split(",");
 
@@ -385,6 +386,7 @@ void V3dR_Communicator::onReadyRead()
             {
                 for(int i=0;i<cnt;i++)
                 {
+
                     TFProcess(iniaial_list.at(i),1);
                 }
             }
