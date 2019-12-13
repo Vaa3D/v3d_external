@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -58,8 +58,9 @@
 # include <algorithm>
 #include <QMessageBox>
 #include <QFile>
+#ifdef __ALLOW_VR_FUNCS__
 #include "../../../../vrrenderer/V3dR_Communicator.h"
-
+#endif
 
 
 #include "../../v3d/CustomDefine.h"
@@ -236,7 +237,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
-
+#ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
         collaborateMenu=menuBar->addMenu("Collaborate");
         loginAction=new QAction("Login",this);
@@ -262,7 +263,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         downAction->setEnabled(false);
         loadAction->setEnabled(false);
         managesocket=0;
-
+#endif
     /*---------------------------------------------------*/
 
     /* ------------------------- "Options" menu -------------------------- */
@@ -3949,6 +3950,7 @@ void PMain::getCurrentImgOrigin(int origin[])
 	origin[2] = this->D0_sbox->value();
 }
 
+#ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
 {
@@ -4040,7 +4042,7 @@ void PMain::login()
     else{
         qDebug()<<"send:"<<QString(userName+":login."+"\n");
         connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
+//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
 
         managesocket->write(QString(userName+":login."+"\n").toUtf8());
@@ -4126,7 +4128,7 @@ void PMain::deleteManageSocket()
 {
     qDebug()<<"delete managesocket";
     qDebug()<<managesocket;
-//    managesocket->deleteLater();
+    managesocket->deleteLater();
 //    delete managesocket;
 //    managesocket=NULL;
 //    managesocket->deleteLater();
@@ -4200,4 +4202,6 @@ void PMain::ColLoadANO(QString ANOfile)
 
     }
 }
+
+#endif
 

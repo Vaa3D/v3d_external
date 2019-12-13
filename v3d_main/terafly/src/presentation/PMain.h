@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -42,14 +42,16 @@
 #include "QGLRefSys.h"
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
+#ifdef __ALLOW_VR_FUNCS__
 #include "fileserver.h"
+
 
 
 /*----------------collaborate mdoe-------------------*/
 class ManageSocket;
 class V3dR_Communicator;
 /*---------------------------------------------------*/
-
+#endif
 class terafly::PMain : public QWidget
 {
     Q_OBJECT
@@ -589,7 +591,7 @@ class terafly::PMain : public QWidget
         * Carries progress bar informations (progress percentage and remaining minutes).
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
-
+#ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 public:
         ManageSocket * managesocket;
@@ -611,6 +613,7 @@ public slots:
         void ColLoadANO(QString ANOfile);
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
+#endif
 };
 
 #endif // PMAIN_GUI_H
