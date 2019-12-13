@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -6181,18 +6181,14 @@ void XFormWidget::doMenuOf3DViewer()
 //		v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
 //		return;
 //	}
-    qDebug()<<"kjgkjgk";
 	try
 	{
-        qDebug()<<"jhj12";
 		menu3DViewer.exec(QCursor::pos());
-        qDebug()<<"jhj";
 	}
 	catch (...)
 	{
 		v3d_msg("Fail to run the XFormWidget::doMenuOf3DViewer() function.\n", 0);
 	}
-    qDebug()<<"jhjsadas";
 
 }
 

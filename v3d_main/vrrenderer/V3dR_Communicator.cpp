@@ -295,7 +295,7 @@ void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 	cout << "send delete over success" << endl;
 }
 
-void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
+void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z,int type)
 {
 
 
@@ -304,7 +304,8 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
-                            +" "+QString::number(ImageCurRes.z));
+                            +" "+QString::number(ImageCurRes.z)+" "+QString::number(type));
+    AutoTraceNode=XYZ(global_node.x,global_node.y,global_node.z);
     onReadySend(nodeMSG);
 
 }
@@ -355,7 +356,7 @@ void V3dR_Communicator::onReadyRead()
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_7);
     QString line;
-    int i=0;
+//    int i=0;
 
     while(1)
     {
@@ -375,7 +376,8 @@ void V3dR_Communicator::onReadyRead()
         if(nextblocksize>0&&socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
-            i++;
+            qDebug()<<line;
+//            i++;
             nextblocksize=0;
             QStringList iniaial_list=line.split(",");
 
@@ -384,6 +386,7 @@ void V3dR_Communicator::onReadyRead()
             {
                 for(int i=0;i<cnt;i++)
                 {
+
                     TFProcess(iniaial_list.at(i),1);
                 }
             }
@@ -391,7 +394,6 @@ void V3dR_Communicator::onReadyRead()
                 emit msgtoprocess(line);
         }else
         {
-//            qDebug()<<"byte < nextblocksize("<<nextblocksize<<")";
             return ;
         }
 

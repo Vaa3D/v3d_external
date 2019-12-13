@@ -2283,19 +2283,19 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
 {
 	// bool deletedmarker=false;
 	//remove the marker in list 
-    qDebug()<<"(x,y,z)"<<x<<" "<<y<<" "<<z;
+//    qDebug()<<"(x,y,z)"<<x<<" "<<y<<" "<<z;
 		for(int i=0;i<drawnMarkerList.size();i++)
 		{
 			ImageMarker markertemp = drawnMarkerList.at(i);
             float dist=10000;
 			if(isOnline == false )
             {
-                qDebug()<<"jkhkjhjk";
+//                qDebug()<<"jkhkjhjk";
                 dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
             }
 			else 
 			{
-                qDebug()<<"123ada";
+//                qDebug()<<"123ada";
                 if(!asg)
                 {
                     XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
