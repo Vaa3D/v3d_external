@@ -430,7 +430,8 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
             CImport::instance()->getVolume(volResIndex)->getDIM_V(), CImport::instance()->getVolume(volResIndex)->getDIM_D(),
             volH0+1, volH1, volV0+1, volV1, volD0+1, volD1, volT0, volT1, nchannels);
     this->title = ctitle;
-    sprintf(ctitle, "ID(%d), Res{%d}, Vol{[%d,%d) [%d,%d) [%d,%d) [%d,%d]}", ID, volResIndex, volH0, volH1, volV0, volV1, volD0, volD1, volT0, volT1);
+	sprintf(ctitle, "ID(%d), Res{%d}, Vol{[%d,%d) [%d,%d) [%d,%d) [%d,%d]}", ID, volResIndex, volH0, volH1, volV0, volV1, volD0, volD1, volT0, volT1);
+
     this->titleShort = ctitle;
     V0_sbox_min = V0_sbox_val = V1_sbox_max = V1_sbox_val =
     H0_sbox_min = H0_sbox_val = H1_sbox_max = H1_sbox_val =
@@ -1071,6 +1072,16 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
 
     qDebug()<<"call newViewer ... ... ";
+
+	/* ======= Locating image block orign in global coordinates for Fragment Tracer, MK, Dec, 2019 ======= */
+	{
+		PMain& pMain = *(PMain::getInstance());
+		pMain.globalXlb = volH0 * volResIndex;
+		pMain.globalYlb = volV0 * volResIndex;
+		pMain.globalZlb = volD0 * volResIndex;
+		cout << endl << "  *** " << volH0 << " " << volV0 << " " << volD0 << endl;
+	}
+	/* =================================================================================================== */
 
     // check precondition #1: active window
     if(!_isActive || toBeClosed)

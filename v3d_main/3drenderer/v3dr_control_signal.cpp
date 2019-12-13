@@ -1202,25 +1202,43 @@ void V3dR_MainWindow::setXCutLockIcon(bool b)
 {
 	if (! xcLock)  return;
 	if (b)
+	{
 		xcLock->setIcon(QIcon(":/pic/Lockon.png"));
+		glWidget->getXlockStatus(true);
+	}
 	else
+	{
 		xcLock->setIcon(QIcon(":/pic/Lockoff.png"));
+		glWidget->getXlockStatus(false);
+	}
 }
 void V3dR_MainWindow::setYCutLockIcon(bool b)
 {
 	if (! ycLock)  return;
 	if (b)
+	{
 		ycLock->setIcon(QIcon(":/pic/Lockon.png"));
+		glWidget->getYlockStatus(true);
+	}
 	else
+	{
 		ycLock->setIcon(QIcon(":/pic/Lockoff.png"));
+		glWidget->getYlockStatus(false);
+	}
 }
 void V3dR_MainWindow::setZCutLockIcon(bool b)
 {
 	if (! zcLock)  return;
 	if (b)
+	{
 		zcLock->setIcon(QIcon(":/pic/Lockon.png"));
+		glWidget->getZlockStatus(true);
+	}
 	else
+	{
 		zcLock->setIcon(QIcon(":/pic/Lockoff.png"));
+		glWidget->getZlockStatus(false);
+	}
 }
 
 

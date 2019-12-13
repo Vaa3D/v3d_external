@@ -3942,6 +3942,13 @@ void PMain::setLockMagnification(bool locked)
 
 }
 
+void PMain::getCurrentImgOrigin(int origin[])
+{
+	origin[0] = this->V0_sbox->value();
+	origin[1] = this->H0_sbox->value();
+	origin[2] = this->D0_sbox->value();
+}
+
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
 {

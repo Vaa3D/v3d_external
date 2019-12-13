@@ -234,6 +234,11 @@ public:
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
 	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
 	virtual void refreshSelectedMarkers();
+	virtual int getTeraflyResLevel();
+	virtual void getOriginFromPMain(int origin[]);
+	virtual bool getXlockStatus();
+	virtual bool getYlockStatus();
+	virtual bool getZlockStatus();
 
 	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);

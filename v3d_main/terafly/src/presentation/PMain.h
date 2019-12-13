@@ -299,6 +299,7 @@ class terafly::PMain : public QWidget
         QProgressBar* getProgressBar(){return progressBar;}
         QStatusBar* getStatusBar(){return statusBar;}
         std::string getAnnotationPathRLU(){return annotationsPathLRU;}
+		void getCurrentImgOrigin(int origin[]);
 
         //resets progress bar, start/stop buttons and tab bar
         void resetGUI();
@@ -371,6 +372,7 @@ class terafly::PMain : public QWidget
 		QPluginLoader* FragTracerQPluginPtr;
 		V3d_PluginLoader* FragTracerPluginLoaderPtr;
 		int globalXlb, globalXhb, globalYlb, globalYhb, globalZlb, globalZhb;
+		bool xLockStatus, yLockStatus, zLockStatus;
 		/*************************************************************/
 
     public slots:
