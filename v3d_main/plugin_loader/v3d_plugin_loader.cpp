@@ -1759,6 +1759,31 @@ void V3d_PluginLoader::refreshSelectedMarkers()
 	terafly::PluginInterface::refreshSelectedMarkers();
 }
 
+int V3d_PluginLoader::getTeraflyResLevel()
+{
+	return terafly::PluginInterface::getTeraflyResLevel();
+}
+
+void V3d_PluginLoader::getOriginFromPMain(int origin[])
+{
+	terafly::PluginInterface::getOriginFromPMain(origin);
+}
+
+bool V3d_PluginLoader::getXlockStatus()
+{
+	return terafly::PluginInterface::getXlockStatus();
+}
+
+bool V3d_PluginLoader::getYlockStatus()
+{
+	return terafly::PluginInterface::getYlockStatus();
+}
+
+bool V3d_PluginLoader::getZlockStatus()
+{
+	return terafly::PluginInterface::getZlockStatus();
+}
+
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {

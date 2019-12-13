@@ -568,6 +568,24 @@ void tf::PluginInterface::changeFragTraceStatus(bool newStatus)
 	pMain.fragTracePluginInstance = newStatus;
 }
 
+bool tf::PluginInterface::getXlockStatus()
+{
+	PMain& pMain = *(PMain::getInstance());
+	return pMain.xLockStatus;
+}
+
+bool tf::PluginInterface::getYlockStatus()
+{
+	PMain& pMain = *(PMain::getInstance());
+	return pMain.yLockStatus;
+}
+
+bool tf::PluginInterface::getZlockStatus()
+{
+	PMain& pMain = *(PMain::getInstance());
+	return pMain.zLockStatus;
+}
+
 void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const float& value)
 {
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
@@ -577,15 +595,21 @@ void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const 
 bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
 {
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
-	
+	PMain& pMain = *(PMain::getInstance());
+
 	if (!currViewerPtr->volumeCutSbAdjusted) return false;
 
-	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
+	if (pMain.xLockStatus) globalCoords[0] = pMain.globalXlb;
+	if (pMain.yLockStatus) globalCoords[2] = pMain.globalYlb;
+	if (pMain.zLockStatus) globalCoords[4] = pMain.globalZlb;
+	cout << "    ---- global image origin: " << globalCoords[0] << " " << globalCoords[2] << " " << globalCoords[4] << endl;
+
+	/*globalCoords[0] = PDialogProofreading::instance()->xCoordl;
 	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
 	globalCoords[2] = PDialogProofreading::instance()->yCoordl;
 	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
 	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
-	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
+	globalCoords[5] = PDialogProofreading::instance()->zCoordh;*/
 
 	displayingVolDims[0] = currViewerPtr->getXDim();
 	displayingVolDims[1] = currViewerPtr->getYDim();
@@ -627,5 +651,20 @@ void tf::PluginInterface::refreshSelectedMarkers()
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
 	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
 		it->selected = false;
+}
+
+int tf::PluginInterface::getTeraflyResLevel()
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	return currViewerPtr->getResIndex();
+}
+
+void tf::PluginInterface::getOriginFromPMain(int origin[])
+{
+	PMain& pMain = *(PMain::getInstance());
+	pMain.getCurrentImgOrigin(origin);
+
+	PDialogProofreading* proofReadingPtr = PDialogProofreading::instance();
+
 }
 // -------------------------------------------------------------------------------------------------------- //

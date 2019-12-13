@@ -430,10 +430,14 @@ public slots:
 
 	// Brain atlas app, MK, July 2019
 	virtual void callUpBrainAtlas();
-
     virtual void toggleEditMode();
     virtual void setEditMode();
     virtual void updateColorMode(int mode);
+
+	// Volume cut lock status for fragment tracing, MK, Dec, 2019
+	virtual void getXlockStatus(bool status);
+	virtual void getYlockStatus(bool status);
+	virtual void getZlockStatus(bool status);
 
 
 //----------------------------------------------------------------------------------------

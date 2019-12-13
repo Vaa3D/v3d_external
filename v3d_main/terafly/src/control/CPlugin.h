@@ -945,6 +945,11 @@ class terafly::PluginInterface
 		static bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
 		static void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
 		static void refreshSelectedMarkers();
+		static int getTeraflyResLevel();
+		static void getOriginFromPMain(int origin[]);
+		static bool getXlockStatus();
+		static bool getYlockStatus();
+		static bool getZlockStatus();
 		// ------------------------------------------------------------------ //
 };
 
