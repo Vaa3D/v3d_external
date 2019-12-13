@@ -295,7 +295,7 @@ void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 	cout << "send delete over success" << endl;
 }
 
-void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
+void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z,int type)
 {
 
 
@@ -304,7 +304,7 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z)
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
-                            +" "+QString::number(ImageCurRes.z));
+                            +" "+QString::number(ImageCurRes.z)+" "+QString::number(type));
     AutoTraceNode=XYZ(global_node.x,global_node.y,global_node.z);
     onReadySend(nodeMSG);
 
