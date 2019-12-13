@@ -1073,16 +1073,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 
     qDebug()<<"call newViewer ... ... ";
 
-	/* ======= Locating image block orign in global coordinates for Fragment Tracer, MK, Dec, 2019 ======= */
-	{
-		PMain& pMain = *(PMain::getInstance());
-		pMain.globalXlb = volH0 * volResIndex;
-		pMain.globalYlb = volV0 * volResIndex;
-		pMain.globalZlb = volD0 * volResIndex;
-		cout << endl << "  *** " << volH0 << " " << volV0 << " " << volD0 << endl;
-	}
-	/* =================================================================================================== */
-
     // check precondition #1: active window
     if(!_isActive || toBeClosed)
     {
