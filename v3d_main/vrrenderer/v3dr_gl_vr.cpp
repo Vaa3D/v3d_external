@@ -2925,7 +2925,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				glm::vec2 ShootingPadUV = calculateshootingPadUV();
 				if(showshootingPad)
 				MenuFunctionChoose(ShootingPadUV);
-				else if(m_secondMenu!=_nothing&&(isOnline == false))
+				else if(m_secondMenu!=_nothing)
 				{
 					//todo liqi
 					ColorMenuChoose(ShootingPadUV);
