@@ -235,7 +235,6 @@ public:
 	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
 	virtual void refreshSelectedMarkers();
 	virtual int getTeraflyResLevel();
-	virtual void getOriginFromPMain(int origin[]);
 	virtual bool getXlockStatus();
 	virtual bool getYlockStatus();
 	virtual bool getZlockStatus();

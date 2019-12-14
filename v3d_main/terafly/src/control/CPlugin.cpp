@@ -599,17 +599,14 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 
 	if (!currViewerPtr->volumeCutSbAdjusted) return false;
 
-	if (pMain.xLockStatus) globalCoords[0] = pMain.globalXlb;
-	if (pMain.yLockStatus) globalCoords[2] = pMain.globalYlb;
-	if (pMain.zLockStatus) globalCoords[4] = pMain.globalZlb;
-	cout << "    ---- global image origin: " << globalCoords[0] << " " << globalCoords[2] << " " << globalCoords[4] << endl;
-
-	/*globalCoords[0] = PDialogProofreading::instance()->xCoordl;
+	// This part is currently not being used by the caller due to incorrect image origin when volume cut lock is on -- //
+	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
 	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
 	globalCoords[2] = PDialogProofreading::instance()->yCoordl;
 	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
 	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
-	globalCoords[5] = PDialogProofreading::instance()->zCoordh;*/
+	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
+	// --------------------------------------------------------------------------------------------------------------- //
 
 	displayingVolDims[0] = currViewerPtr->getXDim();
 	displayingVolDims[1] = currViewerPtr->getYDim();
@@ -657,14 +654,5 @@ int tf::PluginInterface::getTeraflyResLevel()
 {
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
 	return currViewerPtr->getResIndex();
-}
-
-void tf::PluginInterface::getOriginFromPMain(int origin[])
-{
-	PMain& pMain = *(PMain::getInstance());
-	pMain.getCurrentImgOrigin(origin);
-
-	PDialogProofreading* proofReadingPtr = PDialogProofreading::instance();
-
 }
 // -------------------------------------------------------------------------------------------------------- //

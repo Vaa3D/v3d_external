@@ -1764,11 +1764,6 @@ int V3d_PluginLoader::getTeraflyResLevel()
 	return terafly::PluginInterface::getTeraflyResLevel();
 }
 
-void V3d_PluginLoader::getOriginFromPMain(int origin[])
-{
-	terafly::PluginInterface::getOriginFromPMain(origin);
-}
-
 bool V3d_PluginLoader::getXlockStatus()
 {
 	return terafly::PluginInterface::getXlockStatus();
