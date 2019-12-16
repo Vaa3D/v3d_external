@@ -12,6 +12,7 @@
 //#endif
 #include "../neuron_editing/v_neuronswc.h"
 #include "../basic_c_fun/v3d_interface.h"
+#include "fileserver.h"
 
 
 struct Agent {
@@ -34,6 +35,7 @@ private:
     QString anopath;
     QString anoname;
 };
+
 //class CMainApplication;
 class My4DImage;
 class MainWindow;

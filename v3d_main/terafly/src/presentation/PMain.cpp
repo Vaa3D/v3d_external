@@ -4110,10 +4110,6 @@ void PMain::load()
         connect(managesocket,SIGNAL(disconnected()),Communicator->socket,SLOT(disconnectFromHost()));
         connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-//        disconnect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
-//        connect(Communicator,SIGNAL(disconnected()),Communicator,SLOT(message_Disconnected()));
-//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT(deleteLater()));
-
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
         connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
@@ -4210,26 +4206,24 @@ void PMain::ColLoadANO(QString ANOfile)
             tmp=anoExp.cap(1);
         }
 
-
-
         //delete load .ANO
-//        QFile *f = new QFile(tmp+".ano");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
+        QFile *f = new QFile(tmp+".ano");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
 
-//        f = new QFile(tmp+".ano.eswc");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
+        f = new QFile(tmp+".ano.eswc");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
 
-//        f = new QFile(tmp+".ano.apo");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
+        f = new QFile(tmp+".ano.apo");
+        if(f->exists())
+            f->remove();
+        delete f;
+        f=0;
         emit startASK(1000);
 
     }
@@ -4248,7 +4242,6 @@ void PMain::startAutoTrace()
         }
 
         XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
-//        XYZ endPoint;//Global
         XYZ center;//Global
 
         center.x=tempNode.x;center.y=tempNode.y;
@@ -4268,13 +4261,6 @@ void PMain::startAutoTrace()
         startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
         tmp1.push_back(startPoint);
         writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
-
-//        qDebug()<<"tempNode:"<<tempNode.x-128<<" "<<tempNode.y-128<<" "<<tempNode.z;
-//        qDebug()<<"center:"<<(center.x)<<" "<<(center.y)<<" "<<(center.z);
-//        qDebug()<<"endNode:"<<tempNode.x+128<<" "<<tempNode.y+128<<" "<<tempNode.z+256*cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
-////        qDebug()<<"center:"<<(endPoint.x)<<" "<<(endPoint.y)<<" "<<(endPoint.z);
-//        qDebug()<<"startPoint:"<<(startPoint.x)<<" "<<(startPoint.y)<<" "<<(startPoint.z);
-
         XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
                         tempNode,
                         startPoint
