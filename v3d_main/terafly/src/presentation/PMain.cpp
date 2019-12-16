@@ -4107,8 +4107,8 @@ void PMain::load()
 		Communicator = new V3dR_Communicator;
 
         disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-        connect(managesocket,SIGNAL(disconnected()),Communicator->socket,SLOT(disconnectFromHost()));
-        connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
+//        connect(managesocket,SIGNAL(disconnected()),Communicator->socket,SLOT(disconnectFromHost()));//
+//        connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
         connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
