@@ -43,6 +43,7 @@ void FileSocket_receive::readFile()
             file.write(block);
             file.close();
             m_bytesreceived=0;
+            this->write(QString("received "+filename+"\n").toUtf8());
             QRegExp apoRex("(.*).apo");
             if(apoRex.indexIn(filename)!=-1)
             {
@@ -69,7 +70,7 @@ void FileSocket_receive::readFile()
                 file.write(block);
                 file.close();
                 m_bytesreceived=0;
-
+                this->write(QString("received "+filename+"\n").toUtf8());
                 QRegExp apoRex("(.*).apo");
                 if(apoRex.indexIn(filename)!=-1)
                 {
