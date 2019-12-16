@@ -1896,7 +1896,7 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
         qDebug()<<"createMarker2At setLandmark";
         V3D_env->setLandmark(window, vaa3dMarkers);
         V3D_env->pushObjectIn3DWindow(window);
-        qDebug()<<"sadasdfjklas";
+//        qDebug()<<"sadasdfjklas";
 
         //update visible markers
         PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
@@ -2080,7 +2080,7 @@ void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("obtaining the annotations within the current window").c_str(), __itm__current__function__);
     CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, vaa3dMarkers);
     CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, vaa3dCurves.listNeuron);
-    qDebug()<<"dasd";
+//    qDebug()<<"dasd";
 	// MK, April, 25, 2018 /////////////////////////////////////
 	this->treeGlobalCoords.listNeuron.clear();
 	this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;

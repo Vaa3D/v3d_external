@@ -300,9 +300,9 @@ void VR_MainWindow::TVProcess(QString line)
                 return;
             }
             QString user = delmarkerRex.cap(1);
-            float mx = delmarkerPOS.at(1).toFloat();
-            float my = delmarkerPOS.at(2).toFloat();
-            float mz = delmarkerPOS.at(3).toFloat();
+            float mx = delmarkerPOS.at(0).toFloat();
+            float my = delmarkerPOS.at(1).toFloat();
+            float mz = delmarkerPOS.at(2).toFloat();
             int resx = delmarkerPOS.at(3).toFloat();
             int resy = delmarkerPOS.at(4).toFloat();
             int resz = delmarkerPOS.at(5).toFloat();
@@ -373,10 +373,20 @@ void VR_MainWindow::TVProcess(QString line)
                     colortype=poingmsg[1].toInt();
                     if(MSGs[0].split(" ").at(0)=="TeraVR"||MSGs[0].split(" ").at(0)=="TeraFly")
                     {
+                        float mx = poingmsg[2].toFloat();
+                        float my = poingmsg[3].toFloat();
+                        float mz = poingmsg[4].toFloat();
+                        int resx = MSGs[0].split(" ").at(1).toInt();
+                        int resy = MSGs[0].split(" ").at(2).toInt();
+                        int resz = MSGs[0].split(" ").at(3).toInt();
 
-                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
-                        XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype,1);
+                        qDebug()<<"mx="<<mx<<" my="<<my<<" mz="<<mz<<" resx="<<resx<<" resy="<<resy<<" resz="<<resz;
+                        pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
+                        XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
+                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z,1);
+//                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
+//                        XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
+//                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype,1);
                     }
                 }
                 else

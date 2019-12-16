@@ -55,7 +55,7 @@ void FileSocket_send::readMSG()
         QRegExp swcRex("received (.*).eswc\n");
         QRegExp apoRex("received (.*).apo\n");
         QString MSG=QString::fromUtf8(this->readLine());
-        qDebug()<<"fileMSG:"<<MSG;
+//        qDebug()<<"fileMSG:"<<MSG;
         if(anoRex.indexIn(MSG)!=-1)
         {
             sendFile(anopath+".ano.eswc",anoname+".ano.eswc");
@@ -64,7 +64,7 @@ void FileSocket_send::readMSG()
             sendFile(anopath+".ano.apo",anoname+".ano.apo");
         }else if(apoRex.indexIn(MSG)!=-1)
         {
-            qDebug()<<"file upload is ok.";
+//            qDebug()<<"file upload is ok.";
             this->disconnectFromHost();
             QMessageBox::information(0, tr("information"),tr("import successfully."));
         }
@@ -266,7 +266,7 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z,int type)
 
 
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
-    qDebug()<<"global_node"<<global_node.x<<" "<<global_node.y<<" "<<global_node.z;
+//    qDebug()<<"global_node"<<global_node.x<<" "<<global_node.y<<" "<<global_node.z;
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
                             +QString::number(global_node.y)+" "+QString::number(global_node.z)
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
@@ -313,7 +313,8 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
 	}
 	else
 	{
-		qDebug()<<"The message is empty!";
+//		qDebug()<<"The message is empty!";
+        return;
 	}
 }
 
@@ -439,7 +440,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
         }
         else if(colorRex.indexIn(line) != -1) {
-            qDebug()<<"incolor";
+//            qDebug()<<"incolor";
             QStringList clrMSGs = colorRex.cap(1).split(" ");
 
             if(clrMSGs.size()<2) return;
@@ -449,7 +450,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             {
                 if(this->Agents.at(i).name!=user) continue;
                 this->Agents.at(i).colorType=clrtype.toInt();
-                qDebug()<<"user:"<<user<<" receievedColorTYPE="<<this->Agents.at(i).colorType;
+//                qDebug()<<"user:"<<user<<" receievedColorTYPE="<<this->Agents.at(i).colorType;
             }
         }
         else if (deletecurveRex.indexIn(line) != -1) {
@@ -539,7 +540,7 @@ void V3dR_Communicator::CollaborationMainloop(){
 }
 void V3dR_Communicator::onConnected() {
 
-    qDebug()<<"gere is onconnected.";
+//    qDebug()<<"gere is onconnected.";
     onReadySend(QString("/login:" +userName));
 
 }

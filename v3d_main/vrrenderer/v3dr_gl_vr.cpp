@@ -2290,12 +2290,10 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
             float dist=10000;
 			if(isOnline == false )
             {
-//                qDebug()<<"jkhkjhjk";
                 dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
             }
 			else 
 			{
-//                qDebug()<<"123ada";
                 if(!asg)
                 {
                     XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
