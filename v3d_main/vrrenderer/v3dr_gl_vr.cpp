@@ -2655,16 +2655,34 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _MovetoCreator:
 			{
-				if(isOnline == true)
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
 				{
-					if(CollaborationCreatorPos.x!=0&&CollaborationCreatorPos.y!=0&&CollaborationCreatorPos.z!=0)
+					for (size_t j = 0; j < 4; j++)
 					{
-						qDebug()<<"get creator pos";						
-						teraflyPOS = XYZ(CollaborationCreatorPos.x,CollaborationCreatorPos.y,CollaborationCreatorPos.z);//liqi
-						postVRFunctionCallMode = 9;
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
 					}
 				}
+				mat = glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
+				/*delmarkerPOS="";
+				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
+				markerPOS = "";
+				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+				bool IsmarkerValid = false;
+				break;
 			}
+		case _MovetoMarker:
+		{					
+			if (CollaborationCreatorPos.x != 0 && CollaborationCreatorPos.y != 0 && CollaborationCreatorPos.z != 0)
+			{
+				qDebug() << "get creator pos";
+				teraflyPOS = XYZ(CollaborationCreatorPos.x, CollaborationCreatorPos.y, CollaborationCreatorPos.z);//liqi
+				postVRFunctionCallMode = 9;
+				break;
+			}
+		}
 		case _RGBImage: //line width
 			{
 				if(temp_x>0)
@@ -4150,8 +4168,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		//grip right button is used to control linewidth for now
 		iLineWid+=2;
 		if(iLineWid>9){iLineWid = 1;}
-
-				
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
@@ -4809,6 +4825,7 @@ void CMainApplication::SetupControllerTexture()
 		case _ColorChange:// display "ok"
 		case _ResetImage://display"ok
 		case _MovetoCreator:
+		case _MovetoMarker:
 		case _TeraShift:
 			{//_TeraShift
 				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.5f,vcVerts);
@@ -4968,8 +4985,6 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.25f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.25f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.125f,vcVerts);
-
-
 				
 				break;
 			}
@@ -4991,7 +5006,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.5f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.5f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.375f,vcVerts);
-
+				
 			break;
 		}
 		case _AutoRotate:
@@ -5063,6 +5078,15 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_P.x,point_P.y,point_P.z,0.42,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
 			}
+		case _MovetoMarker:
+		{
+			AddVertex(point_M.x, point_M.y, point_M.z, 0.335, 0.76f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.76f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.875f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.875f, vcVerts);
+			AddVertex(point_P.x, point_P.y, point_P.z, 0.42, 0.875f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.76f, vcVerts);
+		}
 		case _UndoRedo:
 		default:
 			break;
@@ -8557,6 +8581,10 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
 		{
 			m_modeGrip_R = m_reducenodeMode;
+		}
+		else if ((panelpos_x >= 0.626) && (panelpos_x <= 0.806) && (panelpos_y >= 0.8) && (panelpos_y <= 1))
+		{
+			m_modeGrip_L = _MovetoMarker;
 		}
 		//else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		//{

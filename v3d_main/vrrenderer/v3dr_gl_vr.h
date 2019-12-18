@@ -47,13 +47,14 @@ enum ModeControlSettings
 	_UndoRedo,
 	_ColorChange,
 	_Surface,
-	_VirtualFinger,	
+	_VirtualFinger,
 	_Freeze,
 	_LineWidth,
 	_AutoRotate,
 	_ResetImage,
 	_RGBImage,
 	_MovetoCreator,
+	_MovetoMarker,
 	_StretchImage
 };
 enum ModeTouchPadR

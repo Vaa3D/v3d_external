@@ -174,20 +174,81 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->SetupCurrentUserInformation(userName.toStdString(), VR_Communicator->Agents.at(i).colorType);
             }
         }
-        else if(creatorRex.indexIn(line) != -1) {
-            qDebug()<<"get creator message";
-            QStringList creatorMSGs = creatorRex.cap(1).split(" ");
-            QString user=creatorMSGs.at(0);
-            QString creator_Res = creatorMSGs.at(1);
-            for(int i=0;i<VR_Communicator->Agents.size();i++)
-            {
-                qDebug()<<"creator name is "<<user;
-                if(VR_Communicator->Agents.at(i).name!=user) continue;
-                pMainApplication->collaboration_creator_name = user;
-                pMainApplication->collaboration_creator_res = creator_Res.toInt();
-                qDebug()<<"user:"<<user<<" receievedCreator"<<pMainApplication->collaboration_creator_name;
-                qDebug()<<"user:"<<user<<" receievedCreator res"<<pMainApplication->collaboration_creator_res;
-            }
+		else if (creatorRex.indexIn(line) != -1) {
+			QString user = creatorRex.cap(1);
+			QStringList markerMSGs = creatorRex.cap(2).split(" ");
+			if (markerMSGs.size() < 3)
+			{
+				qDebug() << "size < 3";
+				return;
+			}
+
+			float mx = markerMSGs.at(0).toFloat();
+			float my = markerMSGs.at(1).toFloat();
+			float mz = markerMSGs.at(2).toFloat();
+			int resx, resy, resz,res;
+
+			if (markerMSGs.size() > 3)
+			{
+				resx = markerMSGs.at(3).toFloat();
+				resy = markerMSGs.at(4).toFloat();
+				resz = markerMSGs.at(5).toFloat();
+				res = markerMSGs.at(6).toInt();
+
+			}
+			if (pMainApplication)
+			{
+
+				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
+				XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
+				if (user == userName)
+				{
+					pMainApplication->READY_TO_SEND = false;
+					CURRENT_DATA_IS_SENT = false;
+					qDebug() << "get message CURRENT_DATA_IS_SENT=false;";
+				}
+				int colortype = 3;
+				for (int i = 0; i < VR_Communicator->Agents.size(); i++)
+				{
+					if (user == VR_Communicator->Agents.at(i).name)
+					{
+						colortype = VR_Communicator->Agents.at(i).colorType;
+						break;
+					}
+				}
+				if (mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y || mz<VRVolumeStartPoint.z || mx>VRVolumeEndPoint.x || my>VRVolumeEndPoint.y || mz>VRVolumeEndPoint.z)
+				{
+					qDebug() << "marker out of size";
+					VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(colortype));
+					return;
+				}
+				bool IsmarkerValid = false;
+				IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+				cout << "IsmarkerValid is " << IsmarkerValid << endl;
+				if (!IsmarkerValid)
+				{
+
+					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+					pMainApplication->collaboration_creator_res = res;
+					pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+					
+				}
+			}
+
+
+            //qDebug()<<"get creator message";
+            //QStringList creatorMSGs = creatorRex.cap(1).split(" ");
+            //QString user=creatorMSGs.at(0);
+            //QString creator_Res = creatorMSGs.at(1);
+            //for(int i=0;i<VR_Communicator->Agents.size();i++)
+            //{
+            //    qDebug()<<"creator name is "<<user;
+            //    if(VR_Communicator->Agents.at(i).name!=user) continue;
+            //    pMainApplication->collaboration_creator_name = user;
+            //    pMainApplication->collaboration_creator_res = creator_Res.toInt();
+            //    qDebug()<<"user:"<<user<<" receievedCreator"<<pMainApplication->collaboration_creator_name;
+            //    qDebug()<<"user:"<<user<<" receievedCreator res"<<pMainApplication->collaboration_creator_res;
+            //}
 
         }
         else if (deletecurveRex.indexIn(line) != -1) {
@@ -604,6 +665,15 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			QString ConverteddragnodePOS = ConvertsendCoords(pMainApplication->dragnodePOS);
             VR_Communicator->onReadySend(QString("/drag_node:" + ConverteddragnodePOS ));
 			CURRENT_DATA_IS_SENT=true;
+		}
+
+		else if (pMainApplication->m_modeGrip_R == _MovetoCreator)
+		{
+			QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
+			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
+			QString QCmainResIndex = QString("%1").arg(pMainApplication->CmainResIndex);
+			VR_Communicator->onReadySend(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
+			CURRENT_DATA_IS_SENT = true;
 		}
 		//if(pMainApplication->READY_TO_SEND==true)
 		//	CURRENT_DATA_IS_SENT=true;
