@@ -1779,6 +1779,11 @@ bool V3d_PluginLoader::getZlockStatus()
 	return terafly::PluginInterface::getZlockStatus();
 }
 
+void V3d_PluginLoader::setEraseCursor(bool on_off)
+{
+	terafly::PluginInterface::setEraseCursor(on_off);
+}
+
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {

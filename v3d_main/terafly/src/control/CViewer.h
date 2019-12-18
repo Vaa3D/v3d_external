@@ -41,6 +41,7 @@
 #include "CImport.h"
 #include "v3d_imaging_para.h"
 #include "V3Dsubclasses.h"
+#include "TeraflyCommunicator.h"
 
 class terafly::CViewer : public QWidget
 {
@@ -361,6 +362,8 @@ class terafly::CViewer : public QWidget
         friend class QUndoMarkerDelete;
         friend class QUndoMarkerDeleteROI;
         friend class QUndoVaa3DNeuron;
+
+		friend class TeraflyCommunicator;
 
 
     public slots:

@@ -655,4 +655,12 @@ int tf::PluginInterface::getTeraflyResLevel()
 	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
 	return currViewerPtr->getResIndex();
 }
+
+void tf::PluginInterface::setEraseCursor(bool on_off)
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	V3dR_GLWidget* curr3DviewWidgetPtr = currViewerPtr->getGLWidget();
+	if (on_off) curr3DviewWidgetPtr->setCursor(Qt::BusyCursor);
+	else curr3DviewWidgetPtr->setCursor(Qt::ArrowCursor);
+}
 // -------------------------------------------------------------------------------------------------------- //

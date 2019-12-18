@@ -238,6 +238,7 @@ public:
 	virtual bool getXlockStatus();
 	virtual bool getYlockStatus();
 	virtual bool getZlockStatus();
+	virtual void setEraseCursor(bool on_off);
 
 	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);

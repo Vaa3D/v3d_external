@@ -950,6 +950,8 @@ class terafly::PluginInterface
 		static bool getXlockStatus();
 		static bool getYlockStatus();
 		static bool getZlockStatus();
+
+		static void setEraseCursor(bool on_off);
 		// ------------------------------------------------------------------ //
 };
 
