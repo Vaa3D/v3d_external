@@ -343,7 +343,7 @@ void V3dR_Communicator::onReadyRead()
         if(nextblocksize>0&&socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
-            qDebug()<<line;
+//            qDebug()<<line;
 //            i++;
             nextblocksize=0;
             QStringList iniaial_list=line.split(",");
