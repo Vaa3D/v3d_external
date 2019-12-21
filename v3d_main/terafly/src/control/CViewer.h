@@ -43,9 +43,10 @@
 #include "V3Dsubclasses.h"
 #include "TeraflyCommunicator.h"
 
-class terafly::CViewer : public QWidget
+class terafly::CViewer : public QWidget, TeraflyCommunicator
 {
     Q_OBJECT
+	Q_INTERFACES(TeraflyCommunicator)
 
     private:
 
@@ -180,6 +181,8 @@ class terafly::CViewer : public QWidget
 
 		QList<ImageMarker> selectedMarkerList;
 		QList<ImageMarker> selectedLocalMarkerList;
+
+		virtual void getCViewerInstanceTest(TeraflyCommunicator*& myCommunicator);
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.

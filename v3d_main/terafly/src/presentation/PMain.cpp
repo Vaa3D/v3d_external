@@ -1986,7 +1986,7 @@ void PMain::autosaveAnnotations()
             }
 
 
-            // clean older auto saved files, e.g. longer than 24 hours
+            // clean older auto saved files, e.g. currently set to be 3 days as per Yun.
             if(cleanOldAutosavedFiles)
             {
                 cleanOldAutosavedFiles = false;
@@ -2028,7 +2028,7 @@ void PMain::autosaveAnnotations()
                     //qDebug()<<curYear<<curMonth<<curDay<<" ... "<<fileYear<<fileMonth<<fileDay;
 
 
-                    if(abs(fileYearInt-curYearInt)>0 || abs(fileMonthInt-curMonthInt)>0 || abs(fileDayInt-curDayInt)>0)
+                    if(abs(fileYearInt-curYearInt)>0 || abs(fileMonthInt-curMonthInt)>0 || abs(fileDayInt-curDayInt)>3)
                     {
                         // qDebug()<<"delete file ...";
 

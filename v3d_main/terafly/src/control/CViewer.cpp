@@ -3223,3 +3223,8 @@ void CViewer::resetEvents()
     if(view3DWidget)
         view3DWidget->installEventFilter(this);
 }
+
+void CViewer::getCViewerInstanceTest(TeraflyCommunicator*& myCommunicator)
+{
+	myCommunicator = qobject_cast<TeraflyCommunicator*>(current);
+}
