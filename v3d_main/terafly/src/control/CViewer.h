@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -41,12 +41,12 @@
 #include "CImport.h"
 #include "v3d_imaging_para.h"
 #include "V3Dsubclasses.h"
-#include "TeraflyCommunicator.h"
+//#include "TeraflyCommunicator.h"
 
-class terafly::CViewer : public QWidget, TeraflyCommunicator
+class terafly::CViewer : public QWidget/*, TeraflyCommunicator*/
 {
     Q_OBJECT
-	Q_INTERFACES(TeraflyCommunicator)
+//	Q_INTERFACES(TeraflyCommunicator)
 
     private:
 
@@ -182,7 +182,7 @@ class terafly::CViewer : public QWidget, TeraflyCommunicator
 		QList<ImageMarker> selectedMarkerList;
 		QList<ImageMarker> selectedLocalMarkerList;
 
-		virtual void getCViewerInstanceTest(TeraflyCommunicator*& myCommunicator);
+//		virtual void getCViewerInstanceTest(TeraflyCommunicator*& myCommunicator);
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.
@@ -366,7 +366,7 @@ class terafly::CViewer : public QWidget, TeraflyCommunicator
         friend class QUndoMarkerDeleteROI;
         friend class QUndoVaa3DNeuron;
 
-		friend class TeraflyCommunicator;
+//		friend class TeraflyCommunicator;
 
 
     public slots:
