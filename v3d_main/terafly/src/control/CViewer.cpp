@@ -1,3 +1,4 @@
+
 //------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).
 // All rights reserved.
@@ -3224,7 +3225,7 @@ void CViewer::resetEvents()
         view3DWidget->installEventFilter(this);
 }
 
-void CViewer::getCViewerInstanceTest(TeraflyCommunicator*& myCommunicator)
-{
-	myCommunicator = qobject_cast<TeraflyCommunicator*>(current);
-}
+//void CViewer::getCViewerInstanceTest(TeraflyCommunicator*& myCommunicator)
+//{
+//	myCommunicator = qobject_cast<TeraflyCommunicator*>(current);
+//}
