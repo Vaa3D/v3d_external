@@ -277,7 +277,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../io/asc_to_swc.h \
     ../io/v3d_nrrd.h \
     ../terafly/src/presentation/theader.h \
-    CustomDefine.h \
 #    ./painting/shared/arthurstyle.h \
 #    ./painting/shared/arthurwidgets.h
 

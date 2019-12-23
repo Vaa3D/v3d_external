@@ -63,8 +63,6 @@
 #endif
 
 
-#include "../../v3d/CustomDefine.h"
-
 using namespace terafly;
 using namespace iim;
 

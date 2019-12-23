@@ -122,7 +122,6 @@ win32 {
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
 		               $$LOCAL_DIR\\common_lib\\include \
 					   $$BOOSTPATH \ 
-					   ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\Fragmented_autoTrace
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)

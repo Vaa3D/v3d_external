@@ -49,7 +49,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../terafly/src/control/CSettings.h"
 #include "../terafly/src/control/CImport.h"
 #include "../terafly/src/control/CViewer.h"
-#include "CustomDefine.h"
 
 #define SIM_DIM1 765	//X
 #define SIM_DIM2 567	//Y

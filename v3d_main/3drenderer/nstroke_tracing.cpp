@@ -92,13 +92,6 @@
 
 #include "../terafly/src/control/CPlugin.h"
 
-// ------- Conditional inclusion for fragment tracing, MK, Mar, 2019 -------
-//#include "../v3d/CustomDefine.h"
-//#ifdef _FRAGTRACE_
-//#include "NeuronStructExplorer.h"
-//#include "NeuronStructUtilities.h"
-//#endif
-// -------------------------------------------------------------------------
 #ifdef _WIN32
     #include <windows.h>
 
