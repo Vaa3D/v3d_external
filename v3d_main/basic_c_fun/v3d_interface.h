@@ -73,6 +73,7 @@ QT_END_NAMESPACE
 #include "basic_triview.h"
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
+#include "INeuronAssembler.h"
 #include <set>
 
 struct V3DPluginArgItem

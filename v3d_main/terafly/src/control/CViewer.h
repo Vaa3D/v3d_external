@@ -42,9 +42,17 @@
 #include "v3d_imaging_para.h"
 #include "V3Dsubclasses.h"
 
-class terafly::CViewer : public QWidget
+#ifdef _NEURON_ASSEMBLER_
+class terafly::CViewer : public QWidget, public INeuronAssembler
 {
     Q_OBJECT
+	Q_INTERFACES(INeuronAssembler)
+
+#else
+class terafly::CViewer : public QWidget
+{
+		Q_OBJECT
+#endif
 
     private:
 
@@ -179,6 +187,10 @@ class terafly::CViewer : public QWidget
 
 		QList<ImageMarker> selectedMarkerList;
 		QList<ImageMarker> selectedLocalMarkerList;
+
+#ifdef _NEURON_ASSEMBLER_
+		virtual string getCviewerWinTitle() { return this->title; }
+#endif
 
         /**********************************************************************************
         * Restores the current viewer from the given (neighboring) source viewer.

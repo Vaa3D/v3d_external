@@ -663,4 +663,13 @@ void tf::PluginInterface::setEraseCursor(bool on_off)
 	if (on_off) curr3DviewWidgetPtr->setCursor(Qt::BusyCursor);
 	else curr3DviewWidgetPtr->setCursor(Qt::ArrowCursor);
 }
+
+#ifdef _NEURON_ASSEMBLER_
+INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	INeuronAssembler* interfacePtr = qobject_cast<terafly::CViewer*>(currViewerPtr);
+	return interfacePtr;
+}
+#endif
 // -------------------------------------------------------------------------------------------------------- //

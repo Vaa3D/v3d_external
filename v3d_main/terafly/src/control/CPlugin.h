@@ -952,6 +952,9 @@ class terafly::PluginInterface
 		static bool getZlockStatus();
 
 		static void setEraseCursor(bool on_off);
+#ifdef _NEURON_ASSEMBLER_
+		static INeuronAssembler* getTeraflyCViewer();
+#endif
 		// ------------------------------------------------------------------ //
 };
 

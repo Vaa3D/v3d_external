@@ -66,6 +66,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 /* ======= Customized Preprocessor Block, MK ======= */
 //#define _YUN_
+//#define _NEURON_ASSEMBLER_
 /* ================================================= */
 
 #endif
