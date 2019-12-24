@@ -3224,3 +3224,15 @@ void CViewer::resetEvents()
     if(view3DWidget)
         view3DWidget->installEventFilter(this);
 }
+
+#ifdef _NEURON_ASSEMBLER_
+void CViewer::segEditing_setCursor(string mode)
+{
+	if (!mode.compare("erase"))
+	{
+		QCursor eraseCursorPic = QCursor(QPixmap("..\\..\\vaa3d_tools\\hackathon\\MK\\Fragmented_autoTrace\\resources\\segment_editing\\eraseCursor_noThinLine.png"));
+		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
+	}
+	else if (!mode.compare("restore")) CViewer::current->view3DWidget->setCursor(Qt::ArrowCursor);
+}
+#endif

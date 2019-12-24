@@ -1023,8 +1023,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 			else if (IS_ALT_MODIFIER)
 			{
-				//QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 				terafly::PMain& pMain = *(terafly::PMain::getInstance());
 				if (!pMain.fragTracePluginInstance)
 				{
@@ -1035,7 +1033,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					pMain.FragTracerPluginLoaderPtr = &mypluginloader;
-					mypluginloader.runPlugin(loader, "settings");
+					mypluginloader.runNAplugin(loader, "settings");
 
 					return;
 				}

@@ -9,7 +9,7 @@ public:
 	virtual ~INeuronAssembler() {}
 
 	virtual string getCviewerWinTitle() = 0;
-
+	virtual void segEditing_setCursor(string mode) = 0;
 
 };
 

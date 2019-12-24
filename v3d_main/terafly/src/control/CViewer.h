@@ -51,7 +51,7 @@ class terafly::CViewer : public QWidget, public INeuronAssembler
 #else
 class terafly::CViewer : public QWidget
 {
-		Q_OBJECT
+	Q_OBJECT
 #endif
 
     private:
@@ -190,6 +190,7 @@ class terafly::CViewer : public QWidget
 
 #ifdef _NEURON_ASSEMBLER_
 		virtual string getCviewerWinTitle() { return this->title; }
+		virtual void segEditing_setCursor(string mode);
 #endif
 
         /**********************************************************************************
