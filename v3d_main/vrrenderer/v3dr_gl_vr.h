@@ -34,7 +34,8 @@ enum ModelControlR
 	m_insertnodeMode,
 	m_reducenodeMode,
 	m_clipplaneMode,
-	m_ConnectMode
+	m_ConnectMode, 
+	_MovetoCreator
 	//m_slabplaneMode
 };
 enum ModeControlSettings
@@ -53,7 +54,7 @@ enum ModeControlSettings
 	_AutoRotate,
 	_ResetImage,
 	_RGBImage,
-	_MovetoCreator,
+
 	_MovetoMarker,
 	_StretchImage
 };

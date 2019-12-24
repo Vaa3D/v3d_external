@@ -8572,7 +8572,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <=0.8))
 		{
-			m_modeGrip_L = _MovetoCreator;
+			m_modeGrip_R = _MovetoCreator;
 		}
 		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		{
