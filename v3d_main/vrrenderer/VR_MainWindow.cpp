@@ -227,9 +227,17 @@ void VR_MainWindow::TVProcess(QString line)
 				cout << "IsmarkerValid is " << IsmarkerValid << endl;
 				if (!IsmarkerValid)
 				{
+
+//                    qDebug()<<"flag _ :";
+//                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
+//					pMainApplication->collaboration_creator_res = res;
+//					pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+					
+
 					VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
 					VR_Communicator->CreatorMarkerRes = res;
 					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+
 				}
 			}
 
@@ -339,7 +347,7 @@ void VR_MainWindow::TVProcess(QString line)
                 if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
                 {
                     qDebug()<<"marker out of size";
-                    VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(colortype));
+                    VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
                     return;
                 }
 				bool IsmarkerValid = false;
@@ -347,7 +355,7 @@ void VR_MainWindow::TVProcess(QString line)
 				cout << "IsmarkerValid is " << IsmarkerValid << endl;
 				if (!IsmarkerValid)
 				{
-					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
 				}
 			}
         }
@@ -382,7 +390,7 @@ void VR_MainWindow::TVProcess(QString line)
                     break;
                 }
             }
-            pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype);
+            pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,3);
         }
         else if (dragnodeRex.indexIn(line) != -1) {
             QStringList dragnodePOS = dragnodeRex.cap(1).split(" ");

@@ -2234,7 +2234,8 @@ void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type)
 {
 	ImageMarker mk(x,y,z);
-	mk.type = type;
+//	mk.type = type;
+    mk.type = 3;
 	mk.radius = 0.02f / m_globalScale;
 
 	glm::vec3 agentclr=glm::vec3();
