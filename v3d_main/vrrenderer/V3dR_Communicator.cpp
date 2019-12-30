@@ -487,7 +487,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             {
                 if(user!=userName)
                 {
-                    emit addMarker(markerRex.cap(2).trimmed(),colortype);//marker用3号色
+                    emit addMarker(markerRex.cap(2).trimmed(),3);//marker用3号色
                     qDebug()<<"siagnal add marker";
                 }
                 else
@@ -529,6 +529,35 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }else {
                 emit addSeg(temp1,colortype);
             }
+
+        }
+
+        else if(creatorRex.indexIn(line)!=-1)
+        {
+            qDebug()<<line;
+            QString user = creatorRex.cap(1);
+            QStringList markerMSGs = creatorRex.cap(2).split(" ");
+            if (markerMSGs.size() < 3)
+            {
+                qDebug() << "size < 3";
+                return;
+            }
+
+            float mx = markerMSGs.at(0).toFloat();
+            float my = markerMSGs.at(1).toFloat();
+            float mz = markerMSGs.at(2).toFloat();
+            int resx, resy, resz,res;
+
+            if (markerMSGs.size() > 3)
+            {
+                resx = markerMSGs.at(3).toFloat();
+                resy = markerMSGs.at(4).toFloat();
+                resz = markerMSGs.at(5).toFloat();
+                res = markerMSGs.at(6).toInt();
+
+            }
+            emit addMarker(markerRex.cap(2).trimmed(),3);//para2 was not used
+            //wait ...
 
         }
 }
