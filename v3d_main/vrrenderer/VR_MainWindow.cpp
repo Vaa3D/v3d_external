@@ -804,7 +804,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 	pMainApplication->CmainResIndex = ResIndex;
     pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
 
-	pMainApplication->collaboration_creator_res = ResIndex;
+	
 	pMainApplication->CollaborationMaxResolution = CollaborationMaxResolution;
 	pMainApplication->CollaborationCurrentRes = VRVolumeCurrentRes;
 
