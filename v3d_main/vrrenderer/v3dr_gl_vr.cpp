@@ -2654,26 +2654,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
-		case _MovetoCreator:
-			{
-				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
-				glm::mat4 mat = glm::mat4();
-				for (size_t i = 0; i < 4; i++)
-				{
-					for (size_t j = 0; j < 4; j++)
-					{
-						mat[i][j] = *(mat_M.get() + i * 4 + j);
-					}
-				}
-				mat = glm::inverse(m_globalMatrix) * mat;
-				glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
-				/*delmarkerPOS="";
-				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
-				markerPOS = "";
-				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-				bool IsmarkerValid = false;
-				break;
-			}
+		
 		case _MovetoMarker:
 		{					
 			if (CollaborationCreatorPos.x != 0 && CollaborationCreatorPos.y != 0 && CollaborationCreatorPos.z != 0)
@@ -4127,7 +4108,26 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				break;
 			}
 			}
-		
+		case _MovetoCreator:
+		{
+			const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+			glm::mat4 mat = glm::mat4();
+			for (size_t i = 0; i < 4; i++)
+			{
+				for (size_t j = 0; j < 4; j++)
+				{
+					mat[i][j] = *(mat_M.get() + i * 4 + j);
+				}
+			}
+			mat = glm::inverse(m_globalMatrix) * mat;
+			glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
+			/*delmarkerPOS="";
+			delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
+			markerPOS = "";
+			markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+			bool IsmarkerValid = false;
+			break;
+		}
 		default :
 			break;
 		}
@@ -4825,7 +4825,6 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _ColorChange:// display "ok"
 		case _ResetImage://display"ok
-		case _MovetoCreator:
 		case _MovetoMarker:
 		case _TeraShift:
 			{//_TeraShift
@@ -5070,15 +5069,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.625f,vcVerts);
 				break;
 			}
-		case _MovetoCreator:
-			{
-				AddVertex(point_M.x,point_M.y,point_M.z,0.335,0.635f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.42,0.75f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
-			}
+		
 		case _MovetoMarker:
 		{
 			AddVertex(point_M.x, point_M.y, point_M.z, 0.335, 0.76f, vcVerts);
@@ -5353,6 +5344,15 @@ void CMainApplication::SetupControllerTexture()
 			AddVertex(point_O.x, point_O.y, point_O.z, 0.25, 0.875f, vcVerts);
 			AddVertex(point_P.x, point_P.y, point_P.z, 0.335, 0.875f, vcVerts);
 			AddVertex(point_N.x, point_N.y, point_N.z, 0.335, 0.75f, vcVerts);
+		}
+		case _MovetoCreator:
+		{
+			AddVertex(point_M.x, point_M.y, point_M.z, 0.335, 0.635f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.635f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.75f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.75f, vcVerts);
+			AddVertex(point_P.x, point_P.y, point_P.z, 0.42, 0.75f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.635f, vcVerts);
 		}
 		default:
 			break;
