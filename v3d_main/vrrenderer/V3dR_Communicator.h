@@ -105,6 +105,8 @@ public:
 	 XYZ ImageCurRes;
 	 XYZ ImageStartPoint;
 
+	 XYZ CreatorMarkerPos;
+	 int CreatorMarkerRes;
     QTimer *asktimer;
 public slots:
     bool SendLoginRequest(QString ip,QString port,QString username);

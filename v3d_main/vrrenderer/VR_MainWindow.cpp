@@ -227,11 +227,17 @@ void VR_MainWindow::TVProcess(QString line)
 				cout << "IsmarkerValid is " << IsmarkerValid << endl;
 				if (!IsmarkerValid)
 				{
-                    qDebug()<<"flag _ :";
-                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
-					pMainApplication->collaboration_creator_res = res;
-					pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+
+//                    qDebug()<<"flag _ :";
+//                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
+//					pMainApplication->collaboration_creator_res = res;
+//					pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
 					
+
+					VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+					VR_Communicator->CreatorMarkerRes = res;
+					pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+
 				}
 			}
 
@@ -555,10 +561,11 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		zoomPOS->x = pMainApplication->teraflyPOS.x;
 		zoomPOS->y = pMainApplication->teraflyPOS.y;
 		zoomPOS->z = pMainApplication->teraflyPOS.z;
-		CreatorPos->x = pMainApplication->CollaborationCreatorPos.x;
-		CreatorPos->y = pMainApplication->CollaborationCreatorPos.y;
-		CreatorPos->z = pMainApplication->CollaborationCreatorPos.z;
-		CreatorRes = pMainApplication->collaboration_creator_res;
+
+		CreatorPos->x = VR_Communicator->CreatorMarkerPos.x;
+		CreatorPos->y = VR_Communicator->CreatorMarkerPos.y;
+		CreatorPos->z = VR_Communicator->CreatorMarkerPos.z;
+		CreatorRes = VR_Communicator->CreatorMarkerRes;
 		qDebug()<<"call that function is"<<_call_that_function;
         disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
         connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
@@ -804,6 +811,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 	pMainApplication->collaborationTargetdelcurveRes = VRvolumeMaxRes;
 	pMainApplication->CmainResIndex = ResIndex;
     pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
+
 	pMainApplication->collaboration_creator_res = ResIndex;
 	pMainApplication->CollaborationMaxResolution = CollaborationMaxResolution;
 	pMainApplication->CollaborationCurrentRes = VRVolumeCurrentRes;

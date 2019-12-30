@@ -194,7 +194,8 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 	NTNumReceieved=0;
 	NeuronTree  nt = terafly::PluginInterface::getSWC();
 	int tempntsize = nt.listNeuron.size();
-
+	CreatorMarkerPos = 0;
+	CreatorMarkerRes = 0;
 	userName="";
 	QRegExp regex("^[a-zA-Z]\\w+");
     socket = 0;

@@ -34,7 +34,8 @@ enum ModelControlR
 	m_insertnodeMode,
 	m_reducenodeMode,
 	m_clipplaneMode,
-	m_ConnectMode
+	m_ConnectMode, 
+	_MovetoCreator
 	//m_slabplaneMode
 };
 enum ModeControlSettings
@@ -53,7 +54,7 @@ enum ModeControlSettings
 	_AutoRotate,
 	_ResetImage,
 	_RGBImage,
-	_MovetoCreator,
+
 	_MovetoMarker,
 	_StretchImage
 };
@@ -257,6 +258,7 @@ public:
 	bool READY_TO_SEND;
 	bool isOnline;
 	static ModelControlR  m_modeGrip_R;
+	static ModeControlSettings m_modeGrip_L;
 	QString delName;
 	QString markerPOS;
 	QString delmarkerPOS;
@@ -346,7 +348,7 @@ private: // OpenGL bookkeeping
 	int m_modeControlGrip_R;
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
-	static ModeControlSettings m_modeGrip_L;
+
 	static ModeTouchPadR m_modeTouchPad_R;
 	static SecondeMenu m_secondMenu;
 	static RGBImageChannel m_rgbChannel;
@@ -601,7 +603,6 @@ private:
 	
 	bool showshootingray;
 	QString collaboration_creator_name;
-	int collaboration_creator_res;
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();
