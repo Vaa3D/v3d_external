@@ -794,19 +794,19 @@ bool V3d_PluginLoader::runNApluginInterface(QObject* plugin, const QString& comm
 	// -- The interface (INeuronAssembler) is cast from terafly::CViewer and passed to Neuron Assembler plugin from here.
 	// --------- MK, Dec, 2019
 
-	V3DPluginInterface2_1 *iface = qobject_cast<V3DPluginInterface2_1 *>(plugin);
-	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
+	V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
+	V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this);
 
 	// -- Might add more terafly class interfaces here in the long run.
 	INeuronAssembler* NAinterface = tf::PluginInterface::getTeraflyCViewer();
 
 	qDebug() << "runPluginInterface2_1 ..." << iface;
 
-	if (iface && callback)
+	if (iface && callback && NAinterface)
 	{
 		try
 		{
-			iface->domenu(command, *callback, (QWidget*)0, *NAinterface); //do not pass the mainwindow widget
+			iface->domenu(command, *callback, (QWidget*)0, *NAinterface); // do not pass the mainwindow widget
 		}
 		catch (...)
 		{
@@ -1840,11 +1840,6 @@ void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
 	terafly::PluginInterface::changeFragTraceStatus(newStatus);
 }
 
-void V3d_PluginLoader::getParamsFromFragTraceUI(const string& keyName, const float& value)
-{
-	terafly::PluginInterface::getParamsFromFragTraceUI(keyName, value);
-}
-
 bool V3d_PluginLoader::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
 {
 	return terafly::PluginInterface::getPartialVolumeCoords(globalCoords, localCoords, displayingVolDims);
@@ -1853,21 +1848,6 @@ bool V3d_PluginLoader::getPartialVolumeCoords(int globalCoords[], int localCoord
 bool V3d_PluginLoader::teraflyImgInstance()
 {
 	return terafly::PluginInterface::teraflyImgInstance();
-}
-
-void V3d_PluginLoader::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
-{
-	terafly::PluginInterface::getSelectedMarkerList(selectedMarkerList, selectedLocalMarkerList);
-}
-
-void V3d_PluginLoader::refreshSelectedMarkers()
-{
-	terafly::PluginInterface::refreshSelectedMarkers();
-}
-
-int V3d_PluginLoader::getTeraflyResLevel()
-{
-	return terafly::PluginInterface::getTeraflyResLevel();
 }
 
 bool V3d_PluginLoader::getXlockStatus()
@@ -1883,11 +1863,6 @@ bool V3d_PluginLoader::getYlockStatus()
 bool V3d_PluginLoader::getZlockStatus()
 {
 	return terafly::PluginInterface::getZlockStatus();
-}
-
-void V3d_PluginLoader::setEraseCursor(bool on_off)
-{
-	terafly::PluginInterface::setEraseCursor(on_off);
 }
 
 #ifdef __ALLOW_VR_FUNCS__

@@ -3225,7 +3225,37 @@ void CViewer::resetEvents()
         view3DWidget->installEventFilter(this);
 }
 
+/* =========== CViewer's implementation of the virtuals inherited from INeuronAssembler =========== */
 #ifdef _NEURON_ASSEMBLER_
+bool CViewer::checkFragTraceStatus()
+{
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	return thisRenderer->fragmentTrace;
+}
+
+int CViewer::getTeraflyResLevel()
+{
+	CViewer* currViewer = CViewer::getCurrent();
+	return currViewer->getResIndex();
+}
+
+void CViewer::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
+{
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	selectedMarkerList = currViewerPtr->selectedMarkerList;
+	selectedLocalMarkerList = currViewerPtr->selectedLocalMarkerList;
+}
+
+void CViewer::refreshSelectedMarkers()
+{
+	CViewer* currViewerPtr = CViewer::getCurrent();
+	currViewerPtr->selectedMarkerList.clear();
+
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(currViewerPtr->getGLWidget()->getRenderer());
+	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+		it->selected = false;
+}
+
 void CViewer::segEditing_setCursor(string mode)
 {
 	if (!mode.compare("erase"))
@@ -3235,4 +3265,11 @@ void CViewer::segEditing_setCursor(string mode)
 	}
 	else if (!mode.compare("restore")) CViewer::current->view3DWidget->setCursor(Qt::ArrowCursor);
 }
+
+void CViewer::getParamsFromFragTraceUI(const string& keyName, const float& value)
+{
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
+	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
+}
 #endif
+/* ======= END of [CViewer's implementation of the virtuals inherited from INeuronAssembler] =======*/

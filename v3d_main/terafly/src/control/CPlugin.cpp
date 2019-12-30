@@ -550,12 +550,6 @@ bool tf::PluginInterface::teraflyImgInstance()
 	else return false;
 }
 
-void tf::PluginInterface::drawEditInfo(int editNum)
-{
-	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
-	CViewer::getCurrent()->getGLWidget()->renderer->drawEditInfo();
-}
-
 bool tf::PluginInterface::checkFragTraceStatus()
 {
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
@@ -584,12 +578,6 @@ bool tf::PluginInterface::getZlockStatus()
 {
 	PMain& pMain = *(PMain::getInstance());
 	return pMain.zLockStatus;
-}
-
-void tf::PluginInterface::getParamsFromFragTraceUI(const string& keyName, const float& value)
-{
-	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
-	thisRenderer->fragTraceParams.insert(pair<string, float>(keyName, value));
 }
 
 bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
@@ -631,37 +619,6 @@ bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCo
 		localCoords[3] - localCoords[2] + 1 == displayingVolDims[1] &&
 		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) return false;
 	else return true;
-}
-
-void tf::PluginInterface::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
-{
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	selectedMarkerList = currViewerPtr->selectedMarkerList;
-	selectedLocalMarkerList = currViewerPtr->selectedLocalMarkerList;
-}
-
-void tf::PluginInterface::refreshSelectedMarkers()
-{
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	currViewerPtr->selectedMarkerList.clear();
-	
-	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
-	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
-		it->selected = false;
-}
-
-int tf::PluginInterface::getTeraflyResLevel()
-{
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	return currViewerPtr->getResIndex();
-}
-
-void tf::PluginInterface::setEraseCursor(bool on_off)
-{
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	V3dR_GLWidget* curr3DviewWidgetPtr = currViewerPtr->getGLWidget();
-	if (on_off) curr3DviewWidgetPtr->setCursor(Qt::BusyCursor);
-	else curr3DviewWidgetPtr->setCursor(Qt::ArrowCursor);
 }
 
 #ifdef _NEURON_ASSEMBLER_

@@ -236,15 +236,10 @@ public:
 	virtual bool teraflyImgInstance();
 	virtual bool checkFragTraceStatus();
 	virtual void changeFragTraceStatus(bool newStatus);
-	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
-	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
-	virtual void refreshSelectedMarkers();
-	virtual int getTeraflyResLevel();
 	virtual bool getXlockStatus();
 	virtual bool getYlockStatus();
 	virtual bool getZlockStatus();
-	virtual void setEraseCursor(bool on_off);
 
 	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
