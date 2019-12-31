@@ -935,18 +935,8 @@ class terafly::PluginInterface
         static std::string version(){ return "1.1.0"; }
         static bool setImage(size_t x, size_t y, size_t z);
 
-		// ----------------- Fragment-based Tracing Related ----------------- //
-		//------------------------------------- MK, Mar, 2019 --------------- //
-		static bool teraflyImgInstance();
-		static bool checkFragTraceStatus();
-		static void changeFragTraceStatus(bool newStatus);
-		static bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
-		static bool getXlockStatus();
-		static bool getYlockStatus();
-		static bool getZlockStatus();
-
+		// This method casts CViewer to INeuronAssembler to allow Neuron Assembler to directly talk to terafly environment. MK, Dec, 2019
 		static INeuronAssembler* getTeraflyCViewer();
-		// ------------------------------------------------------------------ //
 };
 
 #endif

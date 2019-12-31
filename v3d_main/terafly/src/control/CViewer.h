@@ -191,16 +191,24 @@ class terafly::CViewer : public QWidget
 
 #ifdef _NEURON_ASSEMBLER_
 		/* ====================================================================================================
-		* In order to simplify the communication between Neuron Assembler plugin and terafly environment,
-		* I make INeuronAsembler 1 of CViewer's bases (with conditional preprocessor macro '_NEURON_ASSEMBLER_').
-		* This preprocessor block lists functionalities that can be accessed through this interface.
-		* Note, this is a bypass of [V3DPluginCallback2 -> V3d_PluginLoader -> CPlugin -> CViewer] route.
-		* Through this interface, the plugin directly talks to CViewer through [INeuronAssembler].
-		*                                                                                   -- MK, Dec, 2019
-		* ==================================================================================================== */
+		 * In order to simplify the communication between Neuron Assembler plugin and terafly environment,
+		 * I make INeuronAsembler 1 of CViewer's bases (with conditional preprocessor macro '_NEURON_ASSEMBLER_').
+		 * This preprocessor block lists functionalities that can be accessed through this interface.
+		 * Note, this is a bypass of [V3DPluginCallback2 -> V3d_PluginLoader -> CPlugin -> CViewer] route.
+		 * Through this interface, the plugin directly talks to CViewer through [INeuronAssembler].
+		 *                                                                                   -- MK, Dec, 2019
+		 * ==================================================================================================== */
+		virtual bool teraflyImgInstance();
+		
 		virtual bool checkFragTraceStatus();
+		virtual void changeFragTraceStatus(bool newStatus);
+
 		virtual string getCviewerWinTitle() { return this->title; }
 		virtual int getTeraflyResLevel();
+		virtual bool getXlockStatus();
+		virtual bool getYlockStatus();
+		virtual bool getZlockStatus();
+		virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
 
 		virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
 		virtual void refreshSelectedMarkers();

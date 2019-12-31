@@ -542,85 +542,12 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
 }
 
 
-// ------------------------------------ Fragment-based Tracing Related ------------------------------------ //
-//--------------------------------------------------------------------------- MK, Mar, 2019 --------------- //
-bool tf::PluginInterface::teraflyImgInstance()
-{
-	if (!CImport::instance()->isEmpty()) return true;
-	else return false;
-}
-
-bool tf::PluginInterface::checkFragTraceStatus()
-{
-	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
-	return thisRenderer->fragmentTrace;
-}
-
-void tf::PluginInterface::changeFragTraceStatus(bool newStatus)
-{
-	PMain& pMain = *(PMain::getInstance());
-	pMain.fragTracePluginInstance = newStatus;
-}
-
-bool tf::PluginInterface::getXlockStatus()
-{
-	PMain& pMain = *(PMain::getInstance());
-	return pMain.xLockStatus;
-}
-
-bool tf::PluginInterface::getYlockStatus()
-{
-	PMain& pMain = *(PMain::getInstance());
-	return pMain.yLockStatus;
-}
-
-bool tf::PluginInterface::getZlockStatus()
-{
-	PMain& pMain = *(PMain::getInstance());
-	return pMain.zLockStatus;
-}
-
-bool tf::PluginInterface::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
-{
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();	
-	PMain& pMain = *(PMain::getInstance());
-
-	if (!currViewerPtr->volumeCutSbAdjusted) return false;
-
-	// This part is currently not being used by the caller due to incorrect image origin when volume cut lock is on -- //
-	globalCoords[0] = PDialogProofreading::instance()->xCoordl;
-	globalCoords[1] = PDialogProofreading::instance()->xCoordh;
-	globalCoords[2] = PDialogProofreading::instance()->yCoordl;
-	globalCoords[3] = PDialogProofreading::instance()->yCoordh;
-	globalCoords[4] = PDialogProofreading::instance()->zCoordl;
-	globalCoords[5] = PDialogProofreading::instance()->zCoordh;
-	// --------------------------------------------------------------------------------------------------------------- //
-
-	displayingVolDims[0] = currViewerPtr->getXDim();
-	displayingVolDims[1] = currViewerPtr->getYDim();
-	displayingVolDims[2] = currViewerPtr->getZDim();
-
-	if (currViewerPtr->xMinAdjusted) localCoords[0] = PDialogProofreading::instance()->sbXlb;
-	else localCoords[0] = 1;
-	if (currViewerPtr->xMaxAdjusted) localCoords[1] = PDialogProofreading::instance()->sbXhb;
-	else localCoords[1] = displayingVolDims[0];
-	if (currViewerPtr->yMinAdjusted) localCoords[2] = PDialogProofreading::instance()->sbYlb;
-	else localCoords[2] = 1;
-	if (currViewerPtr->yMaxAdjusted) localCoords[3] = PDialogProofreading::instance()->sbYhb;
-	else localCoords[3] = displayingVolDims[1];
-	if (currViewerPtr->zMinAdjusted) localCoords[4] = PDialogProofreading::instance()->sbZlb;
-	else localCoords[4] = 1;
-	if (currViewerPtr->zMaxAdjusted) localCoords[5] = PDialogProofreading::instance()->sbZhb;
-	else localCoords[5] = displayingVolDims[2];
-	
-	//cout << "  Image block dimensions: " << displayingVolDims[0] << " " << displayingVolDims[1] << " " << displayingVolDims[2] << endl;
-
-	if (localCoords[1] - localCoords[0] + 1 == displayingVolDims[0] &&
-		localCoords[3] - localCoords[2] + 1 == displayingVolDims[1] &&
-		localCoords[5] - localCoords[4] + 1 == displayingVolDims[2]) return false;
-	else return true;
-}
-
+/* ======================================================================================================
+ * This method is called by V3d_PluginLoader::runNApluginInterface, 
+ * which casts CViewer to INeuronAssembler in order to allow Neuron Assembler talking to terafly directly.
+ * Note, when '_NEURON_ASSEMBLER_' preprocessor is deactivated, this method becomes a dummy function 
+ * due to its being a static member of terafly::PluginInterface.
+ * ========================================================================== MK, Dec, 2019 ============= */
 #ifdef _NEURON_ASSEMBLER_
 INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()
 {

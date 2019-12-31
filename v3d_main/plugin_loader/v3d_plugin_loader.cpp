@@ -1830,41 +1830,6 @@ bool V3d_PluginLoader::setImageTeraFly(size_t x, size_t y, size_t z)
     return terafly::PluginInterface::setImage(x,y,z);
 }
 
-bool V3d_PluginLoader::checkFragTraceStatus()
-{
-	return terafly::PluginInterface::checkFragTraceStatus();
-}
-
-void V3d_PluginLoader::changeFragTraceStatus(bool newStatus)
-{
-	terafly::PluginInterface::changeFragTraceStatus(newStatus);
-}
-
-bool V3d_PluginLoader::getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[])
-{
-	return terafly::PluginInterface::getPartialVolumeCoords(globalCoords, localCoords, displayingVolDims);
-}
-
-bool V3d_PluginLoader::teraflyImgInstance()
-{
-	return terafly::PluginInterface::teraflyImgInstance();
-}
-
-bool V3d_PluginLoader::getXlockStatus()
-{
-	return terafly::PluginInterface::getXlockStatus();
-}
-
-bool V3d_PluginLoader::getYlockStatus()
-{
-	return terafly::PluginInterface::getYlockStatus();
-}
-
-bool V3d_PluginLoader::getZlockStatus()
-{
-	return terafly::PluginInterface::getZlockStatus();
-}
-
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {

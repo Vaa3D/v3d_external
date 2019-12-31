@@ -233,14 +233,6 @@ public:
 
     virtual bool setImageTeraFly(size_t x, size_t y, size_t z);
 
-	virtual bool teraflyImgInstance();
-	virtual bool checkFragTraceStatus();
-	virtual void changeFragTraceStatus(bool newStatus);
-	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
-	virtual bool getXlockStatus();
-	virtual bool getYlockStatus();
-	virtual bool getZlockStatus();
-
 	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex);

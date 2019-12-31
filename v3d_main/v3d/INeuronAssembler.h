@@ -8,9 +8,17 @@ class INeuronAssembler
 public:
 	virtual ~INeuronAssembler() {}
 
+	virtual bool teraflyImgInstance() = 0;
+
 	virtual bool checkFragTraceStatus() = 0;
+	virtual void changeFragTraceStatus(bool newStatus) = 0;
+	
 	virtual string getCviewerWinTitle() = 0;
 	virtual int getTeraflyResLevel() = 0;
+	virtual bool getXlockStatus() = 0;
+	virtual bool getYlockStatus() = 0;
+	virtual bool getZlockStatus() = 0;
+	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
 
 	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList) = 0;
 	virtual void refreshSelectedMarkers() = 0;
