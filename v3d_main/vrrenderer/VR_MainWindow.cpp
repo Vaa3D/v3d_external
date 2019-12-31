@@ -52,7 +52,7 @@ void VR_MainWindow::onReadySend()
 
 	}
 	else
-	{
+    {
 		cout<<"CollaborationSendPool is empty";
 
 	}
@@ -671,6 +671,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
 			QString QCmainResIndex = QString("%1").arg(pMainApplication->CmainResIndex);
 			VR_Communicator->onReadySend(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
+            qDebug()<<QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex);
 			CURRENT_DATA_IS_SENT = true;
 		}
 		//if(pMainApplication->READY_TO_SEND==true)
