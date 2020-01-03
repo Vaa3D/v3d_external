@@ -4304,9 +4304,9 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 
             int v_ns_size=v_ns_list.seg.at(J).row.size();
             V_NeuronSWC_unit node0,node1;
-            node0=v_ns_list.seg.at(J).row.at(1);
+//            node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||
+            if(/*sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||*/
                sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0)
             {
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
@@ -4349,10 +4349,10 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             else
                 S_temp.pn=i-1;
 
-            S_temp.level=temp[7].toFloat();
-            S_temp.creatmode=temp[8].toFloat();
-            S_temp.timestamp=temp[9].toFloat();
-            S_temp.tfresindex=temp[10].toFloat();
+            S_temp.level=0;
+            S_temp.creatmode=0;
+            S_temp.timestamp=0;
+            S_temp.tfresindex=0;
             if(i==1)
             {
                 CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
@@ -4415,6 +4415,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
     testVNL.append(temp);
     NeuronTree newNT=V_NeuronSWC_list__2__NeuronTree(testVNL);
     terafly::PluginInterface::setSWC(newNT,true);
+
 
 }
 //#endif

@@ -4106,10 +4106,10 @@ void PMain::load()
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
 		Communicator = new V3dR_Communicator;
 
-        disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+//        disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
 //        connect(managesocket,SIGNAL(disconnected()),Communicator->socket,SLOT(disconnectFromHost()));//
 //        connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
-        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+//        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
 
         connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
@@ -4149,6 +4149,7 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
+//    qDebug()<<"jkhjkhj";
     QMessageBox::information(this,tr("Connection is out!"),
                      tr("Data has been safely stored.\nPlease restart vaa3d"),
                      QMessageBox::Ok);

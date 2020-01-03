@@ -2234,8 +2234,8 @@ void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type)
 {
 	ImageMarker mk(x,y,z);
-//	mk.type = type;
-    mk.type = 3;
+    mk.type = type;
+//    mk.type = 3;
 	mk.radius = 0.02f / m_globalScale;
 
 	glm::vec3 agentclr=glm::vec3();
@@ -7032,7 +7032,9 @@ QStringList CMainApplication::NT2QString()
 	//return str;
 //    string messageBuff="TeraVR";
     QString messageBuff;
-	for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
+    for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
+
+//    for(int i=currentNT.listNeuron.size()-1;i>=0;i--)
 	{
         QString packetbuff;
         packetbuff.clear();
@@ -7278,9 +7280,9 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
         NeuronTree nt0=sketchedNTList.at(i);
         NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
 
-        NeuronSWC ss0=nt0.listNeuron.at(1);
+//        NeuronSWC ss0=nt0.listNeuron.at(1);
 
-        if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
+        if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0/*||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0*/)
         {
             sketchedNTList.removeAt(i);
 			SetupSingleMorphologyLine(i, 2);

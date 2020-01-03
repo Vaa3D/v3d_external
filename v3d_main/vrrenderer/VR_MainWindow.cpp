@@ -71,9 +71,11 @@ void VR_MainWindow::TVProcess(QString line)
     QRegExp markerRex("^/marker:(.*)__(.*)$");
     QRegExp delmarkerRex("^/del_marker:(.*)__(.*)$");
 	QRegExp dragnodeRex("^/drag_node:(.*)$");
-	QRegExp creatorRex("^/creator:(.*)$");
+    QRegExp creatorRex("^/creator:(.*)__(.*)$");
     QRegExp messageRex("^/seg:(.*)__(.*)$");
 
+    line=line.trimmed();
+//    qDebug()<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
 
@@ -236,7 +238,7 @@ void VR_MainWindow::TVProcess(QString line)
 
                         VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                         VR_Communicator->CreatorMarkerRes = res;
-                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
 
 				}
 			}
@@ -470,7 +472,7 @@ void VR_MainWindow::TVProcess(QString line)
                     {
                         pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
                         XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, colortype);
+                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
                     }
                 }
 

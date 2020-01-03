@@ -208,7 +208,7 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
     {
         asktimer=new QTimer(this);
         connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
-//                asktimer->start(1000);
+
     }
 }
 V3dR_Communicator::~V3dR_Communicator() {
@@ -216,8 +216,6 @@ V3dR_Communicator::~V3dR_Communicator() {
 
 void V3dR_Communicator::timerStart(QString anoname,int mesc)
 {
-    //读取，使用TP处理
-    qDebug()<<"adsas";
     QFile *f=new QFile("./clouddata/"+anoname+".txt");
 
     if(f->open(QIODevice::ReadOnly|QIODevice::Text))
@@ -227,9 +225,7 @@ void V3dR_Communicator::timerStart(QString anoname,int mesc)
             TFProcess(QString(line),1);
         }
     }
-
     delete  f;
-
     asktimer->start(mesc);
 }
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
@@ -331,7 +327,6 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
 	}
 	else
 	{
-//		qDebug()<<"The message is empty!";
         return;
 	}
 }
@@ -341,7 +336,6 @@ void V3dR_Communicator::onReadyRead()
     QDataStream in(socket);
     in.setVersion(QDataStream::Qt_4_7);
     QString line;
-//    int i=0;
 
     while(1)
     {
@@ -361,21 +355,8 @@ void V3dR_Communicator::onReadyRead()
         if(nextblocksize>0&&socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
-//            qDebug()<<line;
-//            i++;
+
             nextblocksize=0;
-//            QStringList iniaial_list=line.split(",");
-
-//            int cnt=iniaial_list.size();
-//            if(cnt>1)
-//            {
-//                for(int i=0;i<cnt;i++)
-//                {
-
-//                    TFProcess(iniaial_list.at(i),1);
-//                }
-//            }
-//            else
                 emit msgtoprocess(line);
         }else
         {
@@ -395,7 +376,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     QRegExp markerRex("^/marker:(.*)__(.*)$");
     QRegExp delmarkerRex("^/del_marker:(.*)__(.*)$");
     QRegExp dragnodeRex("^/drag_node:(.*)$");
-    QRegExp creatorRex("^/creator:(.*)$");
+    QRegExp creatorRex("^/creator:(.*)__(.*)$");
     QRegExp messageRex("^/seg:(.*)__(.*)$");
 
 
@@ -445,7 +426,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }
             else if((user!=userName)&&(Action=="left"))
             {
-                qDebug()<<"user: "<< user<<"left";
+//                qDebug()<<"user: "<< user<<"left";
                 for(int i=0;i<Agents.size();i++)
                 {
                     if(user == Agents.at(i).name)
@@ -511,7 +492,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 else
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
             }else {
-                emit addMarker(markerRex.cap(2).trimmed(),colortype);//marker用3号色
+                emit addMarker(markerRex.cap(2).trimmed(),3);//marker用3号色
             }
 
             qDebug()<<"==================marker process end====================";
@@ -547,13 +528,13 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }else {
                 emit addSeg(temp1,colortype);
             }
-
+qDebug()<<"======================messageRex in Terafly end============";
         }
 
         else if(creatorRex.indexIn(line)!=-1)
         {
-            qDebug()<<line;
-            QString user = creatorRex.cap(1);
+//            qDebug()<<line;
+
             QStringList markerMSGs = creatorRex.cap(2).split(" ");
             if (markerMSGs.size() < 3)
             {
@@ -561,20 +542,9 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 return;
             }
 
-            float mx = markerMSGs.at(0).toFloat();
-            float my = markerMSGs.at(1).toFloat();
-            float mz = markerMSGs.at(2).toFloat();
-            int resx, resy, resz,res;
 
-            if (markerMSGs.size() > 3)
-            {
-                resx = markerMSGs.at(3).toFloat();
-                resy = markerMSGs.at(4).toFloat();
-                resz = markerMSGs.at(5).toFloat();
-                res = markerMSGs.at(6).toInt();
 
-            }
-            emit addMarker(markerRex.cap(2).trimmed(),3);//para2 was not used
+            emit addMarker(creatorRex.cap(2).trimmed(),3);//para2 was not used
             //wait ...
 
         }
@@ -599,6 +569,7 @@ void V3dR_Communicator::Collaborationsendmessage()
 
 void V3dR_Communicator::Collaborationaskmessage()
 {
+//    qDebug()<<"hlkhh";
         onReadySend(QString("/ask: message"));
 }
 
@@ -615,8 +586,8 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
         if(i!=seg.row.size()-1)
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
-                    .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent);
 
             if(i==0)
                  emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
@@ -624,8 +595,8 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
         else
         {
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
-                    .arg(curSWCunit.r).arg(curSWCunit.parent).arg(curSWCunit.level).arg(curSWCunit.creatmode).arg(curSWCunit.timestamp).arg(curSWCunit.tfresindex);
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                    .arg(curSWCunit.r).arg(curSWCunit.parent);
             emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
             AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
         }
