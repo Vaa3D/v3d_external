@@ -1,4 +1,4 @@
-#include "fileserver.h"
+﻿#include "fileserver.h"
 #include <QMessageBox>
 
 FileSocket_receive::FileSocket_receive(QString ip,QString port,QObject *parent)
@@ -44,12 +44,17 @@ void FileSocket_receive::readFile()
 			file.close();
 			m_bytesreceived = 0;
 			this->write(QString("received " + filename + "\n").toUtf8());
-			QRegExp apoRex("(.*).apo");
-			if (apoRex.indexIn(filename) != -1)
-			{
-				emit receivefile(apoRex.cap(1));
-				disconnectFromHost();
-			}
+            QRegExp txtRex("(.*).txt");
+//			if (apoRex.indexIn(filename) != -1)
+//			{
+//				emit receivefile(apoRex.cap(1));
+//				disconnectFromHost();
+//			}
+            if(txtRex.indexIn(filename) != -1)
+            {
+                emit receivefile(txtRex.cap(1));
+                disconnectFromHost();
+            }
 		}
 	}
 	else {
@@ -72,12 +77,17 @@ void FileSocket_receive::readFile()
 			file.close();
 			m_bytesreceived = 0;
 			this->write(QString("received " + filename + "\n").toUtf8());
-			QRegExp apoRex("(.*).apo");
-			if (apoRex.indexIn(filename) != -1)
-			{
-				emit receivefile(apoRex.cap(1));
-				disconnectFromHost();
-			}
+            QRegExp txtRex("(.*).txt");
+//			if (apoRex.indexIn(filename) != -1)
+//			{
+//				emit receivefile(apoRex.cap(1));
+//				disconnectFromHost();
+//			}
+            if(txtRex.indexIn(filename) != -1)
+            {
+                emit receivefile(txtRex.cap(1));
+                disconnectFromHost();
+            }
 		}
 	}
 }

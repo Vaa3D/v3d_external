@@ -4132,8 +4132,7 @@ void PMain::load()
                 SLOT(SendLoginRequest(QString,QString,QString)));
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),managesocket,SLOT(messageMade()));
-        connect(this,SIGNAL(startASK(int)),cur_win->getGLWidget()->TeraflyCommunicator->asktimer,
-                SLOT(start(int)));
+        connect(this,SIGNAL(startASK(QString,int)),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(timerStart(QString,int)));
 
         connect(managesocket,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
         managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
@@ -4224,7 +4223,7 @@ void PMain::ColLoadANO(QString ANOfile)
             f->remove();
         delete f;
         f=0;
-        emit startASK(1000);
+        emit startASK(ANOfile,1000);
 
     }
 }

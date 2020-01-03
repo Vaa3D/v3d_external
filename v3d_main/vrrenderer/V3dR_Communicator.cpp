@@ -213,6 +213,25 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
 }
 V3dR_Communicator::~V3dR_Communicator() {
 }
+
+void V3dR_Communicator::timerStart(QString anoname,int mesc)
+{
+    //读取，使用TP处理
+    qDebug()<<"adsas";
+    QFile *f=new QFile("./clouddata/"+anoname+".txt");
+
+    if(f->open(QIODevice::ReadOnly|QIODevice::Text))
+    {
+        while (!f->atEnd()) {
+            QByteArray line=f->readLine();
+            TFProcess(QString(line),1);
+        }
+    }
+
+    delete  f;
+
+    asktimer->start(mesc);
+}
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 
     socket=new QTcpSocket(this);
@@ -264,8 +283,6 @@ void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 
 void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z,int type)
 {
-
-
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
 //    qDebug()<<"global_node"<<global_node.x<<" "<<global_node.y<<" "<<global_node.z;
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
@@ -347,18 +364,18 @@ void V3dR_Communicator::onReadyRead()
 //            qDebug()<<line;
 //            i++;
             nextblocksize=0;
-            QStringList iniaial_list=line.split(",");
+//            QStringList iniaial_list=line.split(",");
 
-            int cnt=iniaial_list.size();
-            if(cnt>1)
-            {
-                for(int i=0;i<cnt;i++)
-                {
+//            int cnt=iniaial_list.size();
+//            if(cnt>1)
+//            {
+//                for(int i=0;i<cnt;i++)
+//                {
 
-                    TFProcess(iniaial_list.at(i),1);
-                }
-            }
-            else
+//                    TFProcess(iniaial_list.at(i),1);
+//                }
+//            }
+//            else
                 emit msgtoprocess(line);
         }else
         {

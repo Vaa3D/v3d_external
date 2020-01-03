@@ -115,6 +115,7 @@ public slots:
 	void CollaborationMainloop();
     void TFProcess(QString msg,bool flag_init=0);
     void read_autotrace(QString,XYZ*);
+    void timerStart(QString,int);
 private slots:	
     void onReadyRead();
     void onConnected();

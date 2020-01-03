@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -612,7 +612,7 @@ public slots:
 
 signals:
         void signal_communicator_read_res(QString ,XYZ*);
-        void startASK(int);
+        void startASK(QString,int);
 private:
         QString currentPath;
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
