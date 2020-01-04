@@ -7133,7 +7133,6 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 {
 
 	QString ntnametofind="";
-	//qDebug()<<sketchedNTList.size();
 	if(sketchedNTList.size()<1) return ntnametofind;
 
 	for(int i=0;i<sketchedNTList.size();i++)
@@ -7161,18 +7160,11 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			//cal the dist between pos & current node'position, then compare with the threshold
 			if(dist < (dist_thres/m_globalScale*5))
 			{
-				//once dist between pos & node < threshold, return the segment/neurontree' name that current node belong to 
-//<<<<<<< HEAD
-//				ntnametofind = nt.name;
 
-				//collabo
-//=======
-                //qDebug()<<"=======================End==========================";
 				ntnametofind = nt.name;
-//>>>>>>> auto_test
-				SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
-				SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
-				SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
+                SegNode_tobedeleted.x = nt.listNeuron.at(nt.listNeuron.size()-2).x;
+                SegNode_tobedeleted.y = nt.listNeuron.at(nt.listNeuron.size()-2).y;
+                SegNode_tobedeleted.z = nt.listNeuron.at(nt.listNeuron.size()-2).z;
 				return ntnametofind;
 			}
 		}
