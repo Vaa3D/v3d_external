@@ -233,7 +233,7 @@ void VR_MainWindow::TVProcess(QString line)
 //                    qDebug()<<"flag _ :";
 //                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
 //					pMainApplication->collaboration_creator_res = res;
-//					pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+                    pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
 					
 
                         VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
