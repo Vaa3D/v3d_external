@@ -4304,18 +4304,22 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 
             int v_ns_size=v_ns_list.seg.at(J).row.size();
             V_NeuronSWC_unit node0,node1;
-//            node0=v_ns_list.seg.at(J).row.at(1);
+            node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
             if(/*sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||*/
                sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0)
             {
+                qDebug()<<"find last 2";
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
-
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0)
+            {
+                qDebug()<<"find head 2";
+                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
+                break;
+            }
         }
-
-//        v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
     }
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
 
@@ -4325,7 +4329,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 {
-    qDebug()<<"in collaAddseg";
+    qDebug()<<"in collaAddseg"<<segInfo;
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
     if (qsl.size()<=1) return;
 
@@ -4363,13 +4367,16 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             }
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
-            S_temp.n=temp[0].toLongLong();
+            S_temp.n=i;
             S_temp.type=temp[1].toInt();
             S_temp.x=temp[2].toFloat();
             S_temp.y=temp[3].toFloat();
             S_temp.z=temp[4].toFloat();
             S_temp.r=temp[5].toFloat();
-            S_temp.pn=temp[6].toLongLong();
+            if(i==1)
+                S_temp.pn=-1;
+            else
+                S_temp.pn=i-1;
             S_temp.level=0;
             S_temp.creatmode=0;
             S_temp.timestamp=0;

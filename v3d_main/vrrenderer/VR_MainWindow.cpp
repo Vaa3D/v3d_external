@@ -285,6 +285,8 @@ void VR_MainWindow::TVProcess(QString line)
 					cout << "pMainApplication->collaborationTargetdelcurveRes.x" << pMainApplication->collaborationTargetdelcurveRes.x << endl;
 					cout << "pMainApplication->collaborationTargetdelcurveRes.y" << pMainApplication->collaborationTargetdelcurveRes.y << endl;
 					cout << "pMainApplication->collaborationTargetdelcurveRes.z" << pMainApplication->collaborationTargetdelcurveRes.z << endl;
+                    cout<<"VRVolumeStartPoint (x,y,z)"<<VRVolumeStartPoint.x<<" "<<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+                    cout<<"VRVolumeEndPoint (x,y,z)"<<VRVolumeEndPoint.x<<" "<<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
                     if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
                             ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
                     )

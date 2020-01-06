@@ -7162,9 +7162,9 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			{
 
 				ntnametofind = nt.name;
-                SegNode_tobedeleted.x = nt.listNeuron.at(nt.listNeuron.size()-2).x;
-                SegNode_tobedeleted.y = nt.listNeuron.at(nt.listNeuron.size()-2).y;
-                SegNode_tobedeleted.z = nt.listNeuron.at(nt.listNeuron.size()-2).z;
+                SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
+                SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
+                SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
 				return ntnametofind;
 			}
 		}
@@ -7272,12 +7272,21 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
         NeuronTree nt0=sketchedNTList.at(i);
         NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
 
-//        NeuronSWC ss0=nt0.listNeuron.at(1);
+        NeuronSWC ss0=nt0.listNeuron.at(1);
 
         if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0/*||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0*/)
         {
+            qDebug()<<"VR FIND last 2";
             sketchedNTList.removeAt(i);
 			SetupSingleMorphologyLine(i, 2);
+            res=1;break;
+        }
+
+        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
+        {
+            qDebug()<<"VR FIND head 2";
+            sketchedNTList.removeAt(i);
+            SetupSingleMorphologyLine(i, 2);
             res=1;break;
         }
     }
