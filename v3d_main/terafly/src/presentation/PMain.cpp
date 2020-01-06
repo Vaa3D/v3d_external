@@ -160,6 +160,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     parentWidget = parent;
     annotationsPathLRU = "";
     marginLeft = 65;
+	NeuronAssemblerPortal = nullptr;
 
     //creating fonts
     QFont tinyFont = QApplication::font();
@@ -2466,10 +2467,16 @@ void PMain::resolutionIndexChanged(int i)
 {
     /**/tf::debug(tf::LEV1, strprintf("resolution = %d", i).c_str(), __itm__current__function__);
 
+	//if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+
     try
     {
         if(resolution_cbox->isEnabled() && CViewer::getCurrent() && i > CViewer::getCurrent()->getResIndex())
         {
+
+#ifdef _NEURON_ASSEMBLER_
+			if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
 //            int voiV0 = CVolume::scaleVCoord(V0_sbox->value()-1, CImport::instance()->getResolutions()-1, i);
 //            int voiV1 = CVolume::scaleVCoord(V1_sbox->value()-1, CImport::instance()->getResolutions()-1, i);
 //            int voiH0 = CVolume::scaleHCoord(H0_sbox->value()-1, CImport::instance()->getResolutions()-1, i);
@@ -2499,6 +2506,10 @@ void PMain::resolutionIndexChanged(int i)
             }
 //            else
 //                resolution_cbox->setCurrentIndex(CViewer::getCurrent()->getResIndex());
+
+#ifdef _NEURON_ASSEMBLER_
+			if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
         }
     }
     catch(RuntimeException &ex)
@@ -2532,6 +2543,10 @@ void PMain::traslXposClicked()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
+
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
     {
@@ -2539,10 +2554,18 @@ void PMain::traslXposClicked()
                       (expl->volV1-expl->volV0)/2,
                       (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
 }
 void PMain::traslXnegClicked()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
@@ -2551,10 +2574,18 @@ void PMain::traslXnegClicked()
                       (expl->volV1-expl->volV0)/2,
                       (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
 }
 void PMain::traslYposClicked()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
@@ -2563,10 +2594,18 @@ void PMain::traslYposClicked()
                       (expl->volV1-expl->volV0)/2 + (expl->volV1-expl->volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
                       (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
 }
 void PMain::traslYnegClicked()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
@@ -2575,10 +2614,18 @@ void PMain::traslYnegClicked()
                       (expl->volV1-expl->volV0)/2 - (expl->volV1-expl->volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
                       (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
     }
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
 }
 void PMain::traslZposClicked()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
@@ -2587,10 +2634,18 @@ void PMain::traslZposClicked()
                       (expl->volV1-expl->volV0)/2,
                       (expl->volD1-expl->volD0)/2 + (expl->volD1-expl->volD0)*(100-CSettings::instance()->getTraslZ())/100.0f, expl->volResIndex, expl->volT0, expl->volT1);
     }
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
 }
 void PMain::traslZnegClicked()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
 
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
@@ -2599,6 +2654,10 @@ void PMain::traslZnegClicked()
                       (expl->volV1-expl->volV0)/2,
                       (expl->volD1-expl->volD0)/2 - (expl->volD1-expl->volD0)*(100-CSettings::instance()->getTraslZ())/100.0f, expl->volResIndex, expl->volT0, expl->volT1);
     }
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NeuronAssemblerPortal != nullptr) this->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
 }
 void PMain::traslTposClicked()
 {

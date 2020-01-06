@@ -74,6 +74,7 @@ QT_END_NAMESPACE
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
 #include "INeuronAssembler.h"
+#include "IPMain4NeuronAssembler.h"
 #include <set>
 
 struct V3DPluginArgItem

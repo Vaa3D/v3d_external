@@ -278,6 +278,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../io/v3d_nrrd.h \
     ../terafly/src/presentation/theader.h \
     INeuronAssembler.h \
+    IPMain4NeuronAssembler.h \
 #    ./painting/shared/arthurstyle.h \
 #    ./painting/shared/arthurwidgets.h
 

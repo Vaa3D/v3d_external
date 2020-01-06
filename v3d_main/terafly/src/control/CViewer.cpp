@@ -449,6 +449,8 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     toRetrieveData = false;
 	volumeCutSbAdjusted = false;
 	xMinAdjusted = false, xMaxAdjusted = false, yMinAdjusted = false, yMaxAdjusted = false, zMinAdjusted = false, zMaxAdjusted = false;
+	
+	if (PMain::getInstance()->NeuronAssemblerPortal != nullptr) PMain::getInstance()->NeuronAssemblerPortal->getNAVersionNum();
 
     try
     {
@@ -730,6 +732,10 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick)
         {
 
+#ifdef _NEURON_ASSEMBLER_
+			if (PMain::getInstance()->NeuronAssemblerPortal != nullptr) PMain::getInstance()->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
+
 //            if(current == this)
 //                qDebug()<<"current == this!";
 //            else if(current == prev)
@@ -839,6 +845,9 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             }
             // --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
 
+#ifdef _NEURON_ASSEMBLER_
+			if (PMain::getInstance()->NeuronAssemblerPortal != nullptr) PMain::getInstance()->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
 
             return true;
         }
@@ -2103,6 +2112,10 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         //
         PMain* pMain = PMain::getInstance();
 
+#ifdef _NEURON_ASSEMBLER_
+		if (pMain->NeuronAssemblerPortal != nullptr) pMain->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
+#endif
+
         insituZoomOut_dx = round(pMain->Hdim_sbox->value()/2.0f);
         insituZoomOut_dy = round(pMain->Vdim_sbox->value()/2.0f);
         insituZoomOut_dz = round(pMain->Ddim_sbox->value()/2.0f);
@@ -2376,6 +2389,10 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
             //qDebug()<<"done translate ... start accepting new event ...";
             isTranslate = false;
         }
+
+#ifdef _NEURON_ASSEMBLER_
+		if (pMain->NeuronAssemblerPortal != nullptr) pMain->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
+#endif
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
 }
@@ -3233,6 +3250,12 @@ bool CViewer::teraflyImgInstance()
 	else return false;
 }
 
+void CViewer::sendCastNAUI2PMain(IPMain4NeuronAssembler* NAportal)
+{
+	PMain& pMain = *(PMain::getInstance());
+	pMain.NeuronAssemblerPortal = NAportal;
+}
+
 bool CViewer::checkFragTraceStatus()
 {
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
@@ -3243,12 +3266,6 @@ void CViewer::changeFragTraceStatus(bool newStatus)
 {
 	PMain& pMain = *(PMain::getInstance());
 	pMain.fragTracePluginInstance = newStatus;
-}
-
-int CViewer::getTeraflyResLevel()
-{
-	CViewer* currViewer = CViewer::getCurrent();
-	return currViewer->getResIndex();
 }
 
 bool CViewer::getXlockStatus()
