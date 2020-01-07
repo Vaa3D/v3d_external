@@ -185,10 +185,6 @@ class terafly::CViewer : public QWidget
 		inline int getYDim() { return (this->volV1 - this->volV0); }
 		inline int getZDim() { return (this->volD1 - this->volD0); }
 
-		QList<ImageMarker> selectedMarkerList;
-		QList<ImageMarker> selectedLocalMarkerList;
-
-
 #ifdef _NEURON_ASSEMBLER_
 		/* ====================================================================================================
 		 * In order to simplify the communication between Neuron Assembler plugin and terafly environment,
@@ -212,6 +208,9 @@ class terafly::CViewer : public QWidget
 		virtual bool getZlockStatus();
 		virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]);
 
+		QList<ImageMarker> selectedMarkerList;
+		QList<ImageMarker> selectedLocalMarkerList;
+		QList<ImageMarker> up2dateMarkerList;
 		virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
 		virtual void refreshSelectedMarkers();
 

@@ -668,6 +668,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 event->ignore();
                 return true;
             }
+#ifdef _NEURON_ASSEMBLER_
 			else if (mouseEvt->button() == Qt::LeftButton)
 			{
 				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
@@ -685,6 +686,11 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 						currMarker.z = coord2global<float>(markerIt->z, iim::depth,      false, -1, false, false, __itm__current__function__);
 						this->selectedMarkerList.push_back(currMarker);
 					}
+				}
+				if (PMain::getInstance()->fragTracePluginInstance && this->selectedMarkerList != this->up2dateMarkerList)
+				{
+					this->up2dateMarkerList = this->selectedMarkerList;
+					PMain::getInstance()->NeuronAssemblerPortal->sendSelectedMarkers2NA(this->selectedMarkerList);
 				}
 
 				terafly::PMain& pMain = *(terafly::PMain::getInstance());
@@ -711,7 +717,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					interface->dofunc("mouse_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0);
 				}
 			}
-
+#endif
             return false;
         }
 
