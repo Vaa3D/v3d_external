@@ -74,10 +74,6 @@ public slots:
 	void aboutPlugins();
     void runPlugin();
 	void runPlugin(QPluginLoader *loader, const QString & menuString); //by PHC, 101008
-
-	// -- This is specifically for Neuron Assembler, only gets called by Alt + F. -- MK, Dec, 2019
-	void runNAplugin(QPluginLoader* loader, const QString& menuString); 
-
     void runRecentPlugin(); //added by Zhi Z, 20140721
     void clear_recentPlugins();
 
@@ -86,10 +82,6 @@ protected:
 	bool runPluginInterface(QObject* plugin, const QString& command);
 	bool runPluginInterface2(QObject* plugin, const QString& command);
 	bool runPluginInterface2_1(QObject* plugin, const QString& command);
-
-	// -- This is the plugin interface only for Neuron Assembler, called by V3d_PluginLoader::runNAplugin. -- MK, Dec, 2019
-	bool runNApluginInterface(QObject* plugin, const QString& command); 
-
 	void clear();
 	void loadPlugins(); //load only once
 	void addToMenu(QMenu *menu, QObject *plugin, const QStringList &texts, const char *member);

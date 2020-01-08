@@ -256,7 +256,9 @@ public:
     virtual void openVRWindowV2(v3dhandle image_window, bool bOnlineMode = false) = 0;
 #endif
 
-
+	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication.
+	//                                                                                                                       -- MK, Jan, 2020
+	INeuronAssembler* castCViewer;
 };
 
 class V3DPluginInterface2
@@ -266,9 +268,6 @@ public:
 
 	virtual QStringList menulist() const = 0;
 	virtual void domenu(const QString & menu_name, V3DPluginCallback2 & v3d, QWidget * parent) = 0;
-
-	// -- In order to avoid too much addition to Vaa3D interface due to Neuron Assembler, another plugin interface function is created. -- MK, Dec, 2019
-	virtual void domenu(const QString & menu_name, V3DPluginCallback2 & v3d, QWidget * parent, INeuronAssembler& NA_teraflyInterface) = 0;
 
 	virtual QStringList funclist() const = 0;
 	virtual bool dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,

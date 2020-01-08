@@ -1033,7 +1033,28 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					pMain.FragTracerPluginLoaderPtr = &mypluginloader;
-					mypluginloader.runNAplugin(loader, "settings");
+					mypluginloader.castCViewer = tf::PluginInterface::getTeraflyCViewer();
+					mypluginloader.runPlugin(loader, "settings");
+
+					/*INeuronAssembler* NAinterface = tf::PluginInterface::getTeraflyCViewer();
+
+					QObject* plugin = pMain.FragTracerQPluginPtr->instance();
+					V3DPluginInterface2_1* interface = qobject_cast<V3DPluginInterface2_1*>(plugin);
+					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(pMain.FragTracerPluginLoaderPtr);
+
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "CViewerPortal";
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					interface->dofunc("mouse_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0);*/
 
 					return;
 				}

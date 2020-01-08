@@ -453,8 +453,6 @@ void V3d_PluginLoader::populateMenus()
 	}
 }
 
-//=========================================================
-
 void V3d_PluginLoader::aboutPlugins()
 {
     QList<QDir> pluginsDirList = getPluginsDirList();
@@ -541,82 +539,6 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	//    {
 	//    	loader->unload();      qDebug() << "unload: " <<fileName;
 	//    }
-}
-
-void V3d_PluginLoader::runNAplugin(QPluginLoader *loader, const QString & menuString)
-{
-	// -- This method only gets called from V3dR_GLWidget when Alt + F is hit. 
-	// -- Currently Neuron Assembler exists as a Vaa3D plugin and needs another interface that communicates with terafly environment.
-	// -- Hence this is a special version of runPlugin that calls V3d_PluginLoader::runNApluginInterface to pass terafly Env. to the plugin.
-	// --------- MK, Dec, 2019
-
-	if (!loader)
-	{
-		v3d_msg("ERROR in Vaa3D_PluginLoader::runPlugin: invalid pointer to the plugin loader detected.");
-		return;
-	}
-
-
-#if QT_VERSION < 0x040806 // MK, 09242017, attempting to solve plugin issue on Windows with Qt4.8 and higher. Still not sure why it's ok with Qt4.7.
-	loader->unload();
-#endif
-
-	QObject *plugin = loader->instance();
-	if (!plugin)
-	{
-		v3d_msg("ERROR in Vaa3D_PluginLoader::runPlugin: loader->instance()");
-		return;
-	}
-
-	//added by Zhi Z, 20140724
-	QSettings settings("HHMI", "Vaa3D");
-	recentpluginsList = settings.value("recentPluginList").toStringList();
-	recentpluginsIndex = settings.value("recentPluginIndex").toList();
-
-	QString CurrentpluginInfo = menuString + "%" + loader->fileName();
-	int flag = 0;
-	for (int i = 0; i < pluginFilenameList.size(); i++)
-	{
-		if (pluginFilenameList.at(i) == loader->fileName())
-		{
-			flag = 1;
-			break;
-		}
-	}
-
-	if (flag == 1)
-	{
-		int currentIndex = 0;
-
-		if (recentpluginsIndex.size() > 0)
-		{
-			for (int i = 0; i< recentpluginsList.size(); i++)
-			{
-				if (recentpluginsList.at(i) == CurrentpluginInfo)
-				{
-					currentIndex = recentpluginsIndex.at(i).toInt();
-					recentpluginsList.removeAt(i);
-					recentpluginsIndex.removeAt(i);
-					break;
-				}
-			}
-		}
-		recentpluginsList.prepend(CurrentpluginInfo);
-		recentpluginsIndex.prepend(currentIndex + 1);
-
-		settings.setValue("recentPluginList", recentpluginsList);
-		settings.setValue("recentPluginIndex", recentpluginsIndex);
-
-		updated_recentPlugins();
-		plugin_menu.update();
-	}
-
-	bool done = false;
-	if (!done)  { done = runNApluginInterface(plugin, menuString); v3d_msg("done with runNApluginInterface().", 0); }
-	if (!done)  { v3d_msg("No interface found.", 0); }
-
-
-	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 }
 
 void V3d_PluginLoader::runPlugin()
@@ -786,38 +708,6 @@ bool V3d_PluginLoader::runPluginInterface2_1(QObject* plugin, const QString& com
     }
 	return false;
 }
-
-bool V3d_PluginLoader::runNApluginInterface(QObject* plugin, const QString& command)
-{
-	// -- This method is called by V3d_PluginLoader::runNAplugin.
-	// -- Neuron Assembler requires another interface to talk to terafly environment. 
-	// -- The interface (INeuronAssembler) is cast from terafly::CViewer and passed to Neuron Assembler plugin from here.
-	// --------- MK, Dec, 2019
-
-	V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-	V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this);
-
-	// -- Might add more terafly class interfaces here in the long run.
-	INeuronAssembler* NAinterface = tf::PluginInterface::getTeraflyCViewer();
-
-	qDebug() << "runPluginInterface2_1 ..." << iface;
-
-	if (iface && callback && NAinterface)
-	{
-		try
-		{
-			iface->domenu(command, *callback, (QWidget*)0, *NAinterface); // do not pass the mainwindow widget
-		}
-		catch (...)
-		{
-			v3d_msg(QString("The plugin fails to run [%1]. Check your plugin code please.").arg(command));
-		}
-		return true;
-	}
-	return false;
-}
-
-//====================================================================
 
 bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output)
