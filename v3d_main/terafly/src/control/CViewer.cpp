@@ -690,7 +690,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				if (PMain::getInstance()->fragTracePluginInstance && this->selectedMarkerList != this->up2dateMarkerList)
 				{
 					this->up2dateMarkerList = this->selectedMarkerList;
-					PMain::getInstance()->NeuronAssemblerPortal->sendSelectedMarkers2NA(this->selectedMarkerList);
+					PMain::getInstance()->NeuronAssemblerPortal->sendSelectedMarkers2NA(this->selectedMarkerList, this->selectedLocalMarkerList);
 				}
 
 				terafly::PMain& pMain = *(terafly::PMain::getInstance());
@@ -737,11 +737,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick)
         {
-
-#ifdef _NEURON_ASSEMBLER_
-			if (PMain::getInstance()->NeuronAssemblerPortal != nullptr) PMain::getInstance()->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
-#endif
-
 //            if(current == this)
 //                qDebug()<<"current == this!";
 //            else if(current == prev)
@@ -850,10 +845,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 }
             }
             // --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
-
-#ifdef _NEURON_ASSEMBLER_
-			if (PMain::getInstance()->NeuronAssemblerPortal != nullptr) PMain::getInstance()->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
-#endif
 
             return true;
         }
@@ -2115,18 +2106,12 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
     {
         qDebug()<<"prev ? "<<volResIndex<<" == current ? "<<source->volResIndex;
 
-        //
         PMain* pMain = PMain::getInstance();
-
-#ifdef _NEURON_ASSEMBLER_
-		if (pMain->NeuronAssemblerPortal != nullptr) pMain->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(false);
-#endif
 
         insituZoomOut_dx = round(pMain->Hdim_sbox->value()/2.0f);
         insituZoomOut_dy = round(pMain->Vdim_sbox->value()/2.0f);
         insituZoomOut_dz = round(pMain->Ddim_sbox->value()/2.0f);
 
-        //
         if(insituZoomOut && volResIndex>0 && source->volResIndex > volResIndex)
         {
             int thresh = 4; // voxels
@@ -2395,10 +2380,6 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
             //qDebug()<<"done translate ... start accepting new event ...";
             isTranslate = false;
         }
-
-#ifdef _NEURON_ASSEMBLER_
-		if (pMain->NeuronAssemblerPortal != nullptr) pMain->NeuronAssemblerPortal->switchMarkerMonitor_fromPMain(true);
-#endif
     }
     PLog::instance()->appendOperation(new RestoreViewerOperation(strprintf("Restored viewer %d from viewer %d", ID, source->ID), tf::ALL_COMPS, timer.elapsed()));
 }
@@ -3333,19 +3314,12 @@ bool CViewer::getPartialVolumeCoords(int globalCoords[], int localCoords[], int 
 	else return true;
 }
 
-void CViewer::getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList)
-{
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	selectedMarkerList = currViewerPtr->selectedMarkerList;
-	selectedLocalMarkerList = currViewerPtr->selectedLocalMarkerList;
-}
-
 void CViewer::refreshSelectedMarkers()
 {
-	CViewer* currViewerPtr = CViewer::getCurrent();
-	currViewerPtr->selectedMarkerList.clear();
+	CViewer::getCurrent()->selectedMarkerList.clear();
+	CViewer::getCurrent()->selectedLocalMarkerList.clear();
 
-	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(currViewerPtr->getGLWidget()->getRenderer());
+	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
 	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
 		it->selected = false;
 }

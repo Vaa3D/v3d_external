@@ -211,7 +211,6 @@ class terafly::CViewer : public QWidget
 		QList<ImageMarker> selectedMarkerList;
 		QList<ImageMarker> selectedLocalMarkerList;
 		QList<ImageMarker> up2dateMarkerList;
-		virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList);
 		virtual void refreshSelectedMarkers();
 
 		virtual void segEditing_setCursor(string mode);

@@ -24,7 +24,6 @@ public:
 	virtual bool getZlockStatus() = 0;
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
 
-	virtual void getSelectedMarkerList(QList<ImageMarker>& selectedMarkerList, QList<ImageMarker>& selectedLocalMarkerList) = 0;
 	virtual void refreshSelectedMarkers() = 0;
 
 	virtual void segEditing_setCursor(string mode) = 0;

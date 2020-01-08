@@ -8,8 +8,7 @@ class IPMain4NeuronAssembler
 public:
 	virtual void getNAVersionNum() = 0;
 
-	virtual void switchMarkerMonitor_fromPMain(bool on_off) = 0;
-	virtual void sendSelectedMarkers2NA(const QList<ImageMarker>& selectedMarkerList) = 0;
+	virtual void sendSelectedMarkers2NA(const QList<ImageMarker>& selectedMarkerList, const QList<ImageMarker>& selectedLocalMarkerList) = 0;
 
 };
 
