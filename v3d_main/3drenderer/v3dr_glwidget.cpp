@@ -1035,28 +1035,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					pMain.FragTracerPluginLoaderPtr = &mypluginloader;
 					mypluginloader.castCViewer = tf::PluginInterface::getTeraflyCViewer();
 					mypluginloader.runPlugin(loader, "settings");
-
-					/*INeuronAssembler* NAinterface = tf::PluginInterface::getTeraflyCViewer();
-
-					QObject* plugin = pMain.FragTracerQPluginPtr->instance();
-					V3DPluginInterface2_1* interface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(pMain.FragTracerPluginLoaderPtr);
-
-					V3DPluginArgList pluginInputList, pluginOutputList;
-					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
-					vector<char*> pluginInputArgList;
-					vector<char*> pluginOutputArgList;
-					dummyInput.type = "dummy";
-					dummyInput.p = (void*)(&pluginInputArgList);
-					inputParam.type = "CViewerPortal";
-					inputParam.p = (void*)(&pluginInputArgList);
-					pluginInputList.push_back(dummyInput);
-					pluginInputList.push_back(inputParam);
-					dummyOutput.type = "dummy";
-					dummyOutput.p = (void*)(&pluginOutputArgList);
-					interface->dofunc("mouse_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0);*/
-
-					return;
 				}
 				else v3d_msg("Neuron Assembler plugin instance already exists.");
 			}
@@ -1093,23 +1071,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						pluginInputList.push_back(inputParam);
 						dummyOutput.type = "dummy";
 						dummyOutput.p = (void*)(&pluginOutputArgList);
-						iface->dofunc("hotKey", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget
-
-						map<int, vector<int> > labeledSegs;
-						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
-						{
-							/*if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
-							else
-							{
-								if (labeledSegs.find(segIt->row.begin()->type) == labeledSegs.end())
-								{
-									vector<int> pickedSegs;
-									pickedSegs.push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
-									labeledSegs.insert(pair<int, vector<int> >(segIt->row.begin()->type, pickedSegs));
-								}
-								else labeledSegs.at(segIt->row.begin()->type).push_back(int(segIt - curImg->tracedNeuron.seg.begin()));
-							}*/
-						}				
+						iface->dofunc("hotKey", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget			
 
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
