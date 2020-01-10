@@ -4244,11 +4244,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                     break;*/
                  default:
                     break;
+                     }
 		// qDebug("m_modeGrip_R=%d",m_modeGrip_R);
 		//grip right button is used to control linewidth for now
 //		iLineWid+=2;
 //		if(iLineWid>9){iLineWid = 1;}
-	}
+    }
+
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
 				//this func can 1.call top menu
@@ -4365,7 +4367,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				
 
 	
-	//////////////////
+
 }
 bool CMainApplication::isAnyNodeOutBBox(NeuronSWC S_temp)
 {
