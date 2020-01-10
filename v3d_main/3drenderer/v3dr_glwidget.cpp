@@ -4277,7 +4277,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
     qDebug()<<"in CollaDelSeg:"<<markerPOS;
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
-    qDebug()<<delMarkerPosList;
+//    qDebug()<<delMarkerPosList;
 
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
@@ -4285,9 +4285,9 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
     {
 
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
-//        qDebug()<<nodeXYZ<<":nodeXYZ";
-        XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
 
+        XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
+        qDebug()<<"delcurve:"<<delcurve.x<<" "<<delcurve.y<<" "<<delcurve.z;
 
         for(int J=0;J<v_ns_list.seg.size();J++)
         {
@@ -4296,6 +4296,8 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             V_NeuronSWC_unit node0,node1;
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
+            qDebug()<<"node0:"<<node0.x<<" "<<node0.y<<" "<<node0.z;
+            qDebug()<<"node1:"<<node1.x<<" "<<node1.y<<" "<<node1.z;
             if(/*sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||*/
                sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.0001)
             {
