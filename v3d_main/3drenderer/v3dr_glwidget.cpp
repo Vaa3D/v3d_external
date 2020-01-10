@@ -4194,20 +4194,10 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
             tmp.append(temp[0]);
             tmp.append(temp[1]);
             tmp.append(temp[2]);
-//            tmp[0]=temp[0];
-//            tmp[1]=temp[1];
-//            tmp[2]=temp[2];
             QString markerPos=tmp.join(" ");
             CollaAddMarker(markerPos,temp[3].toInt());
         }
     }
-
-
-
-
-
-
-
 }
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
@@ -4227,7 +4217,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
            float dist = /*glm::*/sqrt((markerI.x-markerXYZ0.at(0).toFloat())*(markerI.x-markerXYZ0.at(0).toFloat())+
                                   (markerI.y-markerXYZ0.at(1).toFloat())*(markerI.y-markerXYZ0.at(1).toFloat())+
                                   (markerI.z-markerXYZ0.at(2).toFloat())*(markerI.z-markerXYZ0.at(2).toFloat()));
-           if(dist<8.0)
+           if(dist<2.0)
            {
                qDebug()<<"find del marker";
                markers.removeAt(i);break;
@@ -4268,7 +4258,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         float dist = /*glm::*/sqrt((markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
                                (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
                                (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z));
-        if(dist<8.0)
+        if(dist<0.001)
         {
             markers.removeAt(i);
             goto L;
@@ -4307,13 +4297,13 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
             if(/*sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||*/
-               sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=2.0)
+               sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.0001)
             {
                 qDebug()<<"find last 2";
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0)
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.0001)
             {
                 qDebug()<<"find head 2";
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);

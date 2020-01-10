@@ -7246,27 +7246,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 bool CMainApplication::DeleteSegment(float x,float y,float z)
 {
     bool res=0;
-//<<<<<<< HEAD
-//    qDebug()<<sketchedNTList.size();
-//    for(int i=0;i<sketchedNTList.size();i++)
-//    {
-//        NeuronTree nt0=sketchedNTList.at(i);
-//        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
-//        qDebug()<<"ss:"<<ss.x<<" "<<ss.y<<" "<<ss.z;
-//        NeuronSWC ss0=nt0.listNeuron.at(1);
-//        qDebug()<<"ss0:"<<ss0.x<<" "<<ss0.y<<" "<<ss0.z;
-//=======
-//    qDebug()<<sketchedNTList.size();
-//    for(int i=0;i<sketchedNTList.size();i++)
-//    {
-//        NeuronTree nt0=sketchedNTList.at(i);
-//        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
-//        NeuronSWC ss0=nt0.listNeuron.at(1);
-//>>>>>>> auto_test
-
-//    }
-
-
+    qDebug()<<"in del seg VR";
     for(int i=0;i<sketchedNTList.size();i++)
     {
         NeuronTree nt0=sketchedNTList.at(i);
@@ -7274,7 +7254,7 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
 
         NeuronSWC ss0=nt0.listNeuron.at(1);
 
-        if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=2.0/*||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0*/)
+        if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.0001/*||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0*/)
         {
             qDebug()<<"VR FIND last 2";
             sketchedNTList.removeAt(i);
@@ -7282,7 +7262,7 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
             res=1;break;
         }
 
-        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0)
+        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.0001)
         {
             qDebug()<<"VR FIND head 2";
             sketchedNTList.removeAt(i);
@@ -7292,7 +7272,6 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
     }
     return res;
 }
-
 
 void CMainApplication::SetDeleteSegmentColor(QString segName)
 {

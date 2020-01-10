@@ -190,7 +190,6 @@ void ManageSocket::receivefile(QString anofile)
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {
 	clienton = client_flag;
-//	NTList_SendPool = ntlist;
 	NTNumReceieved=0;
 	NeuronTree  nt = terafly::PluginInterface::getSWC();
 	int tempntsize = nt.listNeuron.size();
@@ -225,6 +224,7 @@ void V3dR_Communicator::timerStart(QString anoname,int mesc)
             TFProcess(QString(line),1);
         }
     }
+    f->remove();
     delete  f;
     asktimer->start(mesc);
 }
@@ -260,7 +260,6 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 	}
     qDebug()<<"User:  "<<userName<<".  Connected with server: "<<ip<<" :"<<port;
     emit messageMade();
-
 	return 1;
 }
 void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
@@ -355,7 +354,6 @@ void V3dR_Communicator::onReadyRead()
         if(nextblocksize>0&&socket->bytesAvailable()>=nextblocksize)
         {
             in >>line;
-
             nextblocksize=0;
                 emit msgtoprocess(line);
         }else
@@ -439,7 +437,6 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
         }
         else if(colorRex.indexIn(line) != -1) {
-//            qDebug()<<"incolor";
             QStringList clrMSGs = colorRex.cap(1).split(" ");
 
             if(clrMSGs.size()<2) return;
@@ -449,7 +446,6 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             {
                 if(this->Agents.at(i).name!=user) continue;
                 this->Agents.at(i).colorType=clrtype.toInt();
-//                qDebug()<<"user:"<<user<<" receievedColorTYPE="<<this->Agents.at(i).colorType;
             }
         }
         else if (deletecurveRex.indexIn(line) != -1) {
@@ -472,16 +468,16 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             qDebug()<<"+============marker process begin========";
             QString user=markerRex.cap(1);
 
-            int colortype=21;
-            for(int i=0;i<Agents.size();i++)
-            {
-                if(Agents[i].name==user)
-                {
-                    colortype=Agents[i].colorType;
-                    qDebug()<<"marker color"<<colortype;
-                    break;
-                }
-            }
+//            int colortype=21;
+//            for(int i=0;i<Agents.size();i++)
+//            {
+//                if(Agents[i].name==user)
+//                {
+//                    colortype=Agents[i].colorType;
+//                    qDebug()<<"marker color"<<colortype;
+//                    break;
+//                }
+//            }
             if(flag_init==0)
             {
                 if(user!=userName)
@@ -507,13 +503,13 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
             QString user=messageRex.cap(1);
             int colortype=21;
-            for(int i=0;i<Agents.size();i++)
-            {
-                if(Agents[i].name==user)
-                {
-                    colortype=Agents[i].colorType;break;
-                }
-            }
+//            for(int i=0;i<Agents.size();i++)
+//            {
+//                if(Agents[i].name==user)
+//                {
+//                    colortype=Agents[i].colorType;break;
+//                }
+//            }
             QString temp1=messageRex.cap(2).trimmed();
 
             QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
@@ -528,25 +524,19 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }else {
                 emit addSeg(temp1,colortype);
             }
-qDebug()<<"======================messageRex in Terafly end============";
+            qDebug()<<"======================messageRex in Terafly end============";
         }
 
         else if(creatorRex.indexIn(line)!=-1)
         {
-//            qDebug()<<line;
-
             QStringList markerMSGs = creatorRex.cap(2).split(" ");
             if (markerMSGs.size() < 3)
             {
                 qDebug() << "size < 3";
                 return;
             }
-
-
-
             emit addMarker(creatorRex.cap(2).trimmed(),3);//para2 was not used
             //wait ...
-
         }
 }
 
@@ -682,7 +672,6 @@ void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)
 			loc_temp.z = qsl[i].toFloat();
 			loclist_temp.emplace_back(loc_temp);
 		}
-
 	}
 	loc_ReceivePool.push_back(loclist_temp);
 	//update AddCurveSWC
@@ -712,7 +701,6 @@ XYZ V3dR_Communicator::ConvertGlobaltoLocalCroods(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 {
-
 	x+=(ImageStartPoint.x-1);
 	y+=(ImageStartPoint.y-1);
 	z+=(ImageStartPoint.z-1);
@@ -733,7 +721,6 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ
 
 void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
 {
-
     NeuronTree auto_res=readSWC_file(path);
     V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(auto_res);
 

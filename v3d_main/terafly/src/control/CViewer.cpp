@@ -1959,9 +1959,6 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                 view3DWidget->SetupCollaborateInfo();
                 view3DWidget->TeraflyCommunicator->UpdateSendDelMarkerInfo(imageMarkers[i].x,
                                imageMarkers[i].y,imageMarkers[i].z);
-            }else
-            {
-//                qDebug()<<"cdkjsbgkjcvdskjv";
             }
 
         }

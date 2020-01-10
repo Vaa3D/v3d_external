@@ -75,7 +75,6 @@ void VR_MainWindow::TVProcess(QString line)
     QRegExp messageRex("^/seg:(.*)__(.*)$");
 
     line=line.trimmed();
-//    qDebug()<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
 
@@ -234,30 +233,12 @@ void VR_MainWindow::TVProcess(QString line)
 //                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
 //					pMainApplication->collaboration_creator_res = res;
                     pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
-					
-
-                        VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
-                        VR_Communicator->CreatorMarkerRes = res;
-                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
+                    VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+                    VR_Communicator->CreatorMarkerRes = res;
+                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
 
 				}
 			}
-
-
-            //qDebug()<<"get creator message";
-            //QStringList creatorMSGs = creatorRex.cap(1).split(" ");
-            //QString user=creatorMSGs.at(0);
-            //QString creator_Res = creatorMSGs.at(1);
-            //for(int i=0;i<VR_Communicator->Agents.size();i++)
-            //{
-            //    qDebug()<<"creator name is "<<user;
-            //    if(VR_Communicator->Agents.at(i).name!=user) continue;
-            //    pMainApplication->collaboration_creator_name = user;
-            //    pMainApplication->collaboration_creator_res = creator_Res.toInt();
-            //    qDebug()<<"user:"<<user<<" receievedCreator"<<pMainApplication->collaboration_creator_name;
-            //    qDebug()<<"user:"<<user<<" receievedCreator res"<<pMainApplication->collaboration_creator_res;
-            //}
-
         }
         else if (deletecurveRex.indexIn(line) != -1) {
             qDebug() << "deletecurve:"<<line;
@@ -282,11 +263,6 @@ void VR_MainWindow::TVProcess(QString line)
 					pMainApplication->collaborationTargetdelcurveRes.x = resx;
 					pMainApplication->collaborationTargetdelcurveRes.y = resy;
 					pMainApplication->collaborationTargetdelcurveRes.z = resz;
-					cout << "pMainApplication->collaborationTargetdelcurveRes.x" << pMainApplication->collaborationTargetdelcurveRes.x << endl;
-					cout << "pMainApplication->collaborationTargetdelcurveRes.y" << pMainApplication->collaborationTargetdelcurveRes.y << endl;
-					cout << "pMainApplication->collaborationTargetdelcurveRes.z" << pMainApplication->collaborationTargetdelcurveRes.z << endl;
-                    cout<<"VRVolumeStartPoint (x,y,z)"<<VRVolumeStartPoint.x<<" "<<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
-                    cout<<"VRVolumeEndPoint (x,y,z)"<<VRVolumeEndPoint.x<<" "<<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
                     if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
                             ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
                     )
