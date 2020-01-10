@@ -1198,6 +1198,7 @@ void V3dR_MainWindow::initControlValue()
 	//////////////////////////////////////////////////////////////////////////
 }
 
+#ifdef _NEURON_ASSEMBLER_
 void V3dR_MainWindow::setXCutLockIcon(bool b)
 {
 	if (! xcLock)  return;
@@ -1240,7 +1241,7 @@ void V3dR_MainWindow::setZCutLockIcon(bool b)
 		glWidget->getZlockStatus(false);
 	}
 }
-
+#endif
 
 void V3dR_MainWindow::initVolumeTimeRange()
 {

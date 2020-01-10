@@ -49,6 +49,7 @@ void myV3dR_GLWidget::setZoomO(int zr)
 
 void myV3dR_GLWidget::setZoomO(float zr)
 {
+	//cout << zr << " " << this->_zoom << endl;
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, zoom = %.2f", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
 
     //qDebug("V3dR_GLWidget::setZoom = %i",zr);

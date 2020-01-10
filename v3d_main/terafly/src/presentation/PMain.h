@@ -367,6 +367,7 @@ class terafly::PMain : public QWidget
 
         bool cleanOldAutosavedFiles; // e.g. longer than 24 hours
 
+#ifdef _NEURON_ASSEMBLER_
 		/****************** Fragment tracing related *****************/
 		// MK, Sep, 2019
 		bool fragTracePluginInstance;
@@ -375,6 +376,7 @@ class terafly::PMain : public QWidget
 		IPMain4NeuronAssembler* NeuronAssemblerPortal;
 		bool xLockStatus, yLockStatus, zLockStatus;
 		/*************************************************************/
+#endif
 
     public slots:
 

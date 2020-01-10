@@ -160,7 +160,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     parentWidget = parent;
     annotationsPathLRU = "";
     marginLeft = 65;
+
+#ifdef _NEURON_ASSEMBLER_
 	NeuronAssemblerPortal = nullptr;
+	this->fragTracePluginInstance = false; // MK, 2019, Sep; for monitoring FragTrace app status.
+#endif
 
     //creating fonts
     QFont tinyFont = QApplication::font();
@@ -1121,8 +1125,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     setLayout(layout);
     setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
-
-	this->fragTracePluginInstance = false; // MK, 2019, Sep; for monitoring FragTrace app status.
 
     // signals and slots
     /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);

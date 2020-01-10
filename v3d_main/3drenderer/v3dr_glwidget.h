@@ -434,11 +434,12 @@ public slots:
     virtual void setEditMode();
     virtual void updateColorMode(int mode);
 
+#ifdef _NEURON_ASSEMBLER_
 	// Volume cut lock status for fragment tracing, MK, Dec, 2019
 	virtual void getXlockStatus(bool status);
 	virtual void getYlockStatus(bool status);
 	virtual void getZlockStatus(bool status);
-
+#endif
 
 //----------------------------------------------------------------------------------------
 // end View3DControl interface

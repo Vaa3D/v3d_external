@@ -2980,6 +2980,7 @@ void V3dR_GLWidget::switchBackgroundColor()
     POST_updateGL();
 }
 
+#ifdef _NEURON_ASSEMBLER_
 void V3dR_GLWidget::getXlockStatus(bool status)
 {
 	if (this->getRenderer())
@@ -3018,7 +3019,7 @@ void V3dR_GLWidget::getZlockStatus(bool status)
 		if (pMain.fragTracePluginInstance) pMain.zLockStatus = status;
 	}
 }
-
+#endif
 
 void V3dR_GLWidget::setVoxSize()
 {
