@@ -4220,35 +4220,34 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_Grip)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
 
-		// m_modeControlGrip_R++;
-		// m_modeControlGrip_R%=6;
-		// switch(m_modeControlGrip_R)
-		// {
-		// case 0:
-		// 	m_modeGrip_R = m_drawMode;
-		// 	break;
-		// case 1:
-		// 	m_modeGrip_R = m_deleteMode;
-		// 	break;
-		// case 2:
-		// 	m_modeGrip_R = m_dragMode;
-		// 	break;
-		// case 3:
-		// 	m_modeGrip_R = m_markMode;
-		// 	break;
-		// case 4:
-		// 	m_modeGrip_R = m_delmarkMode;
-		// 	break;
-		// case 5:
-		// 	m_modeGrip_R = m_splitMode;
-		// 	break;
-		// default:
-		// 	break;
-		// }	
+        m_modeControlGrip_R++;
+                 m_modeControlGrip_R%=2;
+                 switch(m_modeControlGrip_R)
+                 {
+                 case 0:
+                    m_modeGrip_R = m_drawMode;
+                    break;
+                 case 1:
+                    m_modeGrip_R = m_deleteMode;
+                    break;
+                 /*case 2:
+                    m_modeGrip_R = m_dragMode;
+                    break;
+                 case 3:
+                    m_modeGrip_R = m_markMode;
+                    break;
+                 case 4:
+                    m_modeGrip_R = m_delmarkMode;
+                    break;
+                 case 5:
+                    m_modeGrip_R = m_splitMode;
+                    break;*/
+                 default:
+                    break;
 		// qDebug("m_modeGrip_R=%d",m_modeGrip_R);
 		//grip right button is used to control linewidth for now
-		iLineWid+=2;
-		if(iLineWid>9){iLineWid = 1;}
+//		iLineWid+=2;
+//		if(iLineWid>9){iLineWid = 1;}
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
@@ -4813,10 +4812,10 @@ void CMainApplication::SetupControllerTexture()
 
 	//left controller
 	{
-		Vector4 point_A(-0.023f,-0.009f,0.065f,1);//grip no.1 dispaly "Mode Switch"
-		Vector4 point_B(-0.023f,-0.009f,0.105f,1);
-		Vector4 point_C(-0.02f,-0.025f,0.065f,1);
-		Vector4 point_D(-0.02f,-0.025f,0.105f,1);
+        Vector4 point_A(-0.023f,-2,0.065f,1);//grip no.1 dispaly "Mode Switch"
+        Vector4 point_B(-0.023f,-2,0.105f,1);
+        Vector4 point_C(-0.02f,-2,0.065f,1);
+        Vector4 point_D(-0.02f,-2,0.105f,1);
 		point_A = mat_L * point_A;
 		point_B = mat_L * point_B;
 		point_C = mat_L * point_C;
@@ -4844,10 +4843,10 @@ void CMainApplication::SetupControllerTexture()
 		// AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
 		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
 
-		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad dispaly "ON/OFF"
-		Vector4 point_F(0.02f,0.01f,0.03f,1);
-		Vector4 point_G(-0.02f,0.01f,0.07f,1);
-		Vector4 point_H(0.02f,0.01f,0.07f,1);
+        Vector4 point_E(-0.02f,0.008f,0.03f,1);// for the touchpad dispaly "ON/OFF"
+        Vector4 point_F(0.02f,0.008f,0.03f,1);
+        Vector4 point_G(-0.02f,0.005f,0.07f,1);
+        Vector4 point_H(0.02f,0.005f,0.07f,1);
 		point_E = mat_L * point_E;
 		point_F = mat_L * point_F;
 		point_G = mat_L * point_G;
@@ -4995,10 +4994,10 @@ void CMainApplication::SetupControllerTexture()
 			break;
 		}
 
-		Vector4 point_I(-0.01f,0.01f,0.01f,1);//for the menu button dispaly "QUIT"
-		Vector4 point_J(0.01f,0.01f,0.01f,1);
-		Vector4 point_K(-0.01f,0.01f,0.03f,1);
-		Vector4 point_L(0.01f,0.01f,0.03f,1);//*/
+        Vector4 point_I(-0.01f,0.008f,0.01f,1);//for the menu button dispaly "QUIT"
+        Vector4 point_J(0.01f,0.008f,0.01f,1);
+        Vector4 point_K(-0.01f,0.008f,0.03f,1);
+        Vector4 point_L(0.01f,0.008f,0.03f,1);//*/
 		point_I = mat_L * point_I;
 		point_J = mat_L * point_J;
 		point_K = mat_L * point_K;
@@ -5011,10 +5010,10 @@ void CMainApplication::SetupControllerTexture()
 		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
 
 
-		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current mode dispaly "Surface/line  Virtual finger  search ....."
-		Vector4 point_N(0.02f,0.005f,0.1f,1);
-		Vector4 point_O(-0.02f,0.002f,0.14f,1);
-		Vector4 point_P(0.02f,0.002f,0.14f,1);//*/
+        Vector4 point_M(-0.02f,0.002f,0.1f,1);//for the current mode dispaly "Surface/line  Virtual finger  search ....."
+        Vector4 point_N(0.02f,0.002f,0.1f,1);
+        Vector4 point_O(-0.02f,0.0005f,0.14f,1);
+        Vector4 point_P(0.02f,0.0005f,0.14f,1);//*/
 		point_M = mat_L * point_M;
 		point_N = mat_L * point_N;
 		point_O = mat_L * point_O;
@@ -5199,10 +5198,10 @@ void CMainApplication::SetupControllerTexture()
 		// AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
 		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
 
-		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad switch & display "translate /rotate /scale /nothing
-		Vector4 point_F(0.02f,0.01f,0.03f,1);
-		Vector4 point_G(-0.02f,0.01f,0.07f,1);
-		Vector4 point_H(0.02f,0.01f,0.07f,1);
+        Vector4 point_E(-0.02f,0.008f,0.03f,1);// for the touchpad switch & display "translate /rotate /scale /nothing
+        Vector4 point_F(0.02f,0.008f,0.03f,1);
+        Vector4 point_G(-0.02f,0.005f,0.07f,1);
+        Vector4 point_H(0.02f,0.005f,0.07f,1);
 		point_E = mat_R * point_E;
 		point_F = mat_R * point_F;
 		point_G = mat_R * point_G;
@@ -5274,10 +5273,10 @@ void CMainApplication::SetupControllerTexture()
 		// }
 
 
-		Vector4 point_I(-0.01f,0.01f,0.01f,1);//for the menu button dispaly "SAVE"
-		Vector4 point_J(0.01f,0.01f,0.01f,1);
-		Vector4 point_K(-0.01f,0.01f,0.03f,1);
-		Vector4 point_L(0.01f,0.01f,0.03f,1);//*/
+        Vector4 point_I(-0.01f,0.008f,0.01f,1);//for the menu button dispaly "SAVE"
+        Vector4 point_J(0.01f,0.008f,0.01f,1);
+        Vector4 point_K(-0.01f,0.008f,0.03f,1);
+        Vector4 point_L(0.01f,0.008f,0.03f,1);//*/
 		point_I = mat_R * point_I;
 		point_J = mat_R * point_J;
 		point_K = mat_R * point_K;
@@ -5335,11 +5334,10 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(colormenu_point_rightbottom.x,colormenu_point_rightbottom.y,colormenu_point_rightbottom.z,0.7174,0.6458f,vcVerts);
 				AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174,0.5487f,vcVerts);
 		}
-
-		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
-		Vector4 point_N(0.02f,0.005f,0.1f,1);
-		Vector4 point_O(-0.02f,0.002f,0.13f,1);
-		Vector4 point_P(0.02f,0.002f,0.13f,1);//*/
+        Vector4 point_M(-0.02f,0.002f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
+        Vector4 point_N(0.02f,0.002f,0.1f,1);
+        Vector4 point_O(-0.02f,0.0005f,0.13f,1);
+        Vector4 point_P(0.02f,0.0005f,0.13f,1);//*/
 		point_M = mat_R * point_M;
 		point_N = mat_R * point_N;
 		point_O = mat_R * point_O;
