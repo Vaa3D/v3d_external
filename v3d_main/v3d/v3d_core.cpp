@@ -6648,7 +6648,9 @@ vector<XYZ> My4DImage::ExtractDeletingNode()
 	while (iter != tracedNeuron.seg.end())
 	{
 		if (iter->to_be_deleted)
-			out_LocList.push_back(XYZ(iter->row[1].x, iter->row[1].y, iter->row[1].z));
+        {
+            out_LocList.push_back(XYZ(iter->row[1].x, iter->row[1].y, iter->row[1].z));
+        }
 			iter++;
 	}
 

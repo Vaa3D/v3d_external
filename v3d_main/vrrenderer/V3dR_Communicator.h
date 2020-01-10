@@ -116,6 +116,7 @@ public slots:
     void TFProcess(QString msg,bool flag_init=0);
     void read_autotrace(QString,XYZ*);
     void timerStart(QString,int);
+//    void setautomarker(XYZ);
 private slots:	
     void onReadyRead();
     void onConnected();

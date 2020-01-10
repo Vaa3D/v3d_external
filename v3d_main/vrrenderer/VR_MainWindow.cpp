@@ -244,11 +244,18 @@ void VR_MainWindow::TVProcess(QString line)
             qDebug() << "deletecurve:"<<line;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
+
             if(delMSGs.size()<1)
             {
                 qDebug()<<"size < 2";
+                if(user==userName)
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
                 return;
             }
+
 
             for(int i=0;i<delMSGs.size();i++)
             {
@@ -404,11 +411,15 @@ void VR_MainWindow::TVProcess(QString line)
             if(MSGs.size()<=1) return;
 
             qDebug()<<"======================messageindex in TeraVr begin=================";
-
-            int colortype=21;
+            QStringList REMSGS;
             for(int i=1;i<MSGs.size();i++)
+                REMSGS.push_front(MSGs.at(i));
+            REMSGS.push_front(MSGs.at(0));
+            qDebug()<<REMSGS;
+            int colortype=21;
+            for(int i=1;i<REMSGS.size();i++)
             {
-                QString PointMSG=MSGs.at(i);
+                QString PointMSG=REMSGS.at(i);
                 QStringList poingmsg=PointMSG.trimmed().split(" ");
 
                 XYZ LocCoords=ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
@@ -418,19 +429,19 @@ void VR_MainWindow::TVProcess(QString line)
                 {
                     message+=QString::number(-1);
                     colortype=poingmsg[1].toInt();
-                    if(MSGs[0].split(" ").at(0)=="TeraVR"||MSGs[0].split(" ").at(0)=="TeraFly")
+                    if(REMSGS[0].split(" ").at(0)=="TeraVR"||REMSGS[0].split(" ").at(0)=="TeraFly")
                     {
                         float mx = poingmsg[2].toFloat();
                         float my = poingmsg[3].toFloat();
                         float mz = poingmsg[4].toFloat();
-                        int resx = MSGs[0].split(" ").at(1).toInt();
-                        int resy = MSGs[0].split(" ").at(2).toInt();
-                        int resz = MSGs[0].split(" ").at(3).toInt();
+                        int resx = REMSGS[0].split(" ").at(1).toInt();
+                        int resy = REMSGS[0].split(" ").at(2).toInt();
+                        int resz = REMSGS[0].split(" ").at(3).toInt();
 
                         qDebug()<<"mx="<<mx<<" my="<<my<<" mz="<<mz<<" resx="<<resx<<" resy="<<resy<<" resz="<<resz;
                         pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
-                        XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
-                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z,1);
+                        XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);                      
+                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
 //                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
 //                        XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
 //                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype,1);
@@ -439,18 +450,18 @@ void VR_MainWindow::TVProcess(QString line)
                 else
                     message+=QString::number(i-1);
 
-                if(i!=MSGs.size()-1)
+                if(i!=REMSGS.size()-1)
                 {
                     message+=" ";
 
                 }else
                 {
 
-                    if(MSGs[0].split(" ").at(0)=="TeraVR"||MSGs[0].split(" ").at(0)=="TeraFly")
+                    if(REMSGS[0].split(" ").at(0)=="TeraVR"||REMSGS[0].split(" ").at(0)=="TeraFly")
                     {
-                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
+                        pMainApplication->CollaborationTargetMarkerRes = XYZ(REMSGS[0].split(" ").at(1).toInt(), REMSGS[0].split(" ").at(2).toInt(), REMSGS[0].split(" ").at(3).toInt());
                         XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
+                        pMainApplication->RemoveMarkerandSurface2(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z,1);
                     }
                 }
 

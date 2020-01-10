@@ -4275,28 +4275,39 @@ void PMain::startAutoTrace()
 
         qDebug()<<"path:"<<path;
 
+        QDir dir("./");
+        if(!dir.cd("testV3draw"))
+        {
+            dir.mkdir("testV3draw");
+
+        }
+
         QProcess p;
-        p.execute("D:/cmy_test/bin/vaa3d_msvc.exe",QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
+        p.execute("C:/cmy_test/bin/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
                   <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
                   <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
 
-        QDir dir("./testV3draw/");
+
+
         QFileInfoList file_list=dir.entryInfoList(QDir::Files);
         qDebug()<<dir.absolutePath();
 
-        if(file_list.size()!=1) {qDebug()<<"error:file not 1";return;}
+        for(int i=0;i<file_list.size();i++)
+            qDebug()<<file_list.at(i).fileName();
+        qDebug()<<"hjkhsjkahjkdshakj-------";
+//        if(file_list.size()!=1) {qDebug()<<"error:file not 1";return;}
+
         QRegExp v3drawExp("(.*).v3draw");
         if(v3drawExp.indexIn(file_list.at(0).fileName())!=-1)
         {
             qDebug()<<file_list.at(0).absolutePath();
             QString v3drawpath=file_list.at(0).absolutePath()+"/"+file_list.at(0).fileName();
-            p.execute("D:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"D:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+            p.execute("C:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
                       <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
             //delete v3draw
             QFile *f=new QFile(v3drawpath);
             if(f->exists()) f->remove();
             delete  f;
-
 
              file_list=dir.entryInfoList(QDir::Files);
              QRegExp APP2Exp("(.*)_app2.swc");

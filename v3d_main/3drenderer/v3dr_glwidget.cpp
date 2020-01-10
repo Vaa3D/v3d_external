@@ -4217,7 +4217,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
            float dist = /*glm::*/sqrt((markerI.x-markerXYZ0.at(0).toFloat())*(markerI.x-markerXYZ0.at(0).toFloat())+
                                   (markerI.y-markerXYZ0.at(1).toFloat())*(markerI.y-markerXYZ0.at(1).toFloat())+
                                   (markerI.z-markerXYZ0.at(2).toFloat())*(markerI.z-markerXYZ0.at(2).toFloat()));
-           if(dist<2.0)
+           if(dist<8.0)
            {
                qDebug()<<"find del marker";
                markers.removeAt(i);break;
@@ -4258,7 +4258,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         float dist = /*glm::*/sqrt((markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
                                (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
                                (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z));
-        if(dist<0.001)
+        if(dist<5)
         {
             markers.removeAt(i);
             goto L;
@@ -4296,16 +4296,15 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             V_NeuronSWC_unit node0,node1;
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
-            qDebug()<<"node0:"<<node0.x<<" "<<node0.y<<" "<<node0.z;
-            qDebug()<<"node1:"<<node1.x<<" "<<node1.y<<" "<<node1.z;
-            if(/*sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=2.0||*/
-               sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.0001)
-            {
-                qDebug()<<"find last 2";
-                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
-                break;
-            }
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.0001)
+//            qDebug()<<"node0:"<<node0.x<<" "<<node0.y<<" "<<node0.z<<node0.parent;
+//            qDebug()<<"node1:"<<node1.x<<" "<<node1.y<<" "<<node1.z<<node1.parent;
+//            if(sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.01)
+//            {
+//                qDebug()<<"find last 2";
+//                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
+//                break;
+//            }
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.01)
             {
                 qDebug()<<"find head 2";
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
@@ -4356,6 +4355,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             if(i==qsl.size()-1)
             {
                 CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
+
             }
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {

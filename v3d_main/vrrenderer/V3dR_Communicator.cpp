@@ -636,21 +636,20 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
     return messageBuff;
 }
 
-
-
 QString V3dR_Communicator::V_DeleteNodeToSendMSG(vector<XYZ> loc_list)
 {
-    string messageBuff ;
+    QString messageBuff ;
 	for (int i = 0; i < loc_list.size(); ++i)
 	{
-		char packetbuff[300];
+//		char packetbuff[300];
 		XYZ GlobalCroods = ConvertLocaltoGlobalCroods(loc_list[i].x, loc_list[i].y, loc_list[i].z);
-        sprintf(packetbuff, "%5.3f %5.3f %5.3f %5.3f %5.3f %5.3f_", GlobalCroods.x, GlobalCroods.y, GlobalCroods.z, ImageCurRes.x, ImageCurRes.y, ImageCurRes.z);
-
+//        sprintf(packetbuff, "%5.3f %5.3f %5.3f %5.3f %5.3f %5.3f_", GlobalCroods.x, GlobalCroods.y, GlobalCroods.z, ImageCurRes.x, ImageCurRes.y, ImageCurRes.z);
+        QString packetbuff;
+        packetbuff.clear();
+        packetbuff=QString("%1 %2 %3 %4 %5 %6_").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 		messageBuff += packetbuff;
 	}
-	QString out_MSG = QString::fromStdString(messageBuff);
-	return out_MSG;
+    return messageBuff;
 }
 
 void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)

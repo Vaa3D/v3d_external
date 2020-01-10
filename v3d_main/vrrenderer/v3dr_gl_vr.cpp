@@ -2282,9 +2282,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 
 bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type,bool asg)
 {
-	// bool deletedmarker=false;
-	//remove the marker in list 
-//    qDebug()<<"(x,y,z)"<<x<<" "<<y<<" "<<z;
+
 		for(int i=0;i<drawnMarkerList.size();i++)
 		{
 			ImageMarker markertemp = drawnMarkerList.at(i);
@@ -2308,7 +2306,7 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
                 }
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
-            if(dist < /*(dist_thres/m_globalScale*5)*/8.0)
+            if(dist < /*(dist_thres/m_globalScale*5)*/5)
 			{
 				drawnMarkerList.removeAt(i);
 				markerVisibility.erase(markerVisibility.begin()+i);
@@ -2353,6 +2351,78 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
 	//}
 
 }
+bool CMainApplication::RemoveMarkerandSurface2(double x,double y,double z,int type,bool asg)
+{
+
+        for(int i=0;i<drawnMarkerList.size();i++)
+        {
+            ImageMarker markertemp = drawnMarkerList.at(i);
+            float dist=10000;
+            if(isOnline == false )
+            {
+                dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+            }
+            else
+            {
+                if(!asg)
+                {
+                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+                    dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+                }else
+                {
+//                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+                    dist = glm::sqrt((TaegetMarkx.x- x)*(TaegetMarkx.x- x)+(TaegetMarkx.y- y)*(TaegetMarkx.y- y)+(TaegetMarkx.z- z)*(TaegetMarkx.z- z));
+                }
+            }
+            //cal the dist between pos & current node'position, then compare with the threshold
+            if(dist < /*(dist_thres/m_globalScale*5)*/8.0)
+            {
+                drawnMarkerList.removeAt(i);
+                markerVisibility.erase(markerVisibility.begin()+i);
+                qDebug()<<"remove marker at "<<i;
+                if(Markers_spheres[i]) delete Markers_spheres[i];
+                Markers_spheres.erase(Markers_spheres.begin()+i);
+                Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
+                Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
+                // deletedmarker = true;
+                return true;
+            }
+        }
+
+    return false;
+    //if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
+    //{
+    //	//empty all Markers_spheres,Markers_spheresPos,Markers_spheresColor
+    //	for (int i=0;i<Markers_spheres.size();i++) delete Markers_spheres[i];
+    //	Markers_spheres.clear();
+    //	Markers_spheresPos.clear();
+    //	Markers_spheresColor.clear();
+
+    //	//reset Markers_spheres,Markers_spheresPos,Markers_spheresColor
+    //	for(int i=0;i<drawnMarkerList.size();i++)
+    //	{
+    //		ImageMarker mk = drawnMarkerList.at(i);
+    //		Markers_spheres.push_back(new Sphere(mk.radius,10,10));
+    //		Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
+
+    //		glm::vec3 agentclr=glm::vec3();
+    //		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+    //		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+    //		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+    //		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+    //		Markers_spheresColor.push_back(agentclr);
+    //	}
+    //}
+    //else
+    //{
+    //	//cannot find marker, do nothing
+    //	qDebug()<<"Cannot find any marker nearby.Please retry.";
+    //}
+
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Processes a single VR event
 //-----------------------------------------------------------------------------
@@ -3608,7 +3678,17 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					{
 						SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
 					}
-				}
+                }else
+                {
+                    for(int i=0;i<drawnMarkerList.size();i++)
+                    {
+                        ImageMarker markertemp = drawnMarkerList.at(i);
+                        double dist = glm::sqrt((markertemp.x- m_v4DevicePose.x)*(markertemp.x- m_v4DevicePose.x)+(markertemp.y- m_v4DevicePose.y)*(markertemp.y- m_v4DevicePose.y)
+                                         +(markertemp.z- m_v4DevicePose.z)*(markertemp.z- m_v4DevicePose.z));
+                        if(dist<5)
+                            markerPOS=QString("%1 %2 %3").arg(markertemp.x).arg(markertemp.y).arg(markertemp.z);
+                    }
+                }
 				break;
 			}
 		case m_reducenodeMode:
@@ -7254,15 +7334,15 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
 
         NeuronSWC ss0=nt0.listNeuron.at(1);
 
-        if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.0001/*||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0*/)
-        {
-            qDebug()<<"VR FIND last 2";
-            sketchedNTList.removeAt(i);
-			SetupSingleMorphologyLine(i, 2);
-            res=1;break;
-        }
+//        if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01/*||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0*/)
+//        {
+//            qDebug()<<"VR FIND last 2";
+//            sketchedNTList.removeAt(i);
 
-        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.0001)
+//			SetupSingleMorphologyLine(i, 2);
+//            res=1;break;
+//        }
+        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01)
         {
             qDebug()<<"VR FIND head 2";
             sketchedNTList.removeAt(i);

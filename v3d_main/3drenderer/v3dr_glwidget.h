@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -615,6 +615,7 @@ public slots:
     void CollaDelSeg(QString markerPOS);
     void CollaAddMarker(QString markerPOS,int colortype);
     void CollaDelMarker(QString markerPOS);
+
     //end
 #endif
 
