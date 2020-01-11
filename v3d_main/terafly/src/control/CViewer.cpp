@@ -449,8 +449,6 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     toRetrieveData = false;
 	volumeCutSbAdjusted = false;
 	xMinAdjusted = false, xMaxAdjusted = false, yMinAdjusted = false, yMaxAdjusted = false, zMinAdjusted = false, zMaxAdjusted = false;
-	
-	if (PMain::getInstance()->NeuronAssemblerPortal != nullptr) PMain::getInstance()->NeuronAssemblerPortal->getNAVersionNum();
 
     try
     {
@@ -3324,14 +3322,22 @@ void CViewer::refreshSelectedMarkers()
 		it->selected = false;
 }
 
-void CViewer::segEditing_setCursor(string mode)
+void CViewer::segEditing_setCursor(string action)
 {
-	if (!mode.compare("erase"))
+	if (!action.compare("erase"))
 	{
-		QCursor eraseCursorPic = QCursor(QPixmap("..\\..\\vaa3d_tools\\hackathon\\MK\\Fragmented_autoTrace\\resources\\segment_editing\\eraseCursor_noThinLine.png"));
+		CViewer::current->editingMode = "erase";
+		QString eraserSizeQ = QString::number(CViewer::current->eraserSize);
+		QString cursorPath = "..\\..\\vaa3d_tools\\hackathon\\MK\\Fragmented_autoTrace\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
+		qDebug() << cursorPath;
+		QCursor eraseCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
 	}
-	else if (!mode.compare("restore")) CViewer::current->view3DWidget->setCursor(Qt::ArrowCursor);
+	else if (!action.compare("restore"))
+	{
+		CViewer::current->editingMode = "none";
+		CViewer::current->view3DWidget->setCursor(Qt::ArrowCursor);
+	}
 }
 
 void CViewer::getParamsFromFragTraceUI(const string& keyName, const float& value)

@@ -555,11 +555,5 @@ INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()
 	INeuronAssembler* interfacePtr = qobject_cast<terafly::CViewer*>(currViewerPtr);
 	return interfacePtr;
 }
-#else
-INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()
-{
-	INeuronAssembler* interfacePtr;
-	return interfacePtr;
-}
 #endif
 // -------------------------------------------------------------------------------------------------------- //

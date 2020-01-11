@@ -213,7 +213,11 @@ class terafly::CViewer : public QWidget
 		QList<ImageMarker> up2dateMarkerList;
 		virtual void refreshSelectedMarkers();
 
-		virtual void segEditing_setCursor(string mode);
+		string editingMode;
+		int eraserSize;
+		virtual void editingModeInit() { CViewer::getCurrent()->editingMode = "none"; }
+		virtual void setEraserSize(int newEraserSize) { CViewer::getCurrent()->eraserSize = newEraserSize; }
+		virtual void segEditing_setCursor(string action);
 
 		virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 #endif

@@ -49,8 +49,26 @@ void myV3dR_GLWidget::setZoomO(int zr)
 
 void myV3dR_GLWidget::setZoomO(float zr)
 {
-	//cout << zr << " " << this->_zoom << endl;
-    /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, zoom = %.2f", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
+
+#ifdef _NEURON_ASSEMBLER_
+	if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("erase"))
+	{
+		if (zr < this->_zoom && CViewer::getCurrent()->eraserSize < 4)
+		{
+			++CViewer::getCurrent()->eraserSize;
+			CViewer::getCurrent()->segEditing_setCursor("erase");
+		}
+		else if (zr > this->_zoom && CViewer::getCurrent()->eraserSize > -3)
+		{
+			--CViewer::getCurrent()->eraserSize;
+			CViewer::getCurrent()->segEditing_setCursor("erase");
+		}
+
+		return;
+	}
+#endif
+	
+	/**/tf::debug(tf::LEV_MAX, strprintf("title = %s, zoom = %.2f", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
 
     //qDebug("V3dR_GLWidget::setZoom = %i",zr);
     zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);

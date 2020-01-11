@@ -26,7 +26,9 @@ public:
 
 	virtual void refreshSelectedMarkers() = 0;
 
-	virtual void segEditing_setCursor(string mode) = 0;
+	virtual void editingModeInit() = 0;
+	virtual void setEraserSize(int newEraserSize) = 0;
+	virtual void segEditing_setCursor(string action) = 0;
 
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 };

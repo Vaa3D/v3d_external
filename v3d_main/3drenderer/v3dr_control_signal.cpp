@@ -1198,19 +1198,22 @@ void V3dR_MainWindow::initControlValue()
 	//////////////////////////////////////////////////////////////////////////
 }
 
-#ifdef _NEURON_ASSEMBLER_
 void V3dR_MainWindow::setXCutLockIcon(bool b)
 {
 	if (! xcLock)  return;
 	if (b)
 	{
 		xcLock->setIcon(QIcon(":/pic/Lockon.png"));
+#ifdef _NEURON_ASSEMBLER_
 		glWidget->getXlockStatus(true);
+#endif
 	}
 	else
 	{
 		xcLock->setIcon(QIcon(":/pic/Lockoff.png"));
+#ifdef _NEURON_ASSEMBLER_
 		glWidget->getXlockStatus(false);
+#endif
 	}
 }
 void V3dR_MainWindow::setYCutLockIcon(bool b)
@@ -1219,12 +1222,16 @@ void V3dR_MainWindow::setYCutLockIcon(bool b)
 	if (b)
 	{
 		ycLock->setIcon(QIcon(":/pic/Lockon.png"));
+#ifdef _NEURON_ASSEMBLER_
 		glWidget->getYlockStatus(true);
+#endif
 	}
 	else
 	{
 		ycLock->setIcon(QIcon(":/pic/Lockoff.png"));
+#ifdef _NEURON_ASSEMBLER_
 		glWidget->getYlockStatus(false);
+#endif
 	}
 }
 void V3dR_MainWindow::setZCutLockIcon(bool b)
@@ -1233,15 +1240,18 @@ void V3dR_MainWindow::setZCutLockIcon(bool b)
 	if (b)
 	{
 		zcLock->setIcon(QIcon(":/pic/Lockon.png"));
+#ifdef _NEURON_ASSEMBLER_
 		glWidget->getZlockStatus(true);
+#endif
 	}
 	else
 	{
 		zcLock->setIcon(QIcon(":/pic/Lockoff.png"));
+#ifdef _NEURON_ASSEMBLER_
 		glWidget->getZlockStatus(false);
+#endif
 	}
 }
-#endif
 
 void V3dR_MainWindow::initVolumeTimeRange()
 {

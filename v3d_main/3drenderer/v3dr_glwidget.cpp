@@ -1023,6 +1023,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 			else if (IS_ALT_MODIFIER)
 			{
+#ifdef _NEURON_ASSEMBLER_
 				terafly::PMain& pMain = *(terafly::PMain::getInstance());
 				if (!pMain.fragTracePluginInstance)
 				{
@@ -1037,6 +1038,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					mypluginloader.runPlugin(loader, "settings");
 				}
 				else v3d_msg("Neuron Assembler plugin instance already exists.");
+#endif
 			}
 	  		break;
 
@@ -1053,6 +1055,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
 
+#ifdef _NEURON_ASSEMBLER_
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
@@ -1076,6 +1079,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
 					}
+#endif
 				}
 			}
             else
@@ -1147,7 +1151,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
-
+#ifdef _NEURON_ASSEMBLER_
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
@@ -1158,6 +1162,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
 					}
+#endif
 				}
 			}
 			else
