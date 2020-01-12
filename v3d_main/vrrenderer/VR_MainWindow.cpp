@@ -370,6 +370,7 @@ void VR_MainWindow::TVProcess(QString line)
         }
         else if (delmarkerRex.indexIn(line) != -1) {
             QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
+                        QString user = delmarkerRex.cap(1);
             if(delmarkerPOS.size()<3)
             {
                 qDebug()<<"size < 3";
@@ -380,7 +381,7 @@ void VR_MainWindow::TVProcess(QString line)
                 }
                 return;
             }
-            QString user = delmarkerRex.cap(1);
+
             float mx = delmarkerPOS.at(0).toFloat();
             float my = delmarkerPOS.at(1).toFloat();
             float mz = delmarkerPOS.at(2).toFloat();
