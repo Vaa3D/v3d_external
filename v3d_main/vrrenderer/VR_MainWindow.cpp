@@ -181,6 +181,11 @@ void VR_MainWindow::TVProcess(QString line)
 			if (markerMSGs.size() < 3)
 			{
 				qDebug() << "size < 3";
+                if(user==userName)
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
 				return;
 			}
 
@@ -270,18 +275,30 @@ void VR_MainWindow::TVProcess(QString line)
 					pMainApplication->collaborationTargetdelcurveRes.x = resx;
 					pMainApplication->collaborationTargetdelcurveRes.y = resy;
 					pMainApplication->collaborationTargetdelcurveRes.z = resz;
-                    if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
-                            ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
-                    )
-                    {
-                        qDebug()<<"====================out =====================";
-                        VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
-                        continue;
-                    }
 
                     XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-                    qDebug()<<"delcurve:==="<<node.x<<" "<<node.y<<" "<<node.z;
-                    pMainApplication->DeleteSegment(node.x,node.y,node.z);
+                    if(pMainApplication->DeleteSegment(node.x,node.y,node.z))
+                    {
+                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
+                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z)
+                        {
+                            VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
+                            continue;
+                        }
+                    }
+
+//                    if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
+//                            ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z
+//                    )
+//                    {
+//                        qDebug()<<"====================out =====================";
+//                        VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
+//                        continue;
+//                    }
+
+//                    XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
+//                    qDebug()<<"delcurve:==="<<node.x<<" "<<node.y<<" "<<node.z;
+//                    pMainApplication->DeleteSegment(node.x,node.y,node.z);
                 }
              }
 
@@ -298,6 +315,11 @@ void VR_MainWindow::TVProcess(QString line)
             if(markerMSGs.size()<3)
             {
                 qDebug()<<"size < 3";
+                if(user==userName)
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
                 return;
             }
 
@@ -351,6 +373,11 @@ void VR_MainWindow::TVProcess(QString line)
             if(delmarkerPOS.size()<3)
             {
                 qDebug()<<"size < 3";
+                if(user==userName)
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
                 return;
             }
             QString user = delmarkerRex.cap(1);
@@ -408,7 +435,15 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//list of nodes: seg header_node 1_node 2.....
             qDebug()<<MSGs[0];
             QString message;
-            if(MSGs.size()<=1) return;
+            if(MSGs.size()<=1)
+            {
+                if(user==userName)
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
+                return;
+            }
 
             qDebug()<<"======================messageindex in TeraVr begin=================";
             QStringList REMSGS;
