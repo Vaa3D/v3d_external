@@ -3329,7 +3329,6 @@ void CViewer::segEditing_setCursor(string action)
 		CViewer::current->editingMode = "erase";
 		QString eraserSizeQ = QString::number(CViewer::current->eraserSize);
 		QString cursorPath = "..\\..\\vaa3d_tools\\hackathon\\MK\\Fragmented_autoTrace\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
-		qDebug() << cursorPath;
 		QCursor eraseCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
 	}
