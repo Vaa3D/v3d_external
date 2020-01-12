@@ -483,15 +483,19 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 if(user!=userName)
                 {
                     emit addMarker(markerRex.cap(2).trimmed(),3);//marker用3号色
-                    qDebug()<<"siagnal add marker";
+//                    qDebug()<<"siagnal add marker";
                 }
                 else
-                    qDebug()<<"user:"<<user<<"==userName"<<userName;
+                {
+//                    qDebug()<<"user:"<<user<<"==userName"<<userName;
+                }
+
+
             }else {
                 emit addMarker(markerRex.cap(2).trimmed(),3);//marker用3号色
             }
 
-            qDebug()<<"==================marker process end====================";
+//            qDebug()<<"==================marker process end====================";
 
         }
         else if (delmarkerRex.indexIn(line) != -1) {
@@ -499,7 +503,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }
         else if (messageRex.indexIn(line) != -1) {
 
-            qDebug()<<"======================messageRex in Terafly begin============";
+//            qDebug()<<"======================messageRex in Terafly begin============";
 
             QString user=messageRex.cap(1);
             int colortype=21;
@@ -524,7 +528,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }else {
                 emit addSeg(temp1,colortype);
             }
-            qDebug()<<"======================messageRex in Terafly end============";
+//            qDebug()<<"======================messageRex in Terafly end============";
         }
 
         else if(creatorRex.indexIn(line)!=-1)
@@ -532,7 +536,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             QStringList markerMSGs = creatorRex.cap(2).split(" ");
             if (markerMSGs.size() < 3)
             {
-                qDebug() << "size < 3";
+//                qDebug() << "size < 3";
                 return;
             }
             emit addMarker(creatorRex.cap(2).trimmed(),3);//para2 was not used
@@ -581,7 +585,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 
             if(i==0)
             {
-                qDebug()<<"delmarker "+packetbuff;
+//                qDebug()<<"delmarker "+packetbuff;
                 emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
             }
         }
@@ -590,7 +594,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
             packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
                     .arg(curSWCunit.r).arg(curSWCunit.parent);
-            qDebug()<<"marker "+packetbuff;
+//            qDebug()<<"marker "+packetbuff;
             emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
             AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
         }
@@ -690,9 +694,9 @@ void V3dR_Communicator::onDisconnected() {
 XYZ V3dR_Communicator::ConvertGlobaltoLocalCroods(double x,double y,double z)
 {
 //	cout << "ImageCurRes" << endl;
-	cout << ImageCurRes.x << endl;
-	cout << ImageCurRes.y << endl;
-	cout << ImageCurRes.z << endl;
+//	cout << ImageCurRes.x << endl;
+//	cout << ImageCurRes.y << endl;
+//	cout << ImageCurRes.z << endl;
 	x/=(ImageMaxRes.x/ImageCurRes.x);
 	y/=(ImageMaxRes.y/ImageCurRes.y);
 	z/=(ImageMaxRes.z/ImageCurRes.z);
@@ -733,7 +737,7 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
         {
 
             V_NeuronSWC seg_temp =  testVNL.seg.at(i);
-            qDebug()<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
+//            qDebug()<<V_NeuronSWCToSendMSG(seg_temp,tempPara);
             onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg_temp,tempPara)));
         }
     }

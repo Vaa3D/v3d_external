@@ -4188,7 +4188,7 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
         {
 
             QStringList temp=myvrwin->VROutinfo.deletemarkerspos.at(i).split(" ",QString::SkipEmptyParts);
-            qDebug()<<"temp:";
+//            qDebug()<<"temp:";
             qDebug()<<temp;
             QStringList tmp;
             tmp.append(temp[0]);
@@ -4202,8 +4202,8 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 {
-    qDebug()<<"in CollaDelMarker";
-    qDebug()<<"call delete marker "<< markerPOS;
+//    qDebug()<<"in CollaDelMarker";
+//    qDebug()<<"call delete marker "<< markerPOS;
 
     QStringList delXYZ=markerPOS.split("_",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
@@ -4219,7 +4219,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
                                   (markerI.z-markerXYZ0.at(2).toFloat())*(markerI.z-markerXYZ0.at(2).toFloat()));
            if(dist<8.0)
            {
-               qDebug()<<"find del marker";
+//               qDebug()<<"find del marker";
                markers.removeAt(i);break;
            }
         }
@@ -4229,7 +4229,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 {
-    qDebug()<<"in CollaAddMarker";
+//    qDebug()<<"in CollaAddMarker";
 
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
@@ -4275,7 +4275,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
 void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
-    qDebug()<<"in CollaDelSeg:"<<markerPOS;
+//    qDebug()<<"in CollaDelSeg:"<<markerPOS;
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
 //    qDebug()<<delMarkerPosList;
 
@@ -4287,7 +4287,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
 
         XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
-        qDebug()<<"delcurve:"<<delcurve.x<<" "<<delcurve.y<<" "<<delcurve.z;
+//        qDebug()<<"delcurve:"<<delcurve.x<<" "<<delcurve.y<<" "<<delcurve.z;
 
         for(int J=0;J<v_ns_list.seg.size();J++)
         {
@@ -4320,7 +4320,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 {
-    qDebug()<<"in collaAddseg"<<segInfo;
+//    qDebug()<<"in collaAddseg"<<segInfo;
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
     if (qsl.size()<=1) return;
 
