@@ -7342,9 +7342,9 @@ bool CMainApplication::DeleteSegment(float x,float y,float z)
 //			SetupSingleMorphologyLine(i, 2);
 //            res=1;break;
 //        }
-        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01)
+        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01||sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01)
         {
-            qDebug()<<"VR FIND head 2";
+            qDebug()<<"VR FIND seg"<<i;
             sketchedNTList.removeAt(i);
             SetupSingleMorphologyLine(i, 2);
             res=1;break;

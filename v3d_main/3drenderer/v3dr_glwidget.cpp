@@ -4304,9 +4304,9 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 //                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
 //                break;
 //            }
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.01)
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.01||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.01)
             {
-                qDebug()<<"find head 2";
+                qDebug()<<"find seg "<<J;
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
