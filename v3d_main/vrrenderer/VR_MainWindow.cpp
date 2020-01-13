@@ -240,7 +240,7 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->CreatorMarkerRes = res;
-                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
+                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
 
 				}
 			}
@@ -344,29 +344,21 @@ void VR_MainWindow::TVProcess(QString line)
 					CURRENT_DATA_IS_SENT = false;
 					qDebug() << "get message CURRENT_DATA_IS_SENT=false;";
 				}
-				int colortype = 3;
-				for (int i = 0; i < VR_Communicator->Agents.size(); i++)
-				{
-					if (user == VR_Communicator->Agents.at(i).name)
-					{
-						colortype = VR_Communicator->Agents.at(i).colorType;
-						break;
-					}
-				}
-                if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
+
+                bool IsmarkerValid = false;
+                IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+
+                if(!IsmarkerValid&&(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z))
                 {
                     qDebug()<<"marker out of size";
                     VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
                     return;
+                }else if(!IsmarkerValid)
+                {
+                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
                 }
-				bool IsmarkerValid = false;
-				IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
-				cout << "IsmarkerValid is " << IsmarkerValid << endl;
-				if (!IsmarkerValid)
-				{
-                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
-				}
-			}
+
+
         }
         else if (delmarkerRex.indexIn(line) != -1) {
             QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
@@ -477,7 +469,7 @@ void VR_MainWindow::TVProcess(QString line)
                         qDebug()<<"mx="<<mx<<" my="<<my<<" mz="<<mz<<" resx="<<resx<<" resy="<<resy<<" resz="<<resz;
                         pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
                         XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);                      
-                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 3);
+                        pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
 //                        pMainApplication->CollaborationTargetMarkerRes = XYZ(MSGs[0].split(" ").at(1).toInt(), MSGs[0].split(" ").at(2).toInt(), MSGs[0].split(" ").at(3).toInt());
 //                        XYZ  converreceivexyz = ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
 //                        pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z,colortype,1);
