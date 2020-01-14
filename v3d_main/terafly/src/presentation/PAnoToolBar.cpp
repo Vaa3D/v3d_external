@@ -1,4 +1,4 @@
-#include "PAnoToolBar.h"
+﻿#include "PAnoToolBar.h"
 #include "PMain.h"
 #include "../control/CViewer.h"
 
@@ -34,7 +34,8 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
     buttonUndo = new QToolButton();
     buttonUndo->setIcon(QIcon(":/icons/undo.png"));
     buttonUndo->setToolTip("Undo (Ctrl+Z)");
-    buttonUndo->setEnabled(false);
+//    buttonUndo->setEnabled(false);
+    buttonUndo->setEnabled(true);
     buttonUndo->setShortcut(QKeySequence("Ctrl+Z"));
     connect(buttonUndo, SIGNAL(clicked()), this, SLOT(buttonUndoClicked()));
     toolBar->insertWidget(0, buttonUndo);
@@ -373,15 +374,21 @@ void PAnoToolBar::buttonFragmenTraceChecked(bool checked)
 void PAnoToolBar::buttonUndoClicked()
 {
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
-
-    CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->undoStack.canUndo())
-    {
-        expl->undoStack.undo();
-        if(!expl->undoStack.canUndo())
-            buttonUndo->setEnabled(false);
-        buttonRedo->setEnabled(true);
-    }
+qDebug()<<"-----------------terafly undo --------------"
+        CViewer* expl = CViewer::getCurrent();
+        if(expl->getGLWidget()->TeraflyCommunicator)
+        {
+            expl->getGLWidget()->TeraflyCommunicator->undo();
+        }else
+        {
+            if(expl && expl->undoStack.canUndo())
+            {
+                expl->undoStack.undo();
+                if(!expl->undoStack.canUndo())
+                    buttonUndo->setEnabled(false);
+                buttonRedo->setEnabled(true);
+            }
+        }
 }
 
 void PAnoToolBar::buttonRedoClicked()

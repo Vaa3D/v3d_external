@@ -403,16 +403,20 @@ void V3dR_Communicator::pushUndoStack(QString head, QString Msg)
 {
     if(undoStack.size()>=10)
         undoStack.removeAt(0);
+    qDebug()<<"push undostack:"+Msg;
     undoStack.push_back(Msg);
 }
 
 void V3dR_Communicator::undo()
 {
+    qDebug()<<"--------------undo--------------"
     if(undoStack.size()>0)
     {
         onReadySend(undoStack.at(undoStack.size()-1),0);
+              qDebug()<<undoStack.at(undoStack.size()-1);
         undoStack.removeAt(undoStack.size()-1);
     }
+              qDebug()<<"--------------undo--------------";
 }
 
 
