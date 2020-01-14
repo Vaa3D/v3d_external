@@ -360,6 +360,7 @@ void VR_MainWindow::TVProcess(QString line)
 
 
         }
+            }
         else if (delmarkerRex.indexIn(line) != -1) {
             QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
                         QString user = delmarkerRex.cap(1);
