@@ -1869,7 +1869,7 @@ void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
     V3D_env->setLandmark(window, vaa3dMarkers);
     qDebug()<<"V3D_env->setLandmark(window, vaa3dMarkers);";
     V3D_env->pushObjectIn3DWindow(window);
-    qDebug()<<"1232321312";
+//    qDebug()<<"1232321312";
     //update visible markers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
@@ -1913,11 +1913,11 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     // select marker (if any) at the clicked location
     QList <ImageMarker> imageMarkers1 = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
 
-    qDebug()<<"befor 1===============";
-    for(int i=0;i<imageMarkers1.size();i++)
-    {
-        qDebug()<<i<<"\t(x,y,z)"<<imageMarkers1[i].x<<","<<imageMarkers1[i].y<<","<<imageMarkers1[i].z<<"\t"<<imageMarkers1[i].selected;
-    }
+//    qDebug()<<"befor 1===============";
+//    for(int i=0;i<imageMarkers1.size();i++)
+//    {
+//        qDebug()<<i<<"\t(x,y,z)"<<imageMarkers1[i].x<<","<<imageMarkers1[i].y<<","<<imageMarkers1[i].z<<"\t"<<imageMarkers1[i].selected;
+//    }
 
     view3DWidget->getRenderer()->selectObj(x,y, false);
 

@@ -31,6 +31,7 @@ PAnoToolBar::PAnoToolBar(QWidget *parent) : QWidget(parent)
 
 
     /**/
+//    qDebug()<<"jkhkjhjkhjkhjkhjkhasadas";
     buttonUndo = new QToolButton();
     buttonUndo->setIcon(QIcon(":/icons/undo.png"));
     buttonUndo->setToolTip("Undo (Ctrl+Z)");

@@ -323,8 +323,10 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
         dts<<quint16(block.size()-sizeof (quint16));
         socket->write(block);
         socket->flush();
+
         if(flag)
         {
+//                    qDebug()<<send_MSG;
             QRegExp markerRex("^/marker:(.*)$");
             QRegExp deletecurveRex("^/del_curve:(.*)$");
             QRegExp messageRex("^/seg:(.*)$");
@@ -338,7 +340,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
                 QStringList resList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(0).split(" ");
                 QString _1=nodePosList.at(2)+" "+nodePosList.at(3)+" "+nodePosList.at(4);
                 QString _2=resList.at(1)+" "+resList.at(2)+" "+resList.at(3);
-                pushUndoStack("seg",QString("/del_curve: "+_1+" "+_2));
+                pushUndoStack("seg",QString("/del_curve: "+_1+" "+_2+"_"));
             }else if(deletecurveRex.indexIn(send_MSG)!=-1)
             {
 //                QStringList delMsgs=deletecurveRex.cap(1).split("_",QString::SkipEmptyParts);
@@ -393,30 +395,33 @@ void V3dR_Communicator::onReadyRead()
 
 void V3dR_Communicator::pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC)
 {
+//    qDebug()<<"--------------------pushVSWC--------------------------";
     for(int i=0;i<vector_VSWC.size();i++)
     {
         undo_delcure.push_back("/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i)));
+//        qDebug()<<"pushVSWC:"<<"/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i));
     }
 }
 
 void V3dR_Communicator::pushUndoStack(QString head, QString Msg)
 {
+//    qDebug()<<"kljhlkhjlkjhlkjlk";
     if(undoStack.size()>=10)
         undoStack.removeAt(0);
-    qDebug()<<"push undostack:"+Msg;
-    undoStack.push_back(Msg);
+//    qDebug()<<"push undostack:"+Msg;
+    undoStack.push_back("/undo:"+Msg);
 }
 
 void V3dR_Communicator::undo()
 {
-	qDebug() << "--------------undo--------------";
+//    qDebug() << "--------------undo--------------"<<undoStack.size();
     if(undoStack.size()>0)
     {
         onReadySend(undoStack.at(undoStack.size()-1),0);
-              qDebug()<<undoStack.at(undoStack.size()-1);
+//              qDebug()<<"--------"+undoStack.at(undoStack.size()-1);
         undoStack.removeAt(undoStack.size()-1);
     }
-              qDebug()<<"--------------undo--------------";
+//              qDebug()<<"--------------undo--------------";
 }
 
 
@@ -520,7 +525,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }
         else if (markerRex.indexIn(line) != -1) {
 
-            qDebug()<<"+============marker process begin========";
+//            qDebug()<<"+============marker process begin========";
             QString user=markerRex.cap(1);
 
 //            int colortype=21;

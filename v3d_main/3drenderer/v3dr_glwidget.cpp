@@ -4296,17 +4296,17 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             V_NeuronSWC_unit node0,node1;
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
-//            qDebug()<<"node0:"<<node0.x<<" "<<node0.y<<" "<<node0.z<<node0.parent;
-//            qDebug()<<"node1:"<<node1.x<<" "<<node1.y<<" "<<node1.z<<node1.parent;
+//            qDebug()<<"node0:"<<node0.x<<" "<<node0.y<<" "<<node0.z<<sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2));
+//            qDebug()<<"node1:"<<node1.x<<" "<<node1.y<<" "<<node1.z<<sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2));
 //            if(sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.01)
 //            {
 //                qDebug()<<"find last 2";
 //                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
 //                break;
 //            }
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.01||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.01)
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
             {
-                qDebug()<<"find seg "<<J;
+//                qDebug()<<"find seg "<<J;
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
