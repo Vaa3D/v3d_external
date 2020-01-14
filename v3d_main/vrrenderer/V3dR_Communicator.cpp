@@ -266,7 +266,7 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 {
 //	NTList_SendPool->append(seg);
 
-    onReadySend(QString("/seg: "+V_NeuronSWCToSendMSG(seg)));
+    onReadySend(QString("/seg:"+V_NeuronSWCToSendMSG(seg)));
     cout << "send seg success" << endl;
 }
 
@@ -395,7 +395,7 @@ void V3dR_Communicator::pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC)
 {
     for(int i=0;i<vector_VSWC.size();i++)
     {
-        undo_delcure.push_back(V_NeuronSWCToSendMSG(vector_VSWC.at(i)));
+        undo_delcure.push_back("/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i)));
     }
 }
 
@@ -410,8 +410,8 @@ void V3dR_Communicator::undo()
 {
     if(undoStack.size()>0)
     {
-        onReadySend(undoStack.at(undoStack.size()),0);
-        undoStack.removeAt(undoStack.size());
+        onReadySend(undoStack.at(undoStack.size()-1),0);
+        undoStack.removeAt(undoStack.size()-1);
     }
 }
 

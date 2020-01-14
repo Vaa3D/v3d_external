@@ -664,7 +664,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 QStringList _undostringList=pMainApplication->UndoNT2QString();
                 QString send_string=_undostringList[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
                         +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+_undostringList[1];
-                VR_Communicator->undo_delcure.push_back(send_string);
+                VR_Communicator->undo_delcure.push_back("/seg:"+send_string);
 				CURRENT_DATA_IS_SENT=true;
 			}
 
