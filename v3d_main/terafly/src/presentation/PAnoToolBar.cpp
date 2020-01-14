@@ -374,7 +374,7 @@ void PAnoToolBar::buttonFragmenTraceChecked(bool checked)
 void PAnoToolBar::buttonUndoClicked()
 {
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
-qDebug()<<"-----------------terafly undo --------------"
+	qDebug() << "-----------------terafly undo --------------";
         CViewer* expl = CViewer::getCurrent();
         if(expl->getGLWidget()->TeraflyCommunicator)
         {

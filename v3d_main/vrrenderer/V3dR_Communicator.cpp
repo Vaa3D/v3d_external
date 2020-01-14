@@ -409,7 +409,7 @@ void V3dR_Communicator::pushUndoStack(QString head, QString Msg)
 
 void V3dR_Communicator::undo()
 {
-    qDebug()<<"--------------undo--------------"
+	qDebug() << "--------------undo--------------";
     if(undoStack.size()>0)
     {
         onReadySend(undoStack.at(undoStack.size()-1),0);

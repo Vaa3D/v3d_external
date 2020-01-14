@@ -700,7 +700,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			CURRENT_DATA_IS_SENT = true;
         }else if(pMainApplication->undo==true)
         {
-            qDebug()<<"---------undo TV------------"
+            qDebug()<<"---------undo TV------------";
             VR_Communicator->undo();
 
             pMainApplication->undo=false;
