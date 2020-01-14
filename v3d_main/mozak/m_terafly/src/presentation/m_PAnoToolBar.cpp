@@ -1,4 +1,4 @@
-#include "m_PAnoToolBar.h"
+﻿#include "m_PAnoToolBar.h"
 #include "m_PMain.h"
 #include "m_CViewer.h"
 
@@ -363,13 +363,21 @@ void PAnoToolBar::buttonUndoClicked()
     /**/itm::debug(itm::LEV3, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->undoStack.canUndo())
+    if(expl->getGLWidget()->TeraflyCommunicator)
     {
-        expl->undoStack.undo();
-        if(!expl->undoStack.canUndo())
-            buttonUndo->setEnabled(false);
-        buttonRedo->setEnabled(true);
+        expl->getGLWidget()->TeraflyCommunicator->undo();
+    }else
+    {
+        if(expl && expl->undoStack.canUndo())
+        {
+            expl->undoStack.undo();
+            if(!expl->undoStack.canUndo())
+                buttonUndo->setEnabled(false);
+            buttonRedo->setEnabled(true);
+        }
     }
+
+
 }
 
 void PAnoToolBar::buttonRedoClicked()

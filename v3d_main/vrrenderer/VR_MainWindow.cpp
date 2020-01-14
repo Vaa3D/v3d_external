@@ -517,6 +517,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 	pMainApplication->mainwindow =pmain; 
 
 	pMainApplication->isOnline = isLinkSuccess;
+//    connect(pMainApplication,SIGNAL(undo()),VR_Communicator,SLOT(undo()));
     //pMainApplication->loadedNT.listNeuron.clear();
     //pMainApplication->loadedNT.hashNeuron.clear();
 	GetResindexandStartPointfromVRInfo(ImageVolumeInfo,MaxResolution);
@@ -660,6 +661,10 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 				//QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z));
 				QString ConverteddelcurvePOS = ConvertsendCoords(SegNode_tobedeleted);
 				VR_Communicator->onReadySend(QString("/del_curve:" + ConverteddelcurvePOS + " " + QSCurrentRes));
+                QStringList _undostringList=pMainApplication->UndoNT2QString();
+                QString send_string=_undostringList[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
+                        +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+_undostringList[1];
+                VR_Communicator->undo_delcure.push_back(send_string);
 				CURRENT_DATA_IS_SENT=true;
 			}
 
@@ -742,6 +747,7 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
+
 
 	if(ntlist != NULL)
 	{

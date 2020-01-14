@@ -76,7 +76,7 @@ class V3dR_Communicator : public QWidget
 public:
     explicit V3dR_Communicator(bool *client_flag = 0, V_NeuronSWC_list* ntlist=0);
     ~V3dR_Communicator();
-    void onReadySend(QString send_MSG);
+    void onReadySend(QString send_MSG,bool flag=1);
 //	bool SendLoginRequest();
 	//void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
 	//void Update3DViewNTList(QString &msg, int type);
@@ -116,12 +116,14 @@ public slots:
     void TFProcess(QString msg,bool flag_init=0);
     void read_autotrace(QString,XYZ*);
     void timerStart(QString,int);
+    void undo();
 //    void setautomarker(XYZ);
 private slots:	
     void onReadyRead();
     void onConnected();
     void onDisconnected();
     void askserver();
+
 signals:
     void messageMade();
 	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
@@ -151,7 +153,10 @@ public:
     XYZ AutoTraceNode;
     int flag_x,flag_y,flag_z;
 
-
+    QStringList undoStack;
+    QStringList undo_delcure;
+    void pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC);
+    void pushUndoStack(QString,QString);
 };
 
 

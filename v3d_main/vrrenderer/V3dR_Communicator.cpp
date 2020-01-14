@@ -304,7 +304,7 @@ void V3dR_Communicator::askserver()
 }
 
 
-void V3dR_Communicator::onReadySend(QString send_MSG) {
+void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
 
     if (!send_MSG.isEmpty()) {
         if((send_MSG!="exit")&&(send_MSG!="quit"))
@@ -323,11 +323,38 @@ void V3dR_Communicator::onReadySend(QString send_MSG) {
         dts<<quint16(block.size()-sizeof (quint16));
         socket->write(block);
         socket->flush();
-	}
-	else
-	{
+        if(flag)
+        {
+            QRegExp markerRex("^/marker:(.*)$");
+            QRegExp deletecurveRex("^/del_curve:(.*)$");
+            QRegExp messageRex("^/seg:(.*)$");
+
+            if(markerRex.indexIn(send_MSG)!=-1)
+            {
+                pushUndoStack("marker",send_MSG);
+            }else if(messageRex.indexIn(send_MSG)!=-1)
+            {
+                QStringList nodePosList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(2).split(" ");
+                QStringList resList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(0).split(" ");
+                QString _1=nodePosList.at(2)+" "+nodePosList.at(3)+" "+nodePosList.at(4);
+                QString _2=resList.at(1)+" "+resList.at(2)+" "+resList.at(3);
+                pushUndoStack("seg",QString("/del_curve: "+_1+" "+_2));
+            }else if(deletecurveRex.indexIn(send_MSG)!=-1)
+            {
+//                QStringList delMsgs=deletecurveRex.cap(1).split("_",QString::SkipEmptyParts);
+                for(int i=0;i<undo_delcure.size();i++)
+                {
+                    pushUndoStack("delcurve",undo_delcure.at(i));
+                    undo_delcure.removeAt(i);
+                }
+
+            }
+        }
+    }
+    else
+    {
         return;
-	}
+    }
 }
 
 void V3dR_Communicator::onReadyRead()
@@ -361,6 +388,30 @@ void V3dR_Communicator::onReadyRead()
             return ;
         }
 
+    }
+}
+
+void V3dR_Communicator::pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC)
+{
+    for(int i=0;i<vector_VSWC.size();i++)
+    {
+        undo_delcure.push_back(V_NeuronSWCToSendMSG(vector_VSWC.at(i)));
+    }
+}
+
+void V3dR_Communicator::pushUndoStack(QString head, QString Msg)
+{
+    if(undoStack.size()>=10)
+        undoStack.removeAt(0);
+    undoStack.push_back(Msg);
+}
+
+void V3dR_Communicator::undo()
+{
+    if(undoStack.size()>0)
+    {
+        onReadySend(undoStack.at(undoStack.size()),0);
+        undoStack.removeAt(undoStack.size());
     }
 }
 

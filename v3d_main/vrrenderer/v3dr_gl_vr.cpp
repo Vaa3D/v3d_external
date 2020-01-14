@@ -2559,17 +2559,18 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _UndoRedo:
 			{
-				qDebug()<<"Undo/Redo Operation. Lines Only.";
-				if(temp_x>0)
-				{
-					 RedoLastSketchedNT();
-					 SetupAllMorphologyLine();
-				}
-				else
-				{
-					 UndoLastSketchedNT();
-					 SetupAllMorphologyLine();
-				}
+//				qDebug()<<"Undo/Redo Operation. Lines Only.";
+//				if(temp_x>0)
+//				{
+//					 RedoLastSketchedNT();
+//					 SetupAllMorphologyLine();
+//				}
+//				else
+//				{
+//					 UndoLastSketchedNT();
+//					 SetupAllMorphologyLine();
+//				}
+            emit undo();
 				break;
 			}
 		case _LineWidth: //line width
@@ -7133,6 +7134,26 @@ QStringList CMainApplication::NT2QString()
     return resQSL;
 }
 
+QStringList CMainApplication::UndoNT2QString()
+{
+
+    QString messageBuff;
+    for(int i=0;(i<UndoNT.listNeuron.size())&&(i<120);i++)
+    {
+        QString packetbuff;
+        packetbuff.clear();
+        NeuronSWC S_temp;
+        S_temp=UndoNT.listNeuron.at(i);
+        XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
+        packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(S_temp.n).arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z).arg(S_temp.r).arg(S_temp.parent);
+        messageBuff +=packetbuff;
+    }
+    QStringList resQSL;
+    resQSL.push_back(QString("TeraVR"));
+    resQSL.push_back(messageBuff);
+    return resQSL;
+}
+
 void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
 {	
 	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
@@ -7245,6 +7266,8 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
                 SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
                 SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
                 SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
+                UndoNT=nt;
+
 				return ntnametofind;
 			}
 		}
