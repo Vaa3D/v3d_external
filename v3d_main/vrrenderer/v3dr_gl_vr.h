@@ -613,6 +613,7 @@ public:
 
 public:
         NeuronTree UndoNT;
+        bool undo;
 //signals:
 //        void undo();
 };

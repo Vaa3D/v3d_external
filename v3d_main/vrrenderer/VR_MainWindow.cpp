@@ -698,7 +698,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			VR_Communicator->onReadySend(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
             qDebug()<<QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex);
 			CURRENT_DATA_IS_SENT = true;
-		}
+        }else if(pMainApplication->undo==true)
+        {
+            VR_Communicator->undo();
+            pMainApplication->undo=false;
+        }
 		//if(pMainApplication->READY_TO_SEND==true)
 		//	CURRENT_DATA_IS_SENT=true;
 		

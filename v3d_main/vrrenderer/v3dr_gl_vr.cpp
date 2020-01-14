@@ -747,6 +747,7 @@ CMainApplication::CMainApplication(int argc, char *argv[])
 	, replacetexture(false)
 	, CollaborationTargetMarkerRes(1, 1, 1)
 	, line_tobedeleted(-1)
+    , undo(false)
 	//, font_VR (NULL)
 
 {
@@ -2570,7 +2571,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 //					 UndoLastSketchedNT();
 //					 SetupAllMorphologyLine();
 //				}
-            emit undo();
+//            emit undo();
+            undo=true;
 				break;
 			}
 		case _LineWidth: //line width
