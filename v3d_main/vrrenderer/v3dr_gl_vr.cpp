@@ -2730,13 +2730,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		
 		case _MovetoMarker:
         {
-//            qDebug() << "get creator pos";
+            qDebug() << "get creator pos";
 			if (CollaborationCreatorPos.x != 0 && CollaborationCreatorPos.y != 0 && CollaborationCreatorPos.z != 0)
 			{
 //				qDebug() << "get creator pos";
 				teraflyPOS = XYZ(CollaborationCreatorPos.x, CollaborationCreatorPos.y, CollaborationCreatorPos.z);//liqi
-//                qDebug()<<"---------------------------\n"
-//                       <<teraflyPOS.x<<" "<<teraflyPOS.y<<teraflyPOS.z<<"\n---------------";
+                qDebug()<<"---------------------------\n"
+                       <<teraflyPOS.x<<" "<<teraflyPOS.y<<teraflyPOS.z<<"\n---------------";
 				postVRFunctionCallMode = 9;
 				break;
 			}
