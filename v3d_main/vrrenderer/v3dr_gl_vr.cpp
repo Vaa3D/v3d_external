@@ -2307,7 +2307,7 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int typ
                 }
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
-            if(dist < /*(dist_thres/m_globalScale*5)*/5)
+            if(dist < /*(dist_thres/m_globalScale*5)*/1)
 			{
 				drawnMarkerList.removeAt(i);
 				markerVisibility.erase(markerVisibility.begin()+i);

@@ -4258,7 +4258,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         float dist = /*glm::*/sqrt((markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
                                (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
                                (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z));
-        if(dist<5)
+        if(dist<1)
         {
             markers.removeAt(i);
             goto L;
