@@ -202,11 +202,14 @@ void VR_MainWindow::TVProcess(QString line)
 				res = markerMSGs.at(6).toInt();
 
 			}
+
+            qDebug()<<"-----------creator reveive---"<<mx<<" "<<my<<" "<<mz<<" "<<resx<<" "<<resy<<" "<<resz<<" "<<res;
 			if (pMainApplication)
 			{
 
 				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
 				XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
+                qDebug()<<"converreceivexyz"<<converreceivexyz.x<<" "<< converreceivexyz.y<<" "<< converreceivexyz.z;
 				if (user == userName)
 				{
 					pMainApplication->READY_TO_SEND = false;
@@ -240,6 +243,9 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->CreatorMarkerRes = res;
+                    qDebug()<<"pMainApplication->CollaborationCreatorPos"<<pMainApplication->CollaborationCreatorPos.x<<" "<< pMainApplication->CollaborationCreatorPos.y<<" "<< pMainApplication->CollaborationCreatorPos.z;
+                    qDebug()<<"VR_Communicator->CreatorMarkerPos"<<VR_Communicator->CreatorMarkerPos.x<<" "<< VR_Communicator->CreatorMarkerPos.y<<" "<< VR_Communicator->CreatorMarkerPos.z;
+
                     pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
 
 				}
