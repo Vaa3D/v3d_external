@@ -2573,6 +2573,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 //				}
 //            emit undo();
             undo=true;
+            READY_TO_SEND=true;
+
 				break;
 			}
 		case _LineWidth: //line width

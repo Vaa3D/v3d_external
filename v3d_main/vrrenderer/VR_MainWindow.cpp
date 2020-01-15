@@ -632,17 +632,16 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//handle one rendering loop, and handle user interaction
 	bQuit=pMainApplication->HandleOneIteration();
 
-	
 
 	//send local data to server
-	if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
+    if((pMainApplication->undo==false)&&(pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
 	//READY_TO_SEND is set to true by the "trigger button up" event;
 	//client sends data to server (using onReadySend());
 	//server sends the same data back to client;
 	//READY_TO_SEND is set to false in onReadyRead();
 	//CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
 	{
-		if(pMainApplication->m_modeGrip_R==m_drawMode)
+        if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
 			qDebug() << pMainApplication->currentNT.listNeuron.size() << endl;
             QStringList waitsend=pMainApplication->NT2QString();
@@ -707,17 +706,23 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 			VR_Communicator->onReadySend(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
             qDebug()<<QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex);
 			CURRENT_DATA_IS_SENT = true;
-        }else if(pMainApplication->undo==true)
-        {
-            qDebug()<<"---------undo TV------------";
-            VR_Communicator->undo();
-
-            pMainApplication->undo=false;
         }
+
+
 		//if(pMainApplication->READY_TO_SEND==true)
 		//	CURRENT_DATA_IS_SENT=true;
 		
 	}
+
+    //left hand undo
+    if((pMainApplication->undo==true)&&(pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
+    {
+        qDebug()<<"---------undo TV------------";
+        VR_Communicator->undo();
+        CURRENT_DATA_IS_SENT=true;
+        pMainApplication->undo=false;
+    }
+
 	sendHMDPOScout++;
 	//if(sendHMDPOScout>30)
 	//{
