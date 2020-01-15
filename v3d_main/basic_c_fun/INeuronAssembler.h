@@ -30,6 +30,8 @@ public:
 	virtual void setEraserSize(int newEraserSize) = 0;
 	virtual void segEditing_setCursor(string action) = 0;
 
+	virtual void getLocalCurves(NeuronTree& localCurves) = 0;
+
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 };
 

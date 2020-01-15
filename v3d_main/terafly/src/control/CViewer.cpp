@@ -669,26 +669,42 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 #ifdef _NEURON_ASSEMBLER_
 			else if (mouseEvt->button() == Qt::LeftButton)
 			{
-				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
-				QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;				
-				this->selectedMarkerList.clear();
-				this->selectedLocalMarkerList.clear();
-				for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
+				if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("erase"))
 				{
-					if (markerIt->selected)
-					{
-						this->selectedLocalMarkerList.push_back(*markerIt);
-						ImageMarker currMarker = *markerIt;
-						currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
-						currMarker.y = coord2global<float>(markerIt->y, iim::vertical,   false, -1, false, false, __itm__current__function__);
-						currMarker.z = coord2global<float>(markerIt->z, iim::depth,      false, -1, false, false, __itm__current__function__);
-						this->selectedMarkerList.push_back(currMarker);
-					}
+					myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+					if (thisRenderer->listNeuronTree.size() == 0) return false;
+
+					NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
+					double dist;
+					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
+					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
+					cout << " === distance: " << dist << endl;
+					
 				}
-				if (PMain::getInstance()->fragTracePluginInstance && this->selectedMarkerList != this->up2dateMarkerList)
+				else if (PMain::getInstance()->fragTracePluginInstance && PMain::getInstance()->NeuronAssemblerPortal->markerMonitorStatus())
 				{
-					this->up2dateMarkerList = this->selectedMarkerList;
-					PMain::getInstance()->NeuronAssemblerPortal->sendSelectedMarkers2NA(this->selectedMarkerList, this->selectedLocalMarkerList);
+					view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
+					QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+					this->selectedMarkerList.clear();
+					this->selectedLocalMarkerList.clear();
+					for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
+					{
+						if (markerIt->selected)
+						{
+							this->selectedLocalMarkerList.push_back(*markerIt);
+							ImageMarker currMarker = *markerIt;
+							currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+							currMarker.y = coord2global<float>(markerIt->y, iim::vertical, false, -1, false, false, __itm__current__function__);
+							currMarker.z = coord2global<float>(markerIt->z, iim::depth, false, -1, false, false, __itm__current__function__);
+							this->selectedMarkerList.push_back(currMarker);
+						}
+					}
+					if (PMain::getInstance()->fragTracePluginInstance && this->selectedMarkerList != this->up2dateMarkerList)
+					{
+						this->up2dateMarkerList = this->selectedMarkerList;
+						PMain::getInstance()->NeuronAssemblerPortal->sendSelectedMarkers2NA(this->selectedMarkerList, this->selectedLocalMarkerList);
+					}
 				}
 
 				terafly::PMain& pMain = *(terafly::PMain::getInstance());
