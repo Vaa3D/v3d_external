@@ -3696,6 +3696,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         if(dist<5)
                             markerPOS=QString("%1 %2 %3").arg(markertemp.x).arg(markertemp.y).arg(markertemp.z);
                     }
+                    if(markerPOS==QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z))
+                    {
+                        bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
+                        ||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
+                        ||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
+                        if(IsOutofBounds==true) markerPOS="";
+                    }
                 }
 				break;
 			}

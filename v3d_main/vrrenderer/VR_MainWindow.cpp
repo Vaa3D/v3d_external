@@ -315,15 +315,28 @@ void VR_MainWindow::TVProcess(QString line)
                 bool IsmarkerValid = false;
                 IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
 
-                if(!IsmarkerValid&&(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z))
+                if(!IsmarkerValid)
                 {
-                    qDebug()<<"marker out of size";
-                    VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
-                    return;
-                }else if(!IsmarkerValid)
-                {
-                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
+                    if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
+                    {
+                        qDebug()<<"marker out of size";
+                        VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
+                        return;
+                    }else
+                    {
+                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
+                    }
                 }
+
+//                if(!IsmarkerValid&&(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z))
+//                {
+//                    qDebug()<<"marker out of size";
+//                    VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
+//                    return;
+//                }else if(!IsmarkerValid)
+//                {
+//                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
+//                }
                 if(user==userName||user.toInt()==userName.toInt()+1000)
                 {
                     pMainApplication->READY_TO_SEND = false;
@@ -647,10 +660,13 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		}
 		else if(pMainApplication->m_modeGrip_R==m_markMode)
 		{
-            QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
-			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-            VR_Communicator->onReadySend(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes ));
-			CURRENT_DATA_IS_SENT=true;
+            if(pMainApplication->markerPOS!="")
+            {
+                QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
+                QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
+                VR_Communicator->onReadySend(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes ));
+                CURRENT_DATA_IS_SENT=true;
+            }
 		}
 
 		else if(pMainApplication->m_modeGrip_R==m_dragMode)
