@@ -203,7 +203,7 @@ void VR_MainWindow::TVProcess(QString line)
 
 			}
 
-            qDebug()<<"-----------creator reveive---"<<mx<<" "<<my<<" "<<mz<<" "<<resx<<" "<<resy<<" "<<resz<<" "<<res;
+//            qDebug()<<"-----------creator reveive---"<<mx<<" "<<my<<" "<<mz<<" "<<resx<<" "<<resy<<" "<<resz<<" "<<res;
 			if (pMainApplication)
 			{
 
@@ -243,8 +243,8 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->CreatorMarkerRes = res;
-                    qDebug()<<"pMainApplication->CollaborationCreatorPos"<<pMainApplication->CollaborationCreatorPos.x<<" "<< pMainApplication->CollaborationCreatorPos.y<<" "<< pMainApplication->CollaborationCreatorPos.z;
-                    qDebug()<<"VR_Communicator->CreatorMarkerPos"<<VR_Communicator->CreatorMarkerPos.x<<" "<< VR_Communicator->CreatorMarkerPos.y<<" "<< VR_Communicator->CreatorMarkerPos.z;
+//                    qDebug()<<"pMainApplication->CollaborationCreatorPos"<<pMainApplication->CollaborationCreatorPos.x<<" "<< pMainApplication->CollaborationCreatorPos.y<<" "<< pMainApplication->CollaborationCreatorPos.z;
+//                    qDebug()<<"VR_Communicator->CreatorMarkerPos"<<VR_Communicator->CreatorMarkerPos.x<<" "<< VR_Communicator->CreatorMarkerPos.y<<" "<< VR_Communicator->CreatorMarkerPos.z;
 
                     pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
 
@@ -252,7 +252,7 @@ void VR_MainWindow::TVProcess(QString line)
 			}
         }
         else if (deletecurveRex.indexIn(line) != -1) {
-            qDebug() << "deletecurve:"<<line;
+//            qDebug() << "deletecurve:"<<line;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
 
@@ -308,7 +308,7 @@ void VR_MainWindow::TVProcess(QString line)
                 }
              }
 
-                    qDebug()<<".................................";
+//                    qDebug()<<".................................";
             if(user==userName)
             {
                 pMainApplication->READY_TO_SEND=false;
@@ -419,7 +419,7 @@ void VR_MainWindow::TVProcess(QString line)
             float mx = dragnodePOS.at(3).toFloat();
             float my = dragnodePOS.at(4).toFloat();
             float mz = dragnodePOS.at(5).toFloat();
-            qDebug()<<"user, "<<user<<"drag node's num:"<<ntnum<<" "<<swcnum<<" new position: "<<mx<<" "<<my<<" "<<mz;
+//            qDebug()<<"user, "<<user<<"drag node's num:"<<ntnum<<" "<<swcnum<<" new position: "<<mx<<" "<<my<<" "<<mz;
             XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
             if(user==userName)
             {
