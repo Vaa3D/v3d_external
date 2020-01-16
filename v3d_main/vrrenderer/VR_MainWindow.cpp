@@ -178,9 +178,9 @@ void VR_MainWindow::TVProcess(QString line)
 		else if (creatorRex.indexIn(line) != -1) {
 			QString user = creatorRex.cap(1);
 			QStringList markerMSGs = creatorRex.cap(2).split(" ");
-			if (markerMSGs.size() < 3)
+            if (markerMSGs.size() < 7)
 			{
-				qDebug() << "size < 3";
+                qDebug() << "size < 7";
                 if(user==userName)
                 {
                     pMainApplication->READY_TO_SEND=false;
@@ -228,6 +228,7 @@ void VR_MainWindow::TVProcess(QString line)
 
                     pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->CreatorMarkerPos = XYZ(mx, my, mz);
+                    qDebug()<<"VR_Communicator->CreatorMarkerPos:"<<mx<<" "<<my<<" "<<mz;
                     VR_Communicator->CreatorMarkerRes = res;
 			}
 
@@ -496,7 +497,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
      bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator* TeraflyCommunicator,
                                 XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
 
-	pMainApplication = new CMainApplication(  0, 0 );
+    pMainApplication = new CMainApplication(  0, 0 ,TeraflyCommunicator->CreatorMarkerPos);
 
 	pMainApplication->mainwindow =pmain; 
 
