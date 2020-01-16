@@ -159,7 +159,7 @@ public:
 class CMainApplication
 {
 public:
-	CMainApplication(int argc = 0, char *argv[] = 0);
+    CMainApplication(int argc = 0, char *argv[] = 0,XYZ glomarkerPOS=0);
 	virtual ~CMainApplication();
 
 	bool BInit();
