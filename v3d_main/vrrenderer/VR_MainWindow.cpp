@@ -632,8 +632,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
 
-			qDebug() << "delname = " << pMainApplication->delName;
-			qDebug() << "delcurvePOS = " << pMainApplication->delcurvePOS;
+//			qDebug() << "delname = " << pMainApplication->delName;
+//			qDebug() << "delcurvePOS = " << pMainApplication->delcurvePOS;
 			if (pMainApplication->SegNode_tobedeleted.x != 0 || pMainApplication->SegNode_tobedeleted.y != 0 || pMainApplication->SegNode_tobedeleted.z != 0)
 				//socket->write(QString("/del_curve:" + pMainApplication->delName + "\n").toUtf8());
 			//else
@@ -643,11 +643,15 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 				QString SegNode_tobedeleted = QString("%1 %2 %3").arg(pMainApplication->SegNode_tobedeleted.x).arg(pMainApplication->SegNode_tobedeleted.y).arg(pMainApplication->SegNode_tobedeleted.z);
 				//QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z));
 				QString ConverteddelcurvePOS = ConvertsendCoords(SegNode_tobedeleted);
-				VR_Communicator->onReadySend(QString("/del_curve:" + ConverteddelcurvePOS + " " + QSCurrentRes));
+//				VR_Communicator->onReadySend(QString("/del_curve:" + ConverteddelcurvePOS + " " + QSCurrentRes));
+
                 QStringList _undostringList=pMainApplication->UndoNT2QString();
+//                qDebug()<<"_undostringList:"<<_undostringList;
                 QString send_string=_undostringList[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
                         +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+_undostringList[1];
+//                qDebug()<<send_string;
                 VR_Communicator->undo_delcure.push_back("/seg:"+send_string);
+                VR_Communicator->onReadySend(QString("/del_curve:" + ConverteddelcurvePOS + " " + QSCurrentRes));
 				CURRENT_DATA_IS_SENT=true;
 			}
 
