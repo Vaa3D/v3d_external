@@ -993,6 +993,7 @@ bool CMainApplication::BInit()
         CollaborationCreatorPos = ConvertGlobaltoLocalCoords(CollaborationCreatorGLOPos.x,CollaborationCreatorGLOPos.y,CollaborationCreatorGLOPos.z);
     else
         CollaborationCreatorPos=XYZ(0);
+    qDebug()<<"CollaborationCreatorPos:"<<CollaborationCreatorPos.x<<" "<<CollaborationCreatorPos.y<<" "<<CollaborationCreatorPos.z;
 	SDL_StartTextInput();
 	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
