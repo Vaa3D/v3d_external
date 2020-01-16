@@ -399,7 +399,7 @@ void V3dR_Communicator::pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC)
 //    qDebug()<<"--------------------pushVSWC--------------------------";
     for(int i=0;i<vector_VSWC.size();i++)
     {
-        undo_delcure.push_back("/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i)));
+        undo_delcure.push_back("/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i),0));
 //        qDebug()<<"pushVSWC:"<<"/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i));
     }
 }
@@ -630,48 +630,75 @@ void V3dR_Communicator::Collaborationaskmessage()
         onReadySend(QString("/ask: message"));
 }
 
-QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
+QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
 {
-    QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
-
-	for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
-	{
-
-		V_NeuronSWC_unit curSWCunit = seg.row[i];
-        QString packetbuff;
-        packetbuff.clear();
-        if(i!=seg.row.size()-1)
-        {
-            XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
-                    .arg(curSWCunit.r).arg(curSWCunit.parent);
-
-            if(i==0)
-            {
-//                qDebug()<<"delmarker "+packetbuff;
-                emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
-            }
-        }
-        else
-        {
-            XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
-            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
-                    .arg(curSWCunit.r).arg(curSWCunit.parent);
-//            qDebug()<<"marker "+packetbuff;
-            emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
-            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
-        }
-        messageBuff +=packetbuff;
-	}
-
-    if(seg.row.size()>5)
+    if(f)
     {
-        if(seg.row[5].x-seg.row[0].x>0) flag_x=1;else flag_x=-1;
-        if(seg.row[5].y-seg.row[0].y>0) flag_y=1;else flag_y=-1;
-        if(seg.row[5].z-seg.row[0].z>0) flag_z=1;else flag_z=-1;
-//        qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
+        QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+
+        for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
+        {
+
+            V_NeuronSWC_unit curSWCunit = seg.row[i];
+            QString packetbuff;
+            packetbuff.clear();
+            if(i!=seg.row.size()-1)
+            {
+                XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+                packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                        .arg(curSWCunit.r).arg(curSWCunit.parent);
+
+                if(i==0)
+                {
+                    //                qDebug()<<"delmarker "+packetbuff;
+                    emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
+                }
+            }
+            else
+            {
+                XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+                packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                        .arg(curSWCunit.r).arg(curSWCunit.parent);
+                //            qDebug()<<"marker "+packetbuff;
+                emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
+                AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
+            }
+            messageBuff +=packetbuff;
+        }
+
+        if(seg.row.size()>5)
+        {
+            if(seg.row[5].x-seg.row[0].x>0) flag_x=1;else flag_x=-1;
+            if(seg.row[5].y-seg.row[0].y>0) flag_y=1;else flag_y=-1;
+            if(seg.row[5].z-seg.row[0].z>0) flag_z=1;else flag_z=-1;
+            //        qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
+        }
+        return messageBuff;
+    }else {
+        QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+
+        for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
+        {
+
+            V_NeuronSWC_unit curSWCunit = seg.row[i];
+            QString packetbuff;
+            packetbuff.clear();
+            if(i!=seg.row.size()-1)
+            {
+                XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+                packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                        .arg(curSWCunit.r).arg(curSWCunit.parent);
+            }
+            else
+            {
+                XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+                packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
+                        .arg(curSWCunit.r).arg(curSWCunit.parent);
+            }
+            messageBuff +=packetbuff;
+        }
+        return messageBuff;
     }
-    return messageBuff;
 }
 
 QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
