@@ -344,12 +344,14 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
                 pushUndoStack("seg",QString("/del_curve: "+_1+" "+_2+"_"));
             }else if(deletecurveRex.indexIn(send_MSG)!=-1)
             {
+                qDebug()<<send_MSG;
 //                QStringList delMsgs=deletecurveRex.cap(1).split("_",QString::SkipEmptyParts);
                 for(int i=0;i<undo_delcure.size();i++)
                 {
                     pushUndoStack("delcurve",undo_delcure.at(i));
-                    undo_delcure.removeAt(i);
+//                    undo_delcure.removeAt(i);
                 }
+                undo_delcure.clear();
 
             }
         }
@@ -396,12 +398,14 @@ void V3dR_Communicator::onReadyRead()
 
 void V3dR_Communicator::pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC)
 {
-//    qDebug()<<"--------------------pushVSWC--------------------------";
+    qDebug()<<"--------------------pushVSWC--------------------------";
     for(int i=0;i<vector_VSWC.size();i++)
     {
-        undo_delcure.push_back("/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i),0));
-//        qDebug()<<"pushVSWC:"<<"/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i));
+        QString _string="/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i),false);
+        undo_delcure.push_back(_string);
+//        qDebug()<<i<<":"<<_string;
     }
+    qDebug()<<"--------------------pushVSWC-  out-------------------------";
 }
 
 void V3dR_Communicator::pushUndoStack(QString head, QString Msg)
@@ -675,6 +679,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
         }
         return messageBuff;
     }else {
+        qDebug()<<"hkjhkjhjk";
         QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
         for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
