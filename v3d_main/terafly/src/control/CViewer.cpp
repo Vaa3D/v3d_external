@@ -680,7 +680,13 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
 					cout << " === distance: " << dist << endl;
-					
+
+					/*My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+						if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
+
+					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
+					curImg->proj_trace_history_append();*/
 				}
 				else if (PMain::getInstance()->fragTracePluginInstance && PMain::getInstance()->NeuronAssemblerPortal->markerMonitorStatus())
 				{
