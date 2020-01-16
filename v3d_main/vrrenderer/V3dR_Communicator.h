@@ -151,6 +151,7 @@ private:
     XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
 public:
     XYZ AutoTraceNode;
+//    XYZ MoveToMarkerPos;
     int flag_x,flag_y,flag_z;
 
     QStringList undoStack;

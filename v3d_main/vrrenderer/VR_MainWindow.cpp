@@ -227,7 +227,7 @@ void VR_MainWindow::TVProcess(QString line)
                 }
 
                     pMainApplication->CollaborationCreatorPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
-                    VR_Communicator->CreatorMarkerPos = XYZ(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+                    VR_Communicator->CreatorMarkerPos = XYZ(mx, my, mz);
                     VR_Communicator->CreatorMarkerRes = res;
 			}
 

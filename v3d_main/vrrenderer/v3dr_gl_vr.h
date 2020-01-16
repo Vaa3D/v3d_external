@@ -272,6 +272,7 @@ public:
 	XYZ CmainVRVolumeStartPoint;
 	int CmainResIndex;
 	XYZ CollaborationCreatorPos;
+    XYZ CollaborationCreatorGLOPos;
 	XYZ CollaborationMaxResolution;
 	XYZ CollaborationCurrentRes;
 	XYZ CollaborationTargetMarkerRes;

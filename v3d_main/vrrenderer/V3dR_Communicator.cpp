@@ -202,6 +202,7 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
     asktimer=nullptr;
     nextblocksize=0;
     AutoTraceNode=XYZ(0);
+//    MoveToMarkerPos=XYZ(0);
     flag_x=0;flag_y=0;flag_z=0;
     if(asktimer==nullptr)
     {
@@ -599,8 +600,10 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 //                qDebug() << "size < 3";
                 return;
             }
-            emit addMarker(creatorRex.cap(2).trimmed(),3);//para2 was not used
+            QString Pos=creatorRex.cap(2).trimmed();
+            emit addMarker(Pos,3);//para2 was not used
             //wait ...
+            CreatorMarkerPos=XYZ(Pos.split(" ").at(0).toFloat(),Pos.split(" ").at(1).toFloat(),Pos.split(" ").at(2).toFloat());
         }
 }
 

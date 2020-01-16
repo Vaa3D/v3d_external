@@ -672,7 +672,7 @@ void dprintf( const char *fmt, ... )
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMainApplication::CMainApplication(int argc, char *argv[])
+CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
 	: m_pCompanionWindow(NULL)
 	, m_pContext(NULL)
 	, m_nCompanionWindowWidth(3200)//( 1600 )//(640)//
@@ -748,6 +748,7 @@ CMainApplication::CMainApplication(int argc, char *argv[])
 	, CollaborationTargetMarkerRes(1, 1, 1)
 	, line_tobedeleted(-1)
     , undo(false)
+    ,CollaborationCreatorGLOPos(glomarkerPOS.x,glomarkerPOS.y,glomarkerPOS.z)
 	//, font_VR (NULL)
 
 {
@@ -988,7 +989,10 @@ bool CMainApplication::BInit()
 	u_clipnormal = glm::vec3(0,-1.0,0);
 	u_clippoint = glm::vec3(0.0,0.0,2.0);
 	teraflyPOS = 0;
-	CollaborationCreatorPos = 0;
+    if(CollaborationCreatorGLOPos.x!=0&&CollaborationCreatorGLOPos.y!=0&&CollaborationCreatorGLOPos.z!=0)
+        CollaborationCreatorPos = ConvertGlobaltoLocalCoords(CollaborationCreatorGLOPos.x,CollaborationCreatorGLOPos.y,CollaborationCreatorGLOPos.z);
+    else
+        CollaborationCreatorPos=XYZ(0);
 	SDL_StartTextInput();
 	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
@@ -2737,8 +2741,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 //				qDebug() << "get creator pos";
 				teraflyPOS = XYZ(CollaborationCreatorPos.x, CollaborationCreatorPos.y, CollaborationCreatorPos.z);//liqi
-                qDebug()<<"---------------------------\n"
-                       <<teraflyPOS.x<<" "<<teraflyPOS.y<<teraflyPOS.z<<"\n---------------";
+//                qDebug()<<"---------------------------\n"
+//                       <<teraflyPOS.x<<" "<<teraflyPOS.y<<teraflyPOS.z<<"\n---------------";
 				postVRFunctionCallMode = 9;
 				break;
 			}
