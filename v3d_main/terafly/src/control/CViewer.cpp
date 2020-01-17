@@ -675,18 +675,23 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					if (thisRenderer->listNeuronTree.size() == 0) return false;
 
 					NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
+					// The distance is not always computed correctly, sometimes even far off. But the identified nearest node to the mouse click is usually correct. 
 					double dist;
-					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
 					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
 					cout << " === distance: " << dist << endl;
 
-					/*My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
-						if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
+					float coords[3];
+					coords[0] = treePtr->listNeuron.at(index).x;
+					coords[1] = treePtr->listNeuron.at(index).y;
+					coords[2] = treePtr->listNeuron.at(index).z;
+					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+					vector<V_NeuronSWC> processedSegs = PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron.seg, coords);
+					cout << curImg->tracedNeuron.seg.size() << endl;
 
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
-					curImg->proj_trace_history_append();*/
+					curImg->proj_trace_history_append();
 				}
 				else if (PMain::getInstance()->fragTracePluginInstance && PMain::getInstance()->NeuronAssemblerPortal->markerMonitorStatus())
 				{

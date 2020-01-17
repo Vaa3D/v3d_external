@@ -218,9 +218,9 @@ class terafly::CViewer : public QWidget
 		virtual void editingModeInit() { CViewer::getCurrent()->editingMode = "none"; }
 		virtual void setEraserSize(int newEraserSize) { CViewer::getCurrent()->eraserSize = newEraserSize; }
 		virtual void segEditing_setCursor(string action);
-		virtual void getLocalCurves(NeuronTree& localCurves) { localCurves = this->convertedTreeCoords; }
 
 		virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
+		
 #endif
 
         /**********************************************************************************
