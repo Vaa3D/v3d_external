@@ -687,8 +687,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					coords[1] = treePtr->listNeuron.at(index).y;
 					coords[2] = treePtr->listNeuron.at(index).z;
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					vector<V_NeuronSWC> processedSegs = PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron.seg, coords);
-					cout << curImg->tracedNeuron.seg.size() << endl;
+					curImg->tracedNeuron.seg = PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron.seg, coords);					
 
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
 					curImg->proj_trace_history_append();
