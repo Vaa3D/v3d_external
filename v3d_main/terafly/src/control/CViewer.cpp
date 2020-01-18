@@ -679,7 +679,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					double dist;
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
 					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
-					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
+					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
 					cout << " === distance: " << dist << endl;
 
 					float coords[3];
@@ -687,10 +687,10 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					coords[1] = treePtr->listNeuron.at(index).y;
 					coords[2] = treePtr->listNeuron.at(index).z;
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					curImg->tracedNeuron.seg = PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron.seg, coords);					
+					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron.seg, coords);					
 
-					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
-					curImg->proj_trace_history_append();
+					//curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
+					//curImg->proj_trace_history_append();
 				}
 				else if (PMain::getInstance()->fragTracePluginInstance && PMain::getInstance()->NeuronAssemblerPortal->markerMonitorStatus())
 				{
