@@ -215,9 +215,11 @@ class terafly::CViewer : public QWidget
 
 		string editingMode;
 		int eraserSize;
+		set<int> deletedSegsIDs;
 		virtual void editingModeInit() { CViewer::getCurrent()->editingMode = "none"; }
 		virtual void setEraserSize(int newEraserSize) { CViewer::getCurrent()->eraserSize = newEraserSize; }
 		virtual void segEditing_setCursor(string action);
+		virtual void getOriginalNeuronTree(NeuronTree& originalTree);
 
 		virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 		

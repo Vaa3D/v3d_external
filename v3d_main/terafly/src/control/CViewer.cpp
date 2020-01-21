@@ -674,23 +674,30 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
 					if (thisRenderer->listNeuronTree.size() == 0) return false;
 
-					NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(0));
 					// The distance is not always computed correctly, sometimes even far off. But the identified nearest node to the mouse click is usually correct. 
 					double dist;
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
 					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
-					cout << " === distance: " << dist << endl;
+					cout << " === distance: " << dist << endl; 
 
 					float coords[3];
 					coords[0] = treePtr->listNeuron.at(index).x;
 					coords[1] = treePtr->listNeuron.at(index).y;
 					coords[2] = treePtr->listNeuron.at(index).z;
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron.seg, coords);					
+					
+					map<int, set<int>> seg2Bedited;
+					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(treePtr, coords, seg2Bedited);
+					for (map<int, set<int>>::iterator it = seg2Bedited.begin(); it != seg2Bedited.end(); ++it)
+					{
+						curImg->tracedNeuron.seg[it->first - 1].to_be_deleted = true;
+						curImg->tracedNeuron.seg[it->first - 1].on = false;	
+					}
 
-					//curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
-					//curImg->proj_trace_history_append();
+					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
+					curImg->proj_trace_history_append();
 				}
 				else if (PMain::getInstance()->fragTracePluginInstance && PMain::getInstance()->NeuronAssemblerPortal->markerMonitorStatus())
 				{
@@ -3363,6 +3370,12 @@ void CViewer::segEditing_setCursor(string action)
 		CViewer::current->editingMode = "none";
 		CViewer::current->view3DWidget->setCursor(Qt::ArrowCursor);
 	}
+}
+
+void CViewer::getOriginalNeuronTree(NeuronTree& originalTree)
+{
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(CViewer::getCurrent()->view3DWidget->getRenderer()));
+	originalTree = thisRenderer->listNeuronTree.at(0);
 }
 
 void CViewer::getParamsFromFragTraceUI(const string& keyName, const float& value)

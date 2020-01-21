@@ -5,6 +5,8 @@
 
 #include "IPMain4NeuronAssembler.h"
 
+using namespace std;
+
 class INeuronAssembler
 {
 public:
@@ -29,6 +31,7 @@ public:
 	virtual void editingModeInit() = 0;
 	virtual void setEraserSize(int newEraserSize) = 0;
 	virtual void segEditing_setCursor(string action) = 0;
+	virtual void getOriginalNeuronTree(NeuronTree& originalTree) = 0;
 
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 };
