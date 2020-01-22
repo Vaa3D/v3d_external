@@ -680,6 +680,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
 					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
+					cout << " === segment ID: " << treePtr->listNeuron.at(index).seg_id << endl;
 					cout << " === distance: " << dist << endl; 
 
 					float coords[3];
@@ -687,13 +688,14 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					coords[1] = treePtr->listNeuron.at(index).y;
 					coords[2] = treePtr->listNeuron.at(index).z;
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					
+					cout << curImg->tracedNeuron.seg.size() << endl;
+
 					map<int, set<int>> seg2Bedited;
-					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(treePtr, coords, seg2Bedited);
+					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords, seg2Bedited);
 					for (map<int, set<int>>::iterator it = seg2Bedited.begin(); it != seg2Bedited.end(); ++it)
 					{
-						curImg->tracedNeuron.seg[it->first - 1].to_be_deleted = true;
-						curImg->tracedNeuron.seg[it->first - 1].on = false;	
+						curImg->tracedNeuron.seg[it->first].to_be_deleted = true;
+						curImg->tracedNeuron.seg[it->first].on = false;	
 					}
 
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
