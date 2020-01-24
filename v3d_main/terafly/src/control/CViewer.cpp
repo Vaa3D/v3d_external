@@ -692,11 +692,11 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
 					map<int, set<int>> seg2Bedited;
 					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords, seg2Bedited);
-					for (map<int, set<int>>::iterator it = seg2Bedited.begin(); it != seg2Bedited.end(); ++it)
+				/*	for (map<int, set<int>>::iterator it = seg2Bedited.begin(); it != seg2Bedited.end(); ++it)
 					{
 						curImg->tracedNeuron.seg[it->first].to_be_deleted = true;
 						curImg->tracedNeuron.seg[it->first].on = false;	
-					}
+					}*/
 
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
 					curImg->proj_trace_history_append();
@@ -3363,7 +3363,7 @@ void CViewer::segEditing_setCursor(string action)
 	{
 		CViewer::current->editingMode = "erase";
 		QString eraserSizeQ = QString::number(CViewer::current->eraserSize);
-		QString cursorPath = "..\\..\\vaa3d_tools\\hackathon\\MK\\Fragmented_autoTrace\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
+		QString cursorPath = ".\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
 		QCursor eraseCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
 	}
