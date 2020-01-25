@@ -678,6 +678,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					// The distance is not always computed correctly, sometimes even far off. But the identified nearest node to the mouse click is usually correct. 
 					double dist;
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
+					
 					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
 					cout << " === segment ID: " << treePtr->listNeuron.at(index).seg_id << endl;
@@ -689,14 +690,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					coords[2] = treePtr->listNeuron.at(index).z;
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
 					cout << curImg->tracedNeuron.seg.size() << endl;
-
-					map<int, set<int>> seg2Bedited;
-					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords, seg2Bedited);
-				/*	for (map<int, set<int>>::iterator it = seg2Bedited.begin(); it != seg2Bedited.end(); ++it)
-					{
-						curImg->tracedNeuron.seg[it->first].to_be_deleted = true;
-						curImg->tracedNeuron.seg[it->first].on = false;	
-					}*/
+					
+					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords, mouseEvt->x(), mouseEvt->y());
 
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
 					curImg->proj_trace_history_append();
@@ -3288,6 +3283,12 @@ void CViewer::changeFragTraceStatus(bool newStatus)
 	pMain.fragTracePluginInstance = newStatus;
 }
 
+int CViewer::getZoomingFactor()
+{
+	int zoomFactor = PMain::getInstance()->zoomInSens->value();
+	return zoomFactor;
+}
+
 bool CViewer::getXlockStatus()
 {
 	PMain& pMain = *(PMain::getInstance());
@@ -3374,10 +3375,19 @@ void CViewer::segEditing_setCursor(string action)
 	}
 }
 
-void CViewer::getOriginalNeuronTree(NeuronTree& originalTree)
+void CViewer::convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[])
 {
-	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(CViewer::getCurrent()->view3DWidget->getRenderer()));
-	originalTree = thisRenderer->listNeuronTree.at(0);
+	double winCoord[3];
+	winCoord[0] = double(windowCoord[0]);
+	winCoord[1] = double(windowCoord[1]);
+	winCoord[2] = double(windowCoord[2]);
+
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	thisRenderer->localSWCcoord2projectedWindowCoord(localCoord, winCoord);
+
+	windowCoord[0] = float(winCoord[0]);
+	windowCoord[1] = float(winCoord[1]);
+	windowCoord[2] = float(winCoord[2]);
 }
 
 void CViewer::getParamsFromFragTraceUI(const string& keyName, const float& value)

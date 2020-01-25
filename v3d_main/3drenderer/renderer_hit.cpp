@@ -3340,6 +3340,23 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * p
 	//best_ind = p_listneuron->at(best_ind).n; // this no used, because it changed in V_NeuronSWC
 	return best_ind; //by PHC, 090209. return the index in the SWC file
 }
+
+#ifdef _NEURON_ASSEMBLER_
+void Renderer_gl1::localSWCcoord2projectedWindowCoord(const float swcLocalCoord[], double swcWindowCoord[])
+{
+	GLdouble ix, iy, iz, px, py, pz;
+	ix = GLdouble(swcLocalCoord[0]);
+	iy = GLdouble(swcLocalCoord[1]);
+	iz = GLdouble(swcLocalCoord[2]);
+
+	GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
+
+	swcWindowCoord[0] = px;
+	swcWindowCoord[1] = py;
+	swcWindowCoord[2] = pz;
+}
+#endif
+
 Triangle * Renderer_gl1::findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist)
 {
 	if (!plist) return NULL;

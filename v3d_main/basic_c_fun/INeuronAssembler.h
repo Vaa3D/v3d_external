@@ -21,6 +21,7 @@ public:
 	virtual string getCviewerWinTitle() = 0;
 	virtual int getTeraflyTotalResLevel() = 0;
 	virtual int getTeraflyResLevel() = 0;
+	virtual int getZoomingFactor() = 0;
 	virtual bool getXlockStatus() = 0;
 	virtual bool getYlockStatus() = 0;
 	virtual bool getZlockStatus() = 0;
@@ -31,7 +32,7 @@ public:
 	virtual void editingModeInit() = 0;
 	virtual void setEraserSize(int newEraserSize) = 0;
 	virtual void segEditing_setCursor(string action) = 0;
-	virtual void getOriginalNeuronTree(NeuronTree& originalTree) = 0;
+	virtual void convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[]) = 0;
 
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 };

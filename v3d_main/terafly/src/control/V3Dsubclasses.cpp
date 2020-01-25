@@ -53,12 +53,15 @@ void myV3dR_GLWidget::setZoomO(float zr)
 
     //qDebug("V3dR_GLWidget::setZoom = %i",zr);
     zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
+	
     if (this->_zoom != zr) {
         this->_zoom = zr;
         if (this->renderer)
         {
-            if (zr>PMain::getInstance()->zoomInSens->value() && !CViewer::getCurrent()->isHighestRes())
-                zoomIn(PMain::getInstance()->zoomInMethod->currentText().toStdString().c_str());
+			if (zr > PMain::getInstance()->zoomInSens->value() && !CViewer::getCurrent()->isHighestRes())
+			{
+				zoomIn(PMain::getInstance()->zoomInMethod->currentText().toStdString().c_str());
+			}
             else
                 this->renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
         }

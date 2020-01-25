@@ -255,6 +255,10 @@ public:
 	QList <NeuronTree> * getHandleNeuronTrees() {return &listNeuronTree;}
 	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double & best_dist);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
 
+#ifdef _NEURON_ASSEMBLER_
+	void localSWCcoord2projectedWindowCoord(const float swcLocalCoord[], double swcWindowCoord[]);
+#endif
+
     LandmarkList * getHandleLandmark(); //20141016, by Hanbo Chen
     void setHandleLandmark(LandmarkList & landmark_list);
 
