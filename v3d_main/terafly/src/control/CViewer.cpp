@@ -3283,12 +3283,6 @@ void CViewer::changeFragTraceStatus(bool newStatus)
 	pMain.fragTracePluginInstance = newStatus;
 }
 
-int CViewer::getZoomingFactor()
-{
-	int zoomFactor = PMain::getInstance()->zoomInSens->value();
-	return zoomFactor;
-}
-
 bool CViewer::getXlockStatus()
 {
 	PMain& pMain = *(PMain::getInstance());

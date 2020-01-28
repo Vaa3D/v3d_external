@@ -203,7 +203,7 @@ class terafly::CViewer : public QWidget
 		virtual string getCviewerWinTitle() { return CViewer::getCurrent()->title; }
 		virtual int getTeraflyTotalResLevel() { return CImport::instance()->getResolutions(); }
 		virtual int getTeraflyResLevel() { return CViewer::getCurrent()->getResIndex(); }
-		virtual int getZoomingFactor();
+		virtual int getZoomingFactor() { return CViewer::getCurrent()->getGLWidget()->_zoom; }
 		virtual bool getXlockStatus();
 		virtual bool getYlockStatus();
 		virtual bool getZlockStatus();
@@ -219,6 +219,7 @@ class terafly::CViewer : public QWidget
 		set<int> deletedSegsIDs;
 		virtual void editingModeInit() { CViewer::getCurrent()->editingMode = "none"; }
 		virtual void setEraserSize(int newEraserSize) { CViewer::getCurrent()->eraserSize = newEraserSize; }
+		virtual int getEraserSize() { return CViewer::getCurrent()->eraserSize; }
 		virtual void segEditing_setCursor(string action);		
 		virtual void convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[]);
 
