@@ -679,17 +679,16 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					double dist;
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
 					
-					cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
+					cout << " === mouse coord: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
 					cout << " === segment ID: " << treePtr->listNeuron.at(index).seg_id << endl;
-					cout << " === distance: " << dist << endl; 
+					//cout << " === distance: " << dist << endl; 
 
 					float coords[3];
 					coords[0] = treePtr->listNeuron.at(index).x;
 					coords[1] = treePtr->listNeuron.at(index).y;
 					coords[2] = treePtr->listNeuron.at(index).z;
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					cout << curImg->tracedNeuron.seg.size() << endl;
 					
 					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords, mouseEvt->x(), mouseEvt->y());
 
@@ -3382,6 +3381,15 @@ void CViewer::convertLocalCoord2windowCoord(const float localCoord[], float wind
 	windowCoord[0] = float(winCoord[0]);
 	windowCoord[1] = float(winCoord[1]);
 	windowCoord[2] = float(winCoord[2]);
+}
+
+void CViewer::convertWindowCoord2likelyLocalCoord(const int mouseX, const int mouseY, float putativeCoord[])
+{
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	XYZ point3D = thisRenderer->get3DPoint(mouseX, mouseY);
+	putativeCoord[0] = point3D.x;
+	putativeCoord[1] = point3D.y;
+	putativeCoord[2] = point3D.z;
 }
 
 void CViewer::getParamsFromFragTraceUI(const string& keyName, const float& value)

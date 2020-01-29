@@ -222,6 +222,7 @@ class terafly::CViewer : public QWidget
 		virtual int getEraserSize() { return CViewer::getCurrent()->eraserSize; }
 		virtual void segEditing_setCursor(string action);		
 		virtual void convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[]);
+		virtual void convertWindowCoord2likelyLocalCoord(const int mouseX, const int mouseY, float putativeCoord[]);
 
 		virtual void getParamsFromFragTraceUI(const string& keyName, const float& value);
 		
