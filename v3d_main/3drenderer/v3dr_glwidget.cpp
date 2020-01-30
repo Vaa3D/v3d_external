@@ -801,8 +801,16 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 		// As Alessandro points out in [CViewer::invokedFromVaa3D], Vaa3D somehow does not really disconnect setZoom slot
 		// when scrolling (zooming with mouse wheel) in terafly environment. This additional if-else selection aims to avoid 
 		// Vaa3D's zooming action when the cursor is in the erasing mode of Neuron Assembler.             -- MK, Jan, 2020
-		if (terafly::CViewer::getCurrent()->editingMode.compare("erase")) 
-			setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+		if (!terafly::PMain::isInstantiated()) setZoom((zoomin_sign * zoomStep) + _zoom);
+		else 
+		{
+			if (!terafly::CImport::instance()->isEmpty())
+			{
+				if (terafly::CViewer::getCurrent()->editingMode.compare("erase"))
+					setZoom((zoomin_sign * zoomStep) + _zoom);
+			}
+			else setZoom((zoomin_sign * zoomStep) + _zoom);
+		}
 #else
 		setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 #endif
