@@ -543,10 +543,8 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
 
 
 /* ======================================================================================================
- * This method is called by V3d_PluginLoader::runNApluginInterface, 
+ * This method is called by [v3dr_glwidget] when [Alt + F] is hit, 
  * which casts CViewer to INeuronAssembler in order to allow Neuron Assembler talking to terafly directly.
- * Note, when '_NEURON_ASSEMBLER_' preprocessor is deactivated, this method becomes a dummy function 
- * due to its being a static member of terafly::PluginInterface.
  * ========================================================================== MK, Dec, 2019 ============= */
 #ifdef _NEURON_ASSEMBLER_
 INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()

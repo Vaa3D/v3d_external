@@ -19,6 +19,7 @@ public:
 	virtual void changeFragTraceStatus(bool newStatus) = 0;
 
 	virtual string getCviewerWinTitle() = 0;
+	virtual void printoutWinTitle() = 0;
 	virtual int getTeraflyTotalResLevel() = 0;
 	virtual int getTeraflyResLevel() = 0;
 	virtual int getZoomingFactor() = 0;

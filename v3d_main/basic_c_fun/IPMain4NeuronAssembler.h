@@ -16,6 +16,8 @@ public:
 
 	virtual void getNAVersionNum() = 0;
 
+	virtual void updateCViewerPortal() = 0;
+
 	virtual bool markerMonitorStatus() = 0;
 	virtual void sendSelectedMarkers2NA(const QList<ImageMarker>& selectedMarkerList, const QList<ImageMarker>& selectedLocalMarkerList) = 0;
 

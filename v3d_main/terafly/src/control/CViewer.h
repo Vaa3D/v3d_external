@@ -195,12 +195,13 @@ class terafly::CViewer : public QWidget
 		 *                                                                                   -- MK, Dec, 2019
 		 * ==================================================================================================== */
 		virtual bool teraflyImgInstance();
-		
+
 		virtual void sendCastNAUI2PMain(IPMain4NeuronAssembler* NAportal);
 		virtual bool checkFragTraceStatus();
 		virtual void changeFragTraceStatus(bool newStatus);
 
 		virtual string getCviewerWinTitle() { return CViewer::getCurrent()->title; }
+		virtual void printoutWinTitle() { cout << CViewer::getCurrent()->title << endl; }
 		virtual int getTeraflyTotalResLevel() { return CImport::instance()->getResolutions(); }
 		virtual int getTeraflyResLevel() { return CViewer::getCurrent()->getResIndex(); }
 		virtual int getZoomingFactor() { return CViewer::getCurrent()->getGLWidget()->_zoom; }

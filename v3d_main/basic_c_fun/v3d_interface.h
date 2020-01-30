@@ -257,7 +257,7 @@ public:
 #endif
 
 #ifdef _NEURON_ASSEMBLER_
-	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Han, 2020
+	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Jan, 2020
 	INeuronAssembler* castCViewer;
 #endif
 };

@@ -1408,6 +1408,10 @@ void CViewer::close()
         prev->newViewerTimer = newViewerTimer;
         prev->next = next;
         next->prev = prev;
+#ifdef _NEURON_ASSEMBLER_
+		PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
+		PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+#endif
     }
     else
     {
