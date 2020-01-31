@@ -539,6 +539,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	//    {
 	//    	loader->unload();      qDebug() << "unload: " <<fileName;
 	//    }
+
 }
 
 void V3d_PluginLoader::runPlugin()

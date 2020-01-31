@@ -1409,7 +1409,8 @@ void CViewer::close()
         prev->next = next;
         next->prev = prev;
 #ifdef _NEURON_ASSEMBLER_
-		if (PMain::getInstance()->FragTracerPluginLoaderPtr != nullptr)
+		// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
+		if (PMain::getInstance()->fragTracePluginInstance)
 		{
 			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
 			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();

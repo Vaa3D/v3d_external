@@ -804,7 +804,7 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 		if (!terafly::PMain::isInstantiated()) setZoom((zoomin_sign * zoomStep) + _zoom);
 		else 
 		{
-			if (!terafly::CImport::instance()->isEmpty())
+			if (!terafly::CImport::instance()->isEmpty() && terafly::PMain::getInstance()->FragTracerPluginLoaderPtr != nullptr)
 			{
 				if (terafly::CViewer::getCurrent()->editingMode.compare("erase"))
 					setZoom((zoomin_sign * zoomStep) + _zoom);
@@ -1042,20 +1042,23 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (IS_ALT_MODIFIER)
 			{
 #ifdef _NEURON_ASSEMBLER_
-				terafly::PMain& pMain = *(terafly::PMain::getInstance());
-				if (!pMain.fragTracePluginInstance)
+				if (terafly::PMain::getInstance())
 				{
-					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-					pMain.FragTracerQPluginPtr = loader;
-					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (!pMain.fragTracePluginInstance)
+					{
+						QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+						pMain.FragTracerQPluginPtr = loader;
+						if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 
-					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					pMain.FragTracerPluginLoaderPtr = &mypluginloader;
-					mypluginloader.castCViewer = tf::PluginInterface::getTeraflyCViewer();
-					mypluginloader.runPlugin(loader, "settings");
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+						pMain.FragTracerPluginLoaderPtr = &mypluginloader;
+						mypluginloader.castCViewer = tf::PluginInterface::getTeraflyCViewer();
+						mypluginloader.runPlugin(loader, "settings");
+					}
+					else v3d_msg("Neuron Assembler plugin instance already exists.");
 				}
-				else v3d_msg("Neuron Assembler plugin instance already exists.");
 #endif
 			}
 	  		break;
