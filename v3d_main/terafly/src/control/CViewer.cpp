@@ -1408,6 +1408,7 @@ void CViewer::close()
         prev->newViewerTimer = newViewerTimer;
         prev->next = next;
         next->prev = prev;
+
 #ifdef _NEURON_ASSEMBLER_
 		// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
 		if (PMain::getInstance()->fragTracePluginInstance)
@@ -1416,6 +1417,7 @@ void CViewer::close()
 			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
 		}
 #endif
+
     }
     else
     {
@@ -2277,6 +2279,16 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
         //registrating the current window as the current window of the multiresolution explorer windows chain
         CViewer::current = this;
+
+#ifdef _NEURON_ASSEMBLER_
+		if (PMain::getInstance()->fragTracePluginInstance)
+		{
+			// If Neuron Assembler is instantiated at higher resolution, the following block is needed as it updates Neuron Assembler's CViewerPortal when going back to lower resolution. 
+			//                                                                                                   -- MK, Jan, 2020
+			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(this);
+			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+		}
+#endif
 
         //selecting the current resolution in the PMain GUI and disabling previous resolutions
 //        PMain* pMain = PMain::getInstance();

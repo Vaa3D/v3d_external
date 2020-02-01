@@ -1042,7 +1042,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (IS_ALT_MODIFIER)
 			{
 #ifdef _NEURON_ASSEMBLER_
-				if (terafly::PMain::getInstance())
+				if (terafly::PMain::isInstantiated())
 				{
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (!pMain.fragTracePluginInstance)
@@ -1058,6 +1058,16 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						mypluginloader.runPlugin(loader, "settings");
 					}
 					else v3d_msg("Neuron Assembler plugin instance already exists.");
+				}
+				else
+				{
+					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
+					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+					mypluginloader.castCViewer = nullptr;
+					mypluginloader.runPlugin(loader, "settings");
 				}
 #endif
 			}
