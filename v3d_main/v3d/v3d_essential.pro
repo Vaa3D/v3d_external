@@ -218,7 +218,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_colormapDialog.h \
     ../3drenderer/gradients.h \
- \ #    ../3drenderer/v3d_hoverpoints.h \
+    ../3drenderer/v3d_hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
     ../3drenderer/line_box_intersection_check.h \
     ../neuron_tracing/heap.h \
@@ -279,8 +279,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../terafly/src/presentation/theader.h \
     INeuronAssembler.h \
     IPMain4NeuronAssembler.h \
-#    ./painting/shared/arthurstyle.h \
-#    ./painting/shared/arthurwidgets.h
+    ./old_arthurstyle.h \
+    ./old_arthurwidgets.h
 
 
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
@@ -322,7 +322,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
     ../3drenderer/v3dr_control_signal.cpp \
- \ #    ../3drenderer/v3d_hoverpoints.cpp \
+    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
         ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
@@ -363,10 +363,9 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
     ../io/v3d_nrrd.cpp \
-    ../3drenderer/glsl_r.cpp
-
-#    ./painting/shared/arthurstyle.cpp \
-#    ./painting/shared/arthurwidgets.cpp
+    ../3drenderer/glsl_r.cpp \
+    ./old_arthurstyle.cpp \
+    ./old_arthurwidgets.cpp
 
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
@@ -385,7 +384,7 @@ HEADERS += \
     ../vrrenderer/RenderableObject.h \
     ../vrrenderer/VRFinger.h \
     ../vrrenderer/V3dR_Communicator.h \
-    ../vrrenderer/VR_MainWindow.h 
+    ../vrrenderer/VR_MainWindow.h
 
 SOURCES += \
     ../vrrenderer/v3dr_gl_vr.cpp \

@@ -17,3 +17,12 @@ MK 11/23/2016
 
 
 //#define USE_GLEW
+
+#ifndef _VAA3D_VERSION_CTRL__
+#define _VAA3D_VERSION_CTRL__
+
+#define USE_Qt5 1
+//added by PHC , 2020/1/31
+
+#endif
+

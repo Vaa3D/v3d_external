@@ -36,6 +36,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define MAINWINDOW_H
 #define __v3d_custom_toolbar__
 
+#include "v3d_compile_constraints.h" //by PHC, 2020/1/31
+
 #if defined(USE_Qt5)
   #include <QtWidgets>
 #else
@@ -49,6 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <QWorkspace>
 #endif
+
 #include "v3d_actions.h"
 #include "v3d_compile_constraints.h"
 #include "../worm_straighten_c/bdb_minus.h"

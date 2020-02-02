@@ -41,17 +41,26 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_common.h"
 #include "renderer.h"
 #include "../basic_c_fun/basic_view3d.h"
+
 #if defined(USE_Qt5)
-#include <QOpenGLWidget>
-using QOpenGLWidget_proxy = QOpenGLWidget;
+#include <QOpenGLWidget>   //commented by PHC 20200131
+using QOpenGLWidget_proxy = QOpenGLWidget; //commented by PHC 20200131
+
+//replaced by PHC 20200131 to be the following
+//#include <QGLWidget>
+//using QOpenGLWidget_proxy = QGLWidget;
+
+
 #else
 #include <QGLWidget>
 typedef QGLWidget QOpenGLWidget_proxy;
 #endif
+
 #ifdef __ALLOW_VR_FUNCS__
 #include "../vrrenderer/VR_MainWindow.h"
 #include "../vrrenderer/V3dR_Communicator.h"
 #endif
+
 #include "ui_setVoxSize.h"
 
 class V3dr_colormapDialog;

@@ -1812,11 +1812,11 @@ void Mozak3DView::receiveData(
     {
         try
         {
-            itm::uint32 img_dims[5]       = {std::max(0,nextImgVolH1-nextImgVolH0), std::max(0,nextImgVolV1-nextImgVolV0), std::max(0,nextImgVolD1-nextImgVolD0), nchannels, std::max(0,nextImgVolT1-nextImgVolT0+1)};
-			itm::uint32 img_offset[5]     = {std::max(0,data_s[0]-nextImgVolH0),    std::max(0,data_s[1]-nextImgVolV0),    std::max(0,data_s[2]-nextImgVolD0),    0,         std::max(0,data_s[4]-nextImgVolT0)     };
-            itm::uint32 new_img_dims[5]   = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
-            itm::uint32 new_img_offset[5] = {0,                                     0,                                     0,                                     0,         0                                      };
-            itm::uint32 new_img_count[5]  = {data_c[0],                             data_c[1],                             data_c[2],                             data_c[3], data_c[4]                              };
+            itm::uint32 img_dims[5]       = {uint32(std::max(0,nextImgVolH1-nextImgVolH0)), uint32(std::max(0,nextImgVolV1-nextImgVolV0)), uint32(std::max(0,nextImgVolD1-nextImgVolD0)), uint32(nchannels), uint32(std::max(0,nextImgVolT1-nextImgVolT0+1))};
+            itm::uint32 img_offset[5]     = {uint32(std::max(0,data_s[0]-nextImgVolH0)),    uint32(std::max(0,data_s[1]-nextImgVolV0)),    uint32(std::max(0,data_s[2]-nextImgVolD0)),    uint32(0),         uint32(std::max(0,data_s[4]-nextImgVolT0))     };
+            itm::uint32 new_img_dims[5]   = {uint32(data_c[0]),                             uint32(data_c[1]),                             uint32(data_c[2]),                             uint32(data_c[3]), uint32(data_c[4])                              };
+            itm::uint32 new_img_offset[5] = {uint32(0),                                     uint32(0),                                     uint32(0),                                     uint32(0),         uint32(0)                                      };
+            itm::uint32 new_img_count[5]  = {uint32(data_c[0]),                             uint32(data_c[1]),                             uint32(data_c[2]),                             uint32(data_c[3]), uint32(data_c[4])                              };
 			itm::CImageUtils::copyVOI(data, new_img_dims, new_img_offset, new_img_count,
                     nextImg->getRawData(), img_dims, img_offset);
             
@@ -2021,8 +2021,12 @@ void Mozak3DView::loadNewResolutionData(	int _resIndex,
 	// updating reference system
 	if(!moz->isPRactive())
 		moz->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+
+#ifndef USE_Qt5  //by PHC 20200201, tentative comment this due to the non-found updateGL() function in the respective class in Qt5
 	this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
-	Vaa3D_rotationchanged(0);
+#endif
+
+    Vaa3D_rotationchanged(0);
 
 	// update curve aspect
 	moz->curveAspectChanged();

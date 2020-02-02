@@ -74,6 +74,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef HOVERPOINTS_H
 #define HOVERPOINTS_H
 
+#include "../v3d/v3d_compile_constraints.h" //by PHC 20200201
+
 #ifdef USE_Qt5
   #include <QtWidgets>
 #else
