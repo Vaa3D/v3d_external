@@ -537,8 +537,6 @@ public:
 	 void rc_downstream_segID(My4DImage* curImg, size_t segID);
 	 void segTreeFastReprofile(My4DImage* curImg);
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
-
-	 bool FragTraceMarkerDetector3Dviewer;
 	 // -----------------------------------------------------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.

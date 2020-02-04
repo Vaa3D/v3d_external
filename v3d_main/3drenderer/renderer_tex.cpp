@@ -99,7 +99,6 @@ Renderer_gl1::Renderer_gl1(void* widget)
 	this->isLoadFromFile = false;
 	this->pressedShowSubTree = false;
 	this->zThick = 1;
-	this->FragTraceMarkerDetector3Dviewer = false;
 
 	qDebug("  Renderer_gl1::Renderer_gl1");
 	init_members();

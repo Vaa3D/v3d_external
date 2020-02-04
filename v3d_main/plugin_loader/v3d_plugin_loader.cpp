@@ -1288,14 +1288,6 @@ void V3d_PluginLoader::setHideDisplayControlButton(V3dR_MainWindow *w)
 //    }
 //}
 
-void V3d_PluginLoader::set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w)
-{
-	V3dR_GLWidget* vi = w->getGLWidget();
-	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
-	thisRenderer->FragTraceMarkerDetector3Dviewer = on_off;
-	cout << "marker detector test: " << thisRenderer->listMarker.size() << endl;
-}
-
 void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
 {
     if (v3d_mainwindow )

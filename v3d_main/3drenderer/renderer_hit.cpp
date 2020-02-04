@@ -126,14 +126,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 		case stImageMarker: {//marker
 			(qsName = QString("marker #%1 ... ").arg(names[2]) + listMarker.at(names[2]-1).name);
-			//qDebug() << qsName;
+			
 			/* ======== Select and unselect marker with mouse left button, MK, Sep, 2019 ======= */
-			switch (b_menu) 
+			switch (b_menu)
 			{
-			case true: // With menu popping up (right click)
-				if (!this->FragTraceMarkerDetector3Dviewer) LIST_SELECTED(listMarker, names[2] - 1, true);
+			case true:
+				LIST_SELECTED(listMarker, names[2] - 1, true);
 				break;
-			case false: // Without menu popping up (left click)
+			case false:
 				switch (listMarker.at(names[2] - 1).selected)
 				{
 				case true:
@@ -530,23 +530,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//##############################################################################
 		if (IS_SURFACE())
 		{
-			if (this->FragTraceMarkerDetector3Dviewer)
-			{
-				switch (listMarker.at(names[2] - 1).selected)
-				{
-				case true:
-					LIST_SELECTED(listMarker, names[2] - 1, false);
-					cout << "test1" << endl;
-					break;
-				case false:
-					LIST_SELECTED(listMarker, names[2] - 1, true);
-					cout << "test2" << endl;
-					break;
-				}
-
-				return 0;
-			}
-
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actShowFullPath = new QAction("Show full path", w));
             listAct.append(actObjectManager = new QAction("object manager", w));
@@ -1431,7 +1414,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     		{
     			const ImageMarker & m = listMarker.at(tmpind);
     			XYZ p = XYZ(m);
-
+//<<<<<<< HEAD
+//    			MarkerSpaceToNormalizeSpace(p);
+//=======
     			p.x = p.x*thicknessX -start1;
     			p.y = p.y*thicknessY -start2;
     			p.z = p.z*thicknessZ -start3;
@@ -1453,7 +1438,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     			p.x = s[0]*(p.x +t[0]);
     			p.y = s[1]*(p.y +t[1]);
     			p.z = s[2]*(p.z +t[2]);
-
+//>>>>>>> de6b711e02a658efa8704f8bffd841b27a8873ba
     			qDebug("normalized alt rotation center: (%f %f %f)", p.x, p.y, p.z);
 
     			w->setAltCenter(p.x, p.y, p.z);
