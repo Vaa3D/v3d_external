@@ -277,8 +277,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../io/asc_to_swc.h \
     ../io/v3d_nrrd.h \
     ../terafly/src/presentation/theader.h \
-    INeuronAssembler.h \
-    IPMain4NeuronAssembler.h \
+    ../basic_c_fun/INeuronAssembler.h \
+    ../basic_c_fun/IPMain4NeuronAssembler.h \
     ./old_arthurstyle.h \
     ./old_arthurwidgets.h
 
