@@ -1288,6 +1288,7 @@ void V3d_PluginLoader::setHideDisplayControlButton(V3dR_MainWindow *w)
 //    }
 //}
 
+#ifdef _NEURON_ASSEMBLER_
 void V3d_PluginLoader::set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w)
 {
 	V3dR_GLWidget* vi = w->getGLWidget();
@@ -1295,6 +1296,21 @@ void V3d_PluginLoader::set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWin
 	thisRenderer->FragTraceMarkerDetector3Dviewer = on_off;
 	cout << "marker detector test: " << thisRenderer->listMarker.size() << endl;
 }
+
+QList<ImageMarker> V3d_PluginLoader::send3DviewerMarkerList(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	return thisRenderer->selectedMarkerList;
+}
+
+void V3d_PluginLoader::refreshSelectedMarkers(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	thisRenderer->selectedMarkerList.clear();
+}
+#endif
 
 void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
 {

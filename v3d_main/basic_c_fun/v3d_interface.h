@@ -253,14 +253,16 @@ public:
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex) = 0;
 	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
 
-#ifdef __ALLOW_VR_FUNCS__
-    virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
-    virtual void openVRWindowV2(v3dhandle image_window, bool bOnlineMode = false) = 0;
-#endif
-
 #ifdef _NEURON_ASSEMBLER_
 	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Jan, 2020
 	INeuronAssembler* castCViewer;
+	virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w) = 0;
+	virtual void refreshSelectedMarkers(V3dR_MainWindow* w) = 0;
+#endif
+
+#ifdef __ALLOW_VR_FUNCS__
+    virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;
+    virtual void openVRWindowV2(v3dhandle image_window, bool bOnlineMode = false) = 0;
 #endif
 };
 

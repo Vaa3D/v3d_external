@@ -536,13 +536,31 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				{
 				case true:
 					LIST_SELECTED(listMarker, names[2] - 1, false);
-					cout << "test1" << endl;
 					break;
 				case false:
 					LIST_SELECTED(listMarker, names[2] - 1, true);
-					cout << "test2" << endl;
 					break;
 				}
+				
+				for (QList<ImageMarker>::iterator it = this->listMarker.begin(); it != this->listMarker.end(); ++it)
+					if (it->selected) selectedMarkerList.push_back(*it);
+
+				QObject* plugin = this->FragTracerQPluginPtr->instance();
+				V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
+				V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this->FragTracePluginLoaderPtr);
+				V3DPluginArgList pluginInputList, pluginOutputList;
+				V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+				vector<char*> pluginInputArgList;
+				vector<char*> pluginOutputArgList;
+				dummyInput.type = "dummy";
+				dummyInput.p = (void*)(&pluginInputArgList);
+				inputParam.type = "dummy";
+				inputParam.p = (void*)(&pluginInputArgList);
+				pluginInputList.push_back(dummyInput);
+				pluginInputList.push_back(inputParam);
+				dummyOutput.type = "dummy";
+				dummyOutput.p = (void*)(&pluginOutputArgList);
+				iface->dofunc("3DViewer_marker_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget	
 
 				return 0;
 			}

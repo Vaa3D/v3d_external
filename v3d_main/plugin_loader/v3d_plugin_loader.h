@@ -205,7 +205,11 @@ public:
     virtual void setHideDisplayControlButton(V3dR_MainWindow *w);
     //virtual void setResizeEvent(V3dR_MainWindow *w, int x, int y);
 
+#ifdef _NEURON_ASSEMBLER_
 	virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w);
+	virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w);
+	virtual void refreshSelectedMarkers(V3dR_MainWindow* w);
+#endif
 
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false);

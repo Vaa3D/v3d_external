@@ -539,6 +539,9 @@ public:
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
 
 	 bool FragTraceMarkerDetector3Dviewer;
+	 QList<ImageMarker> selectedMarkerList;
+	 QPluginLoader* FragTracerQPluginPtr;
+	 V3d_PluginLoader* FragTracePluginLoaderPtr;
 	 // -----------------------------------------------------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
