@@ -571,17 +571,16 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 					{
 					case true:
 						LIST_SELECTED(listCell, names[2] - 1, false);
-						//listCell[names[2] - 1].name = names[2];
 						break;
 					case false:
 						LIST_SELECTED(listCell, names[2] - 1, true);
-						//listCell[names[2] - 1].name = names[2];
 						break;
 					}
-
+		
 					QObject* plugin = this->FragTracerQPluginPtr->instance();
 					V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this->FragTracePluginLoaderPtr);
+					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(&mypluginloader);
 					V3DPluginArgList pluginInputList, pluginOutputList;
 					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
 					vector<char*> pluginInputArgList;
