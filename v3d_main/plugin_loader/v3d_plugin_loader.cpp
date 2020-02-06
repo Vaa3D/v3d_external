@@ -1289,26 +1289,54 @@ void V3d_PluginLoader::setHideDisplayControlButton(V3dR_MainWindow *w)
 //}
 
 #ifdef _NEURON_ASSEMBLER_
+int V3d_PluginLoader::getSurfaceType(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	return int(thisRenderer->surType);
+}
+
 void V3d_PluginLoader::set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w)
 {
 	V3dR_GLWidget* vi = w->getGLWidget();
 	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
 	thisRenderer->FragTraceMarkerDetector3Dviewer = on_off;
-	cout << "marker detector test: " << thisRenderer->listMarker.size() << endl;
+	//cout << "marker detector test: " << thisRenderer->listMarker.size() << endl;
+	//cout << "apo detector test: " << thisRenderer->listCell.size() << endl;
+
+	//for (QList<CellAPO>::iterator it = thisRenderer->listCell.begin(); it != thisRenderer->listCell.end(); ++it)
+	//	cout << it->name.toStdString() << ": " << it->selected << endl;
 }
 
 QList<ImageMarker> V3d_PluginLoader::send3DviewerMarkerList(V3dR_MainWindow* w)
 {
 	V3dR_GLWidget* vi = w->getGLWidget();
 	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
-	return thisRenderer->selectedMarkerList;
+	return thisRenderer->listMarker;
+}
+
+QList<CellAPO> V3d_PluginLoader::send3DviewerApoList(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	return thisRenderer->listCell;
 }
 
 void V3d_PluginLoader::refreshSelectedMarkers(V3dR_MainWindow* w)
 {
 	V3dR_GLWidget* vi = w->getGLWidget();
 	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
-	thisRenderer->selectedMarkerList.clear();
+
+	if (thisRenderer->surType == stImageMarker)
+	{
+		for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+			it->selected = false;
+	}
+	else if (thisRenderer->surType == stPointCloud)
+	{
+		for (QList<CellAPO>::iterator it = thisRenderer->listCell.begin(); it != thisRenderer->listCell.end(); ++it)
+			it->selected = false;
+	}	
 }
 #endif
 

@@ -206,8 +206,10 @@ public:
     //virtual void setResizeEvent(V3dR_MainWindow *w, int x, int y);
 
 #ifdef _NEURON_ASSEMBLER_
+	virtual int getSurfaceType(V3dR_MainWindow* w);
 	virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w);
 	virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w);
+	virtual QList<CellAPO> send3DviewerApoList(V3dR_MainWindow* w);
 	virtual void refreshSelectedMarkers(V3dR_MainWindow* w);
 #endif
 

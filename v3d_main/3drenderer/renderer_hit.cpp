@@ -168,7 +168,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}break;
 		case stPointCloud: {//apo
 			(qsName = QString("point cloud #%1 ... ").arg(names[2]) + listCell.at(names[2]-1).name);
-			LIST_SELECTED(listCell, names[2]-1, true);
+			if (!this->FragTraceMarkerDetector3Dviewer) LIST_SELECTED(listCell, names[2]-1, true);
 		}break;
 		}
 	}
@@ -531,38 +531,73 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (IS_SURFACE())
 		{
 			if (this->FragTraceMarkerDetector3Dviewer)
-			{
-				switch (listMarker.at(names[2] - 1).selected)
+			{				
+				if (names[1] == stImageMarker)
 				{
-				case true:
-					LIST_SELECTED(listMarker, names[2] - 1, false);
-					break;
-				case false:
-					LIST_SELECTED(listMarker, names[2] - 1, true);
-					break;
+					this->surType = stImageMarker;
+					switch (listMarker.at(names[2] - 1).selected)
+					{
+					case true:
+						LIST_SELECTED(listMarker, names[2] - 1, false);
+						break;
+					case false:
+						LIST_SELECTED(listMarker, names[2] - 1, true);
+						break;
+					}
+
+					QObject* plugin = this->FragTracerQPluginPtr->instance();
+					V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
+					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this->FragTracePluginLoaderPtr);
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "dummy";
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					iface->dofunc("3DViewer_marker_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget	
+
+					return 0;
 				}
-				
-				for (QList<ImageMarker>::iterator it = this->listMarker.begin(); it != this->listMarker.end(); ++it)
-					if (it->selected) selectedMarkerList.push_back(*it);
+				else if (names[1] == stPointCloud)
+				{
+					this->surType = stPointCloud;
+					switch (listCell.at(names[2] - 1).selected)
+					{
+					case true:
+						LIST_SELECTED(listCell, names[2] - 1, false);
+						//listCell[names[2] - 1].name = names[2];
+						break;
+					case false:
+						LIST_SELECTED(listCell, names[2] - 1, true);
+						//listCell[names[2] - 1].name = names[2];
+						break;
+					}
 
-				QObject* plugin = this->FragTracerQPluginPtr->instance();
-				V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-				V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this->FragTracePluginLoaderPtr);
-				V3DPluginArgList pluginInputList, pluginOutputList;
-				V3DPluginArgItem dummyInput, inputParam, dummyOutput;
-				vector<char*> pluginInputArgList;
-				vector<char*> pluginOutputArgList;
-				dummyInput.type = "dummy";
-				dummyInput.p = (void*)(&pluginInputArgList);
-				inputParam.type = "dummy";
-				inputParam.p = (void*)(&pluginInputArgList);
-				pluginInputList.push_back(dummyInput);
-				pluginInputList.push_back(inputParam);
-				dummyOutput.type = "dummy";
-				dummyOutput.p = (void*)(&pluginOutputArgList);
-				iface->dofunc("3DViewer_marker_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget	
+					QObject* plugin = this->FragTracerQPluginPtr->instance();
+					V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
+					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this->FragTracePluginLoaderPtr);
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "dummy";
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					iface->dofunc("3DViewer_marker_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget	
 
-				return 0;
+					return 0;
+				}
 			}
 
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);

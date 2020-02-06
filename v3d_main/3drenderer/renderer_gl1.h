@@ -539,7 +539,7 @@ public:
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
 
 	 bool FragTraceMarkerDetector3Dviewer;
-	 QList<ImageMarker> selectedMarkerList;
+	 v3dr_SurfaceType surType;
 	 QPluginLoader* FragTracerQPluginPtr;
 	 V3d_PluginLoader* FragTracePluginLoaderPtr;
 	 // -----------------------------------------------------------------------------------------------------------------------------------

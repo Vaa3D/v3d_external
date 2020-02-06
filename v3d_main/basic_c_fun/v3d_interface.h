@@ -231,8 +231,6 @@ public:
     virtual void setHideDisplayControlButton(V3dR_MainWindow *w)=0;
 //    virtual void setResizeEvent(V3dR_MainWindow *w, int x, int y)=0;
 
-	virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w) = 0;
-
     //added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
     virtual NeuronTree getSWCTeraFly() = 0;
     virtual bool setSWCTeraFly(NeuronTree & nt) = 0;
@@ -256,7 +254,10 @@ public:
 #ifdef _NEURON_ASSEMBLER_
 	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Jan, 2020
 	INeuronAssembler* castCViewer;
+	virtual int getSurfaceType(V3dR_MainWindow* w) = 0;	
+	virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w) = 0;
 	virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w) = 0;
+	virtual QList<CellAPO> send3DviewerApoList(V3dR_MainWindow* w) = 0;
 	virtual void refreshSelectedMarkers(V3dR_MainWindow* w) = 0;
 #endif
 
