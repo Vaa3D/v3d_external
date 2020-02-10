@@ -1,0 +1,25 @@
+#!/bin/bash
+#@echo off
+#echo -----------------------------------------------------------------
+#echo This is a shell program to build the v3d program for win32(mingw)
+#echo Based on Mac version by Hanchuan Peng
+#echo 2008-09-20, by Zongcai Ruan
+#echo -----------------------------------------------------------------
+#echo on
+
+
+ARGS=$*
+QARGS='DEFINES+=USE_Qt5' #'QMAKE_LFLAGS+=-no-pie'
+echo ==========================================================
+
+
+cd v3d
+echo ~/qmake vaa3d.pro $QARGS 
+echo =========================================================
+~/qmake vaa3d.pro $QARGS
+touch v3d_version_info.cpp
+make $ARGS
+
+cp vaa3d ../../bin/.   #copy to the system's v3d folder
+cd ../
+
