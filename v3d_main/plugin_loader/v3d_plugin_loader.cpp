@@ -1289,6 +1289,13 @@ void V3d_PluginLoader::setHideDisplayControlButton(V3dR_MainWindow *w)
 //}
 
 #ifdef _NEURON_ASSEMBLER_
+void V3d_PluginLoader::sendQPluginLoaderPtrBack(V3dR_MainWindow* w, QPluginLoader* FragTracerQPluginPtr)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	thisRenderer->FragTracerQPluginPtr = FragTracerQPluginPtr;
+}
+
 int V3d_PluginLoader::getSurfaceType(V3dR_MainWindow* w)
 {
 	V3dR_GLWidget* vi = w->getGLWidget();
