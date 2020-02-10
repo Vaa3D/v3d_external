@@ -10,10 +10,10 @@ call ..\..\qmake vaa3d_msvc.pro %*
 copy/b v3d_version_info.cpp+,,
 nmake -f Makefile.Release
 
-if not exist ..\..\bin\ (
-    mkdir ..\..\bin\ 
+if not exist ..\..\..\bin_msvc\ (
+    mkdir ..\..\..\bin_msvc\ 
 )
-cd  ..\..\bin\
+cd  ..\..\..\bin_msvc\
 
 if %QT_VER%==4 (
 copy %QT_BIN%\QtCore4.dll .\  /y
@@ -30,8 +30,8 @@ copy %QT_BIN%\Qt5Xml.dll .\  /y
 copy %QT_BIN%\Qt5Network.dll .\  /y
 )
 
-copy ..\v3d_main\v3d\release\vaa3d_msvc.exe .\  /y
+copy ..\v3d_external\v3d_main\v3d\release\vaa3d_msvc.exe .\  /y
 
 vaa3d_msvc.exe
 
-cd ..\
+cd ..\v3d_external
