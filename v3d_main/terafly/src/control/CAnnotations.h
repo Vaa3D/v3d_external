@@ -1,11 +1,13 @@
 #ifndef CANNOTATIONS_H
 #define CANNOTATIONS_H
 
+#include "CViewer.h"
+
 #include <set>
 #include "v3d_interface.h"
 #include "CPlugin.h"
 #include "math.h"
-#include "CViewer.h"
+//#include "CViewer.h"
 
 //annotation structure
 struct terafly::annotation

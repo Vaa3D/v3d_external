@@ -25,6 +25,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  * Last update: 120209: by Yinan Wan, add matlab heat map to neuron_type_color list, it starts from type 19
  * Last update: 150506: by PHC. add asc reading support
  */
+
+#include "GLee2glew.h" ////2020-2-10
+
+
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "freeglut_geometry_r.c"

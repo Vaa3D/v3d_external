@@ -464,7 +464,7 @@ double My4DImage::at(int x, int y, int z, int c) const //return a double number 
 	if ( result )
 	{
 		v3d_msg("error happened. Check the command line debuging info.");
-		printf("error happened. p=%ld x=%d y=%d z=%d c=%d\n", (V3DLONG)data4d_virtual, x, y, z, c);
+		printf("error happened. p=%p x=%d y=%d z=%d c=%d\n", data4d_virtual, x, y, z, c);  //2020-2-9 RZC: cast from pointer to 'long int' loses precision [-fpermissive]
 		return -1;
 	}
 

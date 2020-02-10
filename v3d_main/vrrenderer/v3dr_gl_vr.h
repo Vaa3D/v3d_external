@@ -5,8 +5,7 @@
 
 #include <SDL.h>
 
-#include "../basic_c_fun/v3d_interface.h"
-
+//#include "../basic_c_fun/v3d_interface.h"
 
 #include <openvr.h>
 #include "lodepng.h"
@@ -21,6 +20,7 @@
 
 #include "mainwindow.h"
 
+#include "../basic_c_fun/v3d_interface.h"
 
 
 enum ModelControlR

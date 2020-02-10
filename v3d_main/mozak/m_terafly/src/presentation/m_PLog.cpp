@@ -1,3 +1,9 @@
+//@ADD 2020-2-10 RZC
+#if defined(USE_Qt5)
+#define QWindowsStyle QProxyStyle
+//#define QWindowsStyle QCommonStyle
+#endif
+
 #include <set>
 #include <cmath>
 #include <fstream>

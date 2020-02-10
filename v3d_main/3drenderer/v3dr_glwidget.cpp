@@ -41,10 +41,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 ** Last update: 090221, PHC add the surface obj geo dialog
 ****************************************************************************/
 
-#if defined(USE_Qt5)
-#include <QGLFormat>
-#else
-#endif        
+#include "GLee2glew.h" ////2020-2-10
+
 
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
@@ -58,6 +56,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "renderer_gl1.h"
 #include "renderer_gl2.h"
 #include <QtGui>
+
+#if defined(USE_Qt5)
+#include <QGLFormat>
+#else
+#endif        
+
 
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window

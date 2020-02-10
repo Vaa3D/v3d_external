@@ -29,11 +29,16 @@
 #ifndef CLOADSUBVOLUME_H
 #define CLOADSUBVOLUME_H
 
-#include <QThread>
+#include "CViewer.h"
+
+//#include <QThread>
 #include <string>
 #include "CPlugin.h"
 #include "CImport.h"
-#include "CViewer.h"
+//#include "CViewer.h"
+
+#include <QThread>
+
 
 class terafly::CVolume : public QThread
 {

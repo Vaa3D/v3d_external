@@ -28,6 +28,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  *  Copyright Hanchuan Peng. All rights reserved.
  *
  */
+
+#include "GLee2glew.h" ////2020-2-10
+
+
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"

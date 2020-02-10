@@ -210,12 +210,13 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/v3dr_mainwindow.h \
     ../3drenderer/v3dr_glwidget.h \
     ../3drenderer/qtr_widget.h \
-    ../3drenderer/GLee_r.h \
+    ../3drenderer/GLee2glew.h \
+    ../3drenderer/glsl_r.h \
     ../3drenderer/renderer.h \
     ../3drenderer/renderer_gl1.h \
+    ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_surfaceDialog.h \
     ../3drenderer/ItemEditor.h \
-    ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_colormapDialog.h \
     ../3drenderer/gradients.h \
     ../3drenderer/v3d_hoverpoints.h \
@@ -308,17 +309,17 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../cellseg/template_matching_seg.cpp \
     ../3drenderer/v3dr_mainwindow.cpp \
     ../3drenderer/v3dr_glwidget.cpp \
-    ../3drenderer/GLee_r.c \
     ../3drenderer/renderer.cpp \
     ../3drenderer/renderer_tex.cpp \
     ../3drenderer/renderer_obj.cpp \
+    ../3drenderer/renderer_labelfield.cpp \
+    ../3drenderer/renderer_gl2.cpp \
+    ../3drenderer/glsl_r.cpp \
     ../3drenderer/renderer_hit.cpp \
     ../3drenderer/nstroke.cpp \
     ../3drenderer/nstroke_tracing.cpp \
-    ../3drenderer/renderer_labelfield.cpp \
     ../3drenderer/v3dr_surfaceDialog.cpp \
     ../3drenderer/ItemEditor.cpp \
-    ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
     ../3drenderer/v3dr_control_signal.cpp \
@@ -363,7 +364,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
     ../io/v3d_nrrd.cpp \
-    ../3drenderer/glsl_r.cpp \
     ./old_arthurstyle.cpp \
     ./old_arthurwidgets.cpp
 
@@ -436,7 +436,8 @@ unix:!macx {
   LIBS += -lv3dnewmat
 #unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
   LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
-  LIBS += -L../common_lib/lib_unix64 -lteem  -lbz2 -lz  -lGLU #for nrrd support
+  LIBS += -L../common_lib/lib_unix64  -lteem  -lbz2 -lz  -lGLU #for nrrd support
+  ### LIBS += -lGLEW # static link by including glew.c
 }
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
@@ -475,6 +476,6 @@ QMAKE_CXXFLAGS += -DTEEM_STATIC
 
 #removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
 INCLUDEPATH = $$unique(INCLUDEPATH)
-#LIBS = $$unique(LIBS) # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
+# LIBS = $$unique(LIBS) # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
 # CONFIG = $$unique(CONFIG) # this only DOESN'T work on macx, very strange, by RZC 20080923
 message(CONFIG=$$CONFIG)

@@ -37,6 +37,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  *  Last change: 2010-Dec-09. by Hanchuan Peng. remove a few functions and convert them as template functions and move to the header file
  */
 
+#include "GLee2glew.h" ////2020-2-10
+
 #include "renderer.h"
 #include "v3dr_glwidget.h" //for makeCurrent, drawText
 #include <sstream>
@@ -1943,7 +1945,7 @@ int getMaxTexSize3D(int components, int data_type, int compress_format)
 	GLint dim;
 	for (size=1; size<=max_size_limit; size *=2)
 	{
-		glTexImage3D(GL_PROXY_TEXTURE_3D,
+		glTexImage3DEXT(GL_PROXY_TEXTURE_3D,
 				0, //level
 				(GLint)iformat,
 				size,
@@ -2034,7 +2036,7 @@ int getMaxTexSize3X(int components, int data_type, int compress_format)
 	GLint dim;
 	for (size=1; size<=max_size_limit; size *=2)
 	{
-		glTexImage3D(GL_PROXY_TEXTURE_3D,
+		glTexImage3DEXT(GL_PROXY_TEXTURE_3D,
 				0, //level
 				(GLint)iformat,
 				size,
@@ -2065,7 +2067,7 @@ int getMaxTexSize3Z(int components, int data_type, int compress_format)
 	GLint dim;
 	for (size=1; size<=max_size_limit; size *=2)
 	{
-		glTexImage3D(GL_PROXY_TEXTURE_3D,
+		glTexImage3DEXT(GL_PROXY_TEXTURE_3D,
 				0, //level
 				(GLint)iformat,
 				max_3d,

@@ -42,9 +42,18 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
 #define V3DR_COMMON_H_
 
 // Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
+//#include "../v3d/version_control.h"
 
-#include "../v3d/version_control.h"
+//#if defined(USE_GLEW)
+//  #include <GL/glew.h>
+//#else
+//  #include "GLee_r.h"
+//#endif
+//#include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
+//#include "GLee2glew.h" //// change place to head of every *.cpp using GL extensions
 
+// #include <QtOpenGL>
+// #include <QtTest>
 #if defined(USE_Qt5)
   #include <QtWidgets>
   #include <QProgressDialog>
@@ -52,16 +61,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
   #include <QtGui>
 #endif
 
-#if defined(USE_GLEW)
-  #include <GL\glew.h>
-//#else
-//  #include "GLee_r.h"
-#endif
+//#include "GLee2glew.h"
 
-#include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
-
-// #include <QtOpenGL>
-//#include <QtTest>
 
 #include <exception>
 #include <iostream>

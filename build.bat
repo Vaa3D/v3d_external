@@ -6,7 +6,7 @@
   
 cd v3d_main
 
-build.bat
+build.bat %*
 
 cd .\released_plugins
 

@@ -363,6 +363,7 @@ FORMS += \
 INCLUDEPATH = $$unique(INCLUDEPATH)
 #LIBS = $$unique(LIBS)  # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
 message(CONFIG=$$CONFIG)
+message(DEFINES=$$DEFINES)
 
 # aborted attempt to implement reentrant tiff image loading
 # SOURCES -= ../basic_c_fun/mg_image_lib.cpp

@@ -67,13 +67,13 @@ Make sure to check extension "GL_EXT_geometry_shader4" before using Geometry sha
 #ifndef A_GLSL_H
 #define A_GLSL_H
 
-//! \defgroup GLSL libglsl
-//#include "glslSettings.h"
+
 #include <vector>
 #include <iostream>
-//#define GLEW_STATIC
-//#include <GL/glew.h>
-#include "GLee_r.h"
+
+//#include "GLee_r.h"
+//#include "GLee2glew.h"
+
 
 #define GLSLAPI    // static build
 
@@ -216,7 +216,7 @@ namespace cwc
       void       getUniformuiv(const GLchar* varname, GLuint* values, GLint index = -1); //!< Receive value of uniform variable. \warning Requires GL_EXT_gpu_shader4 \param varname The name of the uniform variable.
 
       /*! This method simply calls glBindAttribLocation for the current ProgramObject
-      \warning NVidia implementation is different than the GLSL standard: GLSL attempts to eliminate aliasing of vertex attributes but this is integral to NVIDIA’s hardware approach and necessary for maintaining compatibility with existing OpenGL applications that NVIDIA customers rely on. NVIDIA’s GLSL implementation therefore does not allow built-in vertex attributes to collide with a generic vertex attributes that is assigned to a particular vertex  attribute index with glBindAttribLocation. For example, you should not use gl_Normal (a built-in vertex attribute) and also use glBindAttribLocation to bind a generic vertex attribute named "whatever" to vertex attribute index 2 because gl_Normal aliases to index 2.
+      \warning NVidia implementation is different than the GLSL standard: GLSL attempts to eliminate aliasing of vertex attributes but this is integral to NVIDIAï¿½s hardware approach and necessary for maintaining compatibility with existing OpenGL applications that NVIDIA customers rely on. NVIDIAï¿½s GLSL implementation therefore does not allow built-in vertex attributes to collide with a generic vertex attributes that is assigned to a particular vertex  attribute index with glBindAttribLocation. For example, you should not use gl_Normal (a built-in vertex attribute) and also use glBindAttribLocation to bind a generic vertex attribute named "whatever" to vertex attribute index 2 because gl_Normal aliases to index 2.
       \verbatim
       gl_Vertex                0
       gl_Normal                2

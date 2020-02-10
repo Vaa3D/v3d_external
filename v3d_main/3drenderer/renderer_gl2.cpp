@@ -35,17 +35,19 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *      Author: ruanzongcai
  */
 
-#include "version_control.h"
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
-#include <QtGui>
-//#include <QtANGLE\GLES2\gl2.h>
-#include <QtANGLE\GLES3\gl3.h>
-#endif // USE_Qt5_VS2015_Win7_81 || USE_Qt5_VS2015_Win10_10_14393
+
+// #include "version_control.h"
+// #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+// #include <QtGui>
+// //#include <QtANGLE\GLES2\gl2.h>
+// #include <QtANGLE\GLES3\gl3.h>
+// #endif // USE_Qt5_VS2015_Win7_81 || USE_Qt5_VS2015_Win10_10_14393
+
+#include "GLee2glew.h" ////2020-2-10
 
 
 #include "renderer_gl2.h"
-
-#include "glsl_r.cpp" //for glsl_r.h
+#include "glsl_r.h"
 
 
 // if error then just warning
@@ -475,6 +477,34 @@ RGB8 Renderer_gl2::lookupColormap(RGB8 inC, int op)
 	return oC;
 }
 
+bool Renderer_gl2::supported_TexStream()
+{
+	if (imageT>1)
+	{
+		qDebug( "		Time series is NOT supported by texture stream!");
+		tryTexStream = 0;
+		return false;
+	}
+//	if (sizeof(void*)<8)
+//	{
+//		qDebug( "		32-bit system is NOT supported by texture stream!");
+//		tryTexStream = 0;
+//		return false;
+//	}
+	if (!supported_PBO())
+	{
+		qDebug( "		ARB_pixel_buffer_object 	NOT supported !");
+		tryTexStream = 0;
+		return false;
+	}
+	if (!supported_GLSL())
+	{
+		qDebug( "		ARB_shading_language_100 	NOT supported !");
+		tryTexStream = 0;
+		return false;
+	}
+	return true;
+}
 
 /////////////////////////////////////////////////////////////////////
 //Streaming textures using pixel buffer objects:
@@ -532,36 +562,8 @@ RGB8 Renderer_gl2::lookupColormap(RGB8 inC, int op)
 //
 //    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
 
-#define BIND_UNPACK_PBO(pbo)  glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo)
+#define BIND_UNPACK_PBO(pbo)  glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo)
 
-bool Renderer_gl2::supported_TexStream()
-{
-	if (imageT>1)
-	{
-		qDebug( "		Time series is NOT supported by texture stream!");
-		tryTexStream = 0;
-		return false;
-	}
-//	if (sizeof(void*)<8)
-//	{
-//		qDebug( "		32-bit system is NOT supported by texture stream!");
-//		tryTexStream = 0;
-//		return false;
-//	}
-	if (!supported_PBO())
-	{
-		qDebug( "		ARB_pixel_buffer_object 	NOT supported !");
-		tryTexStream = 0;
-		return false;
-	}
-	if (!supported_GLSL())
-	{
-		qDebug( "		ARB_shading_language_100 	NOT supported !");
-		tryTexStream = 0;
-		return false;
-	}
-	return true;
-}
 
 void Renderer_gl2::cleanTexStreamBuffer()
 {
@@ -571,15 +573,15 @@ void Renderer_gl2::cleanTexStreamBuffer()
 	// release PBO object
 	BIND_UNPACK_PBO(0);
 	if (pboZ) {
-		glDeleteBuffers(1, &pboZ);
+		glDeleteBuffersARB(1, &pboZ);
 		pboZ = 0;
 	}
 	if (pboY) {
-		glDeleteBuffers(1, &pboY);
+		glDeleteBuffersARB(1, &pboY);
 		pboY = 0;
 	}
 	if (pboX) {
-		glDeleteBuffers(1, &pboX);
+		glDeleteBuffersARB(1, &pboX);
 		pboX = 0;
 	}
 	tex_stream_buffer = pboZ>0; //#################
@@ -617,9 +619,9 @@ void  Renderer_gl2::setupTexStreamBuffer()
 
 	//091012: 1 common PBO is not faster than switch 3 PBOs
 	BIND_UNPACK_PBO(0);
-    glGenBuffers(1, &pboZ);
-    glGenBuffers(1, &pboY);
-    glGenBuffers(1, &pboX);
+    glGenBuffersARB(1, &pboZ);
+    glGenBuffersARB(1, &pboY);
+    glGenBuffersARB(1, &pboX);
 	tex_stream_buffer = pboZ>0; //##################
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);      //// 4-byte pixel alignment image for good speed
@@ -667,7 +669,7 @@ void  Renderer_gl2::setupTexStreamBuffer()
 		}
 		///////////////////////////////////////////
 		BIND_UNPACK_PBO(pbo);
-		glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, size, NULL, GL_STREAM_DRAW);
+		glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, size, NULL, GL_STREAM_DRAW);
 
 		glBindTexture(GL_TEXTURE_2D, tex);
 		setTexParam2D();
@@ -740,10 +742,10 @@ void Renderer_gl2::_streamTex(int stack_i, int slice_i, int step, int slice0, in
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	BIND_UNPACK_PBO(pbo);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, size, NULL, GL_STREAM_DRAW);
+	glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, size, NULL, GL_STREAM_DRAW);
 	CHECK_GLError_print();
 
-	pbo_mem = (RGBA8*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
+	pbo_mem = (RGBA8*)glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
 	CHECK_GLError_print();
 	if (pbo_mem)
 	{
@@ -752,7 +754,7 @@ void Renderer_gl2::_streamTex(int stack_i, int slice_i, int step, int slice0, in
 		_copySliceFromStack(rgbaBuf, imageX,imageY,imageZ,  pbo_mem, sw,  stack_i, slice_i,  rgbaBuf_Yzx, rgbaBuf_Xzy);
 
 		// Unmap the texture image buffer & Start DMA transfer
-		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
+		glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
 		CHECK_GLError_print();
 	}
 	else

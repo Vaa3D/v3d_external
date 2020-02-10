@@ -8,7 +8,9 @@
 #ifndef SHADERPROGRAMGLSL_H_
 #define SHADERPROGRAMGLSL_H_
 
-#include "../../3drenderer/GLee_r.h"
+//#include "../../3drenderer/GLee_r.h"
+#include "../../3drenderer/GLee2glew.h" //2020-2-10 RZC
+
 #include "boost/shared_ptr.hpp"
 #include <fstream>
 #include <sstream>

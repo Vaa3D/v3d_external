@@ -1,3 +1,5 @@
+#include "../3drenderer/GLee2glew.h" //2020-2-10 RZC
+
 #include "../3drenderer/renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
 #include "../DataFlowModel.h"

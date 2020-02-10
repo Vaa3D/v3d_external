@@ -43,6 +43,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //#include "../v3d/v3d_compile_constraints.h"
 
+#include "GLee2glew.h" ////2020-2-10
+
+
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 
@@ -1402,7 +1405,7 @@ void Renderer_gl1::setupStackTexture(bool bfirst)
 		if (bfirst)
 		{
 			setTexParam3D();
-			glTexImage3D(GL_TEXTURE_3D, // target
+			glTexImage3DEXT(GL_TEXTURE_3D, // target
 				0, // level
 				texture_format, // texture format
 				fillX, // width
@@ -1416,7 +1419,7 @@ void Renderer_gl1::setupStackTexture(bool bfirst)
 		}
 		///else  // compressed texture cannot using TexSubImage2D but TexSubImage3D !!!
 		{
-			glTexSubImage3D(GL_TEXTURE_3D, // target
+			glTexSubImage3DEXT(GL_TEXTURE_3D, // target
 				0, // level
 				0,0,0,  // offset
 				realX, // sub width

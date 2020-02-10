@@ -26,8 +26,10 @@
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
 
-#include "../presentation/PDialogImport.h"
 #include "../presentation/PMain.h"
+
+#include "../presentation/PDialogImport.h"
+//#include "../presentation/PMain.h"
 #include "../presentation/PLog.h"
 #include "CImport.h"
 #include "CPlugin.h"

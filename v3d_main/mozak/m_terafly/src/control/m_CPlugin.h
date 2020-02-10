@@ -33,9 +33,11 @@
 
 #ifdef USE_Qt5
 #include <QWidget>
+#include <QMutex> ////@ADD 2020-2-10 RZC
 #else
 #include <QtGui>
 #endif
+
 
 #include <limits>
 #include <sstream>

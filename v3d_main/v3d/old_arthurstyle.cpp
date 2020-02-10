@@ -66,6 +66,7 @@ QPixmap cached(const QString &img)
 }
 
 #ifdef Q_OS_MAC
+
 ArthurStyle::ArthurStyle()
     : QProxyStyle() //by PHC 2020/01/31
 {
@@ -73,6 +74,7 @@ ArthurStyle::ArthurStyle()
     Q_INIT_RESOURCE(shared); //commented 20200201 by PHC as in QT5 it is found yet
 #endif
 }
+
 #else
 
 ArthurStyle::ArthurStyle()

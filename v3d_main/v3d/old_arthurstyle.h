@@ -50,14 +50,19 @@
 #include <QWindowsStyle> //by PHC 20200129
 #endif
 
+//@ADD: 2020-2-9 RZC
+#if defined(USE_Qt5)
+    #define  QWindowsStyle  QProxyStyle
+#endif
+
 QT_USE_NAMESPACE
 
 class ArthurStyle :
-#if defined(USE_Qt5)
-        public QProxyStyle
-#else
+// #if defined(USE_Qt5)
+//         public QProxyStyle
+// #else
         public QWindowsStyle
-#endif
+//#endif
 {
 public:
     ArthurStyle();
