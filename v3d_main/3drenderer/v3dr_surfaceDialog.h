@@ -138,7 +138,10 @@ public slots:
 	void pickMarker(int row, int col);
 
 	void editObjNameAndComments();
-    void editNeuronSegmentType();
+#ifdef _YUN_
+	void labelSortMarkers();
+#endif
+	void editNeuronSegmentType();
 
 	void findNext();
 	void findPrev();
@@ -185,7 +188,10 @@ protected:
 				*selectAllButton, *deselectAllButton, *inverseSelectButton,
                 *onSelectButton, *offSelectButton, *colorSelectButton,
                 *editNameCommentButton, *markerLocalView, *neuronSegmentType,
-                *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
+                *objectSetDisplayModeButton, //add objectSetDisplayMode 20130926
+#ifdef _YUN_
+				*labelSortMarkerButton; // MK, Feb, 2020
+#endif
 
 	QTabWidget *tabOptions;
 	QTableWidget *table[1+6];

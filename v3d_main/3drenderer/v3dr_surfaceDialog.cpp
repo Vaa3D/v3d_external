@@ -284,6 +284,10 @@ void V3dr_surfaceDialog::createFirst()
     colorSelectButton = new QPushButton("Color >>");
     objectSetDisplayModeButton = new QPushButton("Display Mode >>"); //by PHC 20130926
     editNameCommentButton = new QPushButton("Name/Comments"); //by PHC, 090219
+#ifdef _YUN_
+	labelSortMarkerButton = new QPushButton("Label/Sort Markers"); // MK, Feb, 2020
+#endif
+
     neuronSegmentType = new QPushButton("NeuronSegmentType");
     undoButton = new QPushButton("Undo");
     changeLayout->addWidget(onSelectButton,  		1+3,0, 1,1);
@@ -291,8 +295,14 @@ void V3dr_surfaceDialog::createFirst()
     changeLayout->addWidget(colorSelectButton,		2+3,0, 1,2);
     changeLayout->addWidget(objectSetDisplayModeButton,		3+3,0, 1,2);
     changeLayout->addWidget(editNameCommentButton,	4+3,0, 1,2);
-    changeLayout->addWidget(neuronSegmentType,      5+3,0, 1,2);
-    changeLayout->addWidget(undoButton,				6+3,0, 1,2);
+#ifdef _YUN_
+	changeLayout->addWidget(labelSortMarkerButton, 5 + 3, 0, 1, 2);
+	changeLayout->addWidget(neuronSegmentType,     6 + 3, 0, 1, 2);
+	changeLayout->addWidget(undoButton,            7 + 3, 0, 1, 2);
+#elif
+	changeLayout->addWidget(neuronSegmentType, 5 + 3, 0, 1, 2);
+	changeLayout->addWidget(undoButton, 6 + 3, 0, 1, 2);
+#endif
 
 //    markerLocalView = new QPushButton("Local 3D View around Marker");
 
@@ -356,6 +366,9 @@ void V3dr_surfaceDialog::createFirst()
 	if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(doMenuOfColor()));
     if (objectSetDisplayModeButton) connect(objectSetDisplayModeButton, SIGNAL(clicked()),   this, SLOT(doMenuOfDisplayMode()));
 	if (editNameCommentButton) connect(editNameCommentButton, SIGNAL(clicked()),   this, SLOT(editObjNameAndComments()));
+#ifdef _YUN_
+	if (labelSortMarkerButton) connect(labelSortMarkerButton, SIGNAL(clicked()), this, SLOT(labelSortMarkers()));
+#endif
     if (neuronSegmentType) connect(neuronSegmentType, SIGNAL(clicked()),   this, SLOT(editNeuronSegmentType()));
 
 	if (searchTextEdit && doSearchTextNext) connect(doSearchTextNext, SIGNAL(clicked()), this, SLOT(findNext()));
@@ -1435,6 +1448,40 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 	undoButton->setEnabled(bCanUndo && bMod);
 #endif
 }
+
+#ifdef _YUN_
+void V3dr_surfaceDialog::labelSortMarkers()
+{
+	QTableWidget* t = currentTableWidget();
+	if (!t) return;
+	Renderer_gl1* r = renderer;
+	if (!r)  return;
+
+	QTableWidgetItem* curItem = 0;
+
+	int maxMarkerName = 0;
+	for (int i = 0; i < t->rowCount(); ++i)
+	{
+		//cout << r->listMarker[i].name.toInt() << endl;
+		if (r->listMarker[i].name.toInt() > 0)
+		{
+			int thisMarkerName = r->listMarker[i].name.toInt();
+			if (thisMarkerName > maxMarkerName) maxMarkerName = thisMarkerName;		
+		}
+	}
+
+	for (int i = 0; i < t->rowCount(); ++i)
+	{
+		if (r->listMarker[i].name.toInt() == 0)
+		{
+			++maxMarkerName;
+			NAME_ITEM_OF_TABLE(curItem, t, i);
+			curItem->setText(QString::number(maxMarkerName));
+			r->listMarker[i].name = QString::number(maxMarkerName);
+		}
+	}
+}
+#endif
 
 void V3dr_surfaceDialog::editNeuronSegmentType()
 {
