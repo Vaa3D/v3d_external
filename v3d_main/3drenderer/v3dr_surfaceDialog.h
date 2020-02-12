@@ -185,12 +185,14 @@ protected:
     QMenu menuDisplayMode;
 
 	QPushButton *okButton, *cancelButton, *undoButton,
-				*selectAllButton, *deselectAllButton, *inverseSelectButton,
-                *onSelectButton, *offSelectButton, *colorSelectButton,
-                *editNameCommentButton, *markerLocalView, *neuronSegmentType,
-                *objectSetDisplayModeButton, //add objectSetDisplayMode 20130926
+		*selectAllButton, *deselectAllButton, *inverseSelectButton,
+		*onSelectButton, *offSelectButton, *colorSelectButton,
+		*editNameCommentButton, *markerLocalView, *neuronSegmentType,
 #ifdef _YUN_
-				*labelSortMarkerButton; // MK, Feb, 2020
+		*objectSetDisplayModeButton,
+		*labelSortMarkerButton; // MK, Feb, 2020
+#else
+		*objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
 #endif
 
 	QTabWidget *tabOptions;
