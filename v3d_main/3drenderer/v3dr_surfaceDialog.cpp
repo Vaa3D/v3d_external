@@ -299,7 +299,7 @@ void V3dr_surfaceDialog::createFirst()
 	changeLayout->addWidget(labelSortMarkerButton, 5 + 3, 0, 1, 2);
 	changeLayout->addWidget(neuronSegmentType,     6 + 3, 0, 1, 2);
 	changeLayout->addWidget(undoButton,            7 + 3, 0, 1, 2);
-#elif
+#else
 	changeLayout->addWidget(neuronSegmentType, 5 + 3, 0, 1, 2);
 	changeLayout->addWidget(undoButton, 6 + 3, 0, 1, 2);
 #endif
