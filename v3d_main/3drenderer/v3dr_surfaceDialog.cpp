@@ -1462,7 +1462,6 @@ void V3dr_surfaceDialog::labelSortMarkers()
 	int maxMarkerName = 0;
 	for (int i = 0; i < t->rowCount(); ++i)
 	{
-		//cout << r->listMarker[i].name.toInt() << endl;
 		if (r->listMarker[i].name.toInt() > 0)
 		{
 			int thisMarkerName = r->listMarker[i].name.toInt();
