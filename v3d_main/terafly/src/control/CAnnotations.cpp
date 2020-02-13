@@ -2041,7 +2041,14 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
 		float convertedZ = CViewer::getCurrent()->coord2global<float>(it->z, iim::depth, false, -1, false, false, __itm__current__function__);
 		std::list<annotation*>* annoPtrList = octree->find(convertedX, convertedY, convertedZ);
 		if (annoPtrList != nullptr)
-			if (annoPtrList->front()->name.compare(it->name.toStdString())) annoPtrList->front()->name = it->name.toStdString();
+		{
+			if (annoPtrList->size() > 1)
+			{
+				for (std::list<annotation*>::iterator listIt = annoPtrList->begin(); listIt != annoPtrList->end(); ++listIt)
+					(*listIt)->name = "duplicated";
+			}
+			else annoPtrList->front()->name = it->name.toStdString();
+		}
 	}
 #endif
 
