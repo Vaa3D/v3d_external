@@ -32,7 +32,7 @@ void customMessageHandler(QtMsgType type, const char *msg)
             abort();
     }
 
-    //保存输出相关信息到指定文件
+    //保存输出相关信息到指定文件 ////chinese-char may lead to incorrect recognition of LF 2020-2-14 RZC 
     QFile outputFile("customMessageLog.txt");
 
 

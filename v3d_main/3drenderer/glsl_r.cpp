@@ -41,6 +41,8 @@ Last update: 2006/11/12 (Geometry Shader Support)
 
 #include "GLee2glew.h" ////Put here Because GL extension loading lib cannot work with the Angle based build of Qt5.
 
+// msvc: QMAKE_LFLAGS += /ignore:4217  # warning LNK4217: locally defined symbol _ imported in function _
+// msvc: QMAKE_LFLAGS += /ignore:4049  # warning LNK4049: locally defined symbol
 #include "glew/GL/glew.c" ////static link by including glew.c
 
 #include "glsl_r.h"

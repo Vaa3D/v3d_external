@@ -1,9 +1,10 @@
 #ifndef QGLREFSYS_H
 #define QGLREFSYS_H
 
+#include "renderer_gl1.h"
+
 #include <QGLWidget>
 #include "../control/CPlugin.h"
-#include "renderer_gl1.h"
 
 class terafly::QGLRefSys : public QGLWidget
 {

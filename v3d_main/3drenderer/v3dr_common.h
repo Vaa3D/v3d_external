@@ -41,6 +41,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
 #ifndef V3DR_COMMON_H_
 #define V3DR_COMMON_H_
 
+//@ADD 2020-2-14 RZC
+// #if defined(_WIN32) || defined(_WIN64)
+// #include <windows.h>
+// #endif
+
 // Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
 //#include "../v3d/version_control.h"
 
@@ -58,11 +63,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
   #include <QtWidgets>
   #include <QProgressDialog>
 #else
+  #include "GLee2glew.h"  //@ADD 2020-2-14 RZC
   #include <QtGui>
 #endif
-
-//#include "GLee2glew.h"
-
 
 #include <exception>
 #include <iostream>

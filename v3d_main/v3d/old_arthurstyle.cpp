@@ -65,27 +65,30 @@ QPixmap cached(const QString &img)
     return pm;
 }
 
-#ifdef Q_OS_MAC
 
-ArthurStyle::ArthurStyle()
-    : QProxyStyle() //by PHC 2020/01/31
-{
-#ifndef USE_Qt5
-    Q_INIT_RESOURCE(shared); //commented 20200201 by PHC as in QT5 it is found yet
+//@ADD: 2020-2-9 RZC
+#if defined(USE_Qt5)
+    #define  QWindowsStyle  QProxyStyle
 #endif
-}
-
-#else
+// #ifdef USE_Qt5
+// ArthurStyle::ArthurStyle()
+//     : QProxyStyle() //by PHC 2020/01/31
+// {
+// #ifndef USE_Qt5
+//     Q_INIT_RESOURCE(shared); //commented 20200201 by PHC as in QT5 it is found yet
+// #endif
+// }
+// #else
 
 ArthurStyle::ArthurStyle()
 	: QWindowsStyle() //by PHC 2020/01/31
 {
-#ifndef USE_Qt5
+//#ifndef USE_Qt5
 	Q_INIT_RESOURCE(shared); //commented 20200201 by PHC as in QT5 it is found yet
-#endif
+//#endif
 }
 
-#endif
+//#endif
 
 
 void ArthurStyle::drawHoverRect(QPainter *painter, const QRect &r) const

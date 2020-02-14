@@ -42,6 +42,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_common.h"
 #include "renderer_gl2.h"
 #include "v3dr_glwidget.h"
+//class V3dR_GLWidget;
+//class Renderer_gl2;
 
 #include "qtr_widget.h"
 #include "gradients.h"

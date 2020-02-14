@@ -6,7 +6,7 @@
  */
 
 #include "CameraTransformGL.h"
-#include "../3drenderer/GLee_r.h"
+#include "../3drenderer/GLee2glew.h" //GLee_r.h ==> GLee2glew.h
 
 CameraTransformGL::CameraTransformGL(const Na3DWidget& widget3d)
 {

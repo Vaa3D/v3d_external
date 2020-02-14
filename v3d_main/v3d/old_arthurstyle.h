@@ -58,11 +58,7 @@
 QT_USE_NAMESPACE
 
 class ArthurStyle :
-// #if defined(USE_Qt5)
-//         public QProxyStyle
-// #else
         public QWindowsStyle
-//#endif
 {
 public:
     ArthurStyle();

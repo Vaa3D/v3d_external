@@ -29,6 +29,7 @@
 #ifndef CIMPORT_H
 #define CIMPORT_H
 
+
 #if defined(USE_Qt5)
 #include <QtCore>
 #endif

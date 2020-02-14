@@ -50,7 +50,7 @@ annotation::annotation() throw (tf::RuntimeException){
     smart_delete = true;
 
     // assign first usable ID
-    if(last_ID == std::numeric_limits<long long>::max())
+    if(last_ID == (std::numeric_limits<long long>::max)())
         throw tf::RuntimeException("Reached the maximum number of annotation instances. Please signal this issue to the developer");
     ID = ++last_ID;
 

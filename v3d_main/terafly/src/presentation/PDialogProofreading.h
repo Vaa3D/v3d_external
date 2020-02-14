@@ -1,6 +1,7 @@
 #ifndef PDIALOGPROOFREADING_H
 #define PDIALOGPROOFREADING_H
 
+
 #include <vector>
 #include <QWidget>
 #include "../control/CPlugin.h"

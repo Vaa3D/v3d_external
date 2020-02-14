@@ -15,6 +15,9 @@ CONFIG += CONSOLE   # make a console application instead of a windows GUI only a
 
 QMAKE_CXXFLAGS += /MP
 QMAKE_LFLAGS   += /STACK:104857600
+QMAKE_LFLAGS += /ignore:4217  # warning LNK4217: locally defined symbol _ imported in function _
+QMAKE_LFLAGS += /ignore:4049  # warning LNK4049: locally defined symbol
+
 
 include(vaa3d.pro)
 
@@ -108,7 +111,7 @@ win32 {
 				-llibFL_cellseg \
                                 -llibFL_brainseg \
                                 -lopenvr_api \
-                                -lglew32 \
+                                # -lglew32 \  # instead by including glew.c
                                 -lSDL2 \
                                 -lSDL2main \
                                 -llibhdf5 \

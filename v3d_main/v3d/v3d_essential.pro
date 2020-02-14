@@ -114,8 +114,14 @@ win32 { # platform: win32-command-mingw
     CONFIG += console
 LIBS += -L$$MINGW_DIR/lib \
 	-L$$LOCAL_DIR/lib_win32
-    DEFINES += __ALLOW_VR_FUNCS__
-
+    
+    DEFINES += __ALLOW_VR_FUNCS__  
+    
+    # @ADD 2020-2-14 RZC: Microsoft C errors: 
+    # error C2589: '(' : illegal token on right side of '::' for std::min/max 
+    # error C2011: 'sockaddr' : 'struct' type redefinition
+    DEFINES += NOMINMAX  _WINSOCKAPI_
+ 
 }
 
 

@@ -2,8 +2,8 @@
 #define CUSTOMCLIPPLANES_H
 
 //#include "../../3drenderer/GLee_r.h"
-//#include "../../3drenderer/GLee2glew.h"
-#include <GL/gl.h>  //2020-2-10 RZC
+#include "../../3drenderer/GLee2glew.h"
+//#include <GL/gl.h>  //2020-2-10 RZC
 
 #include <QUndoStack>
 #include <QUndoCommand>

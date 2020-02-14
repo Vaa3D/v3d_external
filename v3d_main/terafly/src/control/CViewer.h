@@ -35,6 +35,7 @@
 #ifndef CEXPLORERWINDOW_H
 #define CEXPLORERWINDOW_H
 
+
 #include "renderer_gl2.h"
 
 #include "CPlugin.h"

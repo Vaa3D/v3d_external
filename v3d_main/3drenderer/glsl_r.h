@@ -72,7 +72,7 @@ Make sure to check extension "GL_EXT_geometry_shader4" before using Geometry sha
 #include <iostream>
 
 //#include "GLee_r.h"
-//#include "GLee2glew.h"
+#include "GLee2glew.h"
 
 
 #define GLSLAPI    // static build

@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3dr_colormapDialog.h"
 
+
 ///////////////////////////////////////////////////////////
 #define UPDATE_VIEW(w)   if (w)  w->update();
 ///////////////////////////////////////////////////////////

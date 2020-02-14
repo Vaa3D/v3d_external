@@ -53,6 +53,7 @@
 
 //#include <private/qpixmapdata_p.h> //by PHC 20200131
 
+
 extern QPixmap cached(const QString &img);
 
 ArthurFrame::ArthurFrame(QWidget *parent)
@@ -84,10 +85,10 @@ ArthurFrame::ArthurFrame(QWidget *parent)
 //     pal.setBrush(backgroundRole(), m_tile);
 //     setPalette(pal);
 
-#ifdef Q_WS_X11
-    QPixmap xRenderPixmap(1, 1);
-    m_prefer_image = xRenderPixmap.pixmapData()->classId() == QPixmapData::X11Class && !xRenderPixmap.x11PictureHandle();
-#endif
+// #ifdef Q_WS_X11
+//     QPixmap xRenderPixmap(1, 1);
+//     m_prefer_image = xRenderPixmap.pixmapData()->classId() == QPixmapData::X11Class && !xRenderPixmap.x11PictureHandle();
+// #endif
 }
 
 

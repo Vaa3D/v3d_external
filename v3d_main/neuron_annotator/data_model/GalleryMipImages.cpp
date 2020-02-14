@@ -3,7 +3,8 @@
 #include "../gui/GalleryButton.h"
 #include "../DataFlowModel.h"
 
-#include "../../3drenderer/GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
+//#include "../../3drenderer/GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
+#include "../../3drenderer/GLee2glew.h"
 
 //////////////////////////////
 // GalleryMipImages methods //

@@ -29,6 +29,7 @@
 #ifndef PMAIN_GUI_H
 #define PMAIN_GUI_H
 
+
 #include "../control/CVolume.h"
 
 #include <QtGui>
