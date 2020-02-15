@@ -376,6 +376,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 
+unix:INCLUDEPATH += ../common_lib/include/glew/  #by RZC 2020-2-15
+
 win32 {
 INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
 INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
