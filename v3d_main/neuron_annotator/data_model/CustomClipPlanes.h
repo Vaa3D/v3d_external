@@ -6,7 +6,7 @@
 #include <QUndoCommand>
 #include <vector>
 
-#if defined(__WIN32) || defined(__WIN64)
+#if defined(_WIN32) || defined(_WIN64)
 #include <windows.h> //2020-2-15 RZC
 #endif
 #include <GL/gl.h>  //2020-2-10 RZC
