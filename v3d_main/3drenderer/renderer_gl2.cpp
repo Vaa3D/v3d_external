@@ -45,9 +45,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "GLee2glew.h" ////2020-2-10
 
-
-#include "renderer_gl2.h"
 #include "glsl_r.h"
+#include "renderer_gl2.h"
+
 
 
 // if error then just warning
@@ -129,7 +129,7 @@ QString resourceTextFile(QString filename)
     return line;
 }
 
-void linkGLShader(cwc::glShaderManager& SMgr,
+static void linkGLShader(cwc::glShaderManager& SMgr,
 		cwc::glShader*& shader, //output
 		const char* vertex, const char* fragment)
 {

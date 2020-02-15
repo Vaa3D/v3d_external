@@ -13,7 +13,7 @@ ARGS="$* CPATH=$LOCAL_PATH/include LIBRARY_PATH=$LOCAL_PATH/lib:$LIB_BIN_PATH"
 QARGS="CONFIG+=$1"
 COPY_BIN="cp -f v3d/release/v3d.exe common_lib/bin"
 if [ $# -ge 1 ]; then
-   if [ $1 == "debug" ]; then
+   if [ $1 = "debug" ]; then
       COPY_BIN="cp -f v3d/debug/v3d.exe common_lib/bin"
    fi
 fi

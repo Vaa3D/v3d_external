@@ -56,7 +56,7 @@ In the Qt part just call into the framework written OpenGL code through regular 
 Since the actual OpenGL code makes no references to Qt, then it doesn't have to include Qt headers, avoiding problems.
 ************************************************************************************************************/
 
-#define GLEW_STATIC
+#define GLEW_STATIC ////STATIC link by including glew.c
 #include <glew/GL/glew.h>
 
 

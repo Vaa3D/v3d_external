@@ -71,9 +71,11 @@ Make sure to check extension "GL_EXT_geometry_shader4" before using Geometry sha
 #include <vector>
 #include <iostream>
 
-//#include "GLee_r.h"
-#include "GLee2glew.h"
-
+#ifdef USE_Qt5 ///2020-2-15 RZC 
+#include <GL/gl.h>
+#else
+#include "GLee2glew.h" //#include "GLee_r.h"
+#endif
 
 #define GLSLAPI    // static build
 

@@ -83,9 +83,9 @@ QPixmap cached(const QString &img)
 ArthurStyle::ArthurStyle()
 	: QWindowsStyle() //by PHC 2020/01/31
 {
-//#ifndef USE_Qt5
+#ifndef USE_Qt5
 	Q_INIT_RESOURCE(shared); //commented 20200201 by PHC as in QT5 it is found yet
-//#endif
+#endif
 }
 
 //#endif

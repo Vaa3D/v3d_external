@@ -8,9 +8,10 @@
 #ifndef LEGACYVOLUMEACTOR_H_
 #define LEGACYVOLUMEACTOR_H_
 
+#include "../gui/RendererNeuronAnnotator.h"
+
 #include "ActorGL.h"
 #include "boost/shared_ptr.hpp"
-#include "../gui/RendererNeuronAnnotator.h"
 
 /**
  * Encapsulates traditional Vaa3D Renderer class volume rendering
