@@ -11,11 +11,12 @@
 #include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
+#include "V3dR_Communicator.h"
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "V3dR_Communicator.h"
+
 //#include <gltext.hpp>//include freetype and gltest library
 
 #include "mainwindow.h"

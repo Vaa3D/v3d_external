@@ -24,10 +24,10 @@ MK 11/23/2016
 
 #include <QtGlobal> // MK, Feb, 2020 - OS checking preprocessor
 
-#ifdef Q_OS_MAC // MK, Feb, 2020 - Qt5 hasn't been adapted by Vaa3D on Windows platform yet; need a OS check preprocessor here.
+//#ifdef Q_OS_MAC // MK, Feb, 2020 - Qt5 hasn't been adapted by Vaa3D on Windows platform yet; need a OS check preprocessor here.
 #define USE_Qt5 1
 //added by PHC , 2020/1/31
-#endif
+//#endif
 
 #endif
 

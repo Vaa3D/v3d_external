@@ -5,7 +5,7 @@
 #include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
-//#include"../3drenderer/v3dr_common.h"
+#include"../3drenderer/v3dr_common.h"
 //#include <QRegExpValidator>
 //#ifdef _WIN32
 //    #include <windows.h>

@@ -46,8 +46,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
 // #include <windows.h>
 // #endif
 
-// Added by MK, 11/21/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
-//#include "../v3d/version_control.h"
+#include "version_control.h"
 
 //#if defined(USE_GLEW)
 //  #include <GL/glew.h>

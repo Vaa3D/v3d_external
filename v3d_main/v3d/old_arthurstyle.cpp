@@ -254,11 +254,11 @@ void ArthurStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
         break;
 
     default:
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
         QProxyStyle::drawPrimitive(element, option, painter, widget); //by PHC 20200131
-#else
-		QWindowsStyle::drawPrimitive(element, option, painter, widget);
-#endif
+//#else
+//		QWindowsStyle::drawPrimitive(element, option, painter, widget);
+//#endif
         break;
     }
     return;
@@ -301,11 +301,11 @@ void ArthurStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
                 = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             QStyleOptionGroupBox groupBoxCopy(*groupBox);
             groupBoxCopy.subControls &= ~SC_GroupBoxLabel;
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
             QProxyStyle::drawComplexControl(control, &groupBoxCopy, painter, widget); //by PHC 20200131
-#else
-			QWindowsStyle::drawComplexControl(control, &groupBoxCopy, painter, widget);
-#endif
+//#else
+//			QWindowsStyle::drawComplexControl(control, &groupBoxCopy, painter, widget);
+//#endif
 
             if (groupBox->subControls & SC_GroupBoxLabel) {
                 const QRect &r = groupBox->rect;
@@ -332,11 +332,11 @@ void ArthurStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
         }
         break;
     default:
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
         QProxyStyle::drawComplexControl(control, option, painter, widget);
-#else
-		QWindowsStyle::drawComplexControl(control, option, painter, widget);
-#endif
+//#else
+//		QWindowsStyle::drawComplexControl(control, option, painter, widget);
+//#endif
         break;
     }
     return;
@@ -349,29 +349,29 @@ QRect ArthurStyle::subControlRect(ComplexControl control, const QStyleOptionComp
 
     switch (control) {
     default:
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
         rect = QProxyStyle::subControlRect(control, option, subControl, widget);
-#else
-		rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
-#endif
+//#else
+//		rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
+//#endif
         break;
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *group
                 = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             switch (subControl) {
             default:
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
 				rect = QProxyStyle::subControlRect(control, option, subControl, widget);
-#else
-				rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
-#endif
+//#else
+//				rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
+//#endif
                 break;
             case SC_GroupBoxContents:
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
 				rect = QProxyStyle::subControlRect(control, option, subControl, widget);
-#else
+//#else
 				rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
-#endif
+//#endif
                 rect.adjust(0, -8, 0, 0);
                 break;
             case SC_GroupBoxFrame:
@@ -404,11 +404,11 @@ QRect ArthurStyle::subControlRect(ComplexControl control, const QStyleOptionComp
 QSize ArthurStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
                                     const QSize &size, const QWidget *widget) const
 {
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
     QSize newSize = QProxyStyle::sizeFromContents(type, option, size, widget);
-#else
-	QSize newSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
-#endif
+//#else
+//	QSize newSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
+//#endif
 
 
     switch (type) {
@@ -435,11 +435,11 @@ int ArthurStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QWid
 {
     if (pm == PM_SliderLength)
         return 13;
-#ifdef Q_OS_MAC // MK, Feb, 2020
+//#ifdef Q_OS_MAC // MK, Feb, 2020
     return QProxyStyle::pixelMetric(pm, opt, widget);
-#else
-	return QWindowsStyle::pixelMetric(pm, opt, widget);
-#endif
+//#else
+//	return QWindowsStyle::pixelMetric(pm, opt, widget);
+//#endif
 }
 
 void ArthurStyle::polish(QWidget *widget)
@@ -492,11 +492,11 @@ QRect ArthurStyle::subElementRect(SubElement element, const QStyleOption *option
         r = widget->rect().adjusted(20, 0, 0, 0);
         break;
     default:
-#ifdef Q_OS_MAC // MK, Feb, 2020  
+//#ifdef Q_OS_MAC // MK, Feb, 2020  
         r = QProxyStyle::subElementRect(element, option, widget);
-#else
-		r = QWindowsStyle::subElementRect(element, option, widget);
-#endif
+//#else
+//		r = QWindowsStyle::subElementRect(element, option, widget);
+//#endif
         break;
     }
 
