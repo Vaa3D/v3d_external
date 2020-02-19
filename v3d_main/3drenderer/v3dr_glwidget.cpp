@@ -1053,8 +1053,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					{
 						QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 						pMain.FragTracerQPluginPtr = loader;
-						if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						if (!loader)
+						{
+							v3d_msg("Neuron Assemgler module not found. Do nothing.");
+							return;
+						}
+							XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 						V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 						pMain.FragTracerPluginLoaderPtr = &mypluginloader;
 						mypluginloader.castCViewer = tf::PluginInterface::getTeraflyCViewer();
@@ -1068,8 +1072,13 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 					thisRenderer->FragTracerQPluginPtr = loader;
-					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
+					if (!loader) v3d_msg("Neuron Assembler module not found. Do nothing.");
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					if (curXWidget == 0L)
+					{
+						v3d_msg("Neuron Assembler module does not work with non-image 3D viewer. Exit.");
+						return;
+					}
 					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
 					mypluginloader.castCViewer = nullptr;	
 					thisRenderer->FragTracerQPluginPtr = loader;
