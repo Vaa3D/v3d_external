@@ -273,7 +273,7 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 
 void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 {
-	onReadySend(QString("/del_curve: " + V_DeleteNodeToSendMSG(deleteLocNode)));
+    onReadySend(QString("/del_curve:TeraFly_" + V_DeleteNodeToSendMSG(deleteLocNode)));
 	cout << "send delete over success" << endl;
 }
 

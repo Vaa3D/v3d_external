@@ -652,7 +652,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+_undostringList[1];
 //                qDebug()<<send_string;
                 VR_Communicator->undo_delcure.push_back("/seg:"+send_string);
-                VR_Communicator->onReadySend(QString("/del_curve:" + ConverteddelcurvePOS + " " + QSCurrentRes));
+                VR_Communicator->onReadySend(QString("/del_curve:TeraVR_" + ConverteddelcurvePOS + " " + QSCurrentRes));
 				CURRENT_DATA_IS_SENT=true;
 			}
 
