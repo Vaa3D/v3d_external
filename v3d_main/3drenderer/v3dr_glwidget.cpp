@@ -1051,7 +1051,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (!pMain.fragTracePluginInstance)
 					{
-						//QPluginLoader* loader = new QPluginLoader("D:/Vaa3D_2013_Qt486/v3d_external/bin/plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 						QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
 						pMain.FragTracerQPluginPtr = loader;
 						if (!loader->isLoaded())
@@ -1060,31 +1059,28 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 							return;
 						}
 						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-						V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-						pMain.FragTracerPluginLoaderPtr = &mypluginloader;
-						mypluginloader.castCViewer = tf::PluginInterface::getTeraflyCViewer();
-						mypluginloader.FragTracerQPluginPtr = loader;
-						mypluginloader.runPlugin(loader, "settings");
+						pMain.FragTracerPluginLoaderPtr = curXWidget->getMainControlWindow()->pluginLoader;
+						curXWidget->getMainControlWindow()->pluginLoader->castCViewer = tf::PluginInterface::getTeraflyCViewer();
+						curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
 					}
 					else v3d_msg("Neuron Assembler plugin instance already exists.");
 				}
 				else
 				{
-					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-					QPluginLoader* loader = new QPluginLoader("./plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-					thisRenderer->FragTracerQPluginPtr = loader;
-					if (!loader) v3d_msg("Neuron Assembler module not found. Do nothing.");
+					QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					if (!loader)
+					{
+						v3d_msg("Neuron Assembler module not found. Do nothing.");
+						return;
+					}
 					if (curXWidget == 0L)
 					{
 						v3d_msg("Neuron Assembler module does not work with non-image 3D viewer. Exit.");
 						return;
 					}
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					mypluginloader.castCViewer = nullptr;	
-					thisRenderer->FragTracerQPluginPtr = loader;
-					thisRenderer->FragTracePluginLoaderPtr = &mypluginloader;
-					mypluginloader.runPlugin(loader, "settings");
+					curXWidget->getMainControlWindow()->pluginLoader->castCViewer = nullptr;
+					curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
 				}
 #endif
 			}
@@ -1107,9 +1103,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
-						QObject* plugin = pMain.FragTracerQPluginPtr->instance();
-						V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-						V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(pMain.FragTracerPluginLoaderPtr);
 						V3DPluginArgList pluginInputList, pluginOutputList;
 						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
 						vector<char*> pluginInputArgList;
@@ -1122,7 +1115,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						pluginInputList.push_back(inputParam);
 						dummyOutput.type = "dummy";
 						dummyOutput.p = (void*)(&pluginOutputArgList);
-						iface->dofunc("hotKey", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget			
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
 
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();

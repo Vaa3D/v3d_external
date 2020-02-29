@@ -255,7 +255,6 @@ public:
 	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Jan, 2020
 	INeuronAssembler* castCViewer;
 	QPluginLoader* FragTracerQPluginPtr;
-	virtual void sendQPluginLoaderPtrBack(V3dR_MainWindow* w, QPluginLoader* FragTracerQPluginPtr) = 0;
 	virtual int getSurfaceType(V3dR_MainWindow* w) = 0;	
 	virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w) = 0;
 	virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w) = 0;

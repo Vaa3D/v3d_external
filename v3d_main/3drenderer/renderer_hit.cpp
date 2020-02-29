@@ -549,9 +549,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 						break;
 					}
 
-					QObject* plugin = this->FragTracerQPluginPtr->instance();
-					V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(this->FragTracePluginLoaderPtr);
 					V3DPluginArgList pluginInputList, pluginOutputList;
 					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
 					vector<char*> pluginInputArgList;
@@ -564,7 +561,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 					pluginInputList.push_back(inputParam);
 					dummyOutput.type = "dummy";
 					dummyOutput.p = (void*)(&pluginOutputArgList);
-					iface->dofunc("3DViewer_marker_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget	
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "3DViewer_marker_click", pluginInputList, pluginOutputList);
 
 					return 0;
 				}
@@ -580,11 +578,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 						LIST_SELECTED(listCell, names[2] - 1, true);
 						break;
 					}
-		
-					QObject* plugin = this->FragTracerQPluginPtr->instance();
-					V3DPluginInterface2_1* iface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(&mypluginloader);
+					
 					V3DPluginArgList pluginInputList, pluginOutputList;
 					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
 					vector<char*> pluginInputArgList;
@@ -597,7 +591,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 					pluginInputList.push_back(inputParam);
 					dummyOutput.type = "dummy";
 					dummyOutput.p = (void*)(&pluginOutputArgList);
-					iface->dofunc("3DViewer_marker_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0); //do not pass the mainwindow widget	
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "3DViewer_marker_click", pluginInputList, pluginOutputList);
 
 					return 0;
 				}

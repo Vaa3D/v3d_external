@@ -719,30 +719,6 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 						PMain::getInstance()->NeuronAssemblerPortal->sendSelectedMarkers2NA(this->selectedMarkerList, this->selectedLocalMarkerList);
 					}
 				}
-
-				terafly::PMain& pMain = *(terafly::PMain::getInstance());
-				if (pMain.fragTracePluginInstance)
-				{
-					QObject* plugin = pMain.FragTracerQPluginPtr->instance();
-					V3DPluginInterface2_1* interface = qobject_cast<V3DPluginInterface2_1*>(plugin);
-					V3DPluginCallback2* callback = dynamic_cast<V3DPluginCallback2*>(pMain.FragTracerPluginLoaderPtr);
-//					string x = to_string(mouseEvt->x());
-//					string y = to_string(mouseEvt->y());
-					
-					V3DPluginArgList pluginInputList, pluginOutputList;
-					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
-					vector<char*> pluginInputArgList;
-					vector<char*> pluginOutputArgList;
-					dummyInput.type = "dummy";
-					dummyInput.p = (void*)(&pluginInputArgList);
-					inputParam.type = "left";
-					inputParam.p = (void*)(&pluginInputArgList);
-					pluginInputList.push_back(dummyInput);
-					pluginInputList.push_back(inputParam);
-					dummyOutput.type = "dummy";
-					dummyOutput.p = (void*)(&pluginOutputArgList);
-					interface->dofunc("mouse_click", pluginInputList, pluginOutputList, *callback, (QWidget*)0);
-				}
 			}
 #endif
             return false;

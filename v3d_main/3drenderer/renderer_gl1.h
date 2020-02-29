@@ -540,8 +540,6 @@ public:
 
 	 bool FragTraceMarkerDetector3Dviewer;
 	 v3dr_SurfaceType surType;
-	 QPluginLoader* FragTracerQPluginPtr;
-	 V3d_PluginLoader* FragTracePluginLoaderPtr;
 	 // -----------------------------------------------------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
