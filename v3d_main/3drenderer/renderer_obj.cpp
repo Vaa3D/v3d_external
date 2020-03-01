@@ -1434,6 +1434,8 @@ void Renderer_gl1::drawCellList()
 {
 	//qDebug("    Renderer_gl1::drawCellList");
 	if (sShowSurfObjects==0) return;
+	float maxD = boundingBox.Dmax();
+	float marker_size = maxD * markerSize / 1000.f;
 	for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
 	{
 		setFloatDrawOp(pass, sShowSurfObjects);
@@ -1445,10 +1447,14 @@ void Renderer_gl1::drawCellList()
 			float sh = S.intensity/2.0;  //default OpenGL does not permit a shininess or spot exponent over 128
 			XYZW ms = S.intensity/255.0;
 			//RGBA8 color = XYZW(S.color)*ms;  // 081213
-			float d = 2.0*pow(S.volsize/3.1415926*0.75, 1/3.0);
+			float d = 2.0*pow(S.volsize/3.1415926*0.75, 1/3.0);		
 			glPushMatrix();
 			glTranslatef(S.x, S.y, S.z);
+#ifdef _YUN_
+			glScalef(marker_size, marker_size, marker_size);
+#else
 			glScalef(d, d, d);
+#endif
 			glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, sh);
 			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ms.v);
 			//glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, (1/4.0 *ma).v); // 081206, change EMISSION to AMBIENT

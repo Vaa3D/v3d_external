@@ -3205,7 +3205,7 @@ void V3dR_GLWidget::setMarkerSize(int s)
 	if (_markerSize != s) {
 		_markerSize = s;
 		if (renderer)	renderer->markerSize = s;
-        emit changeMarkerSize(s);
+        emit changeMarkerSize(s); // Go back to the spin box and set the new value.
 		POST_updateGL();
 	}
 }
