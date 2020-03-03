@@ -274,7 +274,9 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 
 void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 {
-    onReadySend(QString("/del_curve:TeraFly_" + V_DeleteNodeToSendMSG(deleteLocNode)));
+    QString _string=QString("/del_curve:TeraFly_" + V_DeleteNodeToSendMSG(deleteLocNode));
+    qDebug()<<_string;
+    onReadySend(_string);
 	cout << "send delete over success" << endl;
 }
 
@@ -690,7 +692,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
         }
         return messageBuff;
     }else {
-        qDebug()<<"hkjhkjhjk";
+//        qDebug()<<"hkjhkjhjk";
         QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
         for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
