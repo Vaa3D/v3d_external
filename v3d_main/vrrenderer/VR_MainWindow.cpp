@@ -237,6 +237,7 @@ void VR_MainWindow::TVProcess(QString line)
 //            qDebug() << "deletecurve:"<<line;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
+            delMSGs.pop_front();
 
             if(delMSGs.size()<1)
             {

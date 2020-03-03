@@ -520,11 +520,21 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             if(flag_init==0)
             {
                 if(user!=userName)
-                    emit delSeg(deletecurveRex.cap(2).trimmed());
+                {
+                   QString _string=deletecurveRex.cap(2).trimmed();
+                   QStringList list= _string.split('_');
+                           list.pop_front();
+                           _string=list.join("_");
+                    emit delSeg(_string);
+                }
                 else
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
             }else {
-                emit delSeg(deletecurveRex.cap(2).trimmed());
+                QString _string=deletecurveRex.cap(2).trimmed();
+                QStringList list= _string.split('_');
+                        list.pop_front();
+                        _string=list.join("_");
+                 emit delSeg(_string);
             }
             qDebug()<<"+============delseg process end========";
 
