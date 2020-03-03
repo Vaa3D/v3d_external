@@ -3308,10 +3308,12 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
 	if (w->TeraflyCommunicator)
 	{
-		vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode();
+        vector<V_NeuronSWC> vector_VSWC;
+        vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode(vector_VSWC);
 		cout << "DeleteNodes.size = " << DeleteNodes.size() << endl;
 		w->SetupCollaborateInfo();
-//        w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);//ask QiLi
+        w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
+        w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);//ask QiLi
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
 	}

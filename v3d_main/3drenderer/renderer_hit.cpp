@@ -2380,10 +2380,10 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				
                 if (w->TeraflyCommunicator)
                 {
-                    vector<V_NeuronSWC> vector_VSWC;
-                    vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode(vector_VSWC);
-                    w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
-                    w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+//                    vector<V_NeuronSWC> vector_VSWC;
+//                    vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode(vector_VSWC);
+//                    w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
+//                    w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
                     w->getRenderer()->endSelectMode();                }
 //                qDebug()<<"000000000-0000008";
             }
