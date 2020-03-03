@@ -162,6 +162,7 @@ void ManageSocket::onReadyRead()
 void ManageSocket::send1(QListWidgetItem *item)
 {
     FileSocket_receive *filesocket_receive=new FileSocket_receive(ip);
+    filesocket_receive->isDown=true;
     disconnect(filesocket_receive,SIGNAL(receivefile(QString)),this,SLOT(receivefile(QString)));
     this->write(QString(item->text()+":choose1."+"\n").toUtf8());
 }

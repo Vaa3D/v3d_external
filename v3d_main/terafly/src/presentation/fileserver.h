@@ -50,6 +50,8 @@ private:
     quint64 filenamesize;
     quint64 m_bytesreceived;
     QString ANOfilename;
+public:
+    bool isDown=false;
 
 };
 
