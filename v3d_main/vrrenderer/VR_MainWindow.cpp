@@ -237,6 +237,7 @@ void VR_MainWindow::TVProcess(QString line)
 //            qDebug() << "deletecurve:"<<line;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
+            delMSGs.pop_front();
 
             if(delMSGs.size()<1)
             {
@@ -652,7 +653,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+_undostringList[1];
 //                qDebug()<<send_string;
                 VR_Communicator->undo_delcure.push_back("/seg:"+send_string);
-                VR_Communicator->onReadySend(QString("/del_curve:" + ConverteddelcurvePOS + " " + QSCurrentRes));
+                VR_Communicator->onReadySend(QString("/del_curve:TeraVR_" + ConverteddelcurvePOS + " " + QSCurrentRes));
 				CURRENT_DATA_IS_SENT=true;
 			}
 

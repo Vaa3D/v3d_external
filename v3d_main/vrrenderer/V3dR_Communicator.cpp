@@ -162,6 +162,7 @@ void ManageSocket::onReadyRead()
 void ManageSocket::send1(QListWidgetItem *item)
 {
     FileSocket_receive *filesocket_receive=new FileSocket_receive(ip);
+    filesocket_receive->isDown=true;
     disconnect(filesocket_receive,SIGNAL(receivefile(QString)),this,SLOT(receivefile(QString)));
     this->write(QString(item->text()+":choose1."+"\n").toUtf8());
 }
@@ -273,7 +274,9 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 
 void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 {
-	onReadySend(QString("/del_curve: " + V_DeleteNodeToSendMSG(deleteLocNode)));
+    QString _string=QString("/del_curve:TeraFly_" + V_DeleteNodeToSendMSG(deleteLocNode));
+    qDebug()<<_string;
+    onReadySend(_string);
 	cout << "send delete over success" << endl;
 }
 
@@ -327,7 +330,6 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
 
         if(flag)
         {
-//                    qDebug()<<send_MSG;
             QRegExp markerRex("^/marker:(.*)$");
             QRegExp deletecurveRex("^/del_curve:(.*)$");
             QRegExp messageRex("^/seg:(.*)$");
@@ -337,15 +339,15 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
                 pushUndoStack("marker",send_MSG);
             }else if(messageRex.indexIn(send_MSG)!=-1)
             {
+                qDebug()<<send_MSG;
                 QStringList nodePosList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(2).split(" ");
                 QStringList resList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(0).split(" ");
                 QString _1=nodePosList.at(2)+" "+nodePosList.at(3)+" "+nodePosList.at(4);
                 QString _2=resList.at(1)+" "+resList.at(2)+" "+resList.at(3);
-                pushUndoStack("seg",QString("/del_curve: "+_1+" "+_2+"_"));
+                pushUndoStack("seg",QString("/del_curve:TeraFly_"+_1+" "+_2+"_"));
             }else if(deletecurveRex.indexIn(send_MSG)!=-1)
             {
                 qDebug()<<send_MSG;
-//                QStringList delMsgs=deletecurveRex.cap(1).split("_",QString::SkipEmptyParts);
                 for(int i=0;i<undo_delcure.size();i++)
                 {
                     pushUndoStack("delcurve",undo_delcure.at(i));
@@ -410,10 +412,8 @@ void V3dR_Communicator::pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC)
 
 void V3dR_Communicator::pushUndoStack(QString head, QString Msg)
 {
-//    qDebug()<<"kljhlkhjlkjhlkjlk";
     if(undoStack.size()>=10)
         undoStack.removeAt(0);
-//    qDebug()<<"push undostack:"+Msg;
     undoStack.push_back("/undo:"+Msg);
 }
 
@@ -422,11 +422,10 @@ void V3dR_Communicator::undo()
 //    qDebug() << "--------------undo--------------"<<undoStack.size();
     if(undoStack.size()>0)
     {
+        qDebug()<<undoStack.at(undoStack.size()-1);
         onReadySend(undoStack.at(undoStack.size()-1),0);
-//              qDebug()<<"--------"+undoStack.at(undoStack.size()-1);
         undoStack.removeAt(undoStack.size()-1);
     }
-//              qDebug()<<"--------------undo--------------";
 }
 
 
@@ -519,11 +518,21 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             if(flag_init==0)
             {
                 if(user!=userName)
-                    emit delSeg(deletecurveRex.cap(2).trimmed());
+                {
+                   QString _string=deletecurveRex.cap(2).trimmed();
+                   QStringList list= _string.split('_');
+                           list.pop_front();
+                           _string=list.join("_");
+                    emit delSeg(_string);
+                }
                 else
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
             }else {
-                emit delSeg(deletecurveRex.cap(2).trimmed());
+                QString _string=deletecurveRex.cap(2).trimmed();
+                QStringList list= _string.split('_');
+                        list.pop_front();
+                        _string=list.join("_");
+                 emit delSeg(_string);
             }
             qDebug()<<"+============delseg process end========";
 
@@ -679,7 +688,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
         }
         return messageBuff;
     }else {
-        qDebug()<<"hkjhkjhjk";
+//        qDebug()<<"hkjhkjhjk";
         QString messageBuff=QString("TeraFly %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
         for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
