@@ -7364,6 +7364,50 @@ bool CMainApplication::DeleteSegment(QString segName)
 	//if cannot find any matches,return false
 	return false;
 }
+bool CMainApplication::retyprSegment(float x,float y,float z,int type)
+{
+    bool res=0;
+    qDebug()<<"in retype seg VR";
+    for(int i=0;i<sketchedNTList.size();i++)
+    {
+        NeuronTree nt0=sketchedNTList.at(i);
+        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
+
+        NeuronSWC ss0=nt0.listNeuron.at(1);
+
+        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01||sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01)
+        {
+            qDebug()<<"VR FIND seg"<<i;
+            sketchedNTList.removeAt(i);
+            SetupSingleMorphologyLine(i, 2);
+            res=1;
+            NeuronTree newTempNT;
+            newTempNT.listNeuron.clear();
+            newTempNT.hashNeuron.clear();
+            newTempNT.name=nt0.name;
+            for(int k=0;k<nt0.listNeuron.size();k++)
+            {
+                NeuronSWC S_temp;
+                S_temp.n=nt0.listNeuron.at(k).n;
+                S_temp.type=type;
+                S_temp.x=nt0.listNeuron.at(k).x;
+                S_temp.y=nt0.listNeuron.at(k).y;
+                S_temp.z=nt0.listNeuron.at(k).z;
+                S_temp.r=nt0.listNeuron.at(k).r;
+
+                    S_temp.pn=nt0.listNeuron.at(k).pn;
+                S_temp.level=nt0.listNeuron.at(k).level;
+                S_temp.creatmode=nt0.listNeuron.at(k).creatmode;
+                S_temp.timestamp=nt0.listNeuron.at(k).timestamp;
+                S_temp.tfresindex=nt0.listNeuron.at(k).tfresindex;
+                newTempNT.listNeuron.append(S_temp);
+                newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
+            }
+            sketchedNTList.insert(j,newTempNT);break;
+        }
+    }
+    return res;
+}
 
 bool CMainApplication::DeleteSegment(float x,float y,float z)
 {

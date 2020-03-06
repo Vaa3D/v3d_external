@@ -134,6 +134,7 @@ signals:
     void addMarker(QString,int);
     void delMarker(QString);
     void msgtoprocess(QString);
+    void retypeSeg(QString);
 private:
 
 	QString vr_Port;

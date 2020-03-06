@@ -440,7 +440,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     QRegExp dragnodeRex("^/drag_node:(.*)$");
     QRegExp creatorRex("^/creator:(.*)__(.*)$");
     QRegExp messageRex("^/seg:(.*)__(.*)$");
-
+    QRegExp retypeRex("^/retype:(.*)__(.*)$");
 
         line=line.trimmed();
         if (usersRex.indexIn(line) != -1) {
@@ -617,6 +617,31 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             emit addMarker(Pos,3);//para2 was not used
             //wait ...
             CreatorMarkerPos=XYZ(Pos.split(" ").at(0).toFloat(),Pos.split(" ").at(1).toFloat(),Pos.split(" ").at(2).toFloat());
+        }
+        else if(retypeRex.indexIn(line)!=-1)
+        {
+            QString user=retypeRex.cap(1);
+            qDebug()<<"+============delseg process begin========";
+            if(flag_init==0)
+            {
+                if(user!=userName)
+                {
+                   QString _string=retypeRex.cap(2).trimmed();
+                   QStringList list= _string.split('_');
+                           list.pop_front();
+                           _string=list.join("_");
+                    emit retypeSeg(_string);
+                }
+                else
+                    qDebug()<<"user:"<<user<<"==userName"<<userName;
+            }else {
+                QString _string=retypeRex.cap(2).trimmed();
+                QStringList list= _string.split('_');
+                        list.pop_front();
+                        _string=list.join("_");
+                 emit retypeSeg(_string);
+            }
+            qDebug()<<"+============delseg process end========";
         }
 }
 

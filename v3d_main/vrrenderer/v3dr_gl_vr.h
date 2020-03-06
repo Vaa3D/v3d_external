@@ -183,6 +183,7 @@ public:
 	bool DeleteSegment(QString segName);
 	void SetDeleteSegmentColor(QString segName);
     bool DeleteSegment(float x,float y,float z);
+    bool retyprSegment(float x,float y,float z,int type)
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);

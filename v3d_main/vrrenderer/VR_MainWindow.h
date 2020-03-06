@@ -16,6 +16,7 @@ struct VRoutInfo
 {
 	std::vector<XYZ> deletedcurvespos;
     std::vector<QString> deletemarkerspos;
+    std::vector<QString> retypeMsgs;
 };
 class CMainApplication;
 class My4DImage;

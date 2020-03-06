@@ -4198,6 +4198,16 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
             CollaAddMarker(markerPos,temp[3].toInt());
         }
     }
+
+    int ___size=myvrwin->VROutinfo.retypeMsgs.size();
+    if(___size>0)
+    {
+        for(int i=0;i<___size;i++)
+        {
+            QString temp=myvrwin->VROutinfo.retypeMsgs.at(i);
+            CollretypeSeg(temp);
+        }
+    }
 }
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
@@ -4246,10 +4256,10 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         marker.y=markerXYZ.at(1).toFloat();
         marker.z=markerXYZ.at(2).toFloat();
 
-        marker.color.r=255;
-        marker.color.g=0;
-        marker.color.b=0;
-        marker.color.a=0;
+        marker.color.r=neuron_type_color[colortype][0];
+        marker.color.g=neuron_type_color[colortype][1];
+        marker.color.b=neuron_type_color[colortype][2];
+        marker.color.a=1;
     }
 
 
@@ -4308,6 +4318,56 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             {
 //                qDebug()<<"find seg "<<J;
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
+                break;
+            }
+        }
+    }
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+
+    terafly::PluginInterface::setSWC(nt,true);
+
+}
+
+void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
+{
+//    qDebug()<<"in CollaDelSeg:"<<markerPOS;
+    QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
+//    qDebug()<<delMarkerPosList;
+
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    for(int i=0;i<delMarkerPosList.size();i++)
+    {
+
+        QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
+
+        XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
+        int type=nodeXYZ.at(3).toInt();
+//        qDebug()<<"delcurve:"<<delcurve.x<<" "<<delcurve.y<<" "<<delcurve.z;
+
+        for(int J=0;J<v_ns_list.seg.size();J++)
+        {
+
+            int v_ns_size=v_ns_list.seg.at(J).row.size();
+            V_NeuronSWC_unit node0,node1;
+            node0=v_ns_list.seg.at(J).row.at(1);
+            node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
+//            qDebug()<<"node0:"<<node0.x<<" "<<node0.y<<" "<<node0.z<<sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2));
+//            qDebug()<<"node1:"<<node1.x<<" "<<node1.y<<" "<<node1.z<<sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2));
+//            if(sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.01)
+//            {
+//                qDebug()<<"find last 2";
+//                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
+//                break;
+//            }
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
+            {
+//                qDebug()<<"find seg "<<J;
+                for(int k=0;k<v_ns_list.seg.at(J).row.size();k++)
+                {
+                    v_ns_list.seg.at(J).row.at(k).type=type;
+                }
+//                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
         }

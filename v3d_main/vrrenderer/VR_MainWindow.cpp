@@ -73,6 +73,7 @@ void VR_MainWindow::TVProcess(QString line)
 	QRegExp dragnodeRex("^/drag_node:(.*)$");
     QRegExp creatorRex("^/creator:(.*)__(.*)$");
     QRegExp messageRex("^/seg:(.*)__(.*)$");
+    QRegExp retypeRex("^/retype:(.*)__(.*)$");
 
     line=line.trimmed();
         if (usersRex.indexIn(line) != -1) {
@@ -490,6 +491,56 @@ void VR_MainWindow::TVProcess(QString line)
                     CURRENT_DATA_IS_SENT=false;
                 }
                 pMainApplication->UpdateNTList(message,colortype);
+            }
+        }
+
+        else if (retypeRex.indexIn(line)!=-1)
+        {
+            QString user = deletecurveRex.cap(1);
+            QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
+            delMSGs.pop_front();
+
+            if(delMSGs.size()<1)
+            {
+                qDebug()<<"size < 2";
+                if(user==userName||user.toInt()==userName.toInt()+1000)
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
+                return;
+            }
+            for(int i=0;i<delMSGs.size();i++)
+            {
+                if(pMainApplication)
+                {
+                    QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
+                    int type=xyz.at(3).toInt();
+                    qDebug()<<"xyz list::"<<xyz;
+                    if(xyz.size()<7) continue;
+                    float resx = xyz.at(4).toFloat();
+                    float resy = xyz.at(5).toFloat();
+                    float resz = xyz.at(6).toFloat();
+                    pMainApplication->collaborationTargetdelcurveRes.x = resx;
+                    pMainApplication->collaborationTargetdelcurveRes.y = resy;
+                    pMainApplication->collaborationTargetdelcurveRes.z = resz;
+
+                    XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
+                    if(pMainApplication->DeleteSegment(node.x,node.y,node.z))
+                    {
+                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
+                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z)
+                        {
+                            VROutinfo.retypeMsgs.push_back(delMSGs.at(i));
+                            continue;
+                        }
+                    }
+                }
+             }
+            if(user==userName||user.toInt()==userName.toInt()+1000)
+            {
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
             }
         }
 }
