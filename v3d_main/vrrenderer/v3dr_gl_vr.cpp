@@ -7403,7 +7403,7 @@ bool CMainApplication::retyprSegment(float x,float y,float z,int type)
                 newTempNT.listNeuron.append(S_temp);
                 newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
             }
-            sketchedNTList.insert(j,newTempNT);break;
+            sketchedNTList.insert(i,newTempNT);break;
         }
     }
     return res;

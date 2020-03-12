@@ -4244,7 +4244,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
         qDebug()<<markerPOS;
-    LocationSimple marker;
+    LocationSimple marker=markers.at(0);
     if(markers.size()!=0)
     {
         marker=markers.at(0);//need to modifiy
@@ -4256,9 +4256,9 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         marker.y=markerXYZ.at(1).toFloat();
         marker.z=markerXYZ.at(2).toFloat();
 
-        marker.color.r=neuron_type_color[colortype][0];
-        marker.color.g=neuron_type_color[colortype][1];
-        marker.color.b=neuron_type_color[colortype][2];
+        marker.color.r=0;
+        marker.color.g=0;
+        marker.color.b=255;
         marker.color.a=1;
     }
 
