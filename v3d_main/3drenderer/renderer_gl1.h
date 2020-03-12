@@ -850,7 +850,7 @@ public:
 
 	void setLocalGrid(QList<ImageMarker> inputGridList,QList<long> inputGridNumber, float gridside);
     QList<ImageMarker> getLocalGrid();
-
+void retypeMultiNeuronsbyshortcut();
 
 	int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
     int selectedStartNode; // TDP 20160203 for selecting start node for joining two nodes

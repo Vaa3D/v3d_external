@@ -6736,7 +6736,15 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         if(   (poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)) && !allUnitsOutsideZCut)
                         {
                             if(neuronColorMode==0)
+                            {
                                 change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                                if(w->TeraflyCommunicator)
+                                {
+                                    vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
+                                    int rowsize=row.size();
+                                    w->TeraflyCommunicator->Updateretype(row.at(rowsize),node_type);
+                                }
+                            }
                             else
                                 change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
 

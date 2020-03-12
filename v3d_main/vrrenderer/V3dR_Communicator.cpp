@@ -871,7 +871,12 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
         }
     }
 }
-
+void V3dR_Communicator::Updateretype(V_NeuronSWC_unit row_unit,int type)
+{
+    QString msg="/retype:";
+    msg+=QString::number(row_unit.x)+" "+QString::number(row_unit.y)+" "+QString::number(row_unit.z)+" "+QString::number(type);
+    onReadySend(msg);
+}
 
 
 

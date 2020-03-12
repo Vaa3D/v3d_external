@@ -84,6 +84,7 @@ public:
 	void UpdateDeleteMsg(vector<XYZ> deleteLocNode);//this node is second node of seg,because this is esay to delete correct seg
     void UpdateSendPoolNode(float,float,float,int type=3);
     void UpdateSendDelMarkerInfo(float x,float y,float z);
+    void Updateretype(V_NeuronSWC_unit row_unit,int type);
 	void Collaborationsendmessage();
 	void Collaborationaskmessage();
 	//trans func
