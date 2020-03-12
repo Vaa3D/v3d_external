@@ -301,10 +301,9 @@ void VR_MainWindow::TVProcess(QString line)
             float mx = markerMSGs.at(0).toFloat();
             float my = markerMSGs.at(1).toFloat();
             float mz = markerMSGs.at(2).toFloat();
-            int type=markerMSGs.at(3).toInt();
             int resx,resy,resz;
 
-            if(markerMSGs.size()>4)
+            if(markerMSGs.size()>3)
             {
                  resx = markerMSGs.at(3).toFloat();
                  resy = markerMSGs.at(4).toFloat();
@@ -324,13 +323,23 @@ void VR_MainWindow::TVProcess(QString line)
                     if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
                     {
                         qDebug()<<"marker out of size";
-                        VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(type));
+                        VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
                         return;
                     }else
                     {
-                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
+                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
                     }
                 }
+
+//                if(!IsmarkerValid&&(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z))
+//                {
+//                    qDebug()<<"marker out of size";
+//                    VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
+//                    return;
+//                }else if(!IsmarkerValid)
+//                {
+//                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
+//                }
                 if(user==userName||user.toInt()==userName.toInt()+1000)
                 {
                     pMainApplication->READY_TO_SEND = false;
@@ -711,7 +720,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             if(pMainApplication->markerPOS!="")
             {
                 QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
-                QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);//需要拿到颜色 inVR
+                QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
                 VR_Communicator->onReadySend(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes ));
                 CURRENT_DATA_IS_SENT=true;
             }
