@@ -7364,7 +7364,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 	//if cannot find any matches,return false
 	return false;
 }
-bool CMainApplication::retyprSegment(float x,float y,float z,int type)
+bool CMainApplication::retypeSegment(float x,float y,float z,int type)
 {
     bool res=0;
     qDebug()<<"in retype seg VR";
@@ -7403,7 +7403,7 @@ bool CMainApplication::retyprSegment(float x,float y,float z,int type)
                 newTempNT.listNeuron.append(S_temp);
                 newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
             }
-            sketchedNTList.insert(i,newTempNT);break;
+            sketchedNTList.push_front(newTempNT);break;
         }
     }
     return res;

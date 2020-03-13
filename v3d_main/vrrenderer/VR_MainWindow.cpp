@@ -497,8 +497,7 @@ void VR_MainWindow::TVProcess(QString line)
         else if (retypeRex.indexIn(line)!=-1)
         {
             QString user = deletecurveRex.cap(1);
-            QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
-            delMSGs.pop_front();
+            QStringList delMSGs = deletecurveRex.cap(2).trimmed().split("_",QString::SkipEmptyParts);
 
             if(delMSGs.size()<1)
             {
@@ -526,7 +525,7 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->collaborationTargetdelcurveRes.z = resz;
 
                     XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-                    if(pMainApplication->DeleteSegment(node.x,node.y,node.z))
+                    if(pMainApplication->retypeSegment(node.x,node.y,node.z,type))
                     {
                         if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
                                 ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z)

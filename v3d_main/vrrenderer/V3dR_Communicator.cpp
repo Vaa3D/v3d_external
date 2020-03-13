@@ -542,16 +542,6 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 //            qDebug()<<"+============marker process begin========";
             QString user=markerRex.cap(1);
 
-//            int colortype=21;
-//            for(int i=0;i<Agents.size();i++)
-//            {
-//                if(Agents[i].name==user)
-//                {
-//                    colortype=Agents[i].colorType;
-//                    qDebug()<<"marker color"<<colortype;
-//                    break;
-//                }
-//            }
             if(flag_init==0)
             {
                 if(user!=userName)
@@ -581,13 +571,6 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
             QString user=messageRex.cap(1);
             int colortype=21;
-//            for(int i=0;i<Agents.size();i++)
-//            {
-//                if(Agents[i].name==user)
-//                {
-//                    colortype=Agents[i].colorType;break;
-//                }
-//            }
             QString temp1=messageRex.cap(2).trimmed();
 
             QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
@@ -621,24 +604,23 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         else if(retypeRex.indexIn(line)!=-1)
         {
             QString user=retypeRex.cap(1);
-            qDebug()<<"+============delseg process begin========";
+            qDebug()<<"+============retype process begin========"<<line;
             if(flag_init==0)
             {
                 if(user!=userName)
                 {
                    QString _string=retypeRex.cap(2).trimmed();
-                   QStringList list= _string.split('_');
-                           list.pop_front();
-                           _string=list.join("_");
+//                   QStringList list= _string.split('_');
+//                           _string=list.join("_");
                     emit retypeSeg(_string);
                 }
                 else
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
             }else {
                 QString _string=retypeRex.cap(2).trimmed();
-                QStringList list= _string.split('_');
-                        list.pop_front();
-                        _string=list.join("_");
+//                QStringList list= _string.split('_');
+//                        list.pop_front();
+//                        _string=list.join("_");
                  emit retypeSeg(_string);
             }
             qDebug()<<"+============delseg process end========";
@@ -873,8 +855,10 @@ void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
 }
 void V3dR_Communicator::Updateretype(V_NeuronSWC_unit row_unit,int type)
 {
+    XYZ _coord=ConvertLocaltoGlobalCroods(row_unit.x,row_unit.y,row_unit.z);
     QString msg="/retype:";
-    msg+=QString::number(row_unit.x)+" "+QString::number(row_unit.y)+" "+QString::number(row_unit.z)+" "+QString::number(type);
+    msg+=QString::number(_coord.x)+" "+QString::number(_coord.y)+" "+QString::number(_coord.z)+" "+QString::number(type)
+            +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)+" "+QString::number(ImageCurRes.z);
     onReadySend(msg);
 }
 

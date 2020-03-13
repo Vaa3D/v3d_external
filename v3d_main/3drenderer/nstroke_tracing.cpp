@@ -6709,6 +6709,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
         poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
 
     // back-project the node curve points and mark segments to be deleted
+    qDebug()<<"==============test flag=====================";
     for(V3DLONG j=0; j<listNeuronTree.size(); j++)
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
@@ -6721,6 +6722,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             bool allUnitsOutsideZCut = false;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
+                qDebug()<<"in 123 "<<i;
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
                 iy = p_listneuron->at(i).y;
@@ -6738,11 +6740,12 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                             if(neuronColorMode==0)
                             {
                                 change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                                qDebug()<<"11111111";
                                 if(w->TeraflyCommunicator)
                                 {
                                     vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
                                     int rowsize=row.size();
-                                    w->TeraflyCommunicator->Updateretype(row.at(rowsize),node_type);
+                                    w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
                                 }
                             }
                             else
@@ -6752,6 +6755,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     }
                     else
                     {
+                        bool changedTyp=false;
                         for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                         {
                             QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
@@ -6786,7 +6790,23 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                         row[best_id].type = node_type;
                                     }
                                     else
+                                    {
                                         change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+
+                                        qDebug()<<"11111112 "<<i;
+
+                                        if(w->TeraflyCommunicator)
+                                        {
+                                            if (!(p_listneuron->at(i).seg_id<0 || p_listneuron->at(i).seg_id>= curImg->tracedNeuron.seg.size()))
+                                            {
+                                                vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
+                                                int rowsize=row.size();
+                                                w->SetupCollaborateInfo();
+                                                w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
+                                                changedTyp=true;
+                                            }
+                                        }
+                                    }
 
                                 }
                                 else
@@ -6797,6 +6817,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                 break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
                         }
+                        if(changedTyp) break;
                     }
                 }
             }
