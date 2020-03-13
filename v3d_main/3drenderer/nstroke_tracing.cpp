@@ -6626,6 +6626,7 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 }
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {
+
     int node_type = 0;
     int node_level = 0;
 
@@ -6720,6 +6721,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             if (!p_listneuron)
                 continue;
             bool allUnitsOutsideZCut = false;
+            QList<V3DLONG> idlist;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
 //                qDebug()<<"in 123 "<<i;
@@ -6740,12 +6742,15 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                             if(neuronColorMode==0)
                             {
                                 change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
-                                qDebug()<<"11111111";
-                                if(w->TeraflyCommunicator)
+//                                if(w->TeraflyCommunicator)
+//                                {
+//                                    vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
+//                                    int rowsize=row.size();
+//                                    w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
+//                                }
+                                if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
                                 {
-                                    vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
-                                    int rowsize=row.size();
-                                    w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
+                                    idlist.push_back(p_listneuron->at(i).seg_id);
                                 }
                             }
                             else
@@ -6793,19 +6798,22 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                     {
                                         change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
 
-                                        qDebug()<<"11111112 "<<i;
-
-                                        if(w->TeraflyCommunicator)
+                                        if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
                                         {
-                                            if (!(p_listneuron->at(i).seg_id<0 || p_listneuron->at(i).seg_id>= curImg->tracedNeuron.seg.size()))
-                                            {
-                                                vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
-                                                int rowsize=row.size();
-                                                w->SetupCollaborateInfo();
-                                                w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
-                                                changedTyp=true;
-                                            }
+                                            idlist.push_back(p_listneuron->at(i).seg_id);
                                         }
+
+//                                        if(w->TeraflyCommunicator)
+//                                        {
+//                                            if (!(p_listneuron->at(i).seg_id<0 || p_listneuron->at(i).seg_id>= curImg->tracedNeuron.seg.size()))
+//                                            {
+//                                                vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
+//                                                int rowsize=row.size();
+//                                                w->SetupCollaborateInfo();
+//                                                w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
+//                                                changedTyp=true;
+//                                            }
+//                                        }
                                     }
 
                                 }
@@ -6817,10 +6825,23 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                 break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
                         }
-                        if(changedTyp) break;
                     }
                 }
             }
+
+            if(w->TeraflyCommunicator)
+            {
+                for(int cnt=0;cnt<idlist.size();cnt++)
+                if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
+                {
+                    vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[idlist.at(cnt)].row);
+                    int rowsize=row.size();
+                    w->SetupCollaborateInfo();
+                    w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
+                }
+            }
+
+
             curImg->update_3drenderer_neuron_view(w, this);
             QHash<QString, int>  soma_cnt;
 ;           curImg->proj_trace_history_append();
