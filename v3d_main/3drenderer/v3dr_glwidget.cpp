@@ -4331,6 +4331,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
 {
 //    qDebug()<<"in CollaDelSeg:"<<markerPOS;
+
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
 //    qDebug()<<delMarkerPosList;
 
@@ -4342,7 +4343,9 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
 
         XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
+//        qDebug()<<"adhkjhjk";
         int type=nodeXYZ.at(3).toInt();
+//        int type =4;
 //        qDebug()<<"delcurve:"<<delcurve.x<<" "<<delcurve.y<<" "<<delcurve.z;
 
         for(int J=0;J<v_ns_list.seg.size();J++)
@@ -4362,7 +4365,7 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
 //            }
             if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
             {
-//                qDebug()<<"find seg "<<J;
+                qDebug()<<"find seg "<<J;
                 for(int k=0;k<v_ns_list.seg.at(J).row.size();k++)
                 {
                     v_ns_list.seg.at(J).row.at(k).type=type;

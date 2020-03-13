@@ -6722,7 +6722,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             bool allUnitsOutsideZCut = false;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
-                qDebug()<<"in 123 "<<i;
+//                qDebug()<<"in 123 "<<i;
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
                 iy = p_listneuron->at(i).y;

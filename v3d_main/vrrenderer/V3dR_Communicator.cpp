@@ -621,6 +621,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 //                QStringList list= _string.split('_');
 //                        list.pop_front();
 //                        _string=list.join("_");
+
                  emit retypeSeg(_string);
             }
             qDebug()<<"+============delseg process end========";
