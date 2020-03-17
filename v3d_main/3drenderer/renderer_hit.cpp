@@ -3421,6 +3421,50 @@ void Renderer_gl1::localSWCcoord2projectedWindowCoord(const float swcLocalCoord[
 	swcWindowCoord[1] = py;
 	swcWindowCoord[2] = pz;
 }
+
+void Renderer_gl1::addMarker_NA(XYZ& loc)
+{
+	XYZ pt(loc.x + 1, loc.y + 1, loc.z + 1); // marker position is 1-based
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* image4d = v3dr_getImage4d(_idep);
+	MainWindow* V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+	if (image4d)
+	{
+		QList<LocationSimple>& listLoc = image4d->listLandmarks;
+		LocationSimple S;
+		V3DLONG markerindex = -1; // the index of no special marker, by XZ, 20190721
+		for (V3DLONG i = listLoc.size() - 1; i >= 0; --i)
+		{
+			if (listLoc.at(i).category != 77)
+			{
+				markerindex = i;
+				break;
+			}
+		}
+		if (markerindex >= 0/*listLoc.size()>0*/)
+		{
+			S.inputProperty = listLoc.at(markerindex).inputProperty;
+			S.comments = listLoc.at(markerindex).comments;
+			S.category = listLoc.at(markerindex).category;
+			S.color = this->NAtestingMarkerColor;
+		}
+		else
+		{
+			S.inputProperty = pxLocaUseful;
+			//S.color = random_rgba8(255);
+			S.color = this->NAtestingMarkerColor;
+		}
+		S.x = pt.x;
+		S.y = pt.y;
+		S.z = pt.z;
+		if (V3Dmainwindow) S.radius = V3Dmainwindow->global_setting.default_marker_radius;
+		S.on = true;
+		listLoc.append(S);
+		updateLandmark();
+	}
+}
 #endif
 
 Triangle * Renderer_gl1::findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist)

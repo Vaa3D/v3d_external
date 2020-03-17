@@ -340,6 +340,9 @@ public:
 	void addMarkerUnique(XYZ &loc);
     void addSpecialMarker(XYZ &loc); //add special marker, by XZ, 20190720
 	void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120
+#ifdef _NEURON_ASSEMBLER_
+	void addMarker_NA(XYZ& loc);
+#endif
 
 	// curve
 	int cntCur3DCurveMarkers; //091226. marker cnt when define a curve using marker clicking
@@ -715,6 +718,7 @@ public:
 	bool useCurrentTraceTypeForRetyping;
 
     RGBA8 currentMarkerColor;//added by ZZ 05142018
+	RGBA8 NAtestingMarkerColor; // Mar, 2020, MK
 
 	float zThick;
 
@@ -788,6 +792,10 @@ private:
         currentMarkerColor.g=0;
         currentMarkerColor.b=0;
         deleteKey = 0;
+
+		NAtestingMarkerColor.r = 0;
+		NAtestingMarkerColor.g = 200;
+		NAtestingMarkerColor.b = 0;
      }
 
 

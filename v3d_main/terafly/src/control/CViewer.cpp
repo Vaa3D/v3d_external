@@ -3347,6 +3347,15 @@ void CViewer::refreshSelectedMarkers()
 		it->selected = false;
 }
 
+void CViewer::pushMarkersfromTester(const set<vector<float>>& markerCoords)
+{
+	for (set<vector<float>>::const_iterator coordIt = markerCoords.begin(); coordIt != markerCoords.end(); ++coordIt)
+	{
+		XYZ newLoc(coordIt->at(0), coordIt->at(1), coordIt->at(2));
+		static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer())->addMarker_NA(newLoc);
+	}
+}
+
 void CViewer::segEditing_setCursor(string action)
 {
 	if (!action.compare("erase"))
