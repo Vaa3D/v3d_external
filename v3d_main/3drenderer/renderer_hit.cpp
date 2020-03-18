@@ -3422,7 +3422,7 @@ void Renderer_gl1::localSWCcoord2projectedWindowCoord(const float swcLocalCoord[
 	swcWindowCoord[2] = pz;
 }
 
-void Renderer_gl1::addMarker_NA(XYZ& loc)
+void Renderer_gl1::addMarker_NA(XYZ& loc, RGBA8 color)
 {
 	XYZ pt(loc.x + 1, loc.y + 1, loc.z + 1); // marker position is 1-based
 
@@ -3448,13 +3448,13 @@ void Renderer_gl1::addMarker_NA(XYZ& loc)
 			S.inputProperty = listLoc.at(markerindex).inputProperty;
 			S.comments = listLoc.at(markerindex).comments;
 			S.category = listLoc.at(markerindex).category;
-			S.color = this->NAtestingMarkerColor;
+			S.color = color;
 		}
 		else
 		{
 			S.inputProperty = pxLocaUseful;
 			//S.color = random_rgba8(255);
-			S.color = this->NAtestingMarkerColor;
+			S.color = color;
 		}
 		S.x = pt.x;
 		S.y = pt.y;

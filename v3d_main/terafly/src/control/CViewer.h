@@ -217,7 +217,7 @@ class terafly::CViewer : public QWidget
 		QList<ImageMarker> selectedLocalMarkerList;
 		QList<ImageMarker> up2dateMarkerList;
 		virtual void refreshSelectedMarkers();
-		virtual void pushMarkersfromTester(const set<vector<float>>& markerCoords);
+		virtual void pushMarkersfromTester(const set<vector<float>>& markerCoords, RGBA8 color);
 
 		string editingMode;
 		int eraserSize;
