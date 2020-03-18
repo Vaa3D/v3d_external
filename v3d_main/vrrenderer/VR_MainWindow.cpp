@@ -286,7 +286,8 @@ void VR_MainWindow::TVProcess(QString line)
         }
         else if (markerRex.indexIn(line) != -1) {
             QString user = markerRex.cap(1);
-            QStringList markerMSGs = markerRex.cap(2).split(" ");
+            QString markerPos=markerRex.cap(2).trimmed();
+            QStringList markerMSGs =markerPos .split(" ");
             if(markerMSGs.size()<3)
             {
                 qDebug()<<"size < 3";
@@ -309,6 +310,10 @@ void VR_MainWindow::TVProcess(QString line)
                  resy = markerMSGs.at(4).toFloat();
                  resz = markerMSGs.at(5).toFloat();
             }
+            int type=2;
+            if(markerMSGs.size()==7)
+                type=markerMSGs.at(6).toInt();
+
 			if (pMainApplication)
 			{
 				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
@@ -323,11 +328,11 @@ void VR_MainWindow::TVProcess(QString line)
                     if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z|| mx>VRVolumeEndPoint.x||my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
                     {
                         qDebug()<<"marker out of size";
-                        VROutinfo.deletemarkerspos.push_back(QString("%1 %2 %3 %4").arg(mx).arg(my).arg(mz).arg(3));
+                        VROutinfo.deletemarkerspos.push_back(markerPos);
                         return;
                     }else
                     {
-                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, 2);
+                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
                     }
                 }
 
