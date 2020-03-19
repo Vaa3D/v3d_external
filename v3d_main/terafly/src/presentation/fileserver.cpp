@@ -70,7 +70,6 @@ void FileSocket_receive::readFile()
                 }
                 QString filename;
                 in >> filename;
-                qDebug() << filename;
                 QByteArray block;
                 in >> block;
                 QFile file("./clouddata/" + filename);
@@ -125,7 +124,7 @@ void FileSocket_receive::readFile()
                 file.close();
                 m_bytesreceived = 0;
                 this->write(QString("received " + filename + "\n").toUtf8());
-                QRegExp txtRex("(.*).txt");
+                QRegExp txtRex("(.*).apo");
                 //			if (apoRex.indexIn(filename) != -1)
                 //			{
                 //				emit receivefile(apoRex.cap(1));
@@ -158,7 +157,7 @@ void FileSocket_receive::readFile()
                 file.close();
                 m_bytesreceived = 0;
                 this->write(QString("received " + filename + "\n").toUtf8());
-                QRegExp txtRex("(.*).txt");
+                QRegExp txtRex("(.*).apo");
                 //			if (apoRex.indexIn(filename) != -1)
                 //			{
                 //				emit receivefile(apoRex.cap(1));

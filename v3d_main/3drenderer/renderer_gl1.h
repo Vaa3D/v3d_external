@@ -777,9 +777,9 @@ private:
 		zMax = 1.0;
 		initColorMaps();
 		gridSpacing = 10.0;
-        currentMarkerColor.r=255;
-        currentMarkerColor.g=0;
-        currentMarkerColor.b=0;
+        currentMarkerColor.r=0;
+        currentMarkerColor.g=20;
+        currentMarkerColor.b=200;
         deleteKey = 0;
      }
 

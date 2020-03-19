@@ -7246,6 +7246,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
         currentMarkerColor.r=neuron_type_color[node_type][0];
         currentMarkerColor.g=neuron_type_color[node_type][1];
         currentMarkerColor.b=neuron_type_color[node_type][2];
+
     }else if(neuronColorMode == 5)
     {
         int inputlevel = QInputDialog::getInt(0, QObject::tr("Change node confidence level in segment"),

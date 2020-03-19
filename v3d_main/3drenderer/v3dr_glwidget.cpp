@@ -4255,7 +4255,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
         }
     }
-    int type=2;
+    int type=colortype;
 
     const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
             {255, 255, 255},  // white,   0-undefined
@@ -4541,10 +4541,13 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
     if(markerXYZ.size()==7)
     {
         type=markerXYZ.at(6).toInt();
-        marker.color.r=neuron_type_color[type][0];
-        marker.color.g=neuron_type_color[type][1];
-        marker.color.b=neuron_type_color[type][2];
+
+//        qDebug()<<marker.color.r<< " "<<marker.color.g<<" "<<marker.color.b;
     }
+    marker.color.r=neuron_type_color[type][0];
+    marker.color.g=neuron_type_color[type][1];
+    marker.color.b=neuron_type_color[type][2];
+//    qDebug()<<marker.color.r<< " "<<marker.color.g<<" "<<marker.color.b;
 
     markers.append(marker);
 
@@ -4713,6 +4716,8 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             if(i==qsl.size()-1)
             {
                 CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
+                qDebug()<<"Sfsdf";
+                qDebug()<<"temp[1].toInt()"   <<temp[1].toInt();
             }
 
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraAI")

@@ -4211,8 +4211,8 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
             S.inputProperty = listLoc.at(markerindex).inputProperty;
             S.comments = listLoc.at(markerindex).comments;
             S.category = listLoc.at(markerindex).category;
-            S.color = listLoc.at(markerindex).color;
-            currentMarkerColor = listLoc.at(markerindex).color;;
+            S.color = currentMarkerColor;
+//            currentMarkerColor = listLoc.at(markerindex).color;;
         }
         else
         {
@@ -4220,6 +4220,8 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
             //S.color = random_rgba8(255);
             S.color = currentMarkerColor;
         }
+
+
         S.x = pt.x;
 		S.y = pt.y;
 		S.z = pt.z;

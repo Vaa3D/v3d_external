@@ -111,28 +111,28 @@ void ManageSocket::onReadyRead()
         }else if(CurrentDirDownExp.indexIn(manageMsg)!=-1)
 		{
             QString currentDir=CurrentDirDownExp.cap(1);
-			QStringList file_list=currentDir.split(";");
-			QWidget *widget=new QWidget(0);
-			widget->setWindowTitle("choose annotation file ");
-			QListWidget *filelistWidget=new QListWidget;
-			QVBoxLayout mainlayout(widget);
-
-			mainlayout.addWidget(filelistWidget);
-			connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+            QStringList file_list=currentDir.split(";");
+            QWidget *widget=new QWidget(0);
+            widget->setWindowTitle("choose annotation file ");
+            QListWidget *filelistWidget=new QListWidget();
+            QVBoxLayout mainlayout(widget);
+            mainlayout.addWidget(filelistWidget);
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                 this,SLOT(send1(QListWidgetItem*)));
 
-			connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-				widget,SLOT(close()));
+            connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                widget,SLOT(deleteLater()));
 
-			filelistWidget->clear();
-			for(uint i=0;i<file_list.size();i++)
-			{
-				QIcon icon("file.png");
-				QListWidgetItem *tmp=new QListWidgetItem(icon,file_list.at(i));
-				qDebug()<<file_list.at(i);
-				filelistWidget->addItem(tmp);
-			}
-			widget->show();
+            filelistWidget->clear();
+            for(uint i=0;i<file_list.size();i++)
+            {
+                QIcon icon("file.png");
+                QListWidgetItem *tmp=new QListWidgetItem(icon,file_list.at(i));
+                qDebug()<<file_list.at(i);
+                filelistWidget->addItem(tmp);
+            }
+            widget->show();
+
         }else if(CurrentDirLoadExp.indexIn(manageMsg)!=-1)
         {
             QString currentDir=CurrentDirLoadExp.cap(1);
@@ -140,10 +140,11 @@ void ManageSocket::onReadyRead()
             QListWidget *filelistWidget=new QListWidget;
             filelistWidget->setWindowTitle("choose annotation file ");
             filelistWidget->setGeometry(400,400,500,700);
+
             connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                 this,SLOT(send2(QListWidgetItem*)));
             connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-                filelistWidget,SLOT(close()));
+                filelistWidget,SLOT(deleteLater()));
             filelistWidget->clear();
             for(uint i=0;i<file_list.size();i++)
             {
@@ -674,6 +675,9 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
                         .arg(curSWCunit.r).arg(curSWCunit.parent);
                 //            qDebug()<<"marker "+packetbuff;
                 emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
+
+                qDebug()<<"curSWCunit.type"   <<curSWCunit.type;
+
                 AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
             }
             messageBuff +=packetbuff;
