@@ -550,18 +550,9 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                     emit addMarker(markerRex.cap(2).trimmed(),3);//marker用3号色
 //                    qDebug()<<"siagnal add marker";
                 }
-                else
-                {
-//                    qDebug()<<"user:"<<user<<"==userName"<<userName;
-                }
-
-
             }else {
                 emit addMarker(markerRex.cap(2).trimmed(),3);//marker用3号色
             }
-
-//            qDebug()<<"==================marker process end====================";
-
         }
         else if (delmarkerRex.indexIn(line) != -1) {
 
