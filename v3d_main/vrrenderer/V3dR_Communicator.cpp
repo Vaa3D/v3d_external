@@ -517,7 +517,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             qDebug()<<"+============delseg process begin========";
             if(flag_init==0)
             {
-                if(user!=userName)
+                if(user!=userName+QString::number(0))
                 {
                    QString _string=deletecurveRex.cap(2).trimmed();
                    QStringList list= _string.split('_');
@@ -542,9 +542,10 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 //            qDebug()<<"+============marker process begin========";
             QString user=markerRex.cap(1);
 
+            qDebug()<<line;
             if(flag_init==0)
             {
-                if(user!=userName)
+                if(user!=userName+QString::number(0))
                 {
                     emit addMarker(markerRex.cap(2).trimmed(),3);//marker用3号色
 //                    qDebug()<<"siagnal add marker";
@@ -576,7 +577,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
             if(flag_init==0)
             {
-                if(user==userName&&temp=="TeraFly")
+                if(user==(userName+QString::number(0))&&temp=="TeraFly")
                     qDebug()<<"user:"<<user<<"==userName"<<userName;
                 else
                 {
