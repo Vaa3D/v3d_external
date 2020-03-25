@@ -1460,23 +1460,102 @@ void V3dr_surfaceDialog::labelSortMarkers()
 	QTableWidgetItem* curItem = 0;
 
 	int maxMarkerName = 0;
+	map<string, vector<int>> coord2markerMap;
+	map<int, int> nameRowNumMap;
+	set<int> blankMarkers;
+	vector<int> dupNames;
 	for (int i = 0; i < t->rowCount(); ++i)
 	{
-		if (r->listMarker[i].name.toInt() > 0)
+		if (r->listMarker[i].name == "duplicated") continue;
+		else if (r->listMarker[i].name.toInt() > 0)
 		{
-			int thisMarkerName = r->listMarker[i].name.toInt();
-			if (thisMarkerName > maxMarkerName) maxMarkerName = thisMarkerName;		
+			string markerCoord = to_string(r->listMarker[i].x) + "_" + to_string(r->listMarker[i].y) + "_" + to_string(r->listMarker[i].z);
+			if (coord2markerMap.find(markerCoord) == coord2markerMap.end())
+			{
+				vector<int> markerRowNums;
+				markerRowNums.push_back(i);
+				coord2markerMap.insert({ markerCoord, markerRowNums });
+			}
+			else coord2markerMap[markerCoord].push_back(i);
+		}
+		else blankMarkers.insert(i);
+	}
+
+	for (map<string, vector<int>>::iterator it = coord2markerMap.begin(); it != coord2markerMap.end(); ++it)
+	{
+		if (it->second.size() > 1)
+		{
+			for (vector<int>::iterator it2 = it->second.begin() + 1; it2 != it->second.end(); ++it2)
+			{
+				if (r->listMarker[*it2].name != r->listMarker[*(it->second.begin())].name) 
+					dupNames.push_back(r->listMarker[*it2].name.toInt());
+				else r->listMarker[*it2].name = "deplicated";
+			}
 		}
 	}
 
 	for (int i = 0; i < t->rowCount(); ++i)
 	{
-		if (r->listMarker[i].name.toInt() == 0)
+		if (r->listMarker[i].name == "duplicated") continue;
+		else if (r->listMarker[i].name.toInt() > 0)
 		{
-			++maxMarkerName;
+			nameRowNumMap.insert({ r->listMarker[i].name.toInt(), i });
+			int thisMarkerName = r->listMarker[i].name.toInt();
+			if (thisMarkerName > maxMarkerName) maxMarkerName = thisMarkerName;
+		}
+		else blankMarkers.insert(i);
+	}
+
+	sort(dupNames.rbegin(), dupNames.rend());
+	for (vector<int>::iterator it = dupNames.begin(); it != dupNames.end(); ++it)
+	{
+		for (map<int, int>::iterator it2 = nameRowNumMap.find(*it); it2 != nameRowNumMap.end(); ++it2)
+		{
+			int nameInt = r->listMarker[it2->second].name.toInt();
+			r->listMarker[it2->second].name = QString::number(--nameInt);
+			NAME_ITEM_OF_TABLE(curItem, t, it2->second);
+			curItem->setText(r->listMarker[it2->second].name);
+		}
+		r->listMarker[nameRowNumMap.at(*it)].name = "duplicated";
+		NAME_ITEM_OF_TABLE(curItem, t, nameRowNumMap.at(*it));
+		curItem->setText("duplicated");
+	}
+
+	for (int i = 0; i < t->rowCount(); ++i)
+	{
+		if (r->listMarker[i].name == "duplicated") continue;
+		else if (r->listMarker[i].name.toInt() > 0)
+		{
+			int thisMarkerName = r->listMarker[i].name.toInt();
+			if (thisMarkerName > maxMarkerName) maxMarkerName = thisMarkerName;
+		}
+		else blankMarkers.insert(i);
+	}
+
+	for (int i = 0; i < t->rowCount(); ++i)
+	{
+		if (r->listMarker[i].name == "duplicated")
+		{
 			NAME_ITEM_OF_TABLE(curItem, t, i);
-			curItem->setText(QString::number(maxMarkerName));
-			r->listMarker[i].name = QString::number(maxMarkerName);
+			curItem->setText("duplicated");
+			r->listMarker[i].name = "duplicated";
+		}
+		else if (r->listMarker[i].name.toInt() == 0)
+		{
+			string markerCoord = to_string(r->listMarker[i].x) + "_" + to_string(r->listMarker[i].y) + "_" + to_string(r->listMarker[i].z);
+			if (coord2markerMap.find(markerCoord) == coord2markerMap.end())
+			{
+				++maxMarkerName;
+				NAME_ITEM_OF_TABLE(curItem, t, i);
+				curItem->setText(QString::number(maxMarkerName));
+				r->listMarker[i].name = QString::number(maxMarkerName);
+			}
+			else
+			{
+				NAME_ITEM_OF_TABLE(curItem, t, i);
+				curItem->setText("duplicated");
+				r->listMarker[i].name = "duplicated";
+			}
 		}
 	}
 }

@@ -2042,12 +2042,17 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
 		std::list<annotation*>* annoPtrList = octree->find(convertedX, convertedY, convertedZ);
 		if (annoPtrList != nullptr)
 		{
-			if (annoPtrList->size() > 1)
+			if (annoPtrList->size() == 1) annoPtrList->front()->name = it->name.toStdString();
+			else
 			{
-				for (std::list<annotation*>::iterator listIt = annoPtrList->begin(); listIt != annoPtrList->end(); ++listIt)
-					(*listIt)->name = "duplicated";
+				if (it->name == "duplicated") continue;
+				else
+				{
+					for (std::list<annotation*>::iterator annoIt = annoPtrList->begin(); annoIt != annoPtrList->end(); ++annoIt)
+						(*annoIt)->name = "duplicated";
+					annoPtrList->front()->name = it->name.toStdString();
+				}
 			}
-			else annoPtrList->front()->name = it->name.toStdString();
 		}
 	}
 #endif
