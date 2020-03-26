@@ -4237,7 +4237,7 @@ void PMain::ColLoadANO(QString ANOfile)
 //            f->remove();
 //        delete f;
 //        f=0;
-        emit startASK(ANOfile,1000);
+        emit startASK(ANOfile,25);
 
     }
 }

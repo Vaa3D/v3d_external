@@ -172,7 +172,8 @@ void ManageSocket::send2(QListWidgetItem *item)
 	loadfilename.clear();FileRec=0;
     FileSocket_receive *filesocket_receive=new FileSocket_receive(ip);
     connect(filesocket_receive,SIGNAL(receivefile(QString)),this,SLOT(receivefile(QString)));
-    loadfilename=item->text();
+//    loadfilename=item->text();
+    loadfilename.clear();
     this->write(QString(item->text()+":choose2."+"\n").toUtf8());
 }
 void ManageSocket::messageMade()
@@ -180,14 +181,23 @@ void ManageSocket::messageMade()
     MSGsocket=1;
 
     if(FileRec==1)
+    {
         emit loadANO(loadfilename);
+        MSGsocket=0;
+        FileRec=0;
+    }
 }
 void ManageSocket::receivefile(QString anofile)
 {
     FileRec=1;
-
+    qDebug()<<"anofile"<<anofile;
+    loadfilename=anofile;
     if(MSGsocket==1)
-        emit loadANO(loadfilename);
+    {
+        emit loadANO(anofile);
+        FileRec=0;MSGsocket=0;
+    }
+    qDebug()<<"dsjfhjkhfkjdfhdkjshfjkdhjkfhsdkjhfkjd";
 }
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {

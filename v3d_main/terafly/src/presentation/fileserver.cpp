@@ -49,7 +49,9 @@ void FileSocket_receive::readFile()
                 QRegExp apoRex("(.*).apo");
                 if (apoRex.indexIn(filename) != -1)
                 {
+
                     emit receivefile(apoRex.cap(1));
+                    qDebug()<<"==============================================";
                     disconnectFromHost();
                 }
             }
