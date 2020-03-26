@@ -46,15 +46,10 @@ void FileSocket_receive::readFile()
                 file.close();
                 m_bytesreceived = 0;
                 this->write(QString("received " + filename + "\n").toUtf8());
-                QRegExp txtRex("(.*).txt");
-                //			if (apoRex.indexIn(filename) != -1)
-                //			{
-                //				emit receivefile(apoRex.cap(1));
-                //				disconnectFromHost();
-                //			}
-                if(txtRex.indexIn(filename) != -1)
+                QRegExp apoRex("(.*).apo");
+                if (apoRex.indexIn(filename) != -1)
                 {
-                    emit receivefile(txtRex.cap(1));
+                    emit receivefile(apoRex.cap(1));
                     disconnectFromHost();
                 }
             }
@@ -78,15 +73,10 @@ void FileSocket_receive::readFile()
                 file.close();
                 m_bytesreceived = 0;
                 this->write(QString("received " + filename + "\n").toUtf8());
-                QRegExp txtRex("(.*).txt");
-                //			if (apoRex.indexIn(filename) != -1)
-                //			{
-                //				emit receivefile(apoRex.cap(1));
-                //				disconnectFromHost();
-                //			}
-                if(txtRex.indexIn(filename) != -1)
+                QRegExp apoRex("(.*).apo");
+                if (apoRex.indexIn(filename) != -1)
                 {
-                    emit receivefile(txtRex.cap(1));
+                    emit receivefile(apoRex.cap(1));
                     disconnectFromHost();
                 }
             }
@@ -124,15 +114,10 @@ void FileSocket_receive::readFile()
                 file.close();
                 m_bytesreceived = 0;
                 this->write(QString("received " + filename + "\n").toUtf8());
-                QRegExp txtRex("(.*).apo");
-                //			if (apoRex.indexIn(filename) != -1)
-                //			{
-                //				emit receivefile(apoRex.cap(1));
-                //				disconnectFromHost();
-                //			}
-                if(txtRex.indexIn(filename) != -1)
+                QRegExp apoRex("(.*).apo");
+                if (apoRex.indexIn(filename) != -1)
                 {
-                    emit receivefile(txtRex.cap(1));
+                    emit receivefile(apoRex.cap(1));
                     disconnectFromHost();
                 }
             }
@@ -157,15 +142,10 @@ void FileSocket_receive::readFile()
                 file.close();
                 m_bytesreceived = 0;
                 this->write(QString("received " + filename + "\n").toUtf8());
-                QRegExp txtRex("(.*).apo");
-                //			if (apoRex.indexIn(filename) != -1)
-                //			{
-                //				emit receivefile(apoRex.cap(1));
-                //				disconnectFromHost();
-                //			}
-                if(txtRex.indexIn(filename) != -1)
+                QRegExp apoRex("(.*).apo");
+                if (apoRex.indexIn(filename) != -1)
                 {
-//                    emit receivefile(txtRex.cap(1));
+                    emit receivefile(apoRex.cap(1));
                     disconnectFromHost();
                 }
             }

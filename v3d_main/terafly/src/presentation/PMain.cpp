@@ -4172,8 +4172,18 @@ void PMain::deleteManageSocket()
 
 void PMain::ColLoadANO(QString ANOfile)
 {
-    qDebug()<<"load ANO:"<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
+    QFileInfoList anofileList=QDir("./clouddata").entryInfoList(QStringList()<<".ano");
+    for(int i=0;i<anofileList.size();i++)
+    {
+        if(anofileList.at(i).baseName().contains("stamp")&&anofileList.at(i).baseName().contains(ANOfile.remove(".ano")))
+        {
+            ANOfile=anofileList.at(i).baseName()+".ano";
+        }
+    }
+
+
+
     QString ANOpath="./clouddata/"+ANOfile;
     if(!ANOpath.isEmpty())
     {
@@ -4210,23 +4220,23 @@ void PMain::ColLoadANO(QString ANOfile)
         }
 
         //delete load .ANO
-        QFile *f = new QFile(tmp+".ano");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
+//        QFile *f = new QFile(tmp+".ano");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
 
-        f = new QFile(tmp+".ano.eswc");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
+//        f = new QFile(tmp+".ano.eswc");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
 
-        f = new QFile(tmp+".ano.apo");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
+//        f = new QFile(tmp+".ano.apo");
+//        if(f->exists())
+//            f->remove();
+//        delete f;
+//        f=0;
         emit startASK(ANOfile,1000);
 
     }

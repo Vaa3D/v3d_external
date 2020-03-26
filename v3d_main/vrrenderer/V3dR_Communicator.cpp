@@ -218,17 +218,17 @@ V3dR_Communicator::~V3dR_Communicator() {
 
 void V3dR_Communicator::timerStart(QString anoname,int mesc)
 {
-    QFile *f=new QFile("./clouddata/"+anoname+".txt");
+//    QFile *f=new QFile("./clouddata/"+anoname+".txt");
 
-    if(f->open(QIODevice::ReadOnly|QIODevice::Text))
-    {
-        while (!f->atEnd()) {
-            QByteArray line=f->readLine();
-            TFProcess(QString(line),1);
-        }
-    }
-    f->remove();
-    delete  f;
+//    if(f->open(QIODevice::ReadOnly|QIODevice::Text))
+//    {
+//        while (!f->atEnd()) {
+//            QByteArray line=f->readLine();
+//            TFProcess(QString(line),1);
+//        }
+//    }
+//    f->remove();
+//    delete  f;
     asktimer->start(mesc);
 }
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
@@ -267,8 +267,6 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 }
 void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 {
-//	NTList_SendPool->append(seg);
-
     onReadySend(QString("/seg:"+V_NeuronSWCToSendMSG(seg)));
     cout << "send seg success" << endl;
 }
@@ -276,7 +274,7 @@ void V3dR_Communicator::UpdateSendPoolNTList(V_NeuronSWC seg)
 void V3dR_Communicator::UpdateDeleteMsg(vector<XYZ> deleteLocNode)
 {
     QString _string=QString("/del_curve:TeraFly_" + V_DeleteNodeToSendMSG(deleteLocNode));
-    qDebug()<<_string;
+//    qDebug()<<_string;
     onReadySend(_string);
 	cout << "send delete over success" << endl;
 }
@@ -406,7 +404,6 @@ void V3dR_Communicator::pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC)
     {
         QString _string="/seg:"+V_NeuronSWCToSendMSG(vector_VSWC.at(i),false);
         undo_delcure.push_back(_string);
-//        qDebug()<<i<<":"<<_string;
     }
     qDebug()<<"--------------------pushVSWC-  out-------------------------";
 }
