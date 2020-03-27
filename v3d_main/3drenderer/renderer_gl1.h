@@ -220,10 +220,13 @@ public:
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments spliting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
 	virtual void callShowSubtree(); // highlight the selected segment and its downstream subtree. MK, June, 2018
+	virtual void callShowBreakPoints();
+	virtual void rc_findConnectedSegs_continue(My4DImage* curImg, size_t inputSegID);
 	virtual void callShowConnectedSegs();
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode(int x, int y); // call creating marker
+    virtual void callCreateSpecialMarkerNearestNode(int x,int y); //add special marker, by XZ, 20190720
     virtual void callGDTracing();
 
     virtual void toggleEditMode();
@@ -251,6 +254,10 @@ public:
 
 	QList <NeuronTree> * getHandleNeuronTrees() {return &listNeuronTree;}
 	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double & best_dist);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
+
+#ifdef _NEURON_ASSEMBLER_
+	void localSWCcoord2projectedWindowCoord(const float swcLocalCoord[], double swcWindowCoord[]);
+#endif
 
     LandmarkList * getHandleLandmark(); //20141016, by Hanbo Chen
     void setHandleLandmark(LandmarkList & landmark_list);
@@ -330,7 +337,12 @@ public:
 	void refineMarkerLocal(int marker_id);
 
 	void addMarker(XYZ &loc);
+	void addMarkerUnique(XYZ &loc);
+    void addSpecialMarker(XYZ &loc); //add special marker, by XZ, 20190720
 	void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120
+#ifdef _NEURON_ASSEMBLER_
+	void addMarker_NA(XYZ& loc, RGBA8 color);
+#endif
 
 	// curve
 	int cntCur3DCurveMarkers; //091226. marker cnt when define a curve using marker clicking
@@ -440,6 +452,8 @@ public:
 
      V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
 
+     V3DLONG findNearestMarker_Loc(XYZ &loc, QList <LocationSimple> &listlandmarks,int mode); //add the function to deal with find nearestmarker, by XZ, 20190720
+
      bool lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb,
 									   double *mua, double *mub);
      void getSubVolInfo(XYZ lastloc, XYZ loc0, XYZ loc1, XYZ &sub_orig, double* &pSubdata,
@@ -471,8 +485,11 @@ public:
 	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 void showSubtree();
 	 void showConnectedSegs();
+     void sort_tracedNeuron(My4DImage* curImg, size_t rootID);  // Sort swc, Peng Xie, June 2019
 
 	 bool fragmentTrace; // Fragment tracing mode switch, MK, Dec 2018
+	 map<string, float> fragTraceParams;
+	 void connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage*& curImgPtr);
 	 
 	 void connectNeuronsByStroke();
 	 void connectPointCloudByStroke();
@@ -502,6 +519,7 @@ public:
 	 set<set<size_t> > finalizedLoopsSet;
 	 set<set<size_t> > nonLoopErrors;
 	 map<size_t, set<size_t> > seg2SegsMap;
+	 map<size_t, set<size_t> > segTail2segIDmap;
 	 void loopDetection();
 	 void rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWalk, My4DImage* curImg);
 
@@ -522,6 +540,9 @@ public:
 	 void rc_downstream_segID(My4DImage* curImg, size_t segID);
 	 void segTreeFastReprofile(My4DImage* curImg);
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
+
+	 bool FragTraceMarkerDetector3Dviewer;
+	 v3dr_SurfaceType surType;
 	 // -----------------------------------------------------------------------------------------------------------------------------------
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
@@ -697,6 +718,8 @@ public:
 	bool useCurrentTraceTypeForRetyping;
 
     RGBA8 currentMarkerColor;//added by ZZ 05142018
+
+	float zThick;
 
 private:
 	void init_members()

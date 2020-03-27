@@ -1,4 +1,7 @@
+#include "GLee2glew.h" //2020-2-10
+
 #include "CompartmentMapWidget.h"
+
 
 CompartmentMapWidget::CompartmentMapWidget(QWidget* parent): V3dR_GLWidget(NULL, parent, "Compartment Map")
 {

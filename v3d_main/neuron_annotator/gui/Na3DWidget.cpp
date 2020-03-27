@@ -1,3 +1,5 @@
+#include "../3drenderer/GLee2glew.h" //2020-2-10 RZC
+
 #include "Na3DWidget.h"
 #include "../render/CubeTestActorGL.h"
 #include "v3d_core.h"
@@ -206,7 +208,7 @@ bool Na3DWidget::loadSignalTexture3D(size_t w, size_t h, size_t d, const uint32_
     // qDebug() << width << height << depth << (long)texture_data;
     // Load the data onto video card
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glTexImage3D(GL_TEXTURE_3D,
+    glTexImage3DEXT(GL_TEXTURE_3D,
         0, ///< mipmap level; zero means base level
         GL_RGBA8, ///< texture format, in bytes per pixel
         w,
@@ -333,7 +335,7 @@ bool Na3DWidget::loadLabelTexture3D(size_t w, size_t h, size_t d, const uint16_t
     // qDebug() << width << height << depth << (long)texture_data;
     // Load the data onto video card
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glTexImage3D(GL_TEXTURE_3D,
+    glTexImage3DEXT(GL_TEXTURE_3D,
                  0, // mipmap level
                  GL_INTENSITY16, // texture format
                  w,

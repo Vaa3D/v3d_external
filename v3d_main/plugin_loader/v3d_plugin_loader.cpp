@@ -453,8 +453,6 @@ void V3d_PluginLoader::populateMenus()
 	}
 }
 
-//=========================================================
-
 void V3d_PluginLoader::aboutPlugins()
 {
     QList<QDir> pluginsDirList = getPluginsDirList();
@@ -497,7 +495,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
             break;
         }
     }
-
+	
     if(flag == 1)
     {
         int currentIndex = 0;
@@ -541,6 +539,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	//    {
 	//    	loader->unload();      qDebug() << "unload: " <<fileName;
 	//    }
+
 }
 
 void V3d_PluginLoader::runPlugin()
@@ -710,8 +709,6 @@ bool V3d_PluginLoader::runPluginInterface2_1(QObject* plugin, const QString& com
     }
 	return false;
 }
-
-//====================================================================
 
 bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output)
@@ -1060,6 +1057,43 @@ bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt)
 	return false;
 }
 
+int V3d_PluginLoader::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->setSWC_noDecompose(window, fileName);
+	}
+	return -1;
+}
+
+bool V3d_PluginLoader::hideSWC(V3dR_MainWindow* window, int treeIndex)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->hideSWC(window, treeIndex);
+	}
+	return false;
+}
+
+bool V3d_PluginLoader::displaySWC(V3dR_MainWindow* window, int treeIndex)
+{
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->displaySWC(window, treeIndex);
+	}
+	return false;
+}
+
+QList<NeuronTree> V3d_PluginLoader::loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces)
+{
+	QList<NeuronTree> emptyList;
+	if (v3d_mainwindow)
+	{
+		return v3d_mainwindow->loadedNeurons(window, loadedSurfaces);
+	}
+	return emptyList;
+}
+
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
 {
     if (!filename)
@@ -1253,6 +1287,58 @@ void V3d_PluginLoader::setHideDisplayControlButton(V3dR_MainWindow *w)
 //        w->resizeEvent((QResizeEvent *)QSize(x,y));
 //    }
 //}
+
+#ifdef _NEURON_ASSEMBLER_
+int V3d_PluginLoader::getSurfaceType(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	return int(thisRenderer->surType);
+}
+
+void V3d_PluginLoader::set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	thisRenderer->FragTraceMarkerDetector3Dviewer = on_off;
+	//cout << "marker detector test: " << thisRenderer->listMarker.size() << endl;
+	//cout << "apo detector test: " << thisRenderer->listCell.size() << endl;
+
+	//for (QList<CellAPO>::iterator it = thisRenderer->listCell.begin(); it != thisRenderer->listCell.end(); ++it)
+	//	cout << it->name.toStdString() << ": " << it->selected << endl;
+}
+
+QList<ImageMarker> V3d_PluginLoader::send3DviewerMarkerList(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	return thisRenderer->listMarker;
+}
+
+QList<CellAPO> V3d_PluginLoader::send3DviewerApoList(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+	return thisRenderer->listCell;
+}
+
+void V3d_PluginLoader::refreshSelectedMarkers(V3dR_MainWindow* w)
+{
+	V3dR_GLWidget* vi = w->getGLWidget();
+	Renderer_gl1* thisRenderer = (Renderer_gl1*)(vi->getRenderer());
+
+	if (thisRenderer->surType == stImageMarker)
+	{
+		for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+			it->selected = false;
+	}
+	else if (thisRenderer->surType == stPointCloud)
+	{
+		for (QList<CellAPO>::iterator it = thisRenderer->listCell.begin(); it != thisRenderer->listCell.end(); ++it)
+			it->selected = false;
+	}	
+}
+#endif
 
 void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
 {
@@ -1685,11 +1771,6 @@ void V3d_PluginLoader::releaseOpenedVolumesTeraFly()
 bool V3d_PluginLoader::setImageTeraFly(size_t x, size_t y, size_t z)
 {
     return terafly::PluginInterface::setImage(x,y,z);
-}
-
-void V3d_PluginLoader::redrawEditInfo(int editInputNum)
-{
-	terafly::PluginInterface::drawEditInfo(editInputNum);
 }
 
 #ifdef __ALLOW_VR_FUNCS__

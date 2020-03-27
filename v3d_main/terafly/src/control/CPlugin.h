@@ -935,8 +935,10 @@ class terafly::PluginInterface
         static std::string version(){ return "1.1.0"; }
         static bool setImage(size_t x, size_t y, size_t z);
 
-		static void drawEditInfo(int editNum);
-
+#ifdef _NEURON_ASSEMBLER_
+		// This method casts CViewer to INeuronAssembler allowing Neuron Assembler to directly talk to terafly environment. MK, Dec, 2019
+		static INeuronAssembler* getTeraflyCViewer();
+#endif
 };
 
 #endif

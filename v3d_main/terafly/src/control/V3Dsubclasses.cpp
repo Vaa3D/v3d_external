@@ -48,17 +48,20 @@ void myV3dR_GLWidget::setZoomO(int zr)
 }
 
 void myV3dR_GLWidget::setZoomO(float zr)
-{
-    /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, zoom = %.2f", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
+{	
+	/**/tf::debug(tf::LEV_MAX, strprintf("title = %s, zoom = %.2f", data_title.toStdString().c_str(), zr).c_str(), __itm__current__function__);
 
     //qDebug("V3dR_GLWidget::setZoom = %i",zr);
     zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
+	
     if (this->_zoom != zr) {
         this->_zoom = zr;
         if (this->renderer)
         {
-            if (zr>PMain::getInstance()->zoomInSens->value() && !CViewer::getCurrent()->isHighestRes())
-                zoomIn(PMain::getInstance()->zoomInMethod->currentText().toStdString().c_str());
+			if (zr > PMain::getInstance()->zoomInSens->value() && !CViewer::getCurrent()->isHighestRes())
+			{
+				zoomIn(PMain::getInstance()->zoomInMethod->currentText().toStdString().c_str());
+			}
             else
                 this->renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
         }
@@ -66,6 +69,22 @@ void myV3dR_GLWidget::setZoomO(float zr)
         this->update();
     }
 }
+
+#ifdef _NEURON_ASSEMBLER_
+void myV3dR_GLWidget::setZoom_NAeraserSize(float zr)
+{
+	if (zr < this->_zoom && CViewer::getCurrent()->eraserSize < 3)
+	{
+		++CViewer::getCurrent()->eraserSize;
+		CViewer::getCurrent()->segEditing_setCursor("erase");
+	}
+	else if (zr > this->_zoom && CViewer::getCurrent()->eraserSize > -2)
+	{
+		--CViewer::getCurrent()->eraserSize;
+		CViewer::getCurrent()->segEditing_setCursor("erase");
+	}
+}
+#endif
 
 void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
 {
@@ -101,8 +120,14 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
     else // default
     {
         (this->renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
-        setZoomO((zoomin_sign * zoomStep) + this->_zoom); //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 
+#ifdef _NEURON_ASSEMBLER_
+		if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("erase")) 
+			setZoom_NAeraserSize((zoomin_sign * zoomStep) + this->_zoom);
+		else setZoomO((zoomin_sign * zoomStep) + this->_zoom); //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+#else
+		setZoomO((zoomin_sign * zoomStep) + this->_zoom); //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+#endif
         //---- Alessandro 2013-04-29: first attempt to combine zoom and translation using mouse position (like Google Earth does). Does not work properly.
 //        int dx = (myRenderer_gl1::cast(renderer)->wheelPos.view[0]+myRenderer_gl1::cast(renderer)->wheelPos.view[2])/2.0 - event->x();
 //        int dy = (myRenderer_gl1::cast(renderer)->wheelPos.view[1]+myRenderer_gl1::cast(renderer)->wheelPos.view[3])/2.0 - event->y();

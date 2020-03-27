@@ -28,6 +28,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  *  Copyright Hanchuan Peng. All rights reserved.
  *
  */
+
+#include "GLee2glew.h" ////2020-2-10
+
+
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"
@@ -126,7 +130,26 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 		case stImageMarker: {//marker
 			(qsName = QString("marker #%1 ... ").arg(names[2]) + listMarker.at(names[2]-1).name);
-			LIST_SELECTED(listMarker, names[2]-1, true);
+			//qDebug() << qsName;
+			/* ======== Select and unselect marker with mouse left button, MK, Sep, 2019 ======= */
+			switch (b_menu) 
+			{
+			case true: // With menu popping up (right click)
+				if (!this->FragTraceMarkerDetector3Dviewer) LIST_SELECTED(listMarker, names[2] - 1, true);
+				break;
+			case false: // Without menu popping up (left click)
+				switch (listMarker.at(names[2] - 1).selected)
+				{
+				case true:
+					LIST_SELECTED(listMarker, names[2] - 1, false);
+					break;
+				case false:
+					LIST_SELECTED(listMarker, names[2] - 1, true);
+					break;
+				}
+			}
+			/* ================================================================================= */
+
 			qsInfo = info_Marker(names[2]-1);
 		}break;
 		case stLabelSurface: {//label surface
@@ -149,7 +172,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}break;
 		case stPointCloud: {//apo
 			(qsName = QString("point cloud #%1 ... ").arg(names[2]) + listCell.at(names[2]-1).name);
-			LIST_SELECTED(listCell, names[2]-1, true);
+			if (!this->FragTraceMarkerDetector3Dviewer) LIST_SELECTED(listCell, names[2]-1, true);
 		}break;
 		}
 	}
@@ -511,6 +534,70 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//##############################################################################
 		if (IS_SURFACE())
 		{
+			if (this->FragTraceMarkerDetector3Dviewer)
+			{				
+				if (names[1] == stImageMarker)
+				{
+					this->surType = stImageMarker;
+					switch (listMarker.at(names[2] - 1).selected)
+					{
+					case true:
+						LIST_SELECTED(listMarker, names[2] - 1, false);
+						break;
+					case false:
+						LIST_SELECTED(listMarker, names[2] - 1, true);
+						break;
+					}
+
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "dummy";
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "3DViewer_marker_click", pluginInputList, pluginOutputList);
+
+					return 0;
+				}
+				else if (names[1] == stPointCloud)
+				{
+					this->surType = stPointCloud;
+					switch (listCell.at(names[2] - 1).selected)
+					{
+					case true:
+						LIST_SELECTED(listCell, names[2] - 1, false);
+						break;
+					case false:
+						LIST_SELECTED(listCell, names[2] - 1, true);
+						break;
+					}
+					
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "dummy";
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "3DViewer_marker_click", pluginInputList, pluginOutputList);
+
+					return 0;
+				}
+			}
+
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
             listAct.append(actShowFullPath = new QAction("Show full path", w));
             listAct.append(actObjectManager = new QAction("object manager", w));
@@ -1395,9 +1482,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     		{
     			const ImageMarker & m = listMarker.at(tmpind);
     			XYZ p = XYZ(m);
-//<<<<<<< HEAD
-//    			MarkerSpaceToNormalizeSpace(p);
-//=======
+
     			p.x = p.x*thicknessX -start1;
     			p.y = p.y*thicknessY -start2;
     			p.z = p.z*thicknessZ -start3;
@@ -1419,7 +1504,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     			p.x = s[0]*(p.x +t[0]);
     			p.y = s[1]*(p.y +t[1]);
     			p.z = s[2]*(p.z +t[2]);
-//>>>>>>> de6b711e02a658efa8704f8bffd841b27a8873ba
+
     			qDebug("normalized alt rotation center: (%f %f %f)", p.x, p.y, p.z);
 
     			w->setAltCenter(p.x, p.y, p.z);
@@ -2965,7 +3050,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
 int Renderer_gl1::hitWheel(int x, int y)
 {
-  //  qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
+    //qDebug("  Renderer_gl1::hitWheel \t (%d, %d)", x,y);
     wheelPos.x = x;
     wheelPos.y = y;
     int i;
@@ -3321,6 +3406,67 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * p
 	//best_ind = p_listneuron->at(best_ind).n; // this no used, because it changed in V_NeuronSWC
 	return best_ind; //by PHC, 090209. return the index in the SWC file
 }
+
+#ifdef _NEURON_ASSEMBLER_
+void Renderer_gl1::localSWCcoord2projectedWindowCoord(const float swcLocalCoord[], double swcWindowCoord[])
+{
+	GLdouble ix, iy, iz, px, py, pz;
+	ix = GLdouble(swcLocalCoord[0]);
+	iy = GLdouble(swcLocalCoord[1]);
+	iz = GLdouble(swcLocalCoord[2]);
+
+	GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
+
+	swcWindowCoord[0] = px;
+	swcWindowCoord[1] = py;
+	swcWindowCoord[2] = pz;
+}
+
+void Renderer_gl1::addMarker_NA(XYZ& loc, RGBA8 color)
+{
+	XYZ pt(loc.x + 1, loc.y + 1, loc.z + 1); // marker position is 1-based
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* image4d = v3dr_getImage4d(_idep);
+	MainWindow* V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+	if (image4d)
+	{
+		QList<LocationSimple>& listLoc = image4d->listLandmarks;
+		LocationSimple S;
+		V3DLONG markerindex = -1; // the index of no special marker, by XZ, 20190721
+		for (V3DLONG i = listLoc.size() - 1; i >= 0; --i)
+		{
+			if (listLoc.at(i).category != 77)
+			{
+				markerindex = i;
+				break;
+			}
+		}
+		if (markerindex >= 0/*listLoc.size()>0*/)
+		{
+			S.inputProperty = listLoc.at(markerindex).inputProperty;
+			S.comments = listLoc.at(markerindex).comments;
+			S.category = listLoc.at(markerindex).category;
+			S.color = color;
+		}
+		else
+		{
+			S.inputProperty = pxLocaUseful;
+			//S.color = random_rgba8(255);
+			S.color = color;
+		}
+		S.x = pt.x;
+		S.y = pt.y;
+		S.z = pt.z;
+		if (V3Dmainwindow) S.radius = V3Dmainwindow->global_setting.default_marker_radius;
+		S.on = true;
+		listLoc.append(S);
+		updateLandmark();
+	}
+}
+#endif
+
 Triangle * Renderer_gl1::findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist)
 {
 	if (!plist) return NULL;
@@ -4148,13 +4294,22 @@ void Renderer_gl1::addMarker(XYZ &loc)
 	{
 		QList <LocationSimple> & listLoc = image4d->listLandmarks;
 		LocationSimple S;
-        if (listLoc.size()>0)
+        V3DLONG markerindex = -1; // the index of no special marker, by XZ, 20190721
+        for(V3DLONG i=listLoc.size()-1;i>=0;--i)
         {
-            S.inputProperty = listLoc.last().inputProperty;
-            S.comments = listLoc.last().comments;
-            S.category = listLoc.last().category;
-            S.color = listLoc.last().color;
-            currentMarkerColor = listLoc.last().color;;
+            if(listLoc.at(i).category!=77)
+            {
+                markerindex = i;
+                break;
+            }
+        }
+        if (markerindex>=0/*listLoc.size()>0*/)
+        {
+            S.inputProperty = listLoc.at(markerindex).inputProperty;
+            S.comments = listLoc.at(markerindex).comments;
+            S.category = listLoc.at(markerindex).category;
+            S.color = listLoc.at(markerindex).color;
+            currentMarkerColor = listLoc.at(markerindex).color;;
         }
         else
         {
@@ -4189,6 +4344,114 @@ void Renderer_gl1::addMarker(XYZ &loc)
     listMarker.append(S);
 #endif
 }
+
+void Renderer_gl1::addMarkerUnique(XYZ &loc)
+{
+
+	XYZ pt(loc.x + 1, loc.y + 1, loc.z + 1); // marker position is 1-based
+#ifndef test_main_cpp
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* image4d = v3dr_getImage4d(_idep);
+	MainWindow* V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+	if (image4d)
+	{
+		/*if (image4d->listLandmarks.size() > 0){
+			image4d->listLandmarks.clear();
+			updateLandmark();
+			return;
+		}*/
+
+		QList <LocationSimple> & listLoc = image4d->listLandmarks;
+		LocationSimple S;
+		V3DLONG markerindex = -1; // the index of no special marker, by XZ, 20190721
+		for (V3DLONG i = listLoc.size() - 1; i >= 0; --i)
+		{
+			if (listLoc.at(i).category != 77)
+			{
+				markerindex = i;
+				break;
+			}
+		}
+		if (markerindex >= 0/*listLoc.size()>0*/)
+		{
+			S.inputProperty = listLoc.at(markerindex).inputProperty;
+			S.comments = listLoc.at(markerindex).comments;
+			S.category = listLoc.at(markerindex).category;
+			S.color = listLoc.at(markerindex).color;
+			currentMarkerColor = listLoc.at(markerindex).color;;
+		}
+		else
+		{
+			S.inputProperty = pxLocaUseful;
+			//S.color = random_rgba8(255);
+			S.color = currentMarkerColor;
+		}
+		S.x = pt.x;
+		S.y = pt.y;
+		S.z = pt.z;
+		if (V3Dmainwindow)
+			S.radius = V3Dmainwindow->global_setting.default_marker_radius;
+		S.on = true;
+		listLoc.append(S);
+		updateLandmark();
+	}
+#else
+	ImageMarker S;
+	memset(&S, 0, sizeof(S));
+	S.x = pt.x;
+	S.y = pt.y;
+	S.z = pt.z;
+	if (listMarker.size()>0)
+	{
+		S.color = listMarker.last().color;
+	}
+	else
+	{
+		S.color = random_rgba8(255);
+	}
+	S.on = true;
+	listMarker.append(S);
+#endif
+}
+
+
+void Renderer_gl1::addSpecialMarker(XYZ &loc)
+{
+    XYZ pt(loc.x+1, loc.y+1, loc.z+1); // marker position is 1-based
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    MainWindow* V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+    if (image4d)
+    {
+        QList <LocationSimple> & listLoc = image4d->listLandmarks;
+        LocationSimple S;
+        if (listLoc.size()>0)
+        {
+            S.inputProperty = listLoc.last().inputProperty;
+            //S.comments = "special marker";
+            //S.category = listLoc.last().category;
+            S.color = listLoc.last().color;
+            currentMarkerColor = listLoc.last().color;;
+        }
+        else
+        {
+            S.inputProperty = pxLocaUseful;
+            //S.color = random_rgba8(255);
+            S.color = currentMarkerColor;
+        }
+        S.comments = "special marker";
+        S.category = 77;
+        S.x = pt.x;
+        S.y = pt.y;
+        S.z = pt.z;
+        if (V3Dmainwindow)
+            S.radius = V3Dmainwindow->global_setting.default_marker_radius;
+        S.on = true;
+        listLoc.append(S);
+        updateLandmark();
+    }
+}//add special marker, by XZ, 20190720
 void Renderer_gl1::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC, 090120
 {
 	XYZ pt(loc.x+1, loc.y+1, loc.z+1); // 090505 RZC : marker position is 1-based

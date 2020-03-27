@@ -346,6 +346,7 @@ NeuronTree readSWC_file(const QString& filename)
         	else if (i==8) S.level = qsl[i].toInt();
             else if (i==9) S.creatmode = qsl[i].toInt();
             else if (i==10) S.timestamp = qsl[i].toInt();
+             else if (i==11) S.tfresindex = qsl[i].toInt();
 	//change ESWC format to adapt to flexible feature number, by WYN, 20150602
         	else 
 		S.fea_val.append(qsl[i].toFloat());
@@ -501,7 +502,6 @@ bool importKeywordString2FileType(QString ss, QString vv, QString basedir, P_Obj
 			return false;
 		}
 	}
-	
 	if (tss=="GRAYIMG" || tss=="RAWIMG")
 	{
 		cc.raw_image_file_list.push_back(tvv);
@@ -527,6 +527,12 @@ bool importKeywordString2FileType(QString ss, QString vv, QString basedir, P_Obj
 		cc.pointcloud_file_list.push_back(tvv);
 		printf("\t--> push a point cloud file [%s]\n", qPrintable(tvv));
 	}
+    // Added by Peng Xie, 06-05-2019
+    else if (tss=="MARKERFILE")
+    {
+        cc.marker_file_list.push_back(tvv);
+        printf("\t--> push a marker file [%s]\n", qPrintable(tvv));
+    }
 	else if (tss=="SURFILE" || tss=="SURFACE")
 	{
 		cc.surface_file_list.push_back(tvv);

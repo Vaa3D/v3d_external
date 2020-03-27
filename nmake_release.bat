@@ -1,8 +1,10 @@
 :: 2018-04-27 RZC
 :: a convenience script for MSVC nmake
+::
 
 cd v3d_main\common_lib\winlib64
-copy /y libnewmat_VS2010.lib libnewmat.lib
+::copy /y libnewmat_VS2010.lib libnewmat.lib
+copy /y libnewmat_VS2013.lib libnewmat.lib
 cd ..\..\..
   
 cd v3d_main\v3d

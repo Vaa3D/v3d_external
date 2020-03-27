@@ -85,6 +85,7 @@ DEFINES += TERACONVERTER_PATCH
 
 #setup iomanager
 INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
+
 HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/ioplugins.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/IOPluginAPI.h
@@ -259,6 +260,12 @@ HEADERS += ../terafly/src/presentation/PAnoToolBar.h
 HEADERS += ../terafly/src/control/QUndoMarkerCreate.h
 HEADERS += ../terafly/src/control/QUndoMarkerDelete.h
 HEADERS += ../terafly/src/control/QUndoMarkerDeleteROI.h
+
+win32{
+HEADERS += ../terafly/src/presentation/fileserver.h
+SOURCES += ../terafly/src/presentation/fileserver.cpp
+}
+
 SOURCES += ../terafly/src/control/CAnnotations.cpp
 SOURCES += ../terafly/src/control/CConverter.cpp
 SOURCES += ../terafly/src/control/CViewer.cpp

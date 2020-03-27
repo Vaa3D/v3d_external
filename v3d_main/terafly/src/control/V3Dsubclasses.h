@@ -58,6 +58,10 @@ class terafly::myV3dR_GLWidget : public V3dR_GLWidget
         //@Override
         void setZoomO(int zr);
         void setZoomO(float zr);
+
+#ifdef _NEURON_ASSEMBLER_
+		void setZoom_NAeraserSize(float zr);
+#endif
 };
 
 class terafly::myV3dR_MainWindow : public V3dR_MainWindow

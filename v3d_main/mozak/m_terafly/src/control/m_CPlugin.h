@@ -29,11 +29,16 @@
 #ifndef __TERAMANAGER_C_PLUGIN_H__
 #define __TERAMANAGER_C_PLUGIN_H__
 
+#include "../v3d/v3d_compile_constraints.h" //by PHC 20200131
+
 #ifdef USE_Qt5
 #include <QWidget>
+#include <QMutex> ////@ADD 2020-2-10 RZC
 #else
 #include <QtGui>
 #endif
+
+
 #include <limits>
 #include <sstream>
 #include <algorithm>

@@ -38,8 +38,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef RENDERER_GL2_H_
 #define RENDERER_GL2_H_
 
-#include "renderer_gl1.h"
 #include "glsl_r.h"
+#include "renderer_gl1.h"
 
 
 #define N_CHANNEL 3

@@ -43,8 +43,15 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //#include "../v3d/v3d_compile_constraints.h"
 
+#include "GLee2glew.h" ////2020-2-10
+
+
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
+
+#include "../terafly/src/control/CSettings.h"
+#include "../terafly/src/control/CImport.h"
+#include "../terafly/src/control/CViewer.h"
 
 #define SIM_DIM1 765	//X
 #define SIM_DIM2 567	//Y
@@ -94,7 +101,8 @@ Renderer_gl1::Renderer_gl1(void* widget)
 	this->isTera = false; // added by MK, 2018 May, for arranging segments before entering Rnderer_gla::loopCheck
 	this->isLoadFromFile = false;
 	this->pressedShowSubTree = false;
-	this->fragmentTrace = false;
+	this->zThick = 1;
+	this->FragTraceMarkerDetector3Dviewer = false;
 
 	qDebug("  Renderer_gl1::Renderer_gl1");
 	init_members();
@@ -537,7 +545,44 @@ void Renderer_gl1::paint()
 			{
 				glPushMatrix(); //============================================== scale bar {
 
+#ifdef _YUN_ // MK, April, 2019 --> scale bar redesigned
+				
+				double voxDims[3] = { 0.2, 0.2, 1 };
+				int voxNums[3] = { 0, 0, 0 };
+				int VOIdims[3] = { 0, 0, 0 };
+				int resIndex = 0;
+				
+				terafly::CImport* importCheckPtr = terafly::CImport::instance();
+				if (importCheckPtr->getVMapRawData() != 0)
+				{				
+					voxDims[0] = terafly::CSettings::instance()->getVoxelSizeX();
+					voxDims[1] = terafly::CSettings::instance()->getVoxelSizeY();
+					voxDims[2] = terafly::CSettings::instance()->getVoxelSizeZ();	
+					
+					voxNums[0] = terafly::CImport::instance()->getHighestResVolume()->getDIM_H();
+					voxNums[1] = terafly::CImport::instance()->getHighestResVolume()->getDIM_V();
+					voxNums[2] = terafly::CImport::instance()->getHighestResVolume()->getDIM_D();
+					
+					VOIdims[0] = terafly::CSettings::instance()->getVOIdimH();
+					VOIdims[1] = terafly::CSettings::instance()->getVOIdimV();
+					VOIdims[2] = terafly::CSettings::instance()->getVOIdimD();
+					
+					resIndex = terafly::CViewer::getCurrent()->getResIndex();
+
+					drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex, 1);
+				}
+				else
+				{
+					QSettings callVoxSettings("SEU-Allen", "scaleBar_nonTerafly");
+					voxDims[0] = callVoxSettings.value("x").toDouble();
+					voxDims[1] = callVoxSettings.value("y").toDouble();
+					voxDims[2] = callVoxSettings.value("z").toDouble();
+					drawScaleBar_Yun(voxDims, voxNums, VOIdims, resIndex, this->zThick);
+				}
+				
+#else
 				drawScaleBar();
+#endif
 
 				glPopMatrix(); //========================================================= }
 			}
@@ -1360,7 +1405,7 @@ void Renderer_gl1::setupStackTexture(bool bfirst)
 		if (bfirst)
 		{
 			setTexParam3D();
-			glTexImage3D(GL_TEXTURE_3D, // target
+			glTexImage3DEXT(GL_TEXTURE_3D, // target
 				0, // level
 				texture_format, // texture format
 				fillX, // width
@@ -1374,7 +1419,7 @@ void Renderer_gl1::setupStackTexture(bool bfirst)
 		}
 		///else  // compressed texture cannot using TexSubImage2D but TexSubImage3D !!!
 		{
-			glTexSubImage3D(GL_TEXTURE_3D, // target
+			glTexSubImage3DEXT(GL_TEXTURE_3D, // target
 				0, // level
 				0,0,0,  // offset
 				realX, // sub width
@@ -2288,7 +2333,6 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
     GLuint *selectBuf = new GLuint[PICK_BUFFER_SIZE]; //
     glSelectBuffer(PICK_BUFFER_SIZE, selectBuf);
     glRenderMode(GL_SELECT);
-
     glInitNames();
     {
             glMatrixMode(GL_PROJECTION);

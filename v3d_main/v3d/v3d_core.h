@@ -86,7 +86,7 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 #include "mapview.h"
 
 // // Added by MK, 11/23/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
-#include <arthurwidgets.h>
+#include "old_arthurwidgets.h" //name change 20200129, by PHC
 //////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../cellseg/template_matching_seg.h"

@@ -5,6 +5,10 @@
 #include <windows.h>
 #endif
 
+#include "../3drenderer/GLee2glew.h" //2020-2-10 RZC
+
+#include "RendererNeuronAnnotator.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
@@ -20,7 +24,6 @@
 #include "../MultiColorImageStackNode.h"
 #include "../NeuronAnnotatorResultNode.h"
 #include "../TimebasedIdentifierGenerator.h"
-#include "RendererNeuronAnnotator.h"
 #include "GalleryButton.h"
 #include "../../cell_counter/CellCounter3D.h"
 #include "../NeuronSelector.h"

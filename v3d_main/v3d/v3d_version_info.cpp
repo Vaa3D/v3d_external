@@ -56,7 +56,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 namespace v3d {
     // Set current version here.
 
-    VersionInfo thisVersionOfV3D("3.594");
+    VersionInfo thisVersionOfV3D("4.000b");
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
@@ -67,7 +67,7 @@ namespace v3d {
 void v3d_aboutinfo()
 {
     QString helptext =
-        "<H3>Vaa3D: A Swiss army knife for 3D/4D/5D volume image and surface visualization and processing, developed by Hanchuan Peng, Zongcai Ruan, Fuhui Long, et al. All rights reserved.</H3> "
+        "<H3>Vaa3D: A Swiss army knife for 3D/4D/5D volume image and surface visualization and processing, developed by Hanchuan Peng, Zongcai Ruan, Fuhui Long, Alessandro Bria, Yimin Wang, et al. All rights reserved.</H3> "
 //      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of Vaa3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
         "If you have used Vaa3D, please cite as the following: <br><br>"
         "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353. (http://vaa3d.org) </span><br> "
@@ -77,6 +77,8 @@ void v3d_aboutinfo()
         "<span style=\"color:#0000FF\">Peng, H., et al. (2014) \"Virtual finger boosts three-dimensional imaging and microsurgery as well as terabyte volume image visualization and analysis,\" Nature Communications, Vol. 5, No. 4342, DOI: 10.1038/ncomms5342. </span><br> "
         "<br>"
         "<span style=\"color:#0000FF\">Bria, A., et al. (2016) \"TeraFly: real-time 3D visualization and 3D annotation of terabytes of multidimensional volumetric images,\" Nature Methods, Vol. 13, pp. 192-194, DOI: 10.1038/nmeth.3767.</span><br> "
+        "<br>"
+        "<span style=\"color:#0000FF\">Wang, Y., et al. (2019) \"TeraVR empowers precise reconstruction of complete 3-D neuronal morphology in the whole brain,\" Nature Communications, DOI: 10.1038/s41467-019-11443-y, 2019.</span><br> "
         "<br>"
 
         "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://vaa3d.org\">http://vaa3d.org</a><br>"

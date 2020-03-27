@@ -38,6 +38,10 @@ v3d_basicdatatype.h: by Hanchuan Peng
 #ifndef __V3D_BASICDATATYPE_H__
 #define __V3D_BASICDATATYPE_H__
 
+#include "../v3d/version_control.h"
+// add this back 1/31/2020, by PHC
+
+
 // be compatible with LP64(unix64) and LLP64(win64)
 typedef unsigned char        v3d_uint8;
 typedef unsigned short       v3d_uint16;

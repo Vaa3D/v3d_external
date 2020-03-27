@@ -1,6 +1,7 @@
 #ifndef PDIALOGPROOFREADING_H
 #define PDIALOGPROOFREADING_H
 
+
 #include <vector>
 #include <QWidget>
 #include "../control/CPlugin.h"
@@ -63,6 +64,11 @@ class terafly::PDialogProofreading : public QWidget
 
         static std::vector<tf::block_t> blocks;   // permanently stores the array of blocks
         static int blocks_res;                     // permanently stores blocks resolution
+
+		// Keep volume cut scrollbar location for fragment-based tracing, MK, May, 2019
+		int sbXlb, sbXhb, sbYlb, sbYhb, sbZlb, sbZhb;
+		int xCoordl, xCoordh, yCoordl, yCoordh, zCoordl, zCoordh;
+		// ----------------------------------------------------------------------------
 
     signals:
 

@@ -15,6 +15,9 @@ CONFIG += CONSOLE   # make a console application instead of a windows GUI only a
 
 QMAKE_CXXFLAGS += /MP
 QMAKE_LFLAGS   += /STACK:104857600
+QMAKE_LFLAGS += /ignore:4217  # warning LNK4217: locally defined symbol _ imported in function _
+QMAKE_LFLAGS += /ignore:4049  # warning LNK4049: locally defined symbol
+
 
 include(vaa3d.pro)
 
@@ -79,6 +82,26 @@ win32 {
 		equals(MSVCVERSION, "win32-msvc2010") {
 			LIBS += -L$$BOOSTPATH\\lib64-msvc-10.0
 		}
+
+		exists(..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK\\v3d_imgManagerMK.lib) {
+			message("Fragment tracing essential libraries are built. v3d_imgManagerMK.lib will be included.")
+			
+			INCLUDEPATH += ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK \
+						   ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK\\imgAnalyzer \
+					       ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK\\imgProcessor 
+			
+			LIBS += -L..\\..\\..\\vaa3d_tools\\hackathon\\MK\\v3d_imgManagerMK
+			LIBS += -lv3d_imgManagerMK
+		}
+
+		exists(..\\..\\..\\vaa3d_tools\\hackathon\\MK\\NeuronStructNavigator\\NeuronStructNavigator.lib) {
+			message("Fragment tracing essential libraries are built. NeuronStructNavigator.lib will be included.")
+			
+			INCLUDEPATH += ..\\..\\..\\vaa3d_tools\\hackathon\\MK\\NeuronStructNavigator
+
+			LIBS += -L..\\..\\..\\vaa3d_tools\\hackathon\\MK\\NeuronStructNavigator
+			LIBS += -lNeuronStructNavigator
+		}
 				
 		LIBS += \
 				-llibtiff \
@@ -88,7 +111,7 @@ win32 {
 				-llibFL_cellseg \
                                 -llibFL_brainseg \
                                 -lopenvr_api \
-                                -lglew32 \
+                                # -lglew32 \  # instead by including glew.c
                                 -lSDL2 \
                                 -lSDL2main \
                                 -llibhdf5 \
@@ -101,7 +124,7 @@ win32 {
 	
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
 		               $$LOCAL_DIR\\common_lib\\include \
-					   $$BOOSTPATH
+					   $$BOOSTPATH \ 
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)

@@ -138,7 +138,10 @@ public slots:
 	void pickMarker(int row, int col);
 
 	void editObjNameAndComments();
-    void editNeuronSegmentType();
+#ifdef _YUN_
+	void labelSortMarkers();
+#endif
+	void editNeuronSegmentType();
 
 	void findNext();
 	void findPrev();
@@ -152,6 +155,7 @@ public slots:
 
 	// -- MK, June, 2018
     void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).
+	int getMarkerNum() { return this->listMarker.size(); }
 
     //
     void sortNeuronSegmentByType(QTableWidgetItem* item);
@@ -181,10 +185,15 @@ protected:
     QMenu menuDisplayMode;
 
 	QPushButton *okButton, *cancelButton, *undoButton,
-				*selectAllButton, *deselectAllButton, *inverseSelectButton,
-                *onSelectButton, *offSelectButton, *colorSelectButton,
-                *editNameCommentButton, *markerLocalView, *neuronSegmentType,
-                *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
+		*selectAllButton, *deselectAllButton, *inverseSelectButton,
+		*onSelectButton, *offSelectButton, *colorSelectButton,
+		*editNameCommentButton, *markerLocalView, *neuronSegmentType,
+#ifdef _YUN_
+		*objectSetDisplayModeButton,
+		*labelSortMarkerButton; // MK, Feb, 2020
+#else
+		*objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
+#endif
 
 	QTabWidget *tabOptions;
 	QTableWidget *table[1+6];

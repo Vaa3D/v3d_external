@@ -36,6 +36,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define MAINWINDOW_H
 #define __v3d_custom_toolbar__
 
+#include "v3d_compile_constraints.h" //by PHC, 2020/1/31
+
 #if defined(USE_Qt5)
   #include <QtWidgets>
 #else
@@ -49,6 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <QWorkspace>
 #endif
+
 #include "v3d_actions.h"
 #include "v3d_compile_constraints.h"
 #include "../worm_straighten_c/bdb_minus.h"
@@ -59,6 +62,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
 #include "v3d_commandlineparser.h"
 #include "pluginfunchandler.h"
+#include <set>
 #ifdef __V3DWSDEVELOP__
 #include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY
@@ -529,5 +533,10 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	bool setSWC(void* window, NeuronTree & nt);
 	V3D_GlobalSetting getGlobalSetting();
 	bool setGlobalSetting( V3D_GlobalSetting &gs );
+
+	int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
+	bool hideSWC(V3dR_MainWindow* window, int treeIndex);
+	bool displaySWC(V3dR_MainWindow* window, int treeIndex);
+	QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
 };
 #endif

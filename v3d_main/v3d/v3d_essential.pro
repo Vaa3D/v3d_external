@@ -114,8 +114,14 @@ win32 { # platform: win32-command-mingw
     CONFIG += console
 LIBS += -L$$MINGW_DIR/lib \
 	-L$$LOCAL_DIR/lib_win32
-    DEFINES += __ALLOW_VR_FUNCS__
-
+    
+    DEFINES += __ALLOW_VR_FUNCS__  
+    
+    # @ADD 2020-2-14 RZC: Microsoft C errors: 
+    # error C2589: '(' : illegal token on right side of '::' for std::min/max 
+    # error C2011: 'sockaddr' : 'struct' type redefinition
+    DEFINES += NOMINMAX  _WINSOCKAPI_
+ 
 }
 
 
@@ -210,15 +216,16 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/v3dr_mainwindow.h \
     ../3drenderer/v3dr_glwidget.h \
     ../3drenderer/qtr_widget.h \
-    ../3drenderer/GLee_r.h \
+    ../3drenderer/GLee2glew.h \
+    ../3drenderer/glsl_r.h \
     ../3drenderer/renderer.h \
     ../3drenderer/renderer_gl1.h \
+    ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_surfaceDialog.h \
     ../3drenderer/ItemEditor.h \
-    ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_colormapDialog.h \
     ../3drenderer/gradients.h \
- \ #    ../3drenderer/v3d_hoverpoints.h \
+    ../3drenderer/v3d_hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
     ../3drenderer/line_box_intersection_check.h \
     ../neuron_tracing/heap.h \
@@ -277,9 +284,10 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../io/asc_to_swc.h \
     ../io/v3d_nrrd.h \
     ../terafly/src/presentation/theader.h \
-    CustomDefine.h
-#    ./painting/shared/arthurstyle.h \
-#    ./painting/shared/arthurwidgets.h
+    ../basic_c_fun/INeuronAssembler.h \
+    ../basic_c_fun/IPMain4NeuronAssembler.h \
+    ./old_arthurstyle.h \
+    ./old_arthurwidgets.h
 
 
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
@@ -307,21 +315,21 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../cellseg/template_matching_seg.cpp \
     ../3drenderer/v3dr_mainwindow.cpp \
     ../3drenderer/v3dr_glwidget.cpp \
-    ../3drenderer/GLee_r.c \
     ../3drenderer/renderer.cpp \
     ../3drenderer/renderer_tex.cpp \
     ../3drenderer/renderer_obj.cpp \
+    ../3drenderer/renderer_labelfield.cpp \
+    ../3drenderer/renderer_gl2.cpp \
+    ../3drenderer/glsl_r.cpp \
     ../3drenderer/renderer_hit.cpp \
     ../3drenderer/nstroke.cpp \
     ../3drenderer/nstroke_tracing.cpp \
-    ../3drenderer/renderer_labelfield.cpp \
     ../3drenderer/v3dr_surfaceDialog.cpp \
     ../3drenderer/ItemEditor.cpp \
-    ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
     ../3drenderer/v3dr_control_signal.cpp \
- \ #    ../3drenderer/v3d_hoverpoints.cpp \
+    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
         ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
@@ -362,13 +370,13 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../io/io_bioformats.cpp \
     ../io/asc_to_swc.cpp \
     ../io/v3d_nrrd.cpp \
-    ../3drenderer/glsl_r.cpp
-
-#    ./painting/shared/arthurstyle.cpp \
-#    ./painting/shared/arthurwidgets.cpp
+    ./old_arthurstyle.cpp \
+    ./old_arthurwidgets.cpp
 
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
+
+unix:INCLUDEPATH += ../common_lib/include/glew/  #by RZC 2020-2-15
 
 win32 {
 INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
@@ -384,7 +392,7 @@ HEADERS += \
     ../vrrenderer/RenderableObject.h \
     ../vrrenderer/VRFinger.h \
     ../vrrenderer/V3dR_Communicator.h \
-    ../vrrenderer/VR_MainWindow.h 
+    ../vrrenderer/VR_MainWindow.h
 
 SOURCES += \
     ../vrrenderer/v3dr_gl_vr.cpp \
@@ -417,7 +425,8 @@ FORMS += landmark_property.ui \
     dialog_update_list.ui \
     dialog_update_options.ui \
     dialog_update_downloading.ui \
-    dialog_update_checking.ui
+    dialog_update_checking.ui \
+    ../3drenderer/setVoxSize.ui
 
 
 
@@ -435,7 +444,8 @@ unix:!macx {
   LIBS += -lv3dnewmat
 #unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
   LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
-  LIBS += -L../common_lib/lib_unix64 -lteem  -lbz2 -lz  -lGLU #for nrrd support
+  LIBS += -L../common_lib/lib_unix64  -lteem  -lbz2 -lz  -lGLU #for nrrd support
+  ### LIBS += -lGLEW # static link by including glew.c
 }
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
@@ -474,6 +484,6 @@ QMAKE_CXXFLAGS += -DTEEM_STATIC
 
 #removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
 INCLUDEPATH = $$unique(INCLUDEPATH)
-#LIBS = $$unique(LIBS) # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
+# LIBS = $$unique(LIBS) # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
 # CONFIG = $$unique(CONFIG) # this only DOESN'T work on macx, very strange, by RZC 20080923
 message(CONFIG=$$CONFIG)

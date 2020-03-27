@@ -1,0 +1,16 @@
+#!/bin/bash
+#@echo off
+#echo -----------------------------------------------------------------
+#echo This is a shell program to build for Windows Subsystem Linux (WSL)
+#echo Based on MSYS/mingw version
+#echo 2020-02-10, by Zongcai Ruan
+#echo -----------------------------------------------------------------
+#echo on
+
+
+cd v3d_main
+
+sh ./build.wsl $*
+
+cd ../
+

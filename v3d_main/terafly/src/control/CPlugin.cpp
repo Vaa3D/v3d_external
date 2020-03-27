@@ -30,6 +30,7 @@
 #include "v3d_interface.h"
 #include "../presentation/PMain.h"
 #include "../presentation/PConverter.h"
+#include "../presentation/PDialogProofreading.h"
 #include "VirtualVolume.h"
 #include "v3d_message.h"
 #include "CPlugin.h"
@@ -540,8 +541,17 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     }
 }
 
-void tf::PluginInterface::drawEditInfo(int editNum)
+
+/* ======================================================================================================
+ * This method is called by [v3dr_glwidget] when [Alt + F] is hit, 
+ * which casts CViewer to INeuronAssembler in order to allow Neuron Assembler talking to terafly directly.
+ * ========================================================================== MK, Dec, 2019 ============= */
+#ifdef _NEURON_ASSEMBLER_
+INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()
 {
-	CViewer::getCurrent()->getGLWidget()->renderer->editinput = editNum;
-	CViewer::getCurrent()->getGLWidget()->renderer->drawEditInfo();
+	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+	INeuronAssembler* interfacePtr = qobject_cast<terafly::CViewer*>(currViewerPtr);
+	return interfacePtr;
 }
+#endif
+// -------------------------------------------------------------------------------------------------------- //

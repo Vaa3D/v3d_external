@@ -12,7 +12,7 @@ echo Usage: build.bat
 echo Usage: build.bat clean 
 echo Usage: build.bat -B
 echo -----------------------------------------------------------------
-echo on
+::echo on
 
 
 set MINGW_DIR=c:/mingw
@@ -22,12 +22,23 @@ set LOCAL_DIR=%CD%/common_lib
 set PATH=%PATH%;%MINGW_DIR%/bin;%LOCAL_DIR%/bin
 set VPATH=%LOCAL_DIR%/include;%LOCAL_DIR%/lib_win32;
 
-cd jba/c++ 
-call make -f jba.makefile %*
-cd ../../
+set QT_VER=5
+set DEF_QT5=
+
+if %QT_VER==4 (
+::set QT_BIN=C:\Qt\mingw-qt-4.7.4\bin
+::set QT_BIN=C:\Qt\mingw-qt-4.8.6\bin
+)
+if %QT_VER%==5 (
+set QT_BIN=C:\Qt\5.12.7\mingw73_64\bin
+set DEF_QT5="DEFINES += USE_Qt5" 
+rem "QMAKE_CXXFLAGS += -std=c++0x"
+)
 
 cd v3d
-call qmake v3d.pro
+qmake vaa3d.pro  %DEF_QT5% 
+rem "QMAKE_CXXFLAGS += -std=c++0x"
+
 :: touch command for windows
 copy/b v3d_version_info.cpp+,,
 :: MUST use make target of 'all/release/debug', otherwise qmake will enter 'Makefile:' dead loop
@@ -36,12 +47,33 @@ if a%1==a-B (
    call make clean
    call make release
 ) else (
+   echo make release %*
+   echo ==========================================
    call make release %*
 )
-cd ../
 
-copy v3d\release\v3d.exe %QTDIR%\bin\ /y
-copy v3d\release\v3d.exe .\v3d\ /y
-copy v3d\release\v3d.exe ..\v3d\ /y
+if not exist ..\..\bin\ (
+    mkdir ..\..\bin\ 
+)
+cd  ..\..\bin\
+
+if %QT_VER%==4 (
+copy %QT_BIN%\QtCore4.dll .\  /y
+copy %QT_BIN%\QtGui4.dll   .\  /y
+copy %QT_BIN%\QtOpenGL4.dll .\  /y
+copy %QT_BIN%\QtXml4.dll .\  /y
+copy %QT_BIN%\QtNetwork4.dll .\  /y
+)
+if %QT_VER%==5 (
+copy %QT_BIN%\Qt5Core.dll .\  /y
+copy %QT_BIN%\Qt5Gui.dll   .\  /y
+copy %QT_BIN%\Qt5OpenGL.dll .\  /y
+copy %QT_BIN%\Qt5Xml.dll .\  /y
+copy %QT_BIN%\Qt5Network.dll .\  /y
+)
+
+copy ..\v3d_main\v3d\release\vaa3d.exe .\  /y
+
+vaa3d.exe
 
 cd ../

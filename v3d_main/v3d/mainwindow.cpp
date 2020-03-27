@@ -284,6 +284,17 @@ MainWindow::~MainWindow()
 }
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    /*
+    switch (QMessageBox::information(this,tr("warning"),tr("Do you want to exit?"),tr("yes"),tr("no"),0,1)) {
+    case 0:
+        break;
+    case 1:
+        event->ignore();
+        return;
+        break;
+    } //by XZ, 20190725
+    */
+
     //if (workspace)  workspace->deleteLater(); //110802 RZC //will call ~XFormView to raise BAD_ACCESS
     disconnect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus())); //instead of above line
     V3dApplication::handleCloseEvent(event);
@@ -857,7 +868,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             {
                                 child_rawimg->getImageData()->flip(axis_y);
                             }
-                            if ((b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))&& cc.pointcloud_file_list.size()<=00 && cc.swc_file_list.size()<=0 && cc.surface_file_list.size()<=0)
+                            if ((b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))&& cc.pointcloud_file_list.size()<=0 && cc.swc_file_list.size()<=0 && cc.surface_file_list.size()<=0)
                             {
                                 child_rawimg->doImage3DView();
                             }
@@ -909,7 +920,11 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     }
                 }
             }
-            if (cc.pointcloud_file_list.size()>0 || cc.swc_file_list.size()>0 || cc.surface_file_list.size()>0)
+            if (cc.pointcloud_file_list.size()>0
+                    || cc.swc_file_list.size()>0
+                    || cc.surface_file_list.size()>0
+                    || cc.marker_file_list.size()>0 // Added by Peng Xie , 2019-06-05
+                    )
             {
                 //directly open the 3D viewer
                 iDrawExternalParameter * mypara_3Dview = 0;
@@ -942,6 +957,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     mypara_3Dview->swc_file_list.append(cc.swc_file_list.at(ii));
                 if (cc.surface_file_list.size()>0) //081016: at this moment I use only the first one
                     mypara_3Dview->surface_file = cc.surface_file_list.at(0);
+                // Added by Peng Xie , 2019-06-05
+                if (cc.marker_file_list.size()>0) //06052019: at this moment I use only the first one
+                    mypara_3Dview->marker_file = cc.marker_file_list.at(0);
                 //			if (cc.labelfield_image_file_list.size()>0)
                 //				mypara_3Dview->swc_file = cc.labelfield_image_file_list.at(0);
                 //081016. Note: an interesting side-effect of this ano open function is that the RAW-image window will have "memory" of the associated files.

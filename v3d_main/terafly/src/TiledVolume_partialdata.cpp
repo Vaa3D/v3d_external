@@ -1136,7 +1136,8 @@ iim::uint8* TiledVolume::loadSubvolume_to_UINT8(int V0,int V1, int H0, int H1, i
 
                         // support partial data, YY 10/23/2018
 						QString skipBlock = "NULL.tif";
-						QString slicePath = QString::fromAscii(slice_fullpath);
+//						QString slicePath = QString::fromAscii(slice_fullpath);
+                        QString slicePath = QString(slice_fullpath); //by PHC 20200131
 
                         //if(string(slice_fullpath).find("NULL.tif") != string::npos)
 						if(slicePath.indexOf(skipBlock)!=-1)

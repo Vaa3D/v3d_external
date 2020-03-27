@@ -4315,7 +4315,7 @@ void XFormWidget::createGUI()
 
 	// force layout set
 	QLayout *cur_layout=layout();
-	printf("cur layout=%ld\n", V3DLONG(cur_layout));
+	printf("cur layout=%p\n", (cur_layout));  //2020-2-9 RZC: cast from pointer to 'long int' loses precision [-fpermissive]
 
     // @ADDED by Alessandro on 2015-05-07 : hide/display controls and infos.
     hideDisplayControlsButton = new QPushButton();

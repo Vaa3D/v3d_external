@@ -41,11 +41,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #define V3D_RENDERER_H
 
 #include "v3dr_common.h"
-#include "version_control.h"
-#if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
-  #include <GLES3\gl3.h>
-  #include <GL\glew.h>
-#elif defined(__APPLE__)
+//#include "version_control.h"
+// #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
+//   #include <GLES3\gl3.h>
+//   #include <GL\glew.h>
+//#el
+#if defined(__APPLE__)
   #include <OpenGL/glu.h>
 #else
   #include <GL/glu.h>
@@ -177,6 +178,9 @@ public:
 	vector<size_t> segInfoShow;
     virtual void drawScaleBar(float AlineWidth=3);
 
+	// MK, April, 2019  scale bar redesigned --> 3 dimensions, displayed in micrometer, adaptively changes with current terafly::CImport, terafly::CSettings and input voxel dimensions.
+	virtual void drawScaleBar_Yun(double voxDims[], int voxNums[], int VOIdims[], int resIndex, float zThickness, float AlineWidth = 3);
+
 	virtual void updateVolCutRange();
 	virtual void updateSurfClipRange();
 
@@ -248,10 +252,12 @@ public:
     virtual void callStrokeSplitMultiNeurons() {};//  multiple segments spliting shortcut
     virtual void callStrokeConnectMultiNeurons() {};//  multiple segments connection shortcut
 	virtual void callShowSubtree() {};
+	virtual void callShowBreakPoints() {};//add by wp
 	virtual void callShowConnectedSegs() {};
     virtual void callStrokeCurveDrawingGlobal() {}; // Global optimal curve drawing shortcut
     virtual void callDefine3DPolyline() {}; // 3D polyline defining shortcut
     virtual void callCreateMarkerNearestNode(int x, int y) {};
+    virtual void callCreateSpecialMarkerNearestNode(int x,int y){}; //add special marker, by XZ, 20190720
     virtual void callGDTracing() {};
 
     virtual void toggleEditMode()       {};
@@ -512,36 +518,37 @@ void ViewPlaneToModel(const double modelView[16], double plane[4]);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OpenGL related
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//@change from inline to define: 2020-2-10 RZC
 
-inline bool supported_MultiSample()
-{
-	GLeeInit();	return (GLEE_ARB_multisample>0);
-}
-inline bool supported_Tex3D()
-{
-	GLeeInit();	return (GLEE_VERSION_2_0>0 || GLEE_EXT_texture3D>0);
-	//return getMaxTexSize3D()>0; // (VERSION_2_0==0 when ssh -X) (EXT_texture3D==0 when NVIDIA)
-}
-inline bool supported_TexCompression()
-{
-	GLeeInit();	return (GLEE_ARB_texture_compression>0);
-}
-inline bool supported_TexNPT()
-{
-	GLeeInit();	return (GLEE_ARB_texture_non_power_of_two>0);
-}
-inline bool supported_GL2()
-{
-	GLeeInit();	return (GLEE_VERSION_2_0>0);
-}
-inline bool supported_GLSL()
-{
-	GLeeInit();	return (GLEE_ARB_shading_language_100>0) && (GLEE_VERSION_2_0>0);
-}
-inline bool supported_PBO()
-{
-	GLeeInit();	return (GLEE_ARB_pixel_buffer_object>0);
-}
+#define supported_MultiSample() \
+( \
+	GLeeInit() || (GLEE_ARB_multisample>0) \
+)
+#define supported_Tex3D() \
+( \
+	GLeeInit() || (GLEE_EXT_texture3D>0 || GLEE_VERSION_2_0>0) \
+)
+//#define supported_Tex3D()  (getMaxTexSize3D()>0) //// (VERSION_2_0==0 when ssh -X, EXT_texture3D==0 when NVIDIA)
+#define supported_TexCompression() \
+( \
+	GLeeInit() || (GLEE_ARB_texture_compression>0) \
+)
+#define supported_TexNPT() \
+( \
+	GLeeInit() || (GLEE_ARB_texture_non_power_of_two>0) \
+)
+#define supported_GL2() \
+( \
+	GLeeInit() || (GLEE_VERSION_2_0>0) \
+)
+#define supported_GLSL() \
+( \
+	GLeeInit() || (GLEE_ARB_shading_language_100>0 || GLEE_VERSION_2_0>0) \
+)
+#define supported_PBO() \
+( \
+	GLeeInit() || (GLEE_ARB_pixel_buffer_object>0) \
+)
 
 /////////////////////////////////////////////////////////////////////////////
 

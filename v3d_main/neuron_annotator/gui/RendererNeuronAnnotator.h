@@ -1,8 +1,9 @@
 #ifndef RENDERERNEURONANNOTATOR_H
 #define RENDERERNEURONANNOTATOR_H
 
-#include <QObject>
 #include "../../3drenderer/renderer_gl2.h"
+
+#include <QObject>
 #include "../geometry/Vector3D.h"
 #include "../data_model/NaVolumeData.h"
 #include "../data_model/VolumeTexture.h"

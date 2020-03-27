@@ -323,7 +323,7 @@ class mozak::Mozak3DView : protected teramanager::CViewer
         void appendHistory();
         void performUndo();
         void performRedo();
-
+		static	void HideAll3DView();
 
 	public slots:
 		void updateContrast(int con);

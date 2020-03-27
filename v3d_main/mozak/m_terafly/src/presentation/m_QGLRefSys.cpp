@@ -1,3 +1,6 @@
+#include "../v3d/v3d_compile_constraints.h" //by PHC 20200131
+
+
 #ifdef USE_Qt5
 #include <QtCore>
 #include <QtGui>

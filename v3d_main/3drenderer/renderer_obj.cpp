@@ -25,11 +25,16 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  * Last update: 120209: by Yinan Wan, add matlab heat map to neuron_type_color list, it starts from type 19
  * Last update: 150506: by PHC. add asc reading support
  */
+
+#include "GLee2glew.h" ////2020-2-10
+
+
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "freeglut_geometry_r.c"
 
 #include "../io/asc_to_swc.h"
+//#include "../io/sswc_to_swc.h"
 //#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
 
 
@@ -340,9 +345,9 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
 		{0,   200, 200},  // cyan,    5
 		{220, 200, 0  },  // yellow,  6
 		{0,   200, 20 },  // green,   7
-		{188, 94,  37 },  // coffee,  8
+        {250, 100, 120},  // coffee,  8 change to 10
 		{180, 200, 120},  // asparagus,	9
-		{250, 100, 120},  // salmon,	10
+        {188, 94,  37 },  // salmon,	10  change to 8
 		{120, 200, 200},  // ice,		11
 		{100, 120, 200},  // orchid,	12
     //the following is Hanchuan's further extended color. 111003
@@ -626,8 +631,8 @@ void Renderer_gl1::loadObjectFromFile(const char* url)
 	else
 	    filename = QFileDialog::getOpenFileName(0, QObject::tr("Open File"),
 	    		"",
-                QObject::tr("Supported file (*.swc *.eswc *.asc *.apo *.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff *.v3ds *.vaa3ds *.obj *.marker *.csv)"
-                        ";;Neuron structure	(*.swc *.eswc *.asc)"
+                QObject::tr("Supported file (*.swc *.eswc *.sswc *.asc *.apo *.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff *.v3ds *.vaa3ds *.obj *.marker *.csv)"
+                        ";;Neuron structure	(*.swc *.eswc *.sswc *.asc)"
 	    				";;Point Cloud		(*.apo)"
                         ";;Label field		(*.raw *.v3draw *.vaa3draw *.v3dpbd *.tif *.tiff)"
 	    				";;Label Surface	(*.vaa3ds *.v3ds *.obj)"
@@ -654,6 +659,8 @@ void Renderer_gl1::loadObjectListFromFile()
 	qsl << ep->pointcloud_file_list;
 	qsl << ep->surface_file;
 	qsl << ep->labelfield_file;
+    // Added by Peng Xie, 06-05-2019
+    qsl << ep->marker_file;
 #endif
 	((QWidget*)widget)->hide(); //101024 to avoid busy updateGL
 	foreach (QString filename, qsl)
@@ -716,6 +723,14 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
             if (!(ep->swc_file_list.contains(filename)))
                 ep->swc_file_list << filename;
         }
+		// if sswc
+		/*else if (filename.endsWith(".sswc", Qt::CaseInsensitive)) //KLS, 20180408
+		{
+			type = stNeuronStructure;
+			loadNeuronTree(filename);
+            if (!(ep->swc_file_list.contains(filename)))
+                ep->swc_file_list << filename;
+        }*/
         // if asc
         else if (filename.endsWith(".asc", Qt::CaseInsensitive)) //PHC, 20150506
         {
@@ -1419,6 +1434,8 @@ void Renderer_gl1::drawCellList()
 {
 	//qDebug("    Renderer_gl1::drawCellList");
 	if (sShowSurfObjects==0) return;
+	float maxD = boundingBox.Dmax();
+	float marker_size = maxD * markerSize / 1000.f;
 	for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
 	{
 		setFloatDrawOp(pass, sShowSurfObjects);
@@ -1430,10 +1447,14 @@ void Renderer_gl1::drawCellList()
 			float sh = S.intensity/2.0;  //default OpenGL does not permit a shininess or spot exponent over 128
 			XYZW ms = S.intensity/255.0;
 			//RGBA8 color = XYZW(S.color)*ms;  // 081213
-			float d = 2.0*pow(S.volsize/3.1415926*0.75, 1/3.0);
+			float d = 2.0*pow(S.volsize/3.1415926*0.75, 1/3.0);		
 			glPushMatrix();
 			glTranslatef(S.x, S.y, S.z);
+#ifdef _YUN_
+			glScalef(marker_size, marker_size, marker_size);
+#else
 			glScalef(d, d, d);
+#endif
 			glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, sh);
 			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ms.v);
 			//glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, (1/4.0 *ma).v); // 081206, change EMISSION to AMBIENT
@@ -1515,7 +1536,7 @@ void Renderer_gl1::saveNeuronTree(int kk, const QString& filename) //kk is the c
 		return;
 	}
 #ifndef test_main_cpp
-	writeSWC_file(filename, listNeuronTree[kk]);
+    writeESWC_file(filename, listNeuronTree[kk]); //save eswc format instead of swc format by ZZ, 02282019
 #endif
 }
 void Renderer_gl1::loadNeuronTree(const QString& filename)
@@ -1555,6 +1576,10 @@ void Renderer_gl1::loadNeuronTree(const QString& filename)
 //            }
 //        }
     }
+	//else if (filename.endsWith(".sswc", Qt::CaseInsensitive))
+	//{
+	//	SS = sswc_to_swc::readSSWC_file(filename);
+	//}
     else if (filename.endsWith(".asc", Qt::CaseInsensitive))
         asc_to_swc::readASC_file(SS, (char *)(qPrintable(filename)));
 
@@ -2537,9 +2562,15 @@ void Renderer_gl1::drawNeuronTree(int index)
 			r1 *= rf;
 			r0 *= rf;
 
+			float R1,R0,length1,length0;
+			
+			length1 = S1.r*(S1.r-S0.r)/length;//
+			length0 = S0.r*(S1.r-S0.r)/length;//
+			R1 = sqrt(pow(S1.r,2)-pow(length1,2));//
+			R0 = sqrt(pow(S0.r,2)-pow(length0,2));//
 			if (cur_lineType==0)
 			{
-				GLfloat m[4][4];
+				GLfloat m[4][4],r[4][4];
 				XYZ A, B, C;
 				C = //XYZ(0,0,1);
 				D; normalize(C);	 if (norm(C)<.9) C = XYZ(0,0,1);
@@ -2551,7 +2582,13 @@ void Renderer_gl1::drawNeuronTree(int index)
 				m[0][1] = A.y;	m[1][1] = B.y;	m[2][1] = C.y;	m[3][1] = S1.y;
 				m[0][2] = A.z;	m[1][2] = B.z;	m[2][2] = C.z;	m[3][2] = S1.z;
 				m[0][3] = 0;	m[1][3] = 0;	m[2][3] = 0;	m[3][3] = 1;
-				glMultMatrixf(&m[0][0]);
+
+				r[0][0] = A.x;	r[1][0] = B.x;	r[2][0] = C.x;	r[3][0] = S1.x+C.x*length1;
+				r[0][1] = A.y;	r[1][1] = B.y;	r[2][1] = C.y;	r[3][1] = S1.y+C.y*length1;
+				r[0][2] = A.z;	r[1][2] = B.z;	r[2][2] = C.z;	r[3][2] = S1.z+C.z*length1;
+				r[0][3] = 0;	r[1][3] = 0;	r[2][3] = 0;	r[3][3] = 1;
+
+				glMultMatrixf(&r[0][0]);
                 if (length > 0)
 				{
                     setNeuronColor(S1, seconds);
@@ -2569,9 +2606,14 @@ void Renderer_gl1::drawNeuronTree(int index)
 					//					glMultMatrixf(&m[0][0]); // OpenGL Matrix stack cannot support 3D projective transform division, by RZC 080901
 					//glScalef(r1, r1, length);
 					//glCallList(glistTube);
-					drawDynamicNeuronTube(r1, r0, length); // dynamically create tube, slowly
+					//drawDynamicNeuronTube(r1, r0, length); // dynamically create tube, slowly
+					drawDynamicNeuronTube(2*R1, 2*R0, length-length1+length0); 
+					//drawDynamicNeuronTube(R1, R0, length);
 					glPopMatrix();
 				}
+				glPopMatrix();
+				glPushMatrix();
+				glMultMatrixf(&m[0][0]);
 				glPushMatrix();
 				{
                     glScaled(r1, r1, r1); //for now the spheres are created using the faster method, w/o resampled mesh density. by PHC 20170531

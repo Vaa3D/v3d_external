@@ -118,7 +118,7 @@ Implementation
 
 *********************/
 #if defined(USE_Qt5)
-    #include <QtConcurrent>
+   // #include <QtConcurrent>
 #endif 
 
 #include "MaskChan.h"

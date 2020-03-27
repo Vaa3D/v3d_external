@@ -41,24 +41,27 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 ** Last update: 090221, PHC add the surface obj geo dialog
 ****************************************************************************/
 
-#if defined(USE_Qt5)
-#include <QGLFormat>
-#else
-#endif        
+#include "GLee2glew.h" ////2020-2-10
+
 
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
-
 #include "../terafly/src/control/CPlugin.h"
-#include "../vrrenderer/V3dR_Communicator.h"
+#include "../terafly/src/presentation/PMain.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
 #include "renderer_gl2.h"
 #include <QtGui>
+
+#if defined(USE_Qt5)
+#include <QGLFormat>
+#else
+#endif        
+
 
 bool V3dR_GLWidget::disableUndoRedo = false;
 bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoid ASSERT q_ptr error on closing window
@@ -101,7 +104,6 @@ static bool _isMultipleSampleSupported()
 void V3dR_GLWidget::closeEvent(QCloseEvent* e)
 {
 	qDebug("V3dR_GLWidget::closeEvent");  // never run to here for non-frame window, unless called directly, by RZC 080814
-
 	deleteRenderer();
 
 	/////////////////////////////////////////////////////
@@ -798,7 +800,25 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
     else // default
     {
         (renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
-        setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+
+#ifdef _NEURON_ASSEMBLER_
+		// As Alessandro points out in [CViewer::invokedFromVaa3D], Vaa3D somehow does not really disconnect setZoom slot
+		// when scrolling (zooming with mouse wheel) in terafly environment. This additional if-else selection aims to avoid 
+		// Vaa3D's zooming action when the cursor is in the erasing mode of Neuron Assembler.             -- MK, Jan, 2020
+		if (!terafly::PMain::isInstantiated()) setZoom((zoomin_sign * zoomStep) + _zoom);
+		else 
+		{
+			if (!terafly::CImport::instance()->isEmpty() && terafly::PMain::getInstance()->FragTracerPluginLoaderPtr != nullptr)
+			{
+				if (terafly::CViewer::getCurrent()->editingMode.compare("erase"))
+					setZoom((zoomin_sign * zoomStep) + _zoom);
+			}
+			else setZoom((zoomin_sign * zoomStep) + _zoom);
+		}
+#else
+		setZoom((zoomin_sign * zoomStep) + _zoom);  //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
+#endif
+
     }
 
 	event->accept();
@@ -1025,34 +1045,86 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 			else if (IS_ALT_MODIFIER)
 			{
-				//QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-				
-				callFragmentTracing();
+#ifdef _NEURON_ASSEMBLER_
+				if (terafly::PMain::isInstantiated())
+				{
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (!pMain.fragTracePluginInstance)
+					{
+						QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+						//QPluginLoader* loader = new QPluginLoader("D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+						pMain.FragTracerQPluginPtr = loader;
+						if (!loader->isLoaded())
+						{
+							v3d_msg("Neuron Assemgler module not found. Do nothing.");
+							return;
+						}
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						pMain.FragTracerPluginLoaderPtr = curXWidget->getMainControlWindow()->pluginLoader;
+						curXWidget->getMainControlWindow()->pluginLoader->castCViewer = tf::PluginInterface::getTeraflyCViewer();
+						curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
+					}
+					else v3d_msg("Neuron Assembler plugin instance already exists.");
+				}
+				else
+				{
+					QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					if (!loader)
+					{
+						v3d_msg("Neuron Assembler module not found. Do nothing.");
+						return;
+					}
+					if (curXWidget == 0L)
+					{
+						v3d_msg("Neuron Assembler module does not work with non-image 3D viewer. Exit.");
+						return;
+					}
+					curXWidget->getMainControlWindow()->pluginLoader->castCViewer = nullptr;
+					curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
+				}
+#endif
 			}
 	  		break;
-
-		case Qt::Key_M:
-			if (renderer)
-			{
-				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				if (thisRenderer->fragmentTrace)
-				{
-					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-				
-					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					mypluginloader.runPlugin(loader, "settings");
-				}
-			}
-			break;
 
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
             {
                 toggleEditMode();
             }
+			else if (IS_SHIFT_MODIFIER)
+			{
+				if (this->getRenderer())
+				{
+					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+#ifdef _NEURON_ASSEMBLER_
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
+					{
+						V3DPluginArgList pluginInputList, pluginOutputList;
+						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+						vector<char*> pluginInputArgList;
+						vector<char*> pluginOutputArgList;
+						dummyInput.type = "dummy";
+						dummyInput.p = (void*)(&pluginInputArgList);
+						inputParam.type = "shift_e";
+						inputParam.p = (void*)(&pluginInputArgList);
+						pluginInputList.push_back(dummyInput);
+						pluginInputList.push_back(inputParam);
+						dummyOutput.type = "dummy";
+						dummyOutput.p = (void*)(&pluginOutputArgList);
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+						curImg->proj_trace_history_append();
+					}
+#endif
+				}
+			}
             else
             {
                 callcheckmode();
@@ -1076,16 +1148,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (renderer)
 			{
 				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
-				if (thisRenderer->fragmentTrace)
-				{
-					QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
-					if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
-
-					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-					V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
-					mypluginloader.runPlugin(loader, "start_tracing");
-                }
-                else if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
+                if (thisRenderer->selectMode == Renderer::smDeleteMultiNeurons)
                 {
                     thisRenderer->setDeleteKey(2);
                     thisRenderer->deleteMultiNeuronsByStroke();
@@ -1131,14 +1194,18 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
-
-					for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+#ifdef _NEURON_ASSEMBLER_
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
 					{
-						if (segIt->row.begin()->type == 7) segIt->to_be_deleted = true;
-					}
+						map<int, vector<int> > labeledSegs;
+						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+							if (segIt->row.begin()->type == 16) segIt->to_be_deleted = true;
 
-					curImg->update_3drenderer_neuron_view(this, thisRenderer);
-					curImg->proj_trace_history_append();
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+						curImg->proj_trace_history_append();
+					}
+#endif
 				}
 			}
 			else
@@ -1166,6 +1233,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
+			else if (IS_SHIFT_MODIFIER)
+			{
+				// reserved for future fragment tracer use
+			}
             else
             {
                 neuronColorMode = (neuronColorMode==0)?5:0; //0 default display mode, 5 confidence level mode by ZZ 06192018
@@ -1218,6 +1289,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             break;
 
         case Qt::Key_Q:
+            if(IS_CTRL_MODIFIER){
+                qDebug()<<"call special marker"<<endl<<"---------------------------------------------"<<endl;
+                callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
+            }
+            else
             {
                 callCreateMarkerNearestNode();
             }
@@ -1243,6 +1319,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			else if (IS_ALT_MODIFIER)
 			{
 				callShowConnectedSegs();
+			}
+			else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)
+			{
+				cout << "wp_debug" << __LINE__ << __FUNCTION__ << endl;
+				callShowBreakPoints();
 			}
             break;
 
@@ -1569,6 +1650,9 @@ void V3dR_GLWidget::setThickness(double t) //added by PHC, 090215
 		if (renderer) renderer->setThickness(_thickness);
 		POST_updateGL();
 	}
+
+	Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+	rendererGL1Ptr->zThick = t;
 }
 
 void V3dR_GLWidget::setCurChannel(int t) //100802
@@ -1747,14 +1831,77 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 
 #define __VR_FUNCS_a__
 #ifdef __ALLOW_VR_FUNCS__
+void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
+{
+	qDebug()<<"PMain::doCollaborationVRView()";
+	try
+	{
+			this->setWindowState(Qt::WindowMinimized);	
+			//this->hide();
+			
+			int maxresindex = 1;
+			My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+			
+			this->collaborationMaxResolution = XYZ(img4d->getXDim(),img4d->getYDim(),img4d->getZDim());
+			this->Resindex = -1;
+			cout<<"CViewer::getCurrent()->volResIndex;   "<<this->Resindex<<endl;
+			this->doimageVRView(true);
+			//cur_win->storeAnnotations();
+			//this->show();		
+
+	}
+	catch(...)
+	{
+		qDebug()<<"???do3DVRView()";
+	}
+}
+void V3dR_GLWidget::process3Dwindow(bool show)
+{
+	static bool clearwindowlist = true;// if process3Dwindow is not used in pair ,set it true 
+	XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+	if(!curXWidget)
+	{cout<<"curXWidget is nor exist";clearwindowlist =false;return; }
+	if(!curXWidget->getMainControlWindow())
+		cout<<"main window is nor exist";
+	V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+	QList<V3dR_MainWindow*> windowList = mypluginloader.getListAll3DViewers();
+	static QVector<int> visibility;
+
+	if(show)
+	{
+		cout<<"process3Dwindow show"<<endl;
+		cout<<"windowList"<<windowList.size();
+		for(int i=0;i<visibility.size();++i)
+		{
+			windowList[visibility[i]]->show();
+		}
+
+		clearwindowlist = true;
+	}
+	else
+	{
+		cout<<"process3Dwindow hide"<<endl;
+		if(clearwindowlist)
+		visibility.clear();
+		for(int i=0;i<windowList.size();++i)
+		{
+			if(windowList[i]->isVisible())
+				{
+					visibility.push_back(i);
+					windowList[i]->hide();
+				}
+		}
+	}
+
+}
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
 	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
 	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-
+	cout<<"vr listNeuronTrees.size()"<<listNeuronTrees->size();
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
-
     this->getMainWindow()->hide();
+	//process3Dwindow(false);
     QMessageBox::StandardButton reply;
 	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
 		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
@@ -1770,18 +1917,18 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			if(myvrwin)
 				delete myvrwin;
 			myvrwin = 0;
-			myvrwin = new VR_MainWindow();
+			myvrwin = new VR_MainWindow(TeraflyCommunicator);
 			myvrwin->setWindowTitle("VR MainWindow");
-			bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
-			VRClientON = linkerror;
-			if(!linkerror)  // there is error with linking ,linkerror = 0
-			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); return;}
+			//bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
+			
+			if(!TeraflyCommunicator)  // there is error with linking ,linkerror = 0
+			{qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); VRClientON = false;return;}
 			connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
-			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
+			int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,TeraflyCommunicator,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
 
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -1829,49 +1976,71 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		// 	emit(signalCallTerafly());
 		// }
 	}
+		//process3Dwindow(true);
+
 }
 void V3dR_GLWidget::doclientView(bool check_flag)
 {
 
-	if(check_flag)
+	/*if(check_flag)
 	{
-		qDebug()<<"run true.";
-		if(VRClientON==false)
-		{
-			v3d_msg("Now start Collaboration.");
-			VRClientON = true;
-			Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-			QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-			if(myclient)
-				delete myclient;
-			myclient = 0;
-			myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
-			bool linkerror = myclient->SendLoginRequest();
-			if(!linkerror)
-			{
-				v3d_msg("Error!Cannot link to server!");
-				myclient = 0;
-				VRClientON = false;
-			}
-			else
-				v3d_msg("Successed linking to server! ");
-		}
-		else
-		{
-			v3d_msg("The VR client is running.Failed to start ** client.");
-		}
+	qDebug()<<"run true.";
+	if(VRClientON==false)
+	{
+	v3d_msg("Now start Collaboration.");
+	VRClientON = true;
+	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
+	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+	if(myclient)
+	delete myclient;
+	myclient = 0;
+	myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
+	bool linkerror = myclient->SendLoginRequest();
+	XFormWidget *curXWidget = v3dr_getXWidget(_idep);
+	if (!curXWidget)
+	{
+	cout << "curXWidget is nor exist";
+	return;
+	}
+	if (!curXWidget->getMainControlWindow())
+	cout << "main window is nor exist";
+	V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow());
+	QList<V3dR_MainWindow *> windowList = mypluginloader.getListAll3DViewers();
+
+	if(!linkerror)
+	{
+	for (int i = 0; i < windowList.size(); ++i)
+	{
+	if (windowList[i]->rotCView->isChecked())
+	{
+	windowList[i]->rotCView->setChecked(false);
+	}
+	}
+	v3d_msg("Error!Cannot link to server!");
+	myclient = 0;
+	VRClientON = false;
+	}
+	else
+	{v3d_msg("Successed linking to server! ");
+	myclient->CollaborationMainloop();}
 	}
 	else
 	{
-		qDebug()<<"run false.";
-		if(myclient)
-		{
-			qDebug()<<"run disc.";
-			delete myclient;
-			myclient = 0;
-		}
-		VRClientON=false;
+
+	v3d_msg("The VR client is running.Failed to start ** client.");
 	}
+	}
+	else
+	{
+	qDebug()<<"run false.";
+	if(myclient)
+	{
+	qDebug()<<"run disc.";
+	delete myclient;
+	myclient = 0;
+	}
+	VRClientON=false;
+	}*/
 }
 
 void V3dR_GLWidget::OnVRSocketDisConnected()
@@ -2859,6 +3028,94 @@ void V3dR_GLWidget::switchBackgroundColor()
     POST_updateGL();
 }
 
+#ifdef _NEURON_ASSEMBLER_
+void V3dR_GLWidget::getXlockStatus(bool status)
+{
+	if (this->getRenderer())
+	{
+		Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+		My4DImage* curImg = 0;
+		if (this) curImg = v3dr_getImage4d(_idep);
+
+		terafly::PMain& pMain = *(terafly::PMain::getInstance());
+		if (pMain.fragTracePluginInstance) pMain.xLockStatus = status;
+	}
+}
+
+void V3dR_GLWidget::getYlockStatus(bool status)
+{
+	if (this->getRenderer())
+	{
+		Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+		My4DImage* curImg = 0;
+		if (this) curImg = v3dr_getImage4d(_idep);
+
+		terafly::PMain& pMain = *(terafly::PMain::getInstance());
+		if (pMain.fragTracePluginInstance) pMain.yLockStatus = status;
+	}
+}
+
+void V3dR_GLWidget::getZlockStatus(bool status)
+{
+	if (this->getRenderer())
+	{
+		Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+		My4DImage* curImg = 0;
+		if (this) curImg = v3dr_getImage4d(_idep);
+
+		terafly::PMain& pMain = *(terafly::PMain::getInstance());
+		if (pMain.fragTracePluginInstance) pMain.zLockStatus = status;
+	}
+}
+#endif
+
+void V3dR_GLWidget::setVoxSize()
+{
+	terafly::CImport* importCheckPtr = terafly::CImport::instance();
+	if (importCheckPtr->getVMapRawData() != 0)
+	{
+		v3d_msg(tr("There is a terafly UI inhereted from this Vaa3D controls.\n Please adjust the voxel size from terafly control panel instead."));
+		return;
+	}
+
+	QSettings voxSettings("SEU-Allen", "scaleBar_nonTerafly");
+
+	this->setVoxSizeDlg = new QDialog;
+	this->setVoxDlgPtr = new Ui::setVoxSizeDialog;
+	this->setVoxDlgPtr->setupUi(this->setVoxSizeDlg);
+	this->setVoxDlgPtr->doubleSpinBox->setValue(voxSettings.value("x").toDouble());
+	this->setVoxDlgPtr->doubleSpinBox_2->setValue(voxSettings.value("y").toDouble());
+	this->setVoxDlgPtr->doubleSpinBox_3->setValue(voxSettings.value("z").toDouble());
+	this->setVoxSizeDlg->exec();
+		
+	voxSettings.setValue("x", this->setVoxDlgPtr->doubleSpinBox->value());
+	voxSettings.setValue("y", this->setVoxDlgPtr->doubleSpinBox_2->value());
+	voxSettings.setValue("z", this->setVoxDlgPtr->doubleSpinBox_3->value());
+
+	renderer->paint();
+}
+
+void V3dR_GLWidget::callUpBrainAtlas()
+{
+	if (renderer)
+	{
+		renderer->editinput = 13;
+		renderer->drawEditInfo();
+		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
+		cout << "test1" << endl;
+
+		QPluginLoader* loader = new QPluginLoader("plugins/BrainAtlas/BrainAtlas.dll");
+		if (!loader) v3d_msg("BrainAtlas module not found. Do nothing.");
+		cout << "test2" << endl;
+
+		XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+		cout << "test3" << endl;
+		V3d_PluginLoader mypluginloader(curXWidget->getMainControlWindow()); 
+		cout << "test4" << endl;
+		mypluginloader.runPlugin(loader, "menu1");
+	}
+}
+
 void V3dR_GLWidget::enableShowAxes(bool s)
 {
 	//qDebug("V3dR_GLWidget::setShowAxes = %i",s);
@@ -2949,7 +3206,7 @@ void V3dR_GLWidget::setMarkerSize(int s)
 	if (_markerSize != s) {
 		_markerSize = s;
 		if (renderer)	renderer->markerSize = s;
-        emit changeMarkerSize(s);
+        emit changeMarkerSize(s); // Go back to the spin box and set the new value.
 		POST_updateGL();
 	}
 }
@@ -3412,6 +3669,15 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
     }
 }
 
+void V3dR_GLWidget::callShowBreakPoints()
+{
+	if (renderer)
+	{
+		renderer->callShowBreakPoints();
+		POST_updateGL();
+	}
+}
+
 void V3dR_GLWidget::callShowSubtree()
 {
 	if (renderer)
@@ -3427,19 +3693,6 @@ void V3dR_GLWidget::callShowConnectedSegs()
 	{
 		renderer->callShowConnectedSegs();
 		POST_updateGL();
-	}
-}
-
-void V3dR_GLWidget::callFragmentTracing()
-{
-	if (renderer)
-	{
-		renderer->editinput = 12;
-		renderer->drawEditInfo();
-		Renderer_gl1* rendererGL1 = static_cast<Renderer_gl1*>(this->getRenderer());
-		rendererGL1->fragmentTrace = true;
-		//renderer->callFragmentTracing();
-		//POST_updateGL();
 	}
 }
 
@@ -3561,6 +3814,16 @@ void V3dR_GLWidget::callCreateMarkerNearestNode()
     }
 }
 //end five shortcuts
+
+void V3dR_GLWidget::callCreateSpecialMarkerNearestNode()
+{
+    if(renderer)
+    {
+        QPoint gpos = mapFromGlobal(cursor().pos());
+        renderer->callCreateSpecialMarkerNearestNode(gpos.x(),gpos.y());
+    }
+}
+//add special marker, by XZ, 20190720
 
 
 // For curveline detection , by PHC 20170531

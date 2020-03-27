@@ -39,7 +39,16 @@ Last update: 2006/11/12 (Geometry Shader Support)
 // by RZC 2008-11-23
 
 
+#include "GLee2glew.h" ////Put here Because GL extension loading lib cannot work with the Angle based build of Qt5.
+
+//==========================================================================================================
+// msvc: QMAKE_LFLAGS += /ignore:4217  # warning LNK4217: locally defined symbol _ imported in function _
+// msvc: QMAKE_LFLAGS += /ignore:4049  # warning LNK4049: locally defined symbol
+#include "glew/GL/glew.c" ////STATIC link by including glew.c
+//==========================================================================================================
+
 #include "glsl_r.h"
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -47,6 +56,7 @@ Last update: 2006/11/12 (Geometry Shader Support)
 #include <fstream>
 #include <algorithm>
 #include <math.h>
+#include <string.h>
 
 using namespace std;
 using namespace cwc;
@@ -126,7 +136,7 @@ inline int CheckGLError(const char *file, int line)
 	}
 	return glErr;
 }
-#define CHECK_GL_ERROR() cwc::CheckGLError(__FILE__, __LINE__)
+#define CHECK_GL_ERROR() ////cwc::CheckGLError(__FILE__, __LINE__)
 
 
 //-----------------------------------------------------------------------------
@@ -1361,13 +1371,13 @@ glShaderObject::~glShaderObject()
 }
 
 //-----------------------------------------------------------------------------
-unsigned V3DLONG getFileLength(ifstream& file)
+unsigned long getFileLength(ifstream& file)
 {
     if(!file.good()) return 0;
 
-    unsigned V3DLONG pos=file.tellg();
+    unsigned long pos=file.tellg();
     file.seekg(0,ios::end);
-    unsigned V3DLONG len = file.tellg();
+    unsigned long len = file.tellg();
     file.seekg(ios::beg);
 
     return len;
@@ -1381,7 +1391,7 @@ int glShaderObject::load(char* filename)
 	file.open(filename, ios::in);
    if(!file) return -1;
 
-   unsigned V3DLONG len = getFileLength(file);
+   unsigned long len = getFileLength(file);
 
    if (len==0) return -2;   // "Empty File"
 

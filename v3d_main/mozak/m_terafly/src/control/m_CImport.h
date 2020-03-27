@@ -29,6 +29,8 @@
 #ifndef CIMPORT_H
 #define CIMPORT_H
 
+#include "../v3d/v3d_compile_constraints.h" //by PHC 20200201
+
 #ifdef USE_Qt5
 #include <QtCore>
 #endif

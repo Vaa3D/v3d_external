@@ -59,6 +59,7 @@ Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsist
 
 #include "mainwindow.h"
 #include "v3d_application.h"
+#include "customdebug.h"
 
 #include <string>
 using namespace std;
@@ -111,6 +112,7 @@ void printHelp_v3d()
 
 int main(int argc, char **argv)
 {
+//    qInstallMsgHandler(customMessageHandler);
  for (int myii=0; myii<argc;myii++)
  {
      v3d_msg(QString("[%1]").arg(argv[myii]));

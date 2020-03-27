@@ -1,11 +1,13 @@
 #ifndef CANNOTATIONS_H
 #define CANNOTATIONS_H
 
+#include "CViewer.h"
+
 #include <set>
 #include "v3d_interface.h"
 #include "CPlugin.h"
 #include "math.h"
-#include "CViewer.h"
+//#include "CViewer.h"
 
 //annotation structure
 struct terafly::annotation
@@ -266,8 +268,9 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Save/load method
         **********************************************************************************/
-        void save(const char* filepath,bool removedupnode) throw (tf::RuntimeException);
+        void save(const char* filepath,bool removedupnode, bool as_swc) throw (tf::RuntimeException);
         void load(const char* filepath) throw (tf::RuntimeException);
+        void deleteOldAnnotations(const char* filepath) throw (tf::RuntimeException);
 
         void removeDuplicatedNode(QList<NeuronSWC> &saveSWC,QList<NeuronSWC> &result);
         bool Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid=-1);

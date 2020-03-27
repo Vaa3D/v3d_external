@@ -16,6 +16,7 @@
 #include "../presentation/PLog.h"
 #include "renderer_gl1.h"
 #include "renderer.h"
+#include "../../../../3drenderer/v3dr_surfaceDialog.h"
 
 double SOMA_X = -1.1;
 double SOMA_Y = -1.1;
@@ -50,7 +51,7 @@ annotation::annotation() throw (tf::RuntimeException){
     smart_delete = true;
 
     // assign first usable ID
-    if(last_ID == std::numeric_limits<long long>::max())
+    if(last_ID == (std::numeric_limits<long long>::max)())
         throw tf::RuntimeException("Reached the maximum number of annotation instances. Please signal this issue to the developer");
     ID = ++last_ID;
 
@@ -1911,6 +1912,11 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
         S.z = neurons.at(oripos).z;
         S.r = neurons.at(oripos).r;
         S.type = neurons.at(oripos).type;
+        S.seg_id = neurons.at(oripos).seg_id;
+        S.level = neurons.at(oripos).level;
+        S.creatmode = neurons.at(oripos).creatmode;
+        S.timestamp = neurons.at(oripos).timestamp;
+        S.tfresindex = neurons.at(oripos).tfresindex;
         result.append(S);
         cnt++;
         qDebug()<<QString("New root %1:").arg(i)<<S.x<<S.y<<S.z;
@@ -1934,6 +1940,11 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
                         S.z = neurons.at(oripos).z;
                         S.r = neurons.at(oripos).r;
                         S.type = neurons.at(oripos).type;
+                        S.seg_id = neurons.at(oripos).seg_id;
+                        S.level = neurons.at(oripos).level;
+                        S.creatmode = neurons.at(oripos).creatmode;
+                        S.timestamp = neurons.at(oripos).timestamp;
+                        S.tfresindex = neurons.at(oripos).tfresindex;
                         result.append(S);
                         cnt++;
                         break; //added by CHB to avoid problem caused by loops in swc, 20150313
@@ -1952,7 +1963,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     neighbors.clear();
     return(true);
 }
-void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeException)
+void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
 
@@ -1969,37 +1980,40 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
 
     //saving ano file
 //    v3d_msg(QString(filepath));
-    QString filename = QString(filepath);
-    if(filename.indexOf("/") != (-1)){
-        filename.remove(0, filename.lastIndexOf("/")+1);
+    QString input_ano = QString(filepath);
+    if(input_ano.indexOf("/") != (-1)){
+        input_ano.remove(0, input_ano.lastIndexOf("/")+1);
     }
-    if(filename.endsWith(".ano")){
-        filename.remove(filename.lastIndexOf(".ano"), filename.size());
-    }
-    else{
-        v3d_msg("Input is not an ano file.");
-        return;
-    }
-//    v3d_msg(QString("filename: %1").arg(filename));
 
+    QString output_ano = input_ano;
+    QString output_apo = output_ano + ".apo";
+    QString output_swc = as_swc? output_ano+".swc":output_ano+".eswc";
+
+//    if(filename.endsWith(".ano")){
+//        filename.remove(filename.lastIndexOf(".ano"), filename.size());
+//    }
+//    else{
+//        v3d_msg("Input is not an ano file.");
+//        return;
+//    }
+
+////    v3d_msg(QString("fileprefix: %1").arg(fileprefix));
+
+//    QString output_ano = filename;
+//    QString output_apo = filename;
+//    QString output_swc = filename;
+//    output_ano.append(".ano");
+//    output_apo.append(".apo");
+
+//    if(as_swc){
+//        output_swc.append(".swc");
+//    }
+//    else{
+//        output_swc.append(".eswc");
+//    }
     QString fileprefix(filepath);
     if(fileprefix.indexOf("/") != -1){
         fileprefix.remove(fileprefix.lastIndexOf("/")+1, fileprefix.size());
-    }
-//    v3d_msg(QString("fileprefix: %1").arg(fileprefix));
-
-    QString output_ano = filename;
-    QString output_apo = filename;
-    QString output_swc = filename;
-    if(removedupnode){
-        output_ano.append(".final.ano");
-        output_apo.append(".final.apo");
-        output_swc.append(".final.swc");
-    }
-    else{
-        output_ano.append(".ano");
-        output_apo.append(".apo");
-        output_swc.append(".swc");
     }
     cout<<endl<<"output_ano: "<<qPrintable(fileprefix + output_ano)<<endl;
     cout<<"output_apo: "<<qPrintable(fileprefix + output_apo)<<endl;
@@ -2015,6 +2029,33 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
         fprintf(f, "SWCFILE=%s\n", qPrintable(output_swc));
         fclose(f);
     }
+
+#ifdef _YUN_
+	//if (V3dR_GLWidget::surfaceDlg) cout << V3dR_GLWidget::surfaceDlg->getMarkerNum() << endl;
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(CViewer::getCurrent()->view3DWidget->getRenderer()));
+	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+	{
+		ImageMarker currMarker;
+		float convertedX = CViewer::getCurrent()->coord2global<float>(it->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+		float convertedY = CViewer::getCurrent()->coord2global<float>(it->y, iim::vertical, false, -1, false, false, __itm__current__function__);
+		float convertedZ = CViewer::getCurrent()->coord2global<float>(it->z, iim::depth, false, -1, false, false, __itm__current__function__);
+		std::list<annotation*>* annoPtrList = octree->find(convertedX, convertedY, convertedZ);
+		if (annoPtrList != nullptr)
+		{
+			if (annoPtrList->size() == 1) annoPtrList->front()->name = it->name.toStdString();
+			else
+			{
+				if (it->name == "duplicated") continue;
+				else
+				{
+					for (std::list<annotation*>::iterator annoIt = annoPtrList->begin(); annoIt != annoPtrList->end(); ++annoIt)
+						(*annoIt)->name = "duplicated";
+					annoPtrList->front()->name = it->name.toStdString();
+				}
+			}
+		}
+	}
+#endif
 
     //saving apo (point cloud) file
     QList<CellAPO> points;
@@ -2042,13 +2083,51 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
 	cout << "Annotation size: " << annotations.size() << endl;
     if(removedupnode)
     {
-        if(SOMA_FOUND>1){
+        // Peng Xie 2019-04-23
+        // Find new soma node in the current annotation
+        long soma_found_new = 0;
+        double soma_x_new = -1.1;
+        double soma_y_new = -1.1;
+        double soma_z_new = -1.1;
+        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+        {
+            if((*i)->type == 1) //selecting NeuronSWC
+            {
+                if((*i)->subtype == 1){ // soma found in current annotation
+                    if(soma_found_new == 0){
+                        soma_found_new ++;
+                        soma_x_new = (*i)->x;
+                        soma_y_new = (*i)->y;
+                        soma_z_new = (*i)->z;
+                    }
+                    else{
+                        if(((*i)->x != soma_x_new) || ((*i)->y != soma_y_new) || ((*i)->x != soma_y_new)){
+                            soma_found_new ++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Decide which soma location to use.
+        if(soma_found_new == 0){     // Case 1: If soma_found_new == 0, try using the old soma location
+            qDebug()<<"'Remove dup and save': Using soma from the 'original' annotation.";
+        }
+        else{
+            qDebug()<<"'Remove dup and save': Using soma from the 'edited' annotation.";
+            SOMA_FOUND = soma_found_new;
+            SOMA_X = soma_x_new;
+            SOMA_Y = soma_y_new;
+            SOMA_Z = soma_z_new;
+        }
+        if(SOMA_FOUND>1){      // Case 2: If soma_found_new > 0, use the new soma location
             v3d_msg("Multiple node locations typed as soma in your input swc.\n"
                     "If root of output swc does not match with the real soma,\n"
                     "please double check your input swc.\n"
                     );
         }
 
+        // Create the neuron tree to be sorted.
         QList<NeuronSWC> nt,nt_sort;
         long countNode=0;
         long soma_ct = 0;
@@ -2087,6 +2166,7 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
         NeuronTree tp;
         tp.listNeuron = nt;
 
+        // Sorting
         if(soma_name == -1){
             v3d_msg("No soma detected in the input swc.\n"
                     "If root of output swc does not match with the real soma,\n"
@@ -2098,30 +2178,102 @@ void CAnnotations::save(const char* filepath,bool removedupnode) throw (RuntimeE
             Sort_SWC_NewVersion(nt,nt_sort,soma_name);
         }
         cout<<"nt_sort size is "<<nt_sort.size()<<endl;
-        fprintf(f, "#n type x y z radius parent\n");
-        for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
-        {
-            fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n",
-                    nt_sort.at(countNode).n, nt_sort.at(countNode).type,
-                    nt_sort.at(countNode).x, nt_sort.at(countNode).y, nt_sort.at(countNode).z,
-                    nt_sort.at(countNode).r, nt_sort.at(countNode).parent);
+
+        // Saving
+        if(as_swc){
+            fprintf(f, "#n type x y z radius parent\n");
+            for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
+            {
+                NeuronSWC cur_node = nt_sort.at(countNode);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld\n",
+                        cur_node.n, cur_node.type,
+                        cur_node.x, cur_node.y, cur_node.z,
+                        cur_node.r, cur_node.parent);
+            }
         }
+        else{
+            fprintf(f, "#n type x y z radius parent seg_id level mode timestamp TFresindex\n");
+            for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
+            {
+                NeuronSWC cur_node = nt_sort.at(countNode);
+                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n",
+                        cur_node.n, cur_node.type,
+                        cur_node.x, cur_node.y, cur_node.z,
+                        cur_node.r, cur_node.parent,
+                        cur_node.level, cur_node.creatmode,
+                        cur_node.timestamp, cur_node.tfresindex
+                        );
+            }
+        }
+        v3d_msg(qPrintable("De-duplicated swc saved: " + fileprefix + output_swc));
     }
     else
     {
-        fprintf(f, "#n type x y z radius parent seg_id level mode timestamp TFresindex\n");
-        for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
-            if((*i)->type == 1) //selecting NeuronSWC
+        if(as_swc){
+            fprintf(f, "#n type x y z radius parent seg_id level mode timestamp TFresindex\n");
+            for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
             {
-                fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r,
-                        (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp, (*i)->tfresindex);
+                if((*i)->type == 1) //selecting NeuronSWC
+                {
+                    fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r,
+                            (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp, (*i)->tfresindex);
+                }
             }
+        }
+        else{
+            fprintf(f, "#n type x y z radius parent seg_id level mode timestamp TFresindex\n");
+            for(std::list<annotation*>::iterator i = annotations.begin(); i != annotations.end(); i++)
+            {
+                if((*i)->type == 1) //selecting NeuronSWC
+                {
+                    fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n", (*i)->ID, (*i)->subtype, (*i)->x, (*i)->y, (*i)->z, (*i)->r,
+                            (*i)->parent ? (*i)->parent->ID : -1, 0, (*i)->level, (*i)->creatmode, (*i)->timestamp, (*i)->tfresindex);
+                }
+            }
+        }
+
     }
 
     fclose(f);//file closing
 
     PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", tf::IO, timer.elapsed()));
 }
+void CAnnotations::deleteOldAnnotations(const char *filepath)throw (RuntimeException)
+{
+    /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
+    std::ifstream f(filepath);
+    if(!f.is_open())
+        throw RuntimeException(strprintf("in CAnnotations::load(): cannot load file \"%s\"", filepath));
+
+    // read line by line
+    for (std::string line; std::getline(f, line); )
+    {
+        std::vector < std::string > tokens;
+        terafly::split(line, "=", tokens);
+        if(tokens.size() != 2)
+            throw RuntimeException(strprintf("in CAnnotations::load(const char* filepath = \"%s\"): cannot parse line \"%s\"",filepath,line.c_str()));
+
+        QDir dir(filepath);
+        dir.cdUp();
+        if(tokens[0].compare("APOFILE") == 0)
+        {
+            QString apofilepath=dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str());
+            std::remove(apofilepath.toStdString().c_str());
+            //cout<<"test apo file path "<<apofilepath.toStdString()<<endl;
+        }
+        else if(tokens[0].compare("SWCFILE") == 0)
+        {
+            QString swcfilepath=dir.absolutePath().append("/").append(tf::clcr(tokens[1]).c_str());
+            std::remove(swcfilepath.toStdString().c_str());
+            //cout<<"test swc file path "<<swcfilepath.toStdString()<<endl;
+        }
+        else
+            throw RuntimeException(strprintf("in CAnnotations::load(const char* filepath = \"%s\"): unable to recognize file type \"%s\"", filepath, tokens[0].c_str()));
+    }
+    f.close();
+    std::remove(filepath);
+}
+
 void CAnnotations::load(const char* filepath) throw (RuntimeException)
 {
     SOMA_FOUND = 0;

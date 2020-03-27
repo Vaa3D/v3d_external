@@ -7,7 +7,7 @@
 #if defined(USE_Qt5) 
 
 #include <QtWidgets>
-#include <QtConcurrent>
+#include <QtConcurrent/QtConcurrent> //by PHC 2020/01/31
 
 #else
 

@@ -5,7 +5,7 @@
 #include <iostream>
 
 #if defined(USE_Qt5)
-    #include <QtConcurrent>
+    #include <QtConcurrent/QtConcurrent> //by PHC 20200131
 #endif 
 
 #include <QFuture>
