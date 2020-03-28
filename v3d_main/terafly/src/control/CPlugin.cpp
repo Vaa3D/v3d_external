@@ -271,6 +271,7 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
 
 bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collaborate,int resolution)
 {
+    CViewer::mutex.lock();//add by huanglei for multiply UI
     try
     {
         // set default parameter
@@ -299,6 +300,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collabo
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+    CViewer::mutex.unlock();
 }
 
 // get path of the image volume at the given resolution (default: highest resolution)

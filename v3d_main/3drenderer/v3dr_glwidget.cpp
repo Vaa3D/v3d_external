@@ -4551,7 +4551,9 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
     markers.append(marker);
 
+
    L: terafly::PluginInterface::setLandmark(markers,true);
+
 
 
 }

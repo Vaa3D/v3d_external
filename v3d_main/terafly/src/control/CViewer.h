@@ -608,6 +608,7 @@ class terafly::CViewer : public QWidget
         const Image4DSimple* getImage() throw (tf::RuntimeException);
 
         void  setImage(int x, int y, int z) throw (tf::RuntimeException);
+        static QMutex mutex;//add by huanglei for multiply UI
 
 };
 
