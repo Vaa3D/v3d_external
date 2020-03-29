@@ -1065,6 +1065,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
 						
 						// No need to delete QPlugin root component. It handles itself once getting out of the scope;
+						// However, this [return] seems to prevent NA from crashing, although exaxtly why is still unknown.
 						return;
 					}
 					else v3d_msg("Neuron Assembler plugin instance already exists.");
