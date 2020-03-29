@@ -1051,8 +1051,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (!pMain.fragTracePluginInstance)
 					{
-						QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
-						//QPluginLoader* loader = new QPluginLoader("D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+						//QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+						QPluginLoader* loader = new QPluginLoader("D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
 						pMain.FragTracerQPluginPtr = loader;
 						if (!loader->isLoaded())
 						{
@@ -1063,6 +1063,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						pMain.FragTracerPluginLoaderPtr = curXWidget->getMainControlWindow()->pluginLoader;
 						curXWidget->getMainControlWindow()->pluginLoader->castCViewer = tf::PluginInterface::getTeraflyCViewer();
 						curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
+						
+						// No need to delete QPlugin root component. It handles itself once getting out of the scope;
+						return;
 					}
 					else v3d_msg("Neuron Assembler plugin instance already exists.");
 				}
@@ -1429,7 +1432,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			break;
 	}
 	update(); //091030: must be here for correct MarkerPos's view matrix
-	return;
 }
 
 void V3dR_GLWidget::handleKeyReleaseEvent(QKeyEvent * e)  //090428 RZC: make public function to finally overcome the crash problem of hook MainWindow
