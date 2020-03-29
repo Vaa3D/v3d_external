@@ -1061,6 +1061,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						}
 						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 						pMain.FragTracerPluginLoaderPtr = curXWidget->getMainControlWindow()->pluginLoader;
+
+						// Cast instantiated CViewer into INeuronAssembler and hold in V3D_PluginCallback2, so that [callback] object can access it.
 						curXWidget->getMainControlWindow()->pluginLoader->castCViewer = tf::PluginInterface::getTeraflyCViewer();
 						curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
 						
