@@ -894,6 +894,7 @@ V3DLONG find_seg_in_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, double x, doub
 
 bool change_type_in_seg_of_V_NeuronSWC_list(V_NeuronSWC_list & swc_list, V3DLONG seg_id, int type)
 {
+    qDebug()<<"seg_id:"<<type<<" "<<swc_list.seg[seg_id].row.size();
 	if (seg_id<0 || seg_id>= swc_list.seg.size())	return false;
 
 	vector <V_NeuronSWC_unit> & row = (swc_list.seg[seg_id].row);

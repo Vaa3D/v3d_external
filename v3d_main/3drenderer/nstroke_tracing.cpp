@@ -7280,6 +7280,8 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 
     // back-project the node curve points and mark segments to be deleted
     qDebug()<<"==============test flag=====================";
+
+    qDebug()<<"listNeuronTree.size()"<<listNeuronTree.size();
     for(V3DLONG j=0; j<listNeuronTree.size(); j++)
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
@@ -7293,7 +7295,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             QList<V3DLONG> idlist;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
-//                qDebug()<<"in 123 "<<i;
+
                 GLdouble px, py, pz, ix, iy, iz;
                 ix = p_listneuron->at(i).x;
                 iy = p_listneuron->at(i).y;
@@ -7302,6 +7304,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 
                 if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
+
                     py = viewport[3]-py; //the Y axis is reversed
                     QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
                     if(contour_mode)
@@ -7311,12 +7314,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                             if(neuronColorMode==0)
                             {
                                 change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
-//                                if(w->TeraflyCommunicator)
-//                                {
-//                                    vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
-//                                    int rowsize=row.size();
-//                                    w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
-//                                }
+
                                 if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
                                 {
                                     idlist.push_back(p_listneuron->at(i).seg_id);
@@ -7332,13 +7330,16 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         bool changedTyp=false;
                         for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                         {
+
                             QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
                             if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
                             {
+                                cout<<"hei hei hei k="<<k;
                                 if(neuronColorMode==0)
                                 {
                                     if(node_mode)
                                     {
+                                        cout<<" node_mode\n";
                                         GLdouble spx, spy, spz;
                                         vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
                                         int best_dist;
@@ -7365,31 +7366,18 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                     }
                                     else
                                     {
+                                        cout<<" !node_mode================\n";
                                         change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
 
                                         if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
                                         {
                                             idlist.push_back(p_listneuron->at(i).seg_id);
                                         }
-
-//                                        if(w->TeraflyCommunicator)
-//                                        {
-//                                            if (!(p_listneuron->at(i).seg_id<0 || p_listneuron->at(i).seg_id>= curImg->tracedNeuron.seg.size()))
-//                                            {
-//                                                vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
-//                                                int rowsize=row.size();
-//                                                w->SetupCollaborateInfo();
-//                                                w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
-//                                                changedTyp=true;
-//                                            }
-//                                        }
                                     }
-
                                 }
                                 else
                                 {
                                     change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
-
                                 }
                                 break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             }
@@ -7491,8 +7479,6 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);
                             break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                            //}
-//>>>>>>> master
                         }
                     }
 

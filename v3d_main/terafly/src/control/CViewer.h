@@ -41,6 +41,7 @@
 #include "CImport.h"
 #include "v3d_imaging_para.h"
 #include "V3Dsubclasses.h"
+#include <QMutex>
 
 class terafly::CViewer : public QWidget
 {

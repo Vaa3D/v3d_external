@@ -210,6 +210,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate,int resolutio
 {
     try
     {
+        CViewer::mutex.lock();
         // set default parameter
         if(resolution == infp<int>())
             resolution = CImport::instance()->getResolutions() - 1;
@@ -228,6 +229,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate,int resolutio
 
         // push content to viewer
         CViewer::getCurrent()->loadAnnotations(collaborate);
+        CViewer::mutex.unlock();
     }
     catch (tf::RuntimeException & e)
     {

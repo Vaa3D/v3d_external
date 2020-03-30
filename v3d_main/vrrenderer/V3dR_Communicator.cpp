@@ -2,7 +2,6 @@
 #include "../terafly/src/control/CPlugin.h"
 #include "../terafly/src/presentation/PMain.h"
 #include <QRegExp>
-//#include <QMessageBox>
 #include <QtGui>
 #include <QListWidgetItem>
 #include <iostream>
@@ -45,7 +44,6 @@ void FileSocket_send::sendFile(QString filepath, QString filename)
     dts<<data;
 
     this->write(block);
-    qDebug()<<filepath<<"++";
 }
 void FileSocket_send::readMSG()
 {
@@ -55,7 +53,7 @@ void FileSocket_send::readMSG()
         QRegExp swcRex("received (.*).eswc\n");
         QRegExp apoRex("received (.*).apo\n");
         QString MSG=QString::fromUtf8(this->readLine());
-//        qDebug()<<"fileMSG:"<<MSG;
+
         if(anoRex.indexIn(MSG)!=-1)
         {
             sendFile(anopath+".ano.eswc",anoname+".ano.eswc");
@@ -64,7 +62,6 @@ void FileSocket_send::readMSG()
             sendFile(anopath+".ano.apo",anoname+".ano.apo");
         }else if(apoRex.indexIn(MSG)!=-1)
         {
-//            qDebug()<<"file upload is ok.";
             this->disconnectFromHost();
             QMessageBox::information(0, tr("information"),tr("import successfully."));
         }
@@ -114,7 +111,7 @@ void ManageSocket::onReadyRead()
             QStringList file_list=currentDir.split(";");
             QWidget *widget=new QWidget(0);
             widget->setWindowTitle("choose annotation file ");
-            QListWidget *filelistWidget=new QListWidget();
+            QListWidget *filelistWidget=new QListWidget(widget);
             QVBoxLayout mainlayout(widget);
             mainlayout.addWidget(filelistWidget);
             connect(filelistWidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
@@ -126,8 +123,8 @@ void ManageSocket::onReadyRead()
             filelistWidget->clear();
             for(uint i=0;i<file_list.size();i++)
             {
-                QIcon icon("file.png");
-                QListWidgetItem *tmp=new QListWidgetItem(icon,file_list.at(i));
+//                QIcon icon("file.png");
+                QListWidgetItem *tmp=new QListWidgetItem(file_list.at(i));
                 qDebug()<<file_list.at(i);
                 filelistWidget->addItem(tmp);
             }
@@ -169,7 +166,7 @@ void ManageSocket::send1(QListWidgetItem *item)
 }
 void ManageSocket::send2(QListWidgetItem *item)
 {
-	loadfilename.clear();FileRec=0;
+    loadfilename.clear();FileRec=0;MSGsocket=0;
     FileSocket_receive *filesocket_receive=new FileSocket_receive(ip);
     connect(filesocket_receive,SIGNAL(receivefile(QString)),this,SLOT(receivefile(QString)));
 //    loadfilename=item->text();
@@ -185,19 +182,19 @@ void ManageSocket::messageMade()
         emit loadANO(loadfilename);
         MSGsocket=0;
         FileRec=0;
+        loadfilename.clear();
     }
 }
 void ManageSocket::receivefile(QString anofile)
 {
     FileRec=1;
-    qDebug()<<"anofile"<<anofile;
     loadfilename=anofile;
     if(MSGsocket==1)
     {
         emit loadANO(anofile);
         FileRec=0;MSGsocket=0;
+        loadfilename.clear();
     }
-    qDebug()<<"dsjfhjkhfkjdfhdkjshfjkdhjkfhsdkjhfkjd";
 }
 V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list* ntlist/*=0*/)
 {
@@ -220,7 +217,6 @@ V3dR_Communicator::V3dR_Communicator(bool *client_flag /*= 0*/, V_NeuronSWC_list
     {
         asktimer=new QTimer(this);
         connect(asktimer,SIGNAL(timeout()),this,SLOT(askserver()));
-
     }
 }
 V3dR_Communicator::~V3dR_Communicator() {
@@ -228,17 +224,6 @@ V3dR_Communicator::~V3dR_Communicator() {
 
 void V3dR_Communicator::timerStart(QString anoname,int mesc)
 {
-//    QFile *f=new QFile("./clouddata/"+anoname+".txt");
-
-//    if(f->open(QIODevice::ReadOnly|QIODevice::Text))
-//    {
-//        while (!f->atEnd()) {
-//            QByteArray line=f->readLine();
-//            TFProcess(QString(line),1);
-//        }
-//    }
-//    f->remove();
-//    delete  f;
     asktimer->start(mesc);
 }
 bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
@@ -268,7 +253,8 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
 		if(socket->state()==QAbstractSocket::UnconnectedState)
 		{
 			qDebug()<<"Cannot connect with Server. Unknown error.";
-			return 0;
+//            QMessageBox::Critical(0,"error","please restart.");
+            return 0;
 		}	
 	}
     qDebug()<<"User:  "<<userName<<".  Connected with server: "<<ip<<" :"<<port;
@@ -327,9 +313,14 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
         {
             send_MSG="/say: GoodBye~";
         }
+        if(send_MSG!="/ask:message")
+        {
+            qDebug()<<"send to server:"<<send_MSG;
+        }
         QByteArray block;
         QDataStream dts(&block,QIODevice::WriteOnly);
         dts.setVersion(QDataStream::Qt_4_7);
+
 
         dts<<quint16(0)<<send_MSG;
         dts.device()->seek(0);
@@ -348,7 +339,6 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
                 pushUndoStack("marker",send_MSG);
             }else if(messageRex.indexIn(send_MSG)!=-1)
             {
-                qDebug()<<send_MSG;
                 QStringList nodePosList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(2).split(" ");
                 QStringList resList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(0).split(" ");
                 QString _1=nodePosList.at(2)+" "+nodePosList.at(3)+" "+nodePosList.at(4);
@@ -356,7 +346,6 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
                 pushUndoStack("seg",QString("/del_curve:TeraFly_"+_1+" "+_2+"_"));
             }else if(deletecurveRex.indexIn(send_MSG)!=-1)
             {
-                qDebug()<<send_MSG;
                 for(int i=0;i<undo_delcure.size();i++)
                 {
                     pushUndoStack("delcurve",undo_delcure.at(i));
@@ -389,7 +378,6 @@ void V3dR_Communicator::onReadyRead()
             }
             else
             {
-//                qDebug()<<"bytes <quint16";
                 return;
             }
         }
@@ -398,7 +386,7 @@ void V3dR_Communicator::onReadyRead()
         {
             in >>line;
             nextblocksize=0;
-                emit msgtoprocess(line);
+            emit msgtoprocess(line);
         }else
         {
             return ;
@@ -451,6 +439,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     QRegExp retypeRex("^/retype:(.*)__(.*)$");
 
         line=line.trimmed();
+        qDebug()<<"receive:"<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             foreach (QString user, users) {
@@ -634,8 +623,6 @@ void V3dR_Communicator::CollaborationMainloop(){
 	QTimer::singleShot(200, this, SLOT(CollaborationMainloop()));
 }
 void V3dR_Communicator::onConnected() {
-
-//    qDebug()<<"gere is onconnected.";
     onReadySend(QString("/login:" +userName));
 
 }
@@ -832,7 +819,7 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z)
 	return XYZ(x,y,z);
 }
 
-XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para)
+XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para)//for app2
 {
     //Para={MaxRes, start_global,start_local}
     x+=para[1].x-para[2].x;

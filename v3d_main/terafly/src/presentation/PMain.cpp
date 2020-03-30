@@ -3967,7 +3967,6 @@ void PMain::setLockMagnification(bool locked)
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
 {
-    qDebug()<<"in login()";
     QSettings settings("HHMI", "Vaa3D");
     QString serverNameDefault = "";
     if(!settings.value("vr_serverName").toString().isEmpty())
@@ -4025,8 +4024,6 @@ void PMain::login()
     managesocket->ip=serverName;
     managesocket->manageport=manageserver_Port;
     managesocket->name=userName;
-    qDebug()<<"test 3";
-
     managesocket->connectToHost(serverName,manageserver_Port.toInt());
 
     if( !managesocket->waitForConnected())
@@ -4104,7 +4101,7 @@ void PMain::load()
         collautotrace->setEnabled(1);
         qDebug()<<"-----------------load annotation----------";
         connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
-		Communicator = new V3dR_Communicator;
+        Communicator = new V3dR_Communicator;
 
 //        disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
 //        connect(managesocket,SIGNAL(disconnected()),Communicator->socket,SLOT(disconnectFromHost()));//
@@ -4152,7 +4149,6 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
-//    qDebug()<<"jkhjkhj";
     QMessageBox::information(this,tr("Connection is out!"),
                      tr("Data has been safely stored.\nPlease restart vaa3d"),
                      QMessageBox::Ok);
@@ -4176,18 +4172,14 @@ void PMain::ColLoadANO(QString ANOfile)
     QFileInfoList anofileList=QDir("./clouddata").entryInfoList(QStringList()<<".ano");
     for(int i=0;i<anofileList.size();i++)
     {
-        if(anofileList.at(i).baseName().contains("stamp")&&anofileList.at(i).baseName().contains(ANOfile.remove(".ano")))
+        if(anofileList.at(i).baseName()==ANOfile.remove(".ano"))
         {
             ANOfile=anofileList.at(i).baseName()+".ano";
         }
     }
-
-
-
     QString ANOpath="./clouddata/"+ANOfile;
     if(!ANOpath.isEmpty())
     {
-
         annotationsPathLRU = ANOpath.toStdString();
         CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
         NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
@@ -4307,8 +4299,7 @@ void PMain::startAutoTrace()
 
         for(int i=0;i<file_list.size();i++)
             qDebug()<<file_list.at(i).fileName();
-        qDebug()<<"hjkhsjkahjkdshakj-------";
-//        if(file_list.size()!=1) {qDebug()<<"error:file not 1";return;}
+
 
         QRegExp v3drawExp("(.*).v3draw");
         if(v3drawExp.indexIn(file_list.at(0).fileName())!=-1)
@@ -4338,27 +4329,3 @@ void PMain::startAutoTrace()
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -729,12 +729,16 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 		if (glWidget)	glWidget->makeCurrent(); //090715
 
 		if (lastActive != this) //need updateTool
-		{
+        {
+            if(lastActive)
+                lastActive->hide();
 			lastActive = this;
+
 			qDebug() << QString("V3dR_MainWindow::changeEvent, ActivationChange-> %1").arg(title_prefix+" [" + data_title + "]");
 
 			if (glWidget)  glWidget->updateTool();
-		}
+
+        }
 		//090713 RZC: the state synchronization is hard
 		//if (glWidget)  glWidget->updateLandmark(); // call glWidget->updateTool()
 	}

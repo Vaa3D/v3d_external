@@ -54,6 +54,7 @@
 #include "v3d_application.h"
 #include <cmath>
 
+
 using namespace tf;
 
 CViewer* CViewer::first = 0;
@@ -62,6 +63,7 @@ CViewer* CViewer::current = 0;
 int CViewer::nInstances = 0;
 int CViewer::nTotalInstances = 0;
 int CViewer::newViewerOperationID = 0;
+QMutex CViewer::mutex(QMutex::NonRecursive);
 
 void CViewer::show()
 { 
@@ -1085,7 +1087,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
 
-    mutex.lock();//add by huanglei for multiply UI
+    CViewer::mutex.lock();//add by huanglei for multiply UI
     qDebug()<<"call newViewer ... ... ";
 
     // check precondition #1: active window
@@ -1377,7 +1379,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         PMain::getInstance()->resetGUI();
     }
-    mutex.unlock();
+    CViewer::mutex.unlock();
 }
 
 //safely close this viewer
