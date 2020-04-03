@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
-
+#include <fstream>
 //extern std::vector<Agent> Agents;
 //std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
@@ -801,76 +801,81 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS)
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
+	VR_Window * pmainwindow = new VR_Window();
+	pmainwindow->show();
 
-	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
-	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
-    pMainApplication->mainwindow = pmain;
-    pMainApplication->isOnline = false;
+	//------------------------------origin vr function-------------------------------------//
+	//CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
+	////pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
+ //   pMainApplication->mainwindow = pmain;
+ //   pMainApplication->isOnline = false;
 
 
-	if(ntlist != NULL)
-	{
-		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
-		{
-			// means there is only a reloaded annotation in terafly
-			// we rename it as vaa3d_traced_neuron
-			qDebug()<<"means this is terafly special condition.do something";
-			NeuronTree newS;
-			newS.color = XYZW(0,0,255,255);
-			newS = ntlist->at(0);
-			newS.n = 1;
-			newS.on = true;
-			newS.name = "vaa3d_traced_neuron";
-			newS.file = "vaa3d_traced_neuron";
-			pMainApplication->editableLoadedNTL.append(newS); 
-		}
-		else
-		{
-			for(int i=0;i<ntlist->size();i++)
-			{
-				if((ntlist->at(i).name == "vaa3d_traced_neuron")&&(ntlist->at(i).file == "vaa3d_traced_neuron"))
-				{
-					// means there is a NT named "vaa3d_traced_neuron", we only need to edit this NT.
-					pMainApplication->editableLoadedNTL.append(ntlist->at(i));
-				}
-				else if (!ntlist->at(0).name.isEmpty())
-				{
-					// means it is a loaded Neuron in 3D View,currently we do not allow to edit this neuron in VR
-					pMainApplication->nonEditableLoadedNTL.append(ntlist->at(i));
-				}
-				// else if (ntlist->at(0).name.isEmpty())
-				// means it is an reloaded annotation in terafly, currently we do not show this neuron in VR
-			}
-		}
-	}
-    pMainApplication->loadedNTList = ntlist;
-	
-	if(i4d->valid())
-	{
-		pMainApplication->img4d = i4d;
-		pMainApplication->m_bHasImage4D=true;
-	}
-	if (!pMainApplication->BInit())
-	{
-		pMainApplication->Shutdown();
-		return 0;
-	}
-	pMainApplication->SetupCurrentUserInformation("local user", 13);
+	//if(ntlist != NULL)
+	//{
+	//	if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
+	//	{
+	//		// means there is only a reloaded annotation in terafly
+	//		// we rename it as vaa3d_traced_neuron
+	//		qDebug()<<"means this is terafly special condition.do something";
+	//		NeuronTree newS;
+	//		newS.color = XYZW(0,0,255,255);
+	//		newS = ntlist->at(0);
+	//		newS.n = 1;
+	//		newS.on = true;
+	//		newS.name = "vaa3d_traced_neuron";
+	//		newS.file = "vaa3d_traced_neuron";
+	//		pMainApplication->editableLoadedNTL.append(newS); 
+	//	}
+	//	else
+	//	{
+	//		for(int i=0;i<ntlist->size();i++)
+	//		{
+	//			if((ntlist->at(i).name == "vaa3d_traced_neuron")&&(ntlist->at(i).file == "vaa3d_traced_neuron"))
+	//			{
+	//				// means there is a NT named "vaa3d_traced_neuron", we only need to edit this NT.
+	//				pMainApplication->editableLoadedNTL.append(ntlist->at(i));
+	//			}
+	//			else if (!ntlist->at(0).name.isEmpty())
+	//			{
+	//				// means it is a loaded Neuron in 3D View,currently we do not allow to edit this neuron in VR
+	//				pMainApplication->nonEditableLoadedNTL.append(ntlist->at(i));
+	//			}
+	//			// else if (ntlist->at(0).name.isEmpty())
+	//			// means it is an reloaded annotation in terafly, currently we do not show this neuron in VR
+	//		}
+	//	}
+	//}
+ //   pMainApplication->loadedNTList = ntlist;
+	//
+	//if(i4d->valid())
+	//{
+	//	pMainApplication->img4d = i4d;
+	//	pMainApplication->m_bHasImage4D=true;
+	//}
+	//if (!pMainApplication->BInit())
+	//{
+	//	pMainApplication->Shutdown();
+	//	return 0;
+	//}
+	//pMainApplication->SetupCurrentUserInformation("local user", 13);
 
-	pMainApplication->RunMainLoop();
+	//pMainApplication->RunMainLoop();
 
-	pMainApplication->Shutdown();
+	//pMainApplication->Shutdown();
 
-	// bool _call_that_plugin = pMainApplication->_call_assemble_plugin;
-	int _call_that_function = pMainApplication->postVRFunctionCallMode;
-	zoomPOS->x = pMainApplication->teraflyPOS.x;
-	zoomPOS->y = pMainApplication->teraflyPOS.y;
-	zoomPOS->z = pMainApplication->teraflyPOS.z;
-	delete pMainApplication;
-	pMainApplication = NULL;
+	//// bool _call_that_plugin = pMainApplication->_call_assemble_plugin;
+	//int _call_that_function = pMainApplication->postVRFunctionCallMode;
+	//zoomPOS->x = pMainApplication->teraflyPOS.x;
+	//zoomPOS->y = pMainApplication->teraflyPOS.y;
+	//zoomPOS->z = pMainApplication->teraflyPOS.z;
+	//delete pMainApplication;
+	//pMainApplication = NULL;
 
-	// return _call_that_plugin;
-	return _call_that_function;
+	//// return _call_that_plugin;
+	//return _call_that_function;
+
+	return 0;
 }
 void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution)
 {
@@ -942,4 +947,673 @@ XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 	y-=(VRVolumeStartPoint.y-1);
 	z-=(VRVolumeStartPoint.z-1);
 	return XYZ(x,y,z);
+}
+
+
+VR_Window::VR_Window(QWidget *parent)
+	: QGLWidget(parent)
+{
+	resizeGL(800,600);
+	initializeGL();
+}
+
+VR_Window::~VR_Window()
+{
+
+}
+
+void VR_Window::initializeGL()
+{
+	glClearColor(0.0, 0.0, 1.0, 1.0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
+
+
+}
+
+void VR_Window::resizeGL(int w, int h){
+	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+
+
+}
+void VR_Window::paintGL()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+}
+
+void VR_Window::runcomputeshader_occu()
+{
+	glUseProgram(g_programOCC);
+	//GL_ERROR();
+	glBindImageTexture(0, g_occupancymap, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+	GLint transferFuncLoc = glGetUniformLocation(g_programOCC, "transfer_function");
+	if (transferFuncLoc >= 0)
+	{
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_1D, g_tffTexObj);
+		glUniform1i(transferFuncLoc, 1);
+	}
+	else
+	{
+		std::cout << "TransferFunc"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+
+	GLint volumeLoc = glGetUniformLocation(g_programOCC, "volume");
+	if (volumeLoc >= 0)
+	{
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_3D, g_volTexObj);
+		//glBindImageTexture(1, g_volTexObj, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+		glUniform1i(volumeLoc, 2);
+	}
+	else
+	{
+		std::cout << "Volume"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+
+	glDispatchCompute(10, 10, 4);////////////////////////////////?
+	//GL_ERROR();
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	//GL_ERROR();
+	glUseProgram(0);
+}
+
+void VR_Window::runcomputeshader_dis()
+{
+	//1ST
+
+	glUseProgram(g_programDIS);
+	//glUniform1i(stageLocation, t);
+	int stageLocation0 = glGetUniformLocation(g_programDIS, "stage");
+	int t0 = 0;
+	if (stageLocation0 >= 0) {
+
+		glUniform1i(stageLocation0, t0);
+	}
+	else
+	{
+		std::cout << "stage"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+	glBindImageTexture(0, g_distancemap, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA8);
+	glBindImageTexture(1, g_occupancymap, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	glDispatchCompute(10, 10, 1);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	glUseProgram(0);
+	//GL_ERROR();
+	//2ST
+	glUseProgram(g_programDIS);
+	int stageLocation1 = glGetUniformLocation(g_programDIS, "stage");
+	int t1 = 1;
+	if (stageLocation1 >= 0) {
+
+		glUniform1i(stageLocation1, t1);
+	}
+	else
+	{
+		std::cout << "stage"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+
+	//GL_ERROR();
+	glBindImageTexture(0, g_distancemap, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	glBindImageTexture(1, g_occupancymap, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+	glDispatchCompute(10, 10, 1);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	glUseProgram(0);
+	//3ST
+	glUseProgram(g_programDIS);
+	int stageLocation2 = glGetUniformLocation(g_programDIS, "stage");
+	int t2 = 2;
+	if (stageLocation2 >= 0) {
+
+		glUniform1i(stageLocation2, t2);
+	}
+	else
+	{
+		std::cout << "stage"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+	//GL_ERROR();
+	glBindImageTexture(0, g_distancemap, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+	glBindImageTexture(1, g_occupancymap, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	glDispatchCompute(10, 10, 1);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	glUseProgram(0);
+	//GL_ERROR();
+}
+
+void VR_Window::initest()
+{
+	const char *vertexShaderSource = "#version 430 core\n"
+		"\n"
+		"in vec3 vert;\n"
+		"out vec3 vert_col;\n"
+		"uniform mat4 MVP;"
+		"\n"
+		"void main(void)\n"
+		"{\n"
+		"    gl_Position = MVP*vec4(vert.x,vert.y,vert.z,1.0);\n"
+		//"    gl_Position =vec4(vert.x,vert.y,vert.z,1.0);\n"
+		"	 vert_col=vec3(vert.x,vert.y,vert.z);"
+		"}\n";
+	const char *fragmentShaderSource = "#version 430 core\n"
+		"\n"
+		"uniform sampler3D g_occupancymap;\n"
+		"out vec4 color;\n"
+		"\n"
+		"in vec3 vert_col;\n"
+		"void main(void)\n"
+		"{\n"
+		"color=texture(g_occupancymap,vert_col);"
+		//"color=vec4(1,0,0,0);"
+		"}\n";
+	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
+	// check for shader compile errors
+	int success;
+	char infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+
+	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog <<
+			std::endl;
+	}
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		std::cout << "ERROR:SHADER::PROGRAM::LINKING_FAILED\n" << infoLog <<
+			std::endl;
+	}
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+	float vertices[] = {
+		-0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f, 0.5f, -0.5f,
+		0.5f, 0.5f, -0.5f,
+		-0.5f, 0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+
+		-0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, 0.5f,
+		0.5f, 0.5f, 0.5f,
+		0.5f, 0.5f, 0.5f,
+		-0.5f, 0.5f, 0.5f,
+		-0.5f, -0.5f, 0.5f,
+
+		-0.5f, 0.5f, 0.5f,
+		-0.5f, 0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, 0.5f,
+		-0.5f, 0.5f, 0.5f,
+
+		0.5f, 0.5f, 0.5f,
+		0.5f, 0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, 0.5f,
+		0.5f, 0.5f, 0.5f,
+
+		-0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, 0.5f,
+		-0.5f, -0.5f, 0.5f,
+		-0.5f, -0.5f, -0.5f,
+
+		-0.5f, 0.5f, -0.5f,
+		0.5f, 0.5f, -0.5f,
+		0.5f, 0.5f, 0.5f,
+		0.5f, 0.5f, 0.5f,
+		-0.5f, 0.5f, 0.5f,
+		-0.5f, 0.5f, -0.5f
+	};
+
+
+
+
+	//vao,vbo登场！
+	unsigned int VBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	//先绑定VAO，然后绑定VBO
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//设置顶点属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+	//glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);//???
+	glBindVertexArray(0);//????
+}
+
+void VR_Window::linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFragHandle)
+{
+	const GLsizei maxCount = 2;
+	GLsizei count;
+	GLuint shaders[maxCount];
+	glGetAttachedShaders(shaderPgm, maxCount, &count, shaders);
+	// cout << "get VertHandle: " << shaders[0] << endl;
+	// cout << "get FragHandle: " << shaders[1] << endl;
+	//GL_ERROR();
+	for (int i = 0; i < count; i++) {
+		glDetachShader(shaderPgm, shaders[i]);
+	}
+	// Bind index 0 to the shader input variable "VerPos"
+	glBindAttribLocation(shaderPgm, 0, "VerPos");
+	// Bind index 1 to the shader input variable "VerClr"
+	glBindAttribLocation(shaderPgm, 1, "VerClr");
+	//GL_ERROR();
+	glAttachShader(shaderPgm, newVertHandle);
+	glAttachShader(shaderPgm, newFragHandle);
+	//GL_ERROR();
+	glLinkProgram(shaderPgm);
+	if (GL_FALSE == checkShaderLinkStatus(shaderPgm))
+	{
+		cerr << "Failed to relink shader program!" << endl;
+		exit(EXIT_FAILURE);
+	}
+	//GL_ERROR();
+}
+
+void VR_Window::render(GLenum cullFace)
+{
+	void drawBox(GLenum glFaces);
+	//GL_ERROR();
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//  transform the box
+	glm::mat4 projection = glm::perspective(60.0f, (GLfloat)g_winWidth / g_winHeight, 0.1f, 400.f);
+	glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 model = mat4(1.0f);
+	model *= glm::rotate((float)g_angle, glm::vec3(0.0f, 1.0f, 0.0f));
+	// to make the "head256.raw" i.e. the volume data stand up.
+	model *= glm::rotate(90.0f, vec3(1.0f, 0.0f, 0.0f));
+	model *= glm::translate(glm::vec3(-0.5f, -0.5f, -0.5f));
+	// notice the multiplication order: reverse order of transform
+	glm::mat4 mvp = projection * view * model;
+	GLuint mvpIdx = glGetUniformLocation(g_programHandle, "MVP");
+	if (mvpIdx >= 0)
+	{
+		glUniformMatrix4fv(mvpIdx, 1, GL_FALSE, &mvp[0][0]);
+	}
+	else
+	{
+		cerr << "can't get the MVP" << endl;
+	}
+	//GL_ERROR();
+	drawBox(cullFace);
+	//GL_ERROR();
+	// glutWireTeapot(0.5);
+}
+
+
+void VR_Window::initShader()
+{
+	// vertex shader object for first pass
+	g_bfVertHandle = initShaderObj("shader/backface.vert", GL_VERTEX_SHADER);
+	// fragment shader object for first pass
+	g_bfFragHandle = initShaderObj("shader/backface.frag", GL_FRAGMENT_SHADER);
+	// vertex shader object for second pass
+	g_rcVertHandle = initShaderObj("shader/raycasting.vert", GL_VERTEX_SHADER);
+	// fragment shader object for second pass
+	g_rcFragHandle = initShaderObj("shader/renderring_Acc.frag", GL_FRAGMENT_SHADER);
+	// create the shader program , use it in an appropriate time
+	g_programHandle = createShaderPgm();
+	// 获得由着色器编译器分配的索引(可选)
+	//compute occupancy_map
+	//GL_ERROR();
+	g_compute_occ = initShaderObj("shader/occupancy_map.comp", GL_COMPUTE_SHADER);
+	g_programOCC = createShaderPgm();
+	//GL_ERROR();
+	int success;
+	char infoLog[512];
+	glAttachShader(g_programOCC, g_compute_occ);
+	glLinkProgram(g_programOCC);
+	glGetProgramiv(g_programOCC, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
+		std::cout << "ERROR::OCC::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
+			std::endl;
+	}
+	//compute distance_map
+	g_compute_dis = initShaderObj("shader/distance_map.comp", GL_COMPUTE_SHADER);
+	g_programDIS = createShaderPgm();
+	glAttachShader(g_programDIS, g_compute_dis);
+	glLinkProgram(g_programDIS);
+	glGetProgramiv(g_programDIS, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
+		std::cout << "ERROR::DIS::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
+			std::endl;
+	}
+}
+
+GLuint VR_Window::initOccupancyTex()
+{
+	GLuint occu;
+	glGenTextures(1, &occu);
+	glBindTexture(GL_TEXTURE_3D, occu);
+	glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGBA8, 50, 50, 32);
+	glBindTexture(GL_TEXTURE_3D, 0);
+	//glBindImageTexture(2, g_occupancymap, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8UI);
+	return occu;
+}
+
+void VR_Window::initVBO()
+{
+	GLfloat vertices[24] = {
+		0.0, 0.0, 0.0,
+		0.0, 0.0, 1.0,
+		0.0, 1.0, 0.0,
+		0.0, 1.0, 1.0,
+		1.0, 0.0, 0.0,
+		1.0, 0.0, 1.0,
+		1.0, 1.0, 0.0,
+		1.0, 1.0, 1.0
+	};
+	// draw the six faces of the boundbox by drawwing triangles
+	// draw it contra-clockwise
+	// front: 1 5 7 3
+	// back: 0 2 6 4
+	// left：0 1 3 2
+	// right:7 5 4 6    
+	// up: 2 3 7 6
+	// down: 1 0 4 5
+	GLuint indices[36] = {
+		1, 5, 7,
+		7, 3, 1,
+		0, 2, 6,
+		6, 4, 0,
+		0, 1, 3,
+		3, 2, 0,
+		7, 5, 4,
+		4, 6, 7,
+		2, 3, 7,
+		7, 6, 2,
+		1, 0, 4,
+		4, 5, 1
+	};
+	GLuint gbo[2];
+
+	glGenBuffers(2, gbo);
+	GLuint vertexdat = gbo[0];
+	GLuint veridxdat = gbo[1];
+	glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+	glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	// used in glDrawElement()
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(GLuint), indices, GL_STATIC_DRAW);
+
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	// vao like a closure binding 3 buffer object: verlocdat vercoldat and veridxdat
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(0); // for vertexloc
+	glEnableVertexAttribArray(1); // for vertexcol
+
+	// the vertex location is the same as the vertex color
+	glBindBuffer(GL_ARRAY_BUFFER, vertexdat);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat*)NULL);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLfloat*)NULL);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, veridxdat);
+	// glBindVertexArray(0);
+	g_vao = vao;
+}
+
+void VR_Window::drawBox(GLenum glFaces)
+{
+	//glBindImageTexture(0, g_distancemap, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8UI);
+	glEnable(GL_CULL_FACE);
+	glCullFace(glFaces);
+	glBindVertexArray(g_vao);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint*)NULL);
+	glDisable(GL_CULL_FACE);
+}
+
+GLboolean VR_Window::compileCheck(GLuint shader)
+{
+
+	GLint err;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &err);
+	if (GL_FALSE == err)
+	{
+		GLint logLen;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLen);
+		if (logLen > 0)
+		{
+			char* log = (char*)malloc(logLen);
+			GLsizei written;
+			glGetShaderInfoLog(shader, logLen, &written, log);
+			cerr << "Shader log: " << log << endl;
+			free(log);
+		}
+	}
+	return err;
+}
+
+GLuint VR_Window::initShaderObj(const char* srcfile, GLenum shaderType)
+{
+	ifstream inFile(srcfile, ifstream::in);
+	// use assert?
+	if (!inFile)
+	{
+		cerr << "Error openning file: " << srcfile << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	const int MAX_CNT = 10000;
+	GLchar* shaderCode = (GLchar*)calloc(MAX_CNT, sizeof(GLchar));
+	inFile.read(shaderCode, MAX_CNT);
+	if (inFile.eof())
+	{
+		size_t bytecnt = inFile.gcount();
+		*(shaderCode + bytecnt) = '\0';
+	}
+	else if (inFile.fail())
+	{
+		std::cout << srcfile << "read failed " << endl;
+	}
+	else
+	{
+		std::cout << srcfile << "is too large" << endl;
+	}
+	// create the shader Object
+	GLuint shader = glCreateShader(shaderType);
+	if (0 == shader)
+	{
+		cerr << "Error creating vertex shader." << endl;
+	}
+	// cout << shaderCode << endl;
+	// cout << endl;
+	const GLchar* codeArray[] = { shaderCode };
+	glShaderSource(shader, 1, codeArray, NULL);
+	free(shaderCode);
+
+	// compile the shader
+	glCompileShader(shader);
+	if (GL_FALSE == compileCheck(shader))
+	{
+		cerr << "shader compilation failed" << endl;
+	}
+	return shader;
+}
+
+GLint VR_Window::checkShaderLinkStatus(GLuint pgmHandle)
+{
+	GLint status;
+	glGetProgramiv(pgmHandle, GL_LINK_STATUS, &status);
+	if (GL_FALSE == status)
+	{
+		GLint logLen;
+		glGetProgramiv(pgmHandle, GL_INFO_LOG_LENGTH, &logLen);
+		if (logLen > 0)
+		{
+			GLchar* log = (GLchar*)malloc(logLen);
+			GLsizei written;
+			glGetProgramInfoLog(pgmHandle, logLen, &written, log);
+			cerr << "Program log: " << log << endl;
+		}
+	}
+	return status;
+}
+
+GLuint VR_Window::createShaderPgm()
+{
+	// Create the shader program
+	GLuint programHandle = glCreateProgram();
+	if (0 == programHandle)
+	{
+		cerr << "Error create shader program" << endl;
+		exit(EXIT_FAILURE);
+	}
+	return programHandle;
+}
+
+GLuint VR_Window::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
+{
+	GLuint backFace2DTex;
+	glGenTextures(1, &backFace2DTex);
+	glBindTexture(GL_TEXTURE_2D, backFace2DTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, bfTexWidth, bfTexHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+	return backFace2DTex;
+}
+
+void VR_Window::checkFramebufferStatus()
+{
+	GLenum complete = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (complete != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "framebuffer is not complete" << endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+void VR_Window::initFrameBuffer(GLuint texObj, GLuint texWidth, GLuint texHeight)
+{
+	// create a depth buffer for our framebuffer
+	GLuint depthBuffer;
+	glGenRenderbuffers(1, &depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, texWidth, texHeight);
+
+	// attach the texture and the depth buffer to the framebuffer
+	glGenFramebuffers(1, &g_frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, g_frameBuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texObj, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+	checkFramebufferStatus();
+	glEnable(GL_DEPTH_TEST);
+}
+
+void VR_Window::rcSetUinforms()
+{
+	// setting uniforms such as
+	// ScreenSize 
+	// StepSize
+	// TransferFunc
+	// ExitPoints i.e. the backface, the backface hold the ExitPoints of ray casting
+	// VolumeTex the texture that hold the volume data i.e. head256.raw
+	GLint screenSizeLoc = glGetUniformLocation(g_programHandle, "ScreenSize");
+	if (screenSizeLoc >= 0)
+	{
+		glUniform2f(screenSizeLoc, (float)g_winWidth, (float)g_winHeight);
+	}
+	else
+	{
+		std::cout << "ScreenSize"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+	GLint stepSizeLoc = glGetUniformLocation(g_programHandle, "StepSize");
+	//GL_ERROR();
+	if (stepSizeLoc >= 0)
+	{
+		glUniform1f(stepSizeLoc, g_stepSize);
+	}
+	else
+	{
+		std::cout << "StepSize"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+	//GL_ERROR();
+	//GLint transferFuncLoc = -1;
+	GLint transferFuncLoc = glGetUniformLocation(g_programHandle, "TransferFunc");
+	if (transferFuncLoc >= 0)
+	{
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_1D, g_tffTexObj);
+		glUniform1i(transferFuncLoc, 2);
+	}
+	else
+	{
+		std::cout << "TransferFunc"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+	//GL_ERROR();
+	//GLint backFaceLoc = -1;
+	GLint backFaceLoc = glGetUniformLocation(g_programHandle, "ExitPoints");
+	if (backFaceLoc >= 0)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, g_bfTexObj);
+		glUniform1i(backFaceLoc, 0);
+	}
+	else
+	{
+		std::cout << "ExitPoints"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+	//GL_ERROR();
+	GLint volumeLoc = glGetUniformLocation(g_programHandle, "VolumeTex");
+	if (volumeLoc >= 0)
+	{
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_3D, g_volTexObj);
+		//glBindImageTexture(1, g_volTexObj, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+		glUniform1i(volumeLoc, 1);
+	}
+	else
+	{
+		std::cout << "VolumeTex"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+
 }
