@@ -10,6 +10,7 @@
 #include <sstream>
 #include <math.h>
 #include <fstream>
+#include "shader_m.h"
 //extern std::vector<Agent> Agents;
 //std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
@@ -1243,9 +1244,8 @@ void VR_Window::linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFra
 	//GL_ERROR();
 }
 
-void VR_Window::render(GLenum cullFace)
+void VR_Window::render(GLenum cullFace,GLuint g_programid)
 {
-	void drawBox(GLenum glFaces);
 	//GL_ERROR();
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1261,7 +1261,7 @@ void VR_Window::render(GLenum cullFace)
 	model *= glm::translate(glm::vec3(-0.5f, -0.5f, -0.5f));
 	// notice the multiplication order: reverse order of transform
 	glm::mat4 mvp = projection * view * model;
-	GLuint mvpIdx = glGetUniformLocation(g_programHandle, "MVP");
+	GLuint mvpIdx = glGetUniformLocation(g_programid, "MVP");
 	if (mvpIdx >= 0)
 	{
 		glUniformMatrix4fv(mvpIdx, 1, GL_FALSE, &mvp[0][0]);
@@ -1280,42 +1280,47 @@ void VR_Window::render(GLenum cullFace)
 void VR_Window::initShader()
 {
 	// vertex shader object for first pass
-	g_bfVertHandle = initShaderObj("shader/backface.vert", GL_VERTEX_SHADER);
-	// fragment shader object for first pass
-	g_bfFragHandle = initShaderObj("shader/backface.frag", GL_FRAGMENT_SHADER);
-	// vertex shader object for second pass
-	g_rcVertHandle = initShaderObj("shader/raycasting.vert", GL_VERTEX_SHADER);
-	// fragment shader object for second pass
-	g_rcFragHandle = initShaderObj("shader/renderring_Acc.frag", GL_FRAGMENT_SHADER);
+	//g_bfVertHandle = initShaderObj("shader/backface.vert", GL_VERTEX_SHADER);
+	//// fragment shader object for first pass
+	//g_bfFragHandle = initShaderObj("shader/backface.frag", GL_FRAGMENT_SHADER);
+	//// vertex shader object for second pass
+	//g_rcVertHandle = initShaderObj("shader/raycasting.vert", GL_VERTEX_SHADER);
+	//// fragment shader object for second pass
+	//g_rcFragHandle = initShaderObj("shader/renderring_Acc.frag", GL_FRAGMENT_SHADER);
 	// create the shader program , use it in an appropriate time
-	g_programHandle = createShaderPgm();
+	backfaceShader = new Shader(string("shader/backface.vert").c_str(), string("shader/backface.frag").c_str());
+	raycastingShader = new Shader(string("shader/raycasting.vert").c_str(), string("shader/renderring_Acc.frag").c_str());
+	//g_programHandle = createShaderPgm();
 	// 获得由着色器编译器分配的索引(可选)
 	//compute occupancy_map
 	//GL_ERROR();
-	g_compute_occ = initShaderObj("shader/occupancy_map.comp", GL_COMPUTE_SHADER);
-	g_programOCC = createShaderPgm();
-	//GL_ERROR();
-	int success;
-	char infoLog[512];
-	glAttachShader(g_programOCC, g_compute_occ);
-	glLinkProgram(g_programOCC);
-	glGetProgramiv(g_programOCC, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
-		std::cout << "ERROR::OCC::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
-			std::endl;
-	}
+	//g_compute_occ = initShaderObj("shader/occupancy_map.comp", GL_COMPUTE_SHADER);
+	g_programOCC = CompileGLShader("occupancy_map", "", GL_COMPUTE_SHADER);
+	//g_programOCC = createShaderPgm();
+	////GL_ERROR();
+	//int success;
+	//char infoLog[512];
+	//glAttachShader(g_programOCC, g_compute_occ);
+	//glLinkProgram(g_programOCC);
+	//glGetProgramiv(g_programOCC, GL_LINK_STATUS, &success);
+	//if (!success) {
+	//	glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
+	//	std::cout << "ERROR::OCC::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
+	//		std::endl;
+	//}
+
 	//compute distance_map
-	g_compute_dis = initShaderObj("shader/distance_map.comp", GL_COMPUTE_SHADER);
-	g_programDIS = createShaderPgm();
+	g_programDIS = CompileGLShader("distance_map", "", GL_COMPUTE_SHADER);//liqi func below is encapsulated into CompileGLShader
+	//g_compute_dis = initShaderObj("shader/distance_map.comp", GL_COMPUTE_SHADER);
+	/*g_programDIS = createShaderPgm();
 	glAttachShader(g_programDIS, g_compute_dis);
 	glLinkProgram(g_programDIS);
 	glGetProgramiv(g_programDIS, GL_LINK_STATUS, &success);
 	if (!success) {
-		glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
-		std::cout << "ERROR::DIS::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
-			std::endl;
-	}
+	glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
+	std::cout << "ERROR::DIS::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
+	std::endl;
+	}*/
 }
 
 GLuint VR_Window::initOccupancyTex()
@@ -1420,52 +1425,101 @@ GLboolean VR_Window::compileCheck(GLuint shader)
 	}
 	return err;
 }
-
-GLuint VR_Window::initShaderObj(const char* srcfile, GLenum shaderType)
+//
+//GLuint VR_Window::initShaderObj(const char* srcfile, GLenum shaderType)
+//{
+//	ifstream inFile(srcfile, ifstream::in);
+//	// use assert?
+//	if (!inFile)
+//	{
+//		cerr << "Error openning file: " << srcfile << endl;
+//		exit(EXIT_FAILURE);
+//	}
+//
+//	const int MAX_CNT = 10000;
+//	GLchar* shaderCode = (GLchar*)calloc(MAX_CNT, sizeof(GLchar));
+//	inFile.read(shaderCode, MAX_CNT);
+//	if (inFile.eof())
+//	{
+//		size_t bytecnt = inFile.gcount();
+//		*(shaderCode + bytecnt) = '\0';
+//	}
+//	else if (inFile.fail())
+//	{
+//		std::cout << srcfile << "read failed " << endl;
+//	}
+//	else
+//	{
+//		std::cout << srcfile << "is too large" << endl;
+//	}
+//	// create the shader Object
+//	GLuint shader = glCreateShader(shaderType);
+//	if (0 == shader)
+//	{
+//		cerr << "Error creating vertex shader." << endl;
+//	}
+//	// cout << shaderCode << endl;
+//	// cout << endl;
+//	const GLchar* codeArray[] = { shaderCode };
+//	glShaderSource(shader, 1, codeArray, NULL);
+//	free(shaderCode);
+//
+//	// compile the shader
+//	glCompileShader(shader);
+//	if (GL_FALSE == compileCheck(shader))
+//	{
+//		cerr << "shader compilation failed" << endl;
+//	}
+//	return shader;
+//}
+static bool g_bbPrintf = true;
+void vr_windowdprintf(const char *fmt, ...)
 {
-	ifstream inFile(srcfile, ifstream::in);
-	// use assert?
-	if (!inFile)
+	va_list args;
+	char buffer[2048];
+
+	va_start(args, fmt);
+	vsprintf_s(buffer, fmt, args);
+	va_end(args);
+
+	if (g_bbPrintf)
+		printf("%s", buffer);
+
+	OutputDebugStringA(buffer);
+}
+GLuint VR_Window::CompileGLShader(const char *pchShaderName, const char *p_shader, GLenum shaderType)
+{
+	GLuint unProgramID = glCreateProgram();
+
+	GLuint nSceneVertexShader = glCreateShader(shaderType);
+	glShaderSource(nSceneVertexShader, 1, &p_shader, NULL);
+	glCompileShader(nSceneVertexShader);
+
+	GLint vShaderCompiled = GL_FALSE;
+	glGetShaderiv(nSceneVertexShader, GL_COMPILE_STATUS, &vShaderCompiled);
+	if (vShaderCompiled != GL_TRUE)
 	{
-		cerr << "Error openning file: " << srcfile << endl;
-		exit(EXIT_FAILURE);
+		vr_windowdprintf("%s - Unable to compile vertex shader %d!\n", pchShaderName, nSceneVertexShader);
+		glDeleteProgram(unProgramID);
+		glDeleteShader(nSceneVertexShader);
+		return 0;
+	}
+	glAttachShader(unProgramID, nSceneVertexShader);
+	glDeleteShader(nSceneVertexShader); // the program hangs onto this once it's attached
+	glLinkProgram(unProgramID);
+	GLint programSuccess = GL_TRUE;
+	glGetProgramiv(unProgramID, GL_LINK_STATUS, &programSuccess);
+	if (programSuccess != GL_TRUE)
+	{
+		vr_windowdprintf("%s - Error linking program %d!\n", pchShaderName, unProgramID);
+		glDeleteProgram(unProgramID);
+		return 0;
 	}
 
-	const int MAX_CNT = 10000;
-	GLchar* shaderCode = (GLchar*)calloc(MAX_CNT, sizeof(GLchar));
-	inFile.read(shaderCode, MAX_CNT);
-	if (inFile.eof())
-	{
-		size_t bytecnt = inFile.gcount();
-		*(shaderCode + bytecnt) = '\0';
-	}
-	else if (inFile.fail())
-	{
-		std::cout << srcfile << "read failed " << endl;
-	}
-	else
-	{
-		std::cout << srcfile << "is too large" << endl;
-	}
-	// create the shader Object
-	GLuint shader = glCreateShader(shaderType);
-	if (0 == shader)
-	{
-		cerr << "Error creating vertex shader." << endl;
-	}
-	// cout << shaderCode << endl;
-	// cout << endl;
-	const GLchar* codeArray[] = { shaderCode };
-	glShaderSource(shader, 1, codeArray, NULL);
-	free(shaderCode);
+	glUseProgram(unProgramID);
+	glUseProgram(0);
 
-	// compile the shader
-	glCompileShader(shader);
-	if (GL_FALSE == compileCheck(shader))
-	{
-		cerr << "shader compilation failed" << endl;
-	}
-	return shader;
+	return unProgramID;
 }
 
 GLint VR_Window::checkShaderLinkStatus(GLuint pgmHandle)
@@ -1539,7 +1593,7 @@ void VR_Window::initFrameBuffer(GLuint texObj, GLuint texWidth, GLuint texHeight
 	glEnable(GL_DEPTH_TEST);
 }
 
-void VR_Window::rcSetUinforms()
+void VR_Window::rcSetUinforms(GLuint g_programid)
 {
 	// setting uniforms such as
 	// ScreenSize 
@@ -1547,7 +1601,7 @@ void VR_Window::rcSetUinforms()
 	// TransferFunc
 	// ExitPoints i.e. the backface, the backface hold the ExitPoints of ray casting
 	// VolumeTex the texture that hold the volume data i.e. head256.raw
-	GLint screenSizeLoc = glGetUniformLocation(g_programHandle, "ScreenSize");
+	GLint screenSizeLoc = glGetUniformLocation(g_programid, "ScreenSize");
 	if (screenSizeLoc >= 0)
 	{
 		glUniform2f(screenSizeLoc, (float)g_winWidth, (float)g_winHeight);
@@ -1558,7 +1612,7 @@ void VR_Window::rcSetUinforms()
 			<< "is not bind to the uniform"
 			<< endl;
 	}
-	GLint stepSizeLoc = glGetUniformLocation(g_programHandle, "StepSize");
+	GLint stepSizeLoc = glGetUniformLocation(g_programid, "StepSize");
 	//GL_ERROR();
 	if (stepSizeLoc >= 0)
 	{
@@ -1572,7 +1626,7 @@ void VR_Window::rcSetUinforms()
 	}
 	//GL_ERROR();
 	//GLint transferFuncLoc = -1;
-	GLint transferFuncLoc = glGetUniformLocation(g_programHandle, "TransferFunc");
+	GLint transferFuncLoc = glGetUniformLocation(g_programid, "TransferFunc");
 	if (transferFuncLoc >= 0)
 	{
 		glActiveTexture(GL_TEXTURE2);
@@ -1587,7 +1641,7 @@ void VR_Window::rcSetUinforms()
 	}
 	//GL_ERROR();
 	//GLint backFaceLoc = -1;
-	GLint backFaceLoc = glGetUniformLocation(g_programHandle, "ExitPoints");
+	GLint backFaceLoc = glGetUniformLocation(g_programid, "ExitPoints");
 	if (backFaceLoc >= 0)
 	{
 		glActiveTexture(GL_TEXTURE0);
@@ -1601,7 +1655,7 @@ void VR_Window::rcSetUinforms()
 			<< endl;
 	}
 	//GL_ERROR();
-	GLint volumeLoc = glGetUniformLocation(g_programHandle, "VolumeTex");
+	GLint volumeLoc = glGetUniformLocation(g_programid, "VolumeTex");
 	if (volumeLoc >= 0)
 	{
 		glActiveTexture(GL_TEXTURE1);

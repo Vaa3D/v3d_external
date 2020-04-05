@@ -18,6 +18,7 @@
 #include "V3dR_Communicator.h"
 #include "../basic_c_fun/v3d_interface.h"
 class V3dR_Communicator;
+class Shader;
 using glm::mat4;
 using glm::vec3;
 #define GL_ERROR() checkForOpenGLError(__FILE__, __LINE__)
@@ -99,8 +100,9 @@ protected:
 	void runcomputeshader_dis();
 	void initest();
 	void linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFragHandle);
-	GLuint initShaderObj(const char* srcfile, GLenum shaderType);
-	void render(GLenum cullFace);
+	//GLuint initShaderObj(const char* srcfile, GLenum shaderType);
+	GLuint CompileGLShader(const char *pchShaderName, const char *p_shader, GLenum shaderType);
+	void render(GLenum cullFace, GLuint g_programid);
 	void initShader();
 	GLuint initOccupancyTex();
 	void initVBO();
@@ -115,12 +117,15 @@ protected:
 	//initVol3DTex?
 	void checkFramebufferStatus();
 	void initFrameBuffer(GLuint texObj, GLuint texWidth, GLuint texHeight);
-	void rcSetUinforms();
+	void rcSetUinforms(GLuint g_programid);
 	//DISPLAY?
 public:
-
+	Shader * backfaceShader;
+	Shader * raycastingShader;
 	GLuint g_vao;
 	GLuint g_programHandle;
+	GLuint g_backprogramHandle;
+	GLuint g_rayprogramHandle;
 	GLuint g_programOCC;
 	GLuint g_programDIS;
 	GLuint g_winWidth = 800;
