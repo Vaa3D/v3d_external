@@ -168,6 +168,7 @@ void ManageSocket::send2(QListWidgetItem *item)
 {
     loadfilename.clear();FileRec=0;MSGsocket=0;
     FileSocket_receive *filesocket_receive=new FileSocket_receive(ip);
+    filesocket_receive->isDown=false;
     connect(filesocket_receive,SIGNAL(receivefile(QString)),this,SLOT(receivefile(QString)));
 //    loadfilename=item->text();
     loadfilename.clear();

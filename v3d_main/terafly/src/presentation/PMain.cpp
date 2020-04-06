@@ -4211,7 +4211,7 @@ void PMain::ColLoadANO(QString ANOfile)
             tmp=anoExp.cap(1);
         }
 
-        //delete load .ANO
+//        delete load .ANO
 //        QFile *f = new QFile(tmp+".ano");
 //        if(f->exists())
 //            f->remove();
