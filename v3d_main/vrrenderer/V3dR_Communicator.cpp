@@ -234,7 +234,7 @@ bool V3dR_Communicator::SendLoginRequest(QString ip,QString port,QString user) {
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(socket,SIGNAL(connected()),this,SLOT(onConnected()));
 
-//    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
     QSettings settings("HHMI", "Vaa3D");
 
     userName=user;
@@ -788,8 +788,10 @@ void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)
 }
 
 void V3dR_Communicator::onDisconnected() {
-    qDebug("Now disconnect with the server."); 
-	*clienton = false;
+    QMessageBox::information(this,tr("Message socket Connection is out!"),
+                     tr("Data has been safely stored.\nPlease restart vaa3d"),
+                     QMessageBox::Ok);
+//	*clienton = false;
     deleteLater();
 }
 

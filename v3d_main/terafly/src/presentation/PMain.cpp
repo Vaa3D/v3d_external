@@ -4108,6 +4108,8 @@ void PMain::load()
 //        connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
 //        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
+//        connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(disconnected()),
+//                managesocket,SIGNAL(deleteManageSocket()));
 
         connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
                 cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
@@ -4149,7 +4151,7 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
-    QMessageBox::information(this,tr("Connection is out!"),
+    QMessageBox::information(this,tr("Manage socket Connection is out!"),
                      tr("Data has been safely stored.\nPlease restart vaa3d"),
                      QMessageBox::Ok);
     managesocket->deleteLater();

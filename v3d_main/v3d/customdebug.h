@@ -40,7 +40,7 @@ void customMessageHandler(QtMsgType type, const char *msg)
     QTextStream textStream(&outputFile);
     time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
     textStream << time<<":"<<txtMessage << endl;
-//    std::cout<<time.toStdString().data()<<txtMessage.toStdString().data()<<"\n";
+    std::cout<<time.toStdString().data()<<txtMessage.toStdString().data()<<"\n";
 }
 
 #endif // CUSTOMDEBUG_H

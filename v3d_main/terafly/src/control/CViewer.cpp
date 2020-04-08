@@ -763,7 +763,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				cout << " === distance: " << dist << endl;
 				// --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-                /*XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+                /*
+                {XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
                 XYZ convertedSWC;
                 convertedSWC.x = 0; convertedSWC.y = 0; convertedSWC.z = 0;
                 QList<NeuronSWC> localNodeList = this->convertedTreeCoords.listNeuron;
@@ -799,7 +800,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
                 cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
 				cout << " === converted SWC node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
-				cout << " === nearest distance to mouse click: " << distSqr << endl;*/
+                cout << " === nearest distance to mouse click: " << distSqr << endl;
+}*/
 		
                 if (dist > 100)
                 {
