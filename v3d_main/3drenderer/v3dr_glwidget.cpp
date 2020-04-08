@@ -4253,13 +4253,13 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
     marker.y=markerXYZ.at(1).toFloat();
     marker.z=markerXYZ.at(2).toFloat();
 
-    std::cout<<"CollaAddMarker: marker0("<<marker.x<<","<<marker.y<<","<<marker.z<<","<<marker.color.r<<","<<marker.color.g<<","<<marker.color.b<<")"<<std::endl;
+    qDebug()<<"CollaAddMarker: marker0("<<marker.x<<","<<marker.y<<","<<marker.z<<","<<marker.color.r<<","<<marker.color.g<<","<<marker.color.b<<")"<<endl;
     for(int i=0;i<markers.size();i++)
     {
-        std::cout<<"CollaAddMarker: marker"<<i<<"("<<
+        qDebug()<<"CollaAddMarker: marker"<<i<<"("<<
        markers.at(i).x<<","<<markers.at(i).y<<","<<markers.at(i).z<<","
         <<markers.at(i).color.r<<","<<markers.at(i).color.g<<","<<markers.at(i).color.b
-        <<")"<<std::endl;
+        <<")"<<endl;
     }
 
     for(int i=0;i<markers.size();i++)
@@ -4269,12 +4269,12 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
                                (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z));
         if(dist<1)
         {
-            std::cout<<"CollaAddMarker: RemoveMarker"<<i<<"("
+            qDebug()<<"CollaAddMarker: RemoveMarker"<<i<<"("
                     <<markers.at(i).x<<","<<markers.at(i).y<<","<<markers.at(i).z<<","
                    <<markers.at(i).color.r<<","<<markers.at(i).color.g<<","<<markers.at(i).color.b<<")"
-                    <<std::endl;
+                    <<endl;
             markers.removeAt(i);
-            std::cout<<"still "<<markers.size()<<" marker(s)";
+            qDebug()<<"still "<<markers.size()<<" marker(s)";
             goto L;
 
         }
@@ -4320,8 +4320,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
 
     markers.append(marker);
-    std::cout<<"CollaAddMarker: marker0("<<marker.x<<","<<marker.y<<","<<marker.z<<","<<marker.color.r<<","<<marker.color.g<<","<<marker.color.b<<")"<<std::endl;
-    std::cout<<"still "<<markers.size()<<" marker(s)";
+    qDebug()<<"CollaAddMarker: marker0("<<marker.x<<","<<marker.y<<","<<marker.z<<","<<marker.color.r<<","<<marker.color.g<<","<<marker.color.b<<")";
    L: terafly::PluginInterface::setLandmark(markers,true);
 
 
@@ -4478,8 +4477,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             if(i==qsl.size()-1)
             {
                 CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
-                qDebug()<<"Sfsdf";
-                qDebug()<<"temp[1].toInt()"   <<temp[1].toInt();
+
             }
 
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraAI")
