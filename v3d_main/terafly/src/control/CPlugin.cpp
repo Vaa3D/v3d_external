@@ -210,7 +210,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate,int resolutio
 {
     try
     {
-        CViewer::mutex.lock();
+//        CViewer::mutex.lock();
         // set default parameter
         if(resolution == infp<int>())
             resolution = CImport::instance()->getResolutions() - 1;
@@ -229,7 +229,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate,int resolutio
 
         // push content to viewer
         CViewer::getCurrent()->loadAnnotations(collaborate);
-        CViewer::mutex.unlock();
+//        CViewer::mutex.unlock();
     }
     catch (tf::RuntimeException & e)
     {
@@ -273,7 +273,7 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
 
 bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collaborate,int resolution)
 {
-    CViewer::mutex.lock();//add by huanglei for multiply UI
+//    CViewer::mutex.lock();//add by huanglei for multiply UI
     try
     {
         // set default parameter
@@ -302,7 +302,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collabo
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
-    CViewer::mutex.unlock();
+//    CViewer::mutex.unlock();
 }
 
 // get path of the image volume at the given resolution (default: highest resolution)

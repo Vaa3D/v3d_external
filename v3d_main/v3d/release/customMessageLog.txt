@@ -1,3 +1,0 @@
-2020/01/16 10:54:38:Debug: "D:/Vaa3dRepo/vaa3d/v3d_external/v3d_main/v3d" 
-2020/01/16 10:54:38:Debug: Cannot find ./plugins directory!
-2020/01/16 10:54:39:Debug: "D:/Vaa3dRepo/vaa3d/v3d_external/v3d_main/v3d" 

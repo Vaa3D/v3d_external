@@ -614,7 +614,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
                  emit retypeSeg(_string);
             }
-            qDebug()<<"+============delseg process end========";
+            qDebug()<<"+============retype process end========";
         }
 }
 
