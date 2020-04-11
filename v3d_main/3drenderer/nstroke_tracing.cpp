@@ -7367,7 +7367,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                     else
                                     {
                                         cout<<" !node_mode================\n";
-                                        change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                                        qDebug()<<change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
 
                                         if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
                                         {
