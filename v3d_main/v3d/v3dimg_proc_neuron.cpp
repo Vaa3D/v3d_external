@@ -843,7 +843,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 #define ___trace_add_segment_default_type___
 bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/, double default_radius/*=1*/, double creatmode/*=0*/, double default_timestamp/*=0*/, double default_tfresindex/*=0*/)
 {
-    if (mCoord.size()<=2)  return false;
+    if (mCoord.size()<=0)  return false;
 
     //V3DLONG nexist = tracedNeuron.nnodes();
     V3DLONG nexist = tracedNeuron.maxnoden();

@@ -4344,6 +4344,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
         {
 
             int v_ns_size=v_ns_list.seg.at(J).row.size();
+            if(v_ns_size<=2) continue;
             V_NeuronSWC_unit node0,node1;
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
@@ -4386,6 +4387,7 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
         {
 
             int v_ns_size=v_ns_list.seg.at(J).row.size();
+            if(v_ns_size<=2) continue;
             V_NeuronSWC_unit node0,node1;
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);

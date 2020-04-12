@@ -1721,7 +1721,9 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd,creatmode);
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
-            if (!fromserver&&loc_list.size()>2)
+
+
+            if (!fromserver)
 			{
 
 				if (w->TeraflyCommunicator && curImg->colla_cur_seg.row.size() > 0)
