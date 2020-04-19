@@ -730,8 +730,8 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 
 		if (lastActive != this) //need updateTool
         {
-            if(lastActive)
-                lastActive->hide();
+//            if(lastActive)
+//                lastActive->hide();
 			lastActive = this;
 
 			qDebug() << QString("V3dR_MainWindow::changeEvent, ActivationChange-> %1").arg(title_prefix+" [" + data_title + "]");
