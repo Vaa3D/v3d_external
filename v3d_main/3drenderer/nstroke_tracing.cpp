@@ -7286,7 +7286,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
         if (p_tree
-                && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+                /*&& p_tree->editable*/)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
         {
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
@@ -7334,12 +7334,12 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                             QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
                             if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
                             {
-                                cout<<"hei hei hei k="<<k;
+//                                cout<<"hei hei hei k="<<k;
                                 if(neuronColorMode==0)
                                 {
                                     if(node_mode)
                                     {
-                                        cout<<" node_mode\n";
+//                                        cout<<" node_mode\n";
                                         GLdouble spx, spy, spz;
                                         vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
                                         int best_dist;
@@ -7366,7 +7366,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                     }
                                     else
                                     {
-                                        cout<<" !node_mode================\n";
+//                                        cout<<" !node_mode================\n";
                                         qDebug()<<change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
 
                                         if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
