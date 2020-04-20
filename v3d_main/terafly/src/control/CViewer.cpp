@@ -3366,6 +3366,13 @@ void CViewer::segEditing_setCursor(string action)
 		QCursor eraseCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
 	}
+	else if (!action.compare("connect"))
+	{
+		CViewer::current->editingMode = "connect";
+		QString cursorPath = ".\\resources\\segment_editing\\connectCursor.png";
+		QCursor connectCursorPic = QCursor(QPixmap(cursorPath));
+		CViewer::current->view3DWidget->setCursor(connectCursorPic);
+	}
 	else if (!action.compare("restore"))
 	{
 		CViewer::current->editingMode = "none";

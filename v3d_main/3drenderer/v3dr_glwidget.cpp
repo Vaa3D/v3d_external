@@ -1051,8 +1051,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (!pMain.fragTracePluginInstance)
 					{
-						//QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
-						QPluginLoader* loader = new QPluginLoader("D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+						QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+						//QPluginLoader* loader = new QPluginLoader("D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
 						pMain.FragTracerQPluginPtr = loader;
 						if (!loader->isLoaded())
 						{
@@ -1241,6 +1241,36 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
 			else if (IS_SHIFT_MODIFIER)
 			{
+				if (this->getRenderer())
+				{
+					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+#ifdef _NEURON_ASSEMBLER_
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
+					{
+						V3DPluginArgList pluginInputList, pluginOutputList;
+						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+						vector<char*> pluginInputArgList;
+						vector<char*> pluginOutputArgList;
+						dummyInput.type = "dummy";
+						dummyInput.p = (void*)(&pluginInputArgList);
+						inputParam.type = "shift_c";
+						inputParam.p = (void*)(&pluginInputArgList);
+						pluginInputList.push_back(dummyInput);
+						pluginInputList.push_back(inputParam);
+						dummyOutput.type = "dummy";
+						dummyOutput.p = (void*)(&pluginOutputArgList);
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+						curImg->proj_trace_history_append();
+					}
+#endif
+				}
 				// reserved for future fragment tracer use
 			}
             else
