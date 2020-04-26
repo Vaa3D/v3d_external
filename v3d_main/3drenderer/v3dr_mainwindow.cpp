@@ -110,6 +110,7 @@ void V3dR_MainWindow::closeEvent(QCloseEvent* e)
 		_idep->local_win_size = size();
 	}
 #endif
+    qDebug()<<"close event over";
 }
 
 void V3dR_MainWindow::postClose()
