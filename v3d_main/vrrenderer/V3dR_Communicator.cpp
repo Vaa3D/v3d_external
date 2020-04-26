@@ -340,8 +340,10 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
                 pushUndoStack("marker",send_MSG);
             }else if(messageRex.indexIn(send_MSG)!=-1)
             {
-                QStringList nodePosList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(2).split(" ");
-                QStringList resList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts).at(0).split(" ");
+                QStringList segSepList=messageRex.cap(1).trimmed().split("_",QString::SkipEmptyParts);
+                if(segSepList.size()<3) return ;
+                QStringList nodePosList=segSepList.at(2).split(" ");
+                QStringList resList=segSepList.at(0).split(" ");
                 QString _1=nodePosList.at(2)+" "+nodePosList.at(3)+" "+nodePosList.at(4);
                 QString _2=resList.at(1)+" "+resList.at(2)+" "+resList.at(3);
                 pushUndoStack("seg",QString("/del_curve:TeraFly_"+_1+" "+_2+"_"));

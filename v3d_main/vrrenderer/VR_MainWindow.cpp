@@ -704,11 +704,15 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 
                 QStringList _undostringList=pMainApplication->UndoNT2QString();
 //                qDebug()<<"_undostringList:"<<_undostringList;
-                QString send_string=_undostringList[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
+
+                    QString send_string=_undostringList[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
                         +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+_undostringList[1];
 //                qDebug()<<send_string;
-                VR_Communicator->undo_delcure.push_back("/seg:"+send_string);
-                VR_Communicator->onReadySend(QString("/del_curve:TeraVR_" + ConverteddelcurvePOS + " " + QSCurrentRes));
+                if(_undostringList[1].isNull()==false)
+                {
+                    VR_Communicator->undo_delcure.push_back("/seg:"+send_string);
+                    VR_Communicator->onReadySend(QString("/del_curve:TeraVR_" + ConverteddelcurvePOS + " " + QSCurrentRes));
+                }
 				CURRENT_DATA_IS_SENT=true;
 			}
 

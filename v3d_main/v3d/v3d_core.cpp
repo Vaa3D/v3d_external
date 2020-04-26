@@ -6666,9 +6666,12 @@ vector<XYZ> My4DImage::ExtractDeletingNode(vector<V_NeuronSWC> &vector_VSWC)
     {
         if(tracedNeuron.seg.at(i).to_be_deleted)
         {
-            out_LocList.push_back(XYZ(tracedNeuron.seg.at(i).row[1].x,
-                                  tracedNeuron.seg.at(i).row[1].y,tracedNeuron.seg.at(i).row[1].z));
-            vector_VSWC.push_back(tracedNeuron.seg.at(i));
+            if(tracedNeuron.seg.at(i).row.size()>2)
+            {
+                out_LocList.push_back(XYZ(tracedNeuron.seg.at(i).row[1].x,
+                                      tracedNeuron.seg.at(i).row[1].y,tracedNeuron.seg.at(i).row[1].z));
+                vector_VSWC.push_back(tracedNeuron.seg.at(i));
+            }
         }
     }
 //    while (iter != tracedNeuron.seg.end())
