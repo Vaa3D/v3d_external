@@ -61,6 +61,7 @@ class terafly::myV3dR_GLWidget : public V3dR_GLWidget
 
 #ifdef _NEURON_ASSEMBLER_
 		void setZoom_NAeraserSize(float zr);
+		void setZoom_NAconnectorSize(float zr);
 #endif
 };
 

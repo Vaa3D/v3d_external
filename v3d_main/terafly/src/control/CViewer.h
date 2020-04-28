@@ -220,11 +220,13 @@ class terafly::CViewer : public QWidget
 		virtual void pushMarkersfromTester(const set<vector<float>>& markerCoords, RGBA8 color);
 
 		string editingMode;
-		int eraserSize;
+		int eraserSize, connectorSize;
 		set<int> deletedSegsIDs;
 		virtual void editingModeInit() { CViewer::getCurrent()->editingMode = "none"; }
 		virtual void setEraserSize(int newEraserSize) { CViewer::getCurrent()->eraserSize = newEraserSize; }
 		virtual int getEraserSize() { return CViewer::getCurrent()->eraserSize; }
+		virtual void setConnectorSize(int newConnectorSize) { CViewer::getCurrent()->connectorSize = newConnectorSize; }
+		virtual int getConnectorSize() { return CViewer::getCurrent()->connectorSize; }
 		virtual void segEditing_setCursor(string action);		
 		virtual void convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[]);
 		virtual void convertWindowCoord2likelyLocalCoord(const int mouseX, const int mouseY, float putativeCoord[]);

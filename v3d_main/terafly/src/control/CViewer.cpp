@@ -677,8 +677,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(0));
 					// The distance is not always computed correctly, sometimes even far off. But the identified nearest node to the mouse click is usually correct. 
 					double dist;
-					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
-					
+					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+
 					cout << " === mouse coord: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
 					cout << " === segment ID: " << treePtr->listNeuron.at(index).seg_id << endl;
@@ -689,9 +689,33 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					coords[1] = treePtr->listNeuron.at(index).y;
 					coords[2] = treePtr->listNeuron.at(index).z;
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					
-					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords, mouseEvt->x(), mouseEvt->y());
 
+					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords);
+					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
+					curImg->proj_trace_history_append();
+				}
+				else if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("connect"))
+				{
+					myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+					if (thisRenderer->listNeuronTree.size() == 0) return false;
+
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(0));
+					// The distance is not always computed correctly, sometimes even far off. But the identified nearest node to the mouse click is usually correct. 
+					double dist;
+					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+
+					cout << " === mouse coord: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
+					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
+					cout << " === segment ID: " << treePtr->listNeuron.at(index).seg_id << endl;
+					//cout << " === distance: " << dist << endl; 
+
+					float coords[3];
+					coords[0] = treePtr->listNeuron.at(index).x;
+					coords[1] = treePtr->listNeuron.at(index).y;
+					coords[2] = treePtr->listNeuron.at(index).z;
+					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+
+					PMain::getInstance()->NeuronAssemblerPortal->connectSegProcess(curImg->tracedNeuron, coords);
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
 					curImg->proj_trace_history_append();
 				}
@@ -3369,7 +3393,8 @@ void CViewer::segEditing_setCursor(string action)
 	else if (!action.compare("connect"))
 	{
 		CViewer::current->editingMode = "connect";
-		QString cursorPath = ".\\resources\\segment_editing\\connectCursor.png";
+		QString connectorSizeQ = QString::number(CViewer::current->connectorSize);
+		QString cursorPath = ".\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
 		QCursor connectCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(connectCursorPic);
 	}
