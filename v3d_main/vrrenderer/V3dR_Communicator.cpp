@@ -666,11 +666,11 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
                 packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
                         .arg(curSWCunit.r).arg(curSWCunit.parent);
 
-                if(i==0)
-                {
-                    //                qDebug()<<"delmarker "+packetbuff;
-                    emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
-                }
+//                if(i==0)
+//                {
+//                    //                qDebug()<<"delmarker "+packetbuff;
+//                    emit delMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
+//                }
             }
             else
             {
@@ -678,7 +678,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
                 packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
                         .arg(curSWCunit.r).arg(curSWCunit.parent);
                 //            qDebug()<<"marker "+packetbuff;
-                emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
+//                emit addMarker(QString("%1 %2 %3").arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z),curSWCunit.type);
 
                 qDebug()<<"curSWCunit.type"   <<curSWCunit.type;
 

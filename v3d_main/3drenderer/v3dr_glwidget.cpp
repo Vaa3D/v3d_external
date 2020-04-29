@@ -4447,15 +4447,15 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=0;
             S_temp.timestamp=0;
             S_temp.tfresindex=0;
-            if(i==1)
-            {
-                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
-            }
-            if(i==qsl.size()-1)
-            {
-                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
+//            if(i==1)
+//            {
+//                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
+//            }
+//            if(i==qsl.size()-1)
+//            {
+//                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
 
-            }
+//            }
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
             S_temp.n=i;
@@ -4472,15 +4472,15 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
             S_temp.creatmode=0;
             S_temp.timestamp=0;
             S_temp.tfresindex=0;
-            if(i==1)
-            {
-                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
-            }
-            if(i==qsl.size()-1)
-            {
-                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
+//            if(i==1)
+//            {
+//                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
+//            }
+//            if(i==qsl.size()-1)
+//            {
+//                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
 
-            }
+//            }
 
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraAI")
         {
