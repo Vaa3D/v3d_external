@@ -235,6 +235,8 @@ void VR_MainWindow::TVProcess(QString line)
 
         }
         else if (deletecurveRex.indexIn(line) != -1) {
+            VR_Communicator->receiveCNT++;
+            qDebug()<<"receive "<<VR_Communicator->receiveCNT;
 //            qDebug() << "deletecurve:"<<line;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
@@ -287,6 +289,8 @@ void VR_MainWindow::TVProcess(QString line)
         else if (markerRex.indexIn(line) != -1) {
             QString user = markerRex.cap(1);
             QString markerPos=markerRex.cap(2).trimmed();
+            VR_Communicator->receiveCNT++;
+            qDebug()<<"receive "<<VR_Communicator->receiveCNT;
             QStringList markerMSGs =markerPos .split(" ");
             if(markerMSGs.size()<3)
             {
@@ -354,6 +358,7 @@ void VR_MainWindow::TVProcess(QString line)
             }
        }
         else if (delmarkerRex.indexIn(line) != -1) {
+
             QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
                         QString user = delmarkerRex.cap(1);
             if(delmarkerPOS.size()<3)
@@ -416,7 +421,8 @@ void VR_MainWindow::TVProcess(QString line)
             pMainApplication->UpdateDragNodeinNTList(ntnum,swcnum,converreceivexyz.x,converreceivexyz.y,converreceivexyz.z);
         }
         else if (messageRex.indexIn(line) != -1) {
-
+            VR_Communicator->receiveCNT++;
+            qDebug()<<"receive "<<VR_Communicator->receiveCNT;
             QString user=messageRex.cap(1);
             QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//list of nodes: seg header_node 1_node 2.....
 //            qDebug()<<MSGs[0];
@@ -501,6 +507,8 @@ void VR_MainWindow::TVProcess(QString line)
 
         else if (retypeRex.indexIn(line)!=-1)
         {
+            VR_Communicator->receiveCNT++;
+            qDebug()<<"receive "<<VR_Communicator->receiveCNT;
             QString user = deletecurveRex.cap(1);
             QStringList delMSGs = deletecurveRex.cap(2).trimmed().split("_",QString::SkipEmptyParts);
 

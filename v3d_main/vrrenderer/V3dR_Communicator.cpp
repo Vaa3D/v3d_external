@@ -515,6 +515,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }
         else if (deletecurveRex.indexIn(line) != -1) {
             QString user=deletecurveRex.cap(1);
+            receiveCNT++;
+            qDebug()<<"receive "<<receiveCNT;
             qDebug()<<"+============delseg process begin========";
             if(flag_init==0)
             {
@@ -539,7 +541,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
         }
         else if (markerRex.indexIn(line) != -1) {
-
+            receiveCNT++;
+            qDebug()<<"receive "<<receiveCNT;
 //            qDebug()<<"+============marker process begin========";
             QString user=markerRex.cap(1);
 
@@ -559,7 +562,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
         }
         else if (messageRex.indexIn(line) != -1) {
-
+            receiveCNT++;
+            qDebug()<<"receive "<<receiveCNT;
 //            qDebug()<<"======================messageRex in Terafly begin============";
 
             QString user=messageRex.cap(1);
@@ -596,6 +600,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }
         else if(retypeRex.indexIn(line)!=-1)
         {
+            receiveCNT++;
+            qDebug()<<"receive "<<receiveCNT;
             QString user=retypeRex.cap(1);
             qDebug()<<"+============retype process begin========"<<line;
             if(flag_init==0)

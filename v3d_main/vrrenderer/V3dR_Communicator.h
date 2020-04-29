@@ -160,6 +160,8 @@ public:
     QStringList undo_delcure;
     void pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC);
     void pushUndoStack(QString,QString);
+
+    int receiveCNT=0;
 };
 
 
