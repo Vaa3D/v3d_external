@@ -4419,7 +4419,7 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 {
-    qDebug()<<"in collaAddseg"<<segInfo;
+//    qDebug()<<"in collaAddseg"<<segInfo;
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
     if (qsl.size()<=2) return;
 
@@ -4513,9 +4513,8 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 
     testVNL.append(temp);
     NeuronTree newNT=V_NeuronSWC_list__2__NeuronTree(testVNL);
-    qDebug()<<"set SWC begin";
     terafly::PluginInterface::setSWC(newNT,true);
-    qDebug()<<"set SWC end";
+
 
 }
 //#endif
