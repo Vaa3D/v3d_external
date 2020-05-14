@@ -537,7 +537,7 @@ public:
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
-     void deleteMultiNeuronsByStrokeCommit(XYZ coords);
+     vector<XYZ> deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,vector <XYZ> global_list);
      // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
      void selectMultiMarkersByStroke();
 

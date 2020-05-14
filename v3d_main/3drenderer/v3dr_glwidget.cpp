@@ -4329,37 +4329,22 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
 void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
-    QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
-    NeuronTree  nt = terafly::PluginInterface::getSWC();
-    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);    
+    vector<XYZ> local_list,global_list;
     for(int i=0;i<delMarkerPosList.size();i++)
     {
 
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
-
-        XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
-
-
-        for(int J=0;J<v_ns_list.seg.size();J++)
-        {
-
-            int v_ns_size=v_ns_list.seg.at(J).row.size();
-            if(v_ns_size<2) continue;
-            V_NeuronSWC_unit node0,node1;
-            node0=v_ns_list.seg.at(J).row.at(1);
-            node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
-
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
-            {
-
-                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
-                break;
-            }
-        }
+        global_list.push_back(XYZ(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat()));
+        local_list.push_back(ConvertreceiveCoords(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat()));
     }
-    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
 
-    terafly::PluginInterface::setSWC(nt,true);
+    global_list=rendererGL1Ptr->deleteMultiNeuronsByStrokeCommit(local_list,global_list);
+    if(global_list.size()!=0)
+    {
+
+    }
 
 }
 

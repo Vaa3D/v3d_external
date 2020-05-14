@@ -3325,18 +3325,43 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 //    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
 }
 
-void Renderer_gl1::deleteMultiNeuronsByStrokeCommit(XYZ coords)
+vector<XYZ> Renderer_gl1::deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,vector <XYZ> global_list)
 {
+    vector<XYZ> global_list_not_process;
+
+
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
 
-    curImg->tracedNeuron.deleteMultiSeg();
-
-    //curImg->proj_trace_history_append();          // no need to update the history
+    for(int i=0;i<local_list.size();i++)
+    {
+        XYZ delcurve=local_list[i];
+        bool findit=false;
+        for(int j=0;j<curImg->tracedNeuron.seg.size();j++)
+        {
+            int v_ns_size=curImg->tracedNeuron.seg.at(j).row.size();
+            if(v_ns_size<2) continue;
+            V_NeuronSWC_unit node0,node1;
+            node0=curImg->tracedNeuron.seg.at(j).row.at(1);
+            node1=curImg->tracedNeuron.seg.at(j).row.at(v_ns_size-2);
+            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
+            {
+                qDebug()<<"find seg "<<j;findit=true;
+                curImg->tracedNeuron.seg[j].to_be_deleted=true;
+                break;
+            }
+        }
+        if(!findit) global_list_not_process.push_back(global_list[i]);
+    }
+    std::vector<V_NeuronSWC>::iterator iter = curImg->tracedNeuron.seg.begin();
+    while (iter != curImg->tracedNeuron.seg.end())
+        if (iter->to_be_deleted)
+            iter = curImg->tracedNeuron.seg.erase(iter);
+        else
+           ++iter;
     curImg->update_3drenderer_neuron_view(w, this);
-//    NeuronTree nt= terafly::PluginInterface::getSWC();
-//    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
+    return global_list_not_process;
 }
 
 // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
