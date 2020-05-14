@@ -3325,6 +3325,20 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 //    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
 }
 
+void Renderer_gl1::deleteMultiNeuronsByStrokeCommit(XYZ coords)
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
+
+    curImg->tracedNeuron.deleteMultiSeg();
+
+    //curImg->proj_trace_history_append();          // no need to update the history
+    curImg->update_3drenderer_neuron_view(w, this);
+//    NeuronTree nt= terafly::PluginInterface::getSWC();
+//    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
+}
+
 // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
 void Renderer_gl1::selectMultiMarkersByStroke()
 {

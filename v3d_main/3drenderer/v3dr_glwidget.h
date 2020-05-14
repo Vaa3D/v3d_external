@@ -609,6 +609,8 @@ public:
 #endif
     }
 #ifdef __ALLOW_VR_FUNCS__
+    XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
+
     //for collaborate
 public slots:
     void CollaAddSeg(QString segInfo,int colortype);

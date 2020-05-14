@@ -537,6 +537,7 @@ public:
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
+     void deleteMultiNeuronsByStrokeCommit(XYZ coords);
      // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
      void selectMultiMarkersByStroke();
 
@@ -667,7 +668,7 @@ public:
 
 	// in renderer_obj.cpp
     void addCurveSWC(vector<XYZ> &loc_list, int chno=0, double creatmode=0,bool fromserver = false); //if no chno is specified, then assume to be the first channel //LMG 26/10/2018 if no creatmode specified set to 0
-
+    void addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode,int type);
 	//for local view
     bool produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type=0);
 	void ablate3DLocationSeries(vector <XYZ> & loc_vec); //added by PHC, 120506

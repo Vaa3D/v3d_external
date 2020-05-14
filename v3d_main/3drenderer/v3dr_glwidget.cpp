@@ -4365,10 +4365,8 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 
 void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
 {
-//    qDebug()<<"in CollaDelSeg:"<<markerPOS;
 
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);
-//    qDebug()<<delMarkerPosList;
 
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
@@ -4378,10 +4376,7 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
 
         XYZ delcurve(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat());
-//        qDebug()<<"adhkjhjk";
         int type=nodeXYZ.at(3).toInt();
-//        int type =4;
-//        qDebug()<<"delcurve:"<<delcurve.x<<" "<<delcurve.y<<" "<<delcurve.z;
 
         for(int J=0;J<v_ns_list.seg.size();J++)
         {
@@ -4391,14 +4386,6 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
             V_NeuronSWC_unit node0,node1;
             node0=v_ns_list.seg.at(J).row.at(1);
             node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
-//            qDebug()<<"node0:"<<node0.x<<" "<<node0.y<<" "<<node0.z<<sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2));
-//            qDebug()<<"node1:"<<node1.x<<" "<<node1.y<<" "<<node1.z<<sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2));
-//            if(sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.01)
-//            {
-//                qDebug()<<"find last 2";
-//                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
-//                break;
-//            }
             if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
             {
                 qDebug()<<"find seg "<<J;
@@ -4406,7 +4393,6 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
                 {
                     v_ns_list.seg.at(J).row.at(k).type=type;
                 }
-//                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
                 break;
             }
         }
@@ -4414,7 +4400,6 @@ void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
 
     terafly::PluginInterface::setSWC(nt,true);
-
 }
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
@@ -4422,100 +4407,47 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 //    qDebug()<<"in collaAddseg"<<segInfo;
     QStringList qsl=segInfo.split("_",QString::SkipEmptyParts);
     if (qsl.size()<=2) return;
+    SetupCollaborateInfo();
+    vector<XYZ> loc_coords;
+    int type;
 
-    NeuronTree newTempNT;
-    newTempNT.listNeuron.clear();
-    newTempNT.hashNeuron.clear();
     for(int i=1;i<qsl.size();i++)
     {
-        NeuronSWC S_temp;
         QStringList temp=qsl[i].trimmed().split(" ");
         if(qsl[0].trimmed().split(" ").at(0)=="TeraFly")
         {
-            S_temp.n=i;
-            S_temp.type=temp[1].toInt();
-            S_temp.x=temp[2].toFloat();
-            S_temp.y=temp[3].toFloat();
-            S_temp.z=temp[4].toFloat();
-            S_temp.r=temp[5].toFloat();
-            if(i==1)
-                S_temp.pn=-1;
-            else
-                S_temp.pn=i-1;
-
-            S_temp.level=0;
-            S_temp.creatmode=0;
-            S_temp.timestamp=0;
-            S_temp.tfresindex=0;
-//            if(i==1)
-//            {
-//                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
-//            }
-//            if(i==qsl.size()-1)
-//            {
-//                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
-
-//            }
+            float x=temp[2].toFloat();
+            float y=temp[3].toFloat();
+            float z=temp[4].toFloat();
+            type=temp[1].toInt();
+            loc_coords.push_back(ConvertreceiveCoords(x,y,z));
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraVR")
         {
-            S_temp.n=i;
-            S_temp.type=temp[1].toInt();
-            S_temp.x=temp[2].toFloat();
-            S_temp.y=temp[3].toFloat();
-            S_temp.z=temp[4].toFloat();
-            S_temp.r=temp[5].toFloat();
-            if(i==1)
-                S_temp.pn=-1;
-            else
-                S_temp.pn=i-1;
-            S_temp.level=0;
-            S_temp.creatmode=0;
-            S_temp.timestamp=0;
-            S_temp.tfresindex=0;
-//            if(i==1)
-//            {
-//                CollaDelMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]));
-//            }
-//            if(i==qsl.size()-1)
-//            {
-//                CollaAddMarker(QString("%1 %2 %3").arg(temp[2]).arg(temp[3]).arg(temp[4]),temp[1].toInt());
-
-//            }
+            float x=temp[2].toFloat();
+            float y=temp[3].toFloat();
+            float z=temp[4].toFloat();
+            type=temp[1].toInt();
+            loc_coords.push_back(ConvertreceiveCoords(x,y,z));
 
         }else if(qsl[0].trimmed().split(" ").at(0)=="TeraAI")
         {
-            S_temp.n=i;
-            S_temp.type=18;
-            S_temp.x=temp[2].toFloat();
-            S_temp.y=temp[3].toFloat();
-            S_temp.z=temp[4].toFloat();
-            S_temp.r=temp[5].toFloat();
-
-            if(i==1)
-                S_temp.pn=-1;
-            else
-                S_temp.pn=i-1;
-
-            S_temp.level=0;
-            S_temp.creatmode=0;
-            S_temp.timestamp=0;
-            S_temp.tfresindex=0;
-
+            float x=temp[2].toFloat();
+            float y=temp[3].toFloat();
+            float z=temp[4].toFloat();
+            type=18;
+            loc_coords.push_back(ConvertreceiveCoords(x,y,z));
         }
-        newTempNT.listNeuron.append(S_temp);
-        newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
     }
-    V_NeuronSWC temp=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
-	temp.name = "vaa3d_traced_neuron";
-	temp.file = "vaa3d_traced_neuron";
-    NeuronTree nt=terafly::PluginInterface::getSWC();
-    V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(nt);
+    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
 
-    testVNL.append(temp);
-    NeuronTree newNT=V_NeuronSWC_list__2__NeuronTree(testVNL);
-    terafly::PluginInterface::setSWC(newNT,true);
+    rendererGL1Ptr->addCurveSWC(loc_coords, 1, 1,type);
 
 
+}
+
+XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> local
+{
+    return TeraflyCommunicator->ConvertGlobaltoLocalCroods(x,y,z);
 }
 //#endif
 ///////////////////////////////////////////////////////////////////////////////////////////

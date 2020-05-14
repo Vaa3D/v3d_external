@@ -148,8 +148,8 @@ private:
 public:
     quint16 nextblocksize;
 private:
-	XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
-	XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
+
+    XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
     XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
 public:
     XYZ AutoTraceNode;
@@ -160,7 +160,7 @@ public:
     QStringList undo_delcure;
     void pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC);
     void pushUndoStack(QString,QString);
-
+    XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
     int receiveCNT=0;
 };
 
