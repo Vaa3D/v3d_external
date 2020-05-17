@@ -4108,6 +4108,7 @@ void PMain::load()
 //        connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
 //        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
         cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
+        qDebug()<<"cur_win->getGLWidget() "<<cur_win->getGLWidget()<<" TeraflyCommunicator "<<Communicator;
 //        connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(disconnected()),
 //                managesocket,SIGNAL(deleteManageSocket()));
 
@@ -4231,6 +4232,7 @@ void PMain::ColLoadANO(QString ANOfile)
 //            f->remove();
 //        delete f;
 //        f=0;
+        V3dR_GLWidget::noTerafly=false;
         emit startASK(ANOfile,500);
 
     }

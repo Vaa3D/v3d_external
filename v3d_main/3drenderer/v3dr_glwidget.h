@@ -618,10 +618,15 @@ public slots:
     void CollaAddMarker(QString markerPOS,int colortype);
     void CollaDelMarker(QString markerPOS);
     void CollretypeSeg(QString markerPOS);
+public:
+    void batchprocessDel();
+    static vector<XYZ> global_delMSG;
+    static bool noTerafly;
 
     //end
 #endif
 
 };
+
 
 #endif

@@ -214,6 +214,7 @@ void V3dR_GLWidget::createRenderer() {makeCurrent(); deleteRenderer(); initializ
 
 void V3dR_GLWidget::SetupCollaborateInfo()
 {
+    qDebug()<<data_title;
 	QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
 	if(rx.indexIn(data_title) != -1 && (TeraflyCommunicator !=nullptr))
 	{
@@ -4158,6 +4159,8 @@ void V3dR_GLWidget::cancelSelect()
 	if (renderer) renderer->endSelectMode();
 }
 //#ifdef __ALLOW_VR_FUNCS_
+vector<XYZ> V3dR_GLWidget::global_delMSG ;
+bool V3dR_GLWidget::noTerafly=true;
 void V3dR_GLWidget::UpdateVRcollaInfo()
 {
     qDebug()<<"UpdateVRcollaInfo";
@@ -4331,6 +4334,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
 {
     QStringList delMarkerPosList=markerPOS.split("_",QString::SkipEmptyParts);    
     vector<XYZ> local_list,global_list;
+    SetupCollaborateInfo();
     for(int i=0;i<delMarkerPosList.size();i++)
     {
 
@@ -4343,7 +4347,11 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
     global_list=rendererGL1Ptr->deleteMultiNeuronsByStrokeCommit(local_list,global_list);
     if(global_list.size()!=0)
     {
-
+        for(int i=0;i<global_list.size();i++)
+        {
+            global_delMSG.push_back(global_list[i]);
+            qDebug()<<"cannot del in local: "<<i<<" "<<global_list[i].x<<" "<<global_list[i].y<<" "<<global_list[i].z;
+        }
     }
 
 }
@@ -4433,6 +4441,37 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> local
 {
     return TeraflyCommunicator->ConvertGlobaltoLocalCroods(x,y,z);
+}
+
+void V3dR_GLWidget::batchprocessDel()
+{
+    if(noTerafly) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    for(int i=0;i<global_delMSG.size();i++)
+    {
+
+        XYZ delcurve=global_delMSG[i];
+        qDebug()<<i<<" "<<delcurve.x<<" "<<delcurve.y<<" "<<delcurve.z;
+        for(int J=0;J<v_ns_list.seg.size();J++)
+        {
+            int v_ns_size=v_ns_list.seg.at(J).row.size();
+            if(v_ns_size<2) continue;
+            V_NeuronSWC_unit node0,node1;
+            node0=v_ns_list.seg.at(J).row.at(1);
+            node1=v_ns_list.seg.at(J).row.at(v_ns_size-2);
+           if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
+            {
+               qDebug()<<"find it "<<i;
+                v_ns_list.seg.erase(v_ns_list.seg.begin()+J);
+                break;
+            }
+        }
+    }
+    qDebug()<<"batchprocessDel end";
+    global_delMSG.clear();
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
 }
 //#endif
 ///////////////////////////////////////////////////////////////////////////////////////////

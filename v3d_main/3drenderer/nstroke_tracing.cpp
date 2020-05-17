@@ -3328,8 +3328,6 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 vector<XYZ> Renderer_gl1::deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,vector <XYZ> global_list)
 {
     vector<XYZ> global_list_not_process;
-
-
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
