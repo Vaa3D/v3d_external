@@ -3400,9 +3400,29 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * p
 		if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
 		//qDebug()<<i<<" "<<px<<" "<<py<<" "<<pz<<"\n";
 		double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
+
+#ifdef _NEURON_ASSEMBLER_
+		if (cur_dist < this->radius * this->radius) this->indices.insert(i);
+#endif
+
 		if (i==0) {	best_dist = cur_dist; best_ind=0; }
-		else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i;}}
+		else 
+		{	
+			if (cur_dist<best_dist) 
+			{
+				best_dist=cur_dist; 
+				best_ind = i;
+			}
+		}
 	}
+
+	// Sensitivity test for mouse click and projected coordinates -- MK, May, 2020
+	/*GLint res = gluProject(p_listneuron->at(best_ind).x, p_listneuron->at(best_ind).y, p_listneuron->at(best_ind).z, currMviewMatrix, currPmatrix, currViewport, &px, &py, &pz);
+	cout << " --- mouse click coords from rendere_hit: " << cx << " " << cy << endl;
+	cout << " --- nearesr node projected coords from renderer_hit: (" << best_ind << ") " << px << " " << py << endl;
+	cout << " --- 1st time projected coords: " << bestPx << " " << bestPy << endl;
+	cout << endl;*/
+
 	//best_ind = p_listneuron->at(best_ind).n; // this no used, because it changed in V_NeuronSWC
 	return best_ind; //by PHC, 090209. return the index in the SWC file
 }
@@ -3416,6 +3436,7 @@ void Renderer_gl1::localSWCcoord2projectedWindowCoord(const float swcLocalCoord[
 	iz = GLdouble(swcLocalCoord[2]);
 
 	GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
+	py = viewport[3] - py;
 
 	swcWindowCoord[0] = px;
 	swcWindowCoord[1] = py;

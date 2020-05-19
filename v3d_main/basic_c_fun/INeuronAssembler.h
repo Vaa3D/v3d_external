@@ -3,6 +3,8 @@
 
 #include <QtCore>
 
+#include <boost\container\flat_map.hpp>
+
 #include "IPMain4NeuronAssembler.h"
 
 using namespace std;
@@ -37,6 +39,7 @@ public:
 	virtual void setConnectorSize(int newConnectorSize) = 0;
 	virtual int getConnectorSize() = 0;
 	virtual void segEditing_setCursor(string action) = 0;
+	virtual int getNearestSegEndClusterCentroid(const boost::container::flat_map<int, vector<float>>& segEndClusterCentroidMap) = 0;
 	virtual void convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[]) = 0;
 	virtual void convertWindowCoord2likelyLocalCoord(const int mouseX, const int mouseY, float putativeCoord[]) = 0;
 
