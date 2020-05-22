@@ -549,6 +549,7 @@ public:
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
 
 	 bool FragTraceMarkerDetector3Dviewer;
+	 bool NAeditingMode;
 	 v3dr_SurfaceType surType;
 	 // -----------------------------------------------------------------------------------------------------------------------------------
 

@@ -2386,7 +2386,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	// define a curve //091023
 //    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 //    	selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
-////=======
 
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
@@ -2406,10 +2405,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
 
-//        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
-//					selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
-//					? 1 : (selectMode == smCurveCreate2)? 2 : 3;
-//=======
 //        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons ||
 //        		 selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
 //        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons) //20170731 smBreakTwoNeurons used in mozak
@@ -3080,7 +3075,7 @@ int Renderer_gl1::hitPen(int x, int y)
 			selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
 	{
-		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
+		//qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 		_appendMarkerPos(x,y);
 		// endSlectMode() in movePen
 		return 1;

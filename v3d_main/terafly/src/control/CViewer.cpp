@@ -698,7 +698,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 						break;
 					}
 
-					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(0));
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(thisRenderer->curEditingNeuron - 1));
 					double dist;
 					thisRenderer->indices.clear();
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
@@ -739,7 +739,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 						break;
 					}
 
-					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(0));
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(thisRenderer->curEditingNeuron - 1));
 					double dist;
 					thisRenderer->indices.clear();
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);			
@@ -1457,6 +1457,7 @@ void CViewer::close()
 		{
 			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
 			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+			PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
 		}
 #endif
 
@@ -2329,6 +2330,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 			//                                                                                                   -- MK, Jan, 2020
 			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(this);
 			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+			PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
 		}
 #endif
 

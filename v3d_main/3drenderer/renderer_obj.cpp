@@ -32,6 +32,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "freeglut_geometry_r.c"
+#include "../terafly/src/presentation/PMain.h"
 
 #include "../io/asc_to_swc.h"
 //#include "../io/sswc_to_swc.h"
@@ -1957,6 +1958,32 @@ void Renderer_gl1::setEditMode()
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+
+#ifdef _NEURON_ASSEMBLER_
+	if (this->NAeditingMode)
+	{
+		this->NAeditingMode = false;
+		terafly::PMain& pMain = *(terafly::PMain::getInstance());
+		if (pMain.fragTracePluginInstance)
+		{
+			V3DPluginArgList pluginInputList, pluginOutputList;
+			V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+			vector<char*> pluginInputArgList;
+			vector<char*> pluginOutputArgList;
+			dummyInput.type = "dummy";
+			dummyInput.p = (void*)(&pluginInputArgList);
+			inputParam.type = "escape";
+			inputParam.p = (void*)(&pluginInputArgList);
+			pluginInputList.push_back(dummyInput);
+			pluginInputList.push_back(inputParam);
+			dummyOutput.type = "dummy";
+			dummyOutput.p = (void*)(&pluginOutputArgList);
+			XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+			curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+		}
+	}
+#endif
+
     if(listNeuronTree.size()>=1 && w && curImg)
     {
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)

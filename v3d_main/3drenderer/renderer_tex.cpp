@@ -103,6 +103,7 @@ Renderer_gl1::Renderer_gl1(void* widget)
 	this->pressedShowSubTree = false;
 	this->zThick = 1;
 	this->FragTraceMarkerDetector3Dviewer = false;
+	this->NAeditingMode = false;
 
 	qDebug("  Renderer_gl1::Renderer_gl1");
 	init_members();
@@ -641,10 +642,6 @@ void Renderer_gl1::paint()
 
         glPopMatrix(); //========================================================= }
     }
-
-
-
-
 
 	return;
 }
