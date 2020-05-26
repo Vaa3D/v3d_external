@@ -4345,6 +4345,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
     Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
 
     global_list=rendererGL1Ptr->deleteMultiNeuronsByStrokeCommit(local_list,global_list);
+    POST_updateGL();
     if(global_list.size()!=0)
     {
         for(int i=0;i<global_list.size();i++)
@@ -4353,6 +4354,7 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             qDebug()<<"cannot del in local: "<<i<<" "<<global_list[i].x<<" "<<global_list[i].y<<" "<<global_list[i].z;
         }
     }
+
 
 }
 
@@ -4434,6 +4436,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
     Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
 
     rendererGL1Ptr->addCurveSWC(loc_coords, 1, 1,type);
+    POST_updateGL();
 
 
 }
