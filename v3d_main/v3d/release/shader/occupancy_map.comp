@@ -1,0 +1,59 @@
+#version 430 
+layout(local_size_x=10,local_size_y=10,local_size_z=10)in;
+//layout(binding=0,r8ui)uniform uimage3D volume;
+//layout(binding=1,rgba8)uniform sampler1D transfer_function;
+layout(binding=0,rgba8)uniform image3D occupancy_map;/////////////////////////////////////!
+uniform sampler1D transfer_function;
+uniform sampler3D volume;
+uniform datafromfile{
+	vec3 block_size;
+	ivec3 dimDst;
+	ivec3 dimSrc;
+};
+const float OCCUPIED=0;
+const float EMPTY=0.01;
+
+//raw=(256, 256, 225)
+//block_Size=(4,4,4)
+//glbalInvocation=(64,64,56)
+//localInvocation=(8,8,8)
+//numsoflocalworkgroups=(8,8,7)
+//occupancy_map=(64,64,56)
+void main(){
+	float x=float(dimSrc.x);
+	float y=float(dimSrc.y);
+	float z=float(dimSrc.z);
+	vec3 dimSrc_int=vec3(x,y,z);
+
+	//const ivec3 dimDst=imageSize(occupancy_map);
+	if(any(greaterThanEqual(gl_GlobalInvocationID,dimDst)))return;
+	//const ivec3 dimSrc=imageSize(volume);
+
+
+	const ivec3 start=ivec3(gl_GlobalInvocationID*block_size.xyz);
+	ivec3 end=ivec3(min(dimSrc,start+block_size.xyz));
+	end.x=(dimSrc.x-end.x)<block_size.x?dimSrc.x:end.x;
+	end.y=(dimSrc.y-end.y)<block_size.y?dimSrc.y:end.y;
+	end.z=(dimSrc.z-end.z)<block_size.z?dimSrc.z:end.z;
+
+	ivec3 pos;
+	for(pos.z=start.z;pos.z<end.z;pos.z++)
+		for(pos.y=start.y;pos.y<end.y;pos.y++)
+			for(pos.x=start.x;pos.x<end.x;pos.x++)
+			{
+			
+			 float intensity=texture(volume,pos/dimSrc_int).x;
+			//?
+			float alpha=texture(transfer_function,intensity).a;//?
+			if(intensity>0.078){
+			//if(intensity>0.04){
+				imageStore(occupancy_map,ivec3(gl_GlobalInvocationID),vec4(OCCUPIED));////OCCUPIED//////////////////////
+
+				return;
+			}
+			}
+		//	
+
+	imageStore(occupancy_map,ivec3(gl_GlobalInvocationID),vec4(EMPTY));////EMPTY//////////////////////!
+
+}

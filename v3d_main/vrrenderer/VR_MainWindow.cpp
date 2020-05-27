@@ -11,8 +11,29 @@
 #include <math.h>
 #include <fstream>
 #include "shader_m.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/transform2.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
+#include<string>
+#include<fstream>
+#include<sstream>
+#include<time.h>
+string GetExePath(void)
+{
+	char szFilePath[MAX_PATH + 1] = { 0 };
+	GetModuleFileNameA(NULL, szFilePath, MAX_PATH);
+	(strrchr(szFilePath, '\\'))[0] = 0; // 删除文件名，只获得路径字串
+	string path = szFilePath;
+	return path;
+}
+
+
+#define GL_ERROR() checkForOpenGLError(__FILE__, __LINE__)
 //extern std::vector<Agent> Agents;
 //std::vector<Agent> Agents;
+
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QWidget()
 {
@@ -950,43 +971,595 @@ XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 	return XYZ(x,y,z);
 }
 
-
-VR_Window::VR_Window(QWidget *parent)
-	: QGLWidget(parent)
+static GLuint VBO, VAO;
+const int NumPoints = 5000;
+QGLFormat desiredFormat()
 {
-	resizeGL(800,600);
+	QGLFormat fmt;
+	fmt.setSwapInterval(1);
+	return fmt;
+}
+VR_Window::VR_Window(QWidget *parent)
+	: QGLWidget(desiredFormat())
+{
+
+
+	// Configure the timer
+	connect(&timer, SIGNAL(timeout()), this, SLOT(updateGL()));
+	if (format().swapInterval() == -1)
+	{
+		// V_blank synchronization not available (tearing likely to happen)
+		qDebug("Swap Buffers at v_blank not available: refresh at approx 60fps.");
+		timer.setInterval(17);
+	}
+	else
+	{
+		// V_blank synchronization available
+		timer.setInterval(0);
+	}
+	timer.start();
+	this->resize(QSize(800, 800));
+	resizeGL(800,800);
 	initializeGL();
+
 }
 
 VR_Window::~VR_Window()
 {
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
 
+	//delete[] testshader;
+	delete[] backfaceShader;
+	delete[] raycastingShader;
 }
 
-void VR_Window::initializeGL()
+int VR_Window::render_compute = 0;
+GLuint VR_Window::initTFF1DTex(const char* filename){
+	// read in the user defined data of transfer function
+	cout << "run in initTFF1DTex()" << endl;
+
+	ifstream inFile(filename, ifstream::in);
+	if (!inFile)
+	{
+		cerr << "Error openning file: " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	const int MAX_CNT = 10000;
+	GLubyte* tff = (GLubyte*)calloc(MAX_CNT, sizeof(GLubyte));
+	inFile.read(reinterpret_cast<char*>(tff), MAX_CNT);
+	if (inFile.eof())
+	{
+		size_t bytecnt = inFile.gcount();
+		*(tff + bytecnt) = '\0';
+		std::cout << "bytecnt " << bytecnt << endl;
+	}
+	else if (inFile.fail())
+	{
+		std::cout << filename << "read failed " << endl;
+	}
+	else
+	{
+		std::cout << filename << "is too large" << endl;
+	}
+	GLuint tff1DTex;
+	glGenTextures(1, &tff1DTex);
+	glBindTexture(GL_TEXTURE_1D, tff1DTex);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexImage1D从缓存中载入纹理
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, tff);////////////////////////////？？？？？？？？？
+	//glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	//glBindImageTexture(1, g_tffTexObj, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8UI);
+	free(tff);
+	return tff1DTex;
+}
+int VR_Window::Stack_Offset = 0;
+int VR_Window::Stack_Inuse = 0;
+GLuint VR_Window::initVol3DTex(const char* filename){
+	cout << "run in initVol3DTex()" << endl;
+	FILE* fp;
+	long long *sz = 0;
+	int datatype;
+	errno_t err;
+	GLubyte* data ;			  // 8bit
+	loadTif2Stack(filename, data, sz, datatype);
+	glGenTextures(1, &g_volTexObj);
+	// bind 3D texture target
+	glBindTexture(GL_TEXTURE_3D, g_volTexObj);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	// pixel transfer happens here from client to OpenGL server
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, width,height, depth, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+	//glBindImageTexture(0, g_volTexObj, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8UI);
+	delete[]data;
+	std::cout << "volume texture created" << endl;
+	return g_volTexObj;
+}
+
+_myStack* VR_Window::Free_Stack_List = NULL;
+TIFF* VR_Window::Open_Tiff(const char* file_name, const char* mode){
+	TIFF* tif = 0;
+
+	tif = NULL;
+	int retries = 3;
+	while (retries > 0 && tif == NULL) {
+		tif = TIFFOpen(file_name, mode);
+		if (tif == NULL) {
+			retries--;
+			fprintf(stderr, "cannot open TIFF file %s remaining retries=%d", file_name, retries);
+
+		}
+	}
+	return (tif);
+}
+void VR_Window::Free_Stack(myStack* stack){
+	_myStack* object = (_myStack*)(((char*)stack) - Stack_Offset);
+	object->next = Free_Stack_List;
+	Free_Stack_List = object;
+	Stack_Inuse -= 1;
+}
+int VR_Window::determine_kind(TIFF* tif){
+	short bits, channels, photo;
+
+	TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits);
+	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
+	TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photo);
+	if (photo <= 1)
+	{
+		if (channels > 1) int foo;
+		//error("Black and white tiff has more than 1 channel!",NULL); //TIFFTAG_PHOTOMETRIC indicates the photometric interpretation of the data, wherein 0 means black is 0 and lighter intensity is larger values.
+		// this doesn't preclude multiple channel data.  In fact, if it were 1, it would mean inverted photometric interpretation.  see www.awaresystems.be/imaging/tiff/tifftags/photometricinterpretation.html
+		if (bits == 16)
+			return (GREY16);
+		else
+			return (GREY);
+	}
+	else
+		return (COLOR);
+}
+void* VR_Window::Guarded_Malloc(int size, const char* routine){
+	void* p;
+
+	p = malloc(size);
+	if (p == NULL)
+	{
+		fprintf(stderr, "\nError in %s:\n", routine);
+		fprintf(stderr, "   Out of memory\n");
+		return 0;
+	}
+	return (p);
+}
+void* VR_Window::Guarded_Realloc(void* p, int size, const char* routine)
 {
-	glClearColor(0.0, 0.0, 1.0, 1.0);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
-
-
+	p = realloc(p, size);
+	if (p == NULL)
+	{
+		fprintf(stderr, "\nError in %s:\n", routine);
+		fprintf(stderr, "   Out of memory\n");
+		return 0;
+	}
+	return (p);
 }
-
-void VR_Window::resizeGL(int w, int h){
-	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
-
-
-}
-void VR_Window::paintGL()
+ uint32* VR_Window::get_raster(int npixels, const char* routine)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	static uint32* Raster = NULL;
+	static int     Raster_Size = 0;                           //  Manage read work buffer
+
+	if (npixels < 0)
+	{
+		free(Raster);
+		Raster_Size = 0;
+		Raster = NULL;
+	}
+	else if (npixels > Raster_Size)
+	{
+		Raster_Size = npixels;
+		Raster = (uint32*)Guarded_Realloc(Raster, sizeof(uint32) * Raster_Size, routine);
+	}
+	return (Raster);
+}
+int VR_Window::error(const char* msg, const char* arg)
+ {
+	 fprintf(stderr, "\nError in TIFF library:\n   ");
+	 fprintf(stderr, msg, arg);
+	 fprintf(stderr, "\n");
+	 return 1;
+ }
+void VR_Window::read_directory(TIFF* tif, Image* image, const char* routine) {
+	unsigned int* raster;
+	unsigned char* row;
+	int width, height;
+
+	width = image->width;
+	height = image->height;
+	raster = get_raster(width * height, routine);
+	row = image->array;
+
+	if (image->kind != GREY16)
+
+	{
+		int i, j;
+		uint32* in;
+		uint8* out;
+
+		if (TIFFReadRGBAImage(tif, width, height, raster, 0) == 0)
+			error("read of tif failed in read_directory()", NULL);
+
+		in = raster;
+		if (image->kind == GREY)
+		{
+			for (j = height - 1; j >= 0; j--)
+			{
+				out = row;
+				for (i = 0; i < width; i++)
+				{
+					uint32 pixel = *in++;
+					*out++ = TIFFGetR(pixel);
+				}
+				row += width;
+			}
+		}
+		else
+		{
+			for (j = height - 1; j >= 0; j--)
+			{
+				out = row;
+				for (i = 0; i < width; i++)
+				{
+					uint32 pixel = *in++;
+					*out++ = TIFFGetR(pixel);
+					*out++ = TIFFGetG(pixel);
+					*out++ = TIFFGetB(pixel);
+				}
+				row += width * 3;
+			}
+		}
+	}
+
+	else
+
+	{
+		int tile_width, tile_height;
+
+		if (TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tile_width))    // File is tiled  
+		{
+			int x, y;
+			int i, j;
+			int m, n;
+			uint16* buffer = (uint16*)raster;
+			uint16* out, *in /*, *rous */;
+
+			TIFFGetField(tif, TIFFTAG_TILELENGTH, &tile_height);
+
+			for (y = 0; y < height; y += tile_height)
+			{
+				if (y + tile_height > height)
+					n = height - y;
+				else
+					n = tile_height;
+				for (x = 0; x < width; x += tile_width)
+				{
+					TIFFReadTile(tif, buffer, x, y, 0, 0);
+					if (x + tile_width > width)
+						m = width - x;
+					else
+						m = tile_width;
+					for (j = 0; j < n; j++)
+					{
+						out = (uint16*)(row + 2 * (j * width + x));
+						in = buffer + j * tile_width;
+						for (i = 0; i < m; i++)
+							*out++ = *in++;
+					}
+				}
+				row += n * width * 2;
+			}
+		}
+
+		else    // File is striped
+
+		{
+			int     y;
+
+			for (y = 0; y < height; y++)
+			{
+				TIFFReadScanline(tif, row, y, 0);
+				row += width * 2;
+			}
+		}
+	}
+}
+void VR_Window::Kill_Stack(myStack* stack)
+{
+	free(stack->array);
+	free(((char*)stack) - Stack_Offset);
+	//Stack_Inuse -= 1;
+}
+Image* VR_Window::Select_Plane(myStack* a_stack, int plane)  // Build an image for a plane of a stack
+{
+	static Image My_Image;
+
+	if (plane < 0 || plane >= a_stack->depth)
+		return (NULL);
+	My_Image.kind = a_stack->kind;
+	My_Image.width = a_stack->width;
+	My_Image.height = a_stack->height;
+	My_Image.array = a_stack->array + plane * a_stack->width * a_stack->height * a_stack->kind;
+	return (&My_Image);
+}
+myStack* VR_Window::Read_Stack(const char* file_name) {
+	myStack* stack = 0;
+	TIFF* tif = 0;
+	int depth, width, height, kind;
+	tif = Open_Tiff(file_name, "r");
+	if (!tif)return 0;
+	depth = 1;
+	while (TIFFReadDirectory(tif))depth += 1;
+	TIFFClose(tif);
+
+	tif = Open_Tiff(file_name, "r");
+	if (!tif)return 0;
+
+	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+
+	kind = determine_kind(tif);
+	stack = new_stack(depth * height * width * kind, "Read_Stack");
+
+	stack->width = width;
+	stack->height = height;
+	stack->depth = depth;
+	stack->kind = kind;
+	//cout << "the image size is" << width << " " << height << " " << depth << endl;
+
+	{
+		int d = 0;
+		while (1) {
+			read_directory(tif, Select_Plane(stack, d), "Read_Stack");
+			d += 1;
+
+			if (!TIFFReadDirectory(tif))break;
+			TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+			TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+			if (width != stack->width || height != stack->height) {
+				error("image of stack are not of the same dimensions!", NULL);
+				return 0;
+			}
+			kind = determine_kind(tif);
+			if (kind != stack->kind) {
+				error("image of stack are not of the same type(GRAY,GRAY16,COLOR)!", NULL);
+				return 0;
+			}
+
+		}
+	}
+	TIFFClose(tif);
+	return stack;
+}
+bool VR_Window::loadTif2Stack(const char* filename, unsigned char*& img, long long* &sz, int &datatype) {
+	//img是最重要的参数，保存了图像的数据地址
+	//img即data;
+	//glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, w, h, d, 0, GL_RED, GL_UNSIGNED_BYTE, (GLubyte *)img4d->data)
+	int b_error = 0;
+	FILE* tmp;
+	errno_t err = fopen_s(&tmp, filename, "r");
+	//err = fopen_s(&fp, filename, "r");
+	if (err)
+	{
+		std::cout << "Error: opening .tff file failed" << endl;
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		std::cout << "OK: open .tff file successed" << endl;
+	}
+
+	myStack* tmpstack = Read_Stack(filename);
+	if (!tmpstack) {
+		b_error = 1;
+		return b_error;
+	}
+	unsigned int size = tmpstack->width * tmpstack->height * tmpstack->depth;
+	img = new GLubyte[size];
+	width = tmpstack->width;
+	height = tmpstack->height;
+	depth = tmpstack->depth;
+	//convert to PHC's format 
+	//convert to hanchuan's format
+	if (sz) { delete sz; sz = 0; }
+	if (img) { delete img; img = 0; }
+
+	sz = new V3DLONG[4];
+	if (sz)
+	{
+		sz[0] = tmpstack->width;
+		sz[1] = tmpstack->height;
+		sz[2] = tmpstack->depth;
+		cout << "the image size from tiff library is:";
+		cout << sz[0] << " " << sz[1] << " " << sz[2] << endl;
+		switch (tmpstack->kind)
+		{
+		case GREY:
+			sz[3] = 1;
+			datatype = 1;
+			break;
+
+		case GREY16:
+			sz[3] = 1;
+			datatype = 2;
+			break;
+
+		case COLOR:
+			sz[3] = 3;
+			datatype = 1;
+			break;
+
+		default:
+			printf("The type of tif file is not supported in this version.\n");
+			if (sz) { delete sz; sz = 0; }
+			Kill_Stack(tmpstack); tmpstack = 0;
+			break;
+		}
+	}
+	else
+	{
+		printf("Unable to allocate memory for the size varable! Return.\n");
+		if (tmpstack)
+		{
+			Kill_Stack(tmpstack);
+			tmpstack = 0;
+		}
+		b_error = 1;
+		return b_error;
+	}
+
+	img = new unsigned char[sz[0] * sz[1] * sz[2] * sz[3] * datatype];
+	if (!img)
+	{
+		printf("Unable to allocate memory for the image varable! Return.\n");
+		if (tmpstack) { Kill_Stack(tmpstack);	tmpstack = 0; }
+		if (sz) { delete sz; sz = 0; }
+		b_error = 1;
+		return b_error;
+	}
+	else
+	{
+		V3DLONG i, j, k, c;
+		V3DLONG pgsz1 = sz[2] * sz[1] * sz[0], pgsz2 = sz[1] * sz[0], pgsz3 = sz[0];
+
+		switch (tmpstack->kind)
+		{
+		case GREY:
+		case COLOR:
+			for (c = 0; c < sz[3]; c++)
+				for (k = 0; k < sz[2]; k++)
+					for (j = 0; j < sz[1]; j++)
+						for (i = 0; i < sz[0]; i++)
+							//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_8(tmpstack,i,j,k,c);
+							img[c * pgsz1 + k * pgsz2 + j * pgsz3 + i] = Get_Stack_Pixel(tmpstack, i, j, k, c);
+
+			break;
+
+		case GREY16:
+		{
+			unsigned short int* img16 = (unsigned short int*)img;
+			for (c = 0; c < sz[3]; c++)
+				for (k = 0; k < sz[2]; k++)
+					for (j = 0; j < sz[1]; j++)
+						for (i = 0; i < sz[0]; i++)
+							//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_16(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
+							//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
+							img16[c * pgsz1 + k * pgsz2 + j * pgsz3 + i] = Get_Stack_Pixel(tmpstack, i, j, k, c); //do not assume anything. 080930
+		}
+
+		break;
+
+		default:
+			printf("The type of tif file is not supported in this version.\n");
+			if (sz) { delete sz; sz = 0; }
+			if (img) { delete img; img = 0; }
+			Kill_Stack(tmpstack); tmpstack = 0;
+			b_error = 1;
+			return b_error;
+			break;
+		}
+	}
+
+
+	// kill stack
+	if (tmpstack)
+	{
+		Kill_Stack(tmpstack);
+		tmpstack = 0;
+	}
+	return b_error;
+}
+void VR_Window::drawBox(GLenum glFaces){
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(glFaces);
+	glBindVertexArray(g_vao);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint*)NULL);
+	glDisable(GL_CULL_FACE);
 
 }
+int VR_Window::checkForOpenGLError(const char* file, int line)
+{
+	// return 1 if an OpenGL error occured, 0 otherwise.
+	GLenum glErr;
+	int retCode = 0;
+
+	glErr = glGetError();
+	while (glErr != GL_NO_ERROR)
+	{
+		std::cout << "glError in file " << file
+			<< "@line " << line << gluErrorString(glErr) << endl;
+		retCode = 1;
+		int test;
+		cin >> test;
+		exit(EXIT_FAILURE);
+	}
+	return retCode;
+}
+
 
 void VR_Window::runcomputeshader_occu()
 {
+
 	glUseProgram(g_programOCC);
-	//GL_ERROR();
+	GL_ERROR();
+
+	GLuint uboIndex;
+	GLint uboSize;
+	GLuint ubo;
+	char* block_buffer;
+
+	uboIndex = glGetUniformBlockIndex(g_programOCC, "datafromfile");
+	glGetActiveUniformBlockiv(g_programOCC, uboIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
+	block_buffer = (char*)malloc(uboSize);
+	if (block_buffer == NULL) {
+		fprintf(stderr, "unable to allocate buffer;\n");
+		exit(EXIT_FAILURE);
+	}
+	else {
+		enum { Block_size, DimDst, DimSrc, NumUniforms };
+		GLfloat block_size[3] = { 4.0, 4.0, 4.0 };
+		GLint dimDst[3] = { width / 4, height / 4, depth / 4 };
+		GLint dimSrc[3] = { width, height, depth };
+
+		const char* names[NumUniforms] = {
+			"block_size", "dimDst", "dimSrc"
+		};
+		GLuint indices[NumUniforms];
+		GLint size[NumUniforms];
+		GLint offset[NumUniforms];
+		GLint type[NumUniforms];
+		glGetUniformIndices(g_programOCC, NumUniforms, names, indices);
+		glGetActiveUniformsiv(g_programOCC, NumUniforms, indices, GL_UNIFORM_OFFSET, offset);
+		glGetActiveUniformsiv(g_programOCC, NumUniforms, indices, GL_UNIFORM_SIZE, size);
+		glGetActiveUniformsiv(g_programOCC, NumUniforms, indices, GL_UNIFORM_TYPE, type);
+		memcpy(block_buffer + offset[Block_size], &block_size, size[Block_size] * 3 * sizeof(GLfloat));
+		memcpy(block_buffer + offset[DimDst], &dimDst, size[DimDst] * 3 * sizeof(GLint));
+		memcpy(block_buffer + offset[DimSrc], &dimSrc, size[DimSrc] * 3 * sizeof(GLint));
+
+		glGenBuffers(1, &ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+		glBufferData(GL_UNIFORM_BUFFER, uboSize, block_buffer, GL_STATIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, uboIndex, ubo);
+
+	}
+
 	glBindImageTexture(0, g_occupancymap, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 	GLint transferFuncLoc = glGetUniformLocation(g_programOCC, "transfer_function");
 	if (transferFuncLoc >= 0)
@@ -1017,11 +1590,13 @@ void VR_Window::runcomputeshader_occu()
 			<< endl;
 	}
 
-	glDispatchCompute(10, 10, 4);////////////////////////////////?
-	//GL_ERROR();
+	glDispatchCompute(10, 10, 10);////////////////////////////////?
+	GL_ERROR();
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	//GL_ERROR();
+	GL_ERROR();
 	glUseProgram(0);
+
+
 }
 
 void VR_Window::runcomputeshader_dis()
@@ -1047,7 +1622,7 @@ void VR_Window::runcomputeshader_dis()
 	glDispatchCompute(10, 10, 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	glUseProgram(0);
-	//GL_ERROR();
+	GL_ERROR();
 	//2ST
 	glUseProgram(g_programDIS);
 	int stageLocation1 = glGetUniformLocation(g_programDIS, "stage");
@@ -1063,7 +1638,7 @@ void VR_Window::runcomputeshader_dis()
 			<< endl;
 	}
 
-	//GL_ERROR();
+	GL_ERROR();
 	glBindImageTexture(0, g_distancemap, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
 	glBindImageTexture(1, g_occupancymap, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 	glDispatchCompute(10, 10, 1);
@@ -1083,138 +1658,17 @@ void VR_Window::runcomputeshader_dis()
 			<< "is not bind to the uniform"
 			<< endl;
 	}
-	//GL_ERROR();
+	GL_ERROR();
 	glBindImageTexture(0, g_distancemap, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
 	glBindImageTexture(1, g_occupancymap, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
 	glDispatchCompute(10, 10, 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	glUseProgram(0);
-	//GL_ERROR();
+	GL_ERROR();
 }
 
-void VR_Window::initest()
-{
-	const char *vertexShaderSource = "#version 430 core\n"
-		"\n"
-		"in vec3 vert;\n"
-		"out vec3 vert_col;\n"
-		"uniform mat4 MVP;"
-		"\n"
-		"void main(void)\n"
-		"{\n"
-		"    gl_Position = MVP*vec4(vert.x,vert.y,vert.z,1.0);\n"
-		//"    gl_Position =vec4(vert.x,vert.y,vert.z,1.0);\n"
-		"	 vert_col=vec3(vert.x,vert.y,vert.z);"
-		"}\n";
-	const char *fragmentShaderSource = "#version 430 core\n"
-		"\n"
-		"uniform sampler3D g_occupancymap;\n"
-		"out vec4 color;\n"
-		"\n"
-		"in vec3 vert_col;\n"
-		"void main(void)\n"
-		"{\n"
-		"color=texture(g_occupancymap,vert_col);"
-		//"color=vec4(1,0,0,0);"
-		"}\n";
-	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-	// check for shader compile errors
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
 
-	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog <<
-			std::endl;
-	}
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR:SHADER::PROGRAM::LINKING_FAILED\n" << infoLog <<
-			std::endl;
-	}
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f, 0.5f, -0.5f,
-		0.5f, 0.5f, -0.5f,
-		-0.5f, 0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-
-		-0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, 0.5f,
-		0.5f, 0.5f, 0.5f,
-		0.5f, 0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f,
-		-0.5f, -0.5f, 0.5f,
-
-		-0.5f, 0.5f, 0.5f,
-		-0.5f, 0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f,
-
-		0.5f, 0.5f, 0.5f,
-		0.5f, 0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, 0.5f,
-		0.5f, 0.5f, 0.5f,
-
-		-0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, 0.5f,
-		-0.5f, -0.5f, 0.5f,
-		-0.5f, -0.5f, -0.5f,
-
-		-0.5f, 0.5f, -0.5f,
-		0.5f, 0.5f, -0.5f,
-		0.5f, 0.5f, 0.5f,
-		0.5f, 0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f,
-		-0.5f, 0.5f, -0.5f
-	};
-
-
-
-
-	//vao,vbo登场！
-	unsigned int VBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	//先绑定VAO，然后绑定VBO
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//设置顶点属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
-	//glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);//???
-	glBindVertexArray(0);//????
-}
-
+/*
 void VR_Window::linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFragHandle)
 {
 	const GLsizei maxCount = 2;
@@ -1243,23 +1697,25 @@ void VR_Window::linkShader(GLuint shaderPgm, GLuint newVertHandle, GLuint newFra
 	}
 	//GL_ERROR();
 }
-
+*/
 void VR_Window::render(GLenum cullFace,GLuint g_programid)
 {
 	//GL_ERROR();
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//  transform the box
-	glm::mat4 projection = glm::perspective(60.0f, (GLfloat)g_winWidth / g_winHeight, 0.1f, 400.f);
-	glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f),
+	glm::mat4 projection = glm::perspective(80.0f, (GLfloat)g_winWidth / g_winHeight, 0.1f, 100.f);
+	glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.9f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 model = mat4(1.0f);
-	model *= glm::rotate((float)g_angle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	model *= glm::rotate((float)g_angle/50, glm::vec3(0.0f, 1.0f, 0.0f));
 	// to make the "head256.raw" i.e. the volume data stand up.
-	model *= glm::rotate(90.0f, vec3(1.0f, 0.0f, 0.0f));
+	//model *= glm::rotate(90.0f, vec3(1.0f, 0.0f, 0.0f));
 	model *= glm::translate(glm::vec3(-0.5f, -0.5f, -0.5f));
 	// notice the multiplication order: reverse order of transform
+	//glm::mat4 mvp = mat4(1.0f);
 	glm::mat4 mvp = projection * view * model;
 	GLuint mvpIdx = glGetUniformLocation(g_programid, "MVP");
 	if (mvpIdx >= 0)
@@ -1288,14 +1744,26 @@ void VR_Window::initShader()
 	//// fragment shader object for second pass
 	//g_rcFragHandle = initShaderObj("shader/renderring_Acc.frag", GL_FRAGMENT_SHADER);
 	// create the shader program , use it in an appropriate time
-	backfaceShader = new Shader(string("shader/backface.vert").c_str(), string("shader/backface.frag").c_str());
-	raycastingShader = new Shader(string("shader/raycasting.vert").c_str(), string("shader/renderring_Acc.frag").c_str());
+	cout << "run in initShader()" << endl;
+	string apath = GetExePath();
+	string ver_path(apath);
+	string frag_path(apath);
+	string comp_path(apath);
+	ver_path.append("/shader/backface.vert");
+	frag_path.append("/shader/backface.frag");
+	backfaceShader = new Shader(ver_path.c_str(), frag_path.c_str());
+	ver_path = apath;
+	frag_path = apath;
+	ver_path.append("/shader/raycasting.vert");
+	frag_path.append("/shader/renderring_Acc.frag");
+	raycastingShader = new Shader(ver_path.c_str(), frag_path.c_str());
 	//g_programHandle = createShaderPgm();
 	// 获得由着色器编译器分配的索引(可选)
 	//compute occupancy_map
 	//GL_ERROR();
 	//g_compute_occ = initShaderObj("shader/occupancy_map.comp", GL_COMPUTE_SHADER);
-	g_programOCC = CompileGLShader("occupancy_map", "", GL_COMPUTE_SHADER);
+	comp_path.append("/shader/occupancy_map.comp");
+	g_programOCC = CompileGLShader("occupancy_map", comp_path.c_str(), GL_COMPUTE_SHADER);
 	//g_programOCC = createShaderPgm();
 	////GL_ERROR();
 	//int success;
@@ -1310,25 +1778,28 @@ void VR_Window::initShader()
 	//}
 
 	//compute distance_map
-	g_programDIS = CompileGLShader("distance_map", "", GL_COMPUTE_SHADER);//liqi func below is encapsulated into CompileGLShader
+	comp_path = apath;
+	comp_path.append("/shader/distance_map.comp");
+	g_programDIS = CompileGLShader("distance_map", comp_path.c_str(), GL_COMPUTE_SHADER);//liqi func below is encapsulated into CompileGLShader
 	//g_compute_dis = initShaderObj("shader/distance_map.comp", GL_COMPUTE_SHADER);
-	/*g_programDIS = createShaderPgm();
-	glAttachShader(g_programDIS, g_compute_dis);
-	glLinkProgram(g_programDIS);
-	glGetProgramiv(g_programDIS, GL_LINK_STATUS, &success);
-	if (!success) {
-	glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
-	std::cout << "ERROR::DIS::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
-	std::endl;
-	}*/
+	//g_programDIS = createShaderPgm();
+	//glAttachShader(g_programDIS, g_compute_dis);
+	//glLinkProgram(g_programDIS);
+	//glGetProgramiv(g_programDIS, GL_LINK_STATUS, &success);
+	//if (!success) {
+	//glGetProgramInfoLog(g_compute_occ, 512, NULL, infoLog);
+	//std::cout << "ERROR::DIS::COMPUTE::PROGRAM::LINKING_FAILED\n" << infoLog <<
+	//std::endl;
+	//}
 }
 
 GLuint VR_Window::initOccupancyTex()
 {
+	cout << "run in initOccupancyTex()" << endl;
 	GLuint occu;
 	glGenTextures(1, &occu);
 	glBindTexture(GL_TEXTURE_3D, occu);
-	glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGBA8, 50, 50, 32);
+	glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGBA8, width/4,height/4, depth/4);
 	glBindTexture(GL_TEXTURE_3D, 0);
 	//glBindImageTexture(2, g_occupancymap, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8UI);
 	return occu;
@@ -1336,6 +1807,7 @@ GLuint VR_Window::initOccupancyTex()
 
 void VR_Window::initVBO()
 {
+	cout << "run in initVBO()" << endl;
 	GLfloat vertices[24] = {
 		0.0, 0.0, 0.0,
 		0.0, 0.0, 1.0,
@@ -1395,15 +1867,7 @@ void VR_Window::initVBO()
 	g_vao = vao;
 }
 
-void VR_Window::drawBox(GLenum glFaces)
-{
-	//glBindImageTexture(0, g_distancemap, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8UI);
-	glEnable(GL_CULL_FACE);
-	glCullFace(glFaces);
-	glBindVertexArray(g_vao);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (GLuint*)NULL);
-	glDisable(GL_CULL_FACE);
-}
+
 
 GLboolean VR_Window::compileCheck(GLuint shader)
 {
@@ -1487,10 +1951,18 @@ void vr_windowdprintf(const char *fmt, ...)
 
 	OutputDebugStringA(buffer);
 }
-GLuint VR_Window::CompileGLShader(const char *pchShaderName, const char *p_shader, GLenum shaderType)
+GLuint VR_Window::CompileGLShader(const char *pchShaderName, const char *shaderPath, GLenum shaderType)
 {
 	GLuint unProgramID = glCreateProgram();
+	std::string shaderCode;
+	std::ifstream shaderFile;
+	std::stringstream shaderStream;
+	shaderFile.open(shaderPath);
+	shaderStream << shaderFile.rdbuf();
+	shaderFile.close();
 
+	shaderCode = shaderStream.str();
+	const char *p_shader = shaderCode.c_str();
 	GLuint nSceneVertexShader = glCreateShader(shaderType);
 	glShaderSource(nSceneVertexShader, 1, &p_shader, NULL);
 	glCompileShader(nSceneVertexShader);
@@ -1540,7 +2012,7 @@ GLint VR_Window::checkShaderLinkStatus(GLuint pgmHandle)
 	}
 	return status;
 }
-
+/*
 GLuint VR_Window::createShaderPgm()
 {
 	// Create the shader program
@@ -1551,10 +2023,11 @@ GLuint VR_Window::createShaderPgm()
 		exit(EXIT_FAILURE);
 	}
 	return programHandle;
-}
+}*/
 
 GLuint VR_Window::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
 {
+	cout << "run in initFace2DTex()" << endl;
 	GLuint backFace2DTex;
 	glGenTextures(1, &backFace2DTex);
 	glBindTexture(GL_TEXTURE_2D, backFace2DTex);
@@ -1576,8 +2049,10 @@ void VR_Window::checkFramebufferStatus()
 	}
 }
 
-void VR_Window::initFrameBuffer(GLuint texObj, GLuint texWidth, GLuint texHeight)
+void VR_Window::initFrameBuffer( GLuint texWidth, GLuint texHeight)
 {
+	cout << "run in initFrameBuffer()" << endl;
+
 	// create a depth buffer for our framebuffer
 	GLuint depthBuffer;
 	glGenRenderbuffers(1, &depthBuffer);
@@ -1587,7 +2062,7 @@ void VR_Window::initFrameBuffer(GLuint texObj, GLuint texWidth, GLuint texHeight
 	// attach the texture and the depth buffer to the framebuffer
 	glGenFramebuffers(1, &g_frameBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, g_frameBuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texObj, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_bfTexObj, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
 	checkFramebufferStatus();
 	glEnable(GL_DEPTH_TEST);
@@ -1601,30 +2076,48 @@ void VR_Window::rcSetUinforms(GLuint g_programid)
 	// TransferFunc
 	// ExitPoints i.e. the backface, the backface hold the ExitPoints of ray casting
 	// VolumeTex the texture that hold the volume data i.e. head256.raw
-	GLint screenSizeLoc = glGetUniformLocation(g_programid, "ScreenSize");
-	if (screenSizeLoc >= 0)
-	{
-		glUniform2f(screenSizeLoc, (float)g_winWidth, (float)g_winHeight);
+	GLuint uboIndex;
+	GLint uboSize;
+	GLuint ubo;
+	char* block_buffer;
+
+	uboIndex = glGetUniformBlockIndex(g_programid, "datafromfile");
+	glGetActiveUniformBlockiv(g_programid, uboIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
+	block_buffer = (char *)malloc(uboSize);
+	if (block_buffer == NULL) {
+		fprintf(stderr, "unable to allocate buffer;\n");
+		exit(EXIT_FAILURE);
 	}
-	else
-	{
-		std::cout << "ScreenSize"
-			<< "is not bind to the uniform"
-			<< endl;
+	else {
+		enum { Dim, Sampling_factor, Dim_distance_map, Step_size, Screen_size, NumUniforms };
+		GLint dim[3] = { width, height, depth };
+		GLfloat sampling_factor = 6.0;
+		GLint dim_distance_map[3] = { width / 4, height / 4, depth / 4 };
+		GLfloat step_size = 0.001;
+		GLfloat screen_size[2] = { 800, 800 };
+		const char* names[NumUniforms] = {
+			"dim", "sampling_factor", "dim_distance_map", "StepSize", "ScreenSize"
+		};
+		GLuint indices[NumUniforms];
+		GLint size[NumUniforms];
+		GLint offset[NumUniforms];
+		GLint type[NumUniforms];
+		glGetUniformIndices(g_programid, NumUniforms, names, indices);
+		glGetActiveUniformsiv(g_programid, NumUniforms, indices, GL_UNIFORM_OFFSET, offset);
+		glGetActiveUniformsiv(g_programid, NumUniforms, indices, GL_UNIFORM_SIZE, size);
+		glGetActiveUniformsiv(g_programid, NumUniforms, indices, GL_UNIFORM_TYPE, type);
+		memcpy(block_buffer + offset[Dim], &dim, size[Dim] * 3 * sizeof(GLint));
+		memcpy(block_buffer + offset[Sampling_factor], &sampling_factor, size[Sampling_factor] * sizeof(GLfloat));
+		memcpy(block_buffer + offset[Dim_distance_map], &dim_distance_map, size[Dim_distance_map] * 3 * sizeof(GLint));
+		memcpy(block_buffer + offset[Step_size], &step_size, size[Step_size] * sizeof(GLfloat));
+		memcpy(block_buffer + offset[Screen_size], &screen_size, size[Screen_size] * 2 * sizeof(GLfloat));
+		glGenBuffers(1, &ubo);
+		glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+		glBufferData(GL_UNIFORM_BUFFER, uboSize, block_buffer, GL_STATIC_DRAW);
+		glBindBufferBase(GL_UNIFORM_BUFFER, uboIndex, ubo);
+
 	}
-	GLint stepSizeLoc = glGetUniformLocation(g_programid, "StepSize");
-	//GL_ERROR();
-	if (stepSizeLoc >= 0)
-	{
-		glUniform1f(stepSizeLoc, g_stepSize);
-	}
-	else
-	{
-		std::cout << "StepSize"
-			<< "is not bind to the uniform"
-			<< endl;
-	}
-	//GL_ERROR();
+
 	//GLint transferFuncLoc = -1;
 	GLint transferFuncLoc = glGetUniformLocation(g_programid, "TransferFunc");
 	if (transferFuncLoc >= 0)
@@ -1639,7 +2132,7 @@ void VR_Window::rcSetUinforms(GLuint g_programid)
 			<< "is not bind to the uniform"
 			<< endl;
 	}
-	//GL_ERROR();
+	GL_ERROR();
 	//GLint backFaceLoc = -1;
 	GLint backFaceLoc = glGetUniformLocation(g_programid, "ExitPoints");
 	if (backFaceLoc >= 0)
@@ -1654,7 +2147,7 @@ void VR_Window::rcSetUinforms(GLuint g_programid)
 			<< "is not bind to the uniform"
 			<< endl;
 	}
-	//GL_ERROR();
+	GL_ERROR();
 	GLint volumeLoc = glGetUniformLocation(g_programid, "VolumeTex");
 	if (volumeLoc >= 0)
 	{
@@ -1670,4 +2163,145 @@ void VR_Window::rcSetUinforms(GLuint g_programid)
 			<< endl;
 	}
 
+	GLint distancemapLoc = glGetUniformLocation(g_programid, "distance_map");
+	if (distancemapLoc >= 0)
+	{
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_3D, g_distancemap);
+		glUniform1i(distancemapLoc, 3);
+	}
+	else
+	{
+		std::cout << "distancemap"
+			<< "is not bind to the uniform"
+			<< endl;
+	}
+
+
+}
+
+
+void VR_Window::initializeGL()
+{
+	cout << "run in initializeGL()" << endl;
+	//glClearColor(0.0, 0.0, 1.0, 1.0);
+	//glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_TEXTURE_2D);
+	glewInit();
+	g_texWidth = g_winWidth;
+	g_texHeight = g_winHeight;
+	GL_ERROR();
+	initVBO();
+	GL_ERROR();
+	initShader();
+	string apath= GetExePath();
+	GL_ERROR();
+	apath.append("/materials/tff.dat");
+	g_tffTexObj = initTFF1DTex(apath.c_str());
+	GL_ERROR();
+	g_bfTexObj = initFace2DTex(g_texWidth, g_texHeight);
+	GL_ERROR();
+	apath = GetExePath();
+	apath.append("/materials/test3.tif");
+	g_volTexObj = initVol3DTex(apath.c_str());
+	GL_ERROR();
+	g_occupancymap = initOccupancyTex();
+	GL_ERROR();
+	g_distancemap = initOccupancyTex();
+	GL_ERROR();
+	initFrameBuffer(g_texWidth, g_texHeight);
+	GL_ERROR();
+
+	//test Liqi little demo
+	/*
+	float points[] = {
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		0.0f, 0.5f, 0.0f
+	};
+
+
+	cout << "run in initializeGL()" << endl;
+	glewInit();
+	// Create a vertex array object
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	// Create and initialize a buffer object
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+
+	// Load shaders and use the resulting shader program
+	Shader* testshader = new Shader(string("C:/Users/57610/Documents/research/vaa3d_compile/v3d_external/v3d_main/v3d/release/3.3.shader.vs").c_str(), string("C:/Users/57610/Documents/research/vaa3d_compile/v3d_external/v3d_main/v3d/release/3.3.shader.frag").c_str());
+	GLuint program = testshader->ID;
+	//backfaceShader = new Shader(string("shader/backface.vert").c_str(), string("shader/backface.frag").c_str());
+	glUseProgram(program);
+
+	// Initialize the vertex position attribute from the vertex shader
+	GLuint loc = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(loc);
+	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float),
+		(void*)0);
+
+	glClearColor(0.0, 1.0, 0.0, 1.0); // green background
+	*/
+}
+
+void VR_Window::resizeGL(int w, int h){
+	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+}
+void VR_Window::paintGL()
+{
+
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//cout << "run in paitGL()" << endl;
+	g_angle = (g_angle+1 ) % 360;
+	glEnable(GL_DEPTH_TEST);
+	//第一次渲染，剔除front面渲染到g_framebuffer中
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBuffer);
+	GL_ERROR();
+	//resizeGL(g_winWidth, g_winHeight);
+	//glViewport(0, 0, g_winWidth, g_winHeight);
+	//linkShader(g_programHandle, g_bfVertHandle, g_bfFragHandle);
+	//glUseProgram(g_programHandle);
+	backfaceShader->use();
+	// cull front face
+	render(GL_FRONT, backfaceShader->ID);
+	glUseProgram(0);
+	//GL_ERROR();
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	if (render_compute == 0) {
+	//compute shader occupancy_map
+	runcomputeshader_occu();
+	GL_ERROR();
+	//compute shader distance_map
+	runcomputeshader_dis();
+	render_compute = 1;
+	}
+	//第二次渲染，渲染到屏幕
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//resizeGL(g_winWidth, g_winHeight);
+	//linkShader(g_programHandle, g_rcVertHandle, g_rcFragHandle);
+	GL_ERROR();
+	//glUseProgram(g_programHandle);
+	raycastingShader->use();
+	rcSetUinforms(raycastingShader->ID);
+	GL_ERROR();
+	render(GL_BACK, raycastingShader->ID);
+	GL_ERROR();
+	glUseProgram(0);
+	GL_ERROR();
+	//glutSwapBuffers();
+	//QMetaObject::invokeMethod(this, "updateGL", Qt::QueuedConnection);
+	//updateGL();
+	// test Liqi little demo
+	/*cout << "run in paintGL" << endl;
+	int test;
+	glClear(GL_COLOR_BUFFER_BIT);     // clear the window
+	glDrawArrays(GL_TRIANGLES, 0, 3);   // draw the points
+	glFlush();
+	*/
 }

@@ -1,0 +1,94 @@
+#version 430 
+layout(local_size_x=10,local_size_y=10)in;
+layout(binding=0,rgba8)uniform image3D dist;
+layout(binding=1,rgba8)uniform image3D dist_swap;
+uniform int stage;
+const float OCCUPIED=0;
+const float EMPTY=0.01;
+float occupancy_to_max_dist(float occupancy){
+	return (occupancy==OCCUPIED?0.0:1.0);
+}
+
+void main(){
+	ivec3 pos;
+	if(stage==0){
+	pos=ivec3(0,gl_GlobalInvocationID.x,gl_GlobalInvocationID.y);
+	}else if(stage==1){
+	pos=ivec3(gl_GlobalInvocationID.x,0,gl_GlobalInvocationID.y);
+	}else{
+	pos=ivec3(gl_GlobalInvocationID.x,gl_GlobalInvocationID.y,0);
+	}
+	ivec3 dim=imageSize(dist);
+	   //ivec3 dim= ivec3(50,50,64);
+	if(any(greaterThanEqual(pos,dim)))return;
+	if(stage==0){
+		//forward
+		float gi1jk=occupancy_to_max_dist(imageLoad(dist_swap,ivec3(0,pos.y,pos.z)).x);
+		for(int x=0;x<dim.x;++x){
+		ivec3 p=ivec3(x,pos.y,pos.z);
+		float gijk=occupancy_to_max_dist(imageLoad(dist_swap,p).x);
+		float gijk_new=min(gi1jk+0.01,gijk);
+		imageStore(dist,p,vec4(gijk_new));
+		gi1jk=gijk_new;
+		}
+		//backward
+		gi1jk=imageLoad(dist,ivec3(dim.x-1,pos.y,pos.z)).x;
+		for(int x=dim.x-2;x>=0;--x){
+			ivec3 p=ivec3(x,pos.y,pos.z);
+			float gijk=imageLoad(dist,p).x;
+			float gijk_new=min(gi1jk+0.01,gijk);
+			imageStore(dist,p,vec4(gijk_new));
+			gi1jk=gijk_new;
+		}
+	}
+	else if(stage==1){
+        for (int y = 0; y < dim.y; ++y) {
+          ivec3 p = ivec3(pos.x, y, pos.z);
+          float gijk = imageLoad(dist, p).x;
+          float m_min = gijk;
+          // zigzag out from the voxel of interest, stop as soon as any future voxels
+          // are guaranteed to return a higher distance
+          for (float n = 1.0; n/100 < m_min && n<10.0; n+=1) {////////////////////////////////////////////!
+            if (y >= int(n)) {
+               float gijnk = imageLoad(dist, ivec3(pos.x, y -int(n), pos.z)).x;
+               float m = max(n/100, gijnk);
+              if (m < m_min)
+                m_min = m;
+            }
+            if ((y + int(n)) < dim.y && n/100 < m_min) { // note early exit possible
+               float gijnk = imageLoad(dist, ivec3(pos.x, y + int(n), pos.z)).x;
+               float m = max(n/100, gijnk);
+              if (m < m_min)
+                m_min = m;
+            }
+          }
+          imageStore(dist_swap, p, vec4(m_min));
+        }
+	}
+	else if(stage==2){
+	        // same as transformation 2 but on the z axis
+        for (int z = 0; z < dim.z; ++z) {
+          ivec3 p = ivec3(pos.x, pos.y, z);
+          float gijk= imageLoad(dist_swap, p).x;
+          float m_min= gijk;
+          for (float n = 1.0; n/100 < m_min && n<100.0; n+=1) {
+            if (z >= int(n)) {
+               float gijnk = imageLoad(dist_swap, ivec3(pos.x, pos.y, z - int(n))).x;
+               float m = max(n/100, gijnk);
+              if (m < m_min)
+                m_min = m;
+            }
+            if ((z + int(n)) < dim.z && n/100 < m_min) { // note early exit possible
+               float gijnk = imageLoad(dist_swap, ivec3(pos.x, pos.y, z + int(n))).x;
+               float m = max(n/100, gijnk);
+              if (m < m_min)
+                m_min = m;
+            }
+          }
+		   imageStore(dist, p, vec4(m_min));
+         // imageStore(dist, p, vec4(0.0));
+        }
+
+
+	}
+}
