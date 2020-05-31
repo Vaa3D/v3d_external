@@ -2401,11 +2401,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             qDebug()<<"hdkjashkdjfhkjewh222222222222===========-------------";
                 m_bFrozen = !m_bFrozen;
 
-                if(!m_bFrozen)
-                {
+
                     if (fBrightness >= -0.9) fBrightness = -1.0;
                     else fBrightness = 0.0;
-                }
+
                 break;
 			}
 		case _Contrast://contrast func is moved to right controller touch pad , grip button+/-
