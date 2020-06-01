@@ -6407,15 +6407,15 @@ void CMainApplication::RenderStereoTargets()
 	// Left Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId ); //render scene to m_nRenderFramebufferId
  	glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
-	frameCount++;
+	/*frameCount++;
 	if(GetTime() > 1.0f)
 	{
 		fps = frameCount;
 		frameCount = 0;
 		StartTimer();
-		//cout<<fps<<endl;
+		cout<<fps<<endl;
 		//used for fps tess liqi
-	}	
+	}	*/
 	
 	frameTime = GetFrameTime();
  	RenderScene( vr::Eye_Left );
@@ -6489,6 +6489,15 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	if (m_bHasImage4D)
 	{	
 		// render to texture
+		frameCount++;
+		if (GetTime() > 1.0f)
+		{
+			fps = frameCount;
+			frameCount = 0;
+			StartTimer();
+			cout << fps << endl;
+			//used for fps test syl
+		}
 		glDisable(GL_DEPTH_TEST);
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
