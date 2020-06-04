@@ -1070,7 +1070,24 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						// However, this [return] seems to prevent NA from crashing, although exaxtly why is still unknown.
 						return;
 					}
-					else v3d_msg("Neuron Assembler plugin instance already exists.");
+					else
+					{
+						//v3d_msg("Neuron Assembler plugin instance already exists.");
+						V3DPluginArgList pluginInputList, pluginOutputList;
+						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+						vector<char*> pluginInputArgList;
+						vector<char*> pluginOutputArgList;
+						dummyInput.type = "dummy";
+						dummyInput.p = (void*)(&pluginInputArgList);
+						inputParam.type = "dummy";
+						inputParam.p = (void*)(&pluginInputArgList);
+						pluginInputList.push_back(dummyInput);
+						pluginInputList.push_back(inputParam);
+						dummyOutput.type = "dummy";
+						dummyOutput.p = (void*)(&pluginOutputArgList);
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "bring_to_the_front", pluginInputList, pluginOutputList);
+					}
 				}
 				else
 				{
@@ -1106,8 +1123,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 #ifdef _NEURON_ASSEMBLER_
 				if (this->getRenderer())
 				{
-					cancelSelect();
-
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
@@ -1122,7 +1137,14 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						vector<char*> pluginOutputArgList;
 						dummyInput.type = "dummy";
 						dummyInput.p = (void*)(&pluginInputArgList);
-						inputParam.type = "shift_e";
+
+						if (thisRenderer->editinput == 0) inputParam.type = "shift_e";
+						else
+						{
+							cancelSelect();
+							inputParam.type = "shift_e_already";
+						}
+						
 						inputParam.p = (void*)(&pluginInputArgList);
 						pluginInputList.push_back(dummyInput);
 						pluginInputList.push_back(inputParam);
@@ -1247,12 +1269,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 #ifdef _NEURON_ASSEMBLER_
 				if (this->getRenderer())
 				{
-					cancelSelect();
-
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
-					cout << "segment number(v3dr_glwidget): " << curImg->tracedNeuron.seg.size() << endl;
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
@@ -1263,7 +1282,14 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						vector<char*> pluginOutputArgList;
 						dummyInput.type = "dummy";
 						dummyInput.p = (void*)(&pluginInputArgList);
-						inputParam.type = "shift_c";
+
+						if (this->getRenderer()->editinput == 0) inputParam.type = "shift_c";
+						else
+						{
+							cancelSelect();
+							inputParam.type = "shift_c_already";
+						}
+
 						inputParam.p = (void*)(&pluginInputArgList);
 						pluginInputList.push_back(dummyInput);
 						pluginInputList.push_back(inputParam);

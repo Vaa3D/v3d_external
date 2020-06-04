@@ -698,7 +698,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 						break;
 					}
 
-					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(thisRenderer->curEditingNeuron - 1));
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.last());
 					double dist;
 					thisRenderer->indices.clear();
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
@@ -739,7 +739,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 						break;
 					}
 
-					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(thisRenderer->curEditingNeuron - 1));
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.last());
 					double dist;
 					thisRenderer->indices.clear();
 					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);			
@@ -3430,6 +3430,7 @@ void CViewer::segEditing_setCursor(string action)
 	{
 		CViewer::current->editingMode = "erase";
 		QString eraserSizeQ = QString::number(CViewer::current->eraserSize);
+		//QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
 		QString cursorPath = ".\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
 		QCursor eraseCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
@@ -3438,6 +3439,7 @@ void CViewer::segEditing_setCursor(string action)
 	{
 		CViewer::current->editingMode = "connect";
 		QString connectorSizeQ = QString::number(CViewer::current->connectorSize);
+		//QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
 		QString cursorPath = ".\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
 		QCursor connectCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(connectCursorPic);
