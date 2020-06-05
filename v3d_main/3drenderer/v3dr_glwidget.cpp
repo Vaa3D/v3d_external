@@ -1144,6 +1144,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 							cancelSelect();
 							inputParam.type = "shift_e_already";
 						}
+						thisRenderer->editinput = 97; // This is a special number I chose for Neuron Assembler editing mode. MK, June, 2020.
 						
 						inputParam.p = (void*)(&pluginInputArgList);
 						pluginInputList.push_back(dummyInput);
@@ -1289,6 +1290,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 							cancelSelect();
 							inputParam.type = "shift_c_already";
 						}
+						thisRenderer->editinput = 97; // This is a special number I chose for Neuron Assembler editing mode. MK, June, 2020.
 
 						inputParam.p = (void*)(&pluginInputArgList);
 						pluginInputList.push_back(dummyInput);

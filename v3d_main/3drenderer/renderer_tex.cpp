@@ -636,7 +636,11 @@ void Renderer_gl1::paint()
         glPushMatrix(); //============================================== {
 
         drawVaa3DInfo(16);
-        drawEditInfo();
+        drawEditInfo(); 
+
+#ifdef _NEURON_ASSEMBLER_
+		if (this->editinput != 97) terafly::CViewer::getCurrent()->editingMode = "none";
+#endif
 
 		//drawSegInfo();
 
