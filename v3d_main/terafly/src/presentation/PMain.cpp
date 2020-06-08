@@ -4254,7 +4254,6 @@ void PMain::startAutoTrace()
         XYZ center;//Global
 
         center.x=tempNode.x;center.y=tempNode.y;
-
         center.z=tempNode.z+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_z);
 
         CellAPO centerAPO;
@@ -4288,18 +4287,15 @@ void PMain::startAutoTrace()
         if(!dir.cd("testV3draw"))
         {
             dir.mkdir("testV3draw");
-
         }
+        dir=QDir("testV3draw");
 
         QProcess p;
-        p.execute("C:/cmy_test/bin/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/bin/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
+        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
                   <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
                   <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
 
-
-
-        QFileInfoList file_list=dir.entryInfoList(QDir::Files);
-        qDebug()<<dir.absolutePath();
+        QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
 
         for(int i=0;i<file_list.size();i++)
             qDebug()<<file_list.at(i).fileName();
@@ -4310,7 +4306,7 @@ void PMain::startAutoTrace()
         {
             qDebug()<<file_list.at(0).absolutePath();
             QString v3drawpath=file_list.at(0).absolutePath()+"/"+file_list.at(0).fileName();
-            p.execute("C:/cmy_test/bin/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/bin/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+            qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
                       <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
             //delete v3draw
             QFile *f=new QFile(v3drawpath);
@@ -4324,10 +4320,9 @@ void PMain::startAutoTrace()
                  if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1)
                  {
                      emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
+                     break;
                  }
-                 f=new QFile(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName());
-                 if(f->exists()) f->remove();
-                 delete f;
+
              }
         }
     }
