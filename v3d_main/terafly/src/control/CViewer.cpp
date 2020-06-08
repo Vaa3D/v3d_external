@@ -3428,6 +3428,9 @@ void CViewer::segEditing_setCursor(string action)
 {
 	if (!action.compare("erase"))
 	{
+		myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+		thisRenderer->editinput = 97;
+
 		CViewer::current->editingMode = "erase";
 		QString eraserSizeQ = QString::number(CViewer::current->eraserSize);
 		//QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
@@ -3437,6 +3440,9 @@ void CViewer::segEditing_setCursor(string action)
 	}
 	else if (!action.compare("connect"))
 	{
+		myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+		thisRenderer->editinput = 97;
+
 		CViewer::current->editingMode = "connect";
 		QString connectorSizeQ = QString::number(CViewer::current->connectorSize);
 		//QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
