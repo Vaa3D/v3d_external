@@ -687,11 +687,11 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f)
             messageBuff +=packetbuff;
         }
 
-        if(seg.row.size()>2)
+        if(seg.row.size()>4)
         {
-            if(seg.row[2].x-seg.row[0].x>0) flag_x=1;else flag_x=-1;
-            if(seg.row[2].y-seg.row[0].y>0) flag_y=1;else flag_y=-1;
-            if(seg.row[2].z-seg.row[0].z>0) flag_z=1;else flag_z=-1;
+            if(seg.row[seg.row.size()-1].x-seg.row[seg.row.size()-4].x>0) flag_x=1;else flag_x=-1;
+            if(seg.row[seg.row.size()-1].y-seg.row[seg.row.size()-4].y>0) flag_y=1;else flag_y=-1;
+            if(seg.row[seg.row.size()-1].z-seg.row[seg.row.size()-4].z>0) flag_z=1;else flag_z=-1;
             //        qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
         }
         return messageBuff;
@@ -727,6 +727,13 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
 //    char extramsg[300];
     QString messageBuff=QString("TeraAI %1 %2 %3_").arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
 
+    reverse(seg.row.begin(),seg.row.end());
+    if(seg.row.size()>=3)
+    {
+        seg.row.erase(seg.row.end()-1);
+        seg.row.erase(seg.row.end()-1);
+        seg.row.erase(seg.row.end()-1);
+    }
     for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
     {
         V_NeuronSWC_unit curSWCunit = seg.row[i];
@@ -745,8 +752,16 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para)
             XYZ GlobalCroods = ConvertLocaltoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z,para);
             packetbuff=QString("%1 %2 %3 %4 %5 %6 %7").arg(curSWCunit.n).arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z)
                     .arg(curSWCunit.r).arg(curSWCunit.parent);
+            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
         }
         messageBuff+=packetbuff;
+    }
+    if(seg.row.size()>4)
+    {
+        if(seg.row[seg.row.size()-1].x-seg.row[seg.row.size()-4].x>0) flag_x=1;else flag_x=-1;
+        if(seg.row[seg.row.size()-1].y-seg.row[seg.row.size()-4].y>0) flag_y=1;else flag_y=-1;
+        if(seg.row[seg.row.size()-1].z-seg.row[seg.row.size()-4].z>0) flag_z=1;else flag_z=-1;
+        //        qDebug()<<"flag(x,y,z)="<<flag_x<<" "<<flag_y<<" "<<flag_z;
     }
     return messageBuff;
 }
@@ -842,9 +857,10 @@ XYZ V3dR_Communicator::ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ
 void V3dR_Communicator::read_autotrace(QString path,XYZ* tempPara)
 {
     NeuronTree auto_res=readSWC_file(path);
-    QFile *f=new QFile(path);
-    if(f->exists()) f->remove();
-    delete f;
+//    QFile *f=new QFile(path);
+//    if(f->exists()) f->remove();
+//    delete f;
+
     V_NeuronSWC_list testVNL= NeuronTree__2__V_NeuronSWC_list(auto_res);
 
     if(testVNL.seg.size()!=0)
