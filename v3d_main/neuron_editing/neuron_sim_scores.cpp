@@ -100,7 +100,7 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor( NeuronTree *p1,  Neuron
     double maxdist12 = -1, maxdist21 = -1; //set as some big numbers
 	V3DLONG nseg1big, nseg2big;
     sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12,2);
-    sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21,4);
+    sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21,7);
 
     writeESWC_file(QString("mul_%1").arg(d_thres)+name+".eswc",*p1);
     writeESWC_file(QString("single_%1").arg(d_thres)+name+".eswc",*p2);
