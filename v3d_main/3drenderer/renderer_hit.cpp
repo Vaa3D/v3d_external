@@ -2113,7 +2113,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	}
 	else if (act==actAveDistTwoNeurons)
     {
-        if (listNeuronTree.size()<2)
+        /*if (listNeuronTree.size()<2)
             v3d_msg("only one neuron, nothing is computed");
         else
         {
@@ -2155,7 +2155,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 qDebug() << "score between "<<names[2]<< " and remaining neurons =" << ave_sd << " " << ave_ssd << " " << ave_ssd_percent;
             }
             QMessageBox::information(0, "neuron distance scores", tmpstr);
-        }
+        }*/
 	}
 	else if (act==actDispNeuronMorphoInfo)
 	{

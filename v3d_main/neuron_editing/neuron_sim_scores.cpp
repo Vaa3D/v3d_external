@@ -40,7 +40,20 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v_neuronswc.h"
 #include <iostream>
 #include "global_feature_compute.h"
+#include "neuron_format_converter.h"
+double cuc_length(QString swcname)
+{
+    double length=0;
+    double feature[22]={0};
 
+    NeuronTree nt=readSWC_file(swcname);
+    computeFeature(nt,feature);
+    length=feature[10];
+    //计算长度
+//        p.execute(QString("C:/Users/Brain/Desktop/Vaa3D_V3.601_Windows_MSVC_64bit/vaa3d_msvc.exe /x C:/Users/Brain/Desktop/Vaa3D_V3.601_Windows_MSVC_64bit/plugins/neuron_utilities/global_neuron_feature/global_neuron_feature.dll /f compute_feature "
+//                  "/i %1").arg(swcName+"_user"+QString::number(iter->first)+".ano.eswc"));
+    return length;
+}
 V_NeuronSWC get_v_neuron_swc(const NeuronTree *p);
 vector<V_NeuronSWC> get_neuron_segments(const NeuronTree *p);
 void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const vector<V_NeuronSWC> & segment_list);
@@ -49,7 +62,7 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const V_NeuronSW
 double d_thres = 2.0;
 
 //round all neuronal node coordinates, and compute the average min distance matches for all places the neurons go through
-NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2,bool bmenu, double d_thres_updated)
+NeuronDistSimple neuron_score_rounding_nearest_neighbor( NeuronTree *p1,  NeuronTree *p2,bool bmenu, double d_thres_updated,QString name)
 {
 	NeuronDistSimple ss;
 
@@ -86,14 +99,96 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 	double sum12big, sum21big;
     double maxdist12 = -1, maxdist21 = -1; //set as some big numbers
 	V3DLONG nseg1big, nseg2big;
-    sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12);
-    sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21);
+    sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12,2);
+    sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21,4);
+
+    writeESWC_file(QString("mul_%1").arg(d_thres)+name+".eswc",*p1);
+    writeESWC_file(QString("single_%1").arg(d_thres)+name+".eswc",*p2);
+
+    NeuronTree t1=readSWC_file(QString("mul_%1").arg(d_thres)+name+".eswc");
+    NeuronTree t2=readSWC_file(QString("mul_%1").arg(d_thres)+name+".eswc");
+    for(int i=0;i<t1.listNeuron.size();)
+    {
+        if(i%100==0)
+            qDebug()<<i<<"/"<<t1.listNeuron.size();
+        if(t1.listNeuron.at(i).type==2)
+        {
+            t1.listNeuron.removeAt(i);
+        }else
+        {
+            i++;
+        }
+    }
+    for(int i=0;i<t1.listNeuron.size();i++)
+    {
+        if(i%100==0)
+            qDebug()<<i<<"/"<<t1.listNeuron.size();
+        int pn=t1.listNeuron.at(i).parent;
+        bool find=false;
+        for(int j=0;j<t1.listNeuron.size();j++)
+        {
+            if(t1.listNeuron.at(j).n==pn)
+            {find=true; break;}
+        }
+        if(!find)
+        {
+            t1.listNeuron[i].pn=-1;
+        }
+    }
+    writeESWC_file(QString("mul1_%1").arg(d_thres)+name+".eswc",t1);
+    double dist_1=cuc_length(QString("mul1_%1").arg(d_thres)+name+".eswc");
+
+    for(int i=0;i<t2.listNeuron.size();)
+    {
+        if(i%100==0)
+            qDebug()<<i<<"/"<<t2.listNeuron.size();
+        if(t2.listNeuron.at(i).type==3)
+        {
+            t2.listNeuron.removeAt(i);
+        }else
+        {
+            i++;
+        }
+    }
+    for(int i=0;i<t2.listNeuron.size();i++)
+    {
+        if(i%100==0)
+            qDebug()<<i<<"/"<<t2.listNeuron.size();
+        int pn=t2.listNeuron.at(i).parent;
+        bool find=false;
+        for(int j=0;j<t2.listNeuron.size();j++)
+        {
+            if(t2.listNeuron.at(j).n==pn)
+            {find=true; break;}
+        }
+        if(!find)
+        {
+            t2.listNeuron[i].pn=-1;
+        }
+    }
+    writeESWC_file(QString("mul2_%1").arg(d_thres)+name+".eswc",t2);
+    double dist_2=cuc_length(QString("mul2_%1").arg(d_thres)+name+".eswc");
+
+    NeuronTree n_t1=readSWC_file(QString("mul_%1").arg(d_thres)+name+".eswc");
+    NeuronTree n_t2=readSWC_file(QString("single_%1").arg(d_thres)+name+".eswc");
+
+    V_NeuronSWC_list testVNL1=NeuronTree__2__V_NeuronSWC_list(n_t1);
+    V_NeuronSWC_list testVNL2=NeuronTree__2__V_NeuronSWC_list(n_t2);
+    for(int i=0;i<testVNL2.seg.size();i++)
+    {
+        testVNL1.seg.push_back(testVNL2.seg.at(i));
+    }
+
+    writeESWC_file(QString("merge_%1").arg(d_thres)+name+".eswc",V_NeuronSWC_list__2__NeuronTree(testVNL1));
+
 
     //qDebug() << "sum12="<<sum12 << "npoints1="<< nseg1 << "sum21="<< sum21 << "npoint2="<< nseg2;
     //qDebug() << "sum12big="<<sum12big << "npoints1big="<< nseg1big << "sum21big="<< sum21big << "npoint2big="<< nseg2big;
     //qDebug() << "maxdist12="<<maxdist12 << "maxdist21="<< maxdist21;
 
-
+    ss.dist1=dist_1;ss.dist2=dist_2;
+    ss.dist3=cuc_length(QString("mul_%1").arg(d_thres)+name+".eswc");
+    ss.dist4=cuc_length(QString("single_%1").arg(d_thres)+name+".eswc");
     ss.dist_12_allnodes = sum12/nseg1;
     ss.dist_21_allnodes = sum21/nseg2;
 
@@ -121,11 +216,11 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
                                                                  // Becasue the two neurons (tracts) can have different starting and ending locations,
                                                                  // the bigger one of  maxdist12 and maxdist21 could simply reflect the big difference of
                                                                  // of the starting locations of the two tracts. Thus I use the smaller one, which
-                                                                // should correspond better to the max distance at the truck part of two tracts. PHC 20140318.
+                                                                // should correspond better to the max distance at the truck part of two tracts. PHC 20140318
 	return ss;
 }
 
-double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big, const NeuronTree *p1, const NeuronTree *p2, double & maxdist)
+double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big,  NeuronTree *p1,  NeuronTree *p2, double & maxdist)
 {
 	if (!p1 || !p2) return -1;
 	V3DLONG p1sz = p1->listNeuron.size(), p2sz = p2->listNeuron.size();
@@ -142,8 +237,11 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 
 	for (i=0;i<p1->listNeuron.size();i++)
 	{
+
+        if(i%100==0) qDebug()<<i<<"/"<<p1->listNeuron.size();
 		//first find the two ends of a line seg
         tp1 = (NeuronSWC *)(&(p1->listNeuron.at(i)));
+        tp1->type=3;
         if (tp1->pn < 0)
 			continue;
 		tp2 = (NeuronSWC *)(&(p1->listNeuron.at(h1.value(tp1->pn)))); //use hash table
@@ -164,6 +262,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
 			ptdiff = XYZ(N1,N1,N1) * XYZ(tp2->x-tp1->x, tp2->y-tp1->y, tp2->z-tp1->z);
 		}
         //qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
+//        double min_dist=-1;
 		for (j=0;j<N;j++)
 		{
 			XYZ curpt(tp1->x + ptdiff.x*j, tp1->y + ptdiff.y*j, tp1->z + ptdiff.z*j);
@@ -178,19 +277,139 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
                 if (maxdist<cur_d)
                     maxdist = cur_d;
             }
+//            if(min_dist<0)
+//                min_dist=cur_d;
+//            else
+//            {
+//                if(min_dist>cur_d)
+//                    min_dist=cur_d;
+//            }
 
             if (cur_d>=d_thres)
 			{
 				sum1big += cur_d;
 				nseg1big++;
+                tp1->type=2;
+                tp2->type=2;
                 //qDebug() << "(" << cur_d << ", " << nseg1big << ")";
-			}
+            }
 
 		}
+//        if(min_dist>d_thres)
+//            p1->listNeuron[i].type=2;
+//        else
+//            p1->listNeuron[i].type=3;
+//        qSort(distlist.begin(), distlist.end());
+
 	}
     //qDebug() << "end directional neuronal distance computing";
 
+    for(int i=0;i<p1->listNeuron.size();i++)
+    {
+        NeuronSWC *tp=(NeuronSWC *)(&(p1->listNeuron.at(i)));
+        if (tp->pn < 0)
+        {
+            for(int j=0;j<p1->listNeuron.size();j++)
+            {
+                if(p1->listNeuron.at(j).pn==tp->n)
+                {
+                    tp->type=p1->listNeuron.at(j).type;
+                }
+            }
+        }
+    }
 	return sum1;
+}
+
+double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big, NeuronTree *p1, const NeuronTree *p2, double & maxdist,int type)
+{
+    if (!p1 || !p2) return -1;
+    V3DLONG p1sz = p1->listNeuron.size(), p2sz = p2->listNeuron.size();
+    if (p1sz<2 || p2sz<2) return -1;
+
+    NeuronSWC *tp1, *tp2;
+    V3DLONG i, j;
+    double sum1=0;
+    nseg1=0;
+    nseg1big=0;
+    sum1big=0;
+//    NeuronTree cp1=*p1;
+    QHash<int, int> h1 = generate_neuron_swc_hash(p1); //generate a hash lookup table from a neuron swc graph
+
+    for (i=0;i<p1->listNeuron.size();i++)
+    {
+        if(i%100==0)
+        qDebug()<<i<<"/"<<p1->listNeuron.size();
+        //first find the two ends of a line seg
+        tp1 = (NeuronSWC *)(&(p1->listNeuron.at(i)));
+        if(type)
+            tp1->type=3;
+        if (tp1->pn < 0)
+            continue;
+        tp2 = (NeuronSWC *)(&(p1->listNeuron.at(h1.value(tp1->pn)))); //use hash table find parent
+        //qDebug() << "i="<< i << " pn="<<tp1->pn - 1;
+
+        //now produce a series of points for the line seg
+        double len=dist_L2(XYZ(tp1->x,tp1->y,tp1->z), XYZ(tp2->x,tp2->y,tp2->z));//distance between tp1 and tp2
+        int N = int(1+len+0.5);
+        XYZ ptdiff;
+        if (N<=1)
+        {
+            //qDebug() << "detect one very short segment, len=" << len;
+            ptdiff = XYZ(0,0,0);
+        }
+        else
+        {
+            double N1=1.0/(N-1);
+            ptdiff = XYZ(N1,N1,N1) * XYZ(tp2->x-tp1->x, tp2->y-tp1->y, tp2->z-tp1->z);
+        }
+        //qDebug() << "N="<<N << "len=" <<len << "xd="<<ptdiff.x << " yd=" << ptdiff.y << " zd=" << ptdiff.z << " ";
+        for (j=0;j<N;j++)
+        {
+            XYZ curpt(tp1->x + ptdiff.x*j, tp1->y + ptdiff.y*j, tp1->z + ptdiff.z*j);
+            double cur_d = dist_pt_to_swc(curpt, p2);
+            sum1 += cur_d;
+            nseg1++;
+
+            if (maxdist<0) //use <0 as a condition to check if maxdist has been set
+                maxdist = cur_d;
+            else
+            {
+                if (maxdist<cur_d)
+                    maxdist = cur_d;
+            }
+
+            if (cur_d>=d_thres)
+            {
+                sum1big += cur_d;
+                nseg1big++;
+                if(type>0)
+                {
+                    tp1->type=type;
+                    tp2->type=type;
+
+                }
+            }
+
+        }
+    }
+    //qDebug() << "end directional neuronal distance computing";
+
+    for(int i=0;i<p1->listNeuron.size();i++)
+    {
+        NeuronSWC *tp=(NeuronSWC *)(&(p1->listNeuron.at(i)));
+        if (tp->pn < 0)
+        {
+            for(int j=0;j<p1->listNeuron.size();j++)
+            {
+                if(p1->listNeuron.at(j).pn==tp->n)
+                {
+                    tp->type=p1->listNeuron.at(j).type;
+                }
+            }
+        }
+    }
+    return sum1;
 }
 
 double dist_pt_to_swc(const XYZ & pt, const NeuronTree * p_tree)

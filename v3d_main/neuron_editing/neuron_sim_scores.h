@@ -49,18 +49,23 @@ struct NeuronDistSimple
     double percent_12_apartnodes; //the percentage of interpolated points that have significant distance (>= 2 pixels):from neuron 1  to neurno 2
     double percent_21_apartnodes; //the percentage of interpolated points that have significant distance (>= 2 pixels):: from neuron 2 to neuron 1
     double dist_max; //the maximal distance between two neurons, which is defined the smaller one of the two one-directional max distances
+    double dist1=0;
+    double dist2=0;
+    double dist3=0;
+    double dist4=0;
     NeuronDistSimple() {dist_12_allnodes = dist_21_allnodes = dist_allnodes = dist_apartnodes = percent_apartnodes = dist_max = -1; }
 };
 
 //round all neuronal node coordinates, and compute the average min distance matches for all places the neurons go through
-NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, const NeuronTree *p2, bool menu, double d_thres_updated = 2.0);
-double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big, const NeuronTree *p1, const NeuronTree *p2, double &maxdist);
+NeuronDistSimple neuron_score_rounding_nearest_neighbor( NeuronTree *p1,  NeuronTree *p2, bool menu, double d_thres_updated = 2.0,QString name=QString());
+double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big,  NeuronTree *p1,  NeuronTree *p2, double &maxdist);
+double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & sum1big, NeuronTree *p1, const NeuronTree *p2, double & maxdist,int type);
 double dist_pt_to_swc(const XYZ & pt, const NeuronTree * p2);
 double dist_pt_to_line(const XYZ & p0, const XYZ &  p1, const XYZ &  p2); //p1 and p2 define a straight line, and p0 the point
 double dist_pt_to_line_seg(const XYZ & p0, const XYZ &  p1, const XYZ &  p2); //p1 and p2 are the two ends of the line segment, and p0 the point
 
 QHash<int, int> generate_neuron_swc_hash(const NeuronTree * p_tree); //generate a hash lookup table from a neuron swc graph
-
+double cuc_length(QString swcname);
 
 struct NeuronMorphoInfo
 {
