@@ -107,6 +107,43 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor( NeuronTree *p1,  Neuron
 
     NeuronTree t1=readSWC_file(QString("mul_%1").arg(d_thres)+name+".eswc");
     NeuronTree t2=readSWC_file(QString("mul_%1").arg(d_thres)+name+".eswc");
+    if(name.contains("18869")||name.contains("18462"))
+    {
+        for(int i=0;i<t1.listNeuron.size();i++)
+        {
+            t1.listNeuron[i].x*=0.35;
+            t1.listNeuron[i].y*=0.35;
+        }
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.35;
+            t2.listNeuron[i].y*=0.35;
+        }
+    }else if (name.contains("18047")||name.contains("18454")||name.contains("18455")||name.contains("18465"))
+    {
+        for(int i=0;i<t1.listNeuron.size();i++)
+        {
+            t1.listNeuron[i].x*=0.23;
+            t1.listNeuron[i].y*=0.23;
+        }
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.23;
+            t2.listNeuron[i].y*=0.23;
+        }
+    }else
+    {
+        for(int i=0;i<t1.listNeuron.size();i++)
+        {
+            t1.listNeuron[i].x*=0.2;
+            t1.listNeuron[i].y*=0.2;
+        }
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.2;
+            t2.listNeuron[i].y*=0.2;
+        }
+    }
     for(int i=0;i<t1.listNeuron.size();)
     {
         if(i%100==0)
@@ -169,26 +206,117 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor( NeuronTree *p1,  Neuron
     writeESWC_file(QString("mul2_%1").arg(d_thres)+name+".eswc",t2);
     double dist_2=cuc_length(QString("mul2_%1").arg(d_thres)+name+".eswc");
 
-    NeuronTree n_t1=readSWC_file(QString("mul_%1").arg(d_thres)+name+".eswc");
-    NeuronTree n_t2=readSWC_file(QString("single_%1").arg(d_thres)+name+".eswc");
+     t1=readSWC_file(QString("mul_%1").arg(d_thres)+name+".eswc");
+     t2=readSWC_file(QString("single_%1").arg(d_thres)+name+".eswc");
 
-    V_NeuronSWC_list testVNL1=NeuronTree__2__V_NeuronSWC_list(n_t1);
-    V_NeuronSWC_list testVNL2=NeuronTree__2__V_NeuronSWC_list(n_t2);
+    V_NeuronSWC_list testVNL1=NeuronTree__2__V_NeuronSWC_list(t1);
+    V_NeuronSWC_list testVNL2=NeuronTree__2__V_NeuronSWC_list(t2);
     for(int i=0;i<testVNL2.seg.size();i++)
     {
         testVNL1.seg.push_back(testVNL2.seg.at(i));
     }
 
     writeESWC_file(QString("merge_%1").arg(d_thres)+name+".eswc",V_NeuronSWC_list__2__NeuronTree(testVNL1));
-
-
+    if(name.contains("18869")||name.contains("18462"))
+    {
+        for(int i=0;i<t1.listNeuron.size();i++)
+        {
+            t1.listNeuron[i].x*=0.35;
+            t1.listNeuron[i].y*=0.35;
+        }
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.35;
+            t2.listNeuron[i].y*=0.35;
+        }
+    }else if (name.contains("18047")||name.contains("18454")||name.contains("18455")||name.contains("18465"))
+    {
+        for(int i=0;i<t1.listNeuron.size();i++)
+        {
+            t1.listNeuron[i].x*=0.23;
+            t1.listNeuron[i].y*=0.23;
+        }
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.23;
+            t2.listNeuron[i].y*=0.23;
+        }
+    }else
+    {
+        for(int i=0;i<t1.listNeuron.size();i++)
+        {
+            t1.listNeuron[i].x*=0.2;
+            t1.listNeuron[i].y*=0.2;
+        }
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.2;
+            t2.listNeuron[i].y*=0.2;
+        }
+    }
+    writeESWC_file(QString("SampleMul_%1").arg(d_thres)+name+".eswc",t1);
+    writeESWC_file(QString("SampleSingle_%1").arg(d_thres)+name+".eswc",t2);
     //qDebug() << "sum12="<<sum12 << "npoints1="<< nseg1 << "sum21="<< sum21 << "npoint2="<< nseg2;
     //qDebug() << "sum12big="<<sum12big << "npoints1big="<< nseg1big << "sum21big="<< sum21big << "npoint2big="<< nseg2big;
     //qDebug() << "maxdist12="<<maxdist12 << "maxdist21="<< maxdist21;
 
     ss.dist1=dist_1;ss.dist2=dist_2;
-    ss.dist3=cuc_length(QString("mul_%1").arg(d_thres)+name+".eswc");
-    ss.dist4=cuc_length(QString("single_%1").arg(d_thres)+name+".eswc");
+    ss.dist3=cuc_length(QString("SampleMul_%1").arg(d_thres)+name+".eswc");
+    ss.dist4=cuc_length(QString("SampleSingle_%1").arg(d_thres)+name+".eswc");
+
+    t2=readSWC_file(QString("single_%1").arg(d_thres)+name+".eswc");
+    if(name.contains("18869")||name.contains("18462"))
+    {
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.35;
+            t2.listNeuron[i].y*=0.35;
+        }
+    }else if (name.contains("18047")||name.contains("18454")||name.contains("18455")||name.contains("18465"))
+    {
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.23;
+            t2.listNeuron[i].y*=0.23;
+        }
+    }else
+    {
+        for(int i=0;i<t2.listNeuron.size();i++)
+        {
+            t2.listNeuron[i].x*=0.2;
+            t2.listNeuron[i].y*=0.2;
+        }
+    }
+    for(int i=0;i<t2.listNeuron.size();)
+    {
+        if(i%100==0)
+            qDebug()<<i<<"/"<<t2.listNeuron.size();
+        if(t2.listNeuron.at(i).type==3)
+        {
+            t2.listNeuron.removeAt(i);
+        }else
+        {
+            i++;
+        }
+    }
+    for(int i=0;i<t2.listNeuron.size();i++)
+    {
+        if(i%100==0)
+            qDebug()<<i<<"/"<<t2.listNeuron.size();
+        int pn=t2.listNeuron.at(i).parent;
+        bool find=false;
+        for(int j=0;j<t2.listNeuron.size();j++)
+        {
+            if(t2.listNeuron.at(j).n==pn)
+            {find=true; break;}
+        }
+        if(!find)
+        {
+            t2.listNeuron[i].pn=-1;
+        }
+    }
+    writeESWC_file(QString("single2_%1").arg(d_thres)+name+".eswc",t2);
+    ss.dist5=cuc_length(QString("single2_%1").arg(d_thres)+name+".eswc");
     ss.dist_12_allnodes = sum12/nseg1;
     ss.dist_21_allnodes = sum21/nseg2;
 

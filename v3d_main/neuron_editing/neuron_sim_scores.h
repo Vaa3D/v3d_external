@@ -53,6 +53,7 @@ struct NeuronDistSimple
     double dist2=0;
     double dist3=0;
     double dist4=0;
+    double dist5=0;
     NeuronDistSimple() {dist_12_allnodes = dist_21_allnodes = dist_allnodes = dist_apartnodes = percent_apartnodes = dist_max = -1; }
 };
 
