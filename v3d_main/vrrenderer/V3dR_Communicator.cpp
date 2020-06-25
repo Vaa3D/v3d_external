@@ -513,32 +513,33 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 this->Agents.at(i).colorType=clrtype.toInt();
             }
         }
-        else if (deletecurveRex.indexIn(line) != -1) {
-            QString user=deletecurveRex.cap(1);
-            receiveCNT++;
-            qDebug()<<"receive "<<receiveCNT;
-            qDebug()<<"+============delseg process begin========";
-            if(flag_init==0)
-            {
-                if(user!=userName+QString::number(0))
-                {
-                   QString _string=deletecurveRex.cap(2).trimmed();
-                   QStringList list= _string.split('_');
-                           list.pop_front();
-                           _string=list.join("_");
-                    emit delSeg(_string);
-                }
-                else
-                    qDebug()<<"user:"<<user<<"==userName"<<userName;
-            }else {
-                QString _string=deletecurveRex.cap(2).trimmed();
-                QStringList list= _string.split('_');
-                        list.pop_front();
-                        _string=list.join("_");
-                 emit delSeg(_string);
-            }
-            qDebug()<<"+============delseg process end========";
+		else if (messageRex.indexIn(line) != -1) {
 
+			receiveCNT++;
+			qDebug() << "receive " << receiveCNT;
+			//            qDebug()<<"======================messageRex in Terafly begin============";
+
+			QString user = messageRex.cap(1);
+			int colortype = 21;
+			QString temp1 = messageRex.cap(2).trimmed();
+
+			QString temp = temp1.split("_").at(0).trimmed().split(" ").at(0);
+			if (flag_init == 0)
+			{
+				if (user == (userName + QString::number(0)) && temp == "TeraFly")
+					qDebug() << "user:" << user << "==userName" << userName;
+				else
+				{
+					emit addSeg(temp1, colortype);
+				}
+			}
+			else {
+				emit addSeg(temp1, colortype);
+			}
+			//            qDebug()<<"======================messageRex in Terafly end============";
+
+
+ 
         }
         else if (markerRex.indexIn(line) != -1) {
             receiveCNT++;
@@ -561,28 +562,35 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         else if (delmarkerRex.indexIn(line) != -1) {
 
         }
-        else if (messageRex.indexIn(line) != -1) {
-            receiveCNT++;
-            qDebug()<<"receive "<<receiveCNT;
-//            qDebug()<<"======================messageRex in Terafly begin============";
+		else if (deletecurveRex.indexIn(line) != -1) {
 
-            QString user=messageRex.cap(1);
-            int colortype=21;
-            QString temp1=messageRex.cap(2).trimmed();
+			QString user = deletecurveRex.cap(1);
+			receiveCNT++;
+			qDebug() << "receive " << receiveCNT;
+			qDebug() << "+============delseg process begin========";
+			if (flag_init == 0)
+			{
+				if (user != userName + QString::number(0))
+				{
+					QString _string = deletecurveRex.cap(2).trimmed();
+					QStringList list = _string.split('_');
+					list.pop_front();
+					_string = list.join("_");
+					emit delSeg(_string);
+				}
+				else
+					qDebug() << "user:" << user << "==userName" << userName;
+			}
+			else {
+				QString _string = deletecurveRex.cap(2).trimmed();
+				QStringList list = _string.split('_');
+				list.pop_front();
+				_string = list.join("_");
+				emit delSeg(_string);
+			}
+			qDebug() << "+============delseg process end========";
 
-            QString temp=temp1.split("_").at(0).trimmed().split(" ").at(0);
-            if(flag_init==0)
-            {
-                if(user==(userName+QString::number(0))&&temp=="TeraFly")
-                    qDebug()<<"user:"<<user<<"==userName"<<userName;
-                else
-                {
-                    emit addSeg(temp1,colortype);
-                }
-            }else {
-                emit addSeg(temp1,colortype);
-            }
-//            qDebug()<<"======================messageRex in Terafly end============";
+
         }
 
         else if(creatorRex.indexIn(line)!=-1)

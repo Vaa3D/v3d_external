@@ -403,7 +403,7 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
 {
     /**/tf::debug(tf::LEV1, strprintf("_resIndex = %d, _V0 = %d, _V1 = %d, _H0 = %d, _H1 = %d, _D0 = %d, _D1 = %d, _T0 = %d, _T1 = %d, _nchannels = %d",
                                         _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels).c_str(), __itm__current__function__);
-
+	qDebug() << "SYL TEST CViewer::CViewer";
     //initializations
     ID = nTotalInstances++;
     resetZoomHistory();
@@ -1088,8 +1088,9 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
-
+	
 //    CViewer::mutex.lock();//add by huanglei for multiply UI
+	qDebug() << "SYL TEST Viewer::newViewer";
     qDebug()<<"call newViewer ... ... ";
 
     // check precondition #1: active window
@@ -1360,7 +1361,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
             //
-            toRetrieveData = true;
+            toRetrieveData = true; 
 
             // show new viewer
             next->show();

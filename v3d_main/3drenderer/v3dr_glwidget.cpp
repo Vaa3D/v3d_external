@@ -4337,7 +4337,6 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
     SetupCollaborateInfo();
     for(int i=0;i<delMarkerPosList.size();i++)
     {
-
         QStringList nodeXYZ=delMarkerPosList.at(i).split(" ",QString::SkipEmptyParts);
         global_list.push_back(XYZ(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat()));
         local_list.push_back(ConvertreceiveCoords(nodeXYZ.at(0).toFloat(),nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat()));
@@ -4354,8 +4353,6 @@ void V3dR_GLWidget::CollaDelSeg(QString markerPOS)
             qDebug()<<"cannot del in local: "<<i<<" "<<global_list[i].x<<" "<<global_list[i].y<<" "<<global_list[i].z;
         }
     }
-
-
 }
 
 void V3dR_GLWidget::CollretypeSeg(QString markerPOS)
@@ -4471,7 +4468,7 @@ void V3dR_GLWidget::batchprocessDel()
             }
         }
     }
-    qDebug()<<"batchprocessDel end";
+    qDebug()<<"  end";
     global_delMSG.clear();
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
     terafly::PluginInterface::setSWC(nt,true);

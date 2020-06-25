@@ -155,12 +155,14 @@ V3dR_MainWindow::~V3dR_MainWindow()
 #endif
 
 	// must closed before there! and do nothing is most OK, by RZC 2008-09-27
+	
 }
 
 
 V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
 {
 	qDebug("V3dR_MainWindow::V3dR_MainWindow =====================================");
+	
 	//setAttribute ( Qt::WA_DeleteOnClose, true ); // maybe cause Non-aligned pointer being freed error, when do'not use deleteLater, by RZC 080814, 090427
 	//setAttribute ( Qt::WA_AlwaysShowToolTips, true ); //090427 RZC: force show tooltip, may show some rubbish.
 	//090427 Always tooltip disappears after press any Modifier Key (Shift, Control, Option, Command). Because posting KeyPressEvent to glWidget make CPU 100% load.
@@ -240,6 +242,8 @@ void V3dR_MainWindow::setDataTitle(QString newdt)
 {
 	data_title=newdt; setWindowTitle(title_prefix+" [" + data_title + "]");
 	if (glWidget) glWidget->setDataTitle(newdt);
+	
+
 }
 
 
@@ -723,7 +727,7 @@ void V3dR_MainWindow::leaveEvent(QEvent*)
 QWidget* V3dR_MainWindow::lastActive = 0;
 void V3dR_MainWindow::changeEvent(QEvent* e)
 {
-    //qDebug() <<"V3dR_MainWindow::changeEvent" << e->type();
+    qDebug() <<"SYL TEST V3dR_MainWindow::changeEvent" << e->type();
 	//if (e->type()==QEvent::WindowActivate) // no occur!!!
 	if (e->type()==QEvent::ActivationChange && isActiveWindow())
 	{
