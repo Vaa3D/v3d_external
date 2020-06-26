@@ -4283,7 +4283,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         }
     }
     int type=colortype;
-
+	unsigned char r, g, b;
     const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
             {255, 255, 255},  // white,   0-undefined
             {20,  20,  20 },  // black,   1-soma
@@ -4309,17 +4309,24 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
         //the following (20-275) is used for matlab heat map. 120209 by WYN
         {0,0,131}, //20
-
+		
             };
     if(markerXYZ.size()==7)
     {
         type=markerXYZ.at(6).toInt();
-
+		marker.color.r = neuron_type_color[type][0];
+		marker.color.g = neuron_type_color[type][1];
+		marker.color.b = neuron_type_color[type][2];
 
     }
-    marker.color.r=neuron_type_color[type][0];
-    marker.color.g=neuron_type_color[type][1];
-    marker.color.b=neuron_type_color[type][2];
+	else if (markerXYZ.size() == 9){
+		r = markerXYZ.at(6).toInt();
+		g = markerXYZ.at(7).toInt();
+		b = markerXYZ.at(8).toInt();
+		marker.color.r = r;
+		marker.color.g = g;
+		marker.color.b = b;
+	}
 
 
     markers.append(marker);

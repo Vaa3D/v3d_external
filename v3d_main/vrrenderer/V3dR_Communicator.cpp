@@ -289,6 +289,18 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z,int type)
 
 }
 
+void V3dR_Communicator::UpdateSendPoolNode2(float X, float Y, float Z, int r, int g, int b){//Add by FJ 2020/6/14
+	XYZ global_node = ConvertLocaltoGlobalCroods(X, Y, Z);
+	QString nodeMSG = QString("/marker:" + QString::number(global_node.x) + " "
+		+ QString::number(global_node.y) + " " + QString::number(global_node.z)
+		+ " " + QString::number(ImageCurRes.x) + " " + QString::number(ImageCurRes.y)
+		+ " " + QString::number(ImageCurRes.z) + " "
+		+ QString::number(r) + " " + QString::number(g) + " " + QString::number(b)
+		);
+	AutoTraceNode = XYZ(global_node.x, global_node.y, global_node.z);
+	onReadySend(nodeMSG);
+}
+
 void V3dR_Communicator::UpdateSendDelMarkerInfo(float x,float y,float z)
 {
     XYZ global_node=ConvertLocaltoGlobalCroods(x,y,z);
@@ -541,7 +553,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
  
         }
-        else if (markerRex.indexIn(line) != -1) {
+        else if (markerRex.indexIn(line) != -1) {//Update by FJ 2020/6/14
             receiveCNT++;
             qDebug()<<"receive "<<receiveCNT;
 //            qDebug()<<"+============marker process begin========";

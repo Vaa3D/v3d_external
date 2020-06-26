@@ -83,6 +83,7 @@ public:
 	void UpdateSendPoolNTList(V_NeuronSWC seg);
 	void UpdateDeleteMsg(vector<XYZ> deleteLocNode);//this node is second node of seg,because this is esay to delete correct seg
     void UpdateSendPoolNode(float,float,float,int type=3);
+	void UpdateSendPoolNode2(float, float, float, int r = 0, int g = 20, int b = 200);//Add by FJ 2020/6/14
     void UpdateSendDelMarkerInfo(float x,float y,float z);
     void Updateretype(V_NeuronSWC_unit row_unit,int type);
 	void Collaborationsendmessage();

@@ -315,9 +315,18 @@ void VR_MainWindow::TVProcess(QString line)
                  resz = markerMSGs.at(5).toFloat();
             }
             int type=2;
-            if(markerMSGs.size()==7)
-                type=markerMSGs.at(6).toInt();
-
+			int r, g, b;
+			int modeFlag;//使用颜色序号还是RGB值
+			if (markerMSGs.size() == 7){
+				type = markerMSGs.at(6).toInt();
+				modeFlag = 1;
+			}
+			else if (markerMSGs.size() == 9){//Update by FJ 2020/6/15
+				r = markerMSGs.at(6).toInt();
+				g = markerMSGs.at(7).toInt();
+				b = markerMSGs.at(8).toInt();
+				modeFlag = 2;
+			}
 			if (pMainApplication)
 			{
 				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
@@ -336,7 +345,12 @@ void VR_MainWindow::TVProcess(QString line)
                         return;
                     }else
                     {
-                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
+						if (modeFlag == 1){
+							pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
+						}
+						else if (modeFlag == 2){
+							pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, r, g, b);//增加了RGB输入方式
+						}
                     }
                 }
 
