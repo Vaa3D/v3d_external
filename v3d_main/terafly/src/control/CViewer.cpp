@@ -3433,8 +3433,11 @@ void CViewer::segEditing_setCursor(string action)
 
 		CViewer::current->editingMode = "erase";
 		QString eraserSizeQ = QString::number(CViewer::current->eraserSize);
-		//QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
+#ifdef _NEURON_ASSEMBLER_DEBUG_
+		QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
+#else
 		QString cursorPath = ".\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
+#endif
 		QCursor eraseCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
 	}
@@ -3445,8 +3448,11 @@ void CViewer::segEditing_setCursor(string action)
 
 		CViewer::current->editingMode = "connect";
 		QString connectorSizeQ = QString::number(CViewer::current->connectorSize);
-		//QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
+#ifdef _NEURON_ASSEMBLER_DEBUG_
+		QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
+#else
 		QString cursorPath = ".\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
+#endif
 		QCursor connectCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(connectCursorPic);
 	}
