@@ -52,6 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../terafly/src/control/CSettings.h"
 #include "../terafly/src/control/CImport.h"
 #include "../terafly/src/control/CViewer.h"
+#include "../terafly/src/presentation/PMain.h"
 
 #define SIM_DIM1 765	//X
 #define SIM_DIM2 567	//Y
@@ -639,7 +640,11 @@ void Renderer_gl1::paint()
         drawEditInfo(); 
 
 #ifdef _NEURON_ASSEMBLER_
-		if (this->editinput != 97) terafly::CViewer::getCurrent()->editingMode = "none";
+		if (this->editinput != 97)
+		{
+			if (terafly::PMain::isInstantiated())
+				terafly::CViewer::getCurrent()->editingMode = "none";
+		}
 #endif
 
 		//drawSegInfo();
