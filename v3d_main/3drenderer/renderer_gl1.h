@@ -259,6 +259,8 @@ public:
 	double radius;
 	set<int> indices;
 	void localSWCcoord2projectedWindowCoord(const float swcLocalCoord[], double swcWindowCoord[]);
+
+	set<int> typeChangedSegIDs;
 #endif
 
     LandmarkList * getHandleLandmark(); //20141016, by Hanbo Chen
