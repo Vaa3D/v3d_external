@@ -757,8 +757,9 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
 					PMain::getInstance()->NeuronAssemblerPortal->connectSegProcess(curImg->tracedNeuron, this->seg2includedNodeMap);
+					 
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
-					curImg->proj_trace_history_append();
+					curImg->proj_trace_history_append();				
 				}
 				else if (PMain::getInstance()->fragTracePluginInstance && PMain::getInstance()->NeuronAssemblerPortal->markerMonitorStatus())
 				{

@@ -6626,9 +6626,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 							if (neuronColorMode == 0)
 							{
 								change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
-#ifdef _NEURON_ASSEMBLER_
-								this->typeChangedSegIDs.insert(p_listneuron->at(i).seg_id);
-#endif
 							}
 							else
                                 change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
@@ -6671,10 +6668,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                     }
                                     else
                                         change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
-
-#ifdef _NEURON_ASSEMBLER_
-									this->typeChangedSegIDs.insert(p_listneuron->at(i).seg_id);
-#endif
                                 }
                                 else
                                 {
@@ -6701,16 +6694,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             if(soma_cnt.size()>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt.size()));
         }
     }
-
-#ifdef _NEURON_ASSEMBLER_
-	if (terafly::PMain::isInstantiated() && terafly::PMain::getInstance()->fragTracePluginInstance)
-	{
-		if (terafly::PMain::getInstance()->NeuronAssemblerPortal->changeAssociatedSegsClicked())
-			terafly::PMain::getInstance()->NeuronAssemblerPortal->signalNA2retypeConnectedSegs(curImg->tracedNeuron, this->typeChangedSegIDs, node_type);
-		curImg->update_3drenderer_neuron_view(w, this);
-	}
-	this->typeChangedSegIDs.clear();
-#endif
 }
 
 void Renderer_gl1::breakMultiNeuronsByStrokeCommit()

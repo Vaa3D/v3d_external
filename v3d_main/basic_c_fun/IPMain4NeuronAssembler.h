@@ -26,6 +26,7 @@ public:
 	virtual void exitNAeditingMode() = 0;
 
 	virtual bool changeAssociatedSegsClicked() = 0;
+	virtual void signalNA2retypeConnectedSegs(V_NeuronSWC_list& displayingSegs, const int retypedSeg, const int type) = 0;
 	virtual void signalNA2retypeConnectedSegs(V_NeuronSWC_list& displayingSegs, const set<int>& retypedSegs, const int type) = 0;
 };
 
