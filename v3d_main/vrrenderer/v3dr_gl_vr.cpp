@@ -2401,10 +2401,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				//m_bFrozen = !m_bFrozen;
 
 
-				if (fBrightness >= -0.9) fBrightness = -1.0;
-				else fBrightness = 0.0;
+//                if (fBrightness >= -0.9) fBrightness = -1.0;
+//                else fBrightness = 0.0;
+            //by hl
 				
-
+                fBrightness=0.0;
 				
 
 				break;
