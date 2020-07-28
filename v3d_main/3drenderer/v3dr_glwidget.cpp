@@ -1118,6 +1118,37 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 #endif
 			}
 	  		break;
+#ifdef _NEURON_ASSEMBLER_
+		case Qt::Key_F1:
+			if (this->getRenderer())
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "show-hide";
+
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+				}
+			}
+
+			break;
+#endif
 
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
@@ -1225,6 +1256,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
             }
+#ifdef _NEURON_ASSEMBLER_
 			else if (IS_SHIFT_MODIFIER)
 			{
 				if (this->getRenderer())
@@ -1232,7 +1264,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
-#ifdef _NEURON_ASSEMBLER_
+
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
@@ -1243,9 +1275,29 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
 					}
-#endif
 				}
 			}
+			else if (WITH_SHIFT_MODIFIER && WITH_ALT_MODIFIER)
+			{
+				if (this->getRenderer())
+				{
+					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
+					{
+						map<int, vector<int> > labeledSegs;
+						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+							if (segIt->row.begin()->type == 18) segIt->to_be_deleted = true;
+
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+						curImg->proj_trace_history_append();
+					}
+				}
+			}
+#endif
 			else
             {
                 if(_idep && _idep->window3D)

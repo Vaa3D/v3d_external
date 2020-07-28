@@ -3425,6 +3425,20 @@ void CViewer::pushMarkersfromTester(const set<vector<float>>& markerCoords, RGBA
 	}
 }
 
+vector<V_NeuronSWC>* CViewer::getDisplayingSegs()
+{
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+	return &curImg->tracedNeuron.seg;
+}
+
+void CViewer::updateDisplayingSegs()
+{
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+	curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
+}
+
 void CViewer::segEditing_setCursor(string action)
 {
 	if (!action.compare("erase"))

@@ -33,6 +33,8 @@ public:
 	virtual void refreshSelectedMarkers() = 0;
 	virtual void pushMarkersfromTester(const set<vector<float>>& markerCoords, RGBA8 color) = 0;
 
+	virtual vector<V_NeuronSWC>* getDisplayingSegs() = 0;
+	virtual void updateDisplayingSegs() = 0;
 	virtual void editingModeInit() = 0;
 	virtual void setEraserSize(int newEraserSize) = 0;
 	virtual int getEraserSize() = 0;

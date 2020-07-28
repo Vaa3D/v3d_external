@@ -224,6 +224,8 @@ class terafly::CViewer : public QWidget
 		int eraserSize, connectorSize;
 		map<int, vector<NeuronSWC>> seg2includedNodeMap;
 		set<int> deletedSegsIDs;
+		virtual vector<V_NeuronSWC>* getDisplayingSegs();
+		virtual void updateDisplayingSegs();
 		virtual void editingModeInit() { CViewer::getCurrent()->editingMode = "none"; }
 		virtual void setEraserSize(int newEraserSize) { CViewer::getCurrent()->eraserSize = newEraserSize; }
 		virtual int getEraserSize() { return CViewer::getCurrent()->eraserSize; }
