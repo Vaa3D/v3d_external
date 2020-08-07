@@ -2398,7 +2398,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
 				//m_bFrozen is used to control texture
-            qDebug()<<"hdkjashkdjfhkjewh222222222222===========-------------";
                 m_bFrozen = !m_bFrozen;
 
 
@@ -8054,7 +8053,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
 		{
-            m_modeGrip_L = _Freeze;qDebug()<<"fhgdkshfkjh111111111111111111111";
+            m_modeGrip_L = _Freeze;
 		}
 		 if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
 		{
