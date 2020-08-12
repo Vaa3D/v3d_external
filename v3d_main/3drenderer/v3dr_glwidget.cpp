@@ -1146,7 +1146,64 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
 				}
 			}
+			break;
 
+		case Qt::Key_F2:
+			if (this->getRenderer())
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "increase_show";
+
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+				}
+			}
+			break;
+
+		case Qt::Key_F3:
+			if (this->getRenderer())
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "decrease_show";
+
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+				}
+			}
 			break;
 #endif
 
