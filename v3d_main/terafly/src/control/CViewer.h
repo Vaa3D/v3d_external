@@ -200,8 +200,10 @@ class terafly::CViewer : public QWidget
 		virtual bool teraflyImgInstance();
 
 		virtual void sendCastNAUI2PMain(IPMain4NeuronAssembler* NAportal);
+		//virtual void forceCViewerPortalUpdate();
 		virtual bool checkFragTraceStatus();
 		virtual void changeFragTraceStatus(bool newStatus);
+		virtual int getViewerID() { return this->ID; }
 
 		virtual string getCviewerWinTitle() { return CViewer::getCurrent()->title; }
 		virtual void printoutWinTitle() { cout << CViewer::getCurrent()->title << endl; }

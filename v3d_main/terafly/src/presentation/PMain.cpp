@@ -3949,6 +3949,13 @@ void PMain::setLockMagnification(bool locked)
 
 }
 
+#ifdef _NEURON_ASSEMBLER_
+int PMain::getCViewerID()
+{
+	return CViewer::getCurrent()->ID;
+}
+#endif
+
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()

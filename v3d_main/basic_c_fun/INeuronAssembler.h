@@ -17,8 +17,10 @@ public:
 	virtual bool teraflyImgInstance() = 0;
 
 	virtual void sendCastNAUI2PMain(IPMain4NeuronAssembler* NAportal) = 0;
+	//virtual void forceCViewerPortalUpdate() = 0;
 	virtual bool checkFragTraceStatus() = 0;
 	virtual void changeFragTraceStatus(bool newStatus) = 0;
+	virtual int getViewerID() = 0;
 
 	virtual string getCviewerWinTitle() = 0;
 	virtual void printoutWinTitle() = 0;

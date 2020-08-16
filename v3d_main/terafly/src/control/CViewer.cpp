@@ -1400,6 +1400,18 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             if(resolution == volResIndex)
                 this->close();
 
+#ifdef _NEURON_ASSEMBLER_
+			// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
+			if (PMain::getInstance()->fragTracePluginInstance)
+			{
+				cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
+				//system("pause");
+				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
+				PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+				PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
+			}
+#endif
+
 // unlock updateGraphicsInProgress mutex
 /**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
 /**/ updateGraphicsInProgress.unlock();
@@ -1432,6 +1444,18 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             // if new viewer has the same resolution, this window has to be closed
             if(resolution == volResIndex)
                 this->close();
+
+#ifdef _NEURON_ASSEMBLER_
+			// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
+			if (PMain::getInstance()->fragTracePluginInstance)
+			{
+				cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
+				//system("pause");
+				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
+				PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+				PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
+			}
+#endif
         }
     }
     catch(RuntimeException &ex)
@@ -1451,17 +1475,6 @@ void CViewer::close()
         prev->newViewerTimer = newViewerTimer;
         prev->next = next;
         next->prev = prev;
-
-#ifdef _NEURON_ASSEMBLER_
-		// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
-		if (PMain::getInstance()->fragTracePluginInstance)
-		{
-			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
-			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
-			PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
-		}
-#endif
-
     }
     else
     {
@@ -2327,9 +2340,11 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 #ifdef _NEURON_ASSEMBLER_
 		if (PMain::getInstance()->fragTracePluginInstance)
 		{
+			cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
+			//system("pause");
 			// If Neuron Assembler is instantiated at higher resolution, the following block is needed as it updates Neuron Assembler's CViewerPortal when going back to lower resolution. 
 			//                                                                                                   -- MK, Jan, 2020
-			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(this);
+			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(CViewer::current);
 			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
 			PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
 		}
@@ -3334,6 +3349,13 @@ void CViewer::sendCastNAUI2PMain(IPMain4NeuronAssembler* NAportal)
 	PMain& pMain = *(PMain::getInstance());
 	pMain.NeuronAssemblerPortal = NAportal;
 }
+
+/*void CViewer::forceCViewerPortalUpdate()
+{
+	PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
+	PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+	PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
+}*/
 
 bool CViewer::checkFragTraceStatus()
 {
