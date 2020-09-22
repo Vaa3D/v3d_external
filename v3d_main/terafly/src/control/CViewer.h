@@ -49,7 +49,7 @@
 class terafly::CViewer : public QWidget, public INeuronAssembler
 {
     Q_OBJECT
-	Q_INTERFACES(INeuronAssembler)
+	Q_INTERFACES(INeuronAssembler) // INeuronAssembler is NOT a Q_OBJECT, hence Q_INTERFACES macro is needed.
 
 #else
 class terafly::CViewer : public QWidget
@@ -204,6 +204,7 @@ class terafly::CViewer : public QWidget
 		virtual bool checkFragTraceStatus();
 		virtual void changeFragTraceStatus(bool newStatus);
 		virtual int getViewerID() { return this->ID; }
+		virtual void printOutCViewerAddress() { cout << " => Current CViewer address: " << CViewer::getCurrent() << endl; }
 
 		virtual string getCviewerWinTitle() { return CViewer::getCurrent()->title; }
 		virtual void printoutWinTitle() { cout << CViewer::getCurrent()->title << endl; }

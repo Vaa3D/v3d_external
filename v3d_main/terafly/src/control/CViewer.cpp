@@ -705,6 +705,10 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					this->seg2includedNodeMap.clear();
 					for (auto& nodeIndex : thisRenderer->indices)
 					{
+						if (treePtr->listNeuron.at(nodeIndex).x < PDialogProofreading::instance()->sbXlb || treePtr->listNeuron.at(nodeIndex).x > PDialogProofreading::instance()->sbXhb ||
+							treePtr->listNeuron.at(nodeIndex).y < PDialogProofreading::instance()->sbYlb || treePtr->listNeuron.at(nodeIndex).y > PDialogProofreading::instance()->sbYhb ||
+							treePtr->listNeuron.at(nodeIndex).z < PDialogProofreading::instance()->sbZlb || treePtr->listNeuron.at(nodeIndex).z > PDialogProofreading::instance()->sbZhb) continue;
+
 						if (this->seg2includedNodeMap.find(treePtr->listNeuron.at(nodeIndex).seg_id) != this->seg2includedNodeMap.end())
 							this->seg2includedNodeMap[treePtr->listNeuron.at(nodeIndex).seg_id].push_back(treePtr->listNeuron.at(nodeIndex));
 						else
@@ -715,6 +719,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					}
 
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+					cout << " -- CViewer: " << curImg->tracedNeuron.seg.size() << " segments." << endl;
 					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, this->seg2includedNodeMap);
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
 					curImg->proj_trace_history_append();
@@ -746,6 +751,10 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					this->seg2includedNodeMap.clear();
 					for (auto& nodeIndex : thisRenderer->indices)
 					{
+						if (treePtr->listNeuron.at(nodeIndex).x < PDialogProofreading::instance()->sbXlb || treePtr->listNeuron.at(nodeIndex).x > PDialogProofreading::instance()->sbXhb ||
+							treePtr->listNeuron.at(nodeIndex).y < PDialogProofreading::instance()->sbYlb || treePtr->listNeuron.at(nodeIndex).y > PDialogProofreading::instance()->sbYhb ||
+							treePtr->listNeuron.at(nodeIndex).z < PDialogProofreading::instance()->sbZlb || treePtr->listNeuron.at(nodeIndex).z > PDialogProofreading::instance()->sbZhb) continue;
+
 						if (this->seg2includedNodeMap.find(treePtr->listNeuron.at(nodeIndex).seg_id) != this->seg2includedNodeMap.end())
 							this->seg2includedNodeMap[treePtr->listNeuron.at(nodeIndex).seg_id].push_back(treePtr->listNeuron.at(nodeIndex));
 						else
@@ -1406,7 +1415,10 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 			{
 				cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
 				//system("pause");
-				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
+
+				// Since I make
+				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(next);
+				
 				PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
 				PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
 			}
@@ -1451,7 +1463,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 			{
 				cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
 				//system("pause");
-				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
+				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(next);
 				PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
 				PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
 			}
@@ -2344,7 +2356,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 			//system("pause");
 			// If Neuron Assembler is instantiated at higher resolution, the following block is needed as it updates Neuron Assembler's CViewerPortal when going back to lower resolution. 
 			//                                                                                                   -- MK, Jan, 2020
-			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(CViewer::current);
+			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(CViewer::current);
 			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
 			PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
 		}

@@ -21,6 +21,7 @@ public:
 	virtual bool checkFragTraceStatus() = 0;
 	virtual void changeFragTraceStatus(bool newStatus) = 0;
 	virtual int getViewerID() = 0;
+	virtual void printOutCViewerAddress() = 0;
 
 	virtual string getCviewerWinTitle() = 0;
 	virtual void printoutWinTitle() = 0;
@@ -50,6 +51,7 @@ public:
 	virtual void getParamsFromFragTraceUI(const string& keyName, const float& value) = 0;
 };
 
+// INeuronAssembler is not a Q_OBJECT, hence Q_DECLARE_INTERFACE is needed for CViewer class to inherit.
 Q_DECLARE_INTERFACE(INeuronAssembler, "MK.NeuronAssemblerInterface_for_CViewerClass/1.0");
 
 
