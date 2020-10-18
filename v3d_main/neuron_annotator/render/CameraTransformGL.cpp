@@ -7,7 +7,8 @@
 
 #include "CameraTransformGL.h"
 
-#include <GL/gl.h>  //2020-2-10 RZC
+//#include <GL/gl.h>  //2020-2-10 RZC
+#include <gl.h>
 
 
 CameraTransformGL::CameraTransformGL(const Na3DWidget& widget3d)

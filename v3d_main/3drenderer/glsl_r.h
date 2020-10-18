@@ -72,7 +72,9 @@ Make sure to check extension "GL_EXT_geometry_shader4" before using Geometry sha
 #include <iostream>
 
 #ifdef USE_Qt5 ///2020-2-15 RZC 
-#include <GL/gl.h>
+//#include <GL/gl.h>
+#include <gl.h>
+
 #else
 #include "GLee2glew.h" //#include "GLee_r.h"
 #endif

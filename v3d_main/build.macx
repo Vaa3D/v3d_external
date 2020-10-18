@@ -222,7 +222,6 @@ if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
 fi
 
 #build the MYLIB library
-
 if [ $DOIT == "YES" -o ! -f common_lib/src_packages/mylib_tiff/libmylib.a ]; then
   cd common_lib/src_packages/mylib_tiff 
   if [ $MYLIBCOMPILE == "YES" ]; then  
@@ -231,7 +230,6 @@ if [ $DOIT == "YES" -o ! -f common_lib/src_packages/mylib_tiff/libmylib.a ]; the
   make -f mylib_mac.makefile $ARG_MYLIBTIFF
   cd ../../../
 fi
-
 #prepare the fftw library
 
 if [ $FFTWCOMPILE == "YES" -o ! -f common_lib/lib/libv3dfftw3f.a ]; then
@@ -284,15 +282,14 @@ if [ $DOIT == "YES" ]; then
 fi
 
 #build the vaa3d main program
-
 if [ $DOIT == "YES" ]; then
   cd v3d
   echo =========================================================
-  echo qmake -spec macx-g++ $V3D_PRO_FILE \"$QMAKE_CONFIG\"
+  echo qmake -spec macx-clang $V3D_PRO_FILE \"$QMAKE_CONFIG\"
   echo make $ARG_V3D
   echo =========================================================
   
-  qmake -spec macx-g++ $V3D_PRO_FILE $QMAKE_CONFIG
+  qmake -spec macx-clang $V3D_PRO_FILE $QMAKE_CONFIG
   touch v3d_version_info.cpp
 
   if [ $SYSTEMBITS == "32" ]; then

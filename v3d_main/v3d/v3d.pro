@@ -94,13 +94,13 @@ include(v3d_essential.pro)
 include(../terafly/terafly.pro)
 
 # mozak module
-include(../mozak/m_terafly/m_teramanager.pro)
-RESOURCES += ../mozak/mozak.qrc
-HEADERS +=  ../mozak/MozakUI.h \
-            ../mozak/Mozak3DView.h \
-            customdebug.h
-SOURCES +=  ../mozak/MozakUI.cpp \
-            ../mozak/Mozak3DView.cpp
+#include(../mozak/m_terafly/m_teramanager.pro)
+#RESOURCES += ../mozak/mozak.qrc
+#HEADERS +=  ../mozak/MozakUI.h \
+#            ../mozak/Mozak3DView.h \
+#            customdebug.h
+#SOURCES +=  ../mozak/MozakUI.cpp \
+#            ../mozak/Mozak3DView.cpp
 
 
 #CONFIG += console

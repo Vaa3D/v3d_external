@@ -16,7 +16,8 @@
 #include "../presentation/PLog.h"
 #include "renderer_gl1.h"
 #include "renderer.h"
-#include "../../../../3drenderer/v3dr_surfaceDialog.h"
+//#include "../../../../3drenderer/v3dr_surfaceDialog.h"
+#include "./3drenderer/v3dr_surfaceDialog.h"
 
 double SOMA_X = -1.1;
 double SOMA_Y = -1.1;

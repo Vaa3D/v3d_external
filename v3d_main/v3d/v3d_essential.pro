@@ -96,7 +96,8 @@ INCLUDEPATH += .
 
 
 #DEFINES += USE_Qt5  #this might be invoked from commandline like "~/Qt5.4.1/5.4/clang_64/bin/qmake DEFINES+=USE_Qt5 vaa3d64.pro", however it seems there is some bug
-
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): DEFINES += USE_Qt5
 
 # commented the -app_bundle as on Mac the not-automatically closed terminal is quite annoying!
 # macx: CONFIG-=app_bundle #by PHC, 101119
@@ -445,7 +446,7 @@ unix:!macx {
 #unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
   LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
   LIBS += -L../common_lib/lib_unix64  -lteem  -lbz2 -lz  -lGLU #for nrrd support
-  ### LIBS += -lGLEW # static link by including glew.c
+  ### LIBS += -lGLEW # static link by including glew.cQt pro SHARED_FOLDER
 }
 
 #added 20140324 to cope with centos 64bit GL library issue. by HP
