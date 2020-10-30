@@ -378,6 +378,7 @@ class terafly::PMain : public QWidget
 		V3d_PluginLoader* FragTracerPluginLoaderPtr;
 		IPMain4NeuronAssembler* NeuronAssemblerPortal;
 		bool xLockStatus, yLockStatus, zLockStatus;
+		int getCViewerID();
 		/*************************************************************/
 #endif
 

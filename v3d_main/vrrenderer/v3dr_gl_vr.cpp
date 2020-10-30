@@ -2398,16 +2398,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
 				//m_bFrozen is used to control texture
-				//m_bFrozen = !m_bFrozen;
+                m_bFrozen = !m_bFrozen;
 
 
-				if (fBrightness >= -0.9) fBrightness = -1.0;
-				else fBrightness = 0.0;
-				
+                    if (fBrightness >= -0.9) fBrightness = -1.0;
+                    else fBrightness = 0.0;
 
-				
-
-				break;
+                break;
 			}
 		case _Contrast://contrast func is moved to right controller touch pad , grip button+/-
 			{
@@ -8056,7 +8053,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
 		{
-			m_modeGrip_L = _Freeze;
+            m_modeGrip_L = _Freeze;
 		}
 		 if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
 		{

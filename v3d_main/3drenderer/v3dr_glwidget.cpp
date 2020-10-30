@@ -1051,8 +1051,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (!pMain.fragTracePluginInstance)
 					{
-						//QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+#ifdef _NEURON_ASSEMBLER_DEBUG_
 						QPluginLoader* loader = new QPluginLoader("D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+#else
+						QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+#endif
 						pMain.FragTracerQPluginPtr = loader;
 						if (!loader->isLoaded())
 						{
@@ -1070,11 +1073,32 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						// However, this [return] seems to prevent NA from crashing, although exaxtly why is still unknown.
 						return;
 					}
-					else v3d_msg("Neuron Assembler plugin instance already exists.");
+					else
+					{
+						//v3d_msg("Neuron Assembler plugin instance already exists.");
+						V3DPluginArgList pluginInputList, pluginOutputList;
+						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+						vector<char*> pluginInputArgList;
+						vector<char*> pluginOutputArgList;
+						dummyInput.type = "dummy";
+						dummyInput.p = (void*)(&pluginInputArgList);
+						inputParam.type = "dummy";
+						inputParam.p = (void*)(&pluginInputArgList);
+						pluginInputList.push_back(dummyInput);
+						pluginInputList.push_back(inputParam);
+						dummyOutput.type = "dummy";
+						dummyOutput.p = (void*)(&pluginOutputArgList);
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "bring_to_the_front", pluginInputList, pluginOutputList);
+					}
 				}
 				else
 				{
+#ifdef _NEURON_ASSEMBLER_DEBUG_
+					QPluginLoader* loader = new QPluginLoader("D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+#else
 					QPluginLoader* loader = new QPluginLoader(".\\plugins\\Fragmented_Auto-trace\\Fragmented_Auto-trace.dll");
+#endif
 					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 					if (!loader)
 					{
@@ -1088,10 +1112,100 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					}
 					curXWidget->getMainControlWindow()->pluginLoader->castCViewer = nullptr;
 					curXWidget->getMainControlWindow()->pluginLoader->runPlugin(loader, "settings");
+
+					return;
 				}
 #endif
 			}
 	  		break;
+#ifdef _NEURON_ASSEMBLER_
+		case Qt::Key_F1:
+			if (this->getRenderer())
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "show-hide";
+
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+				}
+			}
+			break;
+
+		case Qt::Key_F2:
+			if (this->getRenderer())
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "increase_show";
+
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+				}
+			}
+			break;
+
+		case Qt::Key_F3:
+			if (this->getRenderer())
+			{
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "decrease_show";
+
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+				}
+			}
+			break;
+#endif
 
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
@@ -1100,23 +1214,32 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
 			else if (IS_SHIFT_MODIFIER)
 			{
+#ifdef _NEURON_ASSEMBLER_
 				if (this->getRenderer())
 				{
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
 
-#ifdef _NEURON_ASSEMBLER_
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
+						thisRenderer->NAeditingMode = true;
 						V3DPluginArgList pluginInputList, pluginOutputList;
 						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
 						vector<char*> pluginInputArgList;
 						vector<char*> pluginOutputArgList;
 						dummyInput.type = "dummy";
 						dummyInput.p = (void*)(&pluginInputArgList);
-						inputParam.type = "shift_e";
+
+						if (thisRenderer->editinput == 0) inputParam.type = "shift_e";
+						else
+						{
+							cancelSelect();
+							inputParam.type = "shift_e_already";
+						}
+						thisRenderer->editinput = 97; // This is a special number I chose for Neuron Assembler editing mode. MK, June, 2020.
+						
 						inputParam.p = (void*)(&pluginInputArgList);
 						pluginInputList.push_back(dummyInput);
 						pluginInputList.push_back(inputParam);
@@ -1124,12 +1247,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						dummyOutput.p = (void*)(&pluginOutputArgList);
 						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
-
-						curImg->update_3drenderer_neuron_view(this, thisRenderer);
-						curImg->proj_trace_history_append();
 					}
-#endif
 				}
+#endif
 			}
             else
             {
@@ -1193,6 +1313,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             {
                 callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
             }
+#ifdef _NEURON_ASSEMBLER_
 			else if (IS_SHIFT_MODIFIER)
 			{
 				if (this->getRenderer())
@@ -1200,7 +1321,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
-#ifdef _NEURON_ASSEMBLER_
+
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
@@ -1211,9 +1332,29 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						curImg->update_3drenderer_neuron_view(this, thisRenderer);
 						curImg->proj_trace_history_append();
 					}
-#endif
 				}
 			}
+			else if (WITH_SHIFT_MODIFIER && WITH_ALT_MODIFIER)
+			{
+				if (this->getRenderer())
+				{
+					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+					My4DImage* curImg = 0;
+					if (this) curImg = v3dr_getImage4d(_idep);
+
+					terafly::PMain& pMain = *(terafly::PMain::getInstance());
+					if (pMain.fragTracePluginInstance)
+					{
+						map<int, vector<int> > labeledSegs;
+						for (vector<V_NeuronSWC>::iterator segIt = curImg->tracedNeuron.seg.begin(); segIt != curImg->tracedNeuron.seg.end(); ++segIt)
+							if (segIt->row.begin()->type == 18) segIt->to_be_deleted = true;
+
+						curImg->update_3drenderer_neuron_view(this, thisRenderer);
+						curImg->proj_trace_history_append();
+					}
+				}
+			}
+#endif
 			else
             {
                 if(_idep && _idep->window3D)
@@ -1241,23 +1382,31 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
 			else if (IS_SHIFT_MODIFIER)
 			{
+#ifdef _NEURON_ASSEMBLER_
 				if (this->getRenderer())
 				{
 					Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
-
-#ifdef _NEURON_ASSEMBLER_
 					terafly::PMain& pMain = *(terafly::PMain::getInstance());
 					if (pMain.fragTracePluginInstance)
 					{
+						thisRenderer->NAeditingMode = true;
 						V3DPluginArgList pluginInputList, pluginOutputList;
 						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
 						vector<char*> pluginInputArgList;
 						vector<char*> pluginOutputArgList;
 						dummyInput.type = "dummy";
 						dummyInput.p = (void*)(&pluginInputArgList);
-						inputParam.type = "shift_c";
+
+						if (this->getRenderer()->editinput == 0) inputParam.type = "shift_c";
+						else
+						{
+							cancelSelect();
+							inputParam.type = "shift_c_already";
+						}
+						thisRenderer->editinput = 97; // This is a special number I chose for Neuron Assembler editing mode. MK, June, 2020.
+
 						inputParam.p = (void*)(&pluginInputArgList);
 						pluginInputList.push_back(dummyInput);
 						pluginInputList.push_back(inputParam);
@@ -1265,13 +1414,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						dummyOutput.p = (void*)(&pluginOutputArgList);
 						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
 						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
-
-						curImg->update_3drenderer_neuron_view(this, thisRenderer);
-						curImg->proj_trace_history_append();
 					}
-#endif
 				}
-				// reserved for future fragment tracer use
+#endif
 			}
             else
             {
@@ -1339,6 +1484,32 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		case Qt::Key_Escape:
 			{
 				cancelSelect();
+
+#ifdef _NEURON_ASSEMBLER_
+				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
+				My4DImage* curImg = 0;
+				if (this) curImg = v3dr_getImage4d(_idep);
+
+				terafly::PMain& pMain = *(terafly::PMain::getInstance());
+				if (pMain.fragTracePluginInstance)
+				{
+					thisRenderer->NAeditingMode = false;
+					V3DPluginArgList pluginInputList, pluginOutputList;
+					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+					vector<char*> pluginInputArgList;
+					vector<char*> pluginOutputArgList;
+					dummyInput.type = "dummy";
+					dummyInput.p = (void*)(&pluginInputArgList);
+					inputParam.type = "escape";
+					inputParam.p = (void*)(&pluginInputArgList);
+					pluginInputList.push_back(dummyInput);
+					pluginInputList.push_back(inputParam);
+					dummyOutput.type = "dummy";
+					dummyOutput.p = (void*)(&pluginOutputArgList);
+					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+				}
+#endif
 			}
 			break;
 

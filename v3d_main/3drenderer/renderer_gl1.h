@@ -256,6 +256,8 @@ public:
 	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double & best_dist);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
 
 #ifdef _NEURON_ASSEMBLER_
+	double radius;
+	set<int> indices;
 	void localSWCcoord2projectedWindowCoord(const float swcLocalCoord[], double swcWindowCoord[]);
 #endif
 
@@ -287,6 +289,11 @@ public:
 	GLint viewport[4];
 	GLdouble projectionMatrix[16];
 	GLdouble markerViewMatrix[16];
+
+	GLint currViewport[4];
+	GLdouble currPmatrix[16];
+	GLdouble currMviewMatrix[16];
+
 	struct MarkerPos {
 		double x, y;		// input point coordinates
 		int view[4];        // view-port
@@ -542,6 +549,7 @@ public:
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
 
 	 bool FragTraceMarkerDetector3Dviewer;
+	 bool NAeditingMode;
 	 v3dr_SurfaceType surType;
 	 // -----------------------------------------------------------------------------------------------------------------------------------
 

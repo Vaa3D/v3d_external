@@ -2386,7 +2386,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	// define a curve //091023
 //    if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 //    	selectMode == smDeleteMultiNeurons || selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
-////=======
 
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smSelectMultiMarkers ||
 		selectMode == smDeleteMultiNeurons ||  selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons ||
@@ -2406,10 +2405,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
 
-//        int N = (selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
-//					selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons)
-//					? 1 : (selectMode == smCurveCreate2)? 2 : 3;
-//=======
 //        int N = (selectMode == smConnectPointCloud || selectMode == smConnectNeurons || selectMode == smConnectMarker || selectMode == smCutNeurons ||
 //        		 selectMode == smCurveCreate1 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers ||
 //        		 selectMode == smRetypeMultiNeurons || selectMode == smBreakMultiNeurons || selectMode == smBreakTwoNeurons) //20170731 smBreakTwoNeurons used in mozak
@@ -3080,7 +3075,7 @@ int Renderer_gl1::hitPen(int x, int y)
 			selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
 	{
-		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
+		//qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 		_appendMarkerPos(x,y);
 		// endSlectMode() in movePen
 		return 1;
@@ -3400,9 +3395,29 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * p
 		if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
 		//qDebug()<<i<<" "<<px<<" "<<py<<" "<<pz<<"\n";
 		double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
+
+#ifdef _NEURON_ASSEMBLER_
+		if (cur_dist < this->radius * this->radius) this->indices.insert(i);
+#endif
+
 		if (i==0) {	best_dist = cur_dist; best_ind=0; }
-		else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i;}}
+		else 
+		{	
+			if (cur_dist<best_dist) 
+			{
+				best_dist=cur_dist; 
+				best_ind = i;
+			}
+		}
 	}
+
+	// Sensitivity test for mouse click and projected coordinates -- MK, May, 2020
+	/*GLint res = gluProject(p_listneuron->at(best_ind).x, p_listneuron->at(best_ind).y, p_listneuron->at(best_ind).z, currMviewMatrix, currPmatrix, currViewport, &px, &py, &pz);
+	cout << " --- mouse click coords from rendere_hit: " << cx << " " << cy << endl;
+	cout << " --- nearesr node projected coords from renderer_hit: (" << best_ind << ") " << px << " " << py << endl;
+	cout << " --- 1st time projected coords: " << bestPx << " " << bestPy << endl;
+	cout << endl;*/
+
 	//best_ind = p_listneuron->at(best_ind).n; // this no used, because it changed in V_NeuronSWC
 	return best_ind; //by PHC, 090209. return the index in the SWC file
 }
@@ -3416,6 +3431,7 @@ void Renderer_gl1::localSWCcoord2projectedWindowCoord(const float swcLocalCoord[
 	iz = GLdouble(swcLocalCoord[2]);
 
 	GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);
+	py = viewport[3] - py;
 
 	swcWindowCoord[0] = px;
 	swcWindowCoord[1] = py;
