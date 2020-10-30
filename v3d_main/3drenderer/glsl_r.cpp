@@ -38,14 +38,7 @@ Last update: 2006/11/12 (Geometry Shader Support)
 // minor modified glsl.cpp for using GLee & pure GL 2.0, and turn off log display when no error occur.
 // by RZC 2008-11-23
 
-
-#include "GLee2glew.h" ////Put here Because GL extension loading lib cannot work with the Angle based build of Qt5.
-
-//==========================================================================================================
-// msvc: QMAKE_LFLAGS += /ignore:4217  # warning LNK4217: locally defined symbol _ imported in function _
-// msvc: QMAKE_LFLAGS += /ignore:4049  # warning LNK4049: locally defined symbol
-#include "glew/GL/glew.c" ////STATIC link by including glew.c
-//==========================================================================================================
+#include "GLee2glew.h" //Put here Because GL extension loading lib cannot work with the Angle based build of Qt5.
 
 #include "glsl_r.h"
 
@@ -136,7 +129,7 @@ inline int CheckGLError(const char *file, int line)
 	}
 	return glErr;
 }
-#define CHECK_GL_ERROR() ////cwc::CheckGLError(__FILE__, __LINE__)
+#define CHECK_GL_ERROR()  cwc::CheckGLError(__FILE__, __LINE__)
 
 
 //-----------------------------------------------------------------------------

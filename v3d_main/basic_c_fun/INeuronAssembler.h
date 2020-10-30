@@ -29,7 +29,7 @@ public:
 	virtual bool getPartialVolumeCoords(int globalCoords[], int localCoords[], int displayingVolDims[]) = 0;
 
 	virtual void refreshSelectedMarkers() = 0;
-	virtual void pushMarkersfromTester(const set<vector<float>>& markerCoords, RGBA8 color) = 0;
+	virtual void pushMarkersfromTester(const set<vector<float> >& markerCoords, RGBA8 color) = 0;
 
 	virtual void editingModeInit() = 0;
 	virtual void setEraserSize(int newEraserSize) = 0;

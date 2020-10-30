@@ -14,5 +14,5 @@ cd v3d_main
 sh ./build.redhat $*
 
 cd ../
-
+echo 'bin/vaa3d'
 
