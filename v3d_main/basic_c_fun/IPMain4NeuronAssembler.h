@@ -21,8 +21,9 @@ public:
 	virtual bool markerMonitorStatus() = 0;
 	virtual void sendSelectedMarkers2NA(const QList<ImageMarker>& selectedMarkerList, const QList<ImageMarker>& selectedLocalMarkerList) = 0;
 
-	virtual void eraserSegProcess(V_NeuronSWC_list& displayingSegs, const map<int, vector<NeuronSWC>>& seg2includedNodeMap) = 0;
-	virtual void connectSegProcess(V_NeuronSWC_list& displayingSegs, const map<int, vector<NeuronSWC>>& seg2includedNodeMap) = 0;
+	////‘>>’ should be ‘> >’ within a nested template argument list
+	virtual void eraserSegProcess(V_NeuronSWC_list& displayingSegs, const map<int, vector<NeuronSWC> >& seg2includedNodeMap) = 0;
+	virtual void connectSegProcess(V_NeuronSWC_list& displayingSegs, const map<int, vector<NeuronSWC> >& seg2includedNodeMap) = 0;
 	virtual void exitNAeditingMode() = 0;
 
 	virtual bool changeAssociatedSegsClicked() = 0;
