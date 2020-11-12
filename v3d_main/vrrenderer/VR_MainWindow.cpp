@@ -1,14 +1,16 @@
+//#include <windows.h>
 #include "v3dr_gl_vr.h"
 #include "VR_MainWindow.h"
 
-
+#include <QtGui>
 #include <QRegExp>
 //#include <QMessageBox>
-#include <QtGui>
 #include <QListWidgetItem>
 #include <iostream>
 #include <sstream>
 #include <math.h>
+
+
 
 std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :

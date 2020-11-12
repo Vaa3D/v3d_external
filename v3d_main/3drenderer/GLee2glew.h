@@ -63,10 +63,11 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 #if 0// ! defined( USE_Qt5 )
 
 #include <QtGui> ////for error: #error qdatastream.h must be included before any header file that defines Status
-////STATIC link by including GLee_r.c into GLee2glew.c
-#undef GL_ARB_vertex_buffer_object
-#include "GLee_r.h"
-#include <GL/glu.h> ////for error: ‘gluErrorString’ was not declared in this scope
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+#include <glew/GL/glew.h>////STATIC link by including GLee_r.c into GLee2glew.c
+//#undef GL_ARB_vertex_buffer_object
+//#include "GLee_r.h"
+#include <GL/glu.h> ////for error: gluErrorString was not declared in this scope
 
 #if ! (defined(_WIN32) || defined(_WIN64))// old EXT only for WINDOWS
 #define glBlendEquationEXT	glBlendEquation

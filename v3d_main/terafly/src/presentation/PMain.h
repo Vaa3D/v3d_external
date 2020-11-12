@@ -30,12 +30,12 @@
 #define PMAIN_GUI_H
 
 
-#include "../control/CVolume.h"
+//#include "../control/CVolume.h"
 
 #include <QtGui>
 #include <v3d_interface.h>
 #include "../control/CPlugin.h"
-//#include "../control/CVolume.h"
+#include "../control/CVolume.h"
 #include "../control/CViewer.h"
 #include "PDialogImport.h"
 #include "v3dr_glwidget.h"

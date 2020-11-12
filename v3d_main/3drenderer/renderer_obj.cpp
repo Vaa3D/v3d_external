@@ -28,10 +28,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 
 #include "GLee2glew.h" ////2020-2-10
 
-
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "freeglut_geometry_r.c"
+
 #include "../terafly/src/presentation/PMain.h"
 
 #include "../io/asc_to_swc.h"

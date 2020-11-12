@@ -1,13 +1,15 @@
+//#include <windows.h>
+#include "v3dr_gl_vr.h"
 #include "V3dR_Communicator.h"
 #include "../terafly/src/control/CPlugin.h"
 #include "../terafly/src/presentation/PMain.h"
+
+#include <QtGui>
 #include <QRegExp>
 //#include <QMessageBox>
-#include <QtGui>
 #include <QListWidgetItem>
 #include <iostream>
 #include <sstream>
-
 
 
 

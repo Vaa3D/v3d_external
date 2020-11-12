@@ -2,7 +2,7 @@
 #define VR_MainWindow_H
 
 #include <QWidget>
-#include <QtGui>
+//#include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
 //#include <QRegExpValidator>

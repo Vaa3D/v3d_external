@@ -63,7 +63,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
   #include <QtWidgets>
   #include <QProgressDialog>
 #else
-  ///#include "GLee2glew.h"  //@ADD 2020-2-14 RZC
+  #include "GLee2glew.h"  //@ADD 2020-2-14 RZC
   #include <QtGui>
 #endif
 

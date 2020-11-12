@@ -3,6 +3,7 @@
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
 
+#include <glew/GL/glew.h>
 #include <SDL.h>
 
 //#include "../basic_c_fun/v3d_interface.h"
@@ -11,7 +12,7 @@
 #include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
-#include <GL/glew.h>
+////#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
