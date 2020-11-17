@@ -35,6 +35,8 @@
 * 2014-11-17. Alessandro. @ADDED 'anoV0', ..., 'anoD1' VOI annotation (global) coordinates as object members in order to fix "duplicated annotations" bug
 */
 
+#include "renderer_gl1.h"
+//#include "renderer.h"
 #include "CViewer.h"
 #include "v3dr_mainwindow.h"
 #include "CVolume.h"
@@ -45,8 +47,8 @@
 #include "../presentation/PLog.h"
 #include "../presentation/PAnoToolBar.h"
 #include "../presentation/PDialogProofreading.h"
-#include "renderer.h"
-#include "renderer_gl1.h"
+//#include "renderer.h"
+//#include "renderer_gl1.h"
 #include "v3dr_colormapDialog.h"
 #include "V3Dsubclasses.h"
 #include "QUndoMarkerCreate.h"

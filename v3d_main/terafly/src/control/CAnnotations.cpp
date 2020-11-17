@@ -1,3 +1,5 @@
+#include "renderer_gl1.h"
+//#include "renderer.h"
 #include <algorithm>
 #include <vector>
 #include <list>
@@ -14,8 +16,8 @@
 #include "COperation.h"
 #include "CImageUtils.h"
 #include "../presentation/PLog.h"
-#include "renderer_gl1.h"
-#include "renderer.h"
+//#include "renderer_gl1.h"
+//#include "renderer.h"
 #include "../../../../3drenderer/v3dr_surfaceDialog.h"
 
 double SOMA_X = -1.1;

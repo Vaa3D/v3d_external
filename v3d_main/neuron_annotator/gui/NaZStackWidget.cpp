@@ -1,3 +1,6 @@
+
+#include "v3dr_common.h"
+
 #include "NaZStackWidget.h"
 #include <QPaintEvent>
 #include <QDebug>

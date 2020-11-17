@@ -30,7 +30,7 @@
 #define PMAIN_GUI_H
 
 
-//#include "../control/CVolume.h"
+#include "renderer_gl2.h"
 
 #include <QtGui>
 #include <v3d_interface.h>

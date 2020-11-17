@@ -25,6 +25,7 @@
 *    4. Neither the name of University  Campus Bio-Medico of Rome, nor Alessandro Bria and Giulio Iannello, may be used to endorse or  promote products  derived from this software without
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
+#include "renderer_gl1.h"
 
 #include "m_PConverter.h"
 #include "m_PMain.h"

@@ -1,3 +1,6 @@
+
+#include "renderer_gl1.h"
+
 #include <algorithm>
 #include <vector>
 #include <list>

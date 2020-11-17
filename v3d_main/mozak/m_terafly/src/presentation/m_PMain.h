@@ -29,6 +29,8 @@
 #ifndef PMAIN_GUI_H
 #define PMAIN_GUI_H
 
+#include "v3dr_common.h"
+
 #include <QtGui>
 #include <v3d_interface.h>
 #include "v3dr_glwidget.h"

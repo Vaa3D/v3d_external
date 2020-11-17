@@ -1,9 +1,11 @@
-#if defined(USE_Qt5)
-#include <QtCore>
-#include <QtGui>
-#endif
+
+#include "renderer_gl1.h"
+
+//#if defined(USE_Qt5)
+//#include <QtCore>
+//#include <QtGui>
+//#endif
 #include "QGLRefSys.h"
-//#include "renderer_gl1.h"
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D

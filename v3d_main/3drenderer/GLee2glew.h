@@ -61,27 +61,27 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 //@2020-10-31 RZC: fixed crash by USING (glewExperimental=true) BEFORE glewInit() AT LINUX
 
 #if 0// ! defined( USE_Qt5 )
-
-#include <QtGui> ////for error: #error qdatastream.h must be included before any header file that defines Status
-#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
-#include <glew/GL/glew.h>////STATIC link by including GLee_r.c into GLee2glew.c
-//#undef GL_ARB_vertex_buffer_object
-//#include "GLee_r.h"
-#include <GL/glu.h> ////for error: gluErrorString was not declared in this scope
-
-#if ! (defined(_WIN32) || defined(_WIN64))// old EXT only for WINDOWS
-#define glBlendEquationEXT	glBlendEquation
-#define glBlendColorEXT		glBlendColor
-#define glTexImage3DEXT		glTexImage3D
-#define glTexSubImage3DEXT	glTexSubImage3D
-//#define glGenBuffersARB		glGenBuffers
-//#define glBindBufferARB		glBindBuffer
-//#define glDeleteBuffersARB	glDeleteBuffers
-//#define glMapBufferARB		glMapBuffer
-//#define glUnmapBufferARB		glUnmapBuffer
-//#define glBufferDataARB		glBufferData
-#endif
-
+//
+//#include <QtGui> ////for error: #error qdatastream.h must be included before any header file that defines Status
+//#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+//#include <glew/GL/glew.h>////STATIC link by including GLee_r.c into GLee2glew.c
+////#undef GL_ARB_vertex_buffer_object
+////#include "GLee_r.h"
+//#include <GL/glu.h> ////for error: gluErrorString was not declared in this scope
+//
+//#if ! (defined(_WIN32) || defined(_WIN64))// old EXT only for WINDOWS
+//#define glBlendEquationEXT	glBlendEquation
+//#define glBlendColorEXT		glBlendColor
+//#define glTexImage3DEXT		glTexImage3D
+//#define glTexSubImage3DEXT	glTexSubImage3D
+////#define glGenBuffersARB		glGenBuffers
+////#define glBindBufferARB		glBindBuffer
+////#define glDeleteBuffersARB	glDeleteBuffers
+////#define glMapBufferARB		glMapBuffer
+////#define glUnmapBufferARB		glUnmapBuffer
+////#define glBufferDataARB		glBufferData
+//#endif
+//
 #else
 
 #define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c

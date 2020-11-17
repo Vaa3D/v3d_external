@@ -3,6 +3,8 @@
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
 
+#include "renderer_gl1.h"
+
 #include "PDialogVirtualPyramid.h"
 #include "PMain.h"
 #include "../control/CImport.h"

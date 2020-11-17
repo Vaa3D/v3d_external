@@ -1,6 +1,6 @@
 
-//#include "../../3drenderer/GLee_r.h" 
-//#include "../../3drenderer/GLee2glew.h"
+
+#include "v3dr_common.h"
 
 #include "GalleryMipImages.h"
 #include "../gui/GalleryButton.h"

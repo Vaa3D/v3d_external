@@ -35,6 +35,7 @@
 #ifndef CEXPLORERWINDOW_H
 #define CEXPLORERWINDOW_H
 
+#include "v3dr_common.h"
 
 #include "CPlugin.h"
 #include "v3dr_mainwindow.h"

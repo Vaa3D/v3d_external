@@ -1,3 +1,6 @@
+
+#include "renderer_gl1.h"
+
 #include "PTabVolumeInfo.h"
 #include "CImport.h"
 #include "VirtualVolume.h"
