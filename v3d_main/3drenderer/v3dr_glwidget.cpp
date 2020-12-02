@@ -1490,24 +1490,26 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				My4DImage* curImg = 0;
 				if (this) curImg = v3dr_getImage4d(_idep);
 
-				terafly::PMain& pMain = *(terafly::PMain::getInstance());
-				if (pMain.fragTracePluginInstance)
+				if (terafly::PMain::isInstantiated())
 				{
-					thisRenderer->NAeditingMode = false;
-					V3DPluginArgList pluginInputList, pluginOutputList;
-					V3DPluginArgItem dummyInput, inputParam, dummyOutput;
-					vector<char*> pluginInputArgList;
-					vector<char*> pluginOutputArgList;
-					dummyInput.type = "dummy";
-					dummyInput.p = (void*)(&pluginInputArgList);
-					inputParam.type = "escape";
-					inputParam.p = (void*)(&pluginInputArgList);
-					pluginInputList.push_back(dummyInput);
-					pluginInputList.push_back(inputParam);
-					dummyOutput.type = "dummy";
-					dummyOutput.p = (void*)(&pluginOutputArgList);
-					XFormWidget* curXWidget = v3dr_getXWidget(_idep);
-					curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+					if (terafly::PMain::getInstance()->fragTracePluginInstance)
+					{
+						thisRenderer->NAeditingMode = false;
+						V3DPluginArgList pluginInputList, pluginOutputList;
+						V3DPluginArgItem dummyInput, inputParam, dummyOutput;
+						vector<char*> pluginInputArgList;
+						vector<char*> pluginOutputArgList;
+						dummyInput.type = "dummy";
+						dummyInput.p = (void*)(&pluginInputArgList);
+						inputParam.type = "escape";
+						inputParam.p = (void*)(&pluginInputArgList);
+						pluginInputList.push_back(dummyInput);
+						pluginInputList.push_back(inputParam);
+						dummyOutput.type = "dummy";
+						dummyOutput.p = (void*)(&pluginOutputArgList);
+						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
+						curXWidget->getMainControlWindow()->pluginLoader->callPluginFunc("Fragmented_Auto-trace", "hotKey", pluginInputList, pluginOutputList);
+					}
 				}
 #endif
 			}
