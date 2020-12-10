@@ -1759,7 +1759,7 @@ bool CMainApplication::HandleInput()
 			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
 			{
 				m_pickUpState = false;
-				pick_point_index_A = -1;
+                pick_point_index_A = -1;
 				pick_point_index_B = -1;
 			}//whenever the touchpad is unpressed, reset m_pickUpState and pick_point
 
@@ -1886,6 +1886,7 @@ void CMainApplication::RunMainLoop()
 		if (bQuit) break;
 		RenderFrame();
 	}
+
 	SDL_StopTextInput();
 }
 // using in VR_MainWindow.cpp

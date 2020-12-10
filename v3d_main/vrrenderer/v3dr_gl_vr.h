@@ -21,8 +21,6 @@
 
 #include "mainwindow.h"
 
-
-
 enum ModelControlR
 {
 	m_drawMode = 0,

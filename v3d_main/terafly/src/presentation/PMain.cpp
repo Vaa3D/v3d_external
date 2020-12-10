@@ -2901,13 +2901,12 @@ void PMain::doCollaborationVRView()
 			this->setWindowState(Qt::WindowMinimized);	
 			this->hide();
 			qDebug() << "PMain hide";
-            //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
+
 			int maxresindex = CImport::instance()->getResolutions()-1;
 			VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
 			cur_win->view3DWidget->collaborationMaxResolution = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
 			cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
-            //cur_win->storeAnnotations();
             this->show();
 			qDebug() << "PMain Show";
 

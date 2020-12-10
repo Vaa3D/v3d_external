@@ -1815,7 +1815,6 @@ void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 	try
 	{
 			this->setWindowState(Qt::WindowMinimized);	
-			//this->hide();
 			
 			int maxresindex = 1;
 			My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
@@ -1824,8 +1823,6 @@ void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 			this->Resindex = -1;
 			cout<<"CViewer::getCurrent()->volResIndex;   "<<this->Resindex<<endl;
 			this->doimageVRView(false);
-			//cur_win->storeAnnotations();
-			//this->show();		
 
 	}
 	catch(...)
@@ -1878,15 +1875,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
 	My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
     this->getMainWindow()->hide();
-	//process3Dwindow(false);
-//    QMessageBox::StandardButton reply;
-//	if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
-//		reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-//	else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
-//		reply = QMessageBox::Yes;
-//	else
-//		reply = QMessageBox::No;
-//    QPushButton* btn = (QPushButton*)sender();
+
 
 
 //    if (/*reply == QMessageBox::Yes*/true)

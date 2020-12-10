@@ -593,11 +593,6 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		}
 	}
     pMainApplication->loadedNTList = ntlist;
-	//if(pMainApplication->loadedNTList->size()>0)
-	//{
-	//	pMainApplication->loadedNT.listNeuron = ntlist->at(0).listNeuron;
-	//	pMainApplication->loadedNT.hashNeuron = ntlist->at(0).hashNeuron; 
-	//}
 	if(i4d->valid())
 	{
 		pMainApplication->img4d = i4d;
@@ -606,8 +601,6 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 	if (!pMainApplication->BInit())
 	{
 		pMainApplication->Shutdown();
-//        disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
-//        connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
 		return 0;
 	}
 	SendVRconfigInfo();
@@ -684,31 +677,12 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		}
 		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
-
-            qDebug() << "delname = " << pMainApplication->delName;
-//			qDebug() << "delcurvePOS = " << pMainApplication->delcurvePOS;
 			if (pMainApplication->SegNode_tobedeleted.x != 0 || pMainApplication->SegNode_tobedeleted.y != 0 || pMainApplication->SegNode_tobedeleted.z != 0)
-				//socket->write(QString("/del_curve:" + pMainApplication->delName + "\n").toUtf8());
-			//else
 			{
 
 				QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
 				QString SegNode_tobedeleted = QString("%1 %2 %3").arg(pMainApplication->SegNode_tobedeleted.x).arg(pMainApplication->SegNode_tobedeleted.y).arg(pMainApplication->SegNode_tobedeleted.z);
-				//QString delID = pMainApplication->FindNearestSegment(glm::vec3(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z));
 				QString ConverteddelcurvePOS = ConvertsendCoords(SegNode_tobedeleted);
-//				VR_Communicator->onReadySend(QString("/del_curve:" + ConverteddelcurvePOS + " " + QSCurrentRes));
-
-//                QStringList _undostringList=pMainApplication->UndoNT2QString();
-//                qDebug()<<"_undostringList:"<<_undostringList;
-
-//                    QString send_string=_undostringList[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
-//                        +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+_undostringList[1];
-//                qDebug()<<send_string;
-//                if(_undostringList[1].isNull()==false)
-//                {
-//                    VR_Communicator->undo_delcure.push_back("/seg:"+send_string);
-//                    VR_Communicator->onReadySend(QString("/del_curve:TeraVR_" + ConverteddelcurvePOS + " " + QSCurrentRes));
-//                }
                 VR_Communicator->onReadySend(QString("/del_curve:TeraVR_" + ConverteddelcurvePOS + " " + QSCurrentRes));
 				CURRENT_DATA_IS_SENT=true;
 			}
@@ -919,11 +893,6 @@ XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 	//QString str1 = coords.section(' ',0, 0);  // str == "bin/myapp"
 	//QString str2 = coords.section(' ',1, 1);  // str == "bin/myapp"
 	//QString str3 = coords.section(' ',2, 2);  // str == "bin/myapp"
-
-	float dividex = VRvolumeMaxRes.x/VRVolumeCurrentRes.x;
-
-	float dividey = VRvolumeMaxRes.y/VRVolumeCurrentRes.y;
-	float dividez = VRvolumeMaxRes.z/VRVolumeCurrentRes.z;
 	x/=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
 	y/=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
 	z/=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
