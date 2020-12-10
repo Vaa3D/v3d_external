@@ -1502,12 +1502,9 @@ bool CMainApplication::HandleInput()
 	vr::VREvent_t event;
 	while( m_pHMD->PollNextEvent( &event, sizeof( event ) ) )
 	{
+
 		ProcessVREvent( event );
-		// if(_call_assemble_plugin)
-		// {
-		// 	qDebug()<<"run here";
-		// 	return true;
-		// }
+
 		if(postVRFunctionCallMode!=0)
 		{
 			qDebug()<<"there is a post-VR function call "<<postVRFunctionCallMode;
@@ -1519,7 +1516,6 @@ bool CMainApplication::HandleInput()
 			return bRet;
 		}
 	}
-
 
 	// Process SteamVR RIGHT controller state 
 	//including draw lines
@@ -1734,54 +1730,7 @@ bool CMainApplication::HandleInput()
 						}
 						currentNT.listNeuron.append(SL0);
 						currentNT.hashNeuron.insert(SL0.n, currentNT.listNeuron.size()-1);//store NeuronSWC SL0 into currentNT
-						// if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawing
-						// {
-						// 	// for each 10 nodes/points, call virtual finger once aiming to see the line's mid-result
-						// 	if((currentNT.listNeuron.size()>0)&&(currentNT.listNeuron.size()%10==0))
-						// 	{	
-						// 		qDebug()<<"size%10==0 goto charge isAnyNodeOutBBox";
-						// 		tempNT.listNeuron.clear();
-						// 		tempNT.hashNeuron.clear();
-						// 		for(int i=0;i<currentNT.listNeuron.size();i++)
-						// 		{
-						// 			NeuronSWC S_node = currentNT.listNeuron.at(i);//swcBB
-						// 			if(!isAnyNodeOutBBox(S_node))
-						// 			{
-						// 				S_node.n=tempNT.listNeuron.size();
-						// 				if(S_node.pn!=-1)
-						// 					S_node.pn = tempNT.listNeuron.last().n;
-						// 				tempNT.listNeuron.append(S_node);
-						// 				tempNT.hashNeuron.insert(S_node.n, tempNT.listNeuron.size()-1);
-						// 			}
-						// 			else if(i==0)
-						// 			{
-						// 				vertexcount=swccount=0;
-						// 				break;
-						// 			}
-										
-						// 		}
-						// 		qDebug()<<"charge isAnyNodeOutBBox done  goto virtual finger";
-						// 		// improve curve shape
-						// 		NeuronTree InputNT;
-						// 		InputNT = tempNT;
-						// 		int iter_number=1;
-						// 		//for(int i=0;i<iter_number;i++)  // liqi  Find matching line segments more than once, resulting in inaccurate results
-						// 		//{
-						// 		//	NeuronTree OutputNT;
-						// 		//	RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
-						// 		//	//convergent = CompareDist(InputNT, OutputNT);
-						// 		//	InputNT.listNeuron.clear();
-						// 		//	InputNT.hashNeuron.clear();
-						// 		//	InputNT = OutputNT;
-						// 		//}
-						// 		currentNT.listNeuron.clear();
-						// 		currentNT.hashNeuron.clear();
-						// 		currentNT = InputNT;
-						// 		tempNT.listNeuron.clear();
-						// 		tempNT.hashNeuron.clear();	
-						// 		qDebug()<<"virtual finger done  goto next frame";
-						// 	}
-						// }
+                        // if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawin
 					}	
 					vertexcount++;
 				}
@@ -1805,29 +1754,6 @@ bool CMainApplication::HandleInput()
 					SetDeleteSegmentColor(tmpdeletename);
 
 				}
-				//else if(m_modeGrip_R==m_slabplaneMode)
-				//{
-				//	glm::mat4 model;
-				//	model = glm::scale(glm::mat4(), glm::vec3(img4d->getXDim(), img4d->getYDim(), img4d->getZDim()));
-				//	model = m_globalMatrix * model;
-				//	const Matrix4 &mat_M = m_rmat4DevicePose[m_iControllerIDRight]; // mat means current controller pos
-				//	glm::mat4 mat = glm::mat4();
-				//	for (size_t i = 0; i < 4; i++)
-				//	{
-				//		for (size_t j = 0; j < 4; j++)
-				//		{
-				//			mat[i][j] = *(mat_M.get() + i * 4 + j);
-				//		}
-				//	}
-
-				//	mat = glm::inverse(model) * mat;
-				//	glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);
-				//	mat = glm::inverse(mat);
-				//	mat = glm::transpose(mat);
-				//	glm::vec4 clipnormal = mat * glm::vec4(0.0, 1.0, 0.0, 1);
-				//	u_clipnormal = glm::vec3(clipnormal.x, clipnormal.y, clipnormal.z);
-				//	u_clippoint = glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z);
-				//}
 			}
 
 			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
@@ -1913,19 +1839,7 @@ bool CMainApplication::HandleInput()
 					u_clipnormal = glm::vec3(clipnormal.x, clipnormal.y, clipnormal.z);
 					u_clippoint = glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z);
 				}
-				// else if(0&&m_rotateMode==true)//into ratate mode
-				// {
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-				// 	m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/100,glm::vec3(1,0,0));
-				// 	m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/100,glm::vec3(0,1,0));
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-				// }
-				// else if(0&&m_zoomMode==true)//into zoom mode
-				// {
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-				// 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/15));
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-				// }
+
 			}
 		}
 	}//
@@ -1955,163 +1869,7 @@ bool CMainApplication::HandleInput()
 		}
 
 	}
-	//qDebug()<<"run here 1.02";
-	// Process SteamVR LEFT controller state
-	//inlcuding translate,rotate and zoom with touchpad; pull a specific point to another POS with trigger
-	//{
-	//	vr::VRControllerState_t state;
 
-	//		if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state) ) )
-	//		{
-	//		//	//whenever touchpad is unpressed, set bool flag  m_TouchFirst = true;
-	//		//	if(!(state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
-	//		//	{
-	//		//		m_TouchFirst=true;
-	//		//	}//
-	//		//	//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
-	//		//	if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
-	//		//		!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
-	//		//	{
-	//		//		float m_fTouchPosY;
-	//		//		float m_fTouchPosX;
-	//		//		if(m_TouchFirst==true)
-	//		//		{//for every first touch,store the axis(x&y) on touchpad as old(means the initial ) POS 
-	//		//			m_TouchFirst=false;
-	//		//			m_fTouchOldY = state.rAxis[0].y;
-	//		//			m_fTouchOldX = state.rAxis[0].x;
-	//		//			//qDebug("1m_TouchFirst= %d,m_fTouchOldX= %f,m_fTouchOldY= %f.\n",m_TouchFirst,m_fTouchOldX,m_fTouchOldY);
-	//		//		}
-	//		//		m_fTouchPosY = state.rAxis[0].y;
-	//		//		m_fTouchPosX = state.rAxis[0].x;
-	//		//		//qDebug("2m_TouchFirst= %d,m_fTouchPosXR= %f,m_fTouchPosYR= %f.\n",m_TouchFirst,m_fTouchPosXR,m_fTouchPosYR);
-	//		//		detX = m_fTouchPosX - m_fTouchOldX;
-	//		//		detY = m_fTouchPosY - m_fTouchOldY;
-	//		//		if((detX<0.3f)&&(detX>-0.3f))detX=0;
-	//		//		if((detY<0.3f)&&(detY>-0.3f))detY=0;
-	//		//		/*if(detY>1.7||detY<-1.7)
-	//		//		{
-	//		//			bRet = true;
-	//		//			return bRet;
-	//		//		}//*/
-	//		//		if(m_translationMode==true)//into translate mode
-	//		//		{
-	//		//			const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];
-	//		//			Vector4 direction(0,0,0,1);
-
-	//		//			Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
-	//		//			Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
-	//		//			Vector4 direction_Y = end_Y - start_Y;
-
-	//		//			Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
-	//		//			Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
-	//		//			Vector4 direction_X = end_X - start_X;
-
-	//		//			if(fabs(m_fTouchPosX) > fabs(m_fTouchPosY)) //move across axis
-	//		//			{
-	//		//				if(m_fTouchPosX<0) direction = direction_X * -1;
-	//		//				else direction = direction_X;
-	//		//			} else //move along axis
-	//		//			{
-	//		//				if(m_fTouchPosY<0) direction = direction_Y * -1;
-	//		//				else direction = direction_Y;
-	//		//			}
-	//		//			direction = direction.normalize() * 0.01;
-
-	//		//			glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
-	//		//			//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
-	//		//			m_globalMatrix = temp_mat * m_globalMatrix;
-	//		//		}
-	//		//		else if(m_rotateMode==true)//into ratate mode
-	//		//		{
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-	//		//			m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/300,glm::vec3(1,0,0));
-	//		//			m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/300,glm::vec3(0,1,0));
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-	//		//		}
-	//		//		else if(m_zoomMode==true)//into zoom mode
-	//		//		{
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-	//		//			m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/300,1+m_fTouchPosY/300,1+m_fTouchPosY/300));
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-	//		//		}
-	//		//	}
-
-	//			//pick up the nearest node and pull it to new locations
-	//			//note: this part of code only serves as a demonstration, and does not handle complicated cases well.
-	//			//also, can only pull drawn neurons, not loaded ones.
-	//			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
-	//			{
-	//				qDebug()<<"start to find nearest node";
-	//				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
-	//				glm::mat4 mat = glm::mat4();
-	//				for (size_t i = 0; i < 4; i++)
-	//				{
-	//					for (size_t j = 0; j < 4; j++)
-	//					{
-	//						mat[i][j] = *(mat_M.get() + i * 4 + j);
-	//					}
-	//				}
-	//				mat=glm::inverse(m_globalMatrix) * mat;
-	//				glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
-	//				//qDebug("ctrlLeftPos = %.2f,%.2f,%.2f\n",ctrlLeftPos.x,ctrlLeftPos.y,ctrlLeftPos.z);
-	//				if(m_pickUpState == false)
-	//				{
-	//					float dist = 0;
-	//					float minvalue = 10.f;
-	//					for(int i = 0; i<sketchedNT_merged.listNeuron.size();i++)
-	//					{
-	//						NeuronSWC SS0;
-	//						SS0 = sketchedNT_merged.listNeuron.at(i);
-	//						dist = glm::sqrt((ctrlLeftPos.x-SS0.x)*(ctrlLeftPos.x-SS0.x)+(ctrlLeftPos.y-SS0.y)*(ctrlLeftPos.y-SS0.y)+(ctrlLeftPos.z-SS0.z)*(ctrlLeftPos.z-SS0.z));
-	//						//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
-	//						if(dist > (dist_thres/m_globalScale*5))
-	//							continue;
-	//						minvalue = glm::min(minvalue,dist);
-	//						if(minvalue==dist)
-	//							pick_point = i;
-
-	//					}
-	//					if(pick_point!=-1){
-	//						m_pickUpState = true;
-	//						qDebug("pick up %d point.",pick_point);}
-	//				}
-	//				else if(pick_point!=-1)
-	//				{
-	//					m_pickUpState = true;
-	//					NeuronSWC SS1;
-	//					SS1 = sketchedNT_merged.listNeuron.at(pick_point);
-	//					SS1.x = ctrlLeftPos.x;
-	//					SS1.y = ctrlLeftPos.y;
-	//					SS1.z = ctrlLeftPos.z;
-	//					sketchedNT_merged.listNeuron[pick_point] = SS1;
-	//					qDebug()<<"finish update nearest node location";
-	//					//sketch_spheresPos[pick_point] = glm::vec3(SS1.x,SS1.y,SS1.z);
-	//					//if(SS1.pn!=-1)
-	//					//{
-	//					//	NeuronSWC SS2 = sketchedNT_merged.listNeuron.at(SS1.pn-1);//SS2 is the parent of SS1
-	//					//	//change cylinder state
-	//					//	float dist = glm::sqrt((SS2.x-SS1.x)*(SS2.x-SS1.x)+(SS2.y-SS1.y)*(SS2.y-SS1.y)+(SS2.z-SS1.z)*(SS2.z-SS1.z));
-	//					//	delete sketch_cylinders[pick_point];
-	//					//	sketch_cylinders[pick_point]= new Cylinder(SS1.r,SS2.r,dist);
-	//					//}
-	//					//if(SS1.n!=sketchedNT_merged.listNeuron.size())
-	//					//{
-	//					//	NeuronSWC SS0 = sketchedNT_merged.listNeuron.at(SS1.n);//SS0 is the child of SS1
-	//					//	float dist = glm::sqrt((SS0.x-SS1.x)*(SS0.x-SS1.x)+(SS0.y-SS1.y)*(SS0.y-SS1.y)+(SS0.z-SS1.z)*(SS0.z-SS1.z));
-	//					//	delete sketch_cylinders[pick_point+1];
-	//					//	sketch_cylinders[pick_point+1]= new Cylinder(SS0.r,SS1.r,dist);
-	//					//}
-	//				}
-	//			}
-
-
-	//			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
-	//			{
-	//				m_pickUpState = false;
-	//				pick_point = -1;
- //               }//whenever the touchpad is unpressed, reset m_pickUpState and pick_point
-	//		}
-	//}
 	return bRet;
 }
 
@@ -2134,10 +1892,13 @@ void CMainApplication::RunMainLoop()
 bool CMainApplication::HandleOneIteration()
 {
 	bool bQuit = false;
+    //qdebug()<<"huanglei debug 8";
 	bQuit = HandleInput();
+    //qdebug()<<"huanglei debug 9";
 	RenderFrame();
+    //qdebug()<<"huanglei debug 10";
 	if(bQuit==true) Shutdown();
-	
+        //qdebug()<<"huanglei debug 11";
 	return bQuit;
 
 }
@@ -2286,46 +2047,57 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 	
 }
 
-bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type,bool asg)
+bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z/*,int type,bool asg*/)
 {
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        qDebug()<<i<<' '<<drawnMarkerList.at(i).x<<" "<<drawnMarkerList.at(i).y<<" "<<drawnMarkerList.at(i).z;
+    }
+    float dist=5;
+    int j=-1;
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        ImageMarker markertemp = drawnMarkerList.at(i);
 
-		for(int i=0;i<drawnMarkerList.size();i++)
-		{
-			ImageMarker markertemp = drawnMarkerList.at(i);
-            float dist=10000;
-			if(isOnline == false )
-            {
-                dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
-            }
-			else 
-			{
-                if(!asg)
-                {
+        if(isOnline == false )
+        {
+            dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+        }
+        else
+        {
+//                if(!asg)
+//                {
                     XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
                     XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
-                    dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
-                }else
-                {
-//                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
-                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
-                    dist = glm::sqrt((TaegetMarkx.x- x)*(TaegetMarkx.x- x)+(TaegetMarkx.y- y)*(TaegetMarkx.y- y)+(TaegetMarkx.z- z)*(TaegetMarkx.z- z));
-                }
-			}
-			//cal the dist between pos & current node'position, then compare with the threshold
-            if(dist < /*(dist_thres/m_globalScale*5)*/1)
-			{
-				drawnMarkerList.removeAt(i);
-				markerVisibility.erase(markerVisibility.begin()+i);
-				qDebug()<<"remove marker at "<<i;
-				if(Markers_spheres[i]) delete Markers_spheres[i];
-				Markers_spheres.erase(Markers_spheres.begin()+i);
-				Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
-				Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
-				// deletedmarker = true;
-				return true;
-			}
-		}
+                    float dist0 = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+                    if(dist0<dist){
+                        dist=dist0;j=i;
+                    }
 
+//        }else
+//                {
+//                XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+
+//                dist = glm::sqrt((TaegetMarkx.x- x)*(TaegetMarkx.x- x)+(TaegetMarkx.y- y)*(TaegetMarkx.y- y)+(TaegetMarkx.z- z)*(TaegetMarkx.z- z));
+//                XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+                qDebug()<<TaegetMarkx.x<<" "<<TaegetMarkx.y<<" "<<TaegetMarkx.z<<" "<<TargetResx.x<<" "<<TargetResx.y<<" "<<TargetResx.z<<" "<<dist;
+//                }
+        }
+			//cal the dist between pos & current node'position, then compare with the threshold
+
+    }
+    if(j!=-1)
+    {
+        drawnMarkerList.removeAt(j);
+        markerVisibility.erase(markerVisibility.begin()+j);
+        qDebug()<<"remove marker at "<<j;
+        if(Markers_spheres[j]) delete Markers_spheres[j];
+        Markers_spheres.erase(Markers_spheres.begin()+j);
+        Markers_spheresPos.erase(Markers_spheresPos.begin()+j);
+        Markers_spheresColor.erase(Markers_spheresColor.begin()+j);
+        // deletedmarker = true;
+        return true;
+    }
 	return false;
 	//if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
 	//{
@@ -2822,183 +2594,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             m_oldCtrlMatrix = mat;
 			m_oldGlobalMatrix = m_globalMatrix;
 	}
-//    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
-//    {
-//
-//            const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
-//            glm::mat4 mat = glm::mat4();
-//            for (size_t i = 0; i < 4; i++)
-//            {
-//                for (size_t j = 0; j < 4; j++)
-//                {
-//                    mat[i][j] = *(mat_M.get() + i * 4 + j);
-//                }
-//            }
-//            mat=glm::inverse(m_globalMatrix) * mat;
-//
-//			glm::vec4 start = mat * glm::vec4( 0, 0, -0.02f, 1 );
-//            //Vector4 start = mat_M * Vector4( 0, 0, -0.02f, 1 );
-//
-//
-//            NeuronSWC SL0;
-//            NeuronSWC SL1;
-//            SL0.x = start.x ;SL0.y = start.y ;SL0.z = start.z ;SL0.r = default_radius;SL0.type = 200; SL0.n = swccount+1;SL0.pn = -1;
-//
-////            float dist = 0;
-////            if(swccount>=2)
-////            {
-////                double point_x = sketchNT.listNeuron.at(swccount-2).x;
-////                double point_y = sketchNT.listNeuron.at(swccount-2).y;
-////                double point_z = sketchNT.listNeuron.at(swccount-2).z;
-////                dist = glm::sqrt((point_x-start.x)*(point_x-start.x)+(point_y-start.y)*(point_y-start.y)+(point_z-start.z)*(point_z-start.z));
-////            }
-//
-//            if(bool_ray)
-//            {
-//                ray_ratio = 1;
-//                double updated_z = -0.29*ray_ratio;
-//				glm::vec4 end = mat * glm::vec4( 0, 0, updated_z, 1 );
-//                //Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
-//                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+2;SL1.pn = swccount+1;
-//                sketchNT.listNeuron.append(SL0);
-//                sketchNT.hashNeuron.insert(SL0.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL0 into sketchNT
-//                sketchNT.listNeuron.append(SL1);
-//                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
-//                swccount +=2;
-//                bool_ray = false;
-//            }else
-//            {
-//                ray_ratio++;
-//                double updated_z = -0.29*ray_ratio;
-//				glm::vec4 end = mat * glm::vec4( 0, 0, updated_z, 1 );
-//                //Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
-//                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+1;SL1.pn = swccount;
-//                sketchNT.listNeuron.append(SL1);
-//                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
-//                swccount++;
-//            }
-//
-//    }
-
-
-
-	//////////////////////////////////////////RIGHT
-	//if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
-	//{	
-	//	vr::VRControllerState_t state;	
-	//	m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
-	//	float temp_x  = state.rAxis[0].x;
-	//	float temp_y  = state.rAxis[0].y;
-
-	//	if(fabs(temp_x) > fabs(temp_y))
-	//	{
-	//		if((loadedNT.listNeuron.size()>0)&&(sketchNT.listNeuron.size()>0)) //both original_vr_neuron and areaofinterest must be non-empty.
-	//		{
-	//			//call feature search function, and update display
-
-	//			//save current neurons
-	//			QString outfilename1 = QCoreApplication::applicationDirPath()+"/original_vr_neuron.swc";
-	//			writeSWC_file(outfilename1, loadedNT);
-	//			qDebug("Successfully write original_vr_neuron");
-
-	//			QString outfilename2 = QCoreApplication::applicationDirPath()+"/areaofinterest.swc";
-	//			writeSWC_file(outfilename2, sketchNT);
-	//			qDebug("Successfully write areaofinterest");
-
-	//			//calculate
-	//			if(temp_x<0) 
-	//			{
-	//				qDebug("Search bjut");
-	//				if(!neuron_subpattern_search(1,mainwindow))
-	//				{
-	//					qDebug("Search failed!");
-	//					return;	
-	//				}
-	//			}
-	//			else 
-	//			{
-	//				qDebug("Search shu");
-	//				if(!neuron_subpattern_search(2,mainwindow))
-	//				{
-	//					qDebug("Search failed!");
-	//					return;	
-	//				}
-	//			}
-
-	//			//load again
-	//			QString filename = QCoreApplication::applicationDirPath()+"/updated_vr_neuron.swc";
-	//			NeuronTree nt_tmp = readSWC_file(filename);
-	//			qDebug("Successfully read tagged SWC file");
-
-	//			for (int i=0; i<loadedNT.listNeuron.size(); i++)
-	//				loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
-
-	//			SetupMorphologyLine(0);
-	//		}
-	//		else
-	//		{
-	//			qDebug("Area of interest is empty!");
-	//		}
-	//	} 
-	//	else 
-	//	{
-	//		if(temp_y<0) 
-	//		{
-	//			qDebug("none");
-	//		}
-	//		else 
-	//		{
-	//			qDebug("freeze");
-	//			m_bFrozen = !m_bFrozen;
-	//		}
-	//	}
-	//}
 
     if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)/*&&(!showshootingray)*/)
-	{		//use touchpad press to change the processing mode for touchpad, only contrast now
-		// m_modeControlTouchPad_R++;
-		// m_modeControlTouchPad_R%=4;
-
-		// switch(m_modeControlTouchPad_R)
-		// {
-		// case 0:
-		// 	m_contrastMode=m_rotateMode=m_zoomMode = false;
-		// 	break;
-		// case 1:
-		// 	m_contrastMode = true;
-		// 	m_rotateMode=m_zoomMode = false;
-		// 	break;
-		// case 2:
-		// 	m_rotateMode = true;
-		// 	m_contrastMode=m_zoomMode = false;
-		// 	break;
-		// case 3:
-		// 	m_zoomMode = true;
-		// 	m_contrastMode=m_rotateMode = false;
-		// 	break;
-		// default:
-		// 	break;
-		// }	
-		//qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
-		vr::VRControllerState_t state;	
+    {
+        vr::VRControllerState_t state;
 		m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
 		float temp_x  = state.rAxis[0].x;
-		// case m_slabplaneMode:
-		// {
-		// 	if(temp_x>0)
-		// 	{
-		// 		fSlabwidth += 0.1;
-		// 		if (fSlabwidth > 0.5)
-		// 			fSlabwidth = 0.5;
-		// 	}
-		// 	if(temp_x<0)
-		// 	{
-		// 		fSlabwidth -= 0.1;
-		// 		if (fSlabwidth < 0.05)
-		// 			fSlabwidth = 0.05;
-		// 	}
-		// 	break;
-		// }
+
 
 	}
 		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))	//detect trigger when menu show
@@ -3008,7 +2610,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				MenuFunctionChoose(ShootingPadUV);
 				else if(m_secondMenu!=_nothing)
 				{
-					//todo liqi
+
 					ColorMenuChoose(ShootingPadUV);
 				}
 				//qDebug()<<showshootingPad;
@@ -3022,7 +2624,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		switch(m_modeGrip_R)
 		{
 		case m_drawMode:
-			//if(m_modeGrip_R==m_drawMode)
 			{
 				if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawing
 				{	
@@ -3627,30 +3228,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			break;
 		}
 
-		
-		// case m_markMode:
-		// 	{
-		// 		const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
-		// 		glm::mat4 mat = glm::mat4();
-		// 		for (size_t i = 0; i < 4; i++)
-		// 		{
-		// 			for (size_t j = 0; j < 4; j++)
-		// 			{
-		// 				mat[i][j] = *(mat_M.get() + i * 4 + j);
-		// 			}
-		// 		}
-		// 		mat=glm::inverse(m_globalMatrix) * mat;
-		// 		glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-		// 		markerPOS="";
-		// 		markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-		// 		if(isOnline==false)	
-		// 		{
-		// 			ClearUndoRedoVectors();
-		// 			SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
-		// 		}
-
-		// 		break;
-		// 	}
 		case m_dragMode:
 			{
 				_startdragnode = false;
@@ -3674,7 +3251,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				/*delmarkerPOS="";
 				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
 				markerPOS="";
-				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+//				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 				bool IsmarkerValid = false;
 				if(isOnline==false)	
 				{
@@ -3693,21 +3270,28 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
                 }else
                 {
+                    //YANSEAOCHI
+                    qDebug()<<"ONLINE";
+                    double dist=5;
                     for(int i=0;i<drawnMarkerList.size();i++)
                     {
                         ImageMarker markertemp = drawnMarkerList.at(i);
-                        double dist = glm::sqrt((markertemp.x- m_v4DevicePose.x)*(markertemp.x- m_v4DevicePose.x)+(markertemp.y- m_v4DevicePose.y)*(markertemp.y- m_v4DevicePose.y)
+                        double dist0 = glm::sqrt((markertemp.x- m_v4DevicePose.x)*(markertemp.x- m_v4DevicePose.x)+(markertemp.y- m_v4DevicePose.y)*(markertemp.y- m_v4DevicePose.y)
                                          +(markertemp.z- m_v4DevicePose.z)*(markertemp.z- m_v4DevicePose.z));
-                        if(dist<5)
-                            markerPOS=QString("%1 %2 %3").arg(markertemp.x).arg(markertemp.y).arg(markertemp.z);
+                        if(dist0<dist)
+                        {markerPOS=QString("%1 %2 %3 %4").arg(markertemp.x).arg(markertemp.y).arg(markertemp.z).arg(19);}
+
                     }
-                    if(markerPOS==QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z))
+                    qDebug()<<"markePOs1="<<markerPOS;
+                    if(markerPOS=="")
                     {
+
                         bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
                         ||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
                         ||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
-                        if(IsOutofBounds==true) markerPOS="";
+                        if(IsOutofBounds!=true) markerPOS = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
                     }
+                    qDebug()<<"msrkerPOS= "<<markerPOS;
                 }
 				break;
 			}
@@ -4385,7 +3969,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// }
 
 				
-
+qDebug() << "huanglei debug 4";
 	
 
 }

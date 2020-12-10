@@ -213,7 +213,7 @@ public:
 	void SetupMarkerandSurface(double x,double y,double z,int type =3);
 	void SetupMarkerandSurface(double x,double y,double z,int colorR,int colorG,int colorB);
 
-    bool RemoveMarkerandSurface(double x,double y,double z,int type=3,bool asg=0);
+    bool RemoveMarkerandSurface(double x,double y,double z/*,int type=3,bool asg=0*/);
     bool RemoveMarkerandSurface2(double x,double y,double z,int type=3,bool asg=0);
 	void RenderControllerAxes();//draw XYZ axes on the base point of the controllers 
 

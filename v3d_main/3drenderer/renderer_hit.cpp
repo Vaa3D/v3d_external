@@ -4206,19 +4206,53 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
                 break;
             }
         }
+        const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
+                {255, 255, 255},  // white,   0-undefined
+                {20,  20,  20 },  // black,   1-soma
+                {200, 20,  0  },  // red,     2-axon
+                {0,   20,  200},  // blue,    3-dendrite
+                {200, 0,   200},  // purple,  4-apical dendrite
+                //the following is Hanchuan's extended color. 090331
+                {0,   200, 200},  // cyan,    5
+                {220, 200, 0  },  // yellow,  6
+                {0,   200, 20 },  // green,   7
+                {188, 94,  37 },  // coffee,  8
+                {180, 200, 120},  // asparagus,	9
+                {250, 100, 120},  // salmon,	10
+                {120, 200, 200},  // ice,		11
+                {100, 120, 200},  // orchid,	12
+            //the following is Hanchuan's further extended color. 111003
+            {255, 128, 168},  //	13
+            {128, 255, 168},  //	14
+            {128, 168, 255},  //	15
+            {168, 255, 128},  //	16
+            {255, 168, 128},  //	17
+            {168, 128, 255}, //	18
+            {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+            //the following (20-275) is used for matlab heat map. 120209 by WYN
+            {0,0,131}, //20
+
+                };
         if (markerindex>=0/*listLoc.size()>0*/)
         {
             S.inputProperty = listLoc.at(markerindex).inputProperty;
             S.comments = listLoc.at(markerindex).comments;
             S.category = listLoc.at(markerindex).category;
-            S.color = currentMarkerColor;
+//            S.color = currentMarkerColor;
+
+            S.color.r=neuron_type_color[int(currentTraceType)][0];
+            S.color.g=neuron_type_color[int(currentTraceType)][1];
+            S.color.b=neuron_type_color[int(currentTraceType)][2];
 //            currentMarkerColor = listLoc.at(markerindex).color;;
         }
         else
         {
             S.inputProperty = pxLocaUseful;
             //S.color = random_rgba8(255);
-            S.color = currentMarkerColor;
+//            S.color = currentMarkerColor;
+            S.color.r=neuron_type_color[int(currentTraceType)][0];
+            S.color.g=neuron_type_color[int(currentTraceType)][1];
+            S.color.b=neuron_type_color[int(currentTraceType)][2];
         }
 
 
@@ -4233,8 +4267,9 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
         if(!fromserver&&w->TeraflyCommunicator!=nullptr)
         {
             w->SetupCollaborateInfo();
-			//w->TeraflyCommunicator->UpdateSendPoolNode(S.x,S.y,S.z,currentTraceType);
-			w->TeraflyCommunicator->UpdateSendPoolNode2(S.x, S.y, S.z, (int)S.color.r, (int)S.color.g, (int)S.color.b);//Update by FJ 2020/6/14
+            qDebug()<<"DASJKH";
+            w->TeraflyCommunicator->UpdateSendPoolNode(S.x,S.y,S.z,int(currentTraceType));
+//			w->TeraflyCommunicator->UpdateSendPoolNode2(S.x, S.y, S.z, (int)S.color.r, (int)S.color.g, (int)S.color.b);//Update by FJ 2020/6/14
         }
 //		updateLandmark();
     }

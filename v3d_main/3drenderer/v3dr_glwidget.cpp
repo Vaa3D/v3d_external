@@ -4250,7 +4250,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
-//    qDebug()<<markerPOS;
+
     LocationSimple marker/*=markers.at(0)*/;
     marker.x=markerXYZ.at(0).toFloat();
     marker.y=markerXYZ.at(1).toFloat();
@@ -4282,7 +4282,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
 
         }
     }
-    int type=colortype;
+    int type=markerXYZ.at(3).toFloat();
 	unsigned char r, g, b;
     const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
             {255, 255, 255},  // white,   0-undefined
@@ -4311,22 +4311,25 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS, int colortype)
         {0,0,131}, //20
 		
             };
-    if(markerXYZ.size()==7)
-    {
-        type=markerXYZ.at(6).toInt();
-		marker.color.r = neuron_type_color[type][0];
-		marker.color.g = neuron_type_color[type][1];
-		marker.color.b = neuron_type_color[type][2];
+            marker.color.r = neuron_type_color[type][0];
+            marker.color.g = neuron_type_color[type][1];
+            marker.color.b = neuron_type_color[type][2];
+//    if(markerXYZ.size()==7)
+//    {
+//        type=markerXYZ.at(6).toInt();
+//		marker.color.r = neuron_type_color[type][0];
+//		marker.color.g = neuron_type_color[type][1];
+//		marker.color.b = neuron_type_color[type][2];
 
-    }
-	else if (markerXYZ.size() == 9){
-		r = markerXYZ.at(6).toInt();
-		g = markerXYZ.at(7).toInt();
-		b = markerXYZ.at(8).toInt();
-		marker.color.r = r;
-		marker.color.g = g;
-		marker.color.b = b;
-	}
+//    }
+//	else if (markerXYZ.size() == 9){
+//		r = markerXYZ.at(6).toInt();
+//		g = markerXYZ.at(7).toInt();
+//		b = markerXYZ.at(8).toInt();
+//		marker.color.r = r;
+//		marker.color.g = g;
+//		marker.color.b = b;
+//	}
 
 
     markers.append(marker);

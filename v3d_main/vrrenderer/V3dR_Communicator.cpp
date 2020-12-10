@@ -280,10 +280,11 @@ void V3dR_Communicator::UpdateSendPoolNode(float X, float Y, float Z,int type)
 {
     XYZ global_node=ConvertLocaltoGlobalCroods(X,Y,Z);
 //    qDebug()<<"global_node"<<global_node.x<<" "<<global_node.y<<" "<<global_node.z;
+    qDebug()<<"UpdateSendPoolNode"<<type;
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
-                            +QString::number(global_node.y)+" "+QString::number(global_node.z)
+                            +QString::number(global_node.y)+" "+QString::number(global_node.z)+" "+QString::number(type))
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
-                            +" "+QString::number(ImageCurRes.z)+" "+QString::number(type));
+                            +" "+QString::number(ImageCurRes.z)+" ";
 //    AutoTraceNode=XYZ(global_node.x,global_node.y,global_node.z);
     onReadySend(nodeMSG);
 
@@ -304,8 +305,9 @@ void V3dR_Communicator::UpdateSendPoolNode2(float X, float Y, float Z, int r, in
 void V3dR_Communicator::UpdateSendDelMarkerInfo(float x,float y,float z)
 {
     XYZ global_node=ConvertLocaltoGlobalCroods(x,y,z);
+
     QString nodeMSG=QString("/marker:"+QString::number(global_node.x)+" "
-                            +QString::number(global_node.y)+" "+QString::number(global_node.z)
+                            +QString::number(global_node.y)+" "+QString::number(global_node.z)+" "+QString::number(19)+
                             +" "+QString::number(ImageCurRes.x)+" "+QString::number(ImageCurRes.y)
                             +" "+QString::number(ImageCurRes.z));
     onReadySend(nodeMSG);
@@ -326,7 +328,7 @@ void V3dR_Communicator::onReadySend(QString send_MSG,bool flag) {
         {
             send_MSG="/say: GoodBye~";
         }
-        if(send_MSG!="/ask:message")
+        if(send_MSG!="/ask:message"&&!send_MSG.contains("hmd")&&!send_MSG.contains("ResIndex"))
         {
             qDebug()<<"send to server:"<<send_MSG;
         }
@@ -455,7 +457,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     QRegExp retypeRex("^/retype:(.*)__(.*)$");
 
         line=line.trimmed();
-        qDebug()<<"receive:"<<line;
+        qDebug()<<"Terafly receive:"<<line;
         if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
             foreach (QString user, users) {
