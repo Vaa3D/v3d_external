@@ -266,10 +266,13 @@ void VR_MainWindow::TVProcess(QString line)
 					pMainApplication->collaborationTargetdelcurveRes.z = resz;
 
                     XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
+
+
                     if(pMainApplication->DeleteSegment(node.x,node.y,node.z))
                     {
-                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
-                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z)
+                                            node=Convertlocal2GloabelInRES(node);
+                        if(node.x<VRVolumeStartPoint.x ||node.y<VRVolumeStartPoint.y||node.z<VRVolumeStartPoint.z
+                                ||node.x>VRVolumeEndPoint.x||node.y>VRVolumeEndPoint.y||node.z>VRVolumeEndPoint.z)
                         {
                             VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
                             continue;
@@ -325,11 +328,11 @@ void VR_MainWindow::TVProcess(QString line)
                 qDebug()<<"IsmarkerValid:"<<IsmarkerValid;
                 if(!IsmarkerValid)
                 {
-
+                    XYZ t=Convertlocal2GloabelInRES(converreceivexyz);
 //                    if(converreceivexyz.x<VRVolumeStartPoint.x || converreceivexyz.y<VRVolumeStartPoint.y||converreceivexyz.z<VRVolumeStartPoint.z
 //                            || converreceivexyz.x>VRVolumeEndPoint.x|| converreceivexyz.y>VRVolumeEndPoint.y||converreceivexyz.z>VRVolumeEndPoint.z)
-                        if(mx<VRVolumeStartPoint.x || my<VRVolumeStartPoint.y||mz<VRVolumeStartPoint.z
-                                || mx>VRVolumeEndPoint.x|| my>VRVolumeEndPoint.y||mz>VRVolumeEndPoint.z)
+                        if(t.x<VRVolumeStartPoint.x || t.y<VRVolumeStartPoint.y||t.z<VRVolumeStartPoint.z
+                                || t.x>VRVolumeEndPoint.x|| t.y>VRVolumeEndPoint.y||t.z>VRVolumeEndPoint.z)
                     {
                         //图像块外
                         qDebug() << "marker out of size:" << markerPos << "," <<VRVolumeStartPoint.x<<","<<VRVolumeStartPoint.y<<","<<VRVolumeStartPoint.z<<"\n"<<
@@ -511,10 +514,21 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->collaborationTargetdelcurveRes.z = resz;
 
                     XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-                    if(pMainApplication->retypeSegment(node.x,node.y,node.z,type))
+//                    if(pMainApplication->retypeSegment(node.x,node.y,node.z,type))
+//                    {
+//                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
+//                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z)
+//                        {
+//                            VROutinfo.retypeMsgs.push_back(delMSGs.at(i));
+//                            continue;
+//                        }
+//                    }
+
+                    if(!pMainApplication->retypeSegment(node.x,node.y,node.z,type))
                     {
-                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
-                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z)
+                                            node=Convertlocal2GloabelInRES(node);
+                        if(node.x<VRVolumeStartPoint.x ||node.y<VRVolumeStartPoint.y||node.z<VRVolumeStartPoint.z
+                                ||node.x>VRVolumeEndPoint.x||node.y>VRVolumeEndPoint.y||node.z>VRVolumeEndPoint.z)
                         {
                             VROutinfo.retypeMsgs.push_back(delMSGs.at(i));
                             continue;
@@ -896,9 +910,9 @@ void VR_MainWindow::SendVRconfigInfo()
     VR_Communicator->onReadySend(QString("/scale:" +  QSglobalscale ));
 }
 
-XYZ VR_MainWindow:: Converlocal2GloabelInRES(XYZ local)
+XYZ VR_MainWindow:: Convertlocal2GloabelInRES(XYZ local)
 {
-    return XYZ(local.x+VRVolumeStartPoint.x,local.y+VRVolumeStartPoint.y,local.y+VRVolumeStartPoint.y);
+    return XYZ(local.x+VRVolumeStartPoint.x,local.y+VRVolumeStartPoint.y,local.z+VRVolumeStartPoint.z);
 }
 XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
 {

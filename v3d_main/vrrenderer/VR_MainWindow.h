@@ -62,6 +62,7 @@ public:
 	void GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution);
 	QString ConvertsendCoords(QString coords);
 	XYZ ConvertreceiveCoords(float x,float y,float z);
+    XYZ Convertlocal2GloabelInRES(XYZ local);
 private:
     int numreceivedmessage;//for debug HL
     int numsendmessage;
