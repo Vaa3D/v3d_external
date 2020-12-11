@@ -4439,7 +4439,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo,int colortype)
 
 XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> local
 {
-    return TeraflyCommunicator->ConvertGlobaltoLocalCroods(x,y,z);
+    return TeraflyCommunicator->ConvertGlobaltoLocalBlockCroods(x,y,z);
 }
 
 void V3dR_GLWidget::batchprocessDel()

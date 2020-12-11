@@ -14,155 +14,159 @@
 #include "../basic_c_fun/v3d_interface.h"
 #include "fileserver.h"
 
-
-struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
-
-};
-class FileSocket_send:public QTcpSocket
-{
-    Q_OBJECT
-public:
-    explicit FileSocket_send(QString ip,QString port,QString anofile_path,QObject *parent=0);
-
-    void sendFile(QString filepath,QString filename);
-public slots:
-    void readMSG();
-private:
-    QString anopath;
-    QString anoname;
-};
-
-//class CMainApplication;
-class My4DImage;
-class MainWindow;
-class ManageSocket:public QTcpSocket
-{
-	Q_OBJECT
-public:
-	explicit ManageSocket(QObject *parent=0);
-	QString ip;
-	QString manageport;
-	QString name;
-//    QString loadfile_name;
-
-public slots:
-    void onReadyRead();
-    void send1(QListWidgetItem*);
-    void send2(QListWidgetItem*);
-    void messageMade();
-//    void receivedfile(QString anofile);
-    void receivefile(QString anofile);
-//    void TFProcess(QString msg);
-protected:
-signals:
-    void makeMessageSocket(QString ip,QString port,QString username);
-    void loadANO(QString);
-//    void receivefile(QString anofile);
-private:
-    QString messageport;
-    QString loadfilename;
-    bool MSGsocket;
-    bool FileRec;
-};
-
 class V3dR_Communicator : public QWidget
 {
     Q_OBJECT
-
+    struct DataInfo
+    {
+        qint32 dataSize;    /*!<该数据块的长度，初始值为0*/
+        qint32 stringOrFilenameSize;/*!<command的长度或者文件名的长度*/
+        qint32 filedataSize;/*!<文件的长度，当传输的不是文件是command时为0*/
+        qint32 dataReadedSize;/*!<已经读取的数据的长度，当数据块被完全读取是等于dataSize*/
+    };
 public:
-    explicit V3dR_Communicator(bool *client_flag = 0, V_NeuronSWC_list* ntlist=0);
-    ~V3dR_Communicator();
-    void onReadySend(QString send_MSG,bool flag=1);
-//	bool SendLoginRequest();
-	//void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
-	//void Update3DViewNTList(QString &msg, int type);
-	void UpdateSendPoolNTList(V_NeuronSWC seg);
-	void UpdateDeleteMsg(vector<XYZ> deleteLocNode);//this node is second node of seg,because this is esay to delete correct seg
-    void UpdateSendPoolNode(float,float,float,int type=3);
-	void UpdateSendPoolNode2(float, float, float, int r = 0, int g = 20, int b = 200);//Add by FJ 2020/6/14
-    void UpdateSendDelMarkerInfo(float x,float y,float z);
-    void Updateretype(V_NeuronSWC_unit row_unit,int type);
-	void Collaborationsendmessage();
-	void Collaborationaskmessage();
-	//trans func
-    QString V_NeuronSWCToSendMSG(V_NeuronSWC seg,bool f=1);
-    QString V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para);
-	QString V_DeleteNodeToSendMSG(vector<XYZ> loc_list);
-	void MsgToV_NeuronSWC(QString msg);
+    explicit V3dR_Communicator();
+    ~V3dR_Communicator()=default;
+//    void onReadySend(QString send_MSG,bool flag=1);//use sendMSG;
+    /**
+     * @brief sendMsg
+     * @param msg
+     * 发送消息
+     */
+    void sendMsg(QString msg);
+    /**
+     * @brief UpdateSendPoolNTList
+     * @param seg
+     * 发送加线segment到服务器
+     */
+    void UpdateSendPoolNTList(V_NeuronSWC seg);
+    /**
+     * @brief UpdateDeleteMsg
+     * @param seg
+     * 发送减线segment到服务器
+     */
+    void UpdateDeleteMsg(V_NeuronSWC seg);//this node is second node of seg,because this is esay to delete correct seg
+    /**
+     * @brief UpdateSendPoolNode
+     * @param x
+     * @param y
+     * @param z
+     * @param type
+     * 发送加点的
+     */
+    void UpdateSendPoolNode(float x,float y,float z,int type);
+    /**
+     * @brief UpdateSendDelMarkerInfo
+     * @param x
+     * @param y
+     * @param z
+     * 发送减点
+     */
+    void UpdateSendDelMarkerInfo(float x,float y,float z,int type=-1);
+    /**
+     * @brief Updateretype
+     * @param seg
+     * @param type
+     * 发送改颜色
+     */
+    void Updateretype(V_NeuronSWC seg,int type);
 
+    /**
+     * @brief V_NeuronSWCToSendMSG
+     * @param seg 全局坐标
+     * @return 将局部坐标的seg按格式转换为要发送的string
+     */
+    QStringList V_NeuronSWCToSendMSG(V_NeuronSWC seg);
+    //Coordinate transform
+    XYZ ConvertGlobaltoLocalBlockCroods(double x,double y,double z);
+    XYZ ConvertLocalBlocktoGlobalCroods(double x,double y,double z);
+    XYZ ConvertMaxRes2CurrResCoords(double x,double y,double z);
+    XYZ ConvertCurrRes2MaxResCoords(double x,double y,double z);
+//    XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
+    //end Coordinate transform
 
-public:
-	float VR_globalScale;//used to 
-    QString userName;
-	std::vector<Agent> Agents;
-//	ManageSocket * managesocket;
-	 QTcpSocket* socket;
-	 double cur_createmode;
-	 int cur_chno;
-	 XYZ ImageMaxRes;
-	 XYZ ImageCurRes;
-	 XYZ ImageStartPoint;
-
-	 XYZ CreatorMarkerPos;
-	 int CreatorMarkerRes;
-    QTimer *asktimer;
+//    void pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC);
+//    void pushUndoStack(QString,QString);
+    //    QString V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para);转换读取的autotrace坐标到全局坐标
+    //	void MsgToV_NeuronSWC(QString msg);
 public slots:
-    bool SendLoginRequest(QString ip,QString port,QString username);
-	//void RunVRMainloop();
-	//void SendHMDPosition();
-	void CollaborationMainloop();
+    /**
+     * @brief TFProcess
+     * @param msg
+     * @param flag_init
+     * 消息处理函数
+     */
     void TFProcess(QString msg,bool flag_init=0);
-    void read_autotrace(QString,XYZ*);
-    void timerStart(QString,int);
-    void undo();
-//    void setautomarker(XYZ);
-private slots:	
+    /**
+     * @brief onReadyRead
+     * 读取输入，并执行相关处理
+     */
     void onReadyRead();
+    /**
+     * @brief onConnected
+     * 发送用户登陆消息
+     */
     void onConnected();
+    /**
+     * @brief onDisconnected
+     * 服务器断开
+     */
     void onDisconnected();
-    void askserver();
 
+//    void read_autotrace(QString,XYZ*);
+//    void undo();
 signals:
-    void messageMade();
-	void CollaAddcurveSWC(vector<XYZ>, int chno, double createmode);
-    void CollAddMarker(XYZ);
+    void load(QString);
+    //msg process
+    void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
 
-    void addSeg(QString,int);
-    void delSeg(QString);
-    void addMarker(QString,int);
-    void delMarker(QString);
-    void msgtoprocess(QString);
-    void retypeSeg(QString);
+    void addSeg(QString);//加线信号 （type x y z;type x y z;...）
+    void delSeg(QString);//减线信号 （type x y z;type x y z;...）
+    void addMarker(QString);//加marker信号 (type x y z)
+    void delMarker(QString);//减marker信号 (type x y z)
+    void retypeSeg(QString,int);//改线的颜色信号（type x y z;type x y z;...）
+    //msg process end
+private:
+    /**
+     * @brief resetDataInfo
+     * 重置接收的数据结构
+     */
+    void resetDataInfo();
+    /**
+     * @brief processReaded
+     * @param list
+     * 处理接受的消息或文件
+     * 1. 文件要求加载，开始协作
+     * 2. 消息：解析操作，同步操作
+     */
+    void processReaded(QStringList list);
+
+public:
+//	float VR_globalScale;//used to
+    QString userName;
+    QTcpSocket* socket;
+    double cur_createmode;
+    int cur_chno;
+
+    XYZ ImageMaxRes;
+    XYZ ImageCurRes;
+    XYZ ImageStartPoint;
+
+    XYZ CreatorMarkerPos;
+    int CreatorMarkerRes;
+
+//    XYZ AutoTraceNode;
+//    int flag_x,flag_y,flag_z;
+
+//    QStringList undoStack;
+//    QStringList undo_delcure;
 private:
 
-	QString vr_Port;
-	bool CURRENT_DATA_IS_SENT;
-	bool * clienton;
-//	V_NeuronSWC_list * NTList_SendPool;
-	vector<vector<XYZ>> loc_ReceivePool;
-	int NTNumReceieved;
-	int NTNumcurrentUser;
-public:
-    quint16 nextblocksize;
-private:
+    DataInfo dataInfo;
+    bool isLoad=true;
 
-    XYZ ConvertLocaltoGlobalCroods(double x,double y,double z);
-    XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
-public:
-    XYZ AutoTraceNode;
-//    XYZ MoveToMarkerPos;
-    int flag_x,flag_y,flag_z;
 
-    QStringList undoStack;
-    QStringList undo_delcure;
-    void pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC);
-    void pushUndoStack(QString,QString);
-    XYZ ConvertGlobaltoLocalCroods(double x,double y,double z);
-    int receiveCNT=0;
+//    int receiveCNT=0;
 };
 
 

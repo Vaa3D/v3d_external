@@ -104,7 +104,7 @@ INCLUDEPATH += .
 # cross-OS-platform, cross-Qt-version
 QT_DIR = $$[QT_INSTALL_PREFIX]
 LOCAL_DIR = ../common_lib/ 				# unix-liked platform: macx, unix, win32-msys-mingw
-
+DEFINES += __ALLOW_VR_FUNCS__
 MINGW_DIR = /mingw # platform: win32-msys-mingw
 win32 { # platform: win32-command-mingw
 	MINGW_DIR = c:/mingw
@@ -218,6 +218,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_colormapDialog.h \
     ../3drenderer/gradients.h \
+    ../vrrenderer/managesocket.h \
  \ #    ../3drenderer/v3d_hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
     ../3drenderer/line_box_intersection_check.h \
@@ -321,6 +322,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
     ../3drenderer/v3dr_control_signal.cpp \
+    ../vrrenderer/managesocket.cpp \
  \ #    ../3drenderer/v3d_hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
         ../imaging/v3d_imaging.cpp \

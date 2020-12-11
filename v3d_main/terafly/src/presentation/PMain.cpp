@@ -59,6 +59,7 @@
 #include <QMessageBox>
 #include <QFile>
 #include "../../../../vrrenderer/V3dR_Communicator.h"
+#include "../../../../vrrenderer/managesocket.h"
 
 
 
@@ -236,7 +237,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
-
+#ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
         collaborateMenu=menuBar->addMenu("Collaborate");
         loginAction=new QAction("Login",this);
@@ -261,8 +262,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         importAction->setEnabled(false);
         downAction->setEnabled(false);
         loadAction->setEnabled(false);
-        managesocket=0;
+        managesocket=nullptr;
 		Communicator=nullptr;
+#endif
     /*---------------------------------------------------*/
 
     /* ------------------------- "Options" menu -------------------------- */
@@ -3964,19 +3966,20 @@ void PMain::setLockMagnification(bool locked)
 }
 
 /*----------------collaborate mdoe-------------------*/
+#ifdef __ALLOW_VR_FUNCS__
 void PMain::login()
 {
     QSettings settings("HHMI", "Vaa3D");
     QString serverNameDefault = "";
     if(!settings.value("vr_serverName").toString().isEmpty())
         serverNameDefault = settings.value("vr_serverName").toString();
-    bool ok1;
-    QString serverName = QInputDialog::getText(0, "Server Address",
-        "Please enter the server address:", QLineEdit::Normal,
-        serverNameDefault, &ok1);
-    QString manageserver_Port;
-    QString userName;
 
+    bool ok1;
+    QString serverName;
+    QString userName;
+    serverName = QInputDialog::getText(0, "Server Address",
+            "Please enter the server address:", QLineEdit::Normal,
+            serverNameDefault, &ok1);
 
     if(!ok1||serverName.isEmpty())
     {
@@ -3985,65 +3988,43 @@ void PMain::login()
     }else
     {
         settings.setValue("vr_serverName", serverName);
-        QString PortDefault = "";
-        if(!settings.value("vr_PORT").toString().isEmpty())
-            PortDefault = settings.value("vr_PORT").toString();
-        bool ok2;
-         manageserver_Port = QInputDialog::getText(0, "Port",//
-            "Please enter server port:", QLineEdit::Normal,
-            PortDefault, &ok2);
 
-        if(!ok2 || manageserver_Port.isEmpty())//
+        QString userNameDefault = "";
+        if(!settings.value("vr_userName").toString().isEmpty())
+            userNameDefault = settings.value("vr_userName").toString();
+        bool ok3;
+         userName = QInputDialog::getText(0, "Lgoin Name",
+            "Please enter your login name:", QLineEdit::Normal,
+            userNameDefault, &ok3);
+
+        if(!ok3 || userName.isEmpty())
         {
             qDebug()<<"WRONG!EMPTY! ";
+            //return SendLoginRequest();
             return ;
-        }
-        else
-        {
-            settings.setValue("vr_PORT", manageserver_Port);//
-            QString userNameDefault = "";
-            if(!settings.value("vr_userName").toString().isEmpty())
-                userNameDefault = settings.value("vr_userName").toString();
-            bool ok3;
-             userName = QInputDialog::getText(0, "Lgoin Name",
-                "Please enter your login name:", QLineEdit::Normal,
-                userNameDefault, &ok3);
-
-            if(!ok3 || userName.isEmpty())
-            {
-                qDebug()<<"WRONG!EMPTY! ";
-                //return SendLoginRequest();
-                return ;
-            }else
-                settings.setValue("vr_userName", userName);
-        }
+        }else
+            settings.setValue("vr_userName", userName);
     }
 
-    managesocket=new ManageSocket(this);
+    managesocket=new ManageSocket();
     managesocket->ip=serverName;
-    managesocket->manageport=manageserver_Port;
     managesocket->name=userName;
-    managesocket->connectToHost(serverName,manageserver_Port.toInt());
-
+    managesocket->connectToHost(serverName,9999);
+    connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
     if( !managesocket->waitForConnected())
     {
         QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
         delete  managesocket;
+        managesocket=nullptr;
         return;
     }
     else{
-        qDebug()<<"send:"<<QString(userName+":login."+"\n");
-        connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-        managesocket->write(QString(userName+":login."+"\n").toUtf8());
-
         loginAction->setText(serverName);
         loginAction->setEnabled(false);
         logoutAction->setEnabled(true);
         importAction->setEnabled(true);
         downAction->setEnabled(true);
         loadAction->setEnabled(true);
-
     }
 }
 
@@ -4051,7 +4032,8 @@ void PMain::logout()
 {
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
-        managesocket->write(QString(managesocket->name+":logout."+"\n").toUtf8());
+        managesocket->flag=true;
+        managesocket->disconnectFromHost();
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4060,10 +4042,46 @@ void PMain::logout()
 
 void PMain::import()
 {
-
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
-        managesocket->write(QString(managesocket->name+":import."+"\n").toUtf8());
+        QString anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
+        QString apofile_path;
+        QString swcfile_path;
+        QString dirpath=QFileInfo(anofile_path).absolutePath();
+        QString filename=QFileInfo(anofile_path).baseName().split('.',QString::SkipEmptyParts).first().trimmed();
+
+        {
+            if(QFile(dirpath+"/"+filename+".apo").exists())
+                apofile_path=dirpath+"/"+filename+".apo";
+            else if(QFile(dirpath+"/"+filename+".ano.apo").exists())
+                apofile_path=dirpath+"/"+filename+".ano.apo";
+        }
+
+        {
+            if(QFile(dirpath+"/"+filename+".swc").exists())
+                swcfile_path=dirpath+"/"+filename+".swc";
+            if(QFile(dirpath+"/"+filename+".eswc").exists())
+                swcfile_path=dirpath+"/"+filename+".eswc";
+            else if(QFile(dirpath+"/"+filename+".ano.swc").exists())
+                swcfile_path=dirpath+"/"+filename+".ano.swc";
+            else if(QFile(dirpath+"/"+filename+".ano.eswc").exists())
+                swcfile_path=dirpath+"/"+filename+".ano.eswc";
+        }
+
+        {
+            if(!QDir(QCoreApplication::applicationDirPath()+"/tmp").exists())
+            {
+                QDir(QCoreApplication::applicationDirPath()).mkdir("tmp");
+            }
+            writeESWC_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc",readSWC_file(swcfile_path));
+            writeESWC_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo",readSWC_file(apofile_path));
+            swcfile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc";
+            apofile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo";
+        }
+        managesocket->sendFiles(
+            {anofile_path,apofile_path,swcfile_path},
+            {anofile_path.section('/',-1),apofile_path.section('/',-1),swcfile_path.section('/',-1)}
+                    );
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4071,13 +4089,12 @@ void PMain::import()
 
 }
 
+
 void PMain::download()
 {
-
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
-
-        managesocket->write(QString(managesocket->name+":down."+"\n").toUtf8());
+        managesocket->sendMsg(QString("down;data:CurrentFiles"));
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4095,54 +4112,43 @@ void PMain::load()
 
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
-        teraflyVRView->setDisabled(true);
-        collaborationVRView->setEnabled(true);
-        collautotrace->setEnabled(1);
-        qDebug()<<"-----------------load annotation----------";
-        connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
-        Communicator = new V3dR_Communicator;
+        managesocket->pmain=this;
+        managesocket->sendMsg(QString("load;data:CurrentFiles"));
+//        teraflyVRView->setDisabled(true);
+//        collaborationVRView->setEnabled(true);
+//        collautotrace->setEnabled(false);
+//        qDebug()<<"-----------------load annotation----------";
 
-//        disconnect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-//        connect(managesocket,SIGNAL(disconnected()),Communicator->socket,SLOT(disconnectFromHost()));//
-//        connect(Communicator->socket,SIGNAL(disconnected()),Communicator,SLOT(onDisconnected()));
-//        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-        cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
+//        Communicator = new V3dR_Communicator;
+//        Communicator->userName=managesocket->name;
+//        connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)));
+//        cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
         qDebug()<<"cur_win->getGLWidget() "<<cur_win->getGLWidget()<<" TeraflyCommunicator "<<Communicator;
-//        connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(disconnected()),
-//                managesocket,SIGNAL(deleteManageSocket()));
 
-        connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
-                cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
+//        connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
+//                cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
 
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString,int)),
-                cur_win->getGLWidget(),SLOT(CollaAddSeg(QString,int)));
+//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
+//                cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
 
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
-                cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
+//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
+//                cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
 
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString,int)),
-                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString,int)));
+//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
+//                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
 
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
-                cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
+//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
+//                cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
 
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString)),
-                cur_win->getGLWidget(),SLOT(CollretypeSeg(QString)));
+//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString)),
+//                cur_win->getGLWidget(),SLOT(CollretypeSeg(QString)));
 
-        connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(SendLoginRequest(QString,QString,QString)));
+//        connect(managesocket,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
 
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),managesocket,SLOT(messageMade()));
-        connect(this,SIGNAL(startASK(QString,int)),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(timerStart(QString,int)));
-
-        connect(managesocket,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
-        managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
 		//Set up Communicator Resolution info  for  convert Croods
-		int maxresindex = CImport::instance()->getResolutions()-1;
-		VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
-		Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
-
+        int maxresindex = CImport::instance()->getResolutions()-1;
+        VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
+        Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4151,11 +4157,12 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
-    QMessageBox::information(this,tr("Manage socket Connection is out!"),
-                     tr("Data has been safely stored.\nPlease restart vaa3d"),
-                     QMessageBox::Ok);
+    if(!managesocket->flag)
+        QMessageBox::information(this,tr("Manage socket Connection is out!"),
+                         tr("Data has been safely stored.\nPlease restart vaa3d"),
+                         QMessageBox::Ok);
     managesocket->deleteLater();
-
+    managesocket=nullptr;
     loginAction->setText("log in");
     loginAction->setEnabled(true);
     logoutAction->setEnabled(false);
@@ -4363,3 +4370,4 @@ void PMain::startAutoTrace()
     }
 
 }
+#endif

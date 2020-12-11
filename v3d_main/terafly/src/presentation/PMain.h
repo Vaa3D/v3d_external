@@ -588,7 +588,7 @@ class terafly::PMain : public QWidget
         * Carries progress bar informations (progress percentage and remaining minutes).
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
-
+#ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 public:
         ManageSocket * managesocket;
@@ -617,6 +617,7 @@ private:
         QString currentPath;
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
+        #endif
 };
 
 #endif // PMAIN_GUI_H
