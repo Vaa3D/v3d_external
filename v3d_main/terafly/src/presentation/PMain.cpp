@@ -4023,22 +4023,6 @@ void PMain::login()
         managesocket=nullptr;
         return;
     }
-
-}
-
-void PMain::logout()
-{
-    qDebug()<<"log out";
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        managesocket->flag=true;
-        qDebug()<<"disconnected";
-        managesocket->disconnectFromHost();
-//        managesocket->waitForDisconnected();
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
 }
 
 void PMain::import()
@@ -4118,11 +4102,28 @@ void PMain::load()
         return;
     }
 
+
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
+        qDebug()<<"load";
         managesocket->pmain=this;
         managesocket->sendMsg(QString("load;data:CurrentFiles"));
 
+    }else {
+        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+        return;
+    }
+}
+void PMain::logout()
+{
+    qDebug()<<"log out";
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    {
+//        if(this->Communicator)
+//            this->Communicator->socket->disconnectFromHost();
+        managesocket->flag=true;
+        qDebug()<<"disconnected";
+        managesocket->disconnectFromHost();
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4133,9 +4134,11 @@ void PMain::deleteManageSocket()
 {
     qDebug()<<"Manage socket disconnected";
     if(!managesocket->flag)
+    {
         QMessageBox::information(this,tr("Manage socket Connection is out!"),
-                         tr("Data has been safely stored.\nPlease restart vaa3d"),
-                         QMessageBox::Ok);
+                                 tr("Data has been safely stored.\nPlease restart vaa3d"),
+                                 QMessageBox::Ok);
+    }
     managesocket->pmain=nullptr;
     managesocket->deleteLater();
     managesocket=nullptr;
@@ -4162,8 +4165,12 @@ void PMain::onManageConnected()
 }
 void PMain::ColLoadANO(QString ANOfile)
 {
+    qDebug()<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
-    if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").entryList(QStringList()<<".ano").contains(ANOfile))
+    QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
+    QStringList anoList=QDir(loaddir).entryList(QDir::Files);
+    qDebug()<<anoList;
+    if(!anoList.contains(ANOfile))
     {
         qDebug()<<"cannot find load data "<<ANOfile;
         return;

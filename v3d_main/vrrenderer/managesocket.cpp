@@ -15,6 +15,7 @@ ManageSocket::ManageSocket(QObject *parent):QTcpSocket(parent)
     resetDataInfo();
     filepaths.clear();
     connect(this,SIGNAL(readyRead()),this,SLOT(onreadyRead()));
+//    connect(this,SIGNAL(disconnected()),this,SLOT(ondisconnect()));
 }
 void ManageSocket::onreadyRead()
 {
@@ -95,7 +96,8 @@ void ManageSocket::sendMsg(QString msg)
     dts<<qint32(totalsize)<<qint32(stringSize)<<qint32(0);
     block+=msg.toUtf8();
     this->write(block);
-    this->waitForBytesWritten();
+    this->flush();
+    qDebug()<<msg;
 }
 
 void ManageSocket::sendFiles(QStringList filePathList,QStringList fileNameList)
@@ -187,6 +189,8 @@ void ManageSocket::processMsg( QString &msg)
 		cur_win->getGLWidget()->TeraflyCommunicator = pmain->Communicator;
         pmain->Communicator->userName=name;
 
+        connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(connected()),
+                this,SLOT(onMessageConnect()));
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
                 cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
 
@@ -199,8 +203,8 @@ void ManageSocket::processMsg( QString &msg)
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
                 cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
 
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString)),
-                cur_win->getGLWidget(),SLOT(CollretypeSeg(QString)));
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
+                cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
 
         connect(this,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
         pmain->Communicator->socket->connectToHost(ip,port);
@@ -210,19 +214,8 @@ void ManageSocket::processMsg( QString &msg)
                              tr("connect failed"),
                              QMessageBox::Ok);
             return;
-        }else if(pmain->Communicator->socket->state()==QAbstractSocket::ConnectedState)
-        {
-            QMessageBox::information(0,tr("Manage "),
-                             tr("Connect sucess!"),
-                             QMessageBox::Ok);
         }
-        cur_win->getGLWidget()->TeraflyCommunicator=pmain->Communicator;
-        int maxresindex = terafly::CImport::instance()->getResolutions()-1;
-        IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
-        pmain->Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
-        pmain->teraflyVRView->setDisabled(false);
-        pmain->collaborationVRView->setEnabled(true);
-        pmain->collautotrace->setEnabled(false);
+
 //            connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
 //                    cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
     }
@@ -255,5 +248,19 @@ void ManageSocket::load(QListWidgetItem* item)
     listwidget=nullptr;
     qDebug()<<"delete lsitwidget";
 }
+
+void ManageSocket::onMessageConnect()
+{
+    int maxresindex = terafly::CImport::instance()->getResolutions()-1;
+    IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
+    pmain->Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
+    pmain->teraflyVRView->setDisabled(false);
+    pmain->collaborationVRView->setEnabled(true);
+    pmain->collautotrace->setEnabled(false);
+    QMessageBox::information(0,tr("Message "),
+                     tr("Connect sucess!"),
+                     QMessageBox::Ok);
+}
+
 
 

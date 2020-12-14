@@ -1,10 +1,11 @@
 ﻿#ifndef V3DR_COMMUNICATOR_H
 #define V3DR_COMMUNICATOR_H
 
-#include <QWidget>
+#include <QObject>
 #include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
+#include <QMessageBox>
 //#include"../3drenderer/v3dr_common.h"
 //#include <QRegExpValidator>
 //#ifdef _WIN32
@@ -13,7 +14,7 @@
 #include "../neuron_editing/v_neuronswc.h"
 #include "../basic_c_fun/v3d_interface.h"
 #include "fileserver.h"
-class V3dR_Communicator : public QWidget
+class V3dR_Communicator : public QObject
 {
     Q_OBJECT
     struct DataInfo
@@ -24,7 +25,7 @@ class V3dR_Communicator : public QWidget
         qint32 dataReadedSize;/*!<已经读取的数据的长度，当数据块被完全读取是等于dataSize*/
     };
 public:
-    explicit V3dR_Communicator();
+    explicit V3dR_Communicator(QObject *partent=nullptr);
     ~V3dR_Communicator()=default;
 //    void onReadySend(QString send_MSG,bool flag=1);//use sendMSG;
     /**

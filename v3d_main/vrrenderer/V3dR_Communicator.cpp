@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 
-V3dR_Communicator::V3dR_Communicator()
+V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 {
 	CreatorMarkerPos = 0;
 	CreatorMarkerRes = 0;
@@ -16,11 +16,14 @@ V3dR_Communicator::V3dR_Communicator()
     socket = new QTcpSocket(this);
     resetDataInfo();
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
+    connect(this->socket,SIGNAL(connected()),this,SLOT(onConnected()));
+    connect(socket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
 
 }
 
 void V3dR_Communicator::onReadyRead()
 {
+    qDebug()<<"on read";
     QDataStream in(socket);
     if(dataInfo.dataSize==0)
     {
@@ -45,7 +48,7 @@ void V3dR_Communicator::onReadyRead()
     if(socket->bytesAvailable()>=dataInfo.stringOrFilenameSize+dataInfo.filedataSize)
     {
         QString messageOrFileName=QString::fromUtf8(socket->read(dataInfo.stringOrFilenameSize),dataInfo.stringOrFilenameSize);
-
+        qDebug()<<"messageOrFileName= "<<messageOrFileName;
         if(dataInfo.filedataSize)
         {
             if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").exists())
@@ -58,7 +61,6 @@ void V3dR_Communicator::onReadyRead()
             file.write(socket->read(dataInfo.filedataSize));file.flush();
             file.close();
             list.push_back("11"+filePath);
-            emit this->load(filePath.section("/",-1));
         }else
         {
             list.push_back("00"+messageOrFileName);
@@ -84,6 +86,8 @@ void V3dR_Communicator::sendMsg(QString msg)
     block+=msg.toUtf8();
     socket->write(block);
     socket->flush();
+    qDebug()<<"send to servr:"<<block;
+    qDebug()<<"send to server:"<<block;
 }
 
 void V3dR_Communicator::processReaded(QStringList list)
@@ -91,20 +95,14 @@ void V3dR_Communicator::processReaded(QStringList list)
     QStringList filepaths;
     for(auto msg:list)
     {
+        qDebug()<<msg;
         if(msg.startsWith("00"))
         {
             emit msgtoprocess(msg.remove(0,2));
-        }else if(msg.startsWith("11"))
+        }else if(msg.startsWith("11")&&msg.contains("swc"))
         {
-            filepaths.push_back(msg.remove(0,2));
-        }
-    }
-    if(filepaths.size()==3)
-    {
-        if(filepaths[0].endsWith(".ano")&&filepaths[1].endsWith(".ano.apo")
-                &&filepaths[2].endsWith(".ano.eswc"))
-        {
-            emit this->load(filepaths[0]);
+            msg=msg.remove(0,2);
+            emit load(msg.section("/",-1).section(".",0,1));
         }
     }
 }
@@ -283,6 +281,7 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
 }
 
 void V3dR_Communicator::onConnected() {
+    qDebug()<<"Message onConnected";
     sendMsg(QString("/login:" +userName));
 }
 
@@ -301,7 +300,7 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 }
 
 void V3dR_Communicator::onDisconnected() {
-    QMessageBox::information(this,tr("Message socket Connection is out!"),
+    QMessageBox::information(0,tr("Message socket Connection is out!"),
                      tr("Data has been safely stored!\nif it is not you disconnect.\nPlease restart vaa3d"),
                      QMessageBox::Ok);
     deleteLater();
