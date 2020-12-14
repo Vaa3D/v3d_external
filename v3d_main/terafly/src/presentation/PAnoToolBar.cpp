@@ -379,16 +379,16 @@ void PAnoToolBar::buttonUndoClicked()
         CViewer* expl = CViewer::getCurrent();
         if(expl->getGLWidget()->TeraflyCommunicator)
         {
-            expl->getGLWidget()->TeraflyCommunicator->undo();
+            //expl->getGLWidget()->TeraflyCommunicator->undo();
         }else
         {
-            if(expl && expl->undoStack.canUndo())
-            {
-                expl->undoStack.undo();
-                if(!expl->undoStack.canUndo())
-                    buttonUndo->setEnabled(false);
-                buttonRedo->setEnabled(true);
-            }
+            //if(expl && expl->undoStack.canUndo())
+            //{
+            //    expl->undoStack.undo();
+            //    if(!expl->undoStack.canUndo())
+            //        buttonUndo->setEnabled(false);
+            //    buttonRedo->setEnabled(true);
+            //}
         }
 }
 

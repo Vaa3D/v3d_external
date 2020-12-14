@@ -53,7 +53,7 @@ class V3dR_Communicator;
 class terafly::PMain : public QWidget
 {
     Q_OBJECT
-
+    friend class ManageSocket;
 	protected: //20170623 RZC: change from private for merging mozak
 	//private:
 
@@ -212,8 +212,8 @@ class terafly::PMain : public QWidget
         QSpinBox* Tdim_sbox;
         QComboBox* resolution_cbox;
 #ifdef __ALLOW_VR_FUNCS__
-		QPushButton* teraflyVRView;
-		QPushButton* collaborationVRView;
+        QPushButton* teraflyVRView;
+        QPushButton* collaborationVRView;
 
         //huanglei
         QPushButton* collautotrace;
@@ -596,25 +596,24 @@ public:
 protected:
         QMenu* collaborateMenu;
         QAction* loginAction;
-        QAction* logoutAction;
         QAction* importAction;
         QAction* downAction;
         QAction* loadAction;
+        QAction* logoutAction;
 public slots:
         void login();
-        void logout();
         void import();
         void download();
         void load();
+        void logout();
         void deleteManageSocket();
-        void startAutoTrace();
         void ColLoadANO(QString ANOfile);
-
+//        void startAutoTrace();//自动算法
 signals:
-        void signal_communicator_read_res(QString ,XYZ*);
-        void startASK(QString,int);
+       // void signal_communicator_read_res(QString ,XYZ*);//读取自动算法的结果
+//        void startASK(QString,int);
 private:
-        QString currentPath;
+        QString currentPath;//for auto trace
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
         #endif

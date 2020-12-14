@@ -4267,8 +4267,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
         if(!fromserver&&w->TeraflyCommunicator!=nullptr)
         {
             w->SetupCollaborateInfo();
-            qDebug()<<"DASJKH";
-            w->TeraflyCommunicator->UpdateSendPoolNode(S.x,S.y,S.z,int(currentTraceType));
+            w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,int(currentTraceType),"TeraFly");
 //			w->TeraflyCommunicator->UpdateSendPoolNode2(S.x, S.y, S.z, (int)S.color.r, (int)S.color.g, (int)S.color.b);//Update by FJ 2020/6/14
         }
 //		updateLandmark();

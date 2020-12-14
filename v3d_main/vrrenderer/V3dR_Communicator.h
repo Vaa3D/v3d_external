@@ -13,7 +13,6 @@
 #include "../neuron_editing/v_neuronswc.h"
 #include "../basic_c_fun/v3d_interface.h"
 #include "fileserver.h"
-
 class V3dR_Communicator : public QWidget
 {
     Q_OBJECT
@@ -39,13 +38,13 @@ public:
      * @param seg
      * 发送加线segment到服务器
      */
-    void UpdateSendPoolNTList(V_NeuronSWC seg);
+    void UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype);
     /**
      * @brief UpdateDeleteMsg
      * @param seg
      * 发送减线segment到服务器
      */
-    void UpdateDeleteMsg(V_NeuronSWC seg);//this node is second node of seg,because this is esay to delete correct seg
+    void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype);//this node is second node of seg,because this is esay to delete correct seg
     /**
      * @brief UpdateSendPoolNode
      * @param x
@@ -54,7 +53,7 @@ public:
      * @param type
      * 发送加点的
      */
-    void UpdateSendPoolNode(float x,float y,float z,int type);
+    void UpdateAddMarkerMsg(float x,float y,float z,int type,QString clienttype);
     /**
      * @brief UpdateSendDelMarkerInfo
      * @param x
@@ -62,14 +61,14 @@ public:
      * @param z
      * 发送减点
      */
-    void UpdateSendDelMarkerInfo(float x,float y,float z,int type=-1);
+    void UpdateDelMarkerSeg(float x,float y,float z,QString clienttype);
     /**
      * @brief Updateretype
      * @param seg
      * @param type
      * 发送改颜色
      */
-    void Updateretype(V_NeuronSWC seg,int type);
+    void UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clienttype);
 
     /**
      * @brief V_NeuronSWCToSendMSG
@@ -126,6 +125,12 @@ signals:
     void delMarker(QString);//减marker信号 (type x y z)
     void retypeSeg(QString,int);//改线的颜色信号（type x y z;type x y z;...）
     //msg process end
+public:
+    void emitAddSeg(QString segInfo) {emit addSeg(segInfo);}
+    void emitDelSeg(QString segInfo) {emit delSeg(segInfo);}
+    void emitAddMarker(QString markerInfo) {emit addMarker(markerInfo);}
+    void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
+    void emitRetypeSeg(QString segInfo,int type) {emitRetypeSeg(segInfo,type);}
 private:
     /**
      * @brief resetDataInfo
@@ -143,17 +148,18 @@ private:
 
 public:
 //	float VR_globalScale;//used to
-    QString userName;
-    QTcpSocket* socket;
+    QString userName;//
+    QTcpSocket* socket;//
     double cur_createmode;
     int cur_chno;
 
-    XYZ ImageMaxRes;
+    XYZ ImageMaxRes;//
     XYZ ImageCurRes;
     XYZ ImageStartPoint;
 
     XYZ CreatorMarkerPos;
     int CreatorMarkerRes;
+
 
 //    XYZ AutoTraceNode;
 //    int flag_x,flag_y,flag_z;

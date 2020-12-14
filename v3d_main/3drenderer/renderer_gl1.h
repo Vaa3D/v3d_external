@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -537,7 +537,7 @@ public:
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
-     vector<XYZ> deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,vector <XYZ> global_list);
+     bool deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,float mindist);
      // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
      void selectMultiMarkersByStroke();
 

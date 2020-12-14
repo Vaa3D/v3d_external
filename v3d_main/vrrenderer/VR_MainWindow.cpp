@@ -15,18 +15,12 @@
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 	QWidget()
 {
-
 	userName="";
-	QRegExp regex("^[a-zA-Z]\\w+");
-//	socket = new QTcpSocket(this);
 	VR_Communicator = TeraflyCommunicator;
-    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
-    connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
-	connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySend()));
+
+//    connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySendSeg()));
     userName = TeraflyCommunicator->userName;
 	CURRENT_DATA_IS_SENT=false;
-    numreceivedmessage=0;//for debug hl
-    numsendmessage=0;
 }
 
 VR_MainWindow::~VR_MainWindow() {
@@ -34,10 +28,8 @@ VR_MainWindow::~VR_MainWindow() {
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
 }
 
-void VR_MainWindow::onReadySend()
+void VR_MainWindow::onReadySendSeg()
 {
-
-    qDebug()<<"VR_MainWindow::onReadySend()";
 	if(!CollaborationSendPool.empty())
 	{
 		cout<<"CollaborationSendPool.size()"<<CollaborationSendPool.size()<<endl;
@@ -45,31 +37,155 @@ void VR_MainWindow::onReadySend()
 		CollaborationSendPool.erase(CollaborationSendPool.begin());
 		if((send_MSG!="exit")&&(send_MSG!="quit"))
 		{
-            VR_Communicator->onReadySend("/seg:" + send_MSG);
+            VR_Communicator->sendMsg("/drawline:" + send_MSG);
 		}
-
 	}
 	else
     {
-		cout<<"CollaborationSendPool is empty";
-
+        cout<<"CollaborationSendPool is empty";
 	}
 }
-
-
 //void VR_MainWindow::onReadyRead()
 void VR_MainWindow::TVProcess(QString line)
-
 {
-    QRegExp deletecurveRex("^/del_curve:(.*)__(.*)$");
-    QRegExp markerRex("^/marker:(.*)__(.*)$");
-    QRegExp delmarkerRex("^/del_marker:(.*)__(.*)$");
+    QRegExp drawlineRex("^/drawline:(.*)__(.*)$");
+    QRegExp dellineRex("^/delline:(.*)$");
+    QRegExp addmarkerRex("^/addmarker:(.*)$");
+    QRegExp delmarkerRex("^/delmarker:(.*)$");
+    QRegExp retypelineRex("^/retypeline:(.*)__(.*)$");
 //	QRegExp dragnodeRex("^/drag_node:(.*)$");
-    QRegExp creatorRex("^/creator:(.*)__(.*)$");
-    QRegExp messageRex("^/seg:(.*)__(.*)$");
-    QRegExp retypeRex("^/retype:(.*)__(.*)$");
+//    QRegExp creatorRex("^/creator:(.*)__(.*)$");
     qDebug()<<"TeraVr reveive:"<<line;
     line=line.trimmed();
+    if (drawlineRex.indexIn(line) != -1) {
+        QStringList listwithheader=drawlineRex.cap(1).split(";",QString::SkipEmptyParts);
+        if(listwithheader.size()<1) return;
+
+        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+        if(user==userName)
+        {
+            pMainApplication->READY_TO_SEND=false;
+            CURRENT_DATA_IS_SENT=false;
+        }
+        int type=-1;
+        QVector<XYZ> coords;
+        {
+            for(int i=1;i<listwithheader.size();i++)
+            {
+                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
+                type=nodeinfo[0].toInt();
+            }
+        }
+        if(pMainApplication)
+        {
+            pMainApplication->UpdateNTList(coords,type);
+            //需要判断线是否在图像中，如果不在则调用全局处理
+        }
+    }else if (dellineRex.indexIn(line) != -1) {
+        QStringList listwithheader=drawlineRex.cap(1).split(";",QString::SkipEmptyParts);
+
+        if(listwithheader.size()<1) return;
+         QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+        if(user==userName)
+        {
+            pMainApplication->READY_TO_SEND=false;
+            CURRENT_DATA_IS_SENT=false;
+        }
+
+        QVector<XYZ> coords;
+        {
+            for(int i=1;i<listwithheader.size();i++)
+            {
+                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
+            }
+        }
+
+        if(pMainApplication)
+        {
+            if(!pMainApplication->DeleteSegment(coords,1*VRVolumeCurrentRes.x/VRvolumeMaxRes.x))
+            {
+                    listwithheader.removeAt(0);
+                    VR_Communicator->emitDelSeg(listwithheader.join(";"));
+                    //全局删线处理
+                  // auto v3dGL= terafly::CViewer::getCurrent()->getGLWidget();
+                   //v3dGL->deleteCurveInMaxRex(listwithheader.join(";"));
+            }
+        }
+    }else if (retypelineRex.indexIn(line)!=-1) {
+        QStringList listwithheader=drawlineRex.cap(1).split(";",QString::SkipEmptyParts);
+
+        if(listwithheader.size()<1) return;
+        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+        int type=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[2].trimmed().toInt();
+        if(user==userName)
+        {
+            pMainApplication->READY_TO_SEND=false;
+            CURRENT_DATA_IS_SENT=false;
+        }
+
+        QVector<XYZ> coords;
+        {
+            for(int i=1;i<listwithheader.size();i++)
+            {
+                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
+            }
+        }
+          if(pMainApplication)
+            {
+                if(!pMainApplication->retypeSegment(coords,1*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,type));
+                {
+                    listwithheader.removeAt(0);
+                    VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type);
+                    }
+            }
+     }else if (addmarkerRex.indexIn(line) != -1) {
+        QStringList listwithheader=addmarkerRex.cap(1).split(";",QString::SkipEmptyParts);
+
+        if(listwithheader.size()<1) return;
+        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+        if(user==userName)
+        {
+            pMainApplication->READY_TO_SEND=false;
+            CURRENT_DATA_IS_SENT=false;
+        }
+        if(listwithheader.size()<2) return;
+        else {
+            auto node=listwithheader[1].split(" ");
+            int type=node[0].toInt();
+            float mx = node.at(1).toFloat();
+            float my = node.at(2).toFloat();
+            float mz = node.at(3).toFloat();
+            XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+            pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
+            //需要判断点是否在图像中，如果不在则全局处理
+        }
+   }else if (delmarkerRex.indexIn(line) != -1) {
+        QStringList listwithheader=addmarkerRex.cap(1).split(";",QString::SkipEmptyParts);
+
+        if(listwithheader.size()<1) return;
+        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+        if(user==userName)
+        {
+            pMainApplication->READY_TO_SEND=false;
+            CURRENT_DATA_IS_SENT=false;
+        }
+        if(listwithheader.size()<2) return;
+        else {
+            auto node=listwithheader[1].split(" ");
+            float mx = node.at(1).toFloat();
+            float my = node.at(2).toFloat();
+            float mz = node.at(3).toFloat();
+            XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+            if(pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z))
+            {
+                listwithheader.removeAt(0);
+                VR_Communicator->emitDelMarker(listwithheader.join(";"));
+            }
+        }
+    }
 /*        if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
 
@@ -170,7 +286,7 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->SetupCurrentUserInformation(userName.toStdString(), VR_Communicator->Agents.at(i).colorType);
             }
         }
-        else*/ if (creatorRex.indexIn(line) != -1) {
+        else*/ /*if (creatorRex.indexIn(line) != -1) {
 			QString user = creatorRex.cap(1);
 			QStringList markerMSGs = creatorRex.cap(2).split(" ");
             qDebug()<<user<<" "<<userName;
@@ -230,171 +346,8 @@ void VR_MainWindow::TVProcess(QString line)
 			}
 
         }
-        else if (deletecurveRex.indexIn(line) != -1) {
-            VR_Communicator->receiveCNT++;
-            qDebug()<<"receive "<<VR_Communicator->receiveCNT;
-//            qDebug() << "deletecurve:"<<line;
-            QString user = deletecurveRex.cap(1);
-            QStringList delMSGs = deletecurveRex.cap(2).split("_",QString::SkipEmptyParts);
-            delMSGs.pop_front();
-            qDebug()<<user<<" "<<userName;
-
-            if(delMSGs.size()<1)
-            {
-                qDebug()<<"size < 2";
-                if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-                {
-                    pMainApplication->READY_TO_SEND=false;
-                    CURRENT_DATA_IS_SENT=false;
-                }
-                return;
-            }
-
-
-            for(int i=0;i<delMSGs.size();i++)
-            {
-                if(pMainApplication)
-                {
-                    QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
-                    qDebug()<<"xyz list::"<<xyz;
-                    if(xyz.size()<6) continue;
-					float resx = xyz.at(3).toFloat();
-					float resy = xyz.at(4).toFloat();
-					float resz = xyz.at(5).toFloat();
-					pMainApplication->collaborationTargetdelcurveRes.x = resx;
-					pMainApplication->collaborationTargetdelcurveRes.y = resy;
-					pMainApplication->collaborationTargetdelcurveRes.z = resz;
-
-                    XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-
-
-                    if(pMainApplication->DeleteSegment(node.x,node.y,node.z))
-                    {
-                                            node=Convertlocal2GloabelInRES(node);
-                        if(node.x<VRVolumeStartPoint.x ||node.y<VRVolumeStartPoint.y||node.z<VRVolumeStartPoint.z
-                                ||node.x>VRVolumeEndPoint.x||node.y>VRVolumeEndPoint.y||node.z>VRVolumeEndPoint.z)
-                        {
-                            VROutinfo.deletedcurvespos.push_back(XYZ(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat()));
-                            continue;
-                        }
-                    }
-                }
-             }
-            if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-            {
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-            }
-        }
-        else if (markerRex.indexIn(line) != -1) {
-            QString user = markerRex.cap(1);
-            QString markerPos=markerRex.cap(2).trimmed();
-            VR_Communicator->receiveCNT++;
-            qDebug()<<"receive "<<VR_Communicator->receiveCNT;
-            qDebug()<<user<<" "<<userName;
-            QStringList markerMSGs =markerPos .split(" ");
-            if(markerMSGs.size()<4)
-            {
-                qDebug()<<"size < 4";
-                if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-                {
-                    pMainApplication->READY_TO_SEND=false;
-                    CURRENT_DATA_IS_SENT=false;
-                }
-                return;
-            }
-
-            float mx = markerMSGs.at(0).toFloat();
-            float my = markerMSGs.at(1).toFloat();
-            float mz = markerMSGs.at(2).toFloat();
-            int type=markerMSGs.at(3).toInt();
-            int resx,resy,resz;
-
-            if(markerMSGs.size()>3)
-            {
-                 resx = markerMSGs.at(4).toFloat();
-                 resy = markerMSGs.at(5).toFloat();
-                 resz = markerMSGs.at(6).toFloat();
-            }
-
-            qDebug()<<"(markerMSGs.size()="<<(markerMSGs.size())<<markerMSGs;
-			if (pMainApplication)
-			{
-				pMainApplication->CollaborationTargetMarkerRes = XYZ(resx, resy, resz);
-				XYZ  converreceivexyz = ConvertreceiveCoords(mx, my, mz);
-
-                bool IsmarkerValid = false;
-                IsmarkerValid = pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
-                qDebug()<<"IsmarkerValid:"<<IsmarkerValid;
-                if(!IsmarkerValid)
-                {
-                    XYZ t=Convertlocal2GloabelInRES(converreceivexyz);
-//                    if(converreceivexyz.x<VRVolumeStartPoint.x || converreceivexyz.y<VRVolumeStartPoint.y||converreceivexyz.z<VRVolumeStartPoint.z
-//                            || converreceivexyz.x>VRVolumeEndPoint.x|| converreceivexyz.y>VRVolumeEndPoint.y||converreceivexyz.z>VRVolumeEndPoint.z)
-                        if(t.x<VRVolumeStartPoint.x || t.y<VRVolumeStartPoint.y||t.z<VRVolumeStartPoint.z
-                                || t.x>VRVolumeEndPoint.x|| t.y>VRVolumeEndPoint.y||t.z>VRVolumeEndPoint.z)
-                    {
-                        //图像块外
-                        qDebug() << "marker out of size:" << markerPos << "," <<VRVolumeStartPoint.x<<","<<VRVolumeStartPoint.y<<","<<VRVolumeStartPoint.z<<"\n"<<
-                        VRVolumeEndPoint.x<<","<<VRVolumeEndPoint.y<<","<<VRVolumeEndPoint.z<<"\n"
-                                 <<converreceivexyz.x<<","<<converreceivexyz.z<<","<<converreceivexyz.z;
-                        VROutinfo.deletemarkerspos.push_back(markerPos);
-                    }
-                    else
-                    {
-                            pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
-                    }
-
-                }
-
-                if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-                {
-                    pMainApplication->READY_TO_SEND = false;
-                    CURRENT_DATA_IS_SENT = false;
-                    qDebug() << "get message CURRENT_DATA_IS_SENT=false;";
-                }
-            }
-       }
-        else if (delmarkerRex.indexIn(line) != -1) {
-            QStringList delmarkerPOS = delmarkerRex.cap(2).split(" ",QString::SkipEmptyParts);
-                        QString user = delmarkerRex.cap(1);
-            if(delmarkerPOS.size()<3)
-            {
-                qDebug()<<"size < 3";
-                if(user.left(userName.count())==userName)
-                {
-
-                    CURRENT_DATA_IS_SENT=false;
-                }
-                return;
-            }
-
-            float mx = delmarkerPOS.at(0).toFloat();
-            float my = delmarkerPOS.at(1).toFloat();
-            float mz = delmarkerPOS.at(2).toFloat();
-            int resx = delmarkerPOS.at(3).toFloat();
-            int resy = delmarkerPOS.at(4).toFloat();
-            int resz = delmarkerPOS.at(5).toFloat();
-            qDebug()<<"user, "<<user<<"del marker: "<<mx<<" "<<my<<" "<<mz;
-            pMainApplication->CollaborationTargetMarkerRes = XYZ(resx,resy,resz);
-            XYZ  converreceivexyz = ConvertreceiveCoords(mx,my,mz);
-            if(user.left(userName.count())==userName)
-            {
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-            }
-//            int colortype=3;
-//            for(int i=0;i<VR_Communicator->Agents.size();i++)
-//            {
-//                if(user == VR_Communicator->Agents.at(i).name)
-//                {
-//                    colortype=VR_Communicator->Agents.at(i).colorType;
-//                    break;
-//                }
-//            }
-            pMainApplication->RemoveMarkerandSurface(converreceivexyz.x,converreceivexyz.y,converreceivexyz.z/*,3*/);
-        }
-        else /*if (dragnodeRex.indexIn(line) != -1) {
+        else */
+        /*if (dragnodeRex.indexIn(line) != -1) {
             QStringList dragnodePOS = dragnodeRex.cap(1).split(" ");
             if(dragnodePOS.size()<6)
             {
@@ -417,133 +370,10 @@ void VR_MainWindow::TVProcess(QString line)
             }
             pMainApplication->UpdateDragNodeinNTList(ntnum,swcnum,converreceivexyz.x,converreceivexyz.y,converreceivexyz.z);
         }
-        else */if (messageRex.indexIn(line) != -1) {
-            VR_Communicator->receiveCNT++;
 
-			qDebug() << "receive " << VR_Communicator->receiveCNT << " HKJHJK";
-            QString user=messageRex.cap(1);
-			qDebug() << user << " " << userName;
-            QStringList MSGs = messageRex.cap(2).split("_",QString::SkipEmptyParts);//list of nodes: seg header_node 1_node 2.....
-//            qDebug()<<MSGs[0];
-            QString message;
-            if(MSGs.size()<=1)
-            {
-                if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-                {
-                    pMainApplication->READY_TO_SEND=false;
-                    CURRENT_DATA_IS_SENT=false;
-                }
-                return;
-            }
-
-            qDebug()<<"======================messageindex in TeraVr begin=================";
-            QStringList REMSGS;
-            for(int i=1;i<MSGs.size();i++)
-                REMSGS.push_front(MSGs.at(i));
-            REMSGS.push_front(MSGs.at(0));
-//            qDebug()<<REMSGS;
-            int colortype=21;
-            for(int i=1;i<REMSGS.size();i++)
-            {
-                QString PointMSG=REMSGS.at(i);
-                QStringList poingmsg=PointMSG.trimmed().split(" ");
-
-                XYZ LocCoords=ConvertreceiveCoords(poingmsg[2].toFloat(),poingmsg[3].toFloat(),poingmsg[4].toFloat());
-                message+=QString(QString::number(i)+" "+poingmsg[1]+" "+QString::number(LocCoords.x)
-                        +" "+QString::number(LocCoords.y)+" "+QString::number(LocCoords.z)+" "+poingmsg[5]+" ");
-                if(i==1)
-                {
-                    message+=QString::number(-1);
-
-                }
-                else
-                    message+=QString::number(i-1);
-
-                if(i!=REMSGS.size()-1)
-                {
-                    message+=" ";
-
-                }else
-                {
-                }
-
-            }
-            qDebug()<<"======================messageindex in TeraVr end=================";
-            if(pMainApplication)
-            {
-                if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-                {
-                    qDebug()<<"reset";
-                    pMainApplication->READY_TO_SEND=false;
-                    CURRENT_DATA_IS_SENT=false;
-                }
-                pMainApplication->UpdateNTList(message,colortype);
-            }
-        }
-
-        else if (retypeRex.indexIn(line)!=-1)
-        {
-            VR_Communicator->receiveCNT++;
-            qDebug()<<"receive "<<VR_Communicator->receiveCNT;
-            QString user = deletecurveRex.cap(1);
-            QStringList delMSGs = deletecurveRex.cap(2).trimmed().split("_",QString::SkipEmptyParts);
-
-            if(delMSGs.size()<1)
-            {
-                qDebug()<<"size < 2";
-                if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-                {
-                    pMainApplication->READY_TO_SEND=false;
-                    CURRENT_DATA_IS_SENT=false;
-                }
-                return;
-            }
-            for(int i=0;i<delMSGs.size();i++)
-            {
-                if(pMainApplication)
-                {
-                    QStringList xyz=delMSGs.at(i).split(" ",QString::SkipEmptyParts);
-                    int type=xyz.at(3).toInt();
-                    qDebug()<<"xyz list::"<<xyz;
-                    if(xyz.size()<7) continue;
-                    float resx = xyz.at(4).toFloat();
-                    float resy = xyz.at(5).toFloat();
-                    float resz = xyz.at(6).toFloat();
-                    pMainApplication->collaborationTargetdelcurveRes.x = resx;
-                    pMainApplication->collaborationTargetdelcurveRes.y = resy;
-                    pMainApplication->collaborationTargetdelcurveRes.z = resz;
-
-                    XYZ node=ConvertreceiveCoords(xyz.at(0).toFloat(),xyz.at(1).toFloat(),xyz.at(2).toFloat());
-//                    if(pMainApplication->retypeSegment(node.x,node.y,node.z,type))
-//                    {
-//                        if(xyz.at(0).toFloat()<VRVolumeStartPoint.x ||xyz.at(1).toFloat()<VRVolumeStartPoint.y||xyz.at(2).toFloat()<VRVolumeStartPoint.z
-//                                ||xyz.at(0).toFloat()>VRVolumeEndPoint.x||xyz.at(1).toFloat()>VRVolumeEndPoint.y||xyz.at(2).toFloat()>VRVolumeEndPoint.z)
-//                        {
-//                            VROutinfo.retypeMsgs.push_back(delMSGs.at(i));
-//                            continue;
-//                        }
-//                    }
-
-                    if(!pMainApplication->retypeSegment(node.x,node.y,node.z,type))
-                    {
-                                            node=Convertlocal2GloabelInRES(node);
-                        if(node.x<VRVolumeStartPoint.x ||node.y<VRVolumeStartPoint.y||node.z<VRVolumeStartPoint.z
-                                ||node.x>VRVolumeEndPoint.x||node.y>VRVolumeEndPoint.y||node.z>VRVolumeEndPoint.z)
-                        {
-                            VROutinfo.retypeMsgs.push_back(delMSGs.at(i));
-                            continue;
-                        }
-                    }
-                }
-             }
-            if(user.left(userName.count())==userName||user.toInt()==userName.toInt()+1000)
-            {
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-            }
-        }
 }
-
+*/
+}
 int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,
      bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator* TeraflyCommunicator,
                                 XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
@@ -553,9 +383,6 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 	pMainApplication->mainwindow =pmain; 
 
 	pMainApplication->isOnline = isLinkSuccess;
-//    connect(pMainApplication,SIGNAL(undo()),VR_Communicator,SLOT(undo()));
-    //pMainApplication->loadedNT.listNeuron.clear();
-    //pMainApplication->loadedNT.hashNeuron.clear();
 	GetResindexandStartPointfromVRInfo(ImageVolumeInfo,MaxResolution);
 	if(ntlist != NULL)
 	{
@@ -604,151 +431,135 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		return 0;
 	}
 	SendVRconfigInfo();
+    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
+    connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
 	RunVRMainloop(zoomPOS);
-	//pMainApplication->Shutdown();
-		qDebug()<<"Now quit VR";
-		int _call_that_function = pMainApplication->postVRFunctionCallMode;
-		zoomPOS->x = pMainApplication->teraflyPOS.x;
-		zoomPOS->y = pMainApplication->teraflyPOS.y;
-		zoomPOS->z = pMainApplication->teraflyPOS.z;
+    pMainApplication->Shutdown();
+    qDebug()<<"Now quit VR";
+    int _call_that_function = pMainApplication->postVRFunctionCallMode;
+    zoomPOS->x = pMainApplication->teraflyPOS.x;
+    zoomPOS->y = pMainApplication->teraflyPOS.y;
+    zoomPOS->z = pMainApplication->teraflyPOS.z;
 
-		CreatorPos->x = VR_Communicator->CreatorMarkerPos.x;
-		CreatorPos->y = VR_Communicator->CreatorMarkerPos.y;
-		CreatorPos->z = VR_Communicator->CreatorMarkerPos.z;
-		CreatorRes = VR_Communicator->CreatorMarkerRes;
-		qDebug()<<"call that function is"<<_call_that_function;
-        disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
-        connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
-		delete pMainApplication;
-		pMainApplication=0;
-		return _call_that_function;
+    CreatorPos->x = VR_Communicator->CreatorMarkerPos.x;
+    CreatorPos->y = VR_Communicator->CreatorMarkerPos.y;
+    CreatorPos->z = VR_Communicator->CreatorMarkerPos.z;
+    CreatorRes = VR_Communicator->CreatorMarkerRes;
+    qDebug()<<"call that function is"<<_call_that_function;
+    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
+    connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
+    delete pMainApplication;
+    pMainApplication=0;
+    return _call_that_function;
 }
-void VR_MainWindow::SendHMDPosition()
-{
-	if(!pMainApplication) return;
-	//get hmd position
-	QString PositionStr=pMainApplication->getHMDPOSstr();
+//void VR_MainWindow::SendHMDPosition()
+//{
+//	if(!pMainApplication) return;
+//	//get hmd position
+//	QString PositionStr=pMainApplication->getHMDPOSstr();
 
-	//send hmd position
-    VR_Communicator->onReadySend(QString("/hmdpos:" + PositionStr));
-	//QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
-	//cout<<"socket resindex"<<ResIndex<<endl;
-	//qDebug()<<"QString resindex"<< QString("%1").arg(ResIndex);
-    VR_Communicator->onReadySend(QString("/ResIndex:" + QString("%1").arg(ResIndex) ));
-}
+//	//send hmd position
+//    //VR_Communicator->onReadySend(QString("/hmdpos:" + PositionStr));
+//	//QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
+//	//cout<<"socket resindex"<<ResIndex<<endl;
+//	//qDebug()<<"QString resindex"<< QString("%1").arg(ResIndex);
+//    //VR_Communicator->onReadySend(QString("/ResIndex:" + QString("%1").arg(ResIndex) ));
+//}
 void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 {
 	qDebug()<<"get into RunMainloop";
 	bool bQuit = false;
-	int sendHMDPOScout = 0;
-
-
 	while(!bQuit)
 	{
-//        qDebug()<<"beforw RunVRMainloop:"<<pMainApplication->READY_TO_SEND;
-	//update agents position if necessary
-	if(VR_Communicator->Agents.size()>0)
-		pMainApplication->SetupAgentModels(VR_Communicator->Agents);
-
 	//handle one rendering loop, and handle user interaction
 
 	bQuit=pMainApplication->HandleOneIteration();
 
-    if((pMainApplication->undo==false)&&(pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
+    if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
 	//READY_TO_SEND is set to true by the "trigger button up" event;
 	//client sends data to server (using onReadySend());
 	//server sends the same data back to client;
 	//READY_TO_SEND is set to false in onReadyRead();
     //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
 	{
-        qDebug()<<"get in "<<pMainApplication->m_modeGrip_R;
         if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
-            qDebug() <<"huanglei "<< pMainApplication->currentNT.listNeuron.size() << endl;
             QStringList waitsend=pMainApplication->NT2QString();
-            QString send_string=waitsend[0]+" "+QString::number(VRVolumeCurrentRes.x)+" "
-                    +QString::number(VRVolumeCurrentRes.y)+" "+QString::number(VRVolumeCurrentRes.z)+"_"+waitsend[1];
-            if(send_string.size()!=0)
-                CollaborationSendPool.emplace_back(send_string);
+            waitsend.push_back(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
 			pMainApplication->ClearCurrentNT();
-            emit sendPoolHead();
+            VR_Communicator->sendMsg("/drawline:"+waitsend.join(";"));
 			CURRENT_DATA_IS_SENT=true;
-			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
 		}
 		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
 			if (pMainApplication->SegNode_tobedeleted.x != 0 || pMainApplication->SegNode_tobedeleted.y != 0 || pMainApplication->SegNode_tobedeleted.z != 0)
 			{
-
-				QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-				QString SegNode_tobedeleted = QString("%1 %2 %3").arg(pMainApplication->SegNode_tobedeleted.x).arg(pMainApplication->SegNode_tobedeleted.y).arg(pMainApplication->SegNode_tobedeleted.z);
-				QString ConverteddelcurvePOS = ConvertsendCoords(SegNode_tobedeleted);
-                VR_Communicator->onReadySend(QString("/del_curve:TeraVR_" + ConverteddelcurvePOS + " " + QSCurrentRes));
+                QStringList result;
+                result.push_back(QString("%1 TeraVR %1 %2 %3").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                for(int i=0;i<pMainApplication->delseg.listNeuron.size();i++)
+                {
+                    result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->delseg.listNeuron[i].x)
+                    .arg(pMainApplication->delseg.listNeuron[i].y).arg(pMainApplication->delseg.listNeuron[i].z).arg(pMainApplication->delseg.listNeuron[i].type)));
+                }
+                VR_Communicator->sendMsg(QString("/delline:"+result.join(";")));
 				CURRENT_DATA_IS_SENT=true;
-			}
-
-			else if(pMainApplication->delName=="")
-			{
+                pMainApplication->SegNode_tobedeleted.x = 0;
+                pMainApplication->SegNode_tobedeleted.y = 0;
+                pMainApplication->SegNode_tobedeleted.z = 0;
+            }else{
                 pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
 				pMainApplication->ClearCurrentNT();
-			}
+            }
 		}
 		else if(pMainApplication->m_modeGrip_R==m_markMode)
 		{
 			qDebug() << "markerPos：" << pMainApplication->markerPOS;
             if(pMainApplication->markerPOS!="")
             {
-                QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
-                QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-                VR_Communicator->onReadySend(QString("/marker:" + ConvertedmarkerPOS +" "+QSCurrentRes ));
+                QStringList result;
+                QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPOS);
+                result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                result.push_back(ConvertedmarkerPOS);
+                if(ConvertedmarkerPOS.split(" ")[0]=="-1")
+                {
+                    VR_Communicator->sendMsg(QString("/delmarker:" + result.join(";")));
+                }else
+                {
+                    VR_Communicator->sendMsg(QString("/addmarker:" + result.join(",") ));
+                }
                 pMainApplication->markerPOS.clear();
                 CURRENT_DATA_IS_SENT=true;
             }
 		}
 
-		else if(pMainApplication->m_modeGrip_R==m_dragMode)
-		{
-			QString ConverteddragnodePOS = ConvertsendCoords(pMainApplication->dragnodePOS);
-            VR_Communicator->onReadySend(QString("/drag_node:" + ConverteddragnodePOS ));
-			CURRENT_DATA_IS_SENT=true;
-		}
+//        else if(pMainApplication->m_modeGrip_R==m_dragMode)
+//        {
+//            QString ConverteddragnodePOS = ConvertToMaxGlobal(pMainApplication->dragnodePOS);
+//            VR_Communicator->sendMsg(QString("/drag_node:" + ConverteddragnodePOS ));
+//            CURRENT_DATA_IS_SENT=true;
+//        }
 
-		else if (pMainApplication->m_modeGrip_R == _MovetoCreator)
-		{
-			QString ConvertedmarkerPOS = ConvertsendCoords(pMainApplication->markerPOS);
-			QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-			QString QCmainResIndex = QString("%1").arg(pMainApplication->CmainResIndex);
-			VR_Communicator->onReadySend(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
-            qDebug()<<QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex);
-			CURRENT_DATA_IS_SENT = true;
-        }		
-	}
+//        else if (pMainApplication->m_modeGrip_R == _MovetoCreator)
+//        {
+//            QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPOS);
 
-    if((pMainApplication->undo==true)&&(pMainApplication->READY_TO_SEND==true)/*&&(CURRENT_DATA_IS_SENT==false)*/)
-    {
-        qDebug()<<"---------undo TV------------";
-        VR_Communicator->undo();
-        CURRENT_DATA_IS_SENT=true;
-        pMainApplication->undo=false;
+//            QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
+//            QString QCmainResIndex = QString("%1").arg(pMainApplication->CmainResIndex);
+//            VR_Communicator->sendMsg(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
+//            qDebug()<<QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex);
+//            CURRENT_DATA_IS_SENT = true;
+//        }
     }
 
-	sendHMDPOScout++;
-
-	if(sendHMDPOScout%20==0)
-	{
-        sendHMDPOScout==0;
-        VR_Communicator->onReadySend(QString("/ask:message"));
+//        if((pMainApplication->undo==true)&&(pMainApplication->READY_TO_SEND==true)/*&&(CURRENT_DATA_IS_SENT==false)*/)
+//        {
+//            qDebug()<<"---------undo TV------------";
+//            //VR_Communicator->undo();
+//            CURRENT_DATA_IS_SENT=true;
+//            pMainApplication->undo=false;
+//        }
 	}
-//	if(sendHMDPOScout%60==0)
-//	{
-//		SendHMDPosition();
-//		sendHMDPOScout = 0;
-//	}
-
-
-	}
-	//QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
 
 	return ;
 }
@@ -862,7 +673,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 
 }
 
-QString VR_MainWindow::ConvertsendCoords(QString coords)
+QString VR_MainWindow::ConvertToMaxGlobal(QString coords)
 {
 	float x = coords.section(' ',0, 0).toFloat();  // str == "bin/myapp"
 	float y = coords.section(' ',1, 1).toFloat();  // str == "bin/myapp"
@@ -874,21 +685,21 @@ QString VR_MainWindow::ConvertsendCoords(QString coords)
 	x*=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
 	y*=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
 	z*=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
-    return QString("%1 %2 %3 %4").arg(x).arg(y).arg(z).arg(type);
+    return QString("%1 %2 %3 %4").arg(type).arg(x).arg(y).arg(z);
 }
 
 void VR_MainWindow::SendVRconfigInfo()
 {
-	float globalscale = pMainApplication->GetGlobalScale();
-	QString QSglobalscale = QString("%1").arg(globalscale); 
-    VR_Communicator->onReadySend(QString("/scale:" +  QSglobalscale ));
+	//float globalscale = pMainApplication->GetGlobalScale();
+	//QString QSglobalscale = QString("%1").arg(globalscale); 
+ //   VR_Communicator->onReadySend(QString("/scale:" +  QSglobalscale ));
 }
 
-XYZ VR_MainWindow:: Convertlocal2GloabelInRES(XYZ local)
+XYZ VR_MainWindow:: ConvertBlock2GloabelInRES(XYZ local)
 {
     return XYZ(local.x+VRVolumeStartPoint.x,local.y+VRVolumeStartPoint.y,local.z+VRVolumeStartPoint.z);
 }
-XYZ VR_MainWindow:: ConvertreceiveCoords(float x,float y,float z)
+XYZ VR_MainWindow:: ConvertMaxGlobal2LocalBlock(float x,float y,float z)
 {
 	//QString str1 = coords.section(' ',0, 0);  // str == "bin/myapp"
 	//QString str2 = coords.section(' ',1, 1);  // str == "bin/myapp"

@@ -1951,53 +1951,53 @@ void CMainApplication::SetupCurrentUserInformation(string name, int typeNumber)
 	}
 }
 
-void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
-{
-
-	for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
-	Agents_spheres.clear();//clear old spheres
-	Agents_spheresPos.clear();//clear old spheres pos
-	Agents_spheresColor.clear();//clear old spheres color
-
-	if(curAgents.size()<2) return;//size<2 means there is no other users,no need to generate sphere
-
-	for(int i=0;i<curAgents.size();i++)//generate new spheres as other users
-	{
-		if(curAgents.at(i).isItSelf==true) continue;//come to itself, skip
-		Agents_spheres.push_back(new Sphere((0.05f / m_globalScale),5,5));
-
-		int type =curAgents.at(i).colorType;//the color of sphere's surface should be the same as Agent's colortype
-		glm::vec3 agentclr=glm::vec3();
-		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
-		Agents_spheresColor.push_back(agentclr);
-
-		glm::mat4 mat_HMD = glm::mat4();
-		for (int k = 0; k < 4; k++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				mat_HMD[k][j]=curAgents.at(i).position[k*4+j];
-				//qDebug()<<"mat_HMD"<<k<<j<<mat_HMD[k][j]<<" ";
-			}
-		}
-		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
-		XYZ convertPOS = ConvertGlobaltoLocalCoords(posss.x,posss.y,posss.z);
-		//qDebug()<<" get agent POS "<<convertPOS.x<<" "<<convertPOS.y<<" "<<convertPOS.z;
-		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
-		//agentsPos  means user's position in world, posss[3] will always be 1.
-		//later may need orientation information
-		if(curAgents[i].name == collaboration_creator_name)
-		{
-			//qDebug()<<collaboration_creator_name<<"converted pos";
-			CollaborationCreatorPos = convertPOS;
-		}
-		Agents_spheresPos.push_back(agentsPos);
-	}
-
-}
+//void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
+//{
+//
+//	for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
+//	Agents_spheres.clear();//clear old spheres
+//	Agents_spheresPos.clear();//clear old spheres pos
+//	Agents_spheresColor.clear();//clear old spheres color
+//
+//	if(curAgents.size()<2) return;//size<2 means there is no other users,no need to generate sphere
+//
+//	for(int i=0;i<curAgents.size();i++)//generate new spheres as other users
+//	{
+//		if(curAgents.at(i).isItSelf==true) continue;//come to itself, skip
+//		Agents_spheres.push_back(new Sphere((0.05f / m_globalScale),5,5));
+//
+//		int type =curAgents.at(i).colorType;//the color of sphere's surface should be the same as Agent's colortype
+//		glm::vec3 agentclr=glm::vec3();
+//		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+//		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+//		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+//		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+//		Agents_spheresColor.push_back(agentclr);
+//
+//		glm::mat4 mat_HMD = glm::mat4();
+//		for (int k = 0; k < 4; k++)
+//		{
+//			for (int j = 0; j < 4; j++)
+//			{
+//				mat_HMD[k][j]=curAgents.at(i).position[k*4+j];
+//				//qDebug()<<"mat_HMD"<<k<<j<<mat_HMD[k][j]<<" ";
+//			}
+//		}
+//		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
+//		XYZ convertPOS = ConvertGlobaltoLocalCoords(posss.x,posss.y,posss.z);
+//		//qDebug()<<" get agent POS "<<convertPOS.x<<" "<<convertPOS.y<<" "<<convertPOS.z;
+//		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
+//		//agentsPos  means user's position in world, posss[3] will always be 1.
+//		//later may need orientation information
+//		if(curAgents[i].name == collaboration_creator_name)
+//		{
+//			//qDebug()<<collaboration_creator_name<<"converted pos";
+//			CollaborationCreatorPos = convertPOS;
+//		}
+//		Agents_spheresPos.push_back(agentsPos);
+//	}
+//
+//}
 
 void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type)
 {
@@ -2050,11 +2050,11 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 
 bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z/*,int type,bool asg*/)
 {
-    for(int i=0;i<drawnMarkerList.size();i++)
-    {
-        qDebug()<<i<<' '<<drawnMarkerList.at(i).x<<" "<<drawnMarkerList.at(i).y<<" "<<drawnMarkerList.at(i).z;
-    }
-    float dist=5;
+//    for(int i=0;i<drawnMarkerList.size();i++)
+//    {
+//        qDebug()<<i<<' '<<drawnMarkerList.at(i).x<<" "<<drawnMarkerList.at(i).y<<" "<<drawnMarkerList.at(i).z;
+//    }
+    float dist=1;
     int j=-1;
     for(int i=0;i<drawnMarkerList.size();i++)
     {
@@ -2066,26 +2066,13 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z/*,int t
         }
         else
         {
-//                if(!asg)
-//                {
-                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
-                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
-                    float dist0 = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
-                    if(dist0<dist){
-                        dist=dist0;j=i;
-                    }
-
-//        }else
-//                {
-//                XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
-
-//                dist = glm::sqrt((TaegetMarkx.x- x)*(TaegetMarkx.x- x)+(TaegetMarkx.y- y)*(TaegetMarkx.y- y)+(TaegetMarkx.z- z)*(TaegetMarkx.z- z));
-//                XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
-                qDebug()<<TaegetMarkx.x<<" "<<TaegetMarkx.y<<" "<<TaegetMarkx.z<<" "<<TargetResx.x<<" "<<TargetResx.y<<" "<<TargetResx.z<<" "<<dist;
-//                }
+            XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+            XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+            float dist0 = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+            if(dist0<dist){
+                dist=dist0;j=i;
+            }
         }
-			//cal the dist between pos & current node'position, then compare with the threshold
-
     }
     if(j!=-1)
     {
@@ -2096,39 +2083,9 @@ bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z/*,int t
         Markers_spheres.erase(Markers_spheres.begin()+j);
         Markers_spheresPos.erase(Markers_spheresPos.begin()+j);
         Markers_spheresColor.erase(Markers_spheresColor.begin()+j);
-        // deletedmarker = true;
         return true;
     }
 	return false;
-	//if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
-	//{
-	//	//empty all Markers_spheres,Markers_spheresPos,Markers_spheresColor
-	//	for (int i=0;i<Markers_spheres.size();i++) delete Markers_spheres[i];
-	//	Markers_spheres.clear();
-	//	Markers_spheresPos.clear();
-	//	Markers_spheresColor.clear();
-
-	//	//reset Markers_spheres,Markers_spheresPos,Markers_spheresColor
-	//	for(int i=0;i<drawnMarkerList.size();i++)
-	//	{
-	//		ImageMarker mk = drawnMarkerList.at(i);
-	//		Markers_spheres.push_back(new Sphere(mk.radius,10,10));
-	//		Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
-
-	//		glm::vec3 agentclr=glm::vec3();
-	//		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-	//		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-	//		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-	//		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
-	//		Markers_spheresColor.push_back(agentclr);
-	//	}
-	//}
-	//else
-	//{
-	//	//cannot find marker, do nothing
-	//	qDebug()<<"Cannot find any marker nearby.Please retry.";
-	//}
-
 }
 bool CMainApplication::RemoveMarkerandSurface2(double x,double y,double z,int type,bool asg)
 {
@@ -3271,20 +3228,23 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
                 }else
                 {
-                    //YANSEAOCHI
+
                     qDebug()<<"ONLINE";
-                    double dist=5;
+                    double dist=1;
+                    int index=-1;
                     for(int i=0;i<drawnMarkerList.size();i++)
                     {
                         ImageMarker markertemp = drawnMarkerList.at(i);
                         double dist0 = glm::sqrt((markertemp.x- m_v4DevicePose.x)*(markertemp.x- m_v4DevicePose.x)+(markertemp.y- m_v4DevicePose.y)*(markertemp.y- m_v4DevicePose.y)
                                          +(markertemp.z- m_v4DevicePose.z)*(markertemp.z- m_v4DevicePose.z));
                         if(dist0<dist)
-                        {markerPOS=QString("%1 %2 %3 %4").arg(markertemp.x).arg(markertemp.y).arg(markertemp.z).arg(19);}
-
+                        {
+                            index=i;dist=dist0;
+                        }
                     }
-                    qDebug()<<"markePOs1="<<markerPOS;
-                    if(markerPOS=="")
+                    if(index>=0)
+                    {markerPOS=QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);}
+                    else
                     {
 
                         bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
@@ -6702,40 +6662,15 @@ QString  CMainApplication::getHMDPOSstr()
 
 QStringList CMainApplication::NT2QString()
 {
-	//char messageBuff[8000]="";
-	//for(int i=0;(i<sketchNT.listNeuron.size())&&(i<120);i++)
-	//{
-	//	char packetbuff[300];
-	//	NeuronSWC S_temp;
-	//	S_temp=sketchNT.listNeuron.at(i);
-	//	sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,S_temp.x,S_temp.y,S_temp.z,S_temp.r,S_temp.pn);
-	//	std::strcat(messageBuff,packetbuff);
-	//}
-	//string str_temp=messageBuff;
-	//QString str=QString::fromStdString(str_temp);
-	////QString str="hello world";
-	//return str;
-//    string messageBuff="TeraVR";
-    QString messageBuff;
+    QStringList messageBuff;
+
     for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
-
-//    for(int i=currentNT.listNeuron.size()-1;i>=0;i--)
 	{
-        QString packetbuff;
-        packetbuff.clear();
-		NeuronSWC S_temp;
-		S_temp=currentNT.listNeuron.at(i);
+        auto S_temp=currentNT.listNeuron[i];
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
-        packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(S_temp.n).arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z).arg(S_temp.r).arg(S_temp.parent);
-//		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld_",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
-		messageBuff +=packetbuff;
+        messageBuff.push_back(QString("%1 %2 %3 %4").arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
 	}
-
-//	QString str=QString::fromStdString(messageBuff);
-    QStringList resQSL;
-    resQSL.push_back(QString("TeraVR"));
-    resQSL.push_back(messageBuff);
-    return resQSL;
+    return messageBuff;
 }
 
 QStringList CMainApplication::UndoNT2QString()
@@ -6762,65 +6697,28 @@ QStringList CMainApplication::UndoNT2QString()
 
 }
 
-void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
+void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to be changed to AddtoNTList( , )
 {	
-	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
-	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
-	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
-	NeuronSWC S_temp;
 	NeuronTree newTempNT;
 	newTempNT.listNeuron.clear();
 	newTempNT.hashNeuron.clear();
-    qDebug()<<"type"<<type<<endl;
-	//each segment has a unique ID storing as its name
-	newTempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
-	for(int i=0;i<str_size;i++)
+    for(int i=0;i<coords.size();i++)
 	{
-		qsl[i].truncate(99);
-		//qDebug()<<qsl[i];
-		int iy = i%7;
-		if (iy==0)
-		{
-			S_temp.n = qsl[i].toInt();
-		}
-		else if (iy==1)
-		{
-            S_temp.type = qsl[i].toInt();
-		}
-		else if (iy==2)
-		{
-			S_temp.x = qsl[i].toFloat();
-
-		}
-		else if (iy==3)
-		{
-			S_temp.y = qsl[i].toFloat();
-
-		}
-		else if (iy==4)
-		{
-			S_temp.z = qsl[i].toFloat();
-
-		}
-		else if (iy==5)
-		{
-			S_temp.r = qsl[i].toFloat();
-
-		}
-		else if (iy==6)
-		{
-			S_temp.pn = qsl[i].toInt();
-			//converted received NT XYZ coords
-//			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);//转化为全局变量？
-//			S_temp.x = tempxyz.x;
-//			S_temp.y = tempxyz.y;
-//			S_temp.z = tempxyz.z;
-			newTempNT.listNeuron.append(S_temp);
-			newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
-		}
-	}//*/
+        NeuronSWC S_temp;
+        S_temp.n=i+1;
+        S_temp.x=coords[i].x;
+        S_temp.x=coords[i].y;
+        S_temp.x=coords[i].z;
+        S_temp.type=type;
+        S_temp.r=1;
+        if(i==0)
+            S_temp.pn=-1;
+        else
+            S_temp.pn=i;
+        newTempNT.listNeuron.append(S_temp);
+        newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
+    }
 	sketchedNTList.push_back(newTempNT);
-	qDebug()<<"receieved nt name is "<<newTempNT.name;
 	SetupSingleMorphologyLine(sketchedNTList.size()-1,0);
 }
 void CMainApplication::ClearCurrentNT()
@@ -6840,7 +6738,6 @@ void CMainApplication::ClearCurrentNT()
 }
 QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 {
-
 	QString ntnametofind="";
 	if(sketchedNTList.size()<1) return ntnametofind;
 
@@ -6850,7 +6747,6 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
         for(int j=0;j<nt.listNeuron.size();j++)
         {
             NeuronSWC SS0=nt.listNeuron.at(j);
-
         }
 
 		for(int j=0;j<nt.listNeuron.size();j++)
@@ -6859,11 +6755,11 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			SS0 = nt.listNeuron.at(j);
 			float dist;
 			if(isOnline == false)
-			dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+                dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
 			else 
 			{
-				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x, dPOS.y, dPOS.z, collaborationTargetdelcurveRes);
-				XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,collaborationTargetdelcurveRes);
+                XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x, dPOS.y, dPOS.z, CollaborationMaxResolution);
+                XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,CollaborationMaxResolution);
 				dist = glm::sqrt((TargetresdPOS.x-TargetresSS0POS.x)*(TargetresdPOS.x-TargetresSS0POS.x)+(TargetresdPOS.y-TargetresSS0POS.y)*(TargetresdPOS.y-TargetresSS0POS.y)+(TargetresdPOS.z-TargetresSS0POS.z)*(TargetresdPOS.z-TargetresSS0POS.z));
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
@@ -6874,7 +6770,7 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
                 SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
                 SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
                 SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
-                UndoNT=nt;
+                delseg=nt;
 
 				return ntnametofind;
 			}
@@ -6934,8 +6830,6 @@ void CMainApplication::UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,f
 
 bool CMainApplication::DeleteSegment(QString segName)
 {
-	//delete the segment that match with segName
-	//cout<<"segname is "<<endl;
 	if(segName=="") return false;//segName="" will do nothing
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
@@ -6953,79 +6847,107 @@ bool CMainApplication::DeleteSegment(QString segName)
 	//if cannot find any matches,return false
 	return false;
 }
-bool CMainApplication::retypeSegment(float x,float y,float z,int type)
+bool CMainApplication::retypeSegment(QVector<XYZ> coords,float dist,int type)
 {
-    bool res=0;
-    qDebug()<<"in retype seg VR";
-    for(int i=0;i<sketchedNTList.size();i++)
+
+    int index=findseg(coords,dist);
+    if(index>=0)
     {
-        NeuronTree nt0=sketchedNTList.at(i);
-        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
-
-        NeuronSWC ss0=nt0.listNeuron.at(1);
-
-        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01||sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01)
+        for(int i=0;i<sketchedNTList[index].listNeuron.size();i++)
         {
-            qDebug()<<"VR FIND seg"<<i;
-            sketchedNTList.removeAt(i);
-            SetupSingleMorphologyLine(i, 2);
-            res=1;
-            NeuronTree newTempNT;
-            newTempNT.listNeuron.clear();
-            newTempNT.hashNeuron.clear();
-            newTempNT.name=nt0.name;
-            for(int k=0;k<nt0.listNeuron.size();k++)
-            {
-                NeuronSWC S_temp;
-                S_temp.n=nt0.listNeuron.at(k).n;
-                S_temp.type=type;
-                S_temp.x=nt0.listNeuron.at(k).x;
-                S_temp.y=nt0.listNeuron.at(k).y;
-                S_temp.z=nt0.listNeuron.at(k).z;
-                S_temp.r=nt0.listNeuron.at(k).r;
-
-                    S_temp.pn=nt0.listNeuron.at(k).pn;
-                S_temp.level=nt0.listNeuron.at(k).level;
-                S_temp.creatmode=nt0.listNeuron.at(k).creatmode;
-                S_temp.timestamp=nt0.listNeuron.at(k).timestamp;
-                S_temp.tfresindex=nt0.listNeuron.at(k).tfresindex;
-                newTempNT.listNeuron.append(S_temp);
-                newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
-            }
-            sketchedNTList.push_front(newTempNT);break;
+            sketchedNTList[index].listNeuron[i].type=type;
         }
+        SetupSingleMorphologyLine(index, 2);
+        return true;
+    }else
+    {
+        return false;
     }
-    return res;
+
+//    bool res=0;
+//    qDebug()<<"in retype seg VR";
+//    for(int i=0;i<sketchedNTList.size();i++)
+//    {
+//        NeuronTree nt0=sketchedNTList.at(i);
+//        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
+
+//        NeuronSWC ss0=nt0.listNeuron.at(1);
+
+//        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01||sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01)
+//        {
+//            qDebug()<<"VR FIND seg"<<i;
+//            sketchedNTList.removeAt(i);
+//            SetupSingleMorphologyLine(i, 2);
+//            res=1;
+//            NeuronTree newTempNT;
+//            newTempNT.listNeuron.clear();
+//            newTempNT.hashNeuron.clear();
+//            newTempNT.name=nt0.name;
+//            for(int k=0;k<nt0.listNeuron.size();k++)
+//            {
+//                NeuronSWC S_temp;
+//                S_temp.n=nt0.listNeuron.at(k).n;
+//                S_temp.type=type;
+//                S_temp.x=nt0.listNeuron.at(k).x;
+//                S_temp.y=nt0.listNeuron.at(k).y;
+//                S_temp.z=nt0.listNeuron.at(k).z;
+//                S_temp.r=nt0.listNeuron.at(k).r;
+
+//                    S_temp.pn=nt0.listNeuron.at(k).pn;
+//                S_temp.level=nt0.listNeuron.at(k).level;
+//                S_temp.creatmode=nt0.listNeuron.at(k).creatmode;
+//                S_temp.timestamp=nt0.listNeuron.at(k).timestamp;
+//                S_temp.tfresindex=nt0.listNeuron.at(k).tfresindex;
+//                newTempNT.listNeuron.append(S_temp);
+//                newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
+//            }
+//            sketchedNTList.push_front(newTempNT);break;
+//        }
+//    }
+//    return res;
 }
 
-bool CMainApplication::DeleteSegment(float x,float y,float z)
+int CMainApplication::findseg(QVector<XYZ> coords,float dist)
 {
-    bool res=0;
-    qDebug()<<"in del seg VR";
+    int index=-1;
     for(int i=0;i<sketchedNTList.size();i++)
     {
-        NeuronTree nt0=sketchedNTList.at(i);
-        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
-
-        NeuronSWC ss0=nt0.listNeuron.at(1);
-
-//        if(sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01/*||sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=2.0*/)
-//        {
-//            qDebug()<<"VR FIND last 2";
-//            sketchedNTList.removeAt(i);
-
-//			SetupSingleMorphologyLine(i, 2);
-//            res=1;break;
-//        }
-        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01||sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01)
+        NeuronTree nt=sketchedNTList.at(i);
+        if(nt.listNeuron.size()!=coords.size()) continue;
+        float sum=0;
+        for(int j=0;j<nt.listNeuron.size();j++)
         {
-            qDebug()<<"VR FIND seg"<<i;
-            sketchedNTList.removeAt(i);
-            SetupSingleMorphologyLine(i, 2);
-            res=1;break;
+            sum+=sqrt(pow(nt.listNeuron[j].x-coords[j].x,2)
+                      +pow(nt.listNeuron[j].y-coords[j].y,2)
+                      +pow(nt.listNeuron[j].z-coords[j].z,2));
         }
+        if(sum/nt.listNeuron.size()<dist)
+            index=i;
+       reverse(coords.begin(),coords.end());
+       sum=0;
+       for(int j=0;j<nt.listNeuron.size();j++)
+       {
+           sum+=sqrt(pow(nt.listNeuron[j].x-coords[j].x,2)
+                     +pow(nt.listNeuron[j].y-coords[j].y,2)
+                     +pow(nt.listNeuron[j].z-coords[j].z,2));
+       }
+       if(sum/nt.listNeuron.size()<dist)
+           index=i;
     }
-    return res;
+    return  index;
+}
+bool CMainApplication::DeleteSegment(QVector<XYZ> coords,float dist)
+{
+    int index=findseg(coords,dist);
+    if(index>=0)
+    {
+        sketchedNTList.removeAt(index);
+        SetupSingleMorphologyLine(index, 2);
+        return true;
+    }else
+    {
+        return false;
+    }
 }
 
 void CMainApplication::SetDeleteSegmentColor(QString segName)
@@ -7231,12 +7153,6 @@ void CMainApplication::SetupRenderModels()//question: purpose? for the 16 VR dev
 	}
 
 }
-
-
-
-
-
-
 void CMainApplication::RefineSketchCurve(int direction, NeuronTree &oldNTree, NeuronTree &newNTree)
 {
 	unsigned char* data1d = 0;

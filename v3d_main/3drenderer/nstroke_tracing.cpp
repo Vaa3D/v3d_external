@@ -3309,11 +3309,12 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 	if (w->TeraflyCommunicator)
 	{
         vector<V_NeuronSWC> vector_VSWC;
-        vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode(vector_VSWC);
-		cout << "DeleteNodes.size = " << DeleteNodes.size() << endl;
+        curImg->ExtractDeletingNode(vector_VSWC);
+
 		w->SetupCollaborateInfo();
-        w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
-        w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);//ask QiLi
+//        w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
+        for(auto seg:vector_VSWC)
+            w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
 	}
@@ -3325,41 +3326,50 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 //    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
 }
 
-vector<XYZ> Renderer_gl1::deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,vector <XYZ> global_list)
+bool Renderer_gl1::deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,float mindist)
 {
-    vector<XYZ> global_list_not_process;
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {/*editinput = 3;*/curImg = v3dr_getImage4d(_idep);}
 
-    for(int i=0;i<local_list.size();i++)
+    auto blocksegs=curImg->tracedNeuron.seg;
+    int index=-1;
+    for(int i=0;i<blocksegs.size();i++)
     {
-        XYZ delcurve=local_list[i];
-        bool findit=false;
-        for(int j=0;j<curImg->tracedNeuron.seg.size();j++)
+        if(local_list.size()!=blocksegs[i].row.size()) continue;
+        auto seg=blocksegs[i].row;
+        float sum=0;
+        for(int j=0;j<local_list.size();j++)
         {
-            int v_ns_size=curImg->tracedNeuron.seg.at(j).row.size();
-            if(v_ns_size<2) continue;
-            V_NeuronSWC_unit node0,node1;
-            node0=curImg->tracedNeuron.seg.at(j).row.at(1);
-            node1=curImg->tracedNeuron.seg.at(j).row.at(v_ns_size-2);
-            if(sqrt(pow(node0.x-delcurve.x,2)+pow(node0.y-delcurve.y,2)+pow(node0.z-delcurve.z,2))<=0.1||sqrt(pow(node1.x-delcurve.x,2)+pow(node1.y-delcurve.y,2)+pow(node1.z-delcurve.z,2))<=0.1)
-            {
-                qDebug()<<"find seg "<<j;findit=true;
-                curImg->tracedNeuron.seg[j].to_be_deleted=true;
-                break;
-            }
+            sum+=sqrt(pow(local_list[j].x-seg[j].x,2)+pow(local_list[j].y-seg[j].y,2)
+                      +pow(local_list[j].z-seg[j].z,2));
         }
-        if(!findit) global_list_not_process.push_back(global_list[i]);
+        if(sum/local_list.size()<mindist)
+        {
+            mindist=sum/local_list.size();
+            index=i;
+        }
+        reverse(local_list.begin(),local_list.end());
+        sum=0;
+        for(int j=0;j<local_list.size();j++)
+        {
+            sum+=sqrt(pow(local_list[j].x-seg[j].x,2)+pow(local_list[j].y-seg[j].y,2)
+                      +pow(local_list[j].z-seg[j].z,2));
+        }
+        if(sum/local_list.size()<mindist)
+        {
+            mindist=sum/local_list.size();
+            index=i;
+        }
     }
-    std::vector<V_NeuronSWC>::iterator iter = curImg->tracedNeuron.seg.begin();
-    while (iter != curImg->tracedNeuron.seg.end())
-        if (iter->to_be_deleted)
-            iter = curImg->tracedNeuron.seg.erase(iter);
-        else
-           ++iter;
-    curImg->update_3drenderer_neuron_view(w, this);
-    return global_list_not_process;
+    if(index>=0)
+    {
+        curImg->tracedNeuron.seg.erase(curImg->tracedNeuron.seg.begin()+index);
+        return true;
+    }else
+    {
+        return false;
+    }
 }
 
 // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
@@ -6992,7 +7002,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                                              "\n 2 -- axon (red)"
                                                              "\n 3 -- dendrite (blue)"
                                                              "\n 4 -- apical dendrite (purple)"
-                                                             "\n else -- custom \n"),
+                                                             "\n else(<21) -- custom \n"),
                                                  currentTraceType, 0, 100, 1, &ok);
 #endif
         }
@@ -7024,261 +7034,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
             //the following (20-275) is used for matlab heat map. 120209 by WYN
             {0,0,131}, //20
-            {0,0,135},
-            {0,0,139},
-            {0,0,143},
-            {0,0,147},
-            {0,0,151},
-            {0,0,155},
-            {0,0,159},
-            {0,0,163},
-            {0,0,167},
-            {0,0,171},
-            {0,0,175},
-            {0,0,179},
-            {0,0,183},
-            {0,0,187},
-            {0,0,191},
-            {0,0,195},
-            {0,0,199},
-            {0,0,203},
-            {0,0,207},
-            {0,0,211},
-            {0,0,215},
-            {0,0,219},
-            {0,0,223},
-            {0,0,227},
-            {0,0,231},
-            {0,0,235},
-            {0,0,239},
-            {0,0,243},
-            {0,0,247},
-            {0,0,251},
-            {0,0,255},
-            {0,3,255},
-            {0,7,255},
-            {0,11,255},
-            {0,15,255},
-            {0,19,255},
-            {0,23,255},
-            {0,27,255},
-            {0,31,255},
-            {0,35,255},
-            {0,39,255},
-            {0,43,255},
-            {0,47,255},
-            {0,51,255},
-            {0,55,255},
-            {0,59,255},
-            {0,63,255},
-            {0,67,255},
-            {0,71,255},
-            {0,75,255},
-            {0,79,255},
-            {0,83,255},
-            {0,87,255},
-            {0,91,255},
-            {0,95,255},
-            {0,99,255},
-            {0,103,255},
-            {0,107,255},
-            {0,111,255},
-            {0,115,255},
-            {0,119,255},
-            {0,123,255},
-            {0,127,255},
-            {0,131,255},
-            {0,135,255},
-            {0,139,255},
-            {0,143,255},
-            {0,147,255},
-            {0,151,255},
-            {0,155,255},
-            {0,159,255},
-            {0,163,255},
-            {0,167,255},
-            {0,171,255},
-            {0,175,255},
-            {0,179,255},
-            {0,183,255},
-            {0,187,255},
-            {0,191,255},
-            {0,195,255},
-            {0,199,255},
-            {0,203,255},
-            {0,207,255},
-            {0,211,255},
-            {0,215,255},
-            {0,219,255},
-            {0,223,255},
-            {0,227,255},
-            {0,231,255},
-            {0,235,255},
-            {0,239,255},
-            {0,243,255},
-            {0,247,255},
-            {0,251,255},
-            {0,255,255},
-            {3,255,251},
-            {7,255,247},
-            {11,255,243},
-            {15,255,239},
-            {19,255,235},
-            {23,255,231},
-            {27,255,227},
-            {31,255,223},
-            {35,255,219},
-            {39,255,215},
-            {43,255,211},
-            {47,255,207},
-            {51,255,203},
-            {55,255,199},
-            {59,255,195},
-            {63,255,191},
-            {67,255,187},
-            {71,255,183},
-            {75,255,179},
-            {79,255,175},
-            {83,255,171},
-            {87,255,167},
-            {91,255,163},
-            {95,255,159},
-            {99,255,155},
-            {103,255,151},
-            {107,255,147},
-            {111,255,143},
-            {115,255,139},
-            {119,255,135},
-            {123,255,131},
-            {127,255,127},
-            {131,255,123},
-            {135,255,119},
-            {139,255,115},
-            {143,255,111},
-            {147,255,107},
-            {151,255,103},
-            {155,255,99},
-            {159,255,95},
-            {163,255,91},
-            {167,255,87},
-            {171,255,83},
-            {175,255,79},
-            {179,255,75},
-            {183,255,71},
-            {187,255,67},
-            {191,255,63},
-            {195,255,59},
-            {199,255,55},
-            {203,255,51},
-            {207,255,47},
-            {211,255,43},
-            {215,255,39},
-            {219,255,35},
-            {223,255,31},
-            {227,255,27},
-            {231,255,23},
-            {235,255,19},
-            {239,255,15},
-            {243,255,11},
-            {247,255,7},
-            {251,255,3},
-            {255,255,0},
-            {255,251,0},
-            {255,247,0},
-            {255,243,0},
-            {255,239,0},
-            {255,235,0},
-            {255,231,0},
-            {255,227,0},
-            {255,223,0},
-            {255,219,0},
-            {255,215,0},
-            {255,211,0},
-            {255,207,0},
-            {255,203,0},
-            {255,199,0},
-            {255,195,0},
-            {255,191,0},
-            {255,187,0},
-            {255,183,0},
-            {255,179,0},
-            {255,175,0},
-            {255,171,0},
-            {255,167,0},
-            {255,163,0},
-            {255,159,0},
-            {255,155,0},
-            {255,151,0},
-            {255,147,0},
-            {255,143,0},
-            {255,139,0},
-            {255,135,0},
-            {255,131,0},
-            {255,127,0},
-            {255,123,0},
-            {255,119,0},
-            {255,115,0},
-            {255,111,0},
-            {255,107,0},
-            {255,103,0},
-            {255,99,0},
-            {255,95,0},
-            {255,91,0},
-            {255,87,0},
-            {255,83,0},
-            {255,79,0},
-            {255,75,0},
-            {255,71,0},
-            {255,67,0},
-            {255,63,0},
-            {255,59,0},
-            {255,55,0},
-            {255,51,0},
-            {255,47,0},
-            {255,43,0},
-            {255,39,0},
-            {255,35,0},
-            {255,31,0},
-            {255,27,0},
-            {255,23,0},
-            {255,19,0},
-            {255,15,0},
-            {255,11,0},
-            {255,7,0},
-            {255,3,0},
-            {255,0,0},
-            {251,0,0},
-            {247,0,0},
-            {243,0,0},
-            {239,0,0},
-            {235,0,0},
-            {231,0,0},
-            {227,0,0},
-            {223,0,0},
-            {219,0,0},
-            {215,0,0},
-            {211,0,0},
-            {207,0,0},
-            {203,0,0},
-            {199,0,0},
-            {195,0,0},
-            {191,0,0},
-            {187,0,0},
-            {183,0,0},
-            {179,0,0},
-            {175,0,0},
-            {171,0,0},
-            {167,0,0},
-            {163,0,0},
-            {159,0,0},
-            {155,0,0},
-            {151,0,0},
-            {147,0,0},
-            {143,0,0},
-            {139,0,0},
-            {135,0,0},
-            {131,0,0},
-            {127,0,0} //275
                 };
         currentMarkerColor.r=neuron_type_color[node_type][0];
         currentMarkerColor.g=neuron_type_color[node_type][1];
@@ -7426,13 +7181,11 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             if(w->TeraflyCommunicator)
             {
                 for(int cnt=0;cnt<idlist.size();cnt++)
-                if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
-                {
-                    vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[idlist.at(cnt)].row);
-                    int rowsize=row.size();
-                    w->SetupCollaborateInfo();
-                    w->TeraflyCommunicator->Updateretype(row.at(rowsize-2),node_type);
-                }
+                    if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
+                    {
+                        w->SetupCollaborateInfo();
+                        w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
+                    }
             }
 
 

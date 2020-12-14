@@ -1172,8 +1172,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	if(collaborationVRView)
 	    connect(collaborationVRView, SIGNAL(clicked()), this, SLOT(doCollaborationVRView()));
 
-    if(collautotrace)
-        connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
+//    if(collautotrace)
+//        connect(collautotrace,SIGNAL(clicked()),this,SLOT(startAutoTrace()));
 #endif
 
     connect(PR_button, SIGNAL(clicked()), this, SLOT(PRbuttonClicked()));
@@ -2911,7 +2911,6 @@ void PMain::doCollaborationVRView()
             cur_win->view3DWidget->doimageVRView(true);
             this->show();
 			qDebug() << "PMain Show";
-
         }
     }
     catch(...)
@@ -4005,10 +4004,15 @@ void PMain::login()
         }else
             settings.setValue("vr_userName", userName);
     }
-
+    if(managesocket)
+    {
+        managesocket->deleteLater();
+        managesocket=nullptr;
+    }
     managesocket=new ManageSocket();
     managesocket->ip=serverName;
     managesocket->name=userName;
+    qDebug()<<"servername = "<<serverName<<" username "<<userName;
     managesocket->connectToHost(serverName,9999);
     connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
     if( !managesocket->waitForConnected())
@@ -4019,20 +4023,23 @@ void PMain::login()
         return;
     }
     else{
+        QMessageBox::information(this, tr("Success"),tr("connect sucess"));
         loginAction->setText(serverName);
         loginAction->setEnabled(false);
         logoutAction->setEnabled(true);
         importAction->setEnabled(true);
         downAction->setEnabled(true);
         loadAction->setEnabled(true);
+//        qDebug()<<QFile("C:/Users/BrainTell/Desktop/v3d_external/v3d_main/v3d/release/tmp/pre_18454_00468_wyp_stamp_2020_11_17_14_39.ano.apo").readAll();
     }
 }
 
 void PMain::logout()
 {
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
     {
         managesocket->flag=true;
+        managesocket->pmain=nullptr;
         managesocket->disconnectFromHost();
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
@@ -4047,48 +4054,55 @@ void PMain::import()
         QString anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
         QString apofile_path;
         QString swcfile_path;
-        QString dirpath=QFileInfo(anofile_path).absolutePath();
-        QString filename=QFileInfo(anofile_path).baseName().split('.',QString::SkipEmptyParts).first().trimmed();
-
         {
-            if(QFile(dirpath+"/"+filename+".apo").exists())
-                apofile_path=dirpath+"/"+filename+".apo";
-            else if(QFile(dirpath+"/"+filename+".ano.apo").exists())
-                apofile_path=dirpath+"/"+filename+".ano.apo";
-        }
-
-        {
-            if(QFile(dirpath+"/"+filename+".swc").exists())
-                swcfile_path=dirpath+"/"+filename+".swc";
-            if(QFile(dirpath+"/"+filename+".eswc").exists())
-                swcfile_path=dirpath+"/"+filename+".eswc";
-            else if(QFile(dirpath+"/"+filename+".ano.swc").exists())
-                swcfile_path=dirpath+"/"+filename+".ano.swc";
-            else if(QFile(dirpath+"/"+filename+".ano.eswc").exists())
-                swcfile_path=dirpath+"/"+filename+".ano.eswc";
-        }
-
-        {
-            if(!QDir(QCoreApplication::applicationDirPath()+"/tmp").exists())
+            QString dirpath=QFileInfo(anofile_path).absolutePath();
+            QString filename=QFileInfo(anofile_path).baseName().split('.',QString::SkipEmptyParts).first().trimmed();
             {
-                QDir(QCoreApplication::applicationDirPath()).mkdir("tmp");
+                if(QFile(dirpath+"/"+filename+".apo").exists())
+                    apofile_path=dirpath+"/"+filename+".apo";
+                else if(QFile(dirpath+"/"+filename+".ano.apo").exists())
+                    apofile_path=dirpath+"/"+filename+".ano.apo";
             }
-            writeESWC_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc",readSWC_file(swcfile_path));
-            writeESWC_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo",readSWC_file(apofile_path));
-            swcfile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc";
-            apofile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo";
+
+            {
+                if(QFile(dirpath+"/"+filename+".swc").exists())
+                    swcfile_path=dirpath+"/"+filename+".swc";
+                if(QFile(dirpath+"/"+filename+".eswc").exists())
+                    swcfile_path=dirpath+"/"+filename+".eswc";
+                else if(QFile(dirpath+"/"+filename+".ano.swc").exists())
+                    swcfile_path=dirpath+"/"+filename+".ano.swc";
+                else if(QFile(dirpath+"/"+filename+".ano.eswc").exists())
+                    swcfile_path=dirpath+"/"+filename+".ano.eswc";
+            }
+
+            {
+                if(!QDir(QCoreApplication::applicationDirPath()+"/tmp").exists())
+                {
+                    QDir(QCoreApplication::applicationDirPath()).mkdir("tmp");
+                }
+                writeESWC_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc",readSWC_file(swcfile_path));
+                writeAPO_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo",readAPO_file(apofile_path));
+                swcfile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc";
+                apofile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo";
+            }
         }
-        managesocket->sendFiles(
-            {anofile_path,apofile_path,swcfile_path},
-            {anofile_path.section('/',-1),apofile_path.section('/',-1),swcfile_path.section('/',-1)}
-                    );
+        QStringList filepaths;
+        QStringList filenames;
+
+        filepaths.push_back(anofile_path);
+        filepaths.push_back(apofile_path);
+        filepaths.push_back(swcfile_path);
+        filenames.push_back(anofile_path.section('/',-1));
+        filenames.push_back(apofile_path.section('/',-1));
+        filenames.push_back(swcfile_path.section('/',-1));
+        qDebug()<<"send file paths "<<filepaths;
+        managesocket->sendFiles(filepaths,filenames);
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
     }
 
 }
-
 
 void PMain::download()
 {
@@ -4114,41 +4128,7 @@ void PMain::load()
     {
         managesocket->pmain=this;
         managesocket->sendMsg(QString("load;data:CurrentFiles"));
-//        teraflyVRView->setDisabled(true);
-//        collaborationVRView->setEnabled(true);
-//        collautotrace->setEnabled(false);
-//        qDebug()<<"-----------------load annotation----------";
 
-//        Communicator = new V3dR_Communicator;
-//        Communicator->userName=managesocket->name;
-//        connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)));
-//        cur_win->getGLWidget()->TeraflyCommunicator=Communicator;
-        qDebug()<<"cur_win->getGLWidget() "<<cur_win->getGLWidget()<<" TeraflyCommunicator "<<Communicator;
-
-//        connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
-//                cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
-
-//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
-//                cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
-
-//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
-//                cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
-
-//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
-//                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
-
-//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
-//                cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
-
-//        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString)),
-//                cur_win->getGLWidget(),SLOT(CollretypeSeg(QString)));
-
-//        connect(managesocket,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
-
-		//Set up Communicator Resolution info  for  convert Croods
-        int maxresindex = CImport::instance()->getResolutions()-1;
-        VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
-        Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4178,171 +4158,167 @@ void PMain::deleteManageSocket()
 void PMain::ColLoadANO(QString ANOfile)
 {
     CViewer *cur_win = CViewer::getCurrent();
-    QFileInfoList anofileList=QDir("./clouddata").entryInfoList(QStringList()<<".ano");
-    for(int i=0;i<anofileList.size();i++)
+    if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").entryList(QStringList()<<".ano").contains(ANOfile))
     {
-        if(anofileList.at(i).baseName()==ANOfile.remove(".ano"))
-        {
-            ANOfile=anofileList.at(i).baseName()+".ano";
-        }
+        qDebug()<<"cannot find load data "<<ANOfile;
+        return;
     }
-    QString ANOpath="./clouddata/"+ANOfile;
-    if(!ANOpath.isEmpty())
+    QString ANOpath=QCoreApplication::applicationDirPath()+"/loaddata/"+ANOfile;
+
+    annotationsPathLRU = ANOpath.toStdString();
+    CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
+    NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
+
+    // save current cursor and set wait cursor
+    QCursor cursor = cur_win->view3DWidget->cursor();
+    if(PAnoToolBar::isInstantiated())
+        PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+    CViewer::setCursor(Qt::WaitCursor);
+
+    // load
+    cur_win->loadAnnotations();
+    saveAnnotationsAction->setEnabled(true);
+    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+    virtualSpaceSizeMenu->setEnabled(false);
+    myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
+
+    // reset saved cursor
+    CViewer::setCursor(cursor);
+    if(PAnoToolBar::isInstantiated())
+        PAnoToolBar::instance()->setCursor(cursor);
+    annotationChanged = true;
+    updateOverview();
+    //删除加载的文件
     {
-        annotationsPathLRU = ANOpath.toStdString();
-        CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
-        NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
+        //        QRegExp anoExp("(.*).ano");
+        //        QString tmp;
+        //        if(anoExp.indexIn(ANOpath)!=-1)
+        //        {
+        //            tmp=anoExp.cap(1);
+        //        }
 
-        // save current cursor and set wait cursor
-        QCursor cursor = cur_win->view3DWidget->cursor();
-        if(PAnoToolBar::isInstantiated())
-            PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-        CViewer::setCursor(Qt::WaitCursor);
+        //        delete load .ANO
+        //        QFile *f = new QFile(tmp+".ano");
+        //        if(f->exists())
+        //            f->remove();
+        //        delete f;
+        //        f=0;
 
-        // load
-        cur_win->loadAnnotations();
-        saveAnnotationsAction->setEnabled(true);
-        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
-        virtualSpaceSizeMenu->setEnabled(false);
-        myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
+        //        f = new QFile(tmp+".ano.eswc");
+        //        if(f->exists())
+        //            f->remove();
+        //        delete f;
+        //        f=0;
 
-        // reset saved cursor
-        CViewer::setCursor(cursor);
-        if(PAnoToolBar::isInstantiated())
-            PAnoToolBar::instance()->setCursor(cursor);
-        annotationChanged = true;
-        updateOverview();
-
-        QRegExp anoExp("(.*).ano");
-        QString tmp;
-        if(anoExp.indexIn(ANOpath)!=-1)
-        {
-            tmp=anoExp.cap(1);
-        }
-
-//        delete load .ANO
-//        QFile *f = new QFile(tmp+".ano");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
-
-//        f = new QFile(tmp+".ano.eswc");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
-
-//        f = new QFile(tmp+".ano.apo");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
-        V3dR_GLWidget::noTerafly=false;
-        emit startASK(ANOfile,500);
-
+        //        f = new QFile(tmp+".ano.apo");
+        //        if(f->exists())
+        //            f->remove();
+        //        delete f;
+        //        f=0;
     }
+    V3dR_GLWidget::noTerafly=false;
+
 }
 
-void PMain::startAutoTrace()
-{
-    const int blocksize=128;
-    CViewer *cur_win = CViewer::getCurrent();
-    if(cur_win->getGLWidget()->TeraflyCommunicator)
-    {
-        if(cur_win->getGLWidget()->TeraflyCommunicator->socket->state()!=QAbstractSocket::ConnectedState)
-        {
-            QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-            return;
-        }
-
-        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
-        XYZ center;//Global
-
-        center.x=int(tempNode.x);
-//        center.y=tempNode.y;
-//        center.x=tempNode.x+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_x);
-        center.y=int(tempNode.y+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_y));
-//        center.z=tempNode.z+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_z);
-        center.z=int(tempNode.z);
-
-        CellAPO centerAPO;
-        centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
-        QList <CellAPO> List_APO_Write;
-        List_APO_Write.push_back(centerAPO);
-        writeAPO_file("V3APO.apo",List_APO_Write);//get .apo to get .v3draw
-
-        QList <ImageMarker> tmp1;
-        ImageMarker startPoint;//Local
-
-        startPoint.x=blocksize/2+1;
-//        startPoint.y=blocksize/2;
-//        startPoint.x=tempNode.x-center.x+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_x*2;
-        startPoint.y=tempNode.y-center.y+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_y*2;
-//        startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
-         startPoint.z=blocksize/2+1.5;
-
-        qDebug()<<"global start point:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
-        qDebug()<<"flag:"<<cur_win->getGLWidget()->TeraflyCommunicator->flag_x<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_y<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
-        qDebug()<<"global center point:"<<center.x<<" "<<center.y<<" "<<center.z;
-        qDebug()<<"local start point:"<<startPoint.x<<" "<<startPoint.y<<" "<<startPoint.z;
-
-
-        tmp1.push_back(startPoint);
-        writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
-        XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
-                        tempNode,
-                        startPoint
-                        };
-
-        QRegExp pathEXP("(.*)RES(.*)");
-        QString path;
-        if(pathEXP.indexIn(currentPath)!=-1)
-        {
-            path=pathEXP.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
-        }
-
-        qDebug()<<"path:"<<path;
-
-        QDir dir("./");
-        if(!dir.cd("testV3draw"))
-        {
-            dir.mkdir("testV3draw");
-        }
-        dir=QDir("testV3draw");
-        {
-            QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
-            for(int i=0;i<file_list.size();i++)
-            {
-                    QFile *f=new QFile(file_list[i].filePath());
-                    if(f->exists()) f->remove();
-                    delete  f;
-            }
-        }
-        QProcess p;       
-        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
-                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
-                  <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
-        QString rawFileName=QString("%1.000_%2.000_%3.000.v3draw").arg(center.x).arg(center.y).arg(center.z);
-
-        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_thresholding/Simple_Adaptive_Thresholding/ada_threshold.dll"
-                            <<"/f"<<"adath"<<"/i"<<"./testV3draw/"+rawFileName<<"/o"<<QString("./testV3draw/thres_"+rawFileName));
-//        cout<<"e.g. v3d -x threshold -f adath -i input.raw -o output.raw -p 5 3"<<endl;
-
-        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
-                  <<"/f"<<"app2"<<"/i"<< QString("./testV3draw/thres_"+rawFileName) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
-
-         QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
-         QRegExp APP2Exp("(.*)_app2.swc");
-         for(int i=0;i<file_list.size();i++)
-         {
-//             qDebug()<<file_list.at(i).fileName();
-             if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1&&file_list.at(i).fileName().contains(QString("thres_"+rawFileName)))
-             {
-                 emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
-                 break;
-             }
-         }
+//void PMain::startAutoTrace()
+//{
+//    const int blocksize=128;
+//    CViewer *cur_win = CViewer::getCurrent();
+//    if(cur_win->getGLWidget()->TeraflyCommunicator)
+//    {
+//        if(cur_win->getGLWidget()->TeraflyCommunicator->socket->state()!=QAbstractSocket::ConnectedState)
+//        {
+//            QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+//            return;
+//        }
+//
+////        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
+//        XYZ center;//Global
+//
+//        center.x=int(tempNode.x);
+////        center.y=tempNode.y;
+////        center.x=tempNode.x+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_x);
+//        center.y=int(tempNode.y+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_y));
+////        center.z=tempNode.z+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_z);
+//        center.z=int(tempNode.z);
+//
+//        CellAPO centerAPO;
+//        centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
+//        QList <CellAPO> List_APO_Write;
+//        List_APO_Write.push_back(centerAPO);
+//        writeAPO_file("V3APO.apo",List_APO_Write);//get .apo to get .v3draw
+//
+//        QList <ImageMarker> tmp1;
+//        ImageMarker startPoint;//Local
+//
+//        startPoint.x=blocksize/2+1;
+////        startPoint.y=blocksize/2;
+////        startPoint.x=tempNode.x-center.x+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_x*2;
+//        startPoint.y=tempNode.y-center.y+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_y*2;
+////        startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
+//         startPoint.z=blocksize/2+1.5;
+//
+//        qDebug()<<"global start point:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
+//        qDebug()<<"flag:"<<cur_win->getGLWidget()->TeraflyCommunicator->flag_x<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_y<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
+//        qDebug()<<"global center point:"<<center.x<<" "<<center.y<<" "<<center.z;
+//        qDebug()<<"local start point:"<<startPoint.x<<" "<<startPoint.y<<" "<<startPoint.z;
+//
+//
+//        tmp1.push_back(startPoint);
+//        writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
+//        XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+//                        tempNode,
+//                        startPoint
+//                        };
+//
+//        QRegExp pathEXP("(.*)RES(.*)");
+//        QString path;
+//        if(pathEXP.indexIn(currentPath)!=-1)
+//        {
+//            path=pathEXP.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
+//        }
+//
+//        qDebug()<<"path:"<<path;
+//
+//        QDir dir("./");
+//        if(!dir.cd("testV3draw"))
+//        {
+//            dir.mkdir("testV3draw");
+//        }
+//        dir=QDir("testV3draw");
+//        {
+//            QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
+//            for(int i=0;i<file_list.size();i++)
+//            {
+//                    QFile *f=new QFile(file_list[i].filePath());
+//                    if(f->exists()) f->remove();
+//                    delete  f;
+//            }
+//        }
+//        QProcess p;       
+//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
+//                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
+//                  <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
+//        QString rawFileName=QString("%1.000_%2.000_%3.000.v3draw").arg(center.x).arg(center.y).arg(center.z);
+//
+//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_thresholding/Simple_Adaptive_Thresholding/ada_threshold.dll"
+//                            <<"/f"<<"adath"<<"/i"<<"./testV3draw/"+rawFileName<<"/o"<<QString("./testV3draw/thres_"+rawFileName));
+////        cout<<"e.g. v3d -x threshold -f adath -i input.raw -o output.raw -p 5 3"<<endl;
+//
+//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+//                  <<"/f"<<"app2"<<"/i"<< QString("./testV3draw/thres_"+rawFileName) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
+//
+//         QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
+//         QRegExp APP2Exp("(.*)_app2.swc");
+//         for(int i=0;i<file_list.size();i++)
+//         {
+////             qDebug()<<file_list.at(i).fileName();
+//             if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1&&file_list.at(i).fileName().contains(QString("thres_"+rawFileName)))
+//             {
+//                 emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
+//                 break;
+//             }
+//         }
 //        QRegExp v3drawExp("(.*).v3draw");
 //        if(v3drawExp.indexIn(file_list.at(0).fileName())!=-1)
 //        {
@@ -4367,7 +4343,7 @@ void PMain::startAutoTrace()
 
 //             }
 //        }
-    }
+//    }
 
-}
+//}
 #endif

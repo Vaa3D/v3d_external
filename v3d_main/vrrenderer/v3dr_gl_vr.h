@@ -164,7 +164,7 @@ public:
 	bool BInitGL();
 	bool BInitCompositor();
 
-	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
+    void UpdateNTList(QVector<XYZ> coords, int type);//add the receieved message/NT to sketchedNTList
     QStringList NT2QString(); // prepare the message to be sent from currentNT.
     QStringList UndoNT2QString();
     XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
@@ -174,14 +174,15 @@ public:
 	bool HandleOneIteration();//used in collaboration mode 
 	QString getHMDPOSstr();//get current HMD position, and prepare the message to be sent to server
 	void SetupCurrentUserInformation(string name, int typeNumber);
-	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
+	//void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
 	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
 	void SetDeleteSegmentColor(QString segName);
-    bool DeleteSegment(float x,float y,float z);
-    bool retypeSegment(float x,float y,float z,int type);
+    bool DeleteSegment(QVector<XYZ> coords,float dist);
+    int findseg(QVector<XYZ> coords,float dist);
+    bool retypeSegment(QVector<XYZ> coords,float dist,int type);
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);
@@ -260,6 +261,7 @@ public:
 	static ModelControlR  m_modeGrip_R;
 	static ModeControlSettings m_modeGrip_L;
 	QString delName;
+    NeuronTree delseg;
 	QString markerPOS;
 	QString delmarkerPOS;
 	QString delcurvePOS;

@@ -742,7 +742,7 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 			qDebug() << QString("V3dR_MainWindow::changeEvent, ActivationChange-> %1").arg(title_prefix+" [" + data_title + "]");
 
 			if (glWidget)  glWidget->updateTool();
-            glWidget->batchprocessDel();
+            //glWidget->deleteCurveInMaxRex();
             if(glWidget->TeraflyCommunicator)
             {
                 qDebug()<<glWidget<<" "<<glWidget->TeraflyCommunicator<<" "<<glWidget->data_title;

@@ -1,9 +1,10 @@
-#ifndef MANAGESOCKET_H
+﻿#ifndef MANAGESOCKET_H
 #define MANAGESOCKET_H
 
 #include <QTcpSocket>
 #include <QListWidgetItem>
 #include "../terafly/src/presentation/PMain.h"
+
 /**
  * @brief The ManageSocket class
  * 继承自QObject
@@ -48,11 +49,6 @@ public:
      * 如果文件是tmp文件夹中的，发送后即将自动删除文件
      */
     void sendFiles(QStringList filePathList,QStringList fileNameList);
-
-    QString ip;
-    QString name;
-    bool flag=false;/*!<判断是否是自己退出*/
-    PMain *pmain=null_ptr;
 public slots:
     /**
      * @brief onreadyRead
@@ -64,10 +60,6 @@ public slots:
     void onreadyRead();
     void download(QListWidgetItem*);
     void load(QListWidgetItem*);
-private:
-    DataInfo dataInfo;/*!<用于控制数据接受的数据结构*/
-    QStringList msgs;/*!<command队列*/
-    QStringList filepaths;/*!<文件路径队列*/
 private:
     /**
      * @brief resetDataInfo
@@ -88,18 +80,24 @@ private:
      * 下载："(.*):DownloadANO" （.*）为文件名列表
      * 加载神经元："(.*):LoadANO")
      */
-    void processMsg( QStringList &msglist);
+    void processMsg( QString &msg);
     /**
      * @brief processFile 处理接受的文件队列
      * 冗余设计，可以及接受多个文件
      * @param filePaths 文件路径列表
      */
     void processFile( QStringList &filePaths);
-    /**
-     * @brief makeMessageServer 调用MessageServer的静态，创建协作的MessageServer
-     * @param neuron 要协作的神经元编号
-     * @return
-     */
+
+
+public:
+    QString ip;
+    QString name;
+    bool flag=false;/*!<判断是否是自己退出*/
+    terafly::PMain *pmain=nullptr;
+private:
+    DataInfo dataInfo;/*!<用于控制数据接受的数据结构*/
+    QStringList filepaths;/*!<文件路径队列*/
+
 signals:
     void disconnected();
 };

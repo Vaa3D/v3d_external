@@ -1,4 +1,4 @@
-#include "managesocket.h"
+﻿#include "managesocket.h"
 #include <QDataStream>
 #include <QFile>
 #include <QCoreApplication>
@@ -6,17 +6,15 @@
 #include <QTime>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QMessageBox>
 #include "V3dR_Communicator.h"
 #include "../../terafly/src/control/CImport.h"
 
 ManageSocket::ManageSocket(QObject *parent):QTcpSocket(parent)
 {
-    {
-        resetDataInfo();
-        msgs.clear();
-        filepaths.clear();
-    }
-    connect(this,SIGNAL(readyread()),this,SLOT(onreadyRead()));
+    resetDataInfo();
+    filepaths.clear();
+    connect(this,SIGNAL(readyRead()),this,SLOT(onreadyRead()));
 }
 void ManageSocket::onreadyRead()
 {
@@ -26,13 +24,7 @@ void ManageSocket::onreadyRead()
         in>>dataInfo.dataSize;dataInfo.dataReadedSize+=sizeof (qint32);
         if(dataInfo.dataSize<0) {
             qDebug()<<"error";return;
-        }
-        if(dataInfo.dataSize==dataInfo.dataReadedSize)
-        {
-            resetDataInfo();return;
-        }
-
-        if(this->bytesAvailable()>=dataInfo.dataSize-dataInfo.dataReadedSize)
+        }        if(this->bytesAvailable()>=dataInfo.dataSize-dataInfo.dataReadedSize)
         {
             QStringList list;
             while(dataInfo.dataSize!=dataInfo.dataReadedSize)
@@ -45,7 +37,11 @@ void ManageSocket::onreadyRead()
                 }else
                 {
                     QByteArray block=this->read(dataInfo.dataSize-dataInfo.dataReadedSize);
-                    QString filePath=QCoreApplication::applicationDirPath()+"/data/"+messageOrFileName;
+                    QString filePath=QCoreApplication::applicationDirPath()+"/download/"+messageOrFileName;
+                    if(!QDir(QCoreApplication::applicationDirPath()+"/download").exists())
+                    {
+                        QDir(QCoreApplication::applicationDirPath()).mkdir("download");
+                    }
                     QFile file(filePath);
                     file.open(QIODevice::WriteOnly);
                     file.write(block);file.flush();
@@ -72,7 +68,11 @@ void ManageSocket::onreadyRead()
                 }else
                 {
                     QByteArray block=this->read(dataInfo.dataSize-dataInfo.dataReadedSize);
-                    QString filePath=QCoreApplication::applicationDirPath()+"/data/"+messageOrFileName;
+                    QString filePath=QCoreApplication::applicationDirPath()+"/download/"+messageOrFileName;
+                    if(!QDir(QCoreApplication::applicationDirPath()+"/download").exists())
+                    {
+                        QDir(QCoreApplication::applicationDirPath()).mkdir("download");
+                    }
                     QFile file(filePath);
                     file.open(QIODevice::WriteOnly);
                     file.write(block);
@@ -106,32 +106,43 @@ void ManageSocket::sendMsg(QString msg)
 
 void ManageSocket::sendFiles(QStringList filePathList,QStringList fileNameList)
 {
-    qint32 totalsize=sizeof (qint32);
-    QByteArray block1;
-    QDataStream dts(&block1,QIODevice::WriteOnly);
+    int totalsize=sizeof(qint32);
+    QList<QByteArray> blocks;
     for(int i=0;i<filePathList.size();i++)
     {
-        auto fileName=fileNameList[i].toUtf8();
-        auto fileData=QFile(filePathList[i]).readAll();
-        totalsize += 2* sizeof (qint32);
-        totalsize += fileName.size();
-        totalsize += fileData.size();
+        QByteArray block;
+        block.clear();
+        QDataStream dts(&block,QIODevice::WriteOnly);
+        QFile f(filePathList[i]);
+        if(!f.open(QIODevice::ReadOnly))
+            qDebug()<<"cannot open file "<<fileNameList[i]<<" "<<f.errorString();
+        QByteArray fileName=fileNameList[i].toUtf8();
+        QByteArray fileData=f.readAll();
+        f.close();
         dts<<qint32(fileName.size())<<qint32(fileData.size());
-        block1 += fileName +=fileData;
+        block=block+fileName;
+        block=block+fileData;
+        blocks.push_back(block);
+        totalsize+=block.size();
     }
     QByteArray block;
-    QDataStream dts1(&block,QIODevice::WriteOnly);
+
+    block.clear();
+    QDataStream dts(&block,QIODevice::WriteOnly);
     dts<<qint32(totalsize);
-    block+=block1;
+    for(int i=0;i<blocks.size();i++)
+        block=block+blocks[i];
+    qDebug()<<totalsize<<' '<<block.size();
     this->write(block);
-    this->waitForBytesWritten();
-    for(auto filepath:filePathList)
-    {
-        if(filepath.contains("/tmp/"))
-        {
-            QFile(filepath).remove();
-        }
-    }
+    this->flush();
+
+////    for(auto filepath:filePathList)
+////    {
+////        if(filepath.contains("/tmp/"))
+////        {
+////            QFile(filepath).remove();
+////        }
+////    }
 }
 
 void ManageSocket::processReaded(QStringList list)
@@ -140,81 +151,86 @@ void ManageSocket::processReaded(QStringList list)
     {
         if(msg.startsWith("00"))
         {
-            processFile(filepaths);
-            msgs.push_back(msg.remove(0,2));
-        }else if(msg.startsWith("11"))
-        {
-            processMsg(msgs);
-            filepaths.push_back(msg.remove(0,2));
+            processMsg(msg.remove(0,2));
         }
     }
-    processMsg(msgs);
-    processFile(filepaths);
 }
-void ManageSocket::processMsg( QStringList &msgs)
+void ManageSocket::processMsg( QString &msg)
 {
-     for(auto msg:msgs)
-     {
-        QRegExp FileList("(.*):CurrentFiles");//down;data:CurrentFiles
-        QRegExp CommunPort("(.*):Port");
-        if(FileList.indexIn(msg)!=-1)
+    QRegExp FileList("(.*):CurrentFiles");//down;data:CurrentFiles
+    QRegExp CommunPort("(.*):Port");
+    if(FileList.indexIn(msg)!=-1)
+    {
+        QStringList response=FileList.cap(1).trimmed().split(";");
+        if(response.size()<2)
         {
-            QStringList response=FileList.cap(1).trimmed().split(";");
-            QString type=response.at(response.size()-2);
-            QString dirname=response.at(response.size()-1);
-            QListWidget *listwidget=new QListWidget;
-            listwidget->setWindowTitle("choose annotation file");
-            if(type=="down")
-                connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-                    this,SLOT(download(itemDoubleClicked(QListWidgetItem*))));
-            else if(type=="load")
-                connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-                        this,SLOT(load(QListWidgetItem*)));
-            listwidget->clear();
-            for(int i=0;i<response.size()-2;i++)
-            {
-                listwidget->addItem(response.at(i));
-            }
-            listwidget->show();
-        }else if(CommunPort.indexIn(msg)!=-1)
+            qDebug()<<"error:msg is err";
+            return;
+        }
+        QString type=response.at(response.size()-2);
+        QString dirname=response.at(response.size()-1);
+        QListWidget *listwidget=new QListWidget;
+        listwidget->setWindowTitle("choose annotation file");
+        if(type=="down")
+            connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                this,SLOT(download(itemDoubleClicked(QListWidgetItem*))));
+        else if(type=="load")
+            connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+                    this,SLOT(load(QListWidgetItem*)));
+        listwidget->clear();
+        for(int i=0;i<response.size()-2;i++)
         {
-            int port=CommunPort.cap(1).toUInt();
-            pmain->teraflyVRView->setDisabled(true);
-            pmain->collaborationVRView->setEnabled(true);
-            pmain->collautotrace->setEnabled(false);
+            listwidget->addItem(response.at(i));
+        }
+        listwidget->show();
+    }else if(CommunPort.indexIn(msg)!=-1)
+    {
+        int port=CommunPort.cap(1).toInt();
+        pmain->Communicator = new V3dR_Communicator;
+        connect(pmain->Communicator,SIGNAL(load(QString)),pmain,SLOT(ColLoadANO(QString)));
+        terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
 
-            pmain->Communicator = new V3dR_Communicator;
-            pmain->Communicator->userName=name;
-            connect(pmain->Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)));
-            pmain->cur_win->getGLWidget()->TeraflyCommunicator=pmain->Communicator;
+        pmain->Communicator->userName=name;
 
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
+                cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
+                cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
+                cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
+                cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
+
+        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString)),
+                cur_win->getGLWidget(),SLOT(CollretypeSeg(QString)));
+
+        connect(this,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
+        pmain->Communicator->socket->connectToHost(ip,port);
+        if(!pmain->Communicator->socket->waitForConnected())
+        {
+            QMessageBox::information(0,tr("Manage "),
+                             tr("connect failed"),
+                             QMessageBox::Ok);
+            return;
+        }else if(pmain->Communicator->socket->state()==QAbstractSocket::ConnectedState)
+        {
+            QMessageBox::information(0,tr("Manage "),
+                             tr("Connect sucess!"),
+                             QMessageBox::Ok);
+        }
+        cur_win->getGLWidget()->TeraflyCommunicator=pmain->Communicator;
+        int maxresindex = terafly::CImport::instance()->getResolutions()-1;
+        IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
+        pmain->Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
+        pmain->teraflyVRView->setDisabled(false);
+        pmain->collaborationVRView->setEnabled(true);
+        pmain->collautotrace->setEnabled(false);
 //            connect(this,SIGNAL(signal_communicator_read_res(QString,XYZ*)),
 //                    cur_win->getGLWidget()->TeraflyCommunicator,SLOT(read_autotrace(QString,XYZ*)));//autotrace
-
-            connect(pmain->cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
-                    pmain->cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
-
-            connect(pmain->cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
-                    pmain->cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
-
-            connect(pmain->cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
-                    pmain->cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
-
-            connect(pmain->cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
-                    pmain->cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
-
-            connect(pmain->cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString)),
-                    pmain->cur_win->getGLWidget(),SLOT(CollretypeSeg(QString)));
-
-            connect(this,SIGNAL(disconnected()),pmain->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
-
-            int maxresindex = CImport::instance()->getResolutions()-1;
-            VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
-            pmain->Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
-//            pmain->Communicator
-        }
     }
-     msgs.clear();
 }
 
 void ManageSocket::download(QListWidgetItem* item)
@@ -234,8 +250,9 @@ void ManageSocket::load(QListWidgetItem* item)
 {
     QString filename=item->text().trimmed();
     if(filename.endsWith(".ano"))
-        sendMsg(filename.chopped(4)+":LoadANO");
-
+        sendMsg(filename.left(filename.size()-4)+":LoadANO");
+    else
+        qDebug()<<"choose file with.ano";
 }
 
 
