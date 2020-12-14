@@ -136,13 +136,13 @@ void ManageSocket::sendFiles(QStringList filePathList,QStringList fileNameList)
     this->write(block);
     this->flush();
 
-////    for(auto filepath:filePathList)
-////    {
-////        if(filepath.contains("/tmp/"))
-////        {
-////            QFile(filepath).remove();
-////        }
-////    }
+    for(auto filepath:filePathList)
+    {
+        if(filepath.contains("/tmp/"))
+        {
+            QFile(filepath).remove();
+        }
+    }
 }
 
 void ManageSocket::processReaded(QStringList list)
