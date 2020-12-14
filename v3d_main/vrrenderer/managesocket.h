@@ -60,6 +60,7 @@ public slots:
     void onreadyRead();
     void download(QListWidgetItem*);
     void load(QListWidgetItem*);
+
 private:
     /**
      * @brief resetDataInfo
@@ -97,7 +98,7 @@ public:
 private:
     DataInfo dataInfo;/*!<用于控制数据接受的数据结构*/
     QStringList filepaths;/*!<文件路径队列*/
-
+    QListWidget *listwidget=nullptr;
 signals:
     void disconnected();
 };

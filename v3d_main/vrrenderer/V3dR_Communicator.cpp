@@ -48,12 +48,17 @@ void V3dR_Communicator::onReadyRead()
 
         if(dataInfo.filedataSize)
         {
-            QString filePath=QCoreApplication::applicationDirPath()+"/tmp/"+messageOrFileName;
+            if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").exists())
+            {
+                QDir(QCoreApplication::applicationDirPath()).mkdir("loaddata");
+            }
+            QString filePath=QCoreApplication::applicationDirPath()+"/loaddata/"+messageOrFileName;
             QFile file(filePath);
             file.open(QIODevice::WriteOnly);
             file.write(socket->read(dataInfo.filedataSize));file.flush();
             file.close();
             list.push_back("11"+filePath);
+            emit this->load(filePath.section("/",-1));
         }else
         {
             list.push_back("00"+messageOrFileName);
@@ -66,7 +71,7 @@ void V3dR_Communicator::onReadyRead()
         processReaded(list);
     }else
         return;
-    onreadyRead();
+	onReadyRead();
 }
 
 void V3dR_Communicator::sendMsg(QString msg)

@@ -18,10 +18,10 @@ ManageSocket::ManageSocket(QObject *parent):QTcpSocket(parent)
 }
 void ManageSocket::onreadyRead()
 {
-    QDataStream in(socket);
+    QDataStream in(this);
     if(dataInfo.dataSize==0)
     {
-        if(socket->bytesAvailable()>=sizeof (qint32))
+		if (this->bytesAvailable() >= sizeof(qint32))
         {
             in>>dataInfo.dataSize;
             dataInfo.dataReadedSize+=sizeof (qint32);
@@ -31,7 +31,7 @@ void ManageSocket::onreadyRead()
 
     if(dataInfo.stringOrFilenameSize==0&&dataInfo.filedataSize==0)
     {
-        if(socket->bytesAvailable()>=2*sizeof (qint32))
+		if (this->bytesAvailable() >= 2 * sizeof(qint32))
         {
             in>>dataInfo.stringOrFilenameSize>>dataInfo.filedataSize;
             dataInfo.dataReadedSize+=(2*sizeof (qint32));
@@ -39,18 +39,32 @@ void ManageSocket::onreadyRead()
             return;
     }
     QStringList list;
-    if(socket->bytesAvailable()>=dataInfo.stringOrFilenameSize+dataInfo.filedataSize)
+	if (this->bytesAvailable() >= dataInfo.stringOrFilenameSize + dataInfo.filedataSize)
     {
-        QString messageOrFileName=QString::fromUtf8(socket->read(dataInfo.stringOrFilenameSize),dataInfo.stringOrFilenameSize);
+        qDebug()<<"in down file1";
+		QString messageOrFileName = QString::fromUtf8(this->read(dataInfo.stringOrFilenameSize), dataInfo.stringOrFilenameSize);
 
+
+        qDebug()<<messageOrFileName<<dataInfo.filedataSize;
         if(dataInfo.filedataSize)
         {
-            QString filePath=QCoreApplication::applicationDirPath()+"/tmp/"+messageOrFileName;
+            if(!QDir(QCoreApplication::applicationDirPath()+"/download").exists())
+            {
+                QDir(QCoreApplication::applicationDirPath()).mkdir("download");
+            }
+            qDebug()<<"in read file";
+            QString filePath=QCoreApplication::applicationDirPath()+"/download/"+messageOrFileName;
+            qDebug()<<filePath;
             QFile file(filePath);
-            file.open(QIODevice::WriteOnly);
-            file.write(socket->read(dataInfo.filedataSize));file.flush();
-            file.close();
-            list.push_back("11"+filePath);
+            if(file.open(QIODevice::WriteOnly))
+            {
+                file.write(this->read(dataInfo.filedataSize)); file.flush();
+                file.close();
+            }else
+            {
+                qDebug()<<filepaths<<" "<<file.error();
+            }
+            qDebug()<<"in down file2";
         }else
         {
             list.push_back("00"+messageOrFileName);
@@ -149,11 +163,11 @@ void ManageSocket::processMsg( QString &msg)
         }
         QString type=response.at(response.size()-2);
         QString dirname=response.at(response.size()-1);
-        QListWidget *listwidget=new QListWidget;
+        listwidget=new QListWidget;
         listwidget->setWindowTitle("choose annotation file");
         if(type=="down")
             connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-                this,SLOT(download(itemDoubleClicked(QListWidgetItem*))));
+                this,SLOT(download(QListWidgetItem*)));
         else if(type=="load")
             connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                     this,SLOT(load(QListWidgetItem*)));
@@ -167,9 +181,10 @@ void ManageSocket::processMsg( QString &msg)
     {
         int port=CommunPort.cap(1).toInt();
         pmain->Communicator = new V3dR_Communicator;
+        
         connect(pmain->Communicator,SIGNAL(load(QString)),pmain,SLOT(ColLoadANO(QString)));
         terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
-
+		cur_win->getGLWidget()->TeraflyCommunicator = pmain->Communicator;
         pmain->Communicator->userName=name;
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
@@ -224,15 +239,21 @@ void ManageSocket::download(QListWidgetItem* item)
     {
         sendMsg(filename+":Download");
     }
+    listwidget->deleteLater();
+    listwidget=nullptr;
+    qDebug()<<"delete lsitwidget";
 }
 
 void ManageSocket::load(QListWidgetItem* item)
 {
     QString filename=item->text().trimmed();
     if(filename.endsWith(".ano"))
-        sendMsg(filename.left(filename.size()-4)+":LoadANO");
+    {sendMsg(filename.left(filename.size()-4)+":LoadANO");}
     else
-        qDebug()<<"choose file with.ano";
+        qDebug()<<"choose file with .ano";
+    listwidget->deleteLater();
+    listwidget=nullptr;
+    qDebug()<<"delete lsitwidget";
 }
 
 

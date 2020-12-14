@@ -4014,7 +4014,8 @@ void PMain::login()
     managesocket->name=userName;
     qDebug()<<"servername = "<<serverName<<" username "<<userName;
     managesocket->connectToHost(serverName,9999);
-    connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+    qDebug()<<connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
+    connect(managesocket,SIGNAL(connected()),this,SLOT(onManageConnected()));
     if( !managesocket->waitForConnected())
     {
         QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
@@ -4022,25 +4023,18 @@ void PMain::login()
         managesocket=nullptr;
         return;
     }
-    else{
-        QMessageBox::information(this, tr("Success"),tr("connect sucess"));
-        loginAction->setText(serverName);
-        loginAction->setEnabled(false);
-        logoutAction->setEnabled(true);
-        importAction->setEnabled(true);
-        downAction->setEnabled(true);
-        loadAction->setEnabled(true);
-//        qDebug()<<QFile("C:/Users/BrainTell/Desktop/v3d_external/v3d_main/v3d/release/tmp/pre_18454_00468_wyp_stamp_2020_11_17_14_39.ano.apo").readAll();
-    }
+
 }
 
 void PMain::logout()
 {
-    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
+    qDebug()<<"log out";
+    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
         managesocket->flag=true;
-        managesocket->pmain=nullptr;
+        qDebug()<<"disconnected";
         managesocket->disconnectFromHost();
+//        managesocket->waitForDisconnected();
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4137,10 +4131,12 @@ void PMain::load()
 
 void PMain::deleteManageSocket()
 {
+    qDebug()<<"Manage socket disconnected";
     if(!managesocket->flag)
         QMessageBox::information(this,tr("Manage socket Connection is out!"),
                          tr("Data has been safely stored.\nPlease restart vaa3d"),
                          QMessageBox::Ok);
+    managesocket->pmain=nullptr;
     managesocket->deleteLater();
     managesocket=nullptr;
     loginAction->setText("log in");
@@ -4154,7 +4150,16 @@ void PMain::deleteManageSocket()
     teraflyVRView->setEnabled(true);
     return;
 }
-
+void PMain::onManageConnected()
+{
+    QMessageBox::information(this, tr("Success"),tr("connect sucess"));
+    loginAction->setText(managesocket->ip);
+    loginAction->setEnabled(false);
+    logoutAction->setEnabled(true);
+    importAction->setEnabled(true);
+    downAction->setEnabled(true);
+    loadAction->setEnabled(true);
+}
 void PMain::ColLoadANO(QString ANOfile)
 {
     CViewer *cur_win = CViewer::getCurrent();
