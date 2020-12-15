@@ -46,7 +46,7 @@ void ManageSocket::onreadyRead()
 		QString messageOrFileName = QString::fromUtf8(this->read(dataInfo.stringOrFilenameSize), dataInfo.stringOrFilenameSize);
 
 
-        qDebug()<<messageOrFileName<<dataInfo.filedataSize;
+//        qDebug()<<messageOrFileName<<dataInfo.filedataSize;
         if(dataInfo.filedataSize)
         {
             if(!QDir(QCoreApplication::applicationDirPath()+"/download").exists())

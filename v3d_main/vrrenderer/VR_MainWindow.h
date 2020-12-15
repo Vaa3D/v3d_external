@@ -35,7 +35,7 @@ public:
     XYZ ConvertBlock2GloabelInRES(XYZ local);
     void SendVRconfigInfo();
 public slots:
-//    void TVProcess(QString);
+    void TVProcess(QString);
 //    /**
 //     * @brief onReadySendSeg
 //     * 从队列中发出画线命令

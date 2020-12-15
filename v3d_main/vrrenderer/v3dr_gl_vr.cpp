@@ -1331,45 +1331,50 @@ void CMainApplication::Shutdown()
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-		j=0;
+        qDebug()<<"delete 1";
+        j=0;
 		for(auto i = loaded_cylinders.begin();i!=loaded_cylinders.end();i++) 
 		{
 				delete (*i);
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-		j=0;
+            qDebug()<<"delete 2";
+        j=0;
 		for(auto i = sketch_spheres.begin();i!=sketch_spheres.end();i++) 
 		{
 				delete (*i);
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-		j=0;
+        qDebug()<<"delete 3";
+        j=0;
 		for(auto i = sketch_cylinders.begin();i!=sketch_cylinders.end();i++)
 		{
 				delete (*i);
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-		j=0;
+        qDebug()<<"delete 4";
+        j=0;
 		for(auto i = Agents_spheres.begin();i!=Agents_spheres.end();i++)
 		{
 				delete (*i);
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-		j=0;
+        qDebug()<<"delete 5";
+        j=0;
 		for(auto i = Markers_spheres.begin();i!=Markers_spheres.end();i++) 
 		{
 				delete (*i);
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-
+qDebug()<<"delete 6";
 		if(ctrSphere)
 			delete ctrSphere;
-
+qDebug()<<"delete 7";
 			
 		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
@@ -1399,7 +1404,7 @@ void CMainApplication::Shutdown()
 		sketchedNTList.clear();
 		drawnMarkerList.clear();
 		markerVisibility.clear();
-
+qDebug()<<"delete 8";
 		if(pick_node)  pick_node = 0;
 		if( m_unMorphologyLineModeVAO != 0 )
 		{
@@ -1407,32 +1412,33 @@ void CMainApplication::Shutdown()
 			glDeleteBuffers(1, &m_glMorphologyLineModeVertBuffer);
 			glDeleteBuffers(1, &m_glMorphologyLineModeIndexBuffer);
 		}
-		
+qDebug()<<"delete 9";
 		if( m_unSketchMorphologyLineModeVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unSketchMorphologyLineModeVAO );
 			glDeleteBuffers(1, &m_glSketchMorphologyLineModeVertBuffer);
 			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
 		}
-
+qDebug()<<"delete 10";
 		if( m_VolumeImageVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
 			//glDeleteBuffers(1, &m_imageVBO);
 		}
-
+qDebug()<<"delete 11";
 		if( m_clipPatchVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_clipPatchVAO );
 			//glDeleteBuffers(1, &m_imageVBO);
 		}
-
+qDebug()<<"delete 12";
 		if( m_unCompanionWindowVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unCompanionWindowVAO );
 			glDeleteBuffers(1, &m_glCompanionWindowIDVertBuffer);
 			glDeleteBuffers(1, &m_glCompanionWindowIDIndexBuffer);
 		}
+        qDebug()<<"delete 13";
 		if( m_unControllerVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unControllerVAO );
@@ -1440,6 +1446,7 @@ void CMainApplication::Shutdown()
 		} 
 	}
 
+qDebug()<<"delete 14";
 	if( m_pCompanionWindow )
 	{
 	//	if(font_VR->self)
@@ -1458,9 +1465,9 @@ void CMainApplication::Shutdown()
 		m_pCompanionWindow = NULL;
 	}
 
-
-	SDL_Quit();
-
+qDebug()<<"delete 15";
+    SDL_Quit();
+    qDebug()<<"shut down sucess!";
 }
 
 //-----------------------------------------------------------------------------
@@ -1886,7 +1893,7 @@ void CMainApplication::RunMainLoop()
 		if (bQuit) break;
 		RenderFrame();
 	}
-
+    qDebug()<<"end of runMainLoop";
 	SDL_StopTextInput();
 }
 // using in VR_MainWindow.cpp
@@ -2770,7 +2777,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case m_deleteMode:
 			//else if(m_modeGrip_R==m_deleteMode)
-			{
+            {
+            qDebug()<<"in delete mode";
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -2783,8 +2791,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
 				delName = "";
-				delcurvePOS  ="";
-				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+//				delcurvePOS  ="";
+//				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				//SegNode_tobedeleted = GetSegtobedelete_Node(delName);
 				if(isOnline==false)	
@@ -3930,7 +3938,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// }
 
 				
-qDebug() << "huanglei debug 4";
+//qDebug() << "huanglei debug 4";
 	
 
 }
@@ -6719,7 +6727,9 @@ void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to 
         newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
     }
 	sketchedNTList.push_back(newTempNT);
-	SetupSingleMorphologyLine(sketchedNTList.size()-1,0);
+    qDebug()<<"pushback seg";
+    SetupSingleMorphologyLine(sketchedNTList.size()-1,0);
+    qDebug()<<"refresh";
 }
 void CMainApplication::ClearCurrentNT()
 {
@@ -6770,8 +6780,8 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
                 SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
                 SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
                 SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
-                delseg=nt;
-
+                segtobedeleted=nt;
+                qDebug()<<"SegNode_tobedeleted="<<SegNode_tobedeleted.x<<" "<<SegNode_tobedeleted.y<<" "<<SegNode_tobedeleted.z;
 				return ntnametofind;
 			}
 		}
@@ -6857,7 +6867,7 @@ bool CMainApplication::retypeSegment(QVector<XYZ> coords,float dist,int type)
         {
             sketchedNTList[index].listNeuron[i].type=type;
         }
-        SetupSingleMorphologyLine(index, 2);
+        SetupSingleMorphologyLine(index, 1);
         return true;
     }else
     {
@@ -6939,8 +6949,10 @@ int CMainApplication::findseg(QVector<XYZ> coords,float dist)
 bool CMainApplication::DeleteSegment(QVector<XYZ> coords,float dist)
 {
     int index=findseg(coords,dist);
+    qDebug()<<"index = "<<index;
     if(index>=0)
     {
+
         sketchedNTList.removeAt(index);
         SetupSingleMorphologyLine(index, 2);
         return true;

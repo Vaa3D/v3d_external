@@ -261,7 +261,7 @@ public:
 	static ModelControlR  m_modeGrip_R;
 	static ModeControlSettings m_modeGrip_L;
 	QString delName;
-    NeuronTree delseg;
+    NeuronTree segtobedeleted;
 	QString markerPOS;
 	QString delmarkerPOS;
 	QString delcurvePOS;

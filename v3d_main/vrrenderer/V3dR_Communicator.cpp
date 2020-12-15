@@ -48,7 +48,7 @@ void V3dR_Communicator::onReadyRead()
     if(socket->bytesAvailable()>=dataInfo.stringOrFilenameSize+dataInfo.filedataSize)
     {
         QString messageOrFileName=QString::fromUtf8(socket->read(dataInfo.stringOrFilenameSize),dataInfo.stringOrFilenameSize);
-        qDebug()<<"messageOrFileName= "<<messageOrFileName;
+//        qDebug()<<"messageOrFileName= "<<messageOrFileName;
         if(dataInfo.filedataSize)
         {
             if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").exists())
@@ -86,7 +86,7 @@ void V3dR_Communicator::sendMsg(QString msg)
     block+=msg.toUtf8();
     socket->write(block);
     socket->flush();
-    qDebug()<<"send to servr:"<<block;
+//    qDebug()<<"send to servr:"<<block;
     qDebug()<<"send to server:"<<msg;
 }
 
@@ -95,7 +95,7 @@ void V3dR_Communicator::processReaded(QStringList list)
     QStringList filepaths;
     for(auto msg:list)
     {
-        qDebug()<<msg;
+//        qDebug()<<msg;
         if(msg.startsWith("00"))
         {
             emit msgtoprocess(msg.remove(0,2));
@@ -127,7 +127,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 //    QRegExp creatorRex("^/creator:(.*)__(.*)$");
 
     line=line.trimmed();
-    qDebug()<<"Terafly receive:"<<line;
+//    qDebug()<<"Terafly receive:"<<line;
     if (usersRex.indexIn(line) != -1) {
         qDebug()<<"for now uses"<<usersRex.cap(1);
     }
@@ -359,7 +359,7 @@ XYZ V3dR_Communicator::ConvertLocalBlocktoGlobalCroods(double x,double y,double 
     y+=(ImageStartPoint.y-1);
     z+=(ImageStartPoint.z-1);
     XYZ node=ConvertCurrRes2MaxResCoords(x,y,z);
-    qDebug()<<"ConvertLocalBlocktoGlobalCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
+//    qDebug()<<"ConvertLocalBlocktoGlobalCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
     return node;
 }
 
