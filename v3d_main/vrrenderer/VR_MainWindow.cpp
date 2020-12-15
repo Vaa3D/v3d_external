@@ -80,7 +80,7 @@ void VR_MainWindow::TVProcess(QString line)
             {
                 auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
                 auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
-                coords.push_front(converted);
+                coords.push_back(converted);
 
                 type=nodeinfo[0].toInt();
             }
