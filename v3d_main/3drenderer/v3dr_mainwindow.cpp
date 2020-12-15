@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -746,10 +746,26 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
             if(glWidget->TeraflyCommunicator)
             {
                 qDebug()<<glWidget<<" "<<glWidget->TeraflyCommunicator<<" "<<glWidget->data_title;
-                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), 0, 0):"<<disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), 0, 0);
-                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0)"<<disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0);
-                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), glWidget, SLOT(CollaAddSeg(QString,int)));"<<connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), glWidget, SLOT(CollaAddSeg(QString)));
-                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));"<<connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));
+                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), 0, 0):"
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), 0, 0);
+                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0)"
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0);
+                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString,int)), 0, 0):"
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), 0, 0);
+                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0)"
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0);
+                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0)"
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0);
+                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), glWidget, SLOT(CollaAddSeg(QString,int)));"
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), glWidget, SLOT(CollaAddSeg(QString)));
+                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));"
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));
+                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0)"
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), glWidget, SLOT(CollretypeSeg(QString,int)));
+                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString,int)), glWidget, SLOT(addMarker(QString,int)));"
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), glWidget, SLOT(addMarker(QString)));
+                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(delMarker(QString)));"
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(delMarker(QString)));
             }else
             {
                 qDebug()<<"glWidget->TeraflyCommunicator==0";
