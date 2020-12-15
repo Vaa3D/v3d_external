@@ -1373,7 +1373,10 @@ void CMainApplication::Shutdown()
 		}
 qDebug()<<"delete 6";
 		if(ctrSphere)
-			delete ctrSphere;
+        {
+            delete ctrSphere;
+            ctrSphere=nullptr;
+        }
 qDebug()<<"delete 7";
 			
 		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
@@ -5442,7 +5445,7 @@ void CMainApplication::SetupMorphologyLine( int drawMode)//pass 3 parameters: &n
 
 //-----------------------------------------------------------------------------
 void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
-											GLuint& LineModeVAO, 
+                                            GLuint& LineModeVAO,
 											GLuint& LineModeVBO, 
 											GLuint& LineModeIndex,
 											unsigned int& Vertcount,
@@ -5582,7 +5585,8 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 	if(LineModeVAO ==0)
 	{
 		//setup vao and vbo stuff
-		glGenVertexArrays(1, &LineModeVAO);
+        glGenVertexArrays(1, &LineModeVAO);
+        qDebug()<<LineModeVAO;
 		glGenBuffers(1, &LineModeVBO);
 		glGenBuffers(1, &LineModeIndex);
 
@@ -6726,6 +6730,7 @@ void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to 
         newTempNT.listNeuron.append(S_temp);
         newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
     }
+    qDebug()<<"befor push  sketch "<<sketchedNTList.size();
 	sketchedNTList.push_back(newTempNT);
     qDebug()<<"pushback seg";
     SetupSingleMorphologyLine(sketchedNTList.size()-1,0);
@@ -7933,11 +7938,16 @@ void CMainApplication::SetupSingleMorphologyLine(int ntIndex, int processMode)
 	if (processMode == 0)
 	// add a new VAO&VBO for new segment in sketchedNTList
 	{
+        qDebug()<<"add vao";
 		iSketchNTLMorphologyVAO.push_back(0);
 		iSketchNTLMorphologyVertBuffer.push_back(0);
 		iSketchNTLMorphologyIndexBuffer.push_back(0);	
 		iSketchNTLMorphologyVertcount.push_back(0);
-		SetupMorphologyLine(sketchedNTList.at(ntIndex),iSketchNTLMorphologyVAO.at(ntIndex),iSketchNTLMorphologyVertBuffer.at(ntIndex),iSketchNTLMorphologyIndexBuffer.at(ntIndex),iSketchNTLMorphologyVertcount.at(ntIndex),2);
+        SetupMorphologyLine(sketchedNTList.at(ntIndex),
+                            iSketchNTLMorphologyVAO.at(ntIndex),
+                            iSketchNTLMorphologyVertBuffer.at(ntIndex),
+                            iSketchNTLMorphologyIndexBuffer.at(ntIndex),
+                            iSketchNTLMorphologyVertcount.at(ntIndex),2);
 	}
 	else if (processMode == 1)
 	// changed a node's pos in dragmode ,then reset the VAO&VBO at ntIndex 
