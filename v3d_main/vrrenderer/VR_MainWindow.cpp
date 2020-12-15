@@ -28,23 +28,23 @@ VR_MainWindow::~VR_MainWindow() {
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
 }
 
-void VR_MainWindow::onReadySendSeg()
-{
-	if(!CollaborationSendPool.empty())
-	{
-		cout<<"CollaborationSendPool.size()"<<CollaborationSendPool.size()<<endl;
-		QString send_MSG = *CollaborationSendPool.begin();
-		CollaborationSendPool.erase(CollaborationSendPool.begin());
-		if((send_MSG!="exit")&&(send_MSG!="quit"))
-		{
-            VR_Communicator->sendMsg("/drawline:" + send_MSG);
-		}
-	}
-	else
-    {
-        cout<<"CollaborationSendPool is empty";
-	}
-}
+//void VR_MainWindow::onReadySendSeg()
+//{
+//	if(!CollaborationSendPool.empty())
+//	{
+//		cout<<"CollaborationSendPool.size()"<<CollaborationSendPool.size()<<endl;
+//		QString send_MSG = *CollaborationSendPool.begin();
+//		CollaborationSendPool.erase(CollaborationSendPool.begin());
+//		if((send_MSG!="exit")&&(send_MSG!="quit"))
+//		{
+//            VR_Communicator->sendMsg("/drawline:" + send_MSG);
+//		}
+//	}
+//	else
+//    {
+//        cout<<"CollaborationSendPool is empty";
+//	}
+//}
 //void VR_MainWindow::onReadyRead()
 void VR_MainWindow::TVProcess(QString line)
 {
@@ -484,6 +484,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	{
         if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
+            qDebug()<<"TeraVR add seg";
             QStringList waitsend=pMainApplication->NT2QString();
             waitsend.push_back(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
 			pMainApplication->ClearCurrentNT();
@@ -492,7 +493,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		}
 		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
-			if (pMainApplication->SegNode_tobedeleted.x != 0 || pMainApplication->SegNode_tobedeleted.y != 0 || pMainApplication->SegNode_tobedeleted.z != 0)
+            if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
 			{
                 QStringList result;
                 result.push_back(QString("%1 TeraVR %1 %2 %3").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
@@ -506,10 +507,12 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 pMainApplication->SegNode_tobedeleted.x = 0;
                 pMainApplication->SegNode_tobedeleted.y = 0;
                 pMainApplication->SegNode_tobedeleted.z = 0;
+                qDebug()<<"TeraVR del seg sucess";
             }else{
                 pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
 				pMainApplication->ClearCurrentNT();
+                qDebug()<<"TeraVR del seg failed";
             }
 		}
 		else if(pMainApplication->m_modeGrip_R==m_markMode)
@@ -523,9 +526,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 result.push_back(ConvertedmarkerPOS);
                 if(ConvertedmarkerPOS.split(" ")[0]=="-1")
                 {
+                    qDebug()<<"TeraVR del marker";
                     VR_Communicator->sendMsg(QString("/delmarker:" + result.join(";")));
                 }else
                 {
+                    qDebug()<<"TeraVR add marker";
                     VR_Communicator->sendMsg(QString("/addmarker:" + result.join(",") ));
                 }
                 pMainApplication->markerPOS.clear();
