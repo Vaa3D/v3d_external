@@ -4281,21 +4281,20 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
 
 void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 {
-    QStringList delSegGlobalList=segInfo.split(";",QString::SkipEmptyParts);
-    vector <XYZ> local_list;
-    SetupCollaborateInfo();
-    for(int i=0;i<delSegGlobalList.size();i++)
-    {
-        QStringList nodeXYZ=delSegGlobalList.at(i).split(" ",QString::SkipEmptyParts);
-        auto localXYZ=ConvertreceiveCoords(nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat(),nodeXYZ.at(3).toFloat());
-        local_list.push_back(localXYZ);
-    }
-    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
-    float mindist=1*TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x;
-    if(rendererGL1Ptr->deleteMultiNeuronsByStrokeCommit(local_list,mindist))
-        POST_updateGL();
-    else
-        deleteCurveInMaxRex(segInfo);
+//    QStringList delSegGlobalList=segInfo.split(";",QString::SkipEmptyParts);
+//    vector <XYZ> local_list;
+//    SetupCollaborateInfo();
+//    for(int i=0;i<delSegGlobalList.size();i++)
+//    {
+//        QStringList nodeXYZ=delSegGlobalList.at(i).split(" ",QString::SkipEmptyParts);
+//        auto localXYZ=ConvertreceiveCoords(nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat(),nodeXYZ.at(3).toFloat());
+//        local_list.push_back(localXYZ);
+//    }
+//    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+//    float mindist=1*TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x;
+//    if(!rendererGL1Ptr->deleteMultiNeuronsByStrokeCommit(local_list,mindist))
+        deleteCurveInAllSpace(segInfo);
+    POST_updateGL();
 }
 
 //NeuronTree V3dR_GLWidget::convertMsg2NT(QStringList list)
@@ -4339,6 +4338,7 @@ void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
         {
             v_ns_list.seg.at(index).row.at(k).type=type;
         }
+        qDebug()<<"retype sucess";
     }else
     {
 		qDebug()<<"Error:cannot find segment to retype " + segInfo;
@@ -4352,26 +4352,27 @@ void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
 void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 {
 //    qDebug()<<"in collaAddseg"<<segInfo;
-    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
-    SetupCollaborateInfo();
-    vector<XYZ> loc_coords;
-    int type;
+//    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
+//    SetupCollaborateInfo();
+//    vector<XYZ> loc_coords;
+//    int type;
 
-    for(int i=0;i<qsl.size();i++)
-    {
-        QStringList temp=qsl[i].trimmed().split(" ");
+//    for(int i=0;i<qsl.size();i++)
+//    {
+//        QStringList temp=qsl[i].trimmed().split(" ");
 
-        float x=temp[1].toFloat();
-        float y=temp[2].toFloat();
-        float z=temp[3].toFloat();
-        type=temp[0].toInt();
-        loc_coords.push_back(ConvertreceiveCoords(x,y,z));
-    }
+//        float x=temp[1].toFloat();
+//        float y=temp[2].toFloat();
+//        float z=temp[3].toFloat();
+//        type=temp[0].toInt();
+//        loc_coords.push_back(ConvertreceiveCoords(x,y,z));
+//    }
 
-    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
-
-    rendererGL1Ptr->addCurveSWC(loc_coords, 1, 1,type);
-    POST_updateGL();
+//    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+//    qDebug()<<"add in seg";
+//    rendererGL1Ptr->addCurveSWC(loc_coords, 1, 1,type);
+//    POST_updateGL();
+    addCurveInAllSapce(segInfo);
 }
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
@@ -4408,9 +4409,13 @@ int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
         }
     }
     if(index<0) qDebug()<<"fail to findseg";
+    else
+    {
+        qDebug()<<"find index "<<index;
+    }
     return index;
 }
-void V3dR_GLWidget::deleteCurveInMaxRex(QString segInfo) //only call by delete curve
+void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo) //only call by delete curve
 {
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
@@ -4437,7 +4442,45 @@ void V3dR_GLWidget::deleteCurveInMaxRex(QString segInfo) //only call by delete c
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
     terafly::PluginInterface::setSWC(nt,true);
 }
+void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
+{
+    V_NeuronSWC seg;
+    {
+        NeuronTree newTempNT;
+        newTempNT.listNeuron.clear();
+        newTempNT.hashNeuron.clear();
+        QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
+        qDebug()<<segInfo;
+        for (int i = 0; i<qsl.size(); i++)
+        {
+            NeuronSWC S;
+            QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
+            qDebug()<<i<<":"<<nodelist;
+            if(nodelist.size()<4) return;
+            S.n=i+1;
+            S.type=nodelist[0].toInt();
+            S.x=nodelist[1].toFloat();
+            S.y=nodelist[2].toFloat();
+            S.z=nodelist[3].toFloat();
+            S.r=1;
+            if(i==0)
+                S.pn=-1;
+            else
+                S.pn=i;
+            newTempNT.listNeuron.push_back(S);
+            newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+        }
+        qDebug()<<"new NT is constructed";
+        seg=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
+    }
+    qDebug()<<"new seg is constructed";
 
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    v_ns_list.seg.push_back(seg);
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+}
 
 XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> local
 {

@@ -615,9 +615,11 @@ public slots:
     void CollaDelMarker(QString markerPOS);
     void CollretypeSeg(QString markerPOS,int type);
 
+
 public:
     XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
-    void deleteCurveInMaxRex(QString segInfo);//neewd to finish
+    void deleteCurveInAllSpace(QString segInfo);//neewd to finish
+    void addCurveInAllSapce(QString segInfo);
     int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);
     static bool noTerafly;
     //    static QStringList global_delMSG;

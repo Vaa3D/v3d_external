@@ -147,6 +147,14 @@ private:
      */
     void processReaded(QStringList list);
 
+    QString XYZ2String(XYZ node,int type=-1)
+    {
+        if(type!=-1)
+            return QString("%1 %2 %3 %4").arg(type).arg(node.x).arg(node.y).arg(node.z);
+        else
+            return QString("%1 %2 %3").arg(node.x).arg(node.y).arg(node.z);
+    }
+
 public:
 //	float VR_globalScale;//used to
     QString userName;//

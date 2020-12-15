@@ -87,7 +87,7 @@ void V3dR_Communicator::sendMsg(QString msg)
     socket->write(block);
     socket->flush();
     qDebug()<<"send to servr:"<<block;
-    qDebug()<<"send to server:"<<block;
+    qDebug()<<"send to server:"<<msg;
 }
 
 void V3dR_Communicator::processReaded(QStringList list)
@@ -121,7 +121,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     QRegExp dellineRex("^/delline:(.*)$");
     QRegExp addmarkerRex("^/addmarker:(.*)$");
     QRegExp delmarkerRex("^/delmarker:(.*)$");
-    QRegExp retypelineRex("^/retype:(.*)$");
+    QRegExp retypelineRex("^/retypeline:(.*)$");
 
 //    QRegExp dragnodeRex("^/drag_node:(.*)$");
 //    QRegExp creatorRex("^/creator:(.*)__(.*)$");
@@ -135,6 +135,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         //line msg format:username clienttype RESx RESy RESz;type x y z;type x y z;...
         QString msg=drawlineRex.cap(1);
         QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+        qDebug()<<msg;
         if(listwithheader.size()<1)
         {
             qDebug()<<"msg only contains header:"<<msg;
@@ -152,6 +153,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         //line msg format:username clienttype RESx RESy RESz;type x y z;type x y z;...
         QString msg = dellineRex.cap(1);
         QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+                qDebug()<<msg;
         if(listwithheader.size()<1)
         {
             qDebug()<<"msg only contains header:"<<msg;
@@ -170,6 +172,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         //marker msg format:username clienttype RESx RESy RESz;type x y z
         QString msg = addmarkerRex.cap(1);
         QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+                qDebug()<<msg;
         if(listwithheader.size()<1)
         {
             qDebug()<<"msg only contains header:"<<msg;
@@ -186,6 +189,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         //marker msg format:username clienttype RESx RESy RESz;type x y z
         QString msg = delmarkerRex.cap(1);
         QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+                qDebug()<<msg;
         if(listwithheader.size()<1)
         {
             qDebug()<<"msg only contains header:"<<msg;
@@ -201,7 +205,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     }else if(retypelineRex.indexIn(line)!=-1)
     {
         //line msg format:username clienttype  newtype RESx RESy RESz;type x y z;type x y z;...
-        QString msg = delmarkerRex.cap(1);
+        QString msg = retypelineRex.cap(1);
         QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
         if(listwithheader.size()<=1)
         {
@@ -227,6 +231,12 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
+        qDebug()<<"-----------------UpdateAddSegMsg-----------------------------";
+        qDebug()<<"username = "<<userName;
+        qDebug()<<"clienttype = "<<clienttype;
+        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -238,10 +248,18 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
+        qDebug()<<"-----------------UpdateDelSegMsg-----------------------------";
+        qDebug()<<"username = "<<userName;
+        qDebug()<<"clienttype = "<<clienttype;
+        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5")
+        .arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         sendMsg(QString("/delline:"+result.join(";")));
+        qDebug()<<"-------------------EndUpdateDelSegMsg-----------------------------";
     }
 }
 
@@ -249,18 +267,31 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
 {
     if(clienttype=="TeraFly")
     {
+        qDebug()<<"-----------------UpdateAddMarkerMsg-----------------------------";
+        qDebug()<<"username = "<<userName;
+        qDebug()<<"clienttype = "<<clienttype;
+        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/addmarker:"+result.join(";")));
+        qDebug()<<"-----------------eNDUpdateAddMarkerMsg-----------------------------";
     }
 }
 void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
+        qDebug()<<"-----------------UpdateDelMarkerSeg-----------------------------";
+        qDebug()<<"username = "<<userName;
+        qDebug()<<"clienttype = "<<clienttype;
+        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
@@ -273,10 +304,16 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
 {
     if(clienttype=="TeraFly")
     {
+        qDebug()<<"-----------------UpdateRetypeSegMsg-----------------------------";
+        qDebug()<<"username = "<<userName;
+        qDebug()<<"clienttype = "<<clienttype;
+        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(userName).arg(clienttype).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
-        sendMsg(QString("/delline:"+result.join(";")));
+        sendMsg(QString("/retypeline:"+result.join(";")));
     }
 }
 
@@ -312,6 +349,7 @@ XYZ V3dR_Communicator::ConvertGlobaltoLocalBlockCroods(double x,double y,double 
     node.x-=(ImageStartPoint.x-1);
     node.y-=(ImageStartPoint.y-1);
     node.z-=(ImageStartPoint.z-1);
+    qDebug()<<"ConvertGlobaltoLocalBlockCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
     return node;
 }
 
@@ -320,8 +358,8 @@ XYZ V3dR_Communicator::ConvertLocalBlocktoGlobalCroods(double x,double y,double 
     x+=(ImageStartPoint.x-1);
     y+=(ImageStartPoint.y-1);
     z+=(ImageStartPoint.z-1);
-    XYZ node=ConvertLocalBlocktoGlobalCroods(x,y,z);
-
+    XYZ node=ConvertCurrRes2MaxResCoords(x,y,z);
+    qDebug()<<"ConvertLocalBlocktoGlobalCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
     return node;
 }
 

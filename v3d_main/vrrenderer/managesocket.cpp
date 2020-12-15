@@ -166,17 +166,28 @@ void ManageSocket::processMsg( QString &msg)
         QString type=response.at(response.size()-2);
         QString dirname=response.at(response.size()-1);
         listwidget=new QListWidget;
+        listwidget->resize(300,500);
         listwidget->setWindowTitle("choose annotation file");
+        listwidget->clear();
+
         if(type=="down")
+        {
             connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
-                this,SLOT(download(QListWidgetItem*)));
+                    this,SLOT(download(QListWidgetItem*)));
+            for(int i=0;i<response.size()-2;i++)
+            {
+                listwidget->addItem(response.at(i));
+            }
+        }
         else if(type=="load")
+        {
             connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                     this,SLOT(load(QListWidgetItem*)));
-        listwidget->clear();
-        for(int i=0;i<response.size()-2;i++)
-        {
-            listwidget->addItem(response.at(i));
+            for(int i=0;i<response.size()-2;i++)
+            {
+                if(response.at(i).endsWith("ano"))
+                    listwidget->addItem(response.at(i));
+            }
         }
         listwidget->show();
     }else if(CommunPort.indexIn(msg)!=-1)
@@ -210,7 +221,7 @@ void ManageSocket::processMsg( QString &msg)
         pmain->Communicator->socket->connectToHost(ip,port);
         if(!pmain->Communicator->socket->waitForConnected())
         {
-            QMessageBox::information(0,tr("Manage "),
+            QMessageBox::information(0,tr("Message "),
                              tr("connect failed"),
                              QMessageBox::Ok);
             return;
