@@ -58,7 +58,7 @@ void VR_MainWindow::TVProcess(QString line)
     qDebug()<<"TeraVr reveive:"<<line;
     line=line.trimmed();
     if (drawlineRex.indexIn(line) != -1) {
-        qDebug()<<"TeraVR add seg";
+//        qDebug()<<"TeraVR add seg";
         QStringList listwithheader=drawlineRex.cap(1).split(";",QString::SkipEmptyParts);
         if(listwithheader.size()<1) return;
 
@@ -68,14 +68,14 @@ void VR_MainWindow::TVProcess(QString line)
         if(listwithheader.size()>1)
         {
             QVector<XYZ> coords;
-            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
-                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
-            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
-                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
-            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
-                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
-            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
-                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+//            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+//                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+//            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+//                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+//            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+//                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+//            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+//                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
             for(int i=1;i<listwithheader.size();i++)
             {
                 auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
@@ -104,7 +104,7 @@ void VR_MainWindow::TVProcess(QString line)
         line=line.trimmed();qDebug()<<line;
 
         QStringList listwithheader=line.split(";",QString::SkipEmptyParts);
-        qDebug()<<"list with header:"<<listwithheader;
+//        qDebug()<<"list with header:"<<listwithheader;
         if(listwithheader.size()<1) return;
          QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
 
@@ -112,14 +112,14 @@ void VR_MainWindow::TVProcess(QString line)
         if(listwithheader.size()>1)
         {
             QVector<XYZ> coords;
-            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
-                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
-            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
-                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
-            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
-                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
-            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
-                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+//            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+//                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+//            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+//                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+//            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+//                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+//            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+//                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
             for(int i=1;i<listwithheader.size();i++)
             {
                 auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
@@ -162,14 +162,14 @@ void VR_MainWindow::TVProcess(QString line)
         if(listwithheader.size()>1)
         {
             QVector<XYZ> coords;
-            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
-                            <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
-                     qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
-                            <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
-                     qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
-                            <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
-                     qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
-                            <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+//            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+//                            <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+//                     qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+//                            <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+//                     qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+//                            <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+//                     qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+//                            <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
             for(int i=1;i<listwithheader.size();i++)
             {
                 auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);

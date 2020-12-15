@@ -6719,8 +6719,8 @@ void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to 
         NeuronSWC S_temp;
         S_temp.n=i+1;
         S_temp.x=coords[i].x;
-        S_temp.x=coords[i].y;
-        S_temp.x=coords[i].z;
+        S_temp.y=coords[i].y;
+        S_temp.z=coords[i].z;
         S_temp.type=type;
         S_temp.r=1;
         if(i==0)
@@ -7938,7 +7938,7 @@ void CMainApplication::SetupSingleMorphologyLine(int ntIndex, int processMode)
 	if (processMode == 0)
 	// add a new VAO&VBO for new segment in sketchedNTList
 	{
-        qDebug()<<"add vao";
+//        qDebug()<<"add vao";
 		iSketchNTLMorphologyVAO.push_back(0);
 		iSketchNTLMorphologyVertBuffer.push_back(0);
 		iSketchNTLMorphologyIndexBuffer.push_back(0);	
