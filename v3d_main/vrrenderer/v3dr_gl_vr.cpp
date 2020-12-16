@@ -1331,7 +1331,7 @@ void CMainApplication::Shutdown()
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-        qDebug()<<"delete 1";
+
         j=0;
 		for(auto i = loaded_cylinders.begin();i!=loaded_cylinders.end();i++) 
 		{
@@ -1339,7 +1339,7 @@ void CMainApplication::Shutdown()
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-            qDebug()<<"delete 2";
+//            qDebug()<<"delete 2";
         j=0;
 		for(auto i = sketch_spheres.begin();i!=sketch_spheres.end();i++) 
 		{
@@ -1347,7 +1347,7 @@ void CMainApplication::Shutdown()
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-        qDebug()<<"delete 3";
+//        qDebug()<<"delete 3";
         j=0;
 		for(auto i = sketch_cylinders.begin();i!=sketch_cylinders.end();i++)
 		{
@@ -1355,7 +1355,7 @@ void CMainApplication::Shutdown()
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-        qDebug()<<"delete 4";
+//        qDebug()<<"delete 4";
         j=0;
 		for(auto i = Agents_spheres.begin();i!=Agents_spheres.end();i++)
 		{
@@ -1363,7 +1363,7 @@ void CMainApplication::Shutdown()
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-        qDebug()<<"delete 5";
+//        qDebug()<<"delete 5";
         j=0;
 		for(auto i = Markers_spheres.begin();i!=Markers_spheres.end();i++) 
 		{
@@ -1371,13 +1371,13 @@ void CMainApplication::Shutdown()
 				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
 				j++;
 		}
-qDebug()<<"delete 6";
+//qDebug()<<"delete 6";
 		if(ctrSphere)
         {
             delete ctrSphere;
             ctrSphere=nullptr;
         }
-qDebug()<<"delete 7";
+//qDebug()<<"delete 7";
 			
 		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
@@ -1407,7 +1407,7 @@ qDebug()<<"delete 7";
 		sketchedNTList.clear();
 		drawnMarkerList.clear();
 		markerVisibility.clear();
-qDebug()<<"delete 8";
+//qDebug()<<"delete 8";
 		if(pick_node)  pick_node = 0;
 		if( m_unMorphologyLineModeVAO != 0 )
 		{
@@ -1415,33 +1415,33 @@ qDebug()<<"delete 8";
 			glDeleteBuffers(1, &m_glMorphologyLineModeVertBuffer);
 			glDeleteBuffers(1, &m_glMorphologyLineModeIndexBuffer);
 		}
-qDebug()<<"delete 9";
+//qDebug()<<"delete 9";
 		if( m_unSketchMorphologyLineModeVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unSketchMorphologyLineModeVAO );
 			glDeleteBuffers(1, &m_glSketchMorphologyLineModeVertBuffer);
 			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
 		}
-qDebug()<<"delete 10";
+//qDebug()<<"delete 10";
 		if( m_VolumeImageVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
 			//glDeleteBuffers(1, &m_imageVBO);
 		}
-qDebug()<<"delete 11";
+//qDebug()<<"delete 11";
 		if( m_clipPatchVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_clipPatchVAO );
 			//glDeleteBuffers(1, &m_imageVBO);
 		}
-qDebug()<<"delete 12";
+//qDebug()<<"delete 12";
 		if( m_unCompanionWindowVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unCompanionWindowVAO );
 			glDeleteBuffers(1, &m_glCompanionWindowIDVertBuffer);
 			glDeleteBuffers(1, &m_glCompanionWindowIDIndexBuffer);
 		}
-        qDebug()<<"delete 13";
+//        qDebug()<<"delete 13";
 		if( m_unControllerVAO != 0 )
 		{
 			glDeleteVertexArrays( 1, &m_unControllerVAO );
@@ -1449,7 +1449,7 @@ qDebug()<<"delete 12";
 		} 
 	}
 
-qDebug()<<"delete 14";
+//qDebug()<<"delete 14";
 	if( m_pCompanionWindow )
 	{
 	//	if(font_VR->self)
@@ -1468,7 +1468,7 @@ qDebug()<<"delete 14";
 		m_pCompanionWindow = NULL;
 	}
 
-qDebug()<<"delete 15";
+//qDebug()<<"delete 15";
     SDL_Quit();
     qDebug()<<"shut down sucess!";
 }
@@ -1908,7 +1908,7 @@ bool CMainApplication::HandleOneIteration()
     //qdebug()<<"huanglei debug 9";
 	RenderFrame();
     //qdebug()<<"huanglei debug 10";
-	if(bQuit==true) Shutdown();
+//	if(bQuit==true) Shutdown();
         //qdebug()<<"huanglei debug 11";
 	return bQuit;
 
@@ -7943,11 +7943,13 @@ void CMainApplication::SetupSingleMorphologyLine(int ntIndex, int processMode)
 		iSketchNTLMorphologyVertBuffer.push_back(0);
 		iSketchNTLMorphologyIndexBuffer.push_back(0);	
 		iSketchNTLMorphologyVertcount.push_back(0);
+        qDebug()<<"----2-----";
         SetupMorphologyLine(sketchedNTList.at(ntIndex),
                             iSketchNTLMorphologyVAO.at(ntIndex),
                             iSketchNTLMorphologyVertBuffer.at(ntIndex),
                             iSketchNTLMorphologyIndexBuffer.at(ntIndex),
                             iSketchNTLMorphologyVertcount.at(ntIndex),2);
+        qDebug()<<"----3-----";
 	}
 	else if (processMode == 1)
 	// changed a node's pos in dragmode ,then reset the VAO&VBO at ntIndex 
@@ -7990,9 +7992,11 @@ void CMainApplication::SetupAllMorphologyLine()
 		iSketchNTLMorphologyVertcount.clear();
 	}
 
+    qDebug()<<"set up single";
 	// for each segment in sketchedNTL ,add its VAO&VBO
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
+
 		SetupSingleMorphologyLine(i,0);
 	}
 	qDebug()<<"Set up all NTs' VAO&VBO done";

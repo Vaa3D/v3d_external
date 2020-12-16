@@ -17,7 +17,8 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 {
 	userName="";
 	VR_Communicator = TeraflyCommunicator;
-
+    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
+    connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
 //    connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySendSeg()));
     userName = TeraflyCommunicator->userName;
     CURRENT_DATA_IS_SENT=false;
@@ -481,11 +482,11 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 	if (!pMainApplication->BInit())
 	{
 		pMainApplication->Shutdown();
+        qDebug()<<"init failed";
 		return 0;
 	}
 	SendVRconfigInfo();
-    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
-    connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
+
 	RunVRMainloop(zoomPOS);
     pMainApplication->Shutdown();
     qDebug()<<"Now quit VR";
@@ -499,8 +500,6 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
     CreatorPos->z = VR_Communicator->CreatorMarkerPos.z;
     CreatorRes = VR_Communicator->CreatorMarkerRes;
     qDebug()<<"call that function is"<<_call_that_function;
-    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
-    connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
     delete pMainApplication;
     pMainApplication=0;
     return _call_that_function;
