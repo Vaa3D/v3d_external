@@ -1054,7 +1054,10 @@ void CViewer::receiveData(
 				if (PMain::getInstance()->resumeVR)
 				{
 					PMain::getInstance()->resumeVR = false;
-					QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+                    if(PMain::getInstance()->Communicator)
+                        QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
+                    else
+                        QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
 				}
             }
         }
@@ -2402,7 +2405,10 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         if (PMain::getInstance()->resumeVR)
         {
             PMain::getInstance()->resumeVR = false;
-            QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+            if(PMain::getInstance()->Communicator)
+                QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
+            else
+                QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
         }
 
         // in situ translation at the same resolution
