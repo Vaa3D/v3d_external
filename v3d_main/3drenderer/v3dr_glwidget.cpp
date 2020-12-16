@@ -1910,9 +1910,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
                         collaborationMaxResolution
                         );
 
-            //绑定VR——communicate
-			qDebug()<<"result is "<<_call_that_func;
-			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+
 
 //			UpdateVRcollaInfo();
 
@@ -1924,6 +1922,9 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 
 			if (_call_that_func > 0)
 			{
+                qDebug()<<"result is "<<_call_that_func;
+                qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+
 				resumeCollaborationVR = true;
 				emit(signalCallTerafly(_call_that_func));
 			}
@@ -1938,7 +1939,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			v3d_msg("The ** client is running.Failed to start VR client.");
 			this->getMainWindow()->show();
 		}
-	}
+    }
 	else
     {//non collaborate mode
 		// bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
