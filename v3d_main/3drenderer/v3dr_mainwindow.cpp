@@ -763,9 +763,9 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0)"
                        <<connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), glWidget, SLOT(CollretypeSeg(QString,int)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString,int)), glWidget, SLOT(addMarker(QString,int)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), glWidget, SLOT(addMarker(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), glWidget, SLOT(CollaAddMarker(QString)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(delMarker(QString)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(delMarker(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(CollaDelMarker(QString)));
             }else
             {
                 qDebug()<<"glWidget->TeraflyCommunicator==0";

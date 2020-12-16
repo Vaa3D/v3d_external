@@ -4030,6 +4030,7 @@ void PMain::import()
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
         QString anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
+        if(anofile_path.isNull()) return;
         QString apofile_path;
         QString swcfile_path;
         {
