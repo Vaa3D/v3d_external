@@ -1870,6 +1870,7 @@ void V3dR_GLWidget::process3Dwindow(bool show)
 	}
 
 }
+//called by clicking collaborate button in 3D View or shift/zoom in VR
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
 	Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
@@ -1881,9 +1882,6 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 	{
 		if (TeraflyCommunicator )
 		{
-			if(myvrwin)
-				delete myvrwin;
-			myvrwin = 0;
             myvrwin = new VR_MainWindow(TeraflyCommunicator);
 			myvrwin->setWindowTitle("VR MainWindow");
 			bool linkerror = (TeraflyCommunicator == nullptr);
@@ -1898,6 +1896,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
+            //_call_that_cun 1~9 is shift or zoom
             int _call_that_func =myvrwin->StartVRScene(
                         listNeuronTrees,
                         img4d,
@@ -1910,6 +1909,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
                         &CollaborationCreatorPos,
                         collaborationMaxResolution
                         );
+
             //绑定VR——communicate
 			qDebug()<<"result is "<<_call_that_func;
 			qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -1917,16 +1917,21 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 //			UpdateVRcollaInfo();
 
 			updateWithTriView();
-			img4d->update_3drenderer_neuron_view();
+            img4d->update_3drenderer_neuron_view();
+
+            delete myvrwin;
+            myvrwin=nullptr;
+
 			if (_call_that_func > 0)
 			{
 				resumeCollaborationVR = true;
 				emit(signalCallTerafly(_call_that_func));
 			}
-			else if(_call_that_func == -1)
+            else if(_call_that_func == -1)//a temporary status for some special use,
 			{
 				call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
 			}
+
 		}
 		else
 		{
@@ -1935,7 +1940,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 		}
 	}
 	else
-	{
+    {//non collaborate mode
 		// bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
 		int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
 		qDebug()<<"result is "<<_call_that_func;
