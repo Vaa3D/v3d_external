@@ -3306,7 +3306,8 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
-	if (w->TeraflyCommunicator)
+    if (w->TeraflyCommunicator
+    &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
 	{
         vector<V_NeuronSWC> vector_VSWC;
         curImg->ExtractDeletingNode(vector_VSWC);
@@ -7183,8 +7184,12 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                 for(int cnt=0;cnt<idlist.size();cnt++)
                     if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
                     {
-                        w->SetupCollaborateInfo();
-                        w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
+                        if(w->TeraflyCommunicator
+                        &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                        {
+                            w->SetupCollaborateInfo();
+                            w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
+                        }
                     }
             }
 

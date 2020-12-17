@@ -733,12 +733,16 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 	{
 		if (glWidget)	glWidget->makeCurrent(); //090715
 
-		if (lastActive != this) //need updateTool
+        if (!this->isHidden()&&lastActive != this) //need updateTool
         {
             if(lastActive)
+            {
+                qDebug()<<"this->getDataTitle()="<<this->getDataTitle();
+                qDebug()<<"lastActive->getDataTitle()="<<dynamic_cast<V3dR_MainWindow*>(lastActive)->getDataTitle();
                 lastActive->hide();
+            }
 			lastActive = this;
-
+            this->show();
 			qDebug() << QString("V3dR_MainWindow::changeEvent, ActivationChange-> %1").arg(title_prefix+" [" + data_title + "]");
 
 			if (glWidget)  glWidget->updateTool();

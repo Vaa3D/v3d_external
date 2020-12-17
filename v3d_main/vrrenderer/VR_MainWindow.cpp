@@ -540,8 +540,12 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             QStringList waitsend=pMainApplication->NT2QString();
             waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
 			pMainApplication->ClearCurrentNT();
-            VR_Communicator->sendMsg("/drawline:"+waitsend.join(";"));
-			CURRENT_DATA_IS_SENT=true;
+            if(VR_Communicator&&
+                VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+            {
+                VR_Communicator->sendMsg("/drawline:"+waitsend.join(";"));
+                CURRENT_DATA_IS_SENT=true;
+            }
 		}
 		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
 		{
@@ -554,12 +558,16 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                     .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                 }
+                if(VR_Communicator&&
+                    VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                {
                 VR_Communicator->sendMsg(QString("/delline:"+result.join(";")));
 				CURRENT_DATA_IS_SENT=true;
                 pMainApplication->SegNode_tobedeleted.x = 0;
                 pMainApplication->SegNode_tobedeleted.y = 0;
                 pMainApplication->SegNode_tobedeleted.z = 0;
                 qDebug()<<"TeraVR del seg sucess";
+                }
             }else{
                 pMainApplication->READY_TO_SEND=false;
 				CURRENT_DATA_IS_SENT=false;
@@ -579,11 +587,19 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if(ConvertedmarkerPOS.split(" ")[0]=="-1")
                 {
                     qDebug()<<"TeraVR del marker";
-                    VR_Communicator->sendMsg(QString("/delmarker:" + result.join(";")));
+                    if(VR_Communicator&&
+                        VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        VR_Communicator->sendMsg(QString("/delmarker:" + result.join(";")));
+                    }
                 }else
                 {
                     qDebug()<<"TeraVR add marker";
-                    VR_Communicator->sendMsg(QString("/addmarker:" + result.join(";") ));
+                    if(VR_Communicator&&
+                        VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        VR_Communicator->sendMsg(QString("/addmarker:" + result.join(";") ));
+                    }
                 }
                 pMainApplication->markerPOS.clear();
                 CURRENT_DATA_IS_SENT=true;

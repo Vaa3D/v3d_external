@@ -46,7 +46,7 @@ void ManageSocket::onreadyRead()
 		QString messageOrFileName = QString::fromUtf8(this->read(dataInfo.stringOrFilenameSize), dataInfo.stringOrFilenameSize);
 
 
-//        qDebug()<<messageOrFileName<<dataInfo.filedataSize;
+        qDebug()<<messageOrFileName<<dataInfo.filedataSize;
         if(dataInfo.filedataSize)
         {
             if(!QDir(QCoreApplication::applicationDirPath()+"/download").exists())
@@ -153,6 +153,7 @@ void ManageSocket::processReaded(QStringList list)
 }
 void ManageSocket::processMsg( QString &msg)
 {
+
     QRegExp FileList("(.*):CurrentFiles");//down;data:CurrentFiles
     QRegExp CommunPort("(.*):Port");
     if(FileList.indexIn(msg)!=-1)
@@ -217,7 +218,7 @@ void ManageSocket::processMsg( QString &msg)
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
 
-        connect(this,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(deleteLater()));
+        connect(this,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(onMessageDisConnect()));
         pmain->Communicator->socket->connectToHost(ip,port);
         if(!pmain->Communicator->socket->waitForConnected())
         {
@@ -252,7 +253,9 @@ void ManageSocket::load(QListWidgetItem* item)
 {
     QString filename=item->text().trimmed();
     if(filename.endsWith(".ano"))
-    {sendMsg(filename.left(filename.size()-4)+":LoadANO");}
+    {
+        sendMsg(filename.left(filename.size()-4)+":LoadANO");
+    }
     else
         qDebug()<<"choose file with .ano";
     listwidget->deleteLater();
@@ -269,9 +272,17 @@ void ManageSocket::onMessageConnect()
     pmain->collaborationVRView->setEnabled(true);
     pmain->collautotrace->setEnabled(false);
     QMessageBox::information(0,tr("Message "),
-                     tr("Connect sucess!"),
+                     tr("Load Annotation Sucess!"),
                      QMessageBox::Ok);
 }
 
+void ManageSocket::onMessageDisConnect()
+{
+    pmain->Communicator->socket->deleteLater();
+    pmain->Communicator ->deleteLater();
+    pmain->Communicator = nullptr;
+    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+}
 
 

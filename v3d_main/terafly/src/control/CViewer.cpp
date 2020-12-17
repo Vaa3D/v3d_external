@@ -1938,9 +1938,10 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                    vaa3dMarkers[j].z == imageMarkers[i].z &&
                    !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this))
                     vaa3dMarkers_tbd.push_back(j);
+			 
 
-
-            if(view3DWidget->TeraflyCommunicator!=nullptr)
+            if(view3DWidget->TeraflyCommunicator!=nullptr
+				&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
             {
                 view3DWidget->SetupCollaborateInfo();
                 view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(imageMarkers[i].x,

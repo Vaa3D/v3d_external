@@ -4264,7 +4264,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 		S.on = true;
 		listLoc.append(S);
 
-        if(!fromserver&&w->TeraflyCommunicator!=nullptr)
+        if(!fromserver&&w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
         {
             w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,int(currentTraceType),"TeraFly");
