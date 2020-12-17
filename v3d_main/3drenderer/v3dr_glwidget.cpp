@@ -1893,6 +1893,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
             }
 			//connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
 			QString VRinfo = this->getDataTitle();
+            qDebug()<<"in collaboarte mode";
 			qDebug()<<"VR get data_title = "<<VRinfo;
 			resumeCollaborationVR = false;//reset resumeCollaborationVR
 			myvrwin->ResIndex = Resindex;
@@ -1910,7 +1911,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
                         collaborationMaxResolution
                         );
 
-
+            qDebug()<<"--------------1--------------------";
 
 //			UpdateVRcollaInfo();
 
@@ -4383,7 +4384,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {
-    float mindist=1;
+    float mindist=0.2*TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x;
     int index=-1;
     for(int i=0;i<v_ns_list.seg.size();i++)
     {

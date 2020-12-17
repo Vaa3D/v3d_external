@@ -132,7 +132,7 @@ void VR_MainWindow::TVProcess(QString line)
 
             if(pMainApplication)
             {
-                if(!pMainApplication->DeleteSegment(coords,1*VRVolumeCurrentRes.x/VRvolumeMaxRes.x))
+                if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
                 {
                     qDebug()<<"delete in block failed";
                         listwithheader.removeAt(0);
@@ -178,7 +178,7 @@ void VR_MainWindow::TVProcess(QString line)
             }
             if(pMainApplication)
               {
-                  if(!pMainApplication->retypeSegment(coords,1*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,type));
+                  if(!pMainApplication->retypeSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,type));
                   {
                       listwithheader.removeAt(0);
                       VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type);
