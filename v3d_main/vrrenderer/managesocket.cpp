@@ -218,7 +218,7 @@ void ManageSocket::processMsg( QString &msg)
         connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
                 cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
 
-        connect(this,SIGNAL(disconnected()),cur_win->getGLWidget()->TeraflyCommunicator,SLOT(onMessageDisConnect()));
+        connect(pmain->Communicator->socket,SIGNAL(disconnected()),pmain,SLOT(onMessageDisConnect()));
         pmain->Communicator->socket->connectToHost(ip,port);
         if(!pmain->Communicator->socket->waitForConnected())
         {
@@ -276,13 +276,6 @@ void ManageSocket::onMessageConnect()
                      QMessageBox::Ok);
 }
 
-void ManageSocket::onMessageDisConnect()
-{
-    pmain->Communicator->socket->deleteLater();
-    pmain->Communicator ->deleteLater();
-    pmain->Communicator = nullptr;
-    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
-    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
-}
+
 
 

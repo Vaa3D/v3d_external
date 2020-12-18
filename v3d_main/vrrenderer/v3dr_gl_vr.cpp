@@ -6868,14 +6868,17 @@ bool CMainApplication::retypeSegment(QVector<XYZ> coords,float dist,int type)
     int index=findseg(coords,dist);
     if(index>=0)
     {
+        qDebug()<<"find index = "<<index;
         for(int i=0;i<sketchedNTList[index].listNeuron.size();i++)
         {
             sketchedNTList[index].listNeuron[i].type=type;
         }
+        qDebug()<<"paint GL";
         SetupSingleMorphologyLine(index, 1);
         return true;
     }else
     {
+        qDebug()<<"not find to retype";
         return false;
     }
 
@@ -6937,7 +6940,10 @@ int CMainApplication::findseg(QVector<XYZ> coords,float dist)
                       +pow(nt.listNeuron[j].z-coords[j].z,2));
         }
         if(sum/nt.listNeuron.size()<dist)
-            index=i;
+        {
+            index=i;dist=sum/nt.listNeuron.size();
+        }
+
        reverse(coords.begin(),coords.end());
        sum=0;
        for(int j=0;j<nt.listNeuron.size();j++)
@@ -6947,7 +6953,9 @@ int CMainApplication::findseg(QVector<XYZ> coords,float dist)
                      +pow(nt.listNeuron[j].z-coords[j].z,2));
        }
        if(sum/nt.listNeuron.size()<dist)
-           index=i;
+       {
+           index=i;dist=sum/nt.listNeuron.size();
+       }
     }
     return  index;
 }

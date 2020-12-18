@@ -53,6 +53,7 @@
 #include "QUndoMarkerDeleteROI.h"
 #include "v3d_application.h"
 #include <cmath>
+#include <QMessageBox>
 
 
 using namespace tf;
@@ -1946,7 +1947,12 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                 view3DWidget->SetupCollaborateInfo();
                 view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(imageMarkers[i].x,
                                imageMarkers[i].y,imageMarkers[i].z,"TeraFly");
-            }
+            }/*else
+            {
+                QMessageBox::information(0,tr("Message "),
+                                 tr("Connection Lost!Data has been saved!"),
+                                 QMessageBox::Ok);
+            }*/
         }
     }
 

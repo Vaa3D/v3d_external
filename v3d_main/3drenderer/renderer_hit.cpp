@@ -44,6 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
+//#include <QMessageBox>
 //#include "../terafly/src/control/CImport.h"
 #include "v3d_application.h"
 
@@ -4269,7 +4270,11 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
             w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,int(currentTraceType),"TeraFly");
 //			w->TeraflyCommunicator->UpdateSendPoolNode2(S.x, S.y, S.z, (int)S.color.r, (int)S.color.g, (int)S.color.b);//Update by FJ 2020/6/14
-        }
+        }/*else
+        {
+            QMessageBox::information(0,tr("Message "),
+                             tr("Connection Lost!Data has been saved!"),
+                             QMessageBox::Ok);*/
 //		updateLandmark();
     }
 #else

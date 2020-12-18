@@ -609,6 +609,7 @@ public slots:
         void deleteManageSocket();
         void ColLoadANO(QString ANOfile);
         void onManageConnected();
+        void onMessageDisConnect();
 //        void startAutoTrace();//自动算法
 signals:
        // void signal_communicator_read_res(QString ,XYZ*);//读取自动算法的结果

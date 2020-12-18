@@ -61,7 +61,7 @@ public slots:
     void download(QListWidgetItem*);
     void load(QListWidgetItem*);
     void onMessageConnect();
-    void onMessageDisConnect();
+//    void onMessageDisConnect();
 private:
     /**
      * @brief resetDataInfo

@@ -4136,8 +4136,8 @@ void PMain::deleteManageSocket()
     qDebug()<<"Manage socket disconnected";
     if(!managesocket->flag)
     {
-        QMessageBox::information(this,tr("Manage socket Connection is out!"),
-                                 tr("Data has been safely stored.\nPlease restart vaa3d"),
+        QMessageBox::information(this,tr("Manage"),
+                                 tr("User is offline!\nPlease re-connet to the server!"),
                                  QMessageBox::Ok);
     }
     managesocket->pmain=nullptr;
@@ -4231,6 +4231,20 @@ void PMain::ColLoadANO(QString ANOfile)
     }
     V3dR_GLWidget::noTerafly=false;
 
+}
+
+void PMain::onMessageDisConnect()
+{
+    this->Communicator->socket->deleteLater();
+    this->Communicator ->deleteLater();
+    this->Communicator = nullptr;
+    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+    QMessageBox::information(0,tr("Message "),
+                     tr("Data unloaded.Further operations won't be synced!"),
+                     QMessageBox::Ok);
+    if(managesocket!=0)
+        managesocket->disconnectFromHost();
 }
 
 //void PMain::startAutoTrace()

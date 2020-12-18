@@ -74,6 +74,7 @@
 #include <map>
 #include <algorithm>
 #include <ctime>
+//#include <QMessageBox>
 
 //#include <boost/chrono.hpp>
 //#include <boost/thread/thread.hpp>
@@ -3318,7 +3319,12 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
             w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
-	}
+    }/*else
+    {
+        QMessageBox::information(0,tr("Message "),
+                         tr("Connection Lost!Data has been saved!"),
+                         QMessageBox::Ok);
+    }*/
     curImg->tracedNeuron.deleteMultiSeg();
 
     //curImg->proj_trace_history_append();          // no need to update the history

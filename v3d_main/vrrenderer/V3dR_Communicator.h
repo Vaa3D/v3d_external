@@ -107,11 +107,11 @@ public slots:
      * 发送用户登陆消息
      */
     void onConnected();
-    /**
-     * @brief onDisconnected
-     * 服务器断开
-     */
-    void onDisconnected();
+//    /**
+//     * @brief onDisconnected
+//     * 服务器断开
+//     */
+//    void onDisconnected();
 
 //    void read_autotrace(QString,XYZ*);
 //    void undo();
@@ -131,7 +131,7 @@ public:
     void emitDelSeg(QString segInfo) {emit delSeg(segInfo);}
     void emitAddMarker(QString markerInfo) {emit addMarker(markerInfo);}
     void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
-    void emitRetypeSeg(QString segInfo,int type) {emitRetypeSeg(segInfo,type);}
+    void emitRetypeSeg(QString segInfo,int type) {emit retypeSeg(segInfo,type);}
 private:
     /**
      * @brief resetDataInfo

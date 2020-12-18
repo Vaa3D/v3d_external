@@ -4223,12 +4223,14 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
     marker.z=markerXYZ.at(3).toFloat();
 
     int index=-1;
-    int mindist=1;
+    double mindist=1;
     for(int i=0;i<markers.size();i++)
     {
-        float dist = /*glm::*/sqrt((markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
-                               (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
-                               (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z));
+        double dist = sqrt(
+                    (markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
+                    (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
+                    (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z)
+                    );
         if(dist<mindist)
         {
             mindist=dist;
@@ -4239,7 +4241,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
         markers.removeAt(index);
     else
 		qDebug()<<"Error:cannot find marker <1 " + markerPOS;
-   L: terafly::PluginInterface::setLandmark(markers,true);
+   terafly::PluginInterface::setLandmark(markers,true);
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
 {
@@ -4277,7 +4279,6 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
         {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
         //the following (20-275) is used for matlab heat map. 120209 by WYN
         {0,0,131}, //20
-		
             };
     marker.color.r = neuron_type_color[type][0];
     marker.color.g = neuron_type_color[type][1];
@@ -4301,7 +4302,7 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 //    float mindist=1*TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x;
 //    if(!rendererGL1Ptr->deleteMultiNeuronsByStrokeCommit(local_list,mindist))
         deleteCurveInAllSpace(segInfo);
-    POST_updateGL();
+//    POST_updateGL();
 }
 
 //NeuronTree V3dR_GLWidget::convertMsg2NT(QStringList list)
@@ -4384,13 +4385,22 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {
-    float mindist=0.2*TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x;
+    float mindist=0.2/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
+    qDebug()<<"threshold="<<mindist;
     int index=-1;
+
+//    for(int j=0;j<coords.size();j++)
+//    {
+//        qDebug()<<j<<":"<<coords[j].x<<" "<<coords[j].y<<" "<<coords[j].z;
+//    }
     for(int i=0;i<v_ns_list.seg.size();i++)
     {
         if(coords.size()!=v_ns_list.seg.at(i).row.size()) continue;
-
         auto seg=v_ns_list.seg.at(i).row;
+//        for(int j=0;j<coords.size();j++)
+//        {
+//            qDebug()<<j<<":"<<seg[j].x<<" "<<seg[j].y<<" "<<seg[j].z;
+//        }
         float sum=0;
         for(int j=0;j<coords.size();j++)
         {
@@ -4457,12 +4467,12 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
         newTempNT.listNeuron.clear();
         newTempNT.hashNeuron.clear();
         QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
-        qDebug()<<segInfo;
+//        qDebug()<<segInfo;
         for (int i = 0; i<qsl.size(); i++)
         {
             NeuronSWC S;
             QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
-            qDebug()<<i<<":"<<nodelist;
+//            qDebug()<<i<<":"<<nodelist;
             if(nodelist.size()<4) return;
             S.n=i+1;
             S.type=nodelist[0].toInt();
@@ -4477,7 +4487,7 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
             newTempNT.listNeuron.push_back(S);
             newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
         }
-        qDebug()<<"new NT is constructed";
+//        qDebug()<<"new NT is constructed";
         seg=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
     }
     qDebug()<<"new seg is constructed";

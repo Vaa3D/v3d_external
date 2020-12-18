@@ -30,6 +30,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "freeglut_geometry_r.c"
 
 #include "../io/asc_to_swc.h"
+//#include <QMessageBox>
 //#include "../io/sswc_to_swc.h"
 //#include "../../../vaa3d_tools/released_plugins/v3d_plugins/resample_swc/resampling.h"
 
@@ -1835,7 +1836,12 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
 					w->SetupCollaborateInfo();
                     w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg,"TeraFly");
-				}
+                }/*else
+                {
+                    QMessageBox::information(0,tr("Message "),
+                                     tr("Connection Lost!Data has been saved!"),
+                                     QMessageBox::Ok);
+                }*/
 			}	
             curImg->update_3drenderer_neuron_view(w, this);
         }

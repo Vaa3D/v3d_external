@@ -148,7 +148,7 @@ V3dR_MainWindow::~V3dR_MainWindow()
 		_idep->b_still_open = false; //switch order of the last sentence. by PHC, 080814
 		_idep->window3D = 0; //100803 RZC
 	}
-
+    qDebug()<<"V3dR_MainWindow::~V3dR_MainWindow end";
 #else
 	//qApp->quit(); //this equal exit(0)
 	QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit)); // this more OK

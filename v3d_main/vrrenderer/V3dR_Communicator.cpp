@@ -17,6 +17,7 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
     resetDataInfo();
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(this->socket,SIGNAL(connected()),this,SLOT(onConnected()));
+//    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
     connect(socket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
 
 }
@@ -336,12 +337,12 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
     return result;
 }
 
-void V3dR_Communicator::onDisconnected() {
-    QMessageBox::information(0,tr("Message socket Connection is out!"),
-                     tr("Data has been safely stored!\nif it is not you disconnect.\nPlease restart vaa3d"),
-                     QMessageBox::Ok);
-    deleteLater();
-}
+//void V3dR_Communicator::onDisconnected() {
+//    QMessageBox::information(0,tr("Message socket Connection is out!"),
+//                     tr("Data has been safely stored!\nif it is not you disconnect.\nPlease restart vaa3d"),
+//                     QMessageBox::Ok);
+//    deleteLater();
+//}
 
 XYZ V3dR_Communicator::ConvertGlobaltoLocalBlockCroods(double x,double y,double z)
 {

@@ -126,8 +126,8 @@ void VR_MainWindow::TVProcess(QString line)
                 auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
                 auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
                 coords.push_front(converted);
-                qDebug()<<nodeinfo;
-                qDebug()<<converted.x<<" "<<converted.y<<" "<<converted.z;
+//                qDebug()<<nodeinfo;
+//                qDebug()<<converted.x<<" "<<converted.y<<" "<<converted.z;
             }
 
             if(pMainApplication)
@@ -156,10 +156,12 @@ void VR_MainWindow::TVProcess(QString line)
         QStringList listwithheader=retypelineRex.cap(1).split(";",QString::SkipEmptyParts);
 
         if(listwithheader.size()<1) return;
-        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
-        int type=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[2].trimmed().toInt();
+        QStringList headers=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts);
+        qDebug()<<headers;
+        QString user=headers[0].trimmed();
+        int type=headers[2].trimmed().toInt();
 
-
+        qDebug()<<"VR new type = "<<type;
         if(listwithheader.size()>1)
         {
             QVector<XYZ> coords;
