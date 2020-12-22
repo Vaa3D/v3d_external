@@ -177,6 +177,7 @@ public:
 	//void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
+    QString FindNearestSegmentForDel(glm::vec3 dPOS);
 	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
 	void SetDeleteSegmentColor(QString segName);
