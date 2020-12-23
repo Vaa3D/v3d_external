@@ -6733,6 +6733,7 @@ void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to 
         newTempNT.listNeuron.append(S_temp);
         newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
     }
+    newTempNT.name="sketch_"+QString("%1").arg(sketchNum++);
     qDebug()<<"befor push  sketch "<<sketchedNTList.size();
 	sketchedNTList.push_back(newTempNT);
     qDebug()<<"pushback seg";
