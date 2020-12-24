@@ -7021,7 +7021,12 @@ bool CMainApplication::DeleteSegment(QVector<XYZ> coords,float dist)
         return false;
     }
 }
-
+/**
+ * @brief CMainApplication::SetDeleteSegmentColor
+ * @param segName
+ * 1. find NT that name = segname ,and set color to candidate color
+ * 2. restore the previous candidate NT's color to origin
+ */
 void CMainApplication::SetDeleteSegmentColor(QString segName)
 {
 
@@ -7055,15 +7060,15 @@ void CMainApplication::SetDeleteSegmentColor(QString segName)
 			}
 			SetupSingleMorphologyLine(i, 1);
 		}
-//		if (line_tobedeleted == NTname && segName!=line_tobedeleted)
-//		{
-//			for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
-//			{
-//				sketchedNTList[i].listNeuron[j].type = color_origin;
-//				cout << "set color origin" << color_origin<< endl;
-//			}
-//			SetupSingleMorphologyLine(i, 1);
-//		}
+//        if (line_tobedeleted == NTname && segName!=line_tobedeleted)
+//        {
+//            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+//            {
+//                sketchedNTList[i].listNeuron[j].type = color_origin;
+//                cout << "set color origin" << color_origin<< endl;
+//            }
+//            SetupSingleMorphologyLine(i, 1);
+//        }
 	}
 		line_tobedeleted = segName;
 
