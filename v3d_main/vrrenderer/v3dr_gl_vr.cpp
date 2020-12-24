@@ -7055,7 +7055,7 @@ void CMainApplication::SetDeleteSegmentColor(QString segName)
 			color_origin = sketchedNTList[i].listNeuron[0].type;
 			for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
 			{
-                sketchedNTList[i].listNeuron[j].type = 20;//set color that seg to be deleted
+                sketchedNTList[i].listNeuron[j].type = 19;//set color that seg to be deleted
 			}
 			SetupSingleMorphologyLine(i, 1);
 		}
