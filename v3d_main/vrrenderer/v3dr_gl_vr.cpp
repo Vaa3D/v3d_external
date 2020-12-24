@@ -7048,7 +7048,6 @@ void CMainApplication::SetDeleteSegmentColor(QString segName)
             }
             SetupSingleMorphologyLine(i, 1);
         }
-        //如果segname!=line_tobedeleted要把segname的线设置成红色
 		if (segName == NTname && segName != line_tobedeleted)
 		{
 			//delete the segment in NTList,then return

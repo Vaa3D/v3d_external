@@ -180,6 +180,7 @@ public:
     QString FindNearestSegmentForDel(glm::vec3 dPOS);
 	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
+
 	void SetDeleteSegmentColor(QString segName);
     bool DeleteSegment(QVector<XYZ> coords,float dist);
     int findseg(QVector<XYZ> coords,float dist);
