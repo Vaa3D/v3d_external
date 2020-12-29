@@ -2361,19 +2361,35 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		case _UndoRedo:
 			{
 //				qDebug()<<"Undo/Redo Operation. Lines Only.";
-//				if(temp_x>0)
-//				{
-//					 RedoLastSketchedNT();
-//					 SetupAllMorphologyLine();
-//				}
-//				else
-//				{
-//					 UndoLastSketchedNT();
-//					 SetupAllMorphologyLine();
-//				}
-//            emit undo();
-            undo=true;
-            READY_TO_SEND=true;
+
+                if(temp_x>0)
+                {
+                    if(!isOnline)
+                    {
+                        RedoLastSketchedNT();
+                        SetupAllMorphologyLine();
+                    }else
+                    {
+                        redo=true;
+                        READY_TO_SEND=true;
+
+                    }
+                }
+                else
+                {
+                    if(!isOnline)
+                    {
+                         UndoLastSketchedNT();
+                         SetupAllMorphologyLine();
+                    }
+                    else
+                    {
+                        undo=true;
+                        READY_TO_SEND=true;
+
+                    }
+                }
+
 
 				break;
 			}

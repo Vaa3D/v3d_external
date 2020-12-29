@@ -166,7 +166,7 @@ public:
 
     void UpdateNTList(QVector<XYZ> coords, int type);//add the receieved message/NT to sketchedNTList
     QStringList NT2QString(NeuronTree); // prepare the message to be sent from currentNT.
-    QStringList UndoNT2QString();
+    QStringList UndoNT2QString();//never use,should be removed
     XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
 	//bool FlashStuff(FlashType type,XYZ coords);
@@ -628,7 +628,8 @@ public:
 
 public:
         NeuronTree UndoNT;
-        bool undo;
+        bool undo=false;
+        bool redo=false;
 //signals:
 //        void undo();
 };
