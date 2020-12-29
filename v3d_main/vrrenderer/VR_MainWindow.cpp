@@ -656,7 +656,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 QStringList waitsends;
                 for(auto nt:pMainApplication->segaftersplit)
                 {
-                    QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT);
+                    QStringList waitsend=pMainApplication->NT2QString(nt);
                     waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     waitsends.push_back(waitsend.join(";"));
                 }
@@ -666,11 +666,13 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if(VR_Communicator&&
                     VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                 {
-                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
-                    for(auto addmsg:waitsends)
-                    {
-                        VR_Communicator->UpdateAddSegMsg(addmsg);
-                    }
+//                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
+//                    for(auto addmsg:waitsends)
+//                    {
+//                        VR_Communicator->UpdateAddSegMsg(addmsg);
+//                    }
+                    //
+                    VR_Communicator->UpdateSplitSegMsg(QString(result.join(";")),waitsends.at(0),waitsends.at(2));
                     CURRENT_DATA_IS_SENT=true;
                     pMainApplication->SegNode_tobedeleted.x = 0;
                     pMainApplication->SegNode_tobedeleted.y = 0;

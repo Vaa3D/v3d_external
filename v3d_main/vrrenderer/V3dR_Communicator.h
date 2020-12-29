@@ -14,6 +14,7 @@
 #include "../neuron_editing/v_neuronswc.h"
 #include "../basic_c_fun/v3d_interface.h"
 #include "fileserver.h"
+#include <deque>
 class V3dR_Communicator : public QObject
 {
     Q_OBJECT
@@ -77,6 +78,10 @@ public:
     void UpdateRetypeSegMsg(QString TVretypeSegMSG);
 
     void UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype);
+    void UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QString addMsg2);
+
+    void UpdateUndoDeque();
+    void UpdateRedoDeque();
     /**
      * @brief V_NeuronSWCToSendMSG
      * @param seg 全局坐标
@@ -186,6 +191,8 @@ private:
 
     DataInfo dataInfo;
     bool isLoad=true;
+    std::deque<QString> undoDeque;
+    std::deque<QString> redoDeque;
 
 
 //    int receiveCNT=0;

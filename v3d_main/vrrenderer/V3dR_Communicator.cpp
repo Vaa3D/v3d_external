@@ -357,6 +357,13 @@ void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,Q
     }
 }
 
+void V3dR_Communicator::UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QString addMsg2)
+{
+    UpdateDelSegMsg(deleteMsg);
+    UpdateAddSegMsg(addMsg1);
+    UpdateAddSegMsg(addMsg2);
+}
+
 void V3dR_Communicator::onConnected() {
     qDebug()<<"Message onConnected";
     sendMsg(QString("/login:" +userName));
