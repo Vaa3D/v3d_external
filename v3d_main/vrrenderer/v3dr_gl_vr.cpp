@@ -3244,7 +3244,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                 {
 
                     qDebug()<<"ONLINE";
-                    double dist=1;
+                    double dist=2;
                     int index=-1;
                     for(int i=0;i<drawnMarkerList.size();i++)
                     {
