@@ -25,7 +25,7 @@ enum ModelControlR
 {
 	m_drawMode = 0,
 	m_deleteMode,
-	m_dragMode,
+    m_retypeMode,
 	m_markMode,
     m_delmarkMode,
 	m_splitMode,
@@ -339,7 +339,7 @@ private:
 	bool bIsRedoEnable;
 	vector<NTL> vUndoList;
 	vector<NTL> vRedoList;
-
+public:
 	static int m_curMarkerColorType;
 
 private: // SDL bookkeeping
