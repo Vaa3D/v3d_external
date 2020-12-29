@@ -237,16 +237,21 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
-        qDebug()<<"-----------------UpdateAddSegMsg-----------------------------";
-        qDebug()<<"username = "<<userName;
-        qDebug()<<"clienttype = "<<clienttype;
-        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
-        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
-        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
+//        qDebug()<<"-----------------UpdateAddSegMsg-----------------------------";
+//        qDebug()<<"username = "<<userName;
+//        qDebug()<<"clienttype = "<<clienttype;
+//        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+//        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+//        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         sendMsg(QString("/drawline:"+result.join(";")));
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
+        }
+        undoDeque.push_back(QString("/delline:"+result.join(";")));
     }
 }
 
@@ -254,17 +259,22 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
-        qDebug()<<"-----------------UpdateDelSegMsg-----------------------------";
-        qDebug()<<"username = "<<userName;
-        qDebug()<<"clienttype = "<<clienttype;
-        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
-        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
-        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
+//        qDebug()<<"-----------------UpdateDelSegMsg-----------------------------";
+//        qDebug()<<"username = "<<userName;
+//        qDebug()<<"clienttype = "<<clienttype;
+//        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+//        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+//        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5")
         .arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         sendMsg(QString("/delline:"+result.join(";")));
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
+        }
+        undoDeque.push_back(QString("/drawline:"+result.join(";")));
         qDebug()<<"-------------------EndUpdateDelSegMsg-----------------------------";
     }
 }
@@ -273,18 +283,23 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
 {
     if(clienttype=="TeraFly")
     {
-        qDebug()<<"-----------------UpdateAddMarkerMsg-----------------------------";
-        qDebug()<<"username = "<<userName;
-        qDebug()<<"clienttype = "<<clienttype;
-        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
-        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
-        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
+//        qDebug()<<"-----------------UpdateAddMarkerMsg-----------------------------";
+//        qDebug()<<"username = "<<userName;
+//        qDebug()<<"clienttype = "<<clienttype;
+//        qDebug()<<"ImageCurRes = "<<XYZ2String(ImageCurRes);
+//        qDebug()<<"ImageMaxRes = "<<XYZ2String(ImageMaxRes);
+//        qDebug()<<"ImageStartPoint = "<<XYZ2String(ImageStartPoint);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/addmarker:"+result.join(";")));
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
+        }
+        undoDeque.push_back(QString("/delmarker:"+result.join(";")));
         qDebug()<<"-----------------eNDUpdateAddMarkerMsg-----------------------------";
     }
 }
@@ -303,6 +318,11 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
         result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/delmarker:"+result.join(";")));
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
+        }
+        undoDeque.push_back(QString("/addmarker:"+result.join(";")));
     }
 }
 
@@ -326,21 +346,42 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
 void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
 {
     this->sendMsg("/drawline:"+TVaddSegMSG);
+    while(undoDeque.size()>=dequeszie)
+    {
+        undoDeque.pop_front();
+    }
+    undoDeque.push_back(QString("/delline:"+TVaddSegMSG));
 }
 
 void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
 {
     this->sendMsg("/delline:"+TVdelSegMSG);
+    while(undoDeque.size()>=dequeszie)
+    {
+        undoDeque.pop_front();
+    }
+    undoDeque.push_back(QString("/drawline:"+TVdelSegMSG));
 }
 
 void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
 {
     this->sendMsg("/addmarker:"+TVaddMarkerMSG);
+
+    while(undoDeque.size()>=dequeszie)
+    {
+        undoDeque.pop_front();
+    }
+    undoDeque.push_back(QString("/delmarker:"+TVaddMarkerMSG));
 }
 
 void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
 {
     this->sendMsg("/delmarker:"+TVdelMarkerMSG);
+    while(undoDeque.size()>=dequeszie)
+    {
+        undoDeque.pop_front();
+    }
+    undoDeque.push_back(QString("/addmarker:"+TVdelMarkerMSG));
 }
 
 void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
@@ -362,6 +403,16 @@ void V3dR_Communicator::UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QStr
     UpdateDelSegMsg(deleteMsg);
     UpdateAddSegMsg(addMsg1);
     UpdateAddSegMsg(addMsg2);
+}
+
+void V3dR_Communicator::UpdateUndoDeque()
+{
+
+}
+
+void V3dR_Communicator::UpdateRedoDeque()
+{
+
 }
 
 void V3dR_Communicator::onConnected() {

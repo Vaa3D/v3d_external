@@ -193,6 +193,7 @@ private:
     bool isLoad=true;
     std::deque<QString> undoDeque;
     std::deque<QString> redoDeque;
+    const int dequeszie=10;
 
 
 //    int receiveCNT=0;

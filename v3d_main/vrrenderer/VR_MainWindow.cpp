@@ -686,6 +686,14 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 pMainApplication->segaftersplit.clear();
                 qDebug()<<"TeraVR del seg failed";
             }
+        }else if(pMainApplication->undo)
+        {
+            VR_Communicator->UpdateUndoDeque();
+            pMainApplication->undo=false;
+        }else if(pMainApplication->redo)
+        {
+            VR_Communicator->UpdateRedoDeque();
+            pMainApplication->redo=false;
         }
 
 //        else if(pMainApplication->m_modeGrip_R==m_dragMode)
