@@ -600,6 +600,7 @@ protected:
         QAction* downAction;
         QAction* loadAction;
         QAction* logoutAction;
+        QListWidget *userView;
 public slots:
         void login();
         void import();
@@ -610,6 +611,7 @@ public slots:
         void ColLoadANO(QString ANOfile);
         void onManageConnected();
         void onMessageDisConnect();
+        void updateuserview(QString userlist);
 //        void startAutoTrace();//自动算法
 signals:
        // void signal_communicator_read_res(QString ,XYZ*);//读取自动算法的结果

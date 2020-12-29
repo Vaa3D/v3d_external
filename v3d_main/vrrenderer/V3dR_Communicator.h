@@ -130,6 +130,7 @@ signals:
     void addMarker(QString);//加marker信号 (type x y z)
     void delMarker(QString);//减marker信号 (type x y z)
     void retypeSeg(QString,int);//改线的颜色信号（type x y z;type x y z;...）
+    void updateuserview(QString);
     //msg process end
 public:
     void emitAddSeg(QString segInfo) {emit addSeg(segInfo);}

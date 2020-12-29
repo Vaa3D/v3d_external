@@ -220,6 +220,9 @@ void ManageSocket::processMsg( QString &msg)
 
         connect(pmain->Communicator->socket,SIGNAL(disconnected()),pmain,SLOT(onMessageDisConnect()));
         pmain->Communicator->socket->connectToHost(ip,port);
+
+        connect(pmain->Communicator,SIGNAL(updateuserview(QString)),pmain,SLOT(updateuserview(QString)));
+
         if(!pmain->Communicator->socket->waitForConnected())
         {
             QMessageBox::information(0,tr("Message "),

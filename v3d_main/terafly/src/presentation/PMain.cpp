@@ -264,6 +264,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         loadAction->setEnabled(false);
         managesocket=nullptr;
 		Communicator=nullptr;
+        userView=nullptr;
 #endif
     /*---------------------------------------------------*/
 
@@ -4013,8 +4014,8 @@ void PMain::login()
     managesocket->ip=serverName;
     managesocket->name=userName;
     qDebug()<<"servername = "<<serverName<<" username "<<userName;
-//    managesocket->connectToHost(serverName,23763);
-    managesocket->connectToHost(serverName,26371);
+    managesocket->connectToHost(serverName,23763);
+//    managesocket->connectToHost(serverName,26371);
     qDebug()<<connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
     connect(managesocket,SIGNAL(connected()),this,SLOT(onManageConnected()));
     if( !managesocket->waitForConnected())
@@ -4233,7 +4234,12 @@ void PMain::ColLoadANO(QString ANOfile)
     V3dR_GLWidget::noTerafly=false;
 
 }
-
+void PMain::updateuserview(QString userlist)
+{
+    if(userView==nullptr)
+        userView=new QListWidget;
+    userView->addItems(userlist.split(";"));
+}
 void PMain::onMessageDisConnect()
 {
     this->Communicator->socket->deleteLater();
@@ -4244,6 +4250,11 @@ void PMain::onMessageDisConnect()
     QMessageBox::information(0,tr("Message "),
                      tr("Data unloaded.Further operations won't be synced!"),
                      QMessageBox::Ok);
+    if(userView)
+    {
+        userView->deleteLater();
+        userView=nullptr;
+    }
     if(managesocket!=0)
         managesocket->disconnectFromHost();
 }

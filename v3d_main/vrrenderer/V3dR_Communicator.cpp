@@ -99,7 +99,12 @@ void V3dR_Communicator::processReaded(QStringList list)
 //        qDebug()<<msg;
         if(msg.startsWith("00"))
         {
-            emit msgtoprocess(msg.remove(0,2));
+            QRegExp usersRex("^/users:(.*)$");
+            if(usersRex.indexIn(msg.remove(0,2)) != -1)
+            {
+                emit updateuserview(usersRex.cap(1));
+            }else
+                emit msgtoprocess(msg.remove(0,2));
         }else if(msg.startsWith("11")&&msg.contains("swc"))
         {
             msg=msg.remove(0,2);
@@ -129,10 +134,10 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
     line=line.trimmed();
 //    qDebug()<<"Terafly receive:"<<line;
-    if (usersRex.indexIn(line) != -1) {
+/*    if (usersRex.indexIn(line) != -1) {
         qDebug()<<"for now uses"<<usersRex.cap(1);
     }
-    else if (drawlineRex.indexIn(line) != -1) {
+    else */if (drawlineRex.indexIn(line) != -1) {
         //line msg format:username clienttype RESx RESy RESz;type x y z;type x y z;...
         QString msg=drawlineRex.cap(1);
         QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
