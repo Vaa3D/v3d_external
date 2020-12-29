@@ -2796,9 +2796,26 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						currentNT.hashNeuron.clear();		
 					}
 					swccount=0;
-				}
-				break;
-			}
+                }else{
+                    READY_TO_SEND=true;
+                    for(int i=0;i<currentNT.listNeuron.size();i++)
+                    {
+                        auto S_temp=currentNT.listNeuron[i];
+                        if(
+                            (S_temp.x<0 || S_temp.x>=CmainVRVolumeEndPoint.x)
+                          ||(S_temp.y<0 || S_temp.y>=CmainVRVolumeEndPoint.x)
+                          ||(S_temp.z<0 || S_temp.z>=CmainVRVolumeEndPoint.x)
+                                )
+                        {
+                            //震动、清空、禁止发送
+                            ClearCurrentNT();
+                            READY_TO_SEND=false;
+                           m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,10);
+                        }
+                    }
+                }
+            };
+            break;
 		case m_deleteMode:
 			//else if(m_modeGrip_R==m_deleteMode)
             {
@@ -2853,9 +2870,12 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 					else
 						qDebug()<<"Cannot Find the Segment ";
-				}
-				break;
-			}
+                }else
+                {
+                    READY_TO_SEND=true;
+                }
+
+            };break;
 		case m_ConnectMode:
 		{
 			//do timestamp when create new segments
@@ -3260,6 +3280,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
                 }else
                 {
+                    READY_TO_SEND=true;
                     qDebug()<<"ONLINE";
                     double dist=2;
                     int index=-1;
@@ -3281,10 +3302,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         ||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
                         ||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
                         if(IsOutofBounds!=true) markerPosTobeDeleted = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
+                        else
+                        {
+                            m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,10);
+                            READY_TO_SEND=false;
+                        }
                     }
-                    qDebug()<<"msrkerPOS= "<<markerPosTobeDeleted;
                 }
-            }break;
+            };break;
 		case m_reducenodeMode:
 		{
 			if (isOnline == false)
@@ -3808,8 +3833,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 		//every time the trigger(right) is unpressd ,set the vertexcount to zero preparing for the next line
 		vertexcount=0;
-		READY_TO_SEND=true;
-		qDebug()<<"READY_TO_SEND=true;";
+//		READY_TO_SEND=true; //be move to each case huanglei
+//		qDebug()<<"READY_TO_SEND=true;";
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_Grip)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
