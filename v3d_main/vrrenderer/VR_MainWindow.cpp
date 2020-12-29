@@ -539,7 +539,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
         if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
             qDebug()<<"TeraVR add seg";
-            QStringList waitsend=pMainApplication->NT2QString();
+            QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT);
             waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
 			pMainApplication->ClearCurrentNT();
             if(VR_Communicator&&
@@ -632,6 +632,57 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 CURRENT_DATA_IS_SENT=false;
                 pMainApplication->ClearCurrentNT();
                 qDebug()<<"TeraVR retype seg failed";
+            }
+        }else if(pMainApplication->m_modeGrip_R == m_splitMode)
+        {
+            if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0 )
+            {
+                if(pMainApplication->segaftersplit.size()!=2)
+                {
+                        pMainApplication->READY_TO_SEND=false;
+                        CURRENT_DATA_IS_SENT=false;
+                        pMainApplication->ClearCurrentNT();
+                        pMainApplication->segaftersplit.clear();
+                        qDebug()<<"TeraVR del seg failed";
+                }
+                QStringList result;
+                result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
+                {
+                    result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
+                    .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
+                }
+
+                QStringList waitsends;
+                for(auto nt:pMainApplication->segaftersplit)
+                {
+                    QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT);
+                    waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    waitsends.push_back(waitsend.join(";"));
+                }
+                pMainApplication->segaftersplit.clear();
+
+
+                if(VR_Communicator&&
+                    VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                {
+                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
+                    for(auto addmsg:waitsends)
+                    {
+                        VR_Communicator->UpdateAddSegMsg(addmsg);
+                    }
+                    CURRENT_DATA_IS_SENT=true;
+                    pMainApplication->SegNode_tobedeleted.x = 0;
+                    pMainApplication->SegNode_tobedeleted.y = 0;
+                    pMainApplication->SegNode_tobedeleted.z = 0;
+                    qDebug()<<"TeraVR del seg sucess";
+                }
+            }else{
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+                pMainApplication->ClearCurrentNT();
+                pMainApplication->segaftersplit.clear();
+                qDebug()<<"TeraVR del seg failed";
             }
         }
 

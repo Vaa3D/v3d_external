@@ -165,7 +165,7 @@ public:
 	bool BInitCompositor();
 
     void UpdateNTList(QVector<XYZ> coords, int type);//add the receieved message/NT to sketchedNTList
-    QStringList NT2QString(); // prepare the message to be sent from currentNT.
+    QStringList NT2QString(NeuronTree); // prepare the message to be sent from currentNT.
     QStringList UndoNT2QString();
     XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
@@ -270,6 +270,8 @@ public:
     NeuronTree segtobedeleted;
     QString delMarkerName;
 	QString markerPosTobeDeleted;
+
+    QVector<NeuronTree> segaftersplit;
 
 	QString dragnodePOS;
 	bool _call_assemble_plugin;

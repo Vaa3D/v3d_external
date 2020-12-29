@@ -1783,7 +1783,7 @@ bool CMainApplication::HandleInput()
 
                         SetDeleteSegmentColor(tmpdeletename);
 				}
-                else if(m_modeControlGrip_R == m_markMode)
+                else if(m_modeGrip_R == m_markMode)
                 {
                     const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
                     glm::mat4 mat = glm::mat4();
@@ -1798,6 +1798,24 @@ bool CMainApplication::HandleInput()
                     glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );
                     QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
                     SetDeleteMarkerColor(tmpdeletename);
+                }else if(m_modeGrip_R == m_splitMode)
+                {
+                    const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+                    glm::mat4 mat = glm::mat4();
+                    for (size_t i = 0; i < 4; i++)
+                    {
+                        for (size_t j = 0; j < 4; j++)
+                        {
+                            mat[i][j] = *(mat_M.get() + i * 4 + j);
+                        }
+                    }
+                    mat = glm::inverse(m_globalMatrix) * mat;
+                    glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
+
+                    QString tmpdeletename = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+//					if (tmpdeletename == "") cout << "seg name is nul" << endl;
+
+                    SetDeleteSegmentColor(tmpdeletename);
                 }
 			}
 
@@ -3286,7 +3304,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         {
                             for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
                             {
-                                sketchedNTList[i].listNeuron[j].type = m_curMarkerColorType;
+                                sketchedNTList[i].listNeuron[j].type =m_curMarkerColorType ;
                             }
                             line_tobedeleted = "";
                             SetupSingleMorphologyLine(i, 1);
@@ -3294,11 +3312,23 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                     }
                 }else
                 {
+                    for (int i = 0; i < sketchedNTList.size(); i++)
+                    {
+                        QString NTname = "";
+                        NTname = sketchedNTList.at(i).name;
+                        if (line_tobedeleted == NTname)
+                        {
+                            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                            {
+                                sketchedNTList[i].listNeuron[j].type =color_origin_seg ;
+                            }
+                            line_tobedeleted = "";
+                            SetupSingleMorphologyLine(i, 1);
+                        }
+                    }
                     READY_TO_SEND=true;
                 }
-			}
-			
-			break;
+            }			break;
 		case m_markMode://when there is a maker ,delete it ,otherwise add a marker
 			{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
@@ -3699,8 +3729,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		case m_splitMode:
 			{	
 
-				if(isOnline == false)
-				{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -3711,9 +3739,27 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
-				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
+                glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
+                                //restore segment color
+                for (int i = 0; i < sketchedNTList.size(); i++)
+                {
+                    QString NTname = "";
+                    NTname = sketchedNTList.at(i).name;
+                    if (line_tobedeleted == NTname)
+                    {
+                        for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                        {
+                            sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                        }
+                        line_tobedeleted = "";
+                        SetupSingleMorphologyLine(i, 1);
+                    }
+                }
+
                 delSegName = "";
-                delSegName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                delSegName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+
+
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
                 if (delSegName == "") break; //segment not found
@@ -3729,34 +3775,36 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						break;
 					}
 				}
+
 				//special situation for splitnode in head or end
 				if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2))
 				{
 					qDebug()<<"split node in hear/end or neuron is too short";
 					break;
 				}
-				//delete NT first
-				if(isOnline==false)	
-				{
-					NTL temp_NTL = sketchedNTList;
-                    bool delerror = DeleteSegment(delSegName);
-					if(delerror==true)
-					{
-						bIsUndoEnable = true;
-						if(vUndoList.size()==MAX_UNDO_COUNT)
-						{
-							vUndoList.erase(vUndoList.begin());
-						}
-						vUndoList.push_back(temp_NTL);
-						if (vRedoList.size()> 0)
-							vRedoList.clear();
-						bIsRedoEnable = false;
-						vRedoList.clear();					
-						qDebug()<<"Segment Deleted.";
-					}
-					else
-						qDebug()<<"Cannot Find the Segment ";
-				}
+//                //delete NT first
+//				if(isOnline==false)
+//				{
+//					NTL temp_NTL = sketchedNTList;
+//                    bool delerror = DeleteSegment(delSegName);
+//					if(delerror==true)
+//					{
+//						bIsUndoEnable = true;
+//						if(vUndoList.size()==MAX_UNDO_COUNT)
+//						{
+//							vUndoList.erase(vUndoList.begin());
+//						}
+//						vUndoList.push_back(temp_NTL);
+//						if (vRedoList.size()> 0)
+//							vRedoList.clear();
+//						bIsRedoEnable = false;
+//						vRedoList.clear();
+//						qDebug()<<"Segment Deleted.";
+//					}
+//					else
+//						qDebug()<<"Cannot Find the Segment ";
+//				}
+
 				//add two NT
 				NeuronTree splitNT1,splitNT2;
 				glm::vec3 directionsplit;
@@ -3845,21 +3893,48 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 
 				//add the two new NTs to NTList
-				splitNT1.name = "sketch_"+QString("%1").arg(sketchNum++);
-				qDebug()<<splitNT1.name;
-				sketchedNTList.push_back(splitNT1);
-				int lIndex = sketchedNTList.size() - 1;
-				qDebug()<<"index = "<<lIndex;
-				SetupSingleMorphologyLine(lIndex,0);
-				splitNT2.name = "sketch_"+QString("%1").arg(sketchNum++);
-				qDebug()<<splitNT2.name;
-				sketchedNTList.push_back(splitNT2);
-				lIndex = sketchedNTList.size() - 1;
-				qDebug()<<"index = "<<lIndex;
-				SetupSingleMorphologyLine(lIndex,0);
+                if(isOnline==false)
+                {
+                    NTL temp_NTL = sketchedNTList;
+                    bool delerror = DeleteSegment(delSegName);
+                    if(delerror==true)
+                    {
+                        bIsUndoEnable = true;
+                        if(vUndoList.size()==MAX_UNDO_COUNT)
+                        {
+                            vUndoList.erase(vUndoList.begin());
+                        }
+                        vUndoList.push_back(temp_NTL);
+                        if (vRedoList.size()> 0)
+                            vRedoList.clear();
+                        bIsRedoEnable = false;
+                        vRedoList.clear();
+                        qDebug()<<"Segment Deleted.";
+                    }
+                    else
+                        qDebug()<<"Cannot Find the Segment ";
+
+                    splitNT1.name = "sketch_"+QString("%1").arg(sketchNum++);
+                    qDebug()<<splitNT1.name;
+                    sketchedNTList.push_back(splitNT1);
+                    int lIndex = sketchedNTList.size() - 1;
+                    qDebug()<<"index = "<<lIndex;
+                    SetupSingleMorphologyLine(lIndex,0);
+                    splitNT2.name = "sketch_"+QString("%1").arg(sketchNum++);
+                    qDebug()<<splitNT2.name;
+                    sketchedNTList.push_back(splitNT2);
+                    lIndex = sketchedNTList.size() - 1;
+                    qDebug()<<"index = "<<lIndex;
+                    SetupSingleMorphologyLine(lIndex,0);
+                }else
+                {
+                    segaftersplit.push_back(splitNT1);
+                    segaftersplit.push_back(splitNT2);
+                    READY_TO_SEND=true;
+                }
 
 				break;
-			}
+
 			}
 		case _MovetoCreator:
 		{
@@ -6769,13 +6844,13 @@ QString  CMainApplication::getHMDPOSstr()
 
 
 
-QStringList CMainApplication::NT2QString()
+QStringList CMainApplication::NT2QString(NeuronTree nt)
 {
     QStringList messageBuff;
 
-    for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
+    for(int i=0;(i<nt.listNeuron.size())&&(i<120);i++)
 	{
-        auto S_temp=currentNT.listNeuron[i];
+        auto S_temp=nt.listNeuron[i];
 
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
         messageBuff.push_back(QString("%1 %2 %3 %4").arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
