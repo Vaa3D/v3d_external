@@ -120,117 +120,218 @@ void V3dR_Communicator::resetDataInfo()
 }
 
 void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
-    QRegExp usersRex("^/users:(.*)$");
+//    QRegExp usersRex("^/users:(.*)$");
     QRegExp hmdposRex("^/hmdpos:(.*)$");
+    QRegExp msgreg("/(.*)_(.*):(.*)");
 
-    QRegExp drawlineRex("^/drawline:(.*)$");
-    QRegExp dellineRex("^/delline:(.*)$");
-    QRegExp addmarkerRex("^/addmarker:(.*)$");
-    QRegExp delmarkerRex("^/delmarker:(.*)$");
-    QRegExp retypelineRex("^/retypeline:(.*)$");
+//    QRegExp drawlineRex("^/drawline:(.*)$");
+//    QRegExp dellineRex("^/delline:(.*)$");
+//    QRegExp addmarkerRex("^/addmarker:(.*)$");
+//    QRegExp delmarkerRex("^/delmarker:(.*)$");
+//    QRegExp retypelineRex("^/retypeline:(.*)$");
+
+    line=line.trimmed();
+    if(msgreg.indexIn(line)!=-1)
+    {
+        QString operationtype=msgreg.cap(1).trimmed();
+        bool isNorm=msgreg.cap(2).trimmed()=="norm";
+        QString operatorMsg=msgreg.cap(3).trimmed();
+
+        if(operationtype == "drawline" )
+        {
+            QString msg=operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            if (user == userName && isNorm)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit addSeg(listwithheader.join(";"));
+            }
+        }else if(operationtype == "delline")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+                    qDebug()<<msg;
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            qDebug() << "+============delseg process begin========";
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            if (user == userName && isNorm)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit delSeg(listwithheader.join(";"));
+            }
+        }else if(operationtype == "addmarker")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+                    qDebug()<<msg;
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            if (user == userName && isNorm)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                emit addMarker(listwithheader[1]);
+            }
+        }else if(operationtype == "delmarker")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+                    qDebug()<<msg;
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            if (user == userName && isNorm)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                emit delMarker(listwithheader[1]);
+            }
+        }else if(operationtype == "retypeline")
+        {
+            QString msg =operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            if(listwithheader.size()<=1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            if (user == userName && isNorm)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit retypeSeg(listwithheader.join(";"),listwithheader[2].split(" ").at(0).trimmed().toInt());
+            }
+        }
+    }
+
 
 //    QRegExp dragnodeRex("^/drag_node:(.*)$");
 //    QRegExp creatorRex("^/creator:(.*)__(.*)$");
 
-    line=line.trimmed();
-//    qDebug()<<"Terafly receive:"<<line;
-/*    if (usersRex.indexIn(line) != -1) {
-        qDebug()<<"for now uses"<<usersRex.cap(1);
-    }
-    else */if (drawlineRex.indexIn(line) != -1) {
-        //line msg format:username clienttype RESx RESy RESz;type x y z;type x y z;...
-        QString msg=drawlineRex.cap(1);
-        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
-        qDebug()<<msg;
-        if(listwithheader.size()<1)
-        {
-            qDebug()<<"msg only contains header:"<<msg;
-            return;
-        }
-        QString user=listwithheader[0].split(" ").at(0).trimmed();
-        if (user == userName)
-            qDebug() << "user:" << user << "==userName" << userName;
-        else
-        {
-            listwithheader.removeAt(0);
-            emit addSeg(listwithheader.join(";"));
-        }
-    }else if (dellineRex.indexIn(line) != -1) {
-        //line msg format:username clienttype RESx RESy RESz;type x y z;type x y z;...
-        QString msg = dellineRex.cap(1);
-        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
-                qDebug()<<msg;
-        if(listwithheader.size()<1)
-        {
-            qDebug()<<"msg only contains header:"<<msg;
-            return;
-        }
-        qDebug() << "+============delseg process begin========";
-        QString user=listwithheader[0].split(" ").at(0).trimmed();
-        if (user == userName)
-            qDebug() << "user:" << user << "==userName" << userName;
-        else
-        {
-            listwithheader.removeAt(0);
-            emit delSeg(listwithheader.join(";"));
-        }
-    }else if (addmarkerRex.indexIn(line) != -1) {//Update by FJ 2020/6/14
-        //marker msg format:username clienttype RESx RESy RESz;type x y z
-        QString msg = addmarkerRex.cap(1);
-        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
-                qDebug()<<msg;
-        if(listwithheader.size()<1)
-        {
-            qDebug()<<"msg only contains header:"<<msg;
-            return;
-        }
-        QString user=listwithheader[0].split(" ").at(0).trimmed();
-        if (user == userName)
-            qDebug() << "user:" << user << "==userName" << userName;
-        else
-        {
-            emit addMarker(listwithheader[1]);
-        }
-    }else if (delmarkerRex.indexIn(line) != -1) {
-        //marker msg format:username clienttype RESx RESy RESz;type x y z
-        QString msg = delmarkerRex.cap(1);
-        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
-                qDebug()<<msg;
-        if(listwithheader.size()<1)
-        {
-            qDebug()<<"msg only contains header:"<<msg;
-            return;
-        }
-        QString user=listwithheader[0].split(" ").at(0).trimmed();
-        if (user == userName)
-            qDebug() << "user:" << user << "==userName" << userName;
-        else
-        {
-            emit delMarker(listwithheader[1]);
-        }
-    }else if(retypelineRex.indexIn(line)!=-1)
-    {
-        //line msg format:username clienttype  newtype RESx RESy RESz;type x y z;type x y z;...
-        QString msg = retypelineRex.cap(1);
-        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
-        if(listwithheader.size()<=1)
-        {
-            qDebug()<<"msg only contains header:"<<msg;
-            return;
-        }
 
-        QString user=listwithheader[0].split(" ").at(0).trimmed();
-        if (user == userName)
-            qDebug() << "user:" << user << "==userName" << userName;
-        else
-        {
-            listwithheader.removeAt(0);
-            emit retypeSeg(listwithheader.join(";"),listwithheader[2].split(" ").at(0).trimmed().toInt());
-        }
-    }/*else if(creatorRex.indexIn(line)!=-1)
-    {
-        //wait to implentment
-    }*/
+//    qDebug()<<"Terafly receive:"<<line;
+//    if (usersRex.indexIn(line) != -1) {
+//        qDebug()<<"for now uses"<<usersRex.cap(1);
+//    }
+//    else if (drawlineRex.indexIn(line) != -1) {
+//        //line msg format:username clienttype RESx RESy RESz;type x y z;type x y z;...
+//        QString msg=drawlineRex.cap(1);
+//        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+//        qDebug()<<msg;
+//        if(listwithheader.size()<1)
+//        {
+//            qDebug()<<"msg only contains header:"<<msg;
+//            return;
+//        }
+//        QString user=listwithheader[0].split(" ").at(0).trimmed();
+//        if (user == userName)
+//            qDebug() << "user:" << user << "==userName" << userName;
+//        else
+//        {
+//            listwithheader.removeAt(0);
+//            emit addSeg(listwithheader.join(";"));
+//        }
+//    }else if (dellineRex.indexIn(line) != -1) {
+//        //line msg format:username clienttype RESx RESy RESz;type x y z;type x y z;...
+//        QString msg = dellineRex.cap(1);
+//        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+//                qDebug()<<msg;
+//        if(listwithheader.size()<1)
+//        {
+//            qDebug()<<"msg only contains header:"<<msg;
+//            return;
+//        }
+//        qDebug() << "+============delseg process begin========";
+//        QString user=listwithheader[0].split(" ").at(0).trimmed();
+//        if (user == userName)
+//            qDebug() << "user:" << user << "==userName" << userName;
+//        else
+//        {
+//            listwithheader.removeAt(0);
+//            emit delSeg(listwithheader.join(";"));
+//        }
+//    }else if (addmarkerRex.indexIn(line) != -1) {//Update by FJ 2020/6/14
+//        //marker msg format:username clienttype RESx RESy RESz;type x y z
+//        QString msg = addmarkerRex.cap(1);
+//        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+//                qDebug()<<msg;
+//        if(listwithheader.size()<1)
+//        {
+//            qDebug()<<"msg only contains header:"<<msg;
+//            return;
+//        }
+//        QString user=listwithheader[0].split(" ").at(0).trimmed();
+//        if (user == userName)
+//            qDebug() << "user:" << user << "==userName" << userName;
+//        else
+//        {
+//            emit addMarker(listwithheader[1]);
+//        }
+//    }else if (delmarkerRex.indexIn(line) != -1) {
+//        //marker msg format:username clienttype RESx RESy RESz;type x y z
+//        QString msg = delmarkerRex.cap(1);
+//        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+//                qDebug()<<msg;
+//        if(listwithheader.size()<1)
+//        {
+//            qDebug()<<"msg only contains header:"<<msg;
+//            return;
+//        }
+//        QString user=listwithheader[0].split(" ").at(0).trimmed();
+//        if (user == userName)
+//            qDebug() << "user:" << user << "==userName" << userName;
+//        else
+//        {
+//            emit delMarker(listwithheader[1]);
+//        }
+//    }else if(retypelineRex.indexIn(line)!=-1)
+//    {
+//        //line msg format:username clienttype  newtype RESx RESy RESz;type x y z;type x y z;...
+//        QString msg = retypelineRex.cap(1);
+//        QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+//        if(listwithheader.size()<=1)
+//        {
+//            qDebug()<<"msg only contains header:"<<msg;
+//            return;
+//        }
+
+//        QString user=listwithheader[0].split(" ").at(0).trimmed();
+//        if (user == userName)
+//            qDebug() << "user:" << user << "==userName" << userName;
+//        else
+//        {
+//            listwithheader.removeAt(0);
+//            emit retypeSeg(listwithheader.join(";"),listwithheader[2].split(" ").at(0).trimmed().toInt());
+//        }
+//    }
+//    else if(creatorRex.indexIn(line)!=-1)
+//    {
+//        //wait to implentment
+//    }
 }
 
 void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
@@ -246,7 +347,7 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
-        sendMsg(QString("/drawline:"+result.join(";")));
+        sendMsg(QString("/drawline_norm:"+result.join(";")));
         while(undoDeque.size()>=dequeszie)
         {
             undoDeque.pop_front();
@@ -269,7 +370,7 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
         result.push_back(QString("%1 %2 %3 %4 %5")
         .arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
-        sendMsg(QString("/delline:"+result.join(";")));
+        sendMsg(QString("/delline_norm:"+result.join(";")));
         while(undoDeque.size()>=dequeszie)
         {
             undoDeque.pop_front();
@@ -294,7 +395,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
-        sendMsg(QString("/addmarker:"+result.join(";")));
+        sendMsg(QString("/addmarker_norm:"+result.join(";")));
         while(undoDeque.size()>=dequeszie)
         {
             undoDeque.pop_front();
@@ -317,7 +418,7 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
         result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
-        sendMsg(QString("/delmarker:"+result.join(";")));
+        sendMsg(QString("/delmarker_norm:"+result.join(";")));
         while(undoDeque.size()>=dequeszie)
         {
             undoDeque.pop_front();
@@ -339,13 +440,13 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(userName).arg(clienttype).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
-        sendMsg(QString("/retypeline:"+result.join(";")));
+        sendMsg(QString("/retypeline_norm:"+result.join(";")));
     }
 }
 
 void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
 {
-    this->sendMsg("/drawline:"+TVaddSegMSG);
+    this->sendMsg("/drawline_norm:"+TVaddSegMSG);
     while(undoDeque.size()>=dequeszie)
     {
         undoDeque.pop_front();
@@ -355,7 +456,7 @@ void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
 
 void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
 {
-    this->sendMsg("/delline:"+TVdelSegMSG);
+    this->sendMsg("/delline_norm:"+TVdelSegMSG);
     while(undoDeque.size()>=dequeszie)
     {
         undoDeque.pop_front();
@@ -365,7 +466,7 @@ void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
 
 void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
 {
-    this->sendMsg("/addmarker:"+TVaddMarkerMSG);
+    this->sendMsg("/addmarker_norm:"+TVaddMarkerMSG);
 
     while(undoDeque.size()>=dequeszie)
     {
@@ -376,7 +477,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
 
 void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
 {
-    this->sendMsg("/delmarker:"+TVdelMarkerMSG);
+    this->sendMsg("/delmarker_norm:"+TVdelMarkerMSG);
     while(undoDeque.size()>=dequeszie)
     {
         undoDeque.pop_front();
@@ -386,7 +487,7 @@ void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
 
 void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
 {
-    this->sendMsg("/retypeline:"+TVretypeSegMSG);
+    this->sendMsg("/retypeline_norm:"+TVretypeSegMSG);
 }
 void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype)
 {
