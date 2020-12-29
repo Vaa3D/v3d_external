@@ -688,11 +688,28 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             }
         }else if(pMainApplication->undo)
         {
-            VR_Communicator->UpdateUndoDeque();
+            if(VR_Communicator->undoDeque.size())
+            {
+                VR_Communicator->UpdateUndoDeque();
+                CURRENT_DATA_IS_SENT=true;
+            }
+            else{
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+            }
             pMainApplication->undo=false;
         }else if(pMainApplication->redo)
         {
-            VR_Communicator->UpdateRedoDeque();
+            if(VR_Communicator->redoDeque.size())
+            {
+                VR_Communicator->UpdateRedoDeque();
+                CURRENT_DATA_IS_SENT=true;
+            }
+            else{
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+            }
+
             pMainApplication->redo=false;
         }
 

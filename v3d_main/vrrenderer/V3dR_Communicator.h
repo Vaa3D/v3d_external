@@ -187,12 +187,13 @@ public:
 
 //    QStringList undoStack;
 //    QStringList undo_delcure;
+    std::deque<QString> undoDeque;
+    std::deque<QString> redoDeque;
 private:
 
     DataInfo dataInfo;
     bool isLoad=true;
-    std::deque<QString> undoDeque;
-    std::deque<QString> redoDeque;
+
     const int dequeszie=10;
 
 
