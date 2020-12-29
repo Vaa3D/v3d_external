@@ -736,7 +736,7 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
 	, mainwindow(NULL)
 	, img4d(NULL)
 	, READY_TO_SEND(false)
-	, sketchNum(0)
+    , sketchNum(0),markerNum(0),
 	, bIsUndoEnable(false)
 	, bIsRedoEnable(false)
 	, _call_assemble_plugin(false)
@@ -746,7 +746,7 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
 	, showshootingray(false)
 	, replacetexture(false)
 	, CollaborationTargetMarkerRes(1, 1, 1)
-	, line_tobedeleted(-1)
+    , line_tobedeleted(-1),marker_tobedeleted(-1),
     , undo(false)
     ,CollaborationCreatorGLOPos(glomarkerPOS.x,glomarkerPOS.y,glomarkerPOS.z)
 	//, font_VR (NULL)
@@ -947,7 +947,8 @@ bool CMainApplication::BInit()
 
 	// m_modeGrip_R = global_padm_modeGrip_R;
 	// m_modeGrip_L = global_padm_modeGrip_L;
-	delName = "";
+    delSegName = "";
+    delMarkerName = "";
 	dragnodePOS="";
 	line_tobedeleted = "";
 	loadedNTCenter = glm::vec3(0);
@@ -1765,8 +1766,23 @@ bool CMainApplication::HandleInput()
 //					if (tmpdeletename == "") cout << "seg name is nul" << endl;
 
                         SetDeleteSegmentColor(tmpdeletename);
-
 				}
+                else if(m_modeControlGrip_R == m_markMode)
+                {
+                    const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+                    glm::mat4 mat = glm::mat4();
+                    for (size_t i = 0; i < 4; i++)
+                    {
+                        for (size_t j = 0; j < 4; j++)
+                        {
+                            mat[i][j] = *(mat_M.get() + i * 4 + j);
+                        }
+                    }
+                    mat=glm::inverse(m_globalMatrix) * mat;
+                    glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );
+                    QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+                    SetDeleteMarkerColor(tmpdeletename);
+                }
 			}
 
 			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
@@ -2027,6 +2043,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type
 	mk.color.r = agentclr[0];
 	mk.color.g = agentclr[1];
 	mk.color.b = agentclr[2];
+    mk.name=QString("Marker_%1").arg(markerNum++);
 	drawnMarkerList.push_back(mk);
 	markerVisibility.push_back(1);
 
@@ -2047,6 +2064,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 	mk.color.r = colorR;
 	mk.color.g = colorG;
 	mk.color.b = colorB;
+    mk.name=QString("Marker_%1").arg(markerNum++);
 	drawnMarkerList.push_back(mk);
 	markerVisibility.push_back(1);
 
@@ -2796,10 +2814,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-				delName = "";
+                delSegName = "";
 //				delcurvePOS  ="";
 //				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-                delName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                delSegName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				//SegNode_tobedeleted = GetSegtobedelete_Node(delName);
 				if(isOnline==false)	
 				{
@@ -2811,14 +2829,14 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						{
 							for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
 							{
-								sketchedNTList[i].listNeuron[j].type = color_origin;
+                                sketchedNTList[i].listNeuron[j].type = color_origin_seg;
 							}
 							line_tobedeleted = "";
 							SetupSingleMorphologyLine(i, 1);
 						}
 					}
 					NTL temp_NTL = sketchedNTList;
-					bool delerror = DeleteSegment(delName);
+                    bool delerror = DeleteSegment(delSegName);
 					if(delerror==true)
 					{
 						bIsUndoEnable = true;
@@ -3222,7 +3240,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
 				/*delmarkerPOS="";
 				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
-				markerPOS="";
+                markerPosTobeDeleted="";
 //				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 				bool IsmarkerValid = false;
 				if(isOnline==false)	
@@ -3242,7 +3260,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
                 }else
                 {
-
                     qDebug()<<"ONLINE";
                     double dist=2;
                     int index=-1;
@@ -3257,19 +3274,17 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         }
                     }
                     if(index>=0)
-                    {markerPOS=QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);}
+                    {markerPosTobeDeleted=QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);}
                     else
                     {
-
                         bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
                         ||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
                         ||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
-                        if(IsOutofBounds!=true) markerPOS = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
+                        if(IsOutofBounds!=true) markerPosTobeDeleted = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
                     }
-                    qDebug()<<"msrkerPOS= "<<markerPOS;
+                    qDebug()<<"msrkerPOS= "<<markerPosTobeDeleted;
                 }
-				break;
-			}
+            }break;
 		case m_reducenodeMode:
 		{
 			if (isOnline == false)
@@ -3285,11 +3300,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat = glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space		
-				delName = "";
-				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+                delSegName = "";
+                delSegName = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
-				if (delName == "") break; //segment not found
+                if (delSegName == "") break; //segment not found
 				int reduceNT_index = -1;
 				int reducenode_index = -1;
 				float minvalue = 999;
@@ -3298,7 +3313,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				{
 					QString NTname = "";
 					NTname = sketchedNTList.at(i).name;
-					if (NTname == delName)
+                    if (NTname == delSegName)
 					{
 						nearestNT = sketchedNTList[i];
 						if (nearestNT.listNeuron.size() <= 2) return;						for (int j = 0; j<nearestNT.listNeuron.size(); j++)
@@ -3325,7 +3340,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					if (isOnline == false)
 					{
 						NTL temp_NTL = sketchedNTList;
-						bool delerror = DeleteSegment(delName);
+                        bool delerror = DeleteSegment(delSegName);
 						if (delerror == true)
 						{
 							bIsUndoEnable = true;
@@ -3401,17 +3416,17 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
-				delName = "";
-				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                delSegName = "";
+                delSegName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
-				if (delName == "") break; //segment not found
+                if (delSegName == "") break; //segment not found
 
 				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
 				{
 					QString NTname="";
 					NTname = sketchedNTList.at(i).name;
-					if(NTname==delName)
+                    if(NTname==delSegName)
 					{
 						nearestNT=sketchedNTList.at(i);
 						nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
@@ -3439,7 +3454,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				if(isOnline==false)	
 				{
 					NTL temp_NTL = sketchedNTList;
-					bool delerror = DeleteSegment(delName);
+                    bool delerror = DeleteSegment(delSegName);
 					if(delerror==true)
 					{
 						bIsUndoEnable = true;
@@ -3618,17 +3633,17 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
-				delName = "";
-				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                delSegName = "";
+                delSegName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
-				if (delName == "") break; //segment not found	
+                if (delSegName == "") break; //segment not found
 
 				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
 				{
 					QString NTname="";
 					NTname = sketchedNTList.at(i).name;
-					if(NTname==delName)
+                    if(NTname==delSegName)
 					{
 						nearestNT=sketchedNTList.at(i);
 						nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
@@ -3645,7 +3660,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				if(isOnline==false)	
 				{
 					NTL temp_NTL = sketchedNTList;
-					bool delerror = DeleteSegment(delName);
+                    bool delerror = DeleteSegment(delSegName);
 					if(delerror==true)
 					{
 						bIsUndoEnable = true;
@@ -3782,8 +3797,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
 			/*delmarkerPOS="";
 			delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
-			markerPOS = "";
-			markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+            markerPosTobeDeleted = "";
+            markerPosTobeDeleted = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
 			bool IsmarkerValid = false;
 			break;
 		}
@@ -6798,6 +6813,28 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 	return ntnametofind;
 }
 
+QString CMainApplication::FindNearestMarker(glm::vec3 dPOS)
+{
+    double dist=2;
+    int index=-1;
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        ImageMarker markertemp = drawnMarkerList.at(i);
+        double dist0 = glm::sqrt((markertemp.x- dPOS.x)*(markertemp.x- dPOS.x)+(markertemp.y- dPOS.y)*(markertemp.y- dPOS.y)
+                         +(markertemp.z- dPOS.z)*(markertemp.z- dPOS.z));
+        if(dist0<dist)
+        {
+            index=i;dist=dist0;
+        }
+    }
+    if(index>=0)
+    {
+        return QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);
+    }
+    else
+        return "";
+}
+
 QString CMainApplication::FindNearestSegmentForDel(glm::vec3 dPOS)
 {
     QString ntnametofind="";
@@ -7043,8 +7080,8 @@ void CMainApplication::SetDeleteSegmentColor(QString segName)
         {
             for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
             {
-                sketchedNTList[i].listNeuron[j].type = color_origin;
-                cout << "set color origin" << color_origin<< endl;
+                sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                cout << "set color origin" << color_origin_seg<< endl;
             }
             SetupSingleMorphologyLine(i, 1);
         }
@@ -7052,10 +7089,10 @@ void CMainApplication::SetDeleteSegmentColor(QString segName)
 		{
 			//delete the segment in NTList,then return
 
-			color_origin = sketchedNTList[i].listNeuron[0].type;
+            color_origin_seg = sketchedNTList[i].listNeuron[0].type;
 			for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
 			{
-                sketchedNTList[i].listNeuron[j].type = 19;//set color that seg to be deleted
+                sketchedNTList[i].listNeuron[j].type = colorForTobeDelete;//set color that seg to be deleted
 			}
 			SetupSingleMorphologyLine(i, 1);
 		}
@@ -7072,6 +7109,50 @@ void CMainApplication::SetDeleteSegmentColor(QString segName)
 		line_tobedeleted = segName;
 
 	//if cannot find any matches,return false
+}
+
+void CMainApplication::SetDeleteMarkerColor(QString markerName)
+{
+    if(markerName == "")
+        cout << "marker name is null" << endl;
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        QString markername=drawnMarkerList.at(i).name;
+        if (marker_tobedeleted == markername && markerName!=marker_tobedeleted)
+        {
+
+            int colorR=color_origin_marker.r;
+            int colorG=color_origin_marker.g;
+            int colorB=color_origin_marker.b;
+
+            drawnMarkerList[i].color.r=colorR;
+            drawnMarkerList[i].color.g=colorG;
+            drawnMarkerList[i].color.b=colorB;
+
+            glm::vec3 agentclr=glm::vec3(colorR,colorG,colorB);
+            for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+            Markers_spheresColor.push_back(agentclr);
+        }
+        if(markerName==markername && markerName!=marker_tobedeleted)
+        {
+            color_origin_marker.r=drawnMarkerList[i].color.r;
+            color_origin_marker.g=drawnMarkerList[i].color.g;
+            color_origin_marker.b=drawnMarkerList[i].color.b;
+
+            int colorR=neuron_type_color[colorForTobeDelete][0];
+            int colorG=neuron_type_color[colorForTobeDelete][1];
+            int colorB=neuron_type_color[colorForTobeDelete][2];
+
+            drawnMarkerList[i].color.r=colorR;
+            drawnMarkerList[i].color.g=colorG;
+            drawnMarkerList[i].color.b=colorB;
+
+            glm::vec3 agentclr=glm::vec3(colorR,colorG,colorB);
+            for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+            Markers_spheresColor.push_back(agentclr);
+        }
+    }
+    marker_tobedeleted=markerName;
 }
 
 void CMainApplication::UndoLastSketchedNT()

@@ -579,11 +579,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 		}
 		else if(pMainApplication->m_modeGrip_R==m_markMode)
 		{
-			qDebug() << "markerPos：" << pMainApplication->markerPOS;
-            if(pMainApplication->markerPOS!="")
+            qDebug() << "markerPos：" << pMainApplication->markerPosTobeDeleted;
+            if(pMainApplication->markerPosTobeDeleted!="")
             {
                 QStringList result;
-                QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPOS);
+                QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPosTobeDeleted);
                 result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                 result.push_back(ConvertedmarkerPOS);
                 if(ConvertedmarkerPOS.split(" ")[0]=="-1")
@@ -603,7 +603,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         VR_Communicator->sendMsg(QString("/addmarker:" + result.join(";") ));
                     }
                 }
-                pMainApplication->markerPOS.clear();
+                pMainApplication->markerPosTobeDeleted.clear();
                 CURRENT_DATA_IS_SENT=true;
             }
 		}

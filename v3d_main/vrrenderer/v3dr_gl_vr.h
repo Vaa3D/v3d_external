@@ -178,10 +178,13 @@ public:
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
     QString FindNearestSegmentForDel(glm::vec3 dPOS);
+    QString FindNearestMarker(glm::vec3 dPOS);
 	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
 
 	void SetDeleteSegmentColor(QString segName);
+    void SetDeleteMarkerColor(QString markerName);
+
     bool DeleteSegment(QVector<XYZ> coords,float dist);
     int findseg(QVector<XYZ> coords,float dist);
     bool retypeSegment(QVector<XYZ> coords,float dist,int type);
@@ -262,11 +265,12 @@ public:
 	bool isOnline;
 	static ModelControlR  m_modeGrip_R;
 	static ModeControlSettings m_modeGrip_L;
-	QString delName;
+
+    QString delSegName;
     NeuronTree segtobedeleted;
-	QString markerPOS;
-	QString delmarkerPOS;
-	QString delcurvePOS;
+    QString delMarkerName;
+	QString markerPosTobeDeleted;
+
 	QString dragnodePOS;
 	bool _call_assemble_plugin;
 	bool _startdragnode;
@@ -295,8 +299,12 @@ private:
 	bool m_bControllerModelON;
 	bool m_bShowMorphologyMarker;
 	QString line_tobedeleted;
-	int color_origin;
+    QString marker_tobedeleted;
+    int color_origin_seg;
+    RGB8 color_origin_marker;
+    const int colorForTobeDelete = 19;
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
+    int markerNum;
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
