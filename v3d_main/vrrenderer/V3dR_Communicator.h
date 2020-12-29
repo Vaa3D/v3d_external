@@ -40,12 +40,14 @@ public:
      * 发送加线segment到服务器
      */
     void UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype);
+    void UpdateAddSegMsg(QString TVaddSegMSG);
     /**
      * @brief UpdateDeleteMsg
      * @param seg
      * 发送减线segment到服务器
      */
-    void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype);//this node is second node of seg,because this is esay to delete correct seg
+    void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype);
+    void UpdateDelSegMsg(QString TVdelSegMSG);//this node is second node of seg,because this is esay to delete correct seg
     /**
      * @brief UpdateSendPoolNode
      * @param x
@@ -55,6 +57,7 @@ public:
      * 发送加点的
      */
     void UpdateAddMarkerMsg(float x,float y,float z,int type,QString clienttype);
+    void UpdateAddMarkerMsg(QString TVaddMarkerMSG);
     /**
      * @brief UpdateSendDelMarkerInfo
      * @param x
@@ -63,6 +66,7 @@ public:
      * 发送减点
      */
     void UpdateDelMarkerSeg(float x,float y,float z,QString clienttype);
+    void UpdateDelMarkerSeg(QString TVdelMarkerMSG);
     /**
      * @brief Updateretype
      * @param seg
@@ -70,6 +74,7 @@ public:
      * 发送改颜色
      */
     void UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clienttype);
+    void UpdateRetypeSegMsg(QString TVretypeSegMSG);
 
     /**
      * @brief V_NeuronSWCToSendMSG

@@ -545,7 +545,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             if(VR_Communicator&&
                 VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
             {
-                VR_Communicator->sendMsg("/drawline:"+waitsend.join(";"));
+                VR_Communicator->UpdateAddSegMsg(waitsend.join(";"));
                 CURRENT_DATA_IS_SENT=true;
             }
 		}
@@ -563,7 +563,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if(VR_Communicator&&
                     VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                 {
-                VR_Communicator->sendMsg(QString("/delline:"+result.join(";")));
+                VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
 				CURRENT_DATA_IS_SENT=true;
                 pMainApplication->SegNode_tobedeleted.x = 0;
                 pMainApplication->SegNode_tobedeleted.y = 0;
@@ -592,7 +592,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     if(VR_Communicator&&
                         VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
-                        VR_Communicator->sendMsg(QString("/delmarker:" + result.join(";")));
+                        VR_Communicator->UpdateDelMarkerSeg(QString(result.join(";")));
                     }
                 }else
                 {
@@ -600,7 +600,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     if(VR_Communicator&&
                         VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
-                        VR_Communicator->sendMsg(QString("/addmarker:" + result.join(";") ));
+                        VR_Communicator->UpdateAddMarkerMsg(QString(result.join(";") ));
                     }
                 }
                 pMainApplication->markerPosTobeDeleted.clear();
@@ -741,6 +741,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 	pMainApplication->collaborationTargetdelcurveRes = VRvolumeMaxRes;
 	pMainApplication->CmainResIndex = ResIndex;
     pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
+    pMainApplication->CmainVRVolumeEndPoint=VRVolumeEndPoint;
 
 	
 	pMainApplication->CollaborationMaxResolution = CollaborationMaxResolution;

@@ -318,6 +318,32 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
     }
 }
 
+void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
+{
+    this->sendMsg("/drawline:"+TVaddSegMSG);
+}
+
+void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
+{
+    this->sendMsg("/delline:"+TVdelSegMSG);
+}
+
+void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
+{
+    this->sendMsg("/addmarker:"+TVaddMarkerMSG);
+}
+
+void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
+{
+    this->sendMsg("/delmarker:"+TVdelMarkerMSG);
+}
+
+void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
+{
+    this->sendMsg("/retypeline:"+TVretypeSegMSG);
+}
+
+
 void V3dR_Communicator::onConnected() {
     qDebug()<<"Message onConnected";
     sendMsg(QString("/login:" +userName));

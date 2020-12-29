@@ -277,6 +277,7 @@ public:
 	int postVRFunctionCallMode;
 	XYZ teraflyPOS;
 	XYZ CmainVRVolumeStartPoint;
+    XYZ CmainVRVolumeEndPoint;
 	int CmainResIndex;
 	XYZ CollaborationCreatorPos;
     XYZ CollaborationCreatorGLOPos;

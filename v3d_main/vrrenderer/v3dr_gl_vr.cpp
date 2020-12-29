@@ -6697,6 +6697,7 @@ QStringList CMainApplication::NT2QString()
     for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
 	{
         auto S_temp=currentNT.listNeuron[i];
+
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
         messageBuff.push_back(QString("%1 %2 %3 %4").arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
 	}
