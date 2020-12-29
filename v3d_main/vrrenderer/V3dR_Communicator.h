@@ -76,6 +76,7 @@ public:
     void UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clienttype);
     void UpdateRetypeSegMsg(QString TVretypeSegMSG);
 
+    void UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype);
     /**
      * @brief V_NeuronSWCToSendMSG
      * @param seg 全局坐标

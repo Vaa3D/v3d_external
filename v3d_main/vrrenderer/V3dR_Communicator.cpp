@@ -347,7 +347,15 @@ void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
 {
     this->sendMsg("/retypeline:"+TVretypeSegMSG);
 }
-
+void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype)
+{
+    V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
+    UpdateDelSegMsg(seg,clienttype);
+    for(auto newseg:new_slist.seg)
+    {
+        UpdateAddSegMsg(newseg,clienttype);
+    }
+}
 
 void V3dR_Communicator::onConnected() {
     qDebug()<<"Message onConnected";

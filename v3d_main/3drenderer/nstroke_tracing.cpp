@@ -3333,7 +3333,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 //    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
 }
 
-bool Renderer_gl1::deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,float mindist)
+bool Renderer_gl1::deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,float mindist)//not use by huanglei
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
@@ -7276,6 +7276,15 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
 
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
+                            if(w->TeraflyCommunicator
+                                &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                                {
+                                    w->SetupCollaborateInfo();
+                                    w->TeraflyCommunicator->UpdateSplitSegMsg(
+                                        curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id),
+                                                p_listneuron->at(i).nodeinseg_id,
+                                                "TeraFly");
+                                }
 							curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);
