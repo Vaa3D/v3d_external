@@ -251,7 +251,7 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
         {
             undoDeque.pop_front();
         }
-        undoDeque.push_back(QString("/delline:"+result.join(";")));
+        undoDeque.push_back(QString("/delline_undo:"+result.join(";")));
     }
 }
 
@@ -274,7 +274,7 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
         {
             undoDeque.pop_front();
         }
-        undoDeque.push_back(QString("/drawline:"+result.join(";")));
+        undoDeque.push_back(QString("/drawline_undo:"+result.join(";")));
         qDebug()<<"-------------------EndUpdateDelSegMsg-----------------------------";
     }
 }
@@ -299,7 +299,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
         {
             undoDeque.pop_front();
         }
-        undoDeque.push_back(QString("/delmarker:"+result.join(";")));
+        undoDeque.push_back(QString("/delmarker_undo:"+result.join(";")));
         qDebug()<<"-----------------eNDUpdateAddMarkerMsg-----------------------------";
     }
 }
@@ -322,7 +322,7 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
         {
             undoDeque.pop_front();
         }
-        undoDeque.push_back(QString("/addmarker:"+result.join(";")));
+        undoDeque.push_back(QString("/addmarker_undo:"+result.join(";")));
     }
 }
 
@@ -350,7 +350,7 @@ void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
     {
         undoDeque.pop_front();
     }
-    undoDeque.push_back(QString("/delline:"+TVaddSegMSG));
+    undoDeque.push_back(QString("/delline_undo:"+TVaddSegMSG));
 }
 
 void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
@@ -360,7 +360,7 @@ void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
     {
         undoDeque.pop_front();
     }
-    undoDeque.push_back(QString("/drawline:"+TVdelSegMSG));
+    undoDeque.push_back(QString("/drawline_undo:"+TVdelSegMSG));
 }
 
 void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
@@ -371,7 +371,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
     {
         undoDeque.pop_front();
     }
-    undoDeque.push_back(QString("/delmarker:"+TVaddMarkerMSG));
+    undoDeque.push_back(QString("/delmarker_undo:"+TVaddMarkerMSG));
 }
 
 void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
@@ -381,7 +381,7 @@ void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
     {
         undoDeque.pop_front();
     }
-    undoDeque.push_back(QString("/addmarker:"+TVdelMarkerMSG));
+    undoDeque.push_back(QString("/addmarker_undo:"+TVdelMarkerMSG));
 }
 
 void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
@@ -407,12 +407,46 @@ void V3dR_Communicator::UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QStr
 
 void V3dR_Communicator::UpdateUndoDeque()
 {
+    if(undoDeque.size()!=0)
+    {
+        QString msg=undoDeque.back();
+        QRegExp reg("/(.*)_(.*):(.*)");
+        if(reg.indexIn(msg)!=-1)
+        {
+            sendMsg(msg);
+            undoDeque.pop_back();
+            while(redoDeque.size()>=dequeszie)
+            {
+                redoDeque.pop_front();
+            }
+            QString operationType=reg.cap(1);
+            QString operatorMsg=reg.cap(3);
+            if("drawline"==operationType)
+                operationType="/delline";
+            else if("delline"==operationType)
+                operationType="/drawline";
+            else if("addmarker"==operationType)
+                operationType="/delmarker";
+            else if("delmarker"==operationType)
+                operationType="/addmarker";
 
+            redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
+        }
+    }
 }
 
 void V3dR_Communicator::UpdateRedoDeque()
 {
-
+    if(redoDeque.size()!=0)
+    {
+        QString msg=undoDeque.back();
+        QRegExp reg("/(.*)_(.*):(.*)");
+        if(reg.indexIn(msg)!=-1)
+        {
+            sendMsg(msg);
+            redoDeque.pop_back();
+        }
+    }
 }
 
 void V3dR_Communicator::onConnected() {
