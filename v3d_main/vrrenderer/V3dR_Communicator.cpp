@@ -96,15 +96,17 @@ void V3dR_Communicator::processReaded(QStringList list)
     QStringList filepaths;
     for(auto msg:list)
     {
-//        qDebug()<<msg;
+        qDebug()<<msg;
         if(msg.startsWith("00"))
         {
             QRegExp usersRex("^/users:(.*)$");
-            if(usersRex.indexIn(msg.remove(0,2)) != -1)
+            QString tmp=msg.remove(0,2);
+            if(usersRex.indexIn(tmp) != -1)
             {
+                qDebug()<<"get";
                 emit updateuserview(usersRex.cap(1));
             }else
-                emit msgtoprocess(msg.remove(0,2));
+                emit msgtoprocess(tmp);
         }else if(msg.startsWith("11")&&msg.contains("swc"))
         {
             msg=msg.remove(0,2);

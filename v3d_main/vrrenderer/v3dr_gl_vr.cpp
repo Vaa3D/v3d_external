@@ -2848,16 +2848,18 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					swccount=0;
                 }else{
                     READY_TO_SEND=true;
+                    qDebug()<<CmainVRVolumeEndPoint.x<<" "<<CmainVRVolumeEndPoint.y<<" "<<CmainVRVolumeEndPoint.z;
                     for(int i=0;i<currentNT.listNeuron.size();i++)
                     {
                         auto S_temp=currentNT.listNeuron[i];
                         if(
                             (S_temp.x<0 || S_temp.x>=CmainVRVolumeEndPoint.x)
-                          ||(S_temp.y<0 || S_temp.y>=CmainVRVolumeEndPoint.x)
-                          ||(S_temp.z<0 || S_temp.z>=CmainVRVolumeEndPoint.x)
+                          ||(S_temp.y<0 || S_temp.y>=CmainVRVolumeEndPoint.y)
+                          ||(S_temp.z<0 || S_temp.z>=CmainVRVolumeEndPoint.z)
                                 )
                         {
                             //震动、清空、禁止发送
+                            qDebug()<<S_temp.x<<" "<<S_temp.y<<" "<<S_temp.z;
                             ClearCurrentNT();
                             READY_TO_SEND=false;
                            m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,10);

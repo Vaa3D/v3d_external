@@ -4239,6 +4239,7 @@ void PMain::updateuserview(QString userlist)
     if(userView==nullptr)
         userView=new QListWidget;
     userView->addItems(userlist.split(";"));
+    userView->show();
 }
 void PMain::onMessageDisConnect()
 {

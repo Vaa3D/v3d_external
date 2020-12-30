@@ -49,199 +49,395 @@ VR_MainWindow::~VR_MainWindow() {
 //void VR_MainWindow::onReadyRead()
 void VR_MainWindow::TVProcess(QString line)
 {
-    QRegExp drawlineRex("^/drawline:(.*)$");
-    QRegExp dellineRex("^/delline:(.*)$");
-    QRegExp addmarkerRex("^/addmarker:(.*)$");
-    QRegExp delmarkerRex("^/delmarker:(.*)$");
-    QRegExp retypelineRex("^/retypeline:(.*)$");
-//	QRegExp dragnodeRex("^/drag_node:(.*)$");
-//    QRegExp creatorRex("^/creator:(.*)__(.*)$");
-    qDebug()<<"TeraVr reveive:"<<line;
+//    QRegExp drawlineRex("^/drawline:(.*)$");
+//    QRegExp dellineRex("^/delline:(.*)$");
+//    QRegExp addmarkerRex("^/addmarker:(.*)$");
+//    QRegExp delmarkerRex("^/delmarker:(.*)$");
+//    QRegExp retypelineRex("^/retypeline:(.*)$");
+////	QRegExp dragnodeRex("^/drag_node:(.*)$");
+////    QRegExp creatorRex("^/creator:(.*)__(.*)$");
+//    qDebug()<<"TeraVr reveive:"<<line;
+//    line=line.trimmed();
+
+    QRegExp msgreg("/(.*)_(.*):(.*)");
     line=line.trimmed();
-    if (drawlineRex.indexIn(line) != -1) {
-//        qDebug()<<"TeraVR add seg";
-        QStringList listwithheader=drawlineRex.cap(1).split(";",QString::SkipEmptyParts);
-        if(listwithheader.size()<1) return;
-
-        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
-
-        int type=-1;
-        if(listwithheader.size()>1)
+    qDebug()<<line;
+    if(msgreg.indexIn(line)!=-1)
+    {
+        QString operationtype=msgreg.cap(1).trimmed();
+        bool isNorm=msgreg.cap(2).trimmed()=="norm";
+        QString operatorMsg=msgreg.cap(3).trimmed();
+        if(operationtype == "drawline" )
         {
-            QVector<XYZ> coords;
-//            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
-//                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
-//            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
-//                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
-//            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
-//                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
-//            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
-//                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
-            for(int i=1;i<listwithheader.size();i++)
+            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+            if(listwithheader.size()<1) return;
+
+            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+            int type=-1;
+            if(listwithheader.size()>1)
             {
-                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
-                auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
-                coords.push_back(converted);
-
-                type=nodeinfo[0].toInt();
-            }
-            if(pMainApplication)
-            {
-                qDebug()<<type<<" "<<coords.size();
-                pMainApplication->UpdateNTList(coords,type);
-                //需要判断线是否在图像中，如果不在则调用全局处理
-            }
-        }
-
-        if(user==userName)
-        {
-            pMainApplication->READY_TO_SEND=false;
-            CURRENT_DATA_IS_SENT=false;
-        }
-    }else if (dellineRex.indexIn(line) != -1) {
-        qDebug()<<"TeraVR del seg";
-        qDebug()<<line;
-        line = dellineRex.cap(1);qDebug()<<line;
-        line=line.trimmed();qDebug()<<line;
-
-        QStringList listwithheader=line.split(";",QString::SkipEmptyParts);
-//        qDebug()<<"list with header:"<<listwithheader;
-        if(listwithheader.size()<1) return;
-         QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
-
-        qDebug()<<"user="<<user;
-        if(listwithheader.size()>1)
-        {
-            QVector<XYZ> coords;
-//            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
-//                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
-//            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
-//                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
-//            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
-//                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
-//            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
-//                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
-            for(int i=1;i<listwithheader.size();i++)
-            {
-                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
-                auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
-                coords.push_front(converted);
-//                qDebug()<<nodeinfo;
-//                qDebug()<<converted.x<<" "<<converted.y<<" "<<converted.z;
-            }
-
-            if(pMainApplication)
-            {
-                if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
+                QVector<XYZ> coords;
+    //            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+    //                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+    //            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+    //                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+    //            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+    //                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+    //            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+    //                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+                for(int i=1;i<listwithheader.size();i++)
                 {
-                    qDebug()<<"delete in block failed";
-                        listwithheader.removeAt(0);
-                        VR_Communicator->emitDelSeg(listwithheader.join(";"));
-                        //全局删线处理
-                      // auto v3dGL= terafly::CViewer::getCurrent()->getGLWidget();
-                       //v3dGL->deleteCurveInMaxRex(listwithheader.join(";"));
+                    auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                    auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                    coords.push_back(converted);
+
+                    type=nodeinfo[0].toInt();
+                }
+                if(pMainApplication)
+                {
+                    qDebug()<<type<<" "<<coords.size();
+                    pMainApplication->UpdateNTList(coords,type);
+                    //需要判断线是否在图像中，如果不在则调用全局处理
                 }
             }
-        }
 
-
-        if(user==userName)
-        {
-            pMainApplication->READY_TO_SEND=false;
-            CURRENT_DATA_IS_SENT=false;
-
-        }
-    }else if (retypelineRex.indexIn(line)!=-1) {
-        qDebug()<<"TeraVR retype seg";
-        QStringList listwithheader=retypelineRex.cap(1).split(";",QString::SkipEmptyParts);
-
-        if(listwithheader.size()<1) return;
-        QStringList headers=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts);
-        qDebug()<<headers;
-        QString user=headers[0].trimmed();
-        int type=headers[2].trimmed().toInt();
-
-        qDebug()<<"VR new type = "<<type;
-        if(listwithheader.size()>1)
-        {
-            QVector<XYZ> coords;
-//            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
-//                            <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
-//                     qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
-//                            <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
-//                     qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
-//                            <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
-//                     qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
-//                            <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
-            for(int i=1;i<listwithheader.size();i++)
+            if(user==userName)
             {
-                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
-                coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
             }
-            if(pMainApplication)
-              {
-                  if(!pMainApplication->retypeSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,type));
+        }else if(operationtype == "delline")
+        {
+            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+    //        qDebug()<<"list with header:"<<listwithheader;
+            if(listwithheader.size()<1) return;
+             QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+            qDebug()<<"user="<<user;
+            if(listwithheader.size()>1)
+            {
+                QVector<XYZ> coords;
+    //            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+    //                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+    //            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+    //                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+    //            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+    //                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+    //            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+    //                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+                for(int i=1;i<listwithheader.size();i++)
+                {
+                    auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                    auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                    coords.push_front(converted);
+    //                qDebug()<<nodeinfo;
+    //                qDebug()<<converted.x<<" "<<converted.y<<" "<<converted.z;
+                }
+
+                if(pMainApplication)
+                {
+                    if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
+                    {
+                        qDebug()<<"delete in block failed";
+                            listwithheader.removeAt(0);
+                            VR_Communicator->emitDelSeg(listwithheader.join(";"));
+                            //全局删线处理
+                          // auto v3dGL= terafly::CViewer::getCurrent()->getGLWidget();
+                           //v3dGL->deleteCurveInMaxRex(listwithheader.join(";"));
+                    }
+                }
+            }
+
+
+            if(user==userName)
+            {
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+
+            }
+        }else if(operationtype == "addmarker")
+        {
+            qDebug()<<"TeraVR add marker";
+            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+
+            if(listwithheader.size()<1) return;
+            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+            if(listwithheader.size()>1)
+            {
+                auto node=listwithheader[1].split(" ");
+                int type=node[0].toInt();
+                float mx = node.at(1).toFloat();
+                float my = node.at(2).toFloat();
+                float mz = node.at(3).toFloat();
+                XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+                pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
+                //需要判断点是否在图像中，如果不在则全局处理
+            }
+            if(user==userName)
+            {
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+            }
+        }else if(operationtype == "delmarker")
+        {
+            qDebug()<<"TeraVR del marker";
+            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+
+            if(listwithheader.size()<1) return;
+            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+            if(listwithheader.size()>1)
+            {
+                auto node=listwithheader[1].split(" ");
+                float mx = node.at(1).toFloat();
+                float my = node.at(2).toFloat();
+                float mz = node.at(3).toFloat();
+                XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+                if(pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z))
+                {
+                    listwithheader.removeAt(0);
+                    VR_Communicator->emitDelMarker(listwithheader.join(";"));
+                }
+            }
+            if(user==userName)
+            {
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+            }
+        }else if(operationtype == "retypeline")
+        {
+            qDebug()<<"TeraVR retype seg";
+            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+
+            if(listwithheader.size()<1) return;
+            QStringList headers=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts);
+            qDebug()<<headers;
+            QString user=headers[0].trimmed();
+            int type=headers[2].trimmed().toInt();
+
+            qDebug()<<"VR new type = "<<type;
+            if(listwithheader.size()>1)
+            {
+                QVector<XYZ> coords;
+    //            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+    //                            <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+    //                     qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+    //                            <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+    //                     qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+    //                            <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+    //                     qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+    //                            <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+                for(int i=1;i<listwithheader.size();i++)
+                {
+                    auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                    coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
+                }
+                if(pMainApplication)
                   {
-                      listwithheader.removeAt(0);
-                      VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type);
+                      if(!pMainApplication->retypeSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,type));
+                      {
+                          listwithheader.removeAt(0);
+                          VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type);
+                      }
                   }
+            }
+
+              if(user==userName)
+              {
+                  pMainApplication->READY_TO_SEND=false;
+                  CURRENT_DATA_IS_SENT=false;
               }
         }
-
-          if(user==userName)
-          {
-              pMainApplication->READY_TO_SEND=false;
-              CURRENT_DATA_IS_SENT=false;
-          }
-     }else if (addmarkerRex.indexIn(line) != -1) {
-        qDebug()<<"TeraVR add marker";
-        QStringList listwithheader=addmarkerRex.cap(1).split(";",QString::SkipEmptyParts);
-
-        if(listwithheader.size()<1) return;
-        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
-
-        if(listwithheader.size()>1)
-        {
-            auto node=listwithheader[1].split(" ");
-            int type=node[0].toInt();
-            float mx = node.at(1).toFloat();
-            float my = node.at(2).toFloat();
-            float mz = node.at(3).toFloat();
-            XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
-            pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
-            //需要判断点是否在图像中，如果不在则全局处理
-        }
-        if(user==userName)
-        {
-            pMainApplication->READY_TO_SEND=false;
-            CURRENT_DATA_IS_SENT=false;
-        }
-   }else if (delmarkerRex.indexIn(line) != -1) {
-        qDebug()<<"TeraVR del marker";
-        QStringList listwithheader=delmarkerRex.cap(1).split(";",QString::SkipEmptyParts);
-
-        if(listwithheader.size()<1) return;
-        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
-
-        if(listwithheader.size()>1)
-        {
-            auto node=listwithheader[1].split(" ");
-            float mx = node.at(1).toFloat();
-            float my = node.at(2).toFloat();
-            float mz = node.at(3).toFloat();
-            XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
-            if(pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z))
-            {
-                listwithheader.removeAt(0);
-                VR_Communicator->emitDelMarker(listwithheader.join(";"));
-            }
-        }
-        if(user==userName)
-        {
-            pMainApplication->READY_TO_SEND=false;
-            CURRENT_DATA_IS_SENT=false;
-        }
     }
+
+
+
+//    if (drawlineRex.indexIn(line) != -1) {
+////        qDebug()<<"TeraVR add seg";
+//        QStringList listwithheader=drawlineRex.cap(1).split(";",QString::SkipEmptyParts);
+//        if(listwithheader.size()<1) return;
+
+//        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+//        int type=-1;
+//        if(listwithheader.size()>1)
+//        {
+//            QVector<XYZ> coords;
+////            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+////                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+////            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+////                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+////            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+////                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+////            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+////                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+//            for(int i=1;i<listwithheader.size();i++)
+//            {
+//                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+//                auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+//                coords.push_back(converted);
+
+//                type=nodeinfo[0].toInt();
+//            }
+//            if(pMainApplication)
+//            {
+//                qDebug()<<type<<" "<<coords.size();
+//                pMainApplication->UpdateNTList(coords,type);
+//                //需要判断线是否在图像中，如果不在则调用全局处理
+//            }
+//        }
+
+//        if(user==userName)
+//        {
+//            pMainApplication->READY_TO_SEND=false;
+//            CURRENT_DATA_IS_SENT=false;
+//        }
+//    }else if (dellineRex.indexIn(line) != -1) {
+//        qDebug()<<"TeraVR del seg";
+//        qDebug()<<line;
+//        line = dellineRex.cap(1);qDebug()<<line;
+//        line=line.trimmed();qDebug()<<line;
+
+//        QStringList listwithheader=line.split(";",QString::SkipEmptyParts);
+////        qDebug()<<"list with header:"<<listwithheader;
+//        if(listwithheader.size()<1) return;
+//         QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+//        qDebug()<<"user="<<user;
+//        if(listwithheader.size()>1)
+//        {
+//            QVector<XYZ> coords;
+////            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+////                   <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+////            qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+////                   <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+////            qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+////                   <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+////            qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+////                   <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+//            for(int i=1;i<listwithheader.size();i++)
+//            {
+//                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+//                auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+//                coords.push_front(converted);
+////                qDebug()<<nodeinfo;
+////                qDebug()<<converted.x<<" "<<converted.y<<" "<<converted.z;
+//            }
+
+//            if(pMainApplication)
+//            {
+//                if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
+//                {
+//                    qDebug()<<"delete in block failed";
+//                        listwithheader.removeAt(0);
+//                        VR_Communicator->emitDelSeg(listwithheader.join(";"));
+//                        //全局删线处理
+//                      // auto v3dGL= terafly::CViewer::getCurrent()->getGLWidget();
+//                       //v3dGL->deleteCurveInMaxRex(listwithheader.join(";"));
+//                }
+//            }
+//        }
+
+
+//        if(user==userName)
+//        {
+//            pMainApplication->READY_TO_SEND=false;
+//            CURRENT_DATA_IS_SENT=false;
+
+//        }
+//    }else if (retypelineRex.indexIn(line)!=-1) {
+//        qDebug()<<"TeraVR retype seg";
+//        QStringList listwithheader=retypelineRex.cap(1).split(";",QString::SkipEmptyParts);
+
+//        if(listwithheader.size()<1) return;
+//        QStringList headers=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts);
+//        qDebug()<<headers;
+//        QString user=headers[0].trimmed();
+//        int type=headers[2].trimmed().toInt();
+
+//        qDebug()<<"VR new type = "<<type;
+//        if(listwithheader.size()>1)
+//        {
+//            QVector<XYZ> coords;
+////            qDebug()<<"VRVolumeStartPoint="<<VRVolumeStartPoint.x<<" "
+////                            <<VRVolumeStartPoint.y<<" "<<VRVolumeStartPoint.z;
+////                     qDebug()<<"VRVolumeEndPoint="<<VRVolumeEndPoint.x<<" "
+////                            <<VRVolumeEndPoint.y<<" "<<VRVolumeEndPoint.z;
+////                     qDebug()<<"VRVolumeCurrentRes="<<VRVolumeCurrentRes.x<<" "
+////                            <<VRVolumeCurrentRes.y<<" "<<VRVolumeCurrentRes.z;
+////                     qDebug()<<"VRvolumeMaxRes="<<VRvolumeMaxRes.x<<" "
+////                            <<VRvolumeMaxRes.y<<" "<<VRvolumeMaxRes.z;
+//            for(int i=1;i<listwithheader.size();i++)
+//            {
+//                auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+//                coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
+//            }
+//            if(pMainApplication)
+//              {
+//                  if(!pMainApplication->retypeSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,type));
+//                  {
+//                      listwithheader.removeAt(0);
+//                      VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type);
+//                  }
+//              }
+//        }
+
+//          if(user==userName)
+//          {
+//              pMainApplication->READY_TO_SEND=false;
+//              CURRENT_DATA_IS_SENT=false;
+//          }
+//     }else if (addmarkerRex.indexIn(line) != -1) {
+//        qDebug()<<"TeraVR add marker";
+//        QStringList listwithheader=addmarkerRex.cap(1).split(";",QString::SkipEmptyParts);
+
+//        if(listwithheader.size()<1) return;
+//        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+//        if(listwithheader.size()>1)
+//        {
+//            auto node=listwithheader[1].split(" ");
+//            int type=node[0].toInt();
+//            float mx = node.at(1).toFloat();
+//            float my = node.at(2).toFloat();
+//            float mz = node.at(3).toFloat();
+//            XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+//            pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
+//            //需要判断点是否在图像中，如果不在则全局处理
+//        }
+//        if(user==userName)
+//        {
+//            pMainApplication->READY_TO_SEND=false;
+//            CURRENT_DATA_IS_SENT=false;
+//        }
+//   }else if (delmarkerRex.indexIn(line) != -1) {
+//        qDebug()<<"TeraVR del marker";
+//        QStringList listwithheader=delmarkerRex.cap(1).split(";",QString::SkipEmptyParts);
+
+//        if(listwithheader.size()<1) return;
+//        QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+
+//        if(listwithheader.size()>1)
+//        {
+//            auto node=listwithheader[1].split(" ");
+//            float mx = node.at(1).toFloat();
+//            float my = node.at(2).toFloat();
+//            float mz = node.at(3).toFloat();
+//            XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+//            if(pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z))
+//            {
+//                listwithheader.removeAt(0);
+//                VR_Communicator->emitDelMarker(listwithheader.join(";"));
+//            }
+//        }
+//        if(user==userName)
+//        {
+//            pMainApplication->READY_TO_SEND=false;
+//            CURRENT_DATA_IS_SENT=false;
+//        }
+//    }
 /*        if (usersRex.indexIn(line) != -1) {
             QStringList users = usersRex.cap(1).split(",");
 
@@ -536,6 +732,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//READY_TO_SEND is set to false in onReadyRead();
     //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
 	{
+        qDebug()<<"we are in send ";
         if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
             qDebug()<<"TeraVR add seg";
