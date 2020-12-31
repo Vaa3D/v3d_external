@@ -7314,7 +7314,7 @@ void CMainApplication::SetDeleteMarkerColor(QString markerName)
 
             glm::vec3 agentclr=glm::vec3(colorR,colorG,colorB);
             for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
-            Markers_spheresColor.push_back(agentclr);
+            Markers_spheresColor[i]=agentclr;
         }
         if(markerName==markername && markerName!=marker_tobedeleted)
         {
@@ -7333,7 +7333,7 @@ void CMainApplication::SetDeleteMarkerColor(QString markerName)
 
             glm::vec3 agentclr=glm::vec3(colorR,colorG,colorB);
             for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
-            Markers_spheresColor.push_back(agentclr);
+            Markers_spheresColor[i]=agentclr;
         }
     }
     marker_tobedeleted=markerName;
