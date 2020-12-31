@@ -236,8 +236,13 @@ void VR_MainWindow::TVProcess(QString line)
                 }
                 if(pMainApplication)
                   {
-                      if(!pMainApplication->retypeSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,type));
+
+                      if(!pMainApplication->retypeSegment(
+                                  coords,
+                                  1.0*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,
+                                  type))
                       {
+                          qDebug()<<"Vr call fly retype ";
                           listwithheader.removeAt(0);
                           VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type);
                       }
@@ -732,7 +737,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	//READY_TO_SEND is set to false in onReadyRead();
     //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
 	{
-        qDebug()<<"we are in send ";
+        qDebug()<<"we are in send "<< pMainApplication->m_modeGrip_R;
         if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
             qDebug()<<"TeraVR add seg";
@@ -834,6 +839,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
         {
             if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0 )
             {
+                qDebug()<<"split 1";
                 if(pMainApplication->segaftersplit.size()!=2)
                 {
                         pMainApplication->READY_TO_SEND=false;
@@ -842,6 +848,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         pMainApplication->segaftersplit.clear();
                         qDebug()<<"TeraVR del seg failed";
                 }
+                qDebug()<<"split 2";
                 QStringList result;
                 result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                 for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
@@ -849,7 +856,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                     .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                 }
-
+                qDebug()<<"result = "<<result;
                 QStringList waitsends;
                 for(auto nt:pMainApplication->segaftersplit)
                 {
@@ -858,6 +865,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     waitsends.push_back(waitsend.join(";"));
                 }
                 pMainApplication->segaftersplit.clear();
+                qDebug()<<"waitsends = "<<waitsends;
 
 
                 if(VR_Communicator&&
@@ -869,7 +877,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 //                        VR_Communicator->UpdateAddSegMsg(addmsg);
 //                    }
                     //
-                    VR_Communicator->UpdateSplitSegMsg(QString(result.join(";")),waitsends.at(0),waitsends.at(2));
+                    VR_Communicator->UpdateSplitSegMsg(QString(result.join(";")),waitsends.at(0),waitsends.at(1));
                     CURRENT_DATA_IS_SENT=true;
                     pMainApplication->SegNode_tobedeleted.x = 0;
                     pMainApplication->SegNode_tobedeleted.y = 0;

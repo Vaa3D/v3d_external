@@ -304,6 +304,7 @@ private:
 	QString line_tobedeleted;
     QString marker_tobedeleted;
     int color_origin_seg;
+    int type_origin_marker;
     RGB8 color_origin_marker;
     const int colorForTobeDelete = 19;
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons

@@ -371,7 +371,7 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
     {168, 255, 128},  //	16
     {255, 168, 128},  //	17
     {168, 128, 255}, //	18
-    {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+    {159, 96, 156}, //19 //totally black. PHC, 2012-02-15
     //the following (20-275) is used for matlab heat map. 120209 by WYN
     {0,0,131}, //20
     {0,0,135},
@@ -1797,6 +1797,7 @@ bool CMainApplication::HandleInput()
                     mat=glm::inverse(m_globalMatrix) * mat;
                     glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );
                     QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+                    qDebug()<<"tmpdeletename:"<<tmpdeletename;
                     SetDeleteMarkerColor(tmpdeletename);
                 }else if(m_modeGrip_R == m_splitMode)
                 {
@@ -2859,10 +2860,10 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                                 )
                         {
                             //震动、清空、禁止发送
-                            qDebug()<<S_temp.x<<" "<<S_temp.y<<" "<<S_temp.z;
+                            qDebug()<<"outside:"<<S_temp.x<<" "<<S_temp.y<<" "<<S_temp.z;
                             ClearCurrentNT();
                             READY_TO_SEND=false;
-                           m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,10);
+                           m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,3000000);
                         }
                     }
                 }
@@ -3406,7 +3407,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         if(IsOutofBounds!=true) markerPosTobeDeleted = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
                         else
                         {
-                            m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,10);
+                            qDebug()<<"add marker out ";
+                            m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,3000000);
                             READY_TO_SEND=false;
                         }
                     }
@@ -7002,7 +7004,8 @@ QString CMainApplication::FindNearestMarker(glm::vec3 dPOS)
     }
     if(index>=0)
     {
-        return QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);
+        return drawnMarkerList[index].name;
+//        return QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);
     }
     else
         return "";
@@ -7290,16 +7293,21 @@ void CMainApplication::SetDeleteMarkerColor(QString markerName)
 {
     if(markerName == "")
         cout << "marker name is null" << endl;
+//    else
+
     for(int i=0;i<drawnMarkerList.size();i++)
     {
         QString markername=drawnMarkerList.at(i).name;
+        qDebug()<<"markername:"<<markername<<
+                  ",markerName:"<<markerName<<
+                  ",marker_tobedeleted:"<<marker_tobedeleted;
         if (marker_tobedeleted == markername && markerName!=marker_tobedeleted)
         {
-
+            qDebug()<<"resume";
             int colorR=color_origin_marker.r;
             int colorG=color_origin_marker.g;
             int colorB=color_origin_marker.b;
-
+            drawnMarkerList[i].type=type_origin_marker;
             drawnMarkerList[i].color.r=colorR;
             drawnMarkerList[i].color.g=colorG;
             drawnMarkerList[i].color.b=colorB;
@@ -7310,10 +7318,11 @@ void CMainApplication::SetDeleteMarkerColor(QString markerName)
         }
         if(markerName==markername && markerName!=marker_tobedeleted)
         {
+            qDebug()<<"setnew";
             color_origin_marker.r=drawnMarkerList[i].color.r;
             color_origin_marker.g=drawnMarkerList[i].color.g;
             color_origin_marker.b=drawnMarkerList[i].color.b;
-
+            drawnMarkerList[i].type=colorForTobeDelete;
             int colorR=neuron_type_color[colorForTobeDelete][0];
             int colorG=neuron_type_color[colorForTobeDelete][1];
             int colorB=neuron_type_color[colorForTobeDelete][2];
