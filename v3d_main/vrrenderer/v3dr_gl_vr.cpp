@@ -2925,6 +2925,20 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						qDebug()<<"Cannot Find the Segment ";
                 }else
                 {
+                    for (int i = 0; i < sketchedNTList.size(); i++)
+                    {
+                        QString NTname = "";
+                        NTname = sketchedNTList.at(i).name;
+                        if (line_tobedeleted == NTname)
+                        {
+                            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                            {
+                                sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                            }
+                            line_tobedeleted = "";
+                            SetupSingleMorphologyLine(i, 1);
+                        }
+                    }
                     READY_TO_SEND=true;
                 }
 
@@ -3361,13 +3375,16 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-				/*delmarkerPOS="";
+                QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+                SetDeleteMarkerColor(tmpdeletename);
+                /*delmarkerPOS="";
 				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
                 markerPosTobeDeleted="";
 //				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-				bool IsmarkerValid = false;
+
 				if(isOnline==false)	
 				{
+                    bool IsmarkerValid = false;
 					ClearUndoRedoVectors();
 					IsmarkerValid = RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
 					cout<<"m_v4DevicePose.x"<<m_v4DevicePose.x<<"m_v4DevicePose.y"<<m_v4DevicePose.y<<"m_v4DevicePose.z"<<m_v4DevicePose.z<<endl;
@@ -6976,10 +6993,8 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			{
 
 				ntnametofind = nt.name;
-                SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
-                SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
-                SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
-                qDebug()<<"SegNode_tobedeleted="<<SegNode_tobedeleted.x<<" "<<SegNode_tobedeleted.y<<" "<<SegNode_tobedeleted.z;
+
+
 				return ntnametofind;
 			}
 		}

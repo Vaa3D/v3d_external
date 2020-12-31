@@ -94,7 +94,7 @@ void VR_MainWindow::TVProcess(QString line)
 
                     type=nodeinfo[0].toInt();
                 }
-                if(pMainApplication)
+                if(pMainApplication&&!coords.isEmpty())
                 {
                     qDebug()<<type<<" "<<coords.size();
                     pMainApplication->UpdateNTList(coords,type);
@@ -135,7 +135,7 @@ void VR_MainWindow::TVProcess(QString line)
     //                qDebug()<<converted.x<<" "<<converted.y<<" "<<converted.z;
                 }
 
-                if(pMainApplication)
+                if(pMainApplication&&!coords.isEmpty())
                 {
                     if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
                     {
@@ -234,7 +234,7 @@ void VR_MainWindow::TVProcess(QString line)
                     auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
                     coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
                 }
-                if(pMainApplication)
+                if(pMainApplication&&!coords.isEmpty())
                   {
 
                       if(!pMainApplication->retypeSegment(

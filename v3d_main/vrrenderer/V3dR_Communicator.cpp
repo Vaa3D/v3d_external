@@ -149,7 +149,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 return;
             }
             QString user=listwithheader[0].split(" ").at(0).trimmed();
-            if (user == userName && isNorm)
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
@@ -168,7 +169,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }
             qDebug() << "+============delseg process begin========";
             QString user=listwithheader[0].split(" ").at(0).trimmed();
-            if (user == userName && isNorm)
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
@@ -186,7 +188,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 return;
             }
             QString user=listwithheader[0].split(" ").at(0).trimmed();
-            if (user == userName && isNorm)
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
@@ -203,7 +206,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 return;
             }
             QString user=listwithheader[0].split(" ").at(0).trimmed();
-            if (user == userName && isNorm)
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
@@ -220,7 +224,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }
 
             QString user=listwithheader[0].split(" ").at(0).trimmed();
-            if (user == userName && isNorm)
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {

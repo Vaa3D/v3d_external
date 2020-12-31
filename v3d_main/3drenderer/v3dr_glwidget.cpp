@@ -4330,6 +4330,7 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 //}
 void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
 {
+    if(segInfo.isEmpty()) return;
     QStringList delSegGlobalList=segInfo.split(";",QString::SkipEmptyParts);
     QVector<XYZ> coords;
     for(int i=0;i<delSegGlobalList.size();i++)
@@ -4434,6 +4435,7 @@ int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 }
 void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo) //only call by delete curve
 {
+    if(segInfo.isEmpty()) return;
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
 
@@ -4461,6 +4463,7 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo) //only call by delete
 }
 void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
 {
+    if(segInfo.isEmpty()) return;
     V_NeuronSWC seg;
     {
         NeuronTree newTempNT;
