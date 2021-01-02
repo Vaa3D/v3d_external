@@ -4195,8 +4195,8 @@ void CMainApplication::RenderFrame()
 	if ( m_pHMD )
 	{
 		QString AgentsNum = QString("%1").arg(Agents_spheres.size()+1);
-		std::string strWindowTitle = "TeraVR [Username: "+current_agent_name+
-			"][Color: "+current_agent_color+"][#Online users: "+AgentsNum.toStdString() + "]";
+        std::string strWindowTitle = "TeraVR [Username: "+current_agent_name+"]";
+//                [Color: "+current_agent_color+"][#Online users: "+AgentsNum.toStdString() + "]";
 		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();
 		SetupControllerTexture();

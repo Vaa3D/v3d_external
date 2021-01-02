@@ -4237,10 +4237,14 @@ void PMain::ColLoadANO(QString ANOfile)
 void PMain::updateuserview(QString userlist)
 {
     if(userView==nullptr)
+    {
         userView=new QListWidget;
+        tabs->addTab(userView,"Online Users");
+    }
+
     userView->clear();
     userView->addItems(userlist.split(";"));
-    userView->show();
+//    userView->show();
 }
 void PMain::onMessageDisConnect()
 {
