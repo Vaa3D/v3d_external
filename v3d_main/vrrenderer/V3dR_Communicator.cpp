@@ -225,12 +225,13 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 
             QString user=listwithheader[0].split(" ").at(0).trimmed();
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="TeraFly";
+            int type=listwithheader[2].split(" ").at(0).trimmed().toInt();
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
                 listwithheader.removeAt(0);
-                emit retypeSeg(listwithheader.join(";"),listwithheader[2].split(" ").at(0).trimmed().toInt());
+                emit retypeSeg(listwithheader.join(";"),type);
             }
         }
     }
