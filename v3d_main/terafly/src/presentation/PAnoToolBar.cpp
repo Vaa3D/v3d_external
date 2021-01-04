@@ -395,11 +395,13 @@ void PAnoToolBar::buttonUndoClicked()
 void PAnoToolBar::buttonRedoClicked()
 {
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
-
+    qDebug()<<"flag huanglei";
     CViewer* expl = CViewer::getCurrent();
     if(expl->getGLWidget()->TeraflyCommunicator)
     {
+        qDebug()<<"redo 1";
         expl->getGLWidget()->TeraflyCommunicator->UpdateRedoDeque();
+        qDebug()<<"redo 2";
     }else
     {
         if(expl && expl->undoStack.canRedo())

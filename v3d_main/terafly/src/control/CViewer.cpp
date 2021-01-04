@@ -2368,8 +2368,8 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         PAnoToolBar::instance()->setParent(0);
         window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
         // also reset undo/redo (which are referred to the source viewer)
-        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+        PAnoToolBar::instance()->buttonRedo->setEnabled(true);
         source->undoStack.clear();
         this->undoStack.clear();
 

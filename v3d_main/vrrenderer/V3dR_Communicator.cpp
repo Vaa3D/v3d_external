@@ -404,11 +404,11 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/addmarker_norm:"+result.join(";")));
-        while(undoDeque.size()>=dequeszie)
-        {
-            undoDeque.pop_front();
-        }
-        undoDeque.push_back(QString("/delmarker_undo:"+result.join(";")));
+//        while(undoDeque.size()>=dequeszie)
+//        {
+//            undoDeque.pop_front();
+//        }
+//        undoDeque.push_back(QString("/delmarker_undo:"+result.join(";")));
         qDebug()<<"-----------------eNDUpdateAddMarkerMsg-----------------------------";
     }
 }
@@ -427,11 +427,11 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
         result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/delmarker_norm:"+result.join(";")));
-        while(undoDeque.size()>=dequeszie)
-        {
-            undoDeque.pop_front();
-        }
-        undoDeque.push_back(QString("/addmarker_undo:"+result.join(";")));
+//        while(undoDeque.size()>=dequeszie)
+//        {
+//            undoDeque.pop_front();
+//        }
+//        undoDeque.push_back(QString("/addmarker_undo:"+result.join(";")));
     }
 }
 
@@ -476,21 +476,21 @@ void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
 {
     this->sendMsg("/addmarker_norm:"+TVaddMarkerMSG);
 
-    while(undoDeque.size()>=dequeszie)
-    {
-        undoDeque.pop_front();
-    }
-    undoDeque.push_back(QString("/delmarker_undo:"+TVaddMarkerMSG));
+//    while(undoDeque.size()>=dequeszie)
+//    {
+//        undoDeque.pop_front();
+//    }
+//    undoDeque.push_back(QString("/delmarker_undo:"+TVaddMarkerMSG));
 }
 
 void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
 {
     this->sendMsg("/delmarker_norm:"+TVdelMarkerMSG);
-    while(undoDeque.size()>=dequeszie)
-    {
-        undoDeque.pop_front();
-    }
-    undoDeque.push_back(QString("/addmarker_undo:"+TVdelMarkerMSG));
+//    while(undoDeque.size()>=dequeszie)
+//    {
+//        undoDeque.pop_front();
+//    }
+//    undoDeque.push_back(QString("/addmarker_undo:"+TVdelMarkerMSG));
 }
 
 void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
@@ -524,21 +524,22 @@ void V3dR_Communicator::UpdateUndoDeque()
         {
             sendMsg(msg);
             undoDeque.pop_back();
-            while(redoDeque.size()>=dequeszie)
-            {
-                redoDeque.pop_front();
-            }
+
             QString operationType=reg.cap(1);
             QString operatorMsg=reg.cap(3);
             if("drawline"==operationType)
                 operationType="/delline";
             else if("delline"==operationType)
                 operationType="/drawline";
-            else if("addmarker"==operationType)
-                operationType="/delmarker";
-            else if("delmarker"==operationType)
-                operationType="/addmarker";
-
+//            else if("addmarker"==operationType)
+//                operationType="/delmarker";
+//            else if("delmarker"==operationType)
+//                operationType="/addmarker";
+            while(redoDeque.size()>=dequeszie)
+            {
+                redoDeque.pop_front();
+            }
+            qDebug()<<"push in redo:"<<QString(operationType+"_redo:"+operatorMsg);
             redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
         }
     }
@@ -546,9 +547,11 @@ void V3dR_Communicator::UpdateUndoDeque()
 
 void V3dR_Communicator::UpdateRedoDeque()
 {
+    qDebug()<<"redo 3";
     if(redoDeque.size()!=0)
     {
-        QString msg=undoDeque.back();
+        QString msg=redoDeque.back();
+        qDebug()<<"redo:"<<msg;
         QRegExp reg("/(.*)_(.*):(.*)");
         if(reg.indexIn(msg)!=-1)
         {

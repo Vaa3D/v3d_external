@@ -6993,8 +6993,6 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 			{
 
 				ntnametofind = nt.name;
-
-
 				return ntnametofind;
 			}
 		}
@@ -7005,13 +7003,13 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 
 QString CMainApplication::FindNearestMarker(glm::vec3 dPOS)
 {
-    double dist=2;
+    double dist=4.0;
     int index=-1;
     for(int i=0;i<drawnMarkerList.size();i++)
     {
         ImageMarker markertemp = drawnMarkerList.at(i);
-        double dist0 = glm::sqrt((markertemp.x- dPOS.x)*(markertemp.x- dPOS.x)+(markertemp.y- dPOS.y)*(markertemp.y- dPOS.y)
-                         +(markertemp.z- dPOS.z)*(markertemp.z- dPOS.z));
+        double dist0 = (markertemp.x- dPOS.x)*(markertemp.x- dPOS.x)+(markertemp.y- dPOS.y)*(markertemp.y- dPOS.y)
+                         +(markertemp.z- dPOS.z)*(markertemp.z- dPOS.z);
         if(dist0<dist)
         {
             index=i;dist=dist0;

@@ -765,12 +765,12 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if(VR_Communicator&&
                     VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                 {
-                VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
-				CURRENT_DATA_IS_SENT=true;
-                pMainApplication->SegNode_tobedeleted.x = 0;
-                pMainApplication->SegNode_tobedeleted.y = 0;
-                pMainApplication->SegNode_tobedeleted.z = 0;
-                qDebug()<<"TeraVR del seg sucess";
+                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
+                    CURRENT_DATA_IS_SENT=true;
+                    pMainApplication->SegNode_tobedeleted.x = 0;
+                    pMainApplication->SegNode_tobedeleted.y = 0;
+                    pMainApplication->SegNode_tobedeleted.z = 0;
+                    qDebug()<<"TeraVR del seg sucess";
                 }
             }else{
                 pMainApplication->READY_TO_SEND=false;
