@@ -727,223 +727,221 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	while(!bQuit)
 	{
 	//handle one rendering loop, and handle user interaction
-
 	bQuit=pMainApplication->HandleOneIteration();
-
-    if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
-	//READY_TO_SEND is set to true by the "trigger button up" event;
-	//client sends data to server (using onReadySend());
-	//server sends the same data back to client;
-	//READY_TO_SEND is set to false in onReadyRead();
+    //READY_TO_SEND is set to true by the "trigger button up" event;
+    //client sends data to server (using onReadySend());
+    //server sends the same data back to client;
+    //READY_TO_SEND is set to false in onReadyRead();
     //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
-	{
-        qDebug()<<"we are in send "<< pMainApplication->m_modeGrip_R;
-        if(pMainApplication->m_modeGrip_R==m_drawMode)
-		{
-            qDebug()<<"TeraVR add seg";
-            QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT);
-            waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
-			pMainApplication->ClearCurrentNT();
-            if(VR_Communicator&&
-                VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
-            {
-                VR_Communicator->UpdateAddSegMsg(waitsend.join(";"));
-                CURRENT_DATA_IS_SENT=true;
-            }
-		}
-		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
-		{
-            if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
-			{
-                QStringList result;
-                result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
-                for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
-                {
-                    result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
-                    .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
-                }
-                if(VR_Communicator&&
-                    VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
-                {
-                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
-                    CURRENT_DATA_IS_SENT=true;
-                    pMainApplication->SegNode_tobedeleted.x = 0;
-                    pMainApplication->SegNode_tobedeleted.y = 0;
-                    pMainApplication->SegNode_tobedeleted.z = 0;
-                    qDebug()<<"TeraVR del seg sucess";
-                }
-            }else{
-                pMainApplication->READY_TO_SEND=false;
-				CURRENT_DATA_IS_SENT=false;
-				pMainApplication->ClearCurrentNT();
-                qDebug()<<"TeraVR del seg failed";
-            }
-		}
-		else if(pMainApplication->m_modeGrip_R==m_markMode)
-		{
-            qDebug() << "markerPos：" << pMainApplication->markerPosTobeDeleted;
-            if(pMainApplication->markerPosTobeDeleted!="")
-            {
-                QStringList result;
-                QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPosTobeDeleted);
-                result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
-                result.push_back(ConvertedmarkerPOS);
-                if(ConvertedmarkerPOS.split(" ")[0]=="-1")
-                {
-                    qDebug()<<"TeraVR del marker";
-                    if(VR_Communicator&&
-                        VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+        if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
+        {
+            if(pMainApplication->undo)
                     {
-                        VR_Communicator->UpdateDelMarkerSeg(QString(result.join(";")));
-                    }
-                }else
-                {
-                    qDebug()<<"TeraVR add marker";
-                    if(VR_Communicator&&
-                        VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                        if(VR_Communicator->undoDeque.size())
+                        {
+                            VR_Communicator->UpdateUndoDeque();
+                            CURRENT_DATA_IS_SENT=true;
+                        }
+                        else{
+                            pMainApplication->READY_TO_SEND=false;
+                            CURRENT_DATA_IS_SENT=false;
+                        }
+                        pMainApplication->undo=false;
+                    }else if(pMainApplication->redo)
                     {
-                        VR_Communicator->UpdateAddMarkerMsg(QString(result.join(";") ));
+                        if(VR_Communicator->redoDeque.size())
+                        {
+                            VR_Communicator->UpdateRedoDeque();
+                            CURRENT_DATA_IS_SENT=true;
+                        }
+                        else{
+                            pMainApplication->READY_TO_SEND=false;
+                            CURRENT_DATA_IS_SENT=false;
+                        }
+
+                        pMainApplication->redo=false;
                     }
-                }
-                pMainApplication->markerPosTobeDeleted.clear();
-                CURRENT_DATA_IS_SENT=true;
-            }
-        }else if(pMainApplication->m_modeGrip_R==m_retypeMode)
-        {
-            if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
-            {
-                QStringList result;
-                result.push_back(QString("%1 TeraVR %2 %3 %4 %5").arg(VR_Communicator->userName).arg(pMainApplication->m_curMarkerColorType).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
-                for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
-                {
-                    result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
-                    .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
-                }
-                if(VR_Communicator&&
-                    VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
-                {
-                VR_Communicator->UpdateRetypeSegMsg(QString(result.join(";")));
-                CURRENT_DATA_IS_SENT=true;
-                pMainApplication->SegNode_tobedeleted.x = 0;
-                pMainApplication->SegNode_tobedeleted.y = 0;
-                pMainApplication->SegNode_tobedeleted.z = 0;
-                qDebug()<<"TeraVR retype seg sucess";
-                }
-            }else{
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-                pMainApplication->ClearCurrentNT();
-                qDebug()<<"TeraVR retype seg failed";
-            }
-        }else if(pMainApplication->m_modeGrip_R == m_splitMode)
-        {
-            if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0 )
-            {
-                qDebug()<<"split 1";
-                if(pMainApplication->segaftersplit.size()!=2)
-                {
-                        pMainApplication->READY_TO_SEND=false;
-                        CURRENT_DATA_IS_SENT=false;
-                        pMainApplication->ClearCurrentNT();
-                        pMainApplication->segaftersplit.clear();
-                        qDebug()<<"TeraVR del seg failed";
-                }
-                qDebug()<<"split 2";
-                QStringList result;
-                result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
-                for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
-                {
-                    result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
-                    .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
-                }
-                qDebug()<<"result = "<<result;
-                QStringList waitsends;
-                for(auto nt:pMainApplication->segaftersplit)
-                {
-                    QStringList waitsend=pMainApplication->NT2QString(nt);
-                    waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
-                    waitsends.push_back(waitsend.join(";"));
-                }
-                pMainApplication->segaftersplit.clear();
-                qDebug()<<"waitsends = "<<waitsends;
 
-
-                if(VR_Communicator&&
-                    VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
-                {
-//                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
-//                    for(auto addmsg:waitsends)
-//                    {
-//                        VR_Communicator->UpdateAddSegMsg(addmsg);
-//                    }
-                    //
-                    VR_Communicator->UpdateSplitSegMsg(QString(result.join(";")),waitsends.at(0),waitsends.at(1));
-                    CURRENT_DATA_IS_SENT=true;
-                    pMainApplication->SegNode_tobedeleted.x = 0;
-                    pMainApplication->SegNode_tobedeleted.y = 0;
-                    pMainApplication->SegNode_tobedeleted.z = 0;
-                    qDebug()<<"TeraVR del seg sucess";
-                }
-            }else{
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-                pMainApplication->ClearCurrentNT();
-                pMainApplication->segaftersplit.clear();
-                qDebug()<<"TeraVR del seg failed";
-            }
-        }else if(pMainApplication->undo)
-        {
-            if(VR_Communicator->undoDeque.size())
-            {
-                VR_Communicator->UpdateUndoDeque();
-                CURRENT_DATA_IS_SENT=true;
-            }
-            else{
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-            }
-            pMainApplication->undo=false;
-        }else if(pMainApplication->redo)
-        {
-            if(VR_Communicator->redoDeque.size())
-            {
-                VR_Communicator->UpdateRedoDeque();
-                CURRENT_DATA_IS_SENT=true;
-            }
-            else{
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
-            }
-
-            pMainApplication->redo=false;
         }
 
-//        else if(pMainApplication->m_modeGrip_R==m_dragMode)
-//        {
-//            QString ConverteddragnodePOS = ConvertToMaxGlobal(pMainApplication->dragnodePOS);
-//            VR_Communicator->sendMsg(QString("/drag_node:" + ConverteddragnodePOS ));
-//            CURRENT_DATA_IS_SENT=true;
-//        }
+        if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
 
-//        else if (pMainApplication->m_modeGrip_R == _MovetoCreator)
-//        {
-//            QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPOS);
+        {
+            qDebug()<<"we are in send "<< pMainApplication->m_modeGrip_R;
+            if(pMainApplication->m_modeGrip_R==m_drawMode)
+            {
+                qDebug()<<"TeraVR add seg";
+                QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT);
+                waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                pMainApplication->ClearCurrentNT();
+                if(VR_Communicator&&
+                    VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                {
+                    VR_Communicator->UpdateAddSegMsg(waitsend.join(";"));
+                    CURRENT_DATA_IS_SENT=true;
+                }
+            }
+            else if(pMainApplication->m_modeGrip_R==m_deleteMode)
+            {
+                if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
+                {
+                    QStringList result;
+                    result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
+                    {
+                        result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
+                        .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
+                    }
+                    if(VR_Communicator&&
+                        VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
+                        CURRENT_DATA_IS_SENT=true;
+                        pMainApplication->SegNode_tobedeleted.x = 0;
+                        pMainApplication->SegNode_tobedeleted.y = 0;
+                        pMainApplication->SegNode_tobedeleted.z = 0;
+                        qDebug()<<"TeraVR del seg sucess";
+                    }
+                }else{
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                    pMainApplication->ClearCurrentNT();
+                    qDebug()<<"TeraVR del seg failed";
+                }
+            }
+            else if(pMainApplication->m_modeGrip_R==m_markMode)
+            {
+                qDebug() << "markerPos：" << pMainApplication->markerPosTobeDeleted;
+                if(pMainApplication->markerPosTobeDeleted!="")
+                {
+                    QStringList result;
+                    QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPosTobeDeleted);
+                    result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    result.push_back(ConvertedmarkerPOS);
+                    if(ConvertedmarkerPOS.split(" ")[0]=="-1")
+                    {
+                        qDebug()<<"TeraVR del marker";
+                        if(VR_Communicator&&
+                            VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                        {
+                            VR_Communicator->UpdateDelMarkerSeg(QString(result.join(";")));
+                        }
+                    }else
+                    {
+                        qDebug()<<"TeraVR add marker";
+                        if(VR_Communicator&&
+                            VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                        {
+                            VR_Communicator->UpdateAddMarkerMsg(QString(result.join(";") ));
+                        }
+                    }
+                    pMainApplication->markerPosTobeDeleted.clear();
+                    CURRENT_DATA_IS_SENT=true;
+                }
+            }else if(pMainApplication->m_modeGrip_R==m_retypeMode)
+            {
+                if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
+                {
+                    QStringList result;
+                    result.push_back(QString("%1 TeraVR %2 %3 %4 %5").arg(VR_Communicator->userName).arg(pMainApplication->m_curMarkerColorType).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
+                    {
+                        result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
+                        .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
+                    }
+                    if(VR_Communicator&&
+                        VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                    VR_Communicator->UpdateRetypeSegMsg(QString(result.join(";")));
+                    CURRENT_DATA_IS_SENT=true;
+                    pMainApplication->SegNode_tobedeleted.x = 0;
+                    pMainApplication->SegNode_tobedeleted.y = 0;
+                    pMainApplication->SegNode_tobedeleted.z = 0;
+                    qDebug()<<"TeraVR retype seg sucess";
+                    }
+                }else{
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                    pMainApplication->ClearCurrentNT();
+                    qDebug()<<"TeraVR retype seg failed";
+                }
+            }else if(pMainApplication->m_modeGrip_R == m_splitMode)
+            {
+                if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0 )
+                {
+                    qDebug()<<"split 1";
+                    if(pMainApplication->segaftersplit.size()!=2)
+                    {
+                            pMainApplication->READY_TO_SEND=false;
+                            CURRENT_DATA_IS_SENT=false;
+                            pMainApplication->ClearCurrentNT();
+                            pMainApplication->segaftersplit.clear();
+                            qDebug()<<"TeraVR del seg failed";
+                    }
+                    qDebug()<<"split 2";
+                    QStringList result;
+                    result.push_back(QString("%1 TeraVR %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
+                    {
+                        result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
+                        .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
+                    }
+                    qDebug()<<"result = "<<result;
+                    QStringList waitsends;
+                    for(auto nt:pMainApplication->segaftersplit)
+                    {
+                        QStringList waitsend=pMainApplication->NT2QString(nt);
+                        waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                        waitsends.push_back(waitsend.join(";"));
+                    }
+                    pMainApplication->segaftersplit.clear();
+                    qDebug()<<"waitsends = "<<waitsends;
 
-//            QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
-//            QString QCmainResIndex = QString("%1").arg(pMainApplication->CmainResIndex);
-//            VR_Communicator->sendMsg(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
-//            qDebug()<<QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex);
-//            CURRENT_DATA_IS_SENT = true;
-//        }
-    }
 
-//        if((pMainApplication->undo==true)&&(pMainApplication->READY_TO_SEND==true)/*&&(CURRENT_DATA_IS_SENT==false)*/)
-//        {
-//            qDebug()<<"---------undo TV------------";
-//            //VR_Communicator->undo();
-//            CURRENT_DATA_IS_SENT=true;
-//            pMainApplication->undo=false;
-//        }
+                    if(VR_Communicator&&
+                        VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+    //                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
+    //                    for(auto addmsg:waitsends)
+    //                    {
+    //                        VR_Communicator->UpdateAddSegMsg(addmsg);
+    //                    }
+                        //
+                        VR_Communicator->UpdateSplitSegMsg(QString(result.join(";")),waitsends.at(0),waitsends.at(1));
+                        CURRENT_DATA_IS_SENT=true;
+                        pMainApplication->SegNode_tobedeleted.x = 0;
+                        pMainApplication->SegNode_tobedeleted.y = 0;
+                        pMainApplication->SegNode_tobedeleted.z = 0;
+                        qDebug()<<"TeraVR del seg sucess";
+                    }
+                }else{
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                    pMainApplication->ClearCurrentNT();
+                    pMainApplication->segaftersplit.clear();
+                    qDebug()<<"TeraVR del seg failed";
+                }
+            }
+
+    //        else if(pMainApplication->m_modeGrip_R==m_dragMode)
+    //        {
+    //            QString ConverteddragnodePOS = ConvertToMaxGlobal(pMainApplication->dragnodePOS);
+    //            VR_Communicator->sendMsg(QString("/drag_node:" + ConverteddragnodePOS ));
+    //            CURRENT_DATA_IS_SENT=true;
+    //        }
+
+    //        else if (pMainApplication->m_modeGrip_R == _MovetoCreator)
+    //        {
+    //            QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPOS);
+
+    //            QString QSCurrentRes = QString("%1 %2 %3").arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z);
+    //            QString QCmainResIndex = QString("%1").arg(pMainApplication->CmainResIndex);
+    //            VR_Communicator->sendMsg(QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex));
+    //            qDebug()<<QString("/creator:" + ConvertedmarkerPOS + " " + QSCurrentRes + " " + QCmainResIndex);
+    //            CURRENT_DATA_IS_SENT = true;
+    //        }
+        }
+
 	}
 
 	return ;
