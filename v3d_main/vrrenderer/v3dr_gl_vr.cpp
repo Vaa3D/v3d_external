@@ -7006,10 +7006,31 @@ QString CMainApplication::FindNearestMarker(glm::vec3 dPOS)
     double dist=4.0;
     int index=-1;
     for(int i=0;i<drawnMarkerList.size();i++)
-    {
+    {   
         ImageMarker markertemp = drawnMarkerList.at(i);
-        double dist0 = (markertemp.x- dPOS.x)*(markertemp.x- dPOS.x)+(markertemp.y- dPOS.y)*(markertemp.y- dPOS.y)
-                         +(markertemp.z- dPOS.z)*(markertemp.z- dPOS.z);
+
+        double dx=markertemp.x- dPOS.x;
+        dx*=dx;
+        if(dx>dist)
+        {
+            continue;
+        }
+
+        double dy=markertemp.y- dPOS.y;
+        dy*=dy;
+        if(dy>dist)
+        {
+            continue;
+        }
+
+        double dz=markertemp.z- dPOS.z;
+        dz*=dz;
+        if(dz>dist)
+        {
+            continue;
+        }
+
+        double dist0 = dx+dy+dz;
         if(dist0<dist)
         {
             index=i;dist=dist0;
