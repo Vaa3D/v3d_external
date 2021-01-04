@@ -542,6 +542,11 @@ void V3dR_Communicator::UpdateUndoDeque()
             qDebug()<<"push in redo:"<<QString(operationType+"_redo:"+operatorMsg);
             redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
         }
+    }else
+    {
+        QMessageBox::information(0,tr("Warning "),
+                         tr("there is no message in undo deque"),
+                         QMessageBox::Ok);
     }
 }
 
