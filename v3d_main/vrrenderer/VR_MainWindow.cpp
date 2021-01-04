@@ -689,7 +689,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		return 0;
 	}
 	SendVRconfigInfo();
-
+    pMainApplication->SetupCurrentUserInformation(this->userName.toStdString(),0);
 	RunVRMainloop(zoomPOS);
     pMainApplication->Shutdown();
     qDebug()<<"Now quit VR";
