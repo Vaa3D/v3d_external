@@ -130,8 +130,10 @@ void CViewer::show()
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
 
         // also reset undo/redo (which are referred to this viewer)
-        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+//        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+//        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+        PAnoToolBar::instance()->buttonRedo->setEnabled(true);
 
 
         // re-arrange viewer's layout
