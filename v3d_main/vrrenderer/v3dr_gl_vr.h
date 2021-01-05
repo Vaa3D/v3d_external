@@ -255,7 +255,7 @@ public:
 
         void TriggerHapticPluse()
         {
-             m_pHMD->TriggerHapticPulse(m_iControllerIDRight,0,30000);
+             m_pHMD->TriggerHapticPulse(m_iControllerIDLeft,0,30000);
         }
 public:
 
