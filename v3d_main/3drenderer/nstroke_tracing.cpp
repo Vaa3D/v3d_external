@@ -3314,17 +3314,11 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
         curImg->ExtractDeletingNode(vector_VSWC);
 
 		w->SetupCollaborateInfo();
-//        w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
         for(auto seg:vector_VSWC)
             w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
-    }/*else
-    {
-        QMessageBox::information(0,tr("Message "),
-                         tr("Connection Lost!Data has been saved!"),
-                         QMessageBox::Ok);
-    }*/
+    }
     curImg->tracedNeuron.deleteMultiSeg();
 
     //curImg->proj_trace_history_append();          // no need to update the history

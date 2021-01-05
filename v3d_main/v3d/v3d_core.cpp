@@ -6660,29 +6660,17 @@ vector<XYZ> My4DImage::ExtractDeletingNode()
 vector<XYZ> My4DImage::ExtractDeletingNode(vector<V_NeuronSWC> &vector_VSWC)
 {
     vector<XYZ> out_LocList;
-//    std::vector<V_NeuronSWC>::iterator iter = tracedNeuron.seg.begin();
 
     for(int i=0;i<tracedNeuron.seg.size();i++)
     {
         if(tracedNeuron.seg.at(i).to_be_deleted)
         {
-            if(tracedNeuron.seg.at(i).row.size()>=2)
+            if(tracedNeuron.seg.at(i).row.size()>0)
             {
-                out_LocList.push_back(XYZ(tracedNeuron.seg.at(i).row[1].x,
-                                      tracedNeuron.seg.at(i).row[1].y,tracedNeuron.seg.at(i).row[1].z));
-                vector_VSWC.push_back(tracedNeuron.seg.at(i));
+               vector_VSWC.push_back(tracedNeuron.seg.at(i));
             }
         }
     }
-//    while (iter != tracedNeuron.seg.end())
-//    {
-//        if (iter->to_be_deleted)
-//        {
-//            out_LocList.push_back(XYZ(iter->row[1].x, iter->row[1].y, iter->row[1].z));
-//            vector_VSWC.push_back(iter);
-//        }
-//            iter++;
-//    }
 
     return out_LocList;
 }

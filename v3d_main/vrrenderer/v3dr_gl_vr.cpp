@@ -7051,9 +7051,9 @@ QString CMainApplication::FindNearestSegmentForDel(glm::vec3 dPOS)
             {
 
                 ntnametofind = nt.name;
-                SegNode_tobedeleted.x = nt.listNeuron.at(1).x;
-                SegNode_tobedeleted.y = nt.listNeuron.at(1).y;
-                SegNode_tobedeleted.z = nt.listNeuron.at(1).z;
+                SegNode_tobedeleted.x = nt.listNeuron.at(0).x;
+                SegNode_tobedeleted.y = nt.listNeuron.at(0).y;
+                SegNode_tobedeleted.z = nt.listNeuron.at(0).z;
                 segtobedeleted=nt;
                 qDebug()<<"SegNode_tobedeleted="<<SegNode_tobedeleted.x<<" "<<SegNode_tobedeleted.y<<" "<<SegNode_tobedeleted.z;
                 return ntnametofind;
