@@ -3796,11 +3796,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                 delSegName = "";
                 delSegName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 
-
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
                 if (delSegName == "") break; //segment not found
-
 				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
 				{
 					QString NTname="";
@@ -3819,28 +3817,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					qDebug()<<"split node in hear/end or neuron is too short";
 					break;
 				}
-//                //delete NT first
-//				if(isOnline==false)
-//				{
-//					NTL temp_NTL = sketchedNTList;
-//                    bool delerror = DeleteSegment(delSegName);
-//					if(delerror==true)
-//					{
-//						bIsUndoEnable = true;
-//						if(vUndoList.size()==MAX_UNDO_COUNT)
-//						{
-//							vUndoList.erase(vUndoList.begin());
-//						}
-//						vUndoList.push_back(temp_NTL);
-//						if (vRedoList.size()> 0)
-//							vRedoList.clear();
-//						bIsRedoEnable = false;
-//						vRedoList.clear();
-//						qDebug()<<"Segment Deleted.";
-//					}
-//					else
-//						qDebug()<<"Cannot Find the Segment ";
-//				}
 
 				//add two NT
 				NeuronTree splitNT1,splitNT2;
