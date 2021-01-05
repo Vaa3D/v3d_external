@@ -539,7 +539,7 @@ void V3dR_Communicator::UpdateUndoDeque()
             {
                 redoDeque.pop_front();
             }
-            qDebug()<<"push in redo:"<<QString(operationType+"_redo:"+operatorMsg);
+//            qDebug()<<"push in redo:"<<QString(operationType+"_redo:"+operatorMsg);
             redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
         }
     }else

@@ -736,49 +736,55 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
         if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
         {
             if(pMainApplication->undo)
-                    {
-                        if(VR_Communicator->undoDeque.size())
-                        {
-                            VR_Communicator->UpdateUndoDeque();
-                            CURRENT_DATA_IS_SENT=true;
-                        }
-                        else{
-                            pMainApplication->READY_TO_SEND=false;
-                            CURRENT_DATA_IS_SENT=false;
-                        }
-                        pMainApplication->undo=false;
-                    }else if(pMainApplication->redo)
-                    {
-                        if(VR_Communicator->redoDeque.size())
-                        {
-                            VR_Communicator->UpdateRedoDeque();
-                            CURRENT_DATA_IS_SENT=true;
-                        }
-                        else{
-                            pMainApplication->READY_TO_SEND=false;
-                            CURRENT_DATA_IS_SENT=false;
-                        }
+            {
+                if(VR_Communicator->undoDeque.size())
+                {
+                    VR_Communicator->UpdateUndoDeque();
+                    CURRENT_DATA_IS_SENT=true;
+                }
+                else{
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
+                pMainApplication->undo=false;
+            }else if(pMainApplication->redo)
+            {
+                if(VR_Communicator->redoDeque.size())
+                {
+                    VR_Communicator->UpdateRedoDeque();
+                    CURRENT_DATA_IS_SENT=true;
+                }
+                else{
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                }
 
-                        pMainApplication->redo=false;
-                    }
+                pMainApplication->redo=false;
+            }
 
         }
 
         if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
-
         {
-            qDebug()<<"we are in send "<< pMainApplication->m_modeGrip_R;
             if(pMainApplication->m_modeGrip_R==m_drawMode)
             {
                 qDebug()<<"TeraVR add seg";
                 QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT);
-                waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
-                pMainApplication->ClearCurrentNT();
-                if(VR_Communicator&&
-                    VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                if(waitsend.size())
                 {
-                    VR_Communicator->UpdateAddSegMsg(waitsend.join(";"));
-                    CURRENT_DATA_IS_SENT=true;
+                    waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    pMainApplication->ClearCurrentNT();
+                    if(VR_Communicator&&
+                            VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        VR_Communicator->UpdateAddSegMsg(waitsend.join(";"));
+                        CURRENT_DATA_IS_SENT=true;
+                    }
+                }else
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                    pMainApplication->ClearCurrentNT();
                 }
             }
             else if(pMainApplication->m_modeGrip_R==m_deleteMode)
@@ -811,7 +817,6 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             }
             else if(pMainApplication->m_modeGrip_R==m_markMode)
             {
-                qDebug() << "markerPos：" << pMainApplication->markerPosTobeDeleted;
                 if(pMainApplication->markerPosTobeDeleted!="")
                 {
                     QStringList result;
@@ -837,6 +842,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     }
                     pMainApplication->markerPosTobeDeleted.clear();
                     CURRENT_DATA_IS_SENT=true;
+                }else
+                {
+                    pMainApplication->READY_TO_SEND=false;
+                    CURRENT_DATA_IS_SENT=false;
+                    pMainApplication->markerPosTobeDeleted="";
                 }
             }else if(pMainApplication->m_modeGrip_R==m_retypeMode)
             {
@@ -941,9 +951,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
     //            CURRENT_DATA_IS_SENT = true;
     //        }
         }
-
 	}
-
 	return ;
 }
 
