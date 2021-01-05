@@ -7268,8 +7268,6 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                         {
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
-
-                            curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
                             if(w->TeraflyCommunicator
                                 &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                                 {
@@ -7279,6 +7277,8 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                                                 p_listneuron->at(i).nodeinseg_id,
                                                 "TeraFly");
                                 }
+                            curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
+
 							curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);
