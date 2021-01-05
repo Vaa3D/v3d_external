@@ -1481,7 +1481,7 @@ bool CMainApplication::HandleInput()
 {
 	SDL_Event sdlEvent;
 	bool bRet = false;
-
+    framecnt=(++framecnt)%numofframe;
 	while ( SDL_PollEvent( &sdlEvent ) != 0 )
 	{
 		if ( sdlEvent.type == SDL_QUIT )
@@ -1504,6 +1504,7 @@ bool CMainApplication::HandleInput()
 			}
 		}
 	}//*/
+
 
 	m_iControllerIDLeft = m_pHMD->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);	
 	m_iControllerIDRight = m_pHMD->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
@@ -1785,20 +1786,23 @@ bool CMainApplication::HandleInput()
 				}
                 else if(m_modeGrip_R == m_markMode)
                 {
-                    const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
-                    glm::mat4 mat = glm::mat4();
-                    for (size_t i = 0; i < 4; i++)
+                    if(!framecnt)
                     {
-                        for (size_t j = 0; j < 4; j++)
+                        const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+                        glm::mat4 mat = glm::mat4();
+                        for (size_t i = 0; i < 4; i++)
                         {
-                            mat[i][j] = *(mat_M.get() + i * 4 + j);
+                            for (size_t j = 0; j < 4; j++)
+                            {
+                                mat[i][j] = *(mat_M.get() + i * 4 + j);
+                            }
                         }
+                        mat=glm::inverse(m_globalMatrix) * mat;
+                        glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );
+                        QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+                        qDebug()<<"tmpdeletename:"<<tmpdeletename;
+                        SetDeleteMarkerColor(tmpdeletename);
                     }
-                    mat=glm::inverse(m_globalMatrix) * mat;
-                    glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );
-                    QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
-                    qDebug()<<"tmpdeletename:"<<tmpdeletename;
-                    SetDeleteMarkerColor(tmpdeletename);
                 }else if(m_modeGrip_R == m_splitMode)
                 {
                     const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos

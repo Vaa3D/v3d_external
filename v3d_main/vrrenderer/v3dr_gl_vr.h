@@ -636,6 +636,10 @@ public:
         NeuronTree UndoNT;
         bool undo=false;
         bool redo=false;
+
+private:
+        unsigned int framecnt=0;
+        const int numofframe=7;
 //signals:
 //        void undo();
 };
