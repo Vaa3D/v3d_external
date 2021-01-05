@@ -384,13 +384,12 @@ void V3dR_Communicator::UpdateUndoDeque()
             {
                 redoDeque.pop_front();
             }
-//            qDebug()<<"push in redo:"<<QString(operationType+"_redo:"+operatorMsg);
             redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
         }
     }else
     {
         QMessageBox::information(0,tr("Warning "),
-                         tr("there is no message in undo deque"),
+                         tr("Action can not be implemented"),
                          QMessageBox::Ok);
     }
 }
@@ -405,7 +404,28 @@ void V3dR_Communicator::UpdateRedoDeque()
         {
             sendMsg(msg);
             redoDeque.pop_back();
+
+            QString operationType=reg.cap(1);
+            QString operatorMsg=reg.cap(3);
+            if("drawline"==operationType)
+                operationType="/delline";
+            else if("delline"==operationType)
+                operationType="/drawline";
+//            else if("addmarker"==operationType)
+//                operationType="/delmarker";
+//            else if("delmarker"==operationType)
+//                operationType="/addmarker";
+            while(undoDeque.size()>=dequeszie)
+            {
+                undoDeque.pop_front();
+            }
+            undoDeque.push_back(QString(operationType+"_undo:"+operatorMsg));
         }
+    }else
+    {
+        QMessageBox::information(0,tr("Warning "),
+                         tr("Action can not be implemented"),
+                         QMessageBox::Ok);
     }
 }
 
