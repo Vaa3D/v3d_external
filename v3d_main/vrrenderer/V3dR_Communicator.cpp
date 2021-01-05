@@ -240,6 +240,7 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
             undoDeque.pop_front();
         }
         undoDeque.push_back(QString("/delline_undo:"+result.join(";")));
+        redoDeque.clear();
     }
 }
 
@@ -258,7 +259,8 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
             undoDeque.pop_front();
         }
         undoDeque.push_back(QString("/drawline_undo:"+result.join(";")));
-        qDebug()<<"-------------------EndUpdateDelSegMsg-----------------------------";
+        redoDeque.clear();
+
     }
 }
 
@@ -310,6 +312,7 @@ void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
         undoDeque.pop_front();
     }
     undoDeque.push_back(QString("/delline_undo:"+TVaddSegMSG));
+    redoDeque.clear();
 }
 
 void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
@@ -320,6 +323,7 @@ void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
         undoDeque.pop_front();
     }
     undoDeque.push_back(QString("/drawline_undo:"+TVdelSegMSG));
+    redoDeque.clear();
 }
 
 void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
