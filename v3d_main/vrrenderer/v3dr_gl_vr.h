@@ -164,10 +164,10 @@ public:
 	bool BInitGL();
 	bool BInitCompositor();
 
-    void UpdateNTList(QVector<XYZ> coords, int type);//add the receieved message/NT to sketchedNTList
-    QStringList NT2QString(NeuronTree); // prepare the message to be sent from currentNT.
-    QStringList UndoNT2QString();//never use,should be removed
-    XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
+        void UpdateNTList(QVector<XYZ> coords, int type);//add the receieved message/NT to sketchedNTList
+        QStringList NT2QString(NeuronTree); // prepare the message to be sent from currentNT.
+        QStringList UndoNT2QString();//never use,should be removed
+        XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
 	//bool FlashStuff(FlashType type,XYZ coords);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
@@ -177,17 +177,17 @@ public:
 	//void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
-    QString FindNearestSegmentForDel(glm::vec3 dPOS);
-    QString FindNearestMarker(glm::vec3 dPOS);
+        QString FindNearestSegmentForDel(glm::vec3 dPOS);
+        QString FindNearestMarker(glm::vec3 dPOS);
 	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
 
 	void SetDeleteSegmentColor(QString segName);
-    void SetDeleteMarkerColor(QString markerName);
+        void SetDeleteMarkerColor(QString markerName);
 
-    bool DeleteSegment(QVector<XYZ> coords,float dist);
-    int findseg(QVector<XYZ> coords,float dist);
-    bool retypeSegment(QVector<XYZ> coords,float dist,int type);
+        bool DeleteSegment(QVector<XYZ> coords,float dist);
+        int findseg(QVector<XYZ> coords,float dist);
+        bool retypeSegment(QVector<XYZ> coords,float dist,int type);
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);
@@ -217,8 +217,8 @@ public:
 	void SetupMarkerandSurface(double x,double y,double z,int type =3);
 	void SetupMarkerandSurface(double x,double y,double z,int colorR,int colorG,int colorB);
 
-    bool RemoveMarkerandSurface(double x,double y,double z/*,int type=3,bool asg=0*/);
-    bool RemoveMarkerandSurface2(double x,double y,double z,int type=3,bool asg=0);
+        bool RemoveMarkerandSurface(double x,double y,double z/*,int type=3,bool asg=0*/);
+        bool RemoveMarkerandSurface2(double x,double y,double z,int type=3,bool asg=0);
 	void RenderControllerAxes();//draw XYZ axes on the base point of the controllers 
 
 	bool SetupStereoRenderTargets();
@@ -252,6 +252,11 @@ public:
 	CGLRenderModel *FindOrLoadRenderModel( const char *pchRenderModelName );
 
 	float GetGlobalScale();
+
+        void TriggerHapticPluse()
+        {
+             m_pHMD->TriggerHapticPulse(m_iControllerIDRight,0,30000);
+        }
 public:
 
 	MainWindow *mainwindow;

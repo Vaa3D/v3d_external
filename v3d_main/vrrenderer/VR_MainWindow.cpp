@@ -330,6 +330,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     CURRENT_DATA_IS_SENT=true;
                 }
                 else{
+                    pMainApplication->TriggerHapticPluse();
                     pMainApplication->READY_TO_SEND=false;
                     CURRENT_DATA_IS_SENT=false;
                 }
@@ -342,6 +343,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     CURRENT_DATA_IS_SENT=true;
                 }
                 else{
+                    pMainApplication->TriggerHapticPluse();
                     pMainApplication->READY_TO_SEND=false;
                     CURRENT_DATA_IS_SENT=false;
                 }
