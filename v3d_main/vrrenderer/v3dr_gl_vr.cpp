@@ -2884,9 +2884,22 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
+                for (int i = 0; i < sketchedNTList.size(); i++)
+                {
+                    QString NTname = "";
+                    NTname = sketchedNTList.at(i).name;
+                    if (line_tobedeleted == NTname)
+                    {
+                        for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                        {
+                            sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                        }
+                        line_tobedeleted = "";
+                        SetupSingleMorphologyLine(i, 1);
+                    }
+                }
+
                 delSegName = "";
-//				delcurvePOS  ="";
-//				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
                 delSegName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				//SegNode_tobedeleted = GetSegtobedelete_Node(delName);
 				if(isOnline==false)	
@@ -2925,20 +2938,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						qDebug()<<"Cannot Find the Segment ";
                 }else
                 {
-                    for (int i = 0; i < sketchedNTList.size(); i++)
-                    {
-                        QString NTname = "";
-                        NTname = sketchedNTList.at(i).name;
-                        if (line_tobedeleted == NTname)
-                        {
-                            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
-                            {
-                                sketchedNTList[i].listNeuron[j].type = color_origin_seg;
-                            }
-                            line_tobedeleted = "";
-                            SetupSingleMorphologyLine(i, 1);
-                        }
-                    }
                     READY_TO_SEND=true;
                 }
 
