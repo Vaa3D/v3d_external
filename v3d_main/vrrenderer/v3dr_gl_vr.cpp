@@ -1632,81 +1632,7 @@ bool CMainApplication::HandleInput()
 				}
                 else if(m_modeGrip_R==m_retypeMode)
 				{
-//					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
-//					glm::mat4 mat = glm::mat4();
-//					for (size_t i = 0; i < 4; i++)
-//					{
-//						for (size_t j = 0; j < 4; j++)
-//						{
-//							mat[i][j] = *(mat_M.get() + i * 4 + j);
-//						}
-//					}
-//					mat=glm::inverse(m_globalMatrix) * mat;
-//					glm::vec4 ctrlRightPos = mat * glm::vec4( 0, 0, 0, 1 );
-//					//qDebug("ctrlRightPos = %.2f,%.2f,%.2f\n",ctrlRightPos.x,ctrlRightPos.y,ctrlRightPos.z);
-//					if(!_startdragnode)
-//					{
-//						if (isOnline == false)
-//						{
-//							bIsUndoEnable = true;
-//							if (vUndoList.size() == MAX_UNDO_COUNT)
-//							{
-//								vUndoList.erase(vUndoList.begin());
-//							}
-//							vUndoList.push_back(sketchedNTList);
-//							if (vRedoList.size() > 0)
-//								vRedoList.clear();
-//							bIsRedoEnable = false;
-//							vRedoList.clear();
-//						}
-//					}
-//					_startdragnode = true;
-//					if(m_pickUpState == false)
-//					{
-//						float dist = 0;
-//						float minvalue = 10.f;
-//						for(int i=0;i<sketchedNTList.size();i++)
-//						{
-//							NeuronTree nt = sketchedNTList.at(i);
-//							for(int j=0;j<nt.listNeuron.size();j++)
-//							{
-//								NeuronSWC SS0;
-//								SS0 = nt.listNeuron.at(j);
-//								dist = glm::sqrt((ctrlRightPos.x-SS0.x)*(ctrlRightPos.x-SS0.x)+(ctrlRightPos.y-SS0.y)*(ctrlRightPos.y-SS0.y)+(ctrlRightPos.z-SS0.z)*(ctrlRightPos.z-SS0.z));
-//								//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
-//								if(dist > (dist_thres/m_globalScale*5))
-//									continue;
-//								minvalue = glm::min(minvalue,dist);
-//								if(minvalue==dist)
-//								{
-//									pick_node = &sketchedNTList[i].listNeuron[j];
-//									pick_point_index_A = i;
-//									pick_point_index_B = j;
-//								}
-//							}
 
-//						}
-//						if(pick_point_index_B!=-1){
-//							m_pickUpState = true;
-//							qDebug("pick up %d, %d point.",pick_point_index_A,pick_point_index_B);}
-//					}
-//					else if(pick_point_index_B!=-1)//when pick up a node
-//					{
-//						dragnodePOS="";
-//						dragnodePOS = QString("%1 %2").arg(pick_point_index_A).arg(pick_point_index_B);
-//						dragnodePOS += QString(" %1 %2 %3").arg(ctrlRightPos.x).arg(ctrlRightPos.y).arg(ctrlRightPos.z);
-
-//						pick_node->x = ctrlRightPos.x;
-//						pick_node->y = ctrlRightPos.y;
-//						pick_node->z = ctrlRightPos.z;
-
-//						SetupSingleMorphologyLine(pick_point_index_A,1);
-
-//						if(isOnline)
-//							pick_node->type = 0;
-//							// sketchedNT_merged.listNeuron[pick_point].type = 0;
-//						qDebug()<<"finish update nearest node location";
-//					}
                     const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
                     glm::mat4 mat = glm::mat4();
                     for (size_t i = 0; i < 4; i++)
@@ -1720,7 +1646,6 @@ bool CMainApplication::HandleInput()
                     glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
 
                     QString tmpdeletename = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
-//					if (tmpdeletename == "") cout << "seg name is nul" << endl;
 
                     SetDeleteSegmentColor(tmpdeletename);
 				}
@@ -3313,7 +3238,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 //				_startdragnode = false;
 //				//ClearUndoRedoVectors();
 
-            qDebug()<<"in delete mode";
+            qDebug()<<"in retype mode";
                 const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
                 glm::mat4 mat = glm::mat4();
                 for (size_t i = 0; i < 4; i++)
@@ -7257,49 +7182,52 @@ bool CMainApplication::DeleteSegment(QVector<XYZ> coords,float dist)
  */
 void CMainApplication::SetDeleteSegmentColor(QString segName)
 {
-
+    //segName:current frame selected segment Name
+    //line_tobedeleted:last frame selected segment name
 	if (segName == "")
 		cout << "seg name is null" << endl;
-	qDebug() << line_tobedeleted;
-	//delete the segment that match with segName
-	for (int i = 0; i < sketchedNTList.size(); i++)
-	{
-		QString NTname = "";
-		NTname = sketchedNTList.at(i).name;
+    qDebug() << "line_tobedeleted="<<line_tobedeleted<<",segName= "+segName;
+    if(segName == line_tobedeleted) return;
 
-        if (line_tobedeleted == NTname && segName!=line_tobedeleted)
+    //restore last frame selected segment color
+    if(line_tobedeleted!="")
+    {
+        for (int i = 0; i < sketchedNTList.size(); i++)
         {
-            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+            QString NTname = sketchedNTList.at(i).name;
+            if (line_tobedeleted == NTname)
             {
-                sketchedNTList[i].listNeuron[j].type = color_origin_seg;
-                cout << "set color origin" << color_origin_seg<< endl;
+                cout<<NTname.toStdString() << "set color origin" << color_origin_seg<< endl;
+                for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                {
+                    sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                }
+                SetupSingleMorphologyLine(i, 1);
+                break;
             }
-            SetupSingleMorphologyLine(i, 1);
         }
-		if (segName == NTname && segName != line_tobedeleted)
-		{
-			//delete the segment in NTList,then return
-
-            color_origin_seg = sketchedNTList[i].listNeuron[0].type;
-			for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
-			{
-                sketchedNTList[i].listNeuron[j].type = colorForTobeDelete;//set color that seg to be deleted
-			}
-			SetupSingleMorphologyLine(i, 1);
-		}
-//        if (line_tobedeleted == NTname && segName!=line_tobedeleted)
-//        {
-//            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
-//            {
-//                sketchedNTList[i].listNeuron[j].type = color_origin;
-//                cout << "set color origin" << color_origin<< endl;
-//            }
-//            SetupSingleMorphologyLine(i, 1);
-//        }
-	}
-		line_tobedeleted = segName;
-
-	//if cannot find any matches,return false
+    }
+    //set current frame selected segment color
+    if(segName!="")
+    {
+        for (int i = 0; i < sketchedNTList.size(); i++)
+        {
+            QString NTname = sketchedNTList.at(i).name;
+            if (segName == NTname)
+            {
+                //delete the segment in NTList,then return
+                color_origin_seg = sketchedNTList[i].listNeuron[0].type;
+                cout<<NTname.toStdString() << "set color new " << colorForTobeDelete<<",origin = "<<color_origin_seg<< endl;
+                for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                {
+                    sketchedNTList[i].listNeuron[j].type = colorForTobeDelete;//set color that seg to be deleted
+                }
+                SetupSingleMorphologyLine(i, 1);
+                break;
+            }
+        }
+    }
+    line_tobedeleted = segName;
 }
 
 void CMainApplication::SetDeleteMarkerColor(QString markerName)
