@@ -95,7 +95,7 @@ void V3dR_Communicator::processReaded(QStringList list)
     QStringList filepaths;
     for(auto msg:list)
     {
-        qDebug()<<msg;
+//        qDebug()<<msg;
         if(msg.startsWith("00"))
         {
             QRegExp usersRex("^/users:(.*)$");

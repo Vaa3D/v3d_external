@@ -313,13 +313,14 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	bool bQuit = false;
 	while(!bQuit)
 	{
-	//handle one rendering loop, and handle user interaction
-	bQuit=pMainApplication->HandleOneIteration();
-    //READY_TO_SEND is set to true by the "trigger button up" event;
-    //client sends data to server (using onReadySend());
-    //server sends the same data back to client;
-    //READY_TO_SEND is set to false in onReadyRead();
-    //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
+        //handle one rendering loop, and handle user interaction
+//        qDebug()<<"VR_MainWindow"
+        bQuit=pMainApplication->HandleOneIteration();
+        //READY_TO_SEND is set to true by the "trigger button up" event;
+        //client sends data to server (using onReadySend());
+        //server sends the same data back to client;
+        //READY_TO_SEND is set to false in onReadyRead();
+        //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
         if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
         {
             if(pMainApplication->undo)
@@ -538,8 +539,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
     //            CURRENT_DATA_IS_SENT = true;
     //        }
         }
-	}
-	return ;
+    }
+
 }
 
 //-----------------------------------------------------------------------------

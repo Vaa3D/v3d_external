@@ -7234,14 +7234,10 @@ void CMainApplication::SetDeleteMarkerColor(QString markerName)
 {
     if(markerName == "")
         cout << "marker name is null" << endl;
-//    else
 
     for(int i=0;i<drawnMarkerList.size();i++)
     {
         QString markername=drawnMarkerList.at(i).name;
-        qDebug()<<"markername:"<<markername<<
-                  ",markerName:"<<markerName<<
-                  ",marker_tobedeleted:"<<marker_tobedeleted;
         if (marker_tobedeleted == markername && markerName!=marker_tobedeleted)
         {
             qDebug()<<"resume";
@@ -7257,6 +7253,12 @@ void CMainApplication::SetDeleteMarkerColor(QString markerName)
             for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
             Markers_spheresColor[i]=agentclr;
         }
+
+    }
+
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        QString markername=drawnMarkerList.at(i).name;
         if(markerName==markername && markerName!=marker_tobedeleted)
         {
             qDebug()<<"setnew";
