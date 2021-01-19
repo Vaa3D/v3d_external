@@ -12,126 +12,107 @@
 
 ManageSocket::ManageSocket(QObject *parent):QTcpSocket(parent)
 {
-    resetDataInfo();
+    resetDataType();
     filepaths.clear();
     connect(this,SIGNAL(readyRead()),this,SLOT(onreadyRead()));
 //    connect(this,SIGNAL(disconnected()),this,SLOT(ondisconnect()));
 }
 void ManageSocket::onreadyRead()
 {
-    QDataStream in(this);
-    if(dataInfo.dataSize==0)
+    if(!datatype.isFile)
     {
-		if (this->bytesAvailable() >= sizeof(qint32))
+        if(canReadLine())
         {
-            in>>dataInfo.dataSize;
-            dataInfo.dataReadedSize+=sizeof (qint32);
-        }
-        else return;
-    }
-
-    if(dataInfo.stringOrFilenameSize==0&&dataInfo.filedataSize==0)
-    {
-		if (this->bytesAvailable() >= 2 * sizeof(qint32))
-        {
-            in>>dataInfo.stringOrFilenameSize>>dataInfo.filedataSize;
-            dataInfo.dataReadedSize+=(2*sizeof (qint32));
-        }else
-            return;
-    }
-    QStringList list;
-	if (this->bytesAvailable() >= dataInfo.stringOrFilenameSize + dataInfo.filedataSize)
-    {
-        qDebug()<<"in down file1";
-		QString messageOrFileName = QString::fromUtf8(this->read(dataInfo.stringOrFilenameSize), dataInfo.stringOrFilenameSize);
-
-
-        qDebug()<<messageOrFileName<<dataInfo.filedataSize;
-        if(dataInfo.filedataSize)
-        {
-            if(!QDir(QCoreApplication::applicationDirPath()+"/download").exists())
+            QString msg=readLine();
+            if(!msg.endsWith('\n'))
             {
-                QDir(QCoreApplication::applicationDirPath()).mkdir("download");
-            }
-            qDebug()<<"in read file";
-            QString filePath=QCoreApplication::applicationDirPath()+"/download/"+messageOrFileName;
-            qDebug()<<filePath;
-            QFile file(filePath);
-            if(file.open(QIODevice::WriteOnly))
-            {
-                file.write(this->read(dataInfo.filedataSize)); file.flush();
-                file.close();
+                disconnectFromHost();
+                this->deleteLater();
             }else
             {
-                qDebug()<<filepaths<<" "<<file.error();
+                msg=msg.trimmed();
+                QRegExp reg("FILENAMESIZE:(.*)");
+                if(reg.indexIn(msg)!=-1)
+                {
+                    datatype.isFile=true;
+                    auto fileNameAndSize=reg.cap(1).split("*;*");
+                    if(fileNameAndSize.size()!=2)
+                    {
+                        disconnectFromHost();
+                        this->deleteLater();
+                    }
+                    datatype.filename=fileNameAndSize[0];
+                    datatype.filesize=fileNameAndSize[1].toLongLong();
+                }else{
+                    QStringList list;
+                    list.push_back("00"+msg);
+                    processReaded(list);
+                }
+                onreadyRead();
             }
-            qDebug()<<"in down file2";
-        }else
-        {
-            list.push_back("00"+messageOrFileName);
         }
-        dataInfo.dataReadedSize+=(dataInfo.stringOrFilenameSize+dataInfo.filedataSize);
-        dataInfo.stringOrFilenameSize=0;
-        dataInfo.filedataSize=0;
-        if(dataInfo.dataReadedSize==dataInfo.dataSize)
-            resetDataInfo();
-        processReaded(list);
-    }else
-        return;
-    onreadyRead();
+    }
+    else{
+        if(bytesAvailable()>=datatype.filesize)
+        {
+            if(!QDir(QCoreApplication::applicationDirPath()+"/download").exists())
+                QDir(QCoreApplication::applicationDirPath()).mkdir("download");
+            QString filePath=QCoreApplication::applicationDirPath()+"/download/"+datatype.filename;
+            QFile file(filePath);
+            file.open(QIODevice::WriteOnly);
+            int length=file.write(read(datatype.filesize));
+            if(length!=datatype.filesize)
+            {
+                qDebug()<<"Error:read file";
+            }
+            file.flush();
+            file.close();
+            QStringList list;
+            list.push_back("11"+filePath);
+            resetDataType();
+            processReaded(list);
+            onreadyRead();
+        }
+    }
 }
 
-void ManageSocket::resetDataInfo()
+void ManageSocket::resetDataType()
 {
-     dataInfo.dataSize=0;dataInfo.stringOrFilenameSize=0;
-     dataInfo.dataReadedSize=0;dataInfo.filedataSize=0;
+    datatype.isFile=false;
+    datatype.filesize=0;
+    datatype.filename.clear();
 }
 
-void ManageSocket::sendMsg(QString msg)
+void ManageSocket::sendMsg(QString type,QString msg)
 {
-    qint32 stringSize=msg.toUtf8().size();
-    qint32 totalsize=3*sizeof (qint32)+stringSize;
-    QByteArray block;
-    QDataStream dts(&block,QIODevice::WriteOnly);
-    dts<<qint32(totalsize)<<qint32(stringSize)<<qint32(0);
-    block+=msg.toUtf8();
-    this->write(block);
-    this->flush();
-    qDebug()<<msg;
+    QString data=type+":"+msg+"\n";
+    int length=write(data.toStdString().c_str(),data.size());
+    if(data.size()!=length)
+        qDebug()<<"Error:send "+data;
+    else
+        qDebug()<<data.toStdString().c_str();
+    flush();
 }
 
 void ManageSocket::sendFiles(QStringList filePathList,QStringList fileNameList)
 {
-    int totalsize=sizeof(qint32);
-    QList<QByteArray> blocks;
     for(int i=0;i<filePathList.size();i++)
     {
-        QByteArray block;
-        block.clear();
-        QDataStream dts(&block,QIODevice::WriteOnly);
         QFile f(filePathList[i]);
         if(!f.open(QIODevice::ReadOnly))
-            qDebug()<<"cannot open file "<<fileNameList[i]<<" "<<f.errorString();
-        QByteArray fileName=fileNameList[i].toUtf8();
+        {
+            qDebug()<<"Manage:cannot open file "<<fileNameList[i]<<" "<<f.errorString();
+            return ;
+        }
         QByteArray fileData=f.readAll();
-        f.close();
-        dts<<qint32(fileName.size())<<qint32(fileData.size());
-        block=block+fileName;
-        block=block+fileData;
-        blocks.push_back(block);
-        totalsize+=block.size();
+        sendMsg("FILENAMESIZE",(fileNameList[i]+"*;*"+QString::number(fileData.size())));
+        int length=write(fileData);
+        if(length!=fileData.size())
+        {
+            qDebug()<<"Error:send data";
+        }
+        flush();
     }
-    QByteArray block;
-
-    block.clear();
-    QDataStream dts(&block,QIODevice::WriteOnly);
-    dts<<qint32(totalsize);
-    for(int i=0;i<blocks.size();i++)
-        block=block+blocks[i];
-    qDebug()<<totalsize<<' '<<block.size();
-    this->write(block);
-    this->flush();
-
     for(auto filepath:filePathList)
     {
         if(filepath.contains("/tmp/"))
@@ -154,8 +135,8 @@ void ManageSocket::processReaded(QStringList list)
 void ManageSocket::processMsg( QString &msg)
 {
 
-    QRegExp FileList("(.*):CurrentFiles");//down;data:CurrentFiles
-    QRegExp CommunPort("(.*):Port");
+    QRegExp FileList("CurrentFiles:(.*)");//down;data:CurrentFiles
+    QRegExp CommunPort("Port:(.*)");
     if(FileList.indexIn(msg)!=-1)
     {
         QStringList response=FileList.cap(1).trimmed().split(";");
@@ -164,8 +145,7 @@ void ManageSocket::processMsg( QString &msg)
             qDebug()<<"error:msg is err";
             return;
         }
-        QString type=response.at(response.size()-2);
-        QString dirname=response.at(response.size()-1);
+        QString type=response.at(0);
         listwidget=new QListWidget;
         listwidget->resize(300,500);
         listwidget->setWindowTitle("choose annotation file");
@@ -175,7 +155,7 @@ void ManageSocket::processMsg( QString &msg)
         {
             connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                     this,SLOT(download(QListWidgetItem*)));
-            for(int i=0;i<response.size()-2;i++)
+            for(int i=2;i<response.size();i++)
             {
                 listwidget->addItem(response.at(i));
             }
@@ -184,7 +164,7 @@ void ManageSocket::processMsg( QString &msg)
         {
             connect(listwidget,SIGNAL(itemDoubleClicked(QListWidgetItem*)),
                     this,SLOT(load(QListWidgetItem*)));
-            for(int i=0;i<response.size()-2;i++)
+            for(int i=2;i<response.size();i++)
             {
                 if(response.at(i).endsWith("ano"))
                     listwidget->addItem(response.at(i));
@@ -241,11 +221,12 @@ void ManageSocket::download(QListWidgetItem* item)
     QString filename=item->text().trimmed();
     if(filename.endsWith(".ano"))
     {
-        sendMsg(filename+";"+filename+".apo;"+filename+".eswc"+":Download");
+//        sendMsg(filename+";"+filename+".apo;"+filename+".eswc"+":Download");
+        sendMsg("Download",filename+";"+filename+".apo;"+filename+".eswc");
     }
     else
     {
-        sendMsg(filename+":Download");
+        sendMsg("Download",filename);
     }
     listwidget->deleteLater();
     listwidget=nullptr;
@@ -257,7 +238,7 @@ void ManageSocket::load(QListWidgetItem* item)
     QString filename=item->text().trimmed();
     if(filename.endsWith(".ano"))
     {
-        sendMsg(filename.left(filename.size()-4)+":LoadANO");
+        sendMsg("LoadANO",filename.left(filename.size()-4));
     }
     else
         qDebug()<<"choose file with .ano";

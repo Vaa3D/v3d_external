@@ -122,7 +122,7 @@ void V3dR_Communicator::resetDataInfo()
 void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 //    QRegExp usersRex("^/users:(.*)$");
     QRegExp hmdposRex("^/hmdpos:(.*)$");
-    QRegExp msgreg("/(.*)_(.*):(.*)");
+    QRegExp msgreg("^/(.*)_(.*):(.*)$");
 
 
     line=line.trimmed();
