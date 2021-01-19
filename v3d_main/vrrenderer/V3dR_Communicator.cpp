@@ -14,7 +14,7 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 	userName="";
 
     socket = new QTcpSocket(this);
-    resetDataInfo();
+    resetDataType();
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(this->socket,SIGNAL(connected()),this,SLOT(onConnected()));
 //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
@@ -23,71 +23,73 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 }
 
 void V3dR_Communicator::onReadyRead()
-{
-    qDebug()<<"on read";
-    QDataStream in(socket);
-    if(dataInfo.dataSize==0)
+{    
+    if(!datatype.isFile)
     {
-        if(socket->bytesAvailable()>=sizeof (qint32))
+        if(socket->canReadLine())
         {
-            in>>dataInfo.dataSize;
-            dataInfo.dataReadedSize+=sizeof (qint32);
+            QString msg=socket->readLine();
+            if(!msg.endsWith('\n'))
+            {
+                socket->disconnectFromHost();
+                this->deleteLater();
+            }else
+            {
+                msg=msg.trimmed();
+                QRegExp reg("FILENAMESIZE:(.*)");
+                if(reg.indexIn(msg)!=-1)
+                {
+                    datatype.isFile=true;
+                    auto fileNameAndSize=reg.cap(1).split("*;*");
+                    if(fileNameAndSize.size()!=2)
+                    {
+                        socket->disconnectFromHost();
+                        this->deleteLater();
+                    }
+                    datatype.filename=fileNameAndSize[0];
+                    datatype.filesize=fileNameAndSize[1].toLongLong();
+                }else{
+                    QStringList list;
+                    list.push_back("00"+msg);
+                    processReaded(list);
+                }
+                onReadyRead();
+            }
         }
-        else return;
     }
-
-    if(dataInfo.stringOrFilenameSize==0&&dataInfo.filedataSize==0)
-    {
-        if(socket->bytesAvailable()>=2*sizeof (qint32))
-        {
-            in>>dataInfo.stringOrFilenameSize>>dataInfo.filedataSize;
-            dataInfo.dataReadedSize+=(2*sizeof (qint32));
-        }else
-            return;
-    }
-    QStringList list;
-    if(socket->bytesAvailable()>=dataInfo.stringOrFilenameSize+dataInfo.filedataSize)
-    {
-        QString messageOrFileName=QString::fromUtf8(socket->read(dataInfo.stringOrFilenameSize),dataInfo.stringOrFilenameSize);
-//        qDebug()<<"messageOrFileName= "<<messageOrFileName;
-        if(dataInfo.filedataSize)
+    else{
+        if(socket->bytesAvailable()>=datatype.filesize)
         {
             if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").exists())
-            {
                 QDir(QCoreApplication::applicationDirPath()).mkdir("loaddata");
-            }
-            QString filePath=QCoreApplication::applicationDirPath()+"/loaddata/"+messageOrFileName;
+            QString filePath=QCoreApplication::applicationDirPath()+"/loaddata/"+datatype.filename;
             QFile file(filePath);
             file.open(QIODevice::WriteOnly);
-            file.write(socket->read(dataInfo.filedataSize));file.flush();
+            int length=file.write(socket->read(datatype.filesize));
+            if(length!=datatype.filesize)
+            {
+                qDebug()<<"Error:read file";
+            }
+            file.flush();
             file.close();
+            QStringList list;
             list.push_back("11"+filePath);
-        }else
-        {
-            list.push_back("00"+messageOrFileName);
+            resetDataType();
+            processReaded(list);
+            onReadyRead();
         }
-        dataInfo.dataReadedSize+=(dataInfo.stringOrFilenameSize+dataInfo.filedataSize);
-        dataInfo.stringOrFilenameSize=0;
-        dataInfo.filedataSize=0;
-        if(dataInfo.dataReadedSize==dataInfo.dataSize)
-            resetDataInfo();
-        processReaded(list);
-    }else
-        return;
-	onReadyRead();
+    }
 }
 
 void V3dR_Communicator::sendMsg(QString msg)
 {
-    qint32 stringSize=msg.toUtf8().size();
-    qint32 totalsize=3*sizeof (qint32)+stringSize;
-    QByteArray block;
-    QDataStream dts(&block,QIODevice::WriteOnly);
-    dts<<qint32(totalsize)<<qint32(stringSize)<<qint32(0);
-    block+=msg.toUtf8();
-    socket->write(block);
+    QString data=msg+"\n";
+    int length=socket->write(data.toStdString().c_str(),data.size());
+    if(data.size()!=length)
+        qDebug()<<"Error:send "+data;
+    else
+        qDebug()<<data.toStdString().c_str();
     socket->flush();
-    qDebug()<<"send to server:"<<msg;
 }
 
 void V3dR_Communicator::processReaded(QStringList list)
@@ -113,10 +115,11 @@ void V3dR_Communicator::processReaded(QStringList list)
     }
 }
 
-void V3dR_Communicator::resetDataInfo()
+void V3dR_Communicator::resetDataType()
 {
-     dataInfo.dataSize=0;dataInfo.stringOrFilenameSize=0;
-     dataInfo.dataReadedSize=0;dataInfo.filedataSize=0;
+    datatype.isFile=false;
+    datatype.filesize=0;
+    datatype.filename.clear();
 }
 
 void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
