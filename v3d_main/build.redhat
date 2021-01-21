@@ -8,6 +8,7 @@
 #echo 2010-08018, by Hanchuan Peng
 #echo 2011-0203, updated by Hanchuan Peng
 #echo 2014-0930, add bigtiff support.
+#echo 2021-01-21, add mkdir ../../bin
 #echo -----------------------------------------------------------------
 #echo on
 
@@ -97,6 +98,11 @@ echo =========================================================
 qmake vaa3d.pro $QARGS
 touch v3d_version_info.cpp
 make $ARGS
+
+if [ ! -d ../../bin ]; then
+    mkdir ../../bin 
+fi
+
 cp vaa3d ../../bin/.   #copy to the system's v3d folder
 cd ../
 
@@ -132,7 +138,6 @@ do
     echo "Find file [$jarfile]"
     mv $jarfile bin/.
 done;
-
 
 cd bin
 echo "Now run Vaa3D..."
