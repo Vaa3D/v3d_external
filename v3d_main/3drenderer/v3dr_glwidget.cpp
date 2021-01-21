@@ -1059,7 +1059,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 						pMain.FragTracerQPluginPtr = loader;
 						if (!loader->isLoaded())
 						{
-							v3d_msg("Neuron Assemgler module not found. Do nothing.");
+							v3d_msg("Neuron Assembler module not found. Do nothing.");
 							return;
 						}
 						XFormWidget* curXWidget = v3dr_getXWidget(_idep);
