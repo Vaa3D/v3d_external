@@ -3244,9 +3244,12 @@ void V3dR_GLWidget::getXlockStatus(bool status)
 		Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 		My4DImage* curImg = 0;
 		if (this) curImg = v3dr_getImage4d(_idep);
-
-		terafly::PMain& pMain = *(terafly::PMain::getInstance());
-		if (pMain.fragTracePluginInstance) pMain.xLockStatus = status;
+		
+		if (terafly::PMain::isInstantiated())
+		{
+			terafly::PMain& pMain = *(terafly::PMain::getInstance());
+			if (pMain.fragTracePluginInstance) pMain.xLockStatus = status;
+		}
 	}
 }
 
@@ -3258,8 +3261,11 @@ void V3dR_GLWidget::getYlockStatus(bool status)
 		My4DImage* curImg = 0;
 		if (this) curImg = v3dr_getImage4d(_idep);
 
-		terafly::PMain& pMain = *(terafly::PMain::getInstance());
-		if (pMain.fragTracePluginInstance) pMain.yLockStatus = status;
+		if (terafly::PMain::isInstantiated())
+		{
+			terafly::PMain& pMain = *(terafly::PMain::getInstance());
+			if (pMain.fragTracePluginInstance) pMain.yLockStatus = status;
+		}
 	}
 }
 
@@ -3271,8 +3277,11 @@ void V3dR_GLWidget::getZlockStatus(bool status)
 		My4DImage* curImg = 0;
 		if (this) curImg = v3dr_getImage4d(_idep);
 
-		terafly::PMain& pMain = *(terafly::PMain::getInstance());
-		if (pMain.fragTracePluginInstance) pMain.zLockStatus = status;
+		if (terafly::PMain::isInstantiated())
+		{
+			terafly::PMain& pMain = *(terafly::PMain::getInstance());
+			if (pMain.fragTracePluginInstance) pMain.zLockStatus = status;
+		}
 	}
 }
 #endif
