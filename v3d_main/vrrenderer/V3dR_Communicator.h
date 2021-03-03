@@ -20,8 +20,9 @@ class V3dR_Communicator : public QObject
     Q_OBJECT
     struct DataType{
         bool isFile=false;//false msg,true file
-        qint64 filesize=0;
+        qint64 datasize=0;
         QString filename;
+        QFile *f=nullptr;
     };
 public:
     explicit V3dR_Communicator(QObject *partent=nullptr);
@@ -111,6 +112,7 @@ public slots:
      * 读取输入，并执行相关处理
      */
     void onReadyRead();
+    char processHeader(const QString rmsg);
     /**
      * @brief onConnected
      * 发送用户登陆消息
