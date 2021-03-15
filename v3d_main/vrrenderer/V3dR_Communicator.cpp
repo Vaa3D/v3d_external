@@ -24,6 +24,7 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 
 void V3dR_Communicator::onReadyRead()
 {    
+    qDebug()<<"ON MESS";
     if(!datatype.isFile)
     {
         if(datatype.datasize==0)
@@ -61,7 +62,11 @@ void V3dR_Communicator::onReadyRead()
                 QString filename=datatype.f->fileName();
                 datatype.f->close();
                 resetDataType();
-//                processFile(filename);
+                if(filename.contains("swc"))
+                {
+                    qDebug()<<"receive file:"<<filename;
+                    emit load(filename.section("/",-1).section(".",0,1));
+                }
                 ret=0;
             }else if(datatype.datasize<0)
             {
@@ -78,6 +83,7 @@ void V3dR_Communicator::onReadyRead()
 
 char V3dR_Communicator::processHeader(const QString rmsg)
 {
+    qDebug()<<"header"<<rmsg;
     int ret = 0;
     if(rmsg.endsWith('\n'))
     {
@@ -85,7 +91,7 @@ char V3dR_Communicator::processHeader(const QString rmsg)
         if(msg.startsWith("DataTypeWithSize:"))
         {
             msg=msg.right(msg.size()-QString("DataTypeWithSize:").size());
-            QStringList paras=msg.split(";;",QString::SkipEmptyParts);
+            QStringList paras=msg.split(" ",QString::SkipEmptyParts);
             if(paras.size()==2&&paras[0]=="0")
             {
                 datatype.datasize=paras[1].toInt();
@@ -121,7 +127,7 @@ void V3dR_Communicator::sendMsg(QString str)
     {
         const QString data=str+"\n";
         int datalength=data.size();
-        QString header=QString("DataTypeWithSize:%1 %2\n").arg(0).arg(datalength);
+        QString header=QString("DataTypeWithSize:%1;;%2\n").arg(0).arg(datalength);
         socket->write(header.toStdString().c_str(),header.size());
         socket->write(data.toStdString().c_str(),data.size());
         socket->flush();
@@ -475,7 +481,7 @@ void V3dR_Communicator::UpdateRedoDeque()
 void V3dR_Communicator::onConnected() {
     qDebug()<<"Message onConnected";
     sendMsg(QString("/login:" +userName));
-    sendMsg("/GetBBSwc:");
+    sendMsg("/GetBBSwc:COLL");
 }
 
 QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
