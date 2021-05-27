@@ -527,7 +527,9 @@ public:
 	 set<set<size_t> > nonLoopErrors;
 	 map<size_t, set<size_t> > seg2SegsMap;
 	 map<size_t, set<size_t> > segTail2segIDmap;
-	 void loopDetection();
+	 void loopDetection(); // This method was deemed trivial by authority. Hence the development was halted and incomplete. 
+						   //	--> Use with caution!! May result in program errors or bewildering anager.
+						   //																	-- Amended by MK, May, 2021
 	 void rc_loopPathCheck(size_t inputSegID, vector<size_t> curPathWalk, My4DImage* curImg);
 
 
@@ -548,6 +550,7 @@ public:
 	 void segTreeFastReprofile(My4DImage* curImg);
 	 void rc_findDownstreamSegs(My4DImage* curImg, size_t inputSegID, string gridKey, int gridLength);	 
 
+	 bool brainAtlasRun;
 	 bool FragTraceMarkerDetector3Dviewer;
 	 bool NAeditingMode;
 	 v3dr_SurfaceType surType;
