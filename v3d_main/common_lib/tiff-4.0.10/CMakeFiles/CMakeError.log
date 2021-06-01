@@ -1,0 +1,145 @@
+Determining if the include file dlfcn.h exists failed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_384e6/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_384e6.dir\build.make CMakeFiles/cmTC_384e6.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_384e6.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_384e6.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c:1:10: fatal error: dlfcn.h: No such file or directory
+ #include <dlfcn.h>
+          ^~~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_384e6.dir\build.make:77: CMakeFiles/cmTC_384e6.dir/CheckIncludeFile.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:126: cmTC_384e6/fast] Error 2
+
+
+
+Determining if the mmap exist failed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_e391f/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_e391f.dir\build.make CMakeFiles/cmTC_e391f.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e391f.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_e391f.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c:2:10: fatal error: sys/mman.h: No such file or directory
+ #include <sys/mman.h>
+          ^~~~~~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_e391f.dir\build.make:77: CMakeFiles/cmTC_e391f.dir/CheckSymbolExists.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:126: cmTC_e391f/fast] Error 2
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <sys/mman.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef mmap
+  return ((int*)(&mmap))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the jbg_newlen exist failed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_9bd4f/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_9bd4f.dir\build.make CMakeFiles/cmTC_9bd4f.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9bd4f.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_9bd4f.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c:2:10: fatal error: jbig.h: No such file or directory
+ #include <jbig.h>
+          ^~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_9bd4f.dir\build.make:77: CMakeFiles/cmTC_9bd4f.dir/CheckSymbolExists.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:126: cmTC_9bd4f/fast] Error 2
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <jbig.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef jbg_newlen
+  return ((int*)(&jbg_newlen))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the include file GL/glut.h exists failed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_7dd59/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_7dd59.dir\build.make CMakeFiles/cmTC_7dd59.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7dd59.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_7dd59.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c:1:10: fatal error: GL/glut.h: No such file or directory
+ #include <GL/glut.h>
+          ^~~~~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_7dd59.dir\build.make:77: CMakeFiles/cmTC_7dd59.dir/CheckIncludeFile.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:126: cmTC_7dd59/fast] Error 2
+
+
+
+Determining if the include file GLUT/glut.h exists failed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_f608e/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_f608e.dir\build.make CMakeFiles/cmTC_f608e.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_f608e.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_f608e.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c:1:10: fatal error: GLUT/glut.h: No such file or directory
+ #include <GLUT/glut.h>
+          ^~~~~~~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_f608e.dir\build.make:77: CMakeFiles/cmTC_f608e.dir/CheckIncludeFile.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:126: cmTC_f608e/fast] Error 2
+
+
+
+Determining if the include file OpenGL/gl.h exists failed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_1d5d4/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_1d5d4.dir\build.make CMakeFiles/cmTC_1d5d4.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1d5d4.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_1d5d4.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c:1:10: fatal error: OpenGL/gl.h: No such file or directory
+ #include <OpenGL/gl.h>
+          ^~~~~~~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_1d5d4.dir\build.make:77: CMakeFiles/cmTC_1d5d4.dir/CheckIncludeFile.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:126: cmTC_1d5d4/fast] Error 2
+
+
+
+Determining if the include file OpenGL/glu.h exists failed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_21927/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_21927.dir\build.make CMakeFiles/cmTC_21927.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_21927.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_21927.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c:1:10: fatal error: OpenGL/glu.h: No such file or directory
+ #include <OpenGL/glu.h>
+          ^~~~~~~~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_21927.dir\build.make:77: CMakeFiles/cmTC_21927.dir/CheckIncludeFile.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:126: cmTC_21927/fast] Error 2
+
+
+

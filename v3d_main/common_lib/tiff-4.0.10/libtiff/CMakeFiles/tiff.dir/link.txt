@@ -1,0 +1,3 @@
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\tiff.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\tiff.dir/objects.a @CMakeFiles\tiff.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--version-script=D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/libtiff/libtiff.map libtiff.def -shared -o libtiff.dll -Wl,--out-implib,libtiff.dll.a -Wl,--major-image-version,5,--minor-image-version,4 -Wl,--whole-archive CMakeFiles\tiff.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\tiff.dir\linklibs.rsp

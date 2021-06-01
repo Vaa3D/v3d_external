@@ -1,0 +1,3 @@
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\ascii_tag.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\ascii_tag.dir/objects.a @CMakeFiles\ascii_tag.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--whole-archive CMakeFiles\ascii_tag.dir/objects.a -Wl,--no-whole-archive -o ascii_tag.exe -Wl,--out-implib,libascii_tag.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\ascii_tag.dir\linklibs.rsp

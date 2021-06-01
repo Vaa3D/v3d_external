@@ -1,0 +1,1374 @@
+The system is: Windows - 10.0.19041 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: D:/mingw64/mingw64/bin/gcc.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.exe"
+
+The C compiler identification is GNU, found in "D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/3.20.2/CompilerIdC/a.exe"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_ecce0/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_ecce0.dir\build.make CMakeFiles/cmTC_ecce0.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ecce0.dir/CMakeCCompilerABI.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -v -o CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj -c D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCCompilerABI.c
+Using built-in specs.
+COLLECT_GCC=D:\mingw64\mingw64\bin\gcc.exe
+Target: x86_64-w64-mingw32
+Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib '
+Thread model: win32
+gcc version 8.1.0 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) 
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona'
+ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/cc1.exe -quiet -v -iprefix D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/ -U_REENTRANT D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=core2 -march=nocona -auxbase-strip CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj -version -o C:\Users\ANNOTA~1\AppData\Local\Temp\ccqxhyBC.s
+GNU C17 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)
+	compiled by GNU C version 8.1.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include"
+ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../include"
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"
+ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/mingw/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include
+End of search list.
+GNU C17 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)
+	compiled by GNU C version 8.1.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: bb117049c51d03d971e874cfcb35cac9
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona'
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj C:\Users\ANNOTA~1\AppData\Local\Temp\ccqxhyBC.s
+GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30
+COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../libexec/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/
+LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../lib/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona'
+Linking C executable cmTC_ecce0.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_ecce0.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_ecce0.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_ecce0.dir/objects.a @CMakeFiles\cmTC_ecce0.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -v -Wl,--whole-archive CMakeFiles\cmTC_ecce0.dir/objects.a -Wl,--no-whole-archive -o cmTC_ecce0.exe -Wl,--out-implib,libcmTC_ecce0.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
+Using built-in specs.
+COLLECT_GCC=D:\mingw64\mingw64\bin\gcc.exe
+COLLECT_LTO_WRAPPER=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe
+Target: x86_64-w64-mingw32
+Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib '
+Thread model: win32
+gcc version 8.1.0 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) 
+COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../libexec/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/
+LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../lib/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ecce0.exe' '-mtune=core2' '-march=nocona'
+ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/collect2.exe -plugin D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/liblto_plugin-0.dll -plugin-opt=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\ANNOTA~1\AppData\Local\Temp\ccS5C7F1.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt --sysroot=C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 -m i386pep -Bdynamic -o cmTC_ecce0.exe D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0 -LD:/mingw64/mingw64/bin/../lib/gcc -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../.. --whole-archive CMakeFiles\cmTC_ecce0.dir/objects.a --no-whole-archive --out-implib libcmTC_ecce0.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ecce0.exe' '-mtune=core2' '-march=nocona'
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include]
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed]
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include]
+  end of search list found
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include]
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed]
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/include]
+  implicit include dirs: [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed;D:/mingw64/mingw64/x86_64-w64-mingw32/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_ecce0/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_ecce0.dir\build.make CMakeFiles/cmTC_ecce0.dir/build]
+  ignore line: [mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_ecce0.dir/CMakeCCompilerABI.c.obj]
+  ignore line: [D:\mingw64\mingw64\bin\gcc.exe   -v -o CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj -c D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCCompilerABI.c]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=D:\mingw64\mingw64\bin\gcc.exe]
+  ignore line: [Target: x86_64-w64-mingw32]
+  ignore line: [Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib ']
+  ignore line: [Thread model: win32]
+  ignore line: [gcc version 8.1.0 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona']
+  ignore line: [ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/cc1.exe -quiet -v -iprefix D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/ -U_REENTRANT D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=core2 -march=nocona -auxbase-strip CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj -version -o C:\Users\ANNOTA~1\AppData\Local\Temp\ccqxhyBC.s]
+  ignore line: [GNU C17 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)]
+  ignore line: [	compiled by GNU C version 8.1.0  GMP version 6.1.2  MPFR version 4.0.1  MPC version 1.1.0  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include"]
+  ignore line: [ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../include"]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"]
+  ignore line: [ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/mingw/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C17 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)]
+  ignore line: [	compiled by GNU C version 8.1.0  GMP version 6.1.2  MPFR version 4.0.1  MPC version 1.1.0  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: bb117049c51d03d971e874cfcb35cac9]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona']
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj C:\Users\ANNOTA~1\AppData\Local\Temp\ccqxhyBC.s]
+  ignore line: [GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30]
+  ignore line: [COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../libexec/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/]
+  ignore line: [LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_ecce0.dir\CMakeCCompilerABI.c.obj' '-c' '-mtune=core2' '-march=nocona']
+  ignore line: [Linking C executable cmTC_ecce0.exe]
+  ignore line: [D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_ecce0.dir\link.txt --verbose=1]
+  ignore line: [D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_ecce0.dir/objects.a]
+  ignore line: [D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_ecce0.dir/objects.a @CMakeFiles\cmTC_ecce0.dir\objects1.rsp]
+  ignore line: [D:\mingw64\mingw64\bin\gcc.exe  -v -Wl --whole-archive CMakeFiles\cmTC_ecce0.dir/objects.a -Wl --no-whole-archive -o cmTC_ecce0.exe -Wl --out-implib libcmTC_ecce0.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=D:\mingw64\mingw64\bin\gcc.exe]
+  ignore line: [COLLECT_LTO_WRAPPER=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe]
+  ignore line: [Target: x86_64-w64-mingw32]
+  ignore line: [Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib ']
+  ignore line: [Thread model: win32]
+  ignore line: [gcc version 8.1.0 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) ]
+  ignore line: [COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../libexec/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/]
+  ignore line: [LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_ecce0.exe' '-mtune=core2' '-march=nocona']
+  link line: [ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/collect2.exe -plugin D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/liblto_plugin-0.dll -plugin-opt=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\ANNOTA~1\AppData\Local\Temp\ccS5C7F1.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_eh -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt --sysroot=C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 -m i386pep -Bdynamic -o cmTC_ecce0.exe D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0 -LD:/mingw64/mingw64/bin/../lib/gcc -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../.. --whole-archive CMakeFiles\cmTC_ecce0.dir/objects.a --no-whole-archive --out-implib libcmTC_ecce0.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+    arg [D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/collect2.exe] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/liblto_plugin-0.dll] ==> ignore
+    arg [-plugin-opt=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe] ==> ignore
+    arg [-plugin-opt=-fresolution=C:\Users\ANNOTA~1\AppData\Local\Temp\ccS5C7F1.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_eh] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+    arg [-plugin-opt=-pass-through=-ladvapi32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lshell32] ==> ignore
+    arg [-plugin-opt=-pass-through=-luser32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+    arg [-plugin-opt=-pass-through=-liconv] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_eh] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+    arg [--sysroot=C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64] ==> ignore
+    arg [-m] ==> ignore
+    arg [i386pep] ==> ignore
+    arg [-Bdynamic] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_ecce0.exe] ==> ignore
+    arg [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o]
+    arg [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o] ==> obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../..] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../..]
+    arg [--whole-archive] ==> ignore
+    arg [CMakeFiles\cmTC_ecce0.dir/objects.a] ==> ignore
+    arg [--no-whole-archive] ==> ignore
+    arg [--out-implib] ==> ignore
+    arg [libcmTC_ecce0.dll.a] ==> ignore
+    arg [--major-image-version] ==> ignore
+    arg [0] ==> ignore
+    arg [--minor-image-version] ==> ignore
+    arg [0] ==> ignore
+    arg [-lmingw32] ==> lib [mingw32]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lgcc_eh] ==> lib [gcc_eh]
+    arg [-lmoldname] ==> lib [moldname]
+    arg [-lmingwex] ==> lib [mingwex]
+    arg [-lmsvcrt] ==> lib [msvcrt]
+    arg [-ladvapi32] ==> lib [advapi32]
+    arg [-lshell32] ==> lib [shell32]
+    arg [-luser32] ==> lib [user32]
+    arg [-lkernel32] ==> lib [kernel32]
+    arg [-liconv] ==> lib [iconv]
+    arg [-lmingw32] ==> lib [mingw32]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lgcc_eh] ==> lib [gcc_eh]
+    arg [-lmoldname] ==> lib [moldname]
+    arg [-lmingwex] ==> lib [mingwex]
+    arg [-lmsvcrt] ==> lib [msvcrt]
+    arg [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o] ==> obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+  remove lib [gcc_eh]
+  remove lib [msvcrt]
+  remove lib [gcc_eh]
+  remove lib [msvcrt]
+  collapse obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/lib/crt2.o]
+  collapse obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o]
+  collapse obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc] ==> [D:/mingw64/mingw64/lib/gcc]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/lib]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib] ==> [D:/mingw64/mingw64/lib]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/lib]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../..] ==> [D:/mingw64/mingw64/lib]
+  implicit libs: [mingw32;gcc;moldname;mingwex;advapi32;shell32;user32;kernel32;iconv;mingw32;gcc;moldname;mingwex]
+  implicit objs: [D:/mingw64/mingw64/x86_64-w64-mingw32/lib/crt2.o;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+  implicit dirs: [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0;D:/mingw64/mingw64/lib/gcc;D:/mingw64/mingw64/x86_64-w64-mingw32/lib;D:/mingw64/mingw64/lib]
+  implicit fwks: []
+
+
+Performing C SOURCE FILE Test C_FLAG_Wall succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_cc369/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_cc369.dir\build.make CMakeFiles/cmTC_cc369.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_cc369.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_Wall  -Wall -o CMakeFiles\cmTC_cc369.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_cc369.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_cc369.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_cc369.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_cc369.dir/objects.a @CMakeFiles\cmTC_cc369.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\cmTC_cc369.dir/objects.a -Wl,--no-whole-archive -o cmTC_cc369.exe -Wl,--out-implib,libcmTC_cc369.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_cc369.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_Winline succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_d9342/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_d9342.dir\build.make CMakeFiles/cmTC_d9342.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d9342.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_Winline  -Wall    -Winline -o CMakeFiles\cmTC_d9342.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_d9342.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_d9342.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_d9342.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_d9342.dir/objects.a @CMakeFiles\cmTC_d9342.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall  -Wl,--whole-archive CMakeFiles\cmTC_d9342.dir/objects.a -Wl,--no-whole-archive -o cmTC_d9342.exe -Wl,--out-implib,libcmTC_d9342.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_d9342.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_W succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_caefb/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_caefb.dir\build.make CMakeFiles/cmTC_caefb.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_caefb.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_W  -Wall -Winline    -W -o CMakeFiles\cmTC_caefb.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_caefb.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_caefb.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_caefb.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_caefb.dir/objects.a @CMakeFiles\cmTC_caefb.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline  -Wl,--whole-archive CMakeFiles\cmTC_caefb.dir/objects.a -Wl,--no-whole-archive -o cmTC_caefb.exe -Wl,--out-implib,libcmTC_caefb.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_caefb.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_Wformat_security succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_61617/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_61617.dir\build.make CMakeFiles/cmTC_61617.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_61617.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_Wformat_security  -Wall -Winline -W    -Wformat-security -o CMakeFiles\cmTC_61617.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_61617.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_61617.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_61617.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_61617.dir/objects.a @CMakeFiles\cmTC_61617.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W  -Wl,--whole-archive CMakeFiles\cmTC_61617.dir/objects.a -Wl,--no-whole-archive -o cmTC_61617.exe -Wl,--out-implib,libcmTC_61617.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_61617.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_Wpointer_arith succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_4b507/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_4b507.dir\build.make CMakeFiles/cmTC_4b507.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4b507.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_Wpointer_arith  -Wall -Winline -W -Wformat-security    -Wpointer-arith -o CMakeFiles\cmTC_4b507.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_4b507.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_4b507.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_4b507.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_4b507.dir/objects.a @CMakeFiles\cmTC_4b507.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security  -Wl,--whole-archive CMakeFiles\cmTC_4b507.dir/objects.a -Wl,--no-whole-archive -o cmTC_4b507.exe -Wl,--out-implib,libcmTC_4b507.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_4b507.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_Wdisabled_optimization succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_266cb/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_266cb.dir\build.make CMakeFiles/cmTC_266cb.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_266cb.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_Wdisabled_optimization  -Wall -Winline -W -Wformat-security -Wpointer-arith    -Wdisabled-optimization -o CMakeFiles\cmTC_266cb.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_266cb.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_266cb.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_266cb.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_266cb.dir/objects.a @CMakeFiles\cmTC_266cb.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith  -Wl,--whole-archive CMakeFiles\cmTC_266cb.dir/objects.a -Wl,--no-whole-archive -o cmTC_266cb.exe -Wl,--out-implib,libcmTC_266cb.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_266cb.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_Wno_unknown_pragmas succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_b122c/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_b122c.dir\build.make CMakeFiles/cmTC_b122c.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b122c.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_Wno_unknown_pragmas  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization    -Wno-unknown-pragmas -o CMakeFiles\cmTC_b122c.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_b122c.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_b122c.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_b122c.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_b122c.dir/objects.a @CMakeFiles\cmTC_b122c.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization  -Wl,--whole-archive CMakeFiles\cmTC_b122c.dir/objects.a -Wl,--no-whole-archive -o cmTC_b122c.exe -Wl,--out-implib,libcmTC_b122c.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_b122c.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_Wdeclaration_after_statement succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_bb679/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_bb679.dir\build.make CMakeFiles/cmTC_bb679.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_bb679.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_Wdeclaration_after_statement  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas    -Wdeclaration-after-statement -o CMakeFiles\cmTC_bb679.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_bb679.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_bb679.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_bb679.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_bb679.dir/objects.a @CMakeFiles\cmTC_bb679.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas  -Wl,--whole-archive CMakeFiles\cmTC_bb679.dir/objects.a -Wl,--no-whole-archive -o cmTC_bb679.exe -Wl,--out-implib,libcmTC_bb679.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_bb679.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test C_FLAG_fstrict_aliasing succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_f6e15/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_f6e15.dir\build.make CMakeFiles/cmTC_f6e15.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_f6e15.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_FLAG_fstrict_aliasing  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement    -fstrict-aliasing -o CMakeFiles\cmTC_f6e15.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_f6e15.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_f6e15.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_f6e15.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_f6e15.dir/objects.a @CMakeFiles\cmTC_f6e15.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement  -Wl,--whole-archive CMakeFiles\cmTC_f6e15.dir/objects.a -Wl,--no-whole-archive -o cmTC_f6e15.exe -Wl,--out-implib,libcmTC_f6e15.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_f6e15.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HAVE_LD_VERSION_SCRIPT succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_e1738/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_e1738.dir\build.make CMakeFiles/cmTC_e1738.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e1738.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DHAVE_LD_VERSION_SCRIPT  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--version-script=D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/conftest.map -o CMakeFiles\cmTC_e1738.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_e1738.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_e1738.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_e1738.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_e1738.dir/objects.a @CMakeFiles\cmTC_e1738.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--version-script=D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/conftest.map -Wl,--whole-archive CMakeFiles\cmTC_e1738.dir/objects.a -Wl,--no-whole-archive -o cmTC_e1738.exe -Wl,--out-implib,libcmTC_e1738.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_e1738.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void){return 0;}
+Determining if the include file assert.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_f013e/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_f013e.dir\build.make CMakeFiles/cmTC_f013e.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_f013e.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_f013e.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_f013e.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_f013e.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_f013e.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_f013e.dir/objects.a @CMakeFiles\cmTC_f013e.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_f013e.dir/objects.a -Wl,--no-whole-archive -o cmTC_f013e.exe -Wl,--out-implib,libcmTC_f013e.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_f013e.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file fcntl.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_832f0/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_832f0.dir\build.make CMakeFiles/cmTC_832f0.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_832f0.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_832f0.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_832f0.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_832f0.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_832f0.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_832f0.dir/objects.a @CMakeFiles\cmTC_832f0.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_832f0.dir/objects.a -Wl,--no-whole-archive -o cmTC_832f0.exe -Wl,--out-implib,libcmTC_832f0.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_832f0.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file inttypes.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_7b039/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_7b039.dir\build.make CMakeFiles/cmTC_7b039.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7b039.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_7b039.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_7b039.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_7b039.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_7b039.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_7b039.dir/objects.a @CMakeFiles\cmTC_7b039.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_7b039.dir/objects.a -Wl,--no-whole-archive -o cmTC_7b039.exe -Wl,--out-implib,libcmTC_7b039.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_7b039.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file io.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_b5ee4/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_b5ee4.dir\build.make CMakeFiles/cmTC_b5ee4.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b5ee4.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_b5ee4.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_b5ee4.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_b5ee4.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_b5ee4.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_b5ee4.dir/objects.a @CMakeFiles\cmTC_b5ee4.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_b5ee4.dir/objects.a -Wl,--no-whole-archive -o cmTC_b5ee4.exe -Wl,--out-implib,libcmTC_b5ee4.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_b5ee4.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file search.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_e1005/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_e1005.dir\build.make CMakeFiles/cmTC_e1005.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e1005.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_e1005.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_e1005.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_e1005.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_e1005.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_e1005.dir/objects.a @CMakeFiles\cmTC_e1005.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_e1005.dir/objects.a -Wl,--no-whole-archive -o cmTC_e1005.exe -Wl,--out-implib,libcmTC_e1005.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_e1005.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file stdint.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_4811d/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_4811d.dir\build.make CMakeFiles/cmTC_4811d.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4811d.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_4811d.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_4811d.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_4811d.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_4811d.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_4811d.dir/objects.a @CMakeFiles\cmTC_4811d.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_4811d.dir/objects.a -Wl,--no-whole-archive -o cmTC_4811d.exe -Wl,--out-implib,libcmTC_4811d.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_4811d.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file string.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_12a61/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_12a61.dir\build.make CMakeFiles/cmTC_12a61.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_12a61.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_12a61.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_12a61.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_12a61.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_12a61.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_12a61.dir/objects.a @CMakeFiles\cmTC_12a61.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_12a61.dir/objects.a -Wl,--no-whole-archive -o cmTC_12a61.exe -Wl,--out-implib,libcmTC_12a61.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_12a61.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file strings.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_f163e/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_f163e.dir\build.make CMakeFiles/cmTC_f163e.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_f163e.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_f163e.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_f163e.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_f163e.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_f163e.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_f163e.dir/objects.a @CMakeFiles\cmTC_f163e.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_f163e.dir/objects.a -Wl,--no-whole-archive -o cmTC_f163e.exe -Wl,--out-implib,libcmTC_f163e.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_f163e.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file sys/time.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_aaa8c/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_aaa8c.dir\build.make CMakeFiles/cmTC_aaa8c.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_aaa8c.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_aaa8c.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_aaa8c.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_aaa8c.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_aaa8c.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_aaa8c.dir/objects.a @CMakeFiles\cmTC_aaa8c.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_aaa8c.dir/objects.a -Wl,--no-whole-archive -o cmTC_aaa8c.exe -Wl,--out-implib,libcmTC_aaa8c.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_aaa8c.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file sys/types.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_c2d1c/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_c2d1c.dir\build.make CMakeFiles/cmTC_c2d1c.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_c2d1c.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_c2d1c.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_c2d1c.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_c2d1c.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_c2d1c.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_c2d1c.dir/objects.a @CMakeFiles\cmTC_c2d1c.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_c2d1c.dir/objects.a -Wl,--no-whole-archive -o cmTC_c2d1c.exe -Wl,--out-implib,libcmTC_c2d1c.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_c2d1c.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file unistd.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_13a9d/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_13a9d.dir\build.make CMakeFiles/cmTC_13a9d.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_13a9d.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_13a9d.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_13a9d.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_13a9d.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_13a9d.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_13a9d.dir/objects.a @CMakeFiles\cmTC_13a9d.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_13a9d.dir/objects.a -Wl,--no-whole-archive -o cmTC_13a9d.exe -Wl,--out-implib,libcmTC_13a9d.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_13a9d.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Performing C SOURCE FILE Test C_HAS_inline succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_d74fa/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_d74fa.dir\build.make CMakeFiles/cmTC_d74fa.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d74fa.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DC_HAS_inline -Dinline=inline  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_d74fa.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c: In function 'main':
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c:5:22: warning: unused parameter 'argc' [-Wunused-parameter]
+         int main(int argc, char *argv[]) {return 0;}
+                  ~~~~^~~~
+D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c:5:34: warning: unused parameter 'argv' [-Wunused-parameter]
+         int main(int argc, char *argv[]) {return 0;}
+                            ~~~~~~^~~~~~
+Linking C executable cmTC_d74fa.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_d74fa.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_d74fa.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_d74fa.dir/objects.a @CMakeFiles\cmTC_d74fa.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_d74fa.dir/objects.a -Wl,--no-whole-archive -o cmTC_d74fa.exe -Wl,--out-implib,libcmTC_d74fa.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_d74fa.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+        typedef int foo_t;
+        static inline foo_t static_foo() {return 0;}
+        foo_t foo(){return 0;}
+        int main(int argc, char *argv[]) {return 0;}
+Performing C SOURCE FILE Test TIME_WITH_SYS_TIME succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_63d6a/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_63d6a.dir\build.make CMakeFiles/cmTC_63d6a.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_63d6a.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DTIME_WITH_SYS_TIME  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_63d6a.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_63d6a.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_63d6a.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_63d6a.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_63d6a.dir/objects.a @CMakeFiles\cmTC_63d6a.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_63d6a.dir/objects.a -Wl,--no-whole-archive -o cmTC_63d6a.exe -Wl,--out-implib,libcmTC_63d6a.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_63d6a.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+#include <sys/time.h>
+#include <time.h>
+int main(void){return 0;}
+Performing C SOURCE FILE Test TM_IN_SYS_TIME succeeded with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_4dd83/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_4dd83.dir\build.make CMakeFiles/cmTC_4dd83.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4dd83.dir/src.c.obj
+D:\mingw64\mingw64\bin\gcc.exe -DTM_IN_SYS_TIME  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_4dd83.dir\src.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\src.c
+Linking C executable cmTC_4dd83.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_4dd83.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_4dd83.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_4dd83.dir/objects.a @CMakeFiles\cmTC_4dd83.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_4dd83.dir/objects.a -Wl,--no-whole-archive -o cmTC_4dd83.exe -Wl,--out-implib,libcmTC_4dd83.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_4dd83.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+#include <sys/types.h>
+#include <time.h>
+
+int main(void){
+  struct tm tm;
+  int *p = &tm.tm_sec;
+  return !p;
+}
+Determining if the include file stddef.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_d3078/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_d3078.dir\build.make CMakeFiles/cmTC_d3078.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d3078.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_d3078.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_d3078.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_d3078.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_d3078.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_d3078.dir/objects.a @CMakeFiles\cmTC_d3078.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_d3078.dir/objects.a -Wl,--no-whole-archive -o cmTC_d3078.exe -Wl,--out-implib,libcmTC_d3078.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_d3078.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of signed int passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_e1f74/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_e1f74.dir\build.make CMakeFiles/cmTC_e1f74.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e1f74.dir/SIZEOF_SIGNED_INT.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_e1f74.dir\SIZEOF_SIGNED_INT.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_SIGNED_INT.c
+Linking C executable cmTC_e1f74.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_e1f74.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_e1f74.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_e1f74.dir/objects.a @CMakeFiles\cmTC_e1f74.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_e1f74.dir/objects.a -Wl,--no-whole-archive -o cmTC_e1f74.exe -Wl,--out-implib,libcmTC_e1f74.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_e1f74.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of unsigned int passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_5707b/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_5707b.dir\build.make CMakeFiles/cmTC_5707b.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5707b.dir/SIZEOF_UNSIGNED_INT.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_5707b.dir\SIZEOF_UNSIGNED_INT.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_UNSIGNED_INT.c
+Linking C executable cmTC_5707b.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_5707b.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_5707b.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_5707b.dir/objects.a @CMakeFiles\cmTC_5707b.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_5707b.dir/objects.a -Wl,--no-whole-archive -o cmTC_5707b.exe -Wl,--out-implib,libcmTC_5707b.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_5707b.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of signed long passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_83745/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_83745.dir\build.make CMakeFiles/cmTC_83745.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_83745.dir/SIZEOF_SIGNED_LONG.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_83745.dir\SIZEOF_SIGNED_LONG.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_SIGNED_LONG.c
+Linking C executable cmTC_83745.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_83745.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_83745.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_83745.dir/objects.a @CMakeFiles\cmTC_83745.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_83745.dir/objects.a -Wl,--no-whole-archive -o cmTC_83745.exe -Wl,--out-implib,libcmTC_83745.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_83745.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of unsigned long passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_6859e/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_6859e.dir\build.make CMakeFiles/cmTC_6859e.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_6859e.dir/SIZEOF_UNSIGNED_LONG.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_6859e.dir\SIZEOF_UNSIGNED_LONG.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_UNSIGNED_LONG.c
+Linking C executable cmTC_6859e.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_6859e.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_6859e.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_6859e.dir/objects.a @CMakeFiles\cmTC_6859e.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_6859e.dir/objects.a -Wl,--no-whole-archive -o cmTC_6859e.exe -Wl,--out-implib,libcmTC_6859e.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_6859e.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of signed long long passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_62979/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_62979.dir\build.make CMakeFiles/cmTC_62979.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_62979.dir/SIZEOF_SIGNED_LONG_LONG.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_62979.dir\SIZEOF_SIGNED_LONG_LONG.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_SIGNED_LONG_LONG.c
+Linking C executable cmTC_62979.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_62979.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_62979.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_62979.dir/objects.a @CMakeFiles\cmTC_62979.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_62979.dir/objects.a -Wl,--no-whole-archive -o cmTC_62979.exe -Wl,--out-implib,libcmTC_62979.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_62979.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of unsigned long long passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_5911b/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_5911b.dir\build.make CMakeFiles/cmTC_5911b.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5911b.dir/SIZEOF_UNSIGNED_LONG_LONG.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_5911b.dir\SIZEOF_UNSIGNED_LONG_LONG.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_UNSIGNED_LONG_LONG.c
+Linking C executable cmTC_5911b.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_5911b.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_5911b.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_5911b.dir/objects.a @CMakeFiles\cmTC_5911b.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_5911b.dir/objects.a -Wl,--no-whole-archive -o cmTC_5911b.exe -Wl,--out-implib,libcmTC_5911b.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_5911b.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of unsigned char * passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_cb6b6/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_cb6b6.dir\build.make CMakeFiles/cmTC_cb6b6.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_cb6b6.dir/SIZEOF_UNSIGNED_CHAR_P.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_cb6b6.dir\SIZEOF_UNSIGNED_CHAR_P.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_UNSIGNED_CHAR_P.c
+Linking C executable cmTC_cb6b6.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_cb6b6.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_cb6b6.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_cb6b6.dir/objects.a @CMakeFiles\cmTC_cb6b6.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_cb6b6.dir/objects.a -Wl,--no-whole-archive -o cmTC_cb6b6.exe -Wl,--out-implib,libcmTC_cb6b6.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_cb6b6.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of size_t passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_89608/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_89608.dir\build.make CMakeFiles/cmTC_89608.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_89608.dir/SIZEOF_SIZE_T.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_89608.dir\SIZEOF_SIZE_T.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_SIZE_T.c
+Linking C executable cmTC_89608.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_89608.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_89608.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_89608.dir/objects.a @CMakeFiles\cmTC_89608.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_89608.dir/objects.a -Wl,--no-whole-archive -o cmTC_89608.exe -Wl,--out-implib,libcmTC_89608.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_89608.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining size of ptrdiff_t passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_25103/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_25103.dir\build.make CMakeFiles/cmTC_25103.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_25103.dir/SIZEOF_PTRDIFF_T.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_25103.dir\SIZEOF_PTRDIFF_T.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CheckTypeSize\SIZEOF_PTRDIFF_T.c
+Linking C executable cmTC_25103.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_25103.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_25103.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_25103.dir/objects.a @CMakeFiles\cmTC_25103.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_25103.dir/objects.a -Wl,--no-whole-archive -o cmTC_25103.exe -Wl,--out-implib,libcmTC_25103.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_25103.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the setmode exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_7b865/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_7b865.dir\build.make CMakeFiles/cmTC_7b865.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7b865.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_7b865.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_7b865.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_7b865.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_7b865.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_7b865.dir/objects.a @CMakeFiles\cmTC_7b865.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_7b865.dir/objects.a -Wl,--no-whole-archive -o cmTC_7b865.exe -Wl,--out-implib,libcmTC_7b865.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_7b865.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <unistd.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef setmode
+  return ((int*)(&setmode))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the snprintf exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_1e2ea/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_1e2ea.dir\build.make CMakeFiles/cmTC_1e2ea.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1e2ea.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_1e2ea.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_1e2ea.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_1e2ea.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_1e2ea.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_1e2ea.dir/objects.a @CMakeFiles\cmTC_1e2ea.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_1e2ea.dir/objects.a -Wl,--no-whole-archive -o cmTC_1e2ea.exe -Wl,--out-implib,libcmTC_1e2ea.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_1e2ea.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdio.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef snprintf
+  return ((int*)(&snprintf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strcasecmp exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_15177/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_15177.dir\build.make CMakeFiles/cmTC_15177.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_15177.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_15177.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_15177.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_15177.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_15177.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_15177.dir/objects.a @CMakeFiles\cmTC_15177.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_15177.dir/objects.a -Wl,--no-whole-archive -o cmTC_15177.exe -Wl,--out-implib,libcmTC_15177.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_15177.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <strings.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strcasecmp
+  return ((int*)(&strcasecmp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtol exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_ab006/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_ab006.dir\build.make CMakeFiles/cmTC_ab006.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ab006.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_ab006.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_ab006.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_ab006.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_ab006.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_ab006.dir/objects.a @CMakeFiles\cmTC_ab006.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_ab006.dir/objects.a -Wl,--no-whole-archive -o cmTC_ab006.exe -Wl,--out-implib,libcmTC_ab006.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_ab006.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtol
+  return ((int*)(&strtol))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtoll exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_a0ea4/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_a0ea4.dir\build.make CMakeFiles/cmTC_a0ea4.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a0ea4.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_a0ea4.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_a0ea4.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_a0ea4.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_a0ea4.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_a0ea4.dir/objects.a @CMakeFiles\cmTC_a0ea4.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_a0ea4.dir/objects.a -Wl,--no-whole-archive -o cmTC_a0ea4.exe -Wl,--out-implib,libcmTC_a0ea4.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_a0ea4.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtoll
+  return ((int*)(&strtoll))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtoul exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_3218c/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_3218c.dir\build.make CMakeFiles/cmTC_3218c.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3218c.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_3218c.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_3218c.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_3218c.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_3218c.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_3218c.dir/objects.a @CMakeFiles\cmTC_3218c.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_3218c.dir/objects.a -Wl,--no-whole-archive -o cmTC_3218c.exe -Wl,--out-implib,libcmTC_3218c.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_3218c.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtoul
+  return ((int*)(&strtoul))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the strtoull exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_5212a/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_5212a.dir\build.make CMakeFiles/cmTC_5212a.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5212a.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_5212a.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_5212a.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_5212a.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_5212a.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_5212a.dir/objects.a @CMakeFiles\cmTC_5212a.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_5212a.dir/objects.a -Wl,--no-whole-archive -o cmTC_5212a.exe -Wl,--out-implib,libcmTC_5212a.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_5212a.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef strtoull
+  return ((int*)(&strtoull))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the getopt exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_3c111/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_3c111.dir\build.make CMakeFiles/cmTC_3c111.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3c111.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_3c111.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_3c111.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_3c111.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_3c111.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_3c111.dir/objects.a @CMakeFiles\cmTC_3c111.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_3c111.dir/objects.a -Wl,--no-whole-archive -o cmTC_3c111.exe -Wl,--out-implib,libcmTC_3c111.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_3c111.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <unistd.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef getopt
+  return ((int*)(&getopt))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the lfind exist passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_6eddb/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_6eddb.dir\build.make CMakeFiles/cmTC_6eddb.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_6eddb.dir/CheckSymbolExists.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_6eddb.dir\CheckSymbolExists.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+Linking C executable cmTC_6eddb.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_6eddb.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_6eddb.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_6eddb.dir/objects.a @CMakeFiles\cmTC_6eddb.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_6eddb.dir/objects.a -Wl,--no-whole-archive -o cmTC_6eddb.exe -Wl,--out-implib,libcmTC_6eddb.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_6eddb.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+File D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <search.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef lfind
+  return ((int*)(&lfind))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: D:/mingw64/mingw64/bin/g++.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.exe"
+
+The CXX compiler identification is GNU, found in "D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/3.20.2/CompilerIdCXX/a.exe"
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_5d819/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_5d819.dir\build.make CMakeFiles/cmTC_5d819.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_5d819.dir/CMakeCXXCompilerABI.cpp.obj
+D:\mingw64\mingw64\bin\g++.exe   -v -o CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj -c D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCXXCompilerABI.cpp
+Using built-in specs.
+COLLECT_GCC=D:\mingw64\mingw64\bin\g++.exe
+Target: x86_64-w64-mingw32
+Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib '
+Thread model: win32
+gcc version 8.1.0 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) 
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona'
+ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/cc1plus.exe -quiet -v -iprefix D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/ -U_REENTRANT D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=core2 -march=nocona -auxbase-strip CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj -version -o C:\Users\ANNOTA~1\AppData\Local\Temp\ccl3XA4m.s
+GNU C++14 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)
+	compiled by GNU C version 8.1.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++"
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32"
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward"
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include"
+ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../include"
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"
+ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"
+ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/mingw/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include
+End of search list.
+GNU C++14 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)
+	compiled by GNU C version 8.1.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.18-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 768151575aea5e2fb63ae2dd7f500530
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona'
+ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj C:\Users\ANNOTA~1\AppData\Local\Temp\ccl3XA4m.s
+GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30
+COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../libexec/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/
+LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../lib/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona'
+Linking CXX executable cmTC_5d819.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_5d819.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_5d819.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_5d819.dir/objects.a @CMakeFiles\cmTC_5d819.dir\objects1.rsp
+D:\mingw64\mingw64\bin\g++.exe  -v -Wl,--whole-archive CMakeFiles\cmTC_5d819.dir/objects.a -Wl,--no-whole-archive -o cmTC_5d819.exe -Wl,--out-implib,libcmTC_5d819.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
+Using built-in specs.
+COLLECT_GCC=D:\mingw64\mingw64\bin\g++.exe
+COLLECT_LTO_WRAPPER=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe
+Target: x86_64-w64-mingw32
+Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib '
+Thread model: win32
+gcc version 8.1.0 (x86_64-win32-seh-rev0, Built by MinGW-W64 project) 
+COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../libexec/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/
+LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/;D:/mingw64/mingw64/bin/../lib/gcc/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/;D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5d819.exe' '-shared-libgcc' '-mtune=core2' '-march=nocona'
+ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/collect2.exe -plugin D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/liblto_plugin-0.dll -plugin-opt=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\ANNOTA~1\AppData\Local\Temp\ccdPr4AI.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt --sysroot=C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 -m i386pep -Bdynamic -o cmTC_5d819.exe D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0 -LD:/mingw64/mingw64/bin/../lib/gcc -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../.. --whole-archive CMakeFiles\cmTC_5d819.dir/objects.a --no-whole-archive --out-implib libcmTC_5d819.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5d819.exe' '-shared-libgcc' '-mtune=core2' '-march=nocona'
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++]
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32]
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward]
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include]
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed]
+    add: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include]
+  end of search list found
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++]
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32]
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward]
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include]
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed]
+  collapse include dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/include]
+  implicit include dirs: [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed;D:/mingw64/mingw64/x86_64-w64-mingw32/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_5d819/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_5d819.dir\build.make CMakeFiles/cmTC_5d819.dir/build]
+  ignore line: [mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_5d819.dir/CMakeCXXCompilerABI.cpp.obj]
+  ignore line: [D:\mingw64\mingw64\bin\g++.exe   -v -o CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj -c D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCXXCompilerABI.cpp]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=D:\mingw64\mingw64\bin\g++.exe]
+  ignore line: [Target: x86_64-w64-mingw32]
+  ignore line: [Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib ']
+  ignore line: [Thread model: win32]
+  ignore line: [gcc version 8.1.0 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona']
+  ignore line: [ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/cc1plus.exe -quiet -v -iprefix D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/ -U_REENTRANT D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\share\cmake-3.20\Modules\CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=core2 -march=nocona -auxbase-strip CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj -version -o C:\Users\ANNOTA~1\AppData\Local\Temp\ccl3XA4m.s]
+  ignore line: [GNU C++14 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)]
+  ignore line: [	compiled by GNU C version 8.1.0  GMP version 6.1.2  MPFR version 4.0.1  MPC version 1.1.0  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++"]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32"]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward"]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include"]
+  ignore line: [ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../include"]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"]
+  ignore line: [ignoring duplicate directory "D:/mingw64/mingw64/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"]
+  ignore line: [ignoring nonexistent directory "C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/mingw/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed]
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C++14 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) version 8.1.0 (x86_64-w64-mingw32)]
+  ignore line: [	compiled by GNU C version 8.1.0  GMP version 6.1.2  MPFR version 4.0.1  MPC version 1.1.0  isl version isl-0.18-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: 768151575aea5e2fb63ae2dd7f500530]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona']
+  ignore line: [ D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj C:\Users\ANNOTA~1\AppData\Local\Temp\ccl3XA4m.s]
+  ignore line: [GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30]
+  ignore line: [COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../libexec/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/]
+  ignore line: [LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles\cmTC_5d819.dir\CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=core2' '-march=nocona']
+  ignore line: [Linking CXX executable cmTC_5d819.exe]
+  ignore line: [D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_5d819.dir\link.txt --verbose=1]
+  ignore line: [D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_5d819.dir/objects.a]
+  ignore line: [D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_5d819.dir/objects.a @CMakeFiles\cmTC_5d819.dir\objects1.rsp]
+  ignore line: [D:\mingw64\mingw64\bin\g++.exe  -v -Wl --whole-archive CMakeFiles\cmTC_5d819.dir/objects.a -Wl --no-whole-archive -o cmTC_5d819.exe -Wl --out-implib libcmTC_5d819.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=D:\mingw64\mingw64\bin\g++.exe]
+  ignore line: [COLLECT_LTO_WRAPPER=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe]
+  ignore line: [Target: x86_64-w64-mingw32]
+  ignore line: [Configured with: ../../../src/gcc-8.1.0/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32 --prefix=/mingw64 --with-sysroot=/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 --enable-shared --enable-static --disable-multilib --enable-languages=c,c++,fortran,lto --enable-libstdcxx-time=yes --enable-threads=win32 --enable-libgomp --enable-libatomic --enable-lto --enable-graphite --enable-checking=release --enable-fully-dynamic-string --enable-version-specific-runtime-libs --disable-libstdcxx-pch --disable-libstdcxx-debug --enable-bootstrap --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-gnu-as --with-gnu-ld --with-arch=nocona --with-tune=core2 --with-libiconv --with-system-zlib --with-gmp=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpfr=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-mpc=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-isl=/c/mingw810/prerequisites/x86_64-w64-mingw32-static --with-pkgversion='x86_64-win32-seh-rev0, Built by MinGW-W64 project' --with-bugurl=https://sourceforge.net/projects/mingw-w64 CFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CXXFLAGS='-O2 -pipe -fno-ident -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' CPPFLAGS=' -I/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/include -I/c/mingw810/prerequisites/x86_64-zlib-static/include -I/c/mingw810/prerequisites/x86_64-w64-mingw32-static/include' LDFLAGS='-pipe -fno-ident -L/c/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64/opt/lib -L/c/mingw810/prerequisites/x86_64-zlib-static/lib -L/c/mingw810/prerequisites/x86_64-w64-mingw32-static/lib ']
+  ignore line: [Thread model: win32]
+  ignore line: [gcc version 8.1.0 (x86_64-win32-seh-rev0  Built by MinGW-W64 project) ]
+  ignore line: [COMPILER_PATH=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../libexec/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/]
+  ignore line: [LIBRARY_PATH=D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/]
+  ignore line: [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_5d819.exe' '-shared-libgcc' '-mtune=core2' '-march=nocona']
+  link line: [ D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/collect2.exe -plugin D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/liblto_plugin-0.dll -plugin-opt=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\ANNOTA~1\AppData\Local\Temp\ccdPr4AI.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-liconv -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt --sysroot=C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64 -m i386pep -Bdynamic -o cmTC_5d819.exe D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0 -LD:/mingw64/mingw64/bin/../lib/gcc -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib -LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../.. --whole-archive CMakeFiles\cmTC_5d819.dir/objects.a --no-whole-archive --out-implib libcmTC_5d819.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -liconv -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+    arg [D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/collect2.exe] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/liblto_plugin-0.dll] ==> ignore
+    arg [-plugin-opt=D:/mingw64/mingw64/bin/../libexec/gcc/x86_64-w64-mingw32/8.1.0/lto-wrapper.exe] ==> ignore
+    arg [-plugin-opt=-fresolution=C:\Users\ANNOTA~1\AppData\Local\Temp\ccdPr4AI.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+    arg [-plugin-opt=-pass-through=-ladvapi32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lshell32] ==> ignore
+    arg [-plugin-opt=-pass-through=-luser32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lkernel32] ==> ignore
+    arg [-plugin-opt=-pass-through=-liconv] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmoldname] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmingwex] ==> ignore
+    arg [-plugin-opt=-pass-through=-lmsvcrt] ==> ignore
+    arg [--sysroot=C:/mingw810/x86_64-810-win32-seh-rt_v6-rev0/mingw64] ==> ignore
+    arg [-m] ==> ignore
+    arg [i386pep] ==> ignore
+    arg [-Bdynamic] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_5d819.exe] ==> ignore
+    arg [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o]
+    arg [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o] ==> obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib]
+    arg [-LD:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../..] ==> dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../..]
+    arg [--whole-archive] ==> ignore
+    arg [CMakeFiles\cmTC_5d819.dir/objects.a] ==> ignore
+    arg [--no-whole-archive] ==> ignore
+    arg [--out-implib] ==> ignore
+    arg [libcmTC_5d819.dll.a] ==> ignore
+    arg [--major-image-version] ==> ignore
+    arg [0] ==> ignore
+    arg [--minor-image-version] ==> ignore
+    arg [0] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lmingw32] ==> lib [mingw32]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lmoldname] ==> lib [moldname]
+    arg [-lmingwex] ==> lib [mingwex]
+    arg [-lmsvcrt] ==> lib [msvcrt]
+    arg [-ladvapi32] ==> lib [advapi32]
+    arg [-lshell32] ==> lib [shell32]
+    arg [-luser32] ==> lib [user32]
+    arg [-lkernel32] ==> lib [kernel32]
+    arg [-liconv] ==> lib [iconv]
+    arg [-lmingw32] ==> lib [mingw32]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lmoldname] ==> lib [moldname]
+    arg [-lmingwex] ==> lib [mingwex]
+    arg [-lmsvcrt] ==> lib [msvcrt]
+    arg [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o] ==> obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+  remove lib [msvcrt]
+  remove lib [msvcrt]
+  collapse obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/lib/crt2.o]
+  collapse obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o]
+  collapse obj [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0] ==> [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc] ==> [D:/mingw64/mingw64/lib/gcc]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib/../lib] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/lib]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../lib] ==> [D:/mingw64/mingw64/lib]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/lib] ==> [D:/mingw64/mingw64/x86_64-w64-mingw32/lib]
+  collapse library dir [D:/mingw64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../..] ==> [D:/mingw64/mingw64/lib]
+  implicit libs: [stdc++;mingw32;gcc_s;gcc;moldname;mingwex;advapi32;shell32;user32;kernel32;iconv;mingw32;gcc_s;gcc;moldname;mingwex]
+  implicit objs: [D:/mingw64/mingw64/x86_64-w64-mingw32/lib/crt2.o;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtbegin.o;D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/crtend.o]
+  implicit dirs: [D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0;D:/mingw64/mingw64/lib/gcc;D:/mingw64/mingw64/x86_64-w64-mingw32/lib;D:/mingw64/mingw64/lib]
+  implicit fwks: []
+
+
+Determining if the include file GL/gl.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_3fd9d/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_3fd9d.dir\build.make CMakeFiles/cmTC_3fd9d.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3fd9d.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_3fd9d.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_3fd9d.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_3fd9d.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_3fd9d.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_3fd9d.dir/objects.a @CMakeFiles\cmTC_3fd9d.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_3fd9d.dir/objects.a -Wl,--no-whole-archive -o cmTC_3fd9d.exe -Wl,--out-implib,libcmTC_3fd9d.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_3fd9d.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file GL/glu.h exists passed with the following output:
+Change Dir: D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp
+
+Run Build Command(s):D:/mingw64/mingw64/bin/mingw32-make.exe -f Makefile cmTC_adeca/fast && D:/mingw64/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_adeca.dir\build.make CMakeFiles/cmTC_adeca.dir/build
+mingw32-make.exe[1]: Entering directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_adeca.dir/CheckIncludeFile.c.obj
+D:\mingw64\mingw64\bin\gcc.exe   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -o CMakeFiles\cmTC_adeca.dir\CheckIncludeFile.c.obj -c D:\Jazzyuancheng\v3d_external-master\v3d_main\common_lib\tiff-4.0.10\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+Linking C executable cmTC_adeca.exe
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_adeca.dir\link.txt --verbose=1
+D:\Jazzyuancheng\cmake-3.20.2-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\cmTC_adeca.dir/objects.a
+D:\mingw64\mingw64\bin\ar.exe cr CMakeFiles\cmTC_adeca.dir/objects.a @CMakeFiles\cmTC_adeca.dir\objects1.rsp
+D:\mingw64\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -Wl,--whole-archive CMakeFiles\cmTC_adeca.dir/objects.a -Wl,--no-whole-archive -o cmTC_adeca.exe -Wl,--out-implib,libcmTC_adeca.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_adeca.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'D:/Jazzyuancheng/v3d_external-master/v3d_main/common_lib/tiff-4.0.10/CMakeFiles/CMakeTmp'
+
+
+
