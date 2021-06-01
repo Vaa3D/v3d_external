@@ -4644,6 +4644,7 @@ bool XFormWidget::loadData()
 {
 	//try to get a rough estimation of available amount of memory
 	V3DLONG nbytes = estimateRoughAmountUsedMemory();
+    /*
     if (nbytes>(unsigned V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
 	{
         printf("machine info: double upper limit =%5.4f V3DLONG upper limit=%ld\n long_n_bytes=%zd",
@@ -4652,7 +4653,7 @@ bool XFormWidget::loadData()
                         "Please either enlarge the memory threshold (in Preferences) or close some stacks to ensure you have enough memory.\n").arg(nbytes).arg(TH_USE_MEMORY));
 		return false;
 	}
-
+    */
 	// trying to load image using multithreaded method, by YuY, added 20101216
 	if(bUsingMultithreadedImageIO)
 	{
@@ -4979,12 +4980,12 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 	if (imgData)
 	{
 		V3DLONG nbytes = estimateRoughAmountUsedMemory();
-        if (nbytes>(V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
+        /*if (nbytes>(V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
 		{
             v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(TH_USE_MEMORY));
 			return;
 		}
-
+*/
 		if (! b_local) //0 for entire image
 		{
 			//iDrawExternalParameter mypara;

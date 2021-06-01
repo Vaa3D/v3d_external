@@ -445,6 +445,7 @@ unix:!macx {
   LIBS += -lv3dnewmat
 #unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
   LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
+
   LIBS += -L../common_lib/lib_unix64  -lteem  -lbz2 -lz  -lGLU #for nrrd support
   ### LIBS += -lGLEW # static link by including glew.c
 }
@@ -474,7 +475,7 @@ macx:dragdropfix{
 # NOT REALLY USED, LIBS are replaced by vaa3d_msvc.pro
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat
-win32:LIBS += -L../common_lib/winlib64 -lteem  -lbz2 -lz  #for nrrd support
+win32:LIBS += -L../common_lib/mingw -lglew -lhdf5 -lszip -lzlib -lSDL2 -lteem  -lbz2 -lz -lopenvr_api -lwsock32
 #    -lglut32 # win32-mingw, on unix link libglut.a
 #win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	#for win32 disable using MYLIB
 

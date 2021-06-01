@@ -1,0 +1,2 @@
+D:\mingw64\mingw64\bin\ar.exe qc libjba.a CMakeFiles/jba.dir/histeq.obj
+D:\mingw64\mingw64\bin\ranlib.exe libjba.a
