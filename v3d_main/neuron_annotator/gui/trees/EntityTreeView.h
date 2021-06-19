@@ -7,7 +7,7 @@ class Entity;
 
 class EntityTreeView : public QTreeView
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit EntityTreeView(QWidget *parent = 0);
     void selectEntity(const qint64 & entityId);

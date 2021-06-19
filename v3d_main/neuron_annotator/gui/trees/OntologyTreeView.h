@@ -5,7 +5,7 @@
 
 class OntologyTreeView : public EntityTreeView
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit OntologyTreeView(QWidget *parent = 0);
 

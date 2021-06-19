@@ -58,13 +58,10 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
     {
         bool ok1;
 
-#if defined(USE_Qt5)
+
         V3DLONG d_thres_new = QInputDialog::getInt(0, "change the default distance threshold",
                                                        "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
-#else
-        V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
-                                                       "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
-#endif
+
         if (ok1)
         {
             d_thres = d_thres_new;
@@ -485,27 +482,27 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const vector<V_N
 		{
 			V_NeuronSWC_unit node = seg.row.at(j);
 			V_NeuronSWC_coord key = node;
-			map.insertMulti(key, node);
+            //map.insertMulti(key, node);
 		}
 	}
 
 	n_branch = 0;
 	n_tip = 2*segment_list.size();
 
-	QList <V_NeuronSWC_coord> keys = map.uniqueKeys();
-	for (V3DLONG i=0; i<keys.size(); i++)
-	{
-		V_NeuronSWC_coord key = keys.at(i);
-		int nkey = map.count(key);
-		if (nkey >= 3)
-		{
-			n_branch ++;
-		}
-		if (nkey >= 2)
-		{
-			n_tip -= nkey;
-		}
-	}
+    //QList <V_NeuronSWC_coord> keys = map.uniqueKeys();
+//	for (V3DLONG i=0; i<keys.size(); i++)
+//	{
+//		V_NeuronSWC_coord key = keys.at(i);
+//		int nkey = map.count(key);
+//		if (nkey >= 3)
+//		{
+//			n_branch ++;
+//		}
+//		if (nkey >= 2)
+//		{
+//			n_tip -= nkey;
+//		}
+//	}
 }
 
 //091212 RZC

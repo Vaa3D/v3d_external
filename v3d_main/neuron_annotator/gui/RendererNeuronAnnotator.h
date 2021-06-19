@@ -32,7 +32,7 @@
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
 
-Q_OBJECT
+//Q_OBJECT
 
 public:
     RendererNeuronAnnotator(void* widget);
@@ -95,7 +95,7 @@ public:
     using Renderer_gl2::thicknessY;
     using Renderer_gl2::thicknessZ;
 
-signals:
+//signals:
     void progressValueChanged(int);
     void progressComplete();
     void progressMessageChanged(QString);
@@ -104,7 +104,7 @@ signals:
     void showCornerAxesChanged(bool);
     void slabThicknessChanged(int);
 
-public slots:
+//public slots:
     void setAlphaBlending(bool);
     void setShowCornerAxes(bool b);
     bool setSlabThickness(int); // range 2-1000 voxels

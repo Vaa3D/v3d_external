@@ -28,19 +28,19 @@ namespace Ui {
 
 class AnnotationWidget : public QFrame
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit AnnotationWidget(QWidget *parent = 0);
     ~AnnotationWidget();
     void setMainWindow(NaMainWindow *mainWindow);
 
-signals:
+//signals:
     void entitySelected(const Entity *entity); // Parameter may be null if the selection is cleared
     void neuronSelected(int index);
     void neuronsDeselected();
 
-public slots:
+//public slots:
     void closeOntology();
     void openOntology(Ontology *ontology);
     void closeAnnotationSession();
@@ -73,7 +73,7 @@ protected:
     void showSynced();
     void showDesynced();
 
-private slots:
+//private slots:
     void createAnnotationResults(const void *results);
     void createAnnotationError(const QString & error);
     void removeAnnotationResults(const void *results);

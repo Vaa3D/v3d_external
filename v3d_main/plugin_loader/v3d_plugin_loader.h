@@ -42,11 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define _V3D_PLUGIN_LOADER_H_
 #include <qmenu.h>
 #include <set>
-#if defined(USE_Qt5)
-  #include <QtWidgets>
-#else
-  #include <QtGui>
-#endif
+
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include "../basic_c_fun/v3d_interface.h"
 

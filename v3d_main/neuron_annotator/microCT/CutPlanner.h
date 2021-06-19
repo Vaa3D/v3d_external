@@ -17,7 +17,7 @@
 
 class CutPlanner : public QDialog
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     CutPlanner(CameraModel& camera,
@@ -26,14 +26,14 @@ public:
     virtual ~CutPlanner();
     double getMicrometersPerVoxel() const {return micrometersPerVoxel;}
 
-signals:
+//signals:
     void clipPlaneRequested();
     void keepPlaneRequested();
     void cutGuideRequested(bool doShow);
     void rotationAdjusted(Rotation3D rotation); // To maintain axis alignment
     void compartmentNamingRequested();
 
-public slots:
+//public slots:
     void onRotationChanged(Rotation3D rotation);
     void on_micrometersBox_valueChanged(double val);
     void on_labelBrainCompartmentsButton_clicked() {emit compartmentNamingRequested();}

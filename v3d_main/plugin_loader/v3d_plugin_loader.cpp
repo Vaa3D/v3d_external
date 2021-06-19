@@ -47,10 +47,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include "../v3d/v3d_core.h"
 #include "v3d_plugin_loader.h"
 #include "pluginDialog.h"
-#include "../terafly/src/control/CPlugin.h"
+//#include "../terafly/src/control/CPlugin.h"
 #include <QtGlobal>
-
-
+#include <QMessageBox>
+#include <QScrollArea>
+#include <QProgressBar>
 void pumpEvents(int loops=100)
 {
 	for (int j=1; j<loops; j++) //try to empty all existing events
@@ -306,27 +307,27 @@ void V3d_PluginLoader::updated_recentPlugins()
                     V3DLONG j = i;
                     while(j > 0 && recentpluginsIndex_temp.at(j-1).toInt()<recentpluginsIndex_temp.at(j).toInt())
                     {
-                        recentpluginsIndex_temp.swap(j,j-1);
-                        sort_index.swap(j,j-1);
-                        j--;
+//                        recentpluginsIndex_temp.swap(j,j-1);
+//                        sort_index.swap(j,j-1);
+//                        j--;
                     }
                 }
             }
         }
 
-        QRegExp reg("%");
-        for(int i = 0; i < recentpluginsList.size(); i++)
-        {
-            QStringList plugininfo = recentpluginsList.at(i).split(reg);
-            QAction *action = new QAction(plugininfo.at(0),this);
-            connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-            plugin_recent->addAction(action);
+        //QRegExp reg("%");
+//        for(int i = 0; i < recentpluginsList.size(); i++)
+//        {
+//            QStringList plugininfo = recentpluginsList.at(i).split(reg);
+//            QAction *action = new QAction(plugininfo.at(0),this);
+//            connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+//            plugin_recent->addAction(action);
 
-            QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
-            QAction *action_index = new QAction(plugininfo_index.at(0),this);
-            connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-            plugin_most->addAction(action_index);
-        }
+//            QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
+//            QAction *action_index = new QAction(plugininfo_index.at(0),this);
+//            connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+//            plugin_most->addAction(action_index);
+//        }
     }
 }
 
@@ -334,13 +335,13 @@ void V3d_PluginLoader::runRecentPlugin()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     int i;
-    QRegExp reg("%");
+    //QRegExp reg("%");
     QStringList plugininfo;
     for(i = 0; i< recentpluginsList.size(); i++)
     {
-        plugininfo = recentpluginsList.at(i).split(reg);
-        if(plugininfo.at(0) == action->text())
-            break;
+//        plugininfo = recentpluginsList.at(i).split(reg);
+//        if(plugininfo.at(0) == action->text())
+//            break;
     }
     QPluginLoader* loader = new QPluginLoader(plugininfo.at(1));
     return runPlugin(loader,plugininfo.at(0));
@@ -1276,7 +1277,7 @@ void V3d_PluginLoader::setHideDisplayControlButton(V3dR_MainWindow *w)
 {
     if(v3d_mainwindow)
     {
-        w->hideDisplayControls();
+        //w->hideDisplayControls();
     }
 }
 
@@ -1344,7 +1345,7 @@ void V3d_PluginLoader::setWindowDataTitle(V3dR_MainWindow * w, QString title)
 {
     if (v3d_mainwindow )
     {
-      w->setDataTitle(title);
+    //  w->setDataTitle(title);
     }
 }
 
@@ -1406,8 +1407,8 @@ void V3d_PluginLoader::screenShot_Any3DViewer(V3dR_MainWindow *w,QString filenam
     if (w)
     {
         V3dR_GLWidget * v = w->getGLWidget();
-        if (v)
-            v->screenShot(filename);
+       // if (v)
+           // v->screenShot(filename);
     }
 }
 
@@ -1430,8 +1431,8 @@ void V3d_PluginLoader::update_NeuronBoundingBox(V3dR_MainWindow *w)
     {
         V3dR_GLWidget * g = w->getGLWidget();
         Renderer_gl1 * gp = (Renderer_gl1 *) g->getRenderer();
-        gp->updateNeuronBoundingBox();
-        gp->updateBoundingBox();
+        //gp->updateNeuronBoundingBox();
+        //gp->updateBoundingBox();
     }
 }
 
@@ -1445,8 +1446,8 @@ LandmarkList * V3d_PluginLoader::getHandleLandmarkList_Any3DViewer(V3dR_MainWind
         Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
         if (!gp)
             return 0;
-        else
-            return (gp->getHandleLandmark());
+       // else
+           // return (gp->getHandleLandmark());
     }
 }
 
@@ -1462,8 +1463,8 @@ bool V3d_PluginLoader::setHandleLandmarkList_Any3DViewer(V3dR_MainWindow *w, Lan
             return false;
         else
         {
-            gp->setHandleLandmark(landmark_list);
-            gp->updateLandmark();
+            //gp->setHandleLandmark(landmark_list);
+            //gp->updateLandmark();
             return true;
         }
     }
@@ -1543,14 +1544,14 @@ V3dR_MainWindow * V3d_PluginLoader::find3DViewerByName(QString fileName)
 
 void V3d_PluginLoader::update_3DViewer(V3dR_MainWindow *w) //Dec, 9, 2013. PHC
 {
-    if (w)
-    {
-        V3dR_GLWidget * v = w->getGLWidget();
-        if (v)
-            v->update();
-    }
+//    if (w)
+//    {
+//        V3dR_GLWidget * v = w->getGLWidget();
+//        if (v)
+//            v->update();
+//    }
 
-    pumpEvents(); //131209 PHC
+//    pumpEvents(); //131209 PHC
 
 }
 
@@ -1621,8 +1622,8 @@ QList <LabelSurf> getListLabelSurf_3DGLWidget(V3dR_GLWidget *vi) //a utility fun
         Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
         if (!gp)
             return mylabelsurf;
-        else
-            return gp->getListLabelSurf();
+//        else
+//            return gp->getListLabelSurf();
     }    
 }
 
@@ -1673,18 +1674,19 @@ DataLists_in_3dviewer V3d_PluginLoader::fetch_3dviewer_datafilelist(QString name
 
 bool setListLabelSurf_3DGLWidget(V3dR_GLWidget *vi, QList <LabelSurf> listLabelSurfinput) //a utility function
 {
-    if (!vi) return false;
-    else
-    {
-        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
-        if (!gp)
-            return false;
-        else
-        {
-            gp->setListLabelSurf(listLabelSurfinput);
-            return true;
-        }
-    }            
+   // if (!vi)
+        return false;
+//    else
+//    {
+//        //Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+//        //if (!gp)
+//            return false;
+//        else
+//        {
+//            //gp->setListLabelSurf(listLabelSurfinput);
+//            return true;
+//        }
+//    }
 }
 
 bool V3d_PluginLoader::setListLabelSurf_3DGlobalViewer(v3dhandle image_window, QList <LabelSurf> listLabelSurfinput)
@@ -1709,90 +1711,90 @@ bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <L
 //added TeraFly interface, functions are provided by Alessadnro Bria, the wrapper is provided by Zhi Zhou Aug. 23, 2017
 NeuronTree V3d_PluginLoader::getSWCTeraFly()
 {
-    return terafly::PluginInterface::getSWC();
+    //return terafly::PluginInterface::getSWC();
 }
 
 bool V3d_PluginLoader::setSWCTeraFly(NeuronTree & nt)
 {
-    return terafly::PluginInterface::setSWC(nt);
+   // return terafly::PluginInterface::setSWC(nt);
 }
 
 LandmarkList V3d_PluginLoader::getLandmarkTeraFly()
 {
-    return terafly::PluginInterface::getLandmark();
+    //return terafly::PluginInterface::getLandmark();
 }
 
 bool V3d_PluginLoader::setLandmarkTeraFly(LandmarkList & landmark_list)
 {
-    return terafly::PluginInterface::setLandmark(landmark_list);
+    //return terafly::PluginInterface::setLandmark(landmark_list);
 }
 
 QString V3d_PluginLoader::getPathTeraFly()
 {
-    return QString(terafly::PluginInterface::getPath().c_str());
+   // return QString(terafly::PluginInterface::getPath().c_str());
 }
 
 const Image4DSimple * V3d_PluginLoader::getImageTeraFly()
 {
-    return terafly::PluginInterface::getImage();
+   // return terafly::PluginInterface::getImage();
 }
 
 QString V3d_PluginLoader::versionTeraFly()
 {
-    return QString(terafly::PluginInterface::version().c_str());
+   // return QString(terafly::PluginInterface::version().c_str());
 }
 
 bool V3d_PluginLoader::getDimTeraFly(const std::string & path, V3DLONG * & sz)
 {
-    sz = new V3DLONG [5];
-    if (!sz)
-    {
-        return false;
-    }
-    sz[0] = terafly::PluginInterface::getXDim(path);
-    sz[1] = terafly::PluginInterface::getYDim(path);
-    sz[2] = terafly::PluginInterface::getZDim(path);
-    sz[3] = terafly::PluginInterface::getCDim(path);
-    sz[4] = terafly::PluginInterface::getTDim(path);
+//    sz = new V3DLONG [5];
+//    if (!sz)
+//    {
+//        return false;
+//    }
+//    sz[0] = terafly::PluginInterface::getXDim(path);
+//    sz[1] = terafly::PluginInterface::getYDim(path);
+//    sz[2] = terafly::PluginInterface::getZDim(path);
+//    sz[3] = terafly::PluginInterface::getCDim(path);
+//    sz[4] = terafly::PluginInterface::getTDim(path);
     return true;
 }
 
 unsigned char* V3d_PluginLoader::getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1)
 {
-    return terafly::PluginInterface::getSubVolume(path,x0,x1,y0,y1,z0,z1);
+   // return terafly::PluginInterface::getSubVolume(path,x0,x1,y0,y1,z0,z1);
 }
 
 
 void V3d_PluginLoader::releaseOpenedVolumesTeraFly()
 {
-    terafly::PluginInterface::releaseOpenedVolumes();
+   // terafly::PluginInterface::releaseOpenedVolumes();
 }
 
 bool V3d_PluginLoader::setImageTeraFly(size_t x, size_t y, size_t z)
 {
-    return terafly::PluginInterface::setImage(x,y,z);
+    //return terafly::PluginInterface::setImage(x,y,z);
 }
 
 #ifdef __ALLOW_VR_FUNCS__
 void V3d_PluginLoader::openVRWindow(V3dR_MainWindow *w, bool bOnlineMode)
 {
     qDebug("V3d_PluginLoader::openVRWindow ");
-    if (w)
-    {
-        qDebug("V3d_PluginLoader::openVRWindow ----if w");
-        V3dR_GLWidget * v = w->getGLWidget();
-        if (v)
-        {
-            qDebug("V3d_PluginLoader::openVRWindow ----if v");
-            v->doimageVRView(bOnlineMode);
-        }
-    }
+//    if (w)
+//    {
+//        qDebug("V3d_PluginLoader::openVRWindow ----if w");
+//        V3dR_GLWidget * v = w->getGLWidget();
+//        if (v)
+//        {
+//            qDebug("V3d_PluginLoader::openVRWindow ----if v");
+//            //v->doimageVRView(bOnlineMode);
+//        }
+//    }
 }
 
 void V3d_PluginLoader::openVRWindowV2(v3dhandle image_window, bool bOnlineMode)
 {
     qDebug("V3d_PluginLoader::openVRWindow version 2");
     V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
-    if(vi) vi->doimageVRView(bOnlineMode);
+    //if(vi) vi->doimageVRView(bOnlineMode);
 }
 #endif

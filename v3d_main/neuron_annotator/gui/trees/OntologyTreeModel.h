@@ -10,7 +10,7 @@ class EntityTreeItem;
 
 class OntologyTreeModel : public EntityTreeModel
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     OntologyTreeModel(Ontology *ontology, QObject *parent = 0);

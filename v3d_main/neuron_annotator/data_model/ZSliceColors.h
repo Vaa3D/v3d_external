@@ -9,7 +9,7 @@
 // ZSliceColors creates a QImage for use in the z stack viewer.
 class ZSliceColors : public NaLockableData
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit ZSliceColors(const NaVolumeData& volumeData,
@@ -17,7 +17,7 @@ public:
                           const NeuronSelectionModel& neuronSelectionModel);
     virtual ~ZSliceColors();
 
-public slots:
+//public slots:
     virtual void update();
     void setZIndex(int z);
     void onCameraFocusChanged(const Vector3D& focus);

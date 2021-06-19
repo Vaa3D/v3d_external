@@ -48,10 +48,10 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
-#include "../terafly/src/control/CPlugin.h"
-#ifdef __ALLOW_VR_FUNCS__
-#include "../mozak/MozakUI.h"
-#endif
+//#include "../terafly/src/control/CPlugin.h"
+//#ifdef __ALLOW_VR_FUNCS__
+//#include "../mozak/MozakUI.h"
+//#endif
 
 //LMG for cross-platform UTC Timestamp 15/10/2018
 #if defined(Q_OS_WIN32)
@@ -869,13 +869,13 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     //qDebug("raw/cur_seg Timestamp: %.0f / %.0f", seconds, cur_seg.row[cur_seg.nrows()-1].timestamp);
 
     //LMG 13-12-2017 get current resolution and save in eswc
-    tf::PluginInterface resinterface;
-    int resindex = resinterface.getRes();
-    int allresnum = resinterface.getallRes();
-    resindex = int(pow(2,double(allresnum-resindex)));
-    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
-    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
-    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
+   // tf::PluginInterface resinterface;
+    //int resindex = resinterface.getRes();
+    //int allresnum = resinterface.getallRes();
+//    resindex = int(pow(2,double(allresnum-resindex)));
+//    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
+//    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
+//    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
@@ -940,14 +940,14 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
 
     for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) if(cur_seg.row[k].timestamp == 0) cur_seg.row[k].timestamp = seconds;
 
-    //LMG 13-12-2017 get current resolution and save in eswc
-    tf::PluginInterface resinterface;
-    int resindex = resinterface.getRes();
-    int allresnum = resinterface.getallRes();
-    resindex = int(pow(2,double(allresnum-resindex)));
-    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
-    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
-    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
+//    //LMG 13-12-2017 get current resolution and save in eswc
+//    tf::PluginInterface resinterface;
+//    int resindex = resinterface.getRes();
+//    int allresnum = resinterface.getallRes();
+//    resindex = int(pow(2,double(allresnum-resindex)));
+//    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
+//    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
+//    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
@@ -1000,19 +1000,19 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
 #define ___trace_history_append___
 void My4DImage::proj_trace_history_append()
 {
-    proj_trace_history_append(tracedNeuron);
+//    proj_trace_history_append(tracedNeuron);
 
-    // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
-    // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
-    tf::TeraFly::doaction("neuron edit");
+//    // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
+//    // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
+//    tf::TeraFly::doaction("neuron edit");
 
-#ifdef __ALLOW_VR_FUNCS__
-    //20170803 RZC
-    mozak::MozakUI::onImageTraceHistoryChanged();
-#endif
+////#ifdef __ALLOW_VR_FUNCS__
+////    //20170803 RZC
+////    mozak::MozakUI::onImageTraceHistoryChanged();
+////#endif
     
-    emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
-	SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
+//    emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
+//	SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
 }
 
 void My4DImage::proj_trace_history_append(V_NeuronSWC_list & tNeuron)
@@ -1125,7 +1125,7 @@ bool My4DImage::proj_trace_changeNeuronSegType(V3DLONG node_id, NeuronTree *p_tr
 										"\n else -- custom \n"),
 									  node_type, 0, 100, 1, &ok);
 #else
-	node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+    node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
 							  QObject::tr("SWC type: "
 										"\n 0 -- undefined (white)"
 										"\n 1 -- soma (black)"
@@ -1171,7 +1171,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 				channo = QInputDialog::getInt(0, qtitle,
 					  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
 #else
-				channo = QInputDialog::getInteger(0, qtitle,
+                channo = QInputDialog::getInt(0, qtitle,
 					  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
 #endif
 				if (! ok)  return false;
@@ -1181,7 +1181,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 			int win_sz = QInputDialog::getInt(0, qtitle,
 					  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
 #else
-			int win_sz = QInputDialog::getInteger(0, qtitle,
+            int win_sz = QInputDialog::getInt(0, qtitle,
 					  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
 #endif
 			if (! ok)  return false;
@@ -1201,7 +1201,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 				channo = QInputDialog::getInt(0, qtitle,
 												  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
 #else
-				channo = QInputDialog::getInteger(0, qtitle,
+                channo = QInputDialog::getInt(0, qtitle,
 												  QObject::tr("image data channel: "), 1, 1, this->getCDim(), 1, &ok);
 #endif
 				if (! ok)  return false;
@@ -1211,7 +1211,7 @@ bool My4DImage::proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_
 			int win_sz = QInputDialog::getInt(0, qtitle,
 												  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
 #else
-			int win_sz = QInputDialog::getInteger(0, qtitle,
+            int win_sz = QInputDialog::getInt(0, qtitle,
 												  QObject::tr("radius smoothing window size: "), 5, 1, 20, 1, &ok);
 #endif
 			if (! ok)  return false;
@@ -1528,16 +1528,16 @@ bool My4DImage::proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree,
 		if (b_do_all_seg && seg_id!=seg_id0)
 			continue; //in this case only display the pinpointed seg in figure
 
-		if (b_dispfig)
-		{
-			barFigureDialog *dlg1 = new barFigureDialog(vvec1, labelsLT1, labelRB, 0, QSize(500, 150), QColor(50,50,50));
-			dlg1->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Total Mass").arg(p_tree->file).arg(seg_id));
-			dlg1->show();
+//		if (b_dispfig)
+//		{
+//			barFigureDialog *dlg1 = new barFigureDialog(vvec1, labelsLT1, labelRB, 0, QSize(500, 150), QColor(50,50,50));
+//			dlg1->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Total Mass").arg(p_tree->file).arg(seg_id));
+//			dlg1->show();
 
-			barFigureDialog *dlg2 = new barFigureDialog(vvec2, labelsLT2, labelRB, 0, QSize(500, 150), QColor(50,50,50));
-			dlg2->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Mean Intensity").arg(p_tree->file).arg(seg_id));
-			dlg2->show();
-		}
+//			barFigureDialog *dlg2 = new barFigureDialog(vvec2, labelsLT2, labelRB, 0, QSize(500, 150), QColor(50,50,50));
+//			dlg2->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Mean Intensity").arg(p_tree->file).arg(seg_id));
+//			dlg2->show();
+//		}
 	}
 	return res;
 }

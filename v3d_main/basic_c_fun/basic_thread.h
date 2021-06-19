@@ -36,12 +36,12 @@
 #ifndef __BASIC_THREAD_H__
 #define __BASIC_THREAD_H__
 
-#include <QtGui>
+//#include <QtGui>
 #include <QMutex>
 #include <QQueue>
 #include <QThread>
 #include <QWaitCondition>
-
+#include <QDebug>
 #include "basic_triview.h"
 
 // Communicating with the Main thread

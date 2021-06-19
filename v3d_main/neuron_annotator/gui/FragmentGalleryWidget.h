@@ -12,7 +12,7 @@ class NeuronFragmentData;
 // should have been the right widget for this purpose.
 class FragmentGalleryWidget : public QAbstractScrollArea
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     enum SortOrder {
@@ -35,10 +35,10 @@ public:
     void setDataFlowModel(const DataFlowModel*);
     void updateButtonsGeometry();
 
-signals:
+//signals:
     void scrollPixelChanged(int);
 
-public slots:
+//public slots:
     void scrollToFragment(NeuronSelectionModel::NeuronIndex);
     void setScrollPixel(int pixel);
     void sortByIndex();

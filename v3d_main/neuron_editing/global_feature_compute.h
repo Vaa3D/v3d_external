@@ -2,7 +2,8 @@
 #define COMPUTE_H
 
 #include <QtGlobal>
-#include "basic_surf_objs.h" 
+//#include "basic_surf_objs.h"
+#include "../basic_c_fun/basic_surf_objs.h"
 
 void computeFeature(const NeuronTree & nt, double * features);
 QVector<V3DLONG> getRemoteChild(int t);

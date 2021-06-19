@@ -136,8 +136,8 @@ USE_Qt5 {
   INCLUDEPATH += $$SHARED_FOLDER
   LIBS += -L$$SHARED_FOLDER
 } else {
-  SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
-  include($$SHARED_FOLDER/shared.pri)
+#  SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+#  include($$SHARED_FOLDER/shared.pri)
   INCLUDEPATH += $$SHARED_FOLDER
   LIBS += -L$$SHARED_FOLDER
 }
@@ -313,25 +313,25 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_tracing/dij_bgl.cpp \
     ../gmm/fit_gmm.cpp \
     ../cellseg/template_matching_seg.cpp \
-    ../3drenderer/v3dr_mainwindow.cpp \
-    ../3drenderer/v3dr_glwidget.cpp \
-    ../3drenderer/renderer.cpp \
-    ../3drenderer/renderer_tex.cpp \
-    ../3drenderer/renderer_obj.cpp \
-    ../3drenderer/renderer_labelfield.cpp \
-    ../3drenderer/renderer_gl2.cpp \
-    ../3drenderer/glsl_r.cpp \
-    ../3drenderer/GLee2glew.c \
-    ../3drenderer/renderer_hit.cpp \
-    ../3drenderer/nstroke.cpp \
-    ../3drenderer/nstroke_tracing.cpp \
-    ../3drenderer/v3dr_surfaceDialog.cpp \
-    ../3drenderer/ItemEditor.cpp \
-    ../3drenderer/v3dr_colormapDialog.cpp \
-    ../3drenderer/gradients.cpp \
-    ../3drenderer/v3dr_control_signal.cpp \
-    ../3drenderer/v3d_hoverpoints.cpp \
-    ../3drenderer/barFigureDialog.cpp \
+#    ../3drenderer/v3dr_mainwindow.cpp \
+#    ../3drenderer/v3dr_glwidget.cpp \
+#    ../3drenderer/renderer.cpp \
+#    ../3drenderer/renderer_tex.cpp \
+#    ../3drenderer/renderer_obj.cpp \
+#    ../3drenderer/renderer_labelfield.cpp \
+#    ../3drenderer/renderer_gl2.cpp \
+#    ../3drenderer/glsl_r.cpp \
+#    ../3drenderer/GLee2glew.c \
+#    ../3drenderer/renderer_hit.cpp \
+#    ../3drenderer/nstroke.cpp \
+#    ../3drenderer/nstroke_tracing.cpp \
+#    ../3drenderer/v3dr_surfaceDialog.cpp \
+#    ../3drenderer/ItemEditor.cpp \
+#    ../3drenderer/v3dr_colormapDialog.cpp \
+#    ../3drenderer/gradients.cpp \
+#    ../3drenderer/v3dr_control_signal.cpp \
+#    ../3drenderer/v3d_hoverpoints.cpp \
+#    ../3drenderer/barFigureDialog.cpp \
         ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
@@ -396,15 +396,15 @@ HEADERS += \
     ../vrrenderer/VR_MainWindow.h
 
 SOURCES += \
-    ../vrrenderer/v3dr_gl_vr.cpp \
-    ../vrrenderer/Cylinder.cpp \
-    ../vrrenderer/Sphere.cpp \
-    ../vrrenderer/Matrices.cpp \
-    ../vrrenderer/lodepng.cpp \
-    ../vrrenderer/RenderableObject.cpp \
-    ../vrrenderer/VRFinger.cpp \
-    ../vrrenderer/V3dR_Communicator.cpp \
-    ../vrrenderer/VR_MainWindow.cpp
+#    ../vrrenderer/v3dr_gl_vr.cpp \
+#    ../vrrenderer/Cylinder.cpp \
+#    ../vrrenderer/Sphere.cpp \
+#    ../vrrenderer/Matrices.cpp \
+#    ../vrrenderer/lodepng.cpp \
+#    ../vrrenderer/RenderableObject.cpp \
+#    ../vrrenderer/VRFinger.cpp \
+#    ../vrrenderer/V3dR_Communicator.cpp \
+#    ../vrrenderer/VR_MainWindow.cpp
 }
 
 FORMS += landmark_property.ui \
@@ -473,8 +473,9 @@ macx:dragdropfix{
 
 # NOT REALLY USED, LIBS are replaced by vaa3d_msvc.pro
 win32:LIBS += -lm -lv3dtiff \
-    -lv3dnewmat
-win32:LIBS += -L../common_lib/winlib64 -lteem  -lbz2 -lz  #for nrrd support
+-lv3dnewmat
+
+win32:LIBS += -L../common_lib/mingw -lglew -lhdf5 -lszip -lzlib -lSDL2 -lteem  -lbz2 -lz -lopenvr_api -lwsock32 #for nrrd support #for nrrd support
 #    -lglut32 # win32-mingw, on unix link libglut.a
 #win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	#for win32 disable using MYLIB
 

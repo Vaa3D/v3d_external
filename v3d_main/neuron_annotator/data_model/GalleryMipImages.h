@@ -9,12 +9,12 @@
 // thread needs to do is call QPixmap::fromImage() for each GalleryButton.
 class GalleryMipImages : public NaLockableData
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit GalleryMipImages(const MipFragmentColors& mipFragmentColorsParam);
     ~GalleryMipImages();
 
-public slots:
+//public slots:
     void update();
 
 protected:

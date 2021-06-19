@@ -15,7 +15,7 @@ class MipMergedData;
 // mode of V3D
 class NaLargeMIPWidget : public Na2DViewer
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     NaLargeMIPWidget(QWidget* parent);
@@ -32,7 +32,7 @@ public:
     void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
     void setMipMergedData(const MipMergedData* mipMergedDataParam);
 
-signals:
+//signals:
     // message intended for main window status area
     void statusMessage(const QString&);
     void volumeDataUpdated(const My4DImage*, const My4DImage*);
@@ -45,13 +45,13 @@ signals:
     void showProgress();
     void hideProgress();
 
-public slots:
+//public slots:
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
     void onMouseSingleClick(QPoint pos);
     void showContextMenu(QPoint);
 
-protected slots:
+//protected slots:
     void onHighlightedNeuronChanged(int neuronIndex);
 
 protected:

@@ -11,7 +11,7 @@
 
 class NeuronSelector : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     NeuronSelector(QObject * parent);
@@ -25,12 +25,12 @@ public:
     bool inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z);
     QList<ImageMarker> highlightIndexNeuron(); // returns a list of points for the index neuron
 
-public slots:
+//public slots:
     void onVolumeDataChanged();
     void onSelectionModelChanged(); // updates highlight based on state of NeuronSelectionModel
     void updateSelectedPosition(double x, double y, double z);
 
-signals:
+//signals:
     void landmarksClearNeeded();
     void landmarksUpdateNeeded(const QList<ImageMarker>);
     void selectionClearNeeded();

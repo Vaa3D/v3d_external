@@ -64,13 +64,13 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-08-2011
 #endif
 
-#ifdef _ALLOW_TERAFLY_MENU_
-#include "../terafly/src/control/CPlugin.h"
-#endif
+//#ifdef _ALLOW_TERAFLY_MENU_
+//#include "../terafly/src/control/CPlugin.h"
+//#endif
 
-#ifdef __ALLOW_VR_FUNCS__
-#include "../mozak/MozakUI.h";
-#endif
+//#ifdef __ALLOW_VR_FUNCS__
+//#include "../mozak/MozakUI.h";
+//#endif
 
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
@@ -228,17 +228,11 @@ MainWindow::MainWindow()
     setAcceptDrops(true); //080827
     //
 
-#if defined(USE_Qt5)
+
     workspace = new QMdiArea;
     setCentralWidget(workspace);
     connect(workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)),  this, SLOT(updateMenus()));
-#else
-    workspace = new QWorkspace;
-    setCentralWidget(workspace);
-    connect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus()));
-    windowMapper = new QSignalMapper(this);
-    connect(windowMapper, SIGNAL(mapped(QWidget *)),  workspace, SLOT(setActiveWindow(QWidget *)));
-#endif
+
     createActions();
     createMenus();
     createToolBars();
@@ -268,7 +262,7 @@ MainWindow::MainWindow()
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
 
 #define __AUTOLAUNCH_OPEN_NEURON_GAME___
-	/// RZC 20170620: disable auto launch
+    /// RZC 20170620: disable auto launch
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 }
 //void MainWindow::postClose() //090812 RZC
@@ -524,39 +518,39 @@ void MainWindow::triggerRunPlugin()
 {
     emit imageLoaded2Plugin();
 }
-void MainWindow::handleCoordinatedCloseEvent_real() {
-    // qDebug("***vaa3d: MainWindow::closeEvent");
-    writeSettings(); //added on 090501 to save setting (default preferences)
-    foreach (V3dR_MainWindow* p3DView, list_3Dview_win)
-    {
-        if (p3DView)
-        {
-            p3DView->postClose(); //151117. PHC
-//        v3d_msg("haha");
-        }
-    }
-    //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
+//void MainWindow::handleCoordinatedCloseEvent_real() {
+//    // qDebug("***vaa3d: MainWindow::closeEvent");
+//    writeSettings(); //added on 090501 to save setting (default preferences)
+//    foreach (V3dR_MainWindow* p3DView, list_3Dview_win)
+//    {
+//        if (p3DView)
+//        {
+//            p3DView->postClose(); //151117. PHC
+        //v3d_msg("haha");
+//        }
+//    }
+//    //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
 
-#if defined(USE_Qt5)
-    workspace->closeAllSubWindows();
-#else
-    workspace->closeAllWindows();
-#endif
-}
-void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event)
-{
-    handleCoordinatedCloseEvent_real();
-    if (activeMdiChild())
-    {
-        event->ignore();
-        return; //090812 RZC
-    }
-    else
-    {
-        //writeSettings();
-        event->accept();
-    }
-}
+//#if defined(USE_Qt5)
+//    workspace->closeAllSubWindows();
+//#else
+//    workspace->closeAllWindows();
+//#endif
+//}
+//void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event)
+//{
+//    handleCoordinatedCloseEvent_real();
+//    if (activeMdiChild())
+//    {
+//        event->ignore();
+//        return; //090812 RZC
+//    }
+//    else
+//    {
+//        //writeSettings();
+//        event->accept();
+//    }
+//}
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     //setText(tr("<drop content>"));
@@ -778,45 +772,46 @@ void MainWindow::generateVersionInfo()
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 {
-    int numfind = 0; //20110427 YuY
-    V3dR_MainWindow * v3dRMWFind;
-    // support image with relative path
-    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath(); //20110427 YuY
-    if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //20110427 YuY
-    for (int i=0; i<list_3Dview_win.size(); i++)
-    {
-        if (list_3Dview_win.at(i)->getDataTitle()==canonicalFilePath || QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName() == canonicalFilePath) //20110427 YuY
-        {
-            v3dRMWFind = list_3Dview_win.at(i);
-            numfind++;
-        }
-    }
-    if(!numfind) //20110427 YuY
-    {
-        // try find image name contains the input string from the end
-        for (int i=0; i<list_3Dview_win.size(); i++)
-        {
-            if ( list_3Dview_win.at(i)->getDataTitle().endsWith(canonicalFilePath) ||
-                QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
-            {
-                v3dRMWFind = list_3Dview_win.at(i);
-                numfind++;
-            }
-        }
-    }
-    if(numfind > 1)	//20110427 YuY
-    {
-        v3d_msg(QString("Too many windows sharing the same [partial] name. Please specify your image with whole name including absolute path and try again."), 1);
-        return 0;
-    }
-    else if(numfind == 1)
-    {
-        return v3dRMWFind;
-    }
-    else
-    {
-        return 0;
-    }
+//    int numfind = 0; //20110427 YuY
+//    V3dR_MainWindow * v3dRMWFind;
+//    // support image with relative path
+//    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath(); //20110427 YuY
+//    if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //20110427 YuY
+//    for (int i=0; i<list_3Dview_win.size(); i++)
+//    {
+//        if (list_3Dview_win.at(i)->getDataTitle()==canonicalFilePath || QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName() == canonicalFilePath) //20110427 YuY
+//        {
+//            v3dRMWFind = list_3Dview_win.at(i);
+//            numfind++;
+//        }
+//    }
+//    if(!numfind) //20110427 YuY
+//    {
+//        // try find image name contains the input string from the end
+//        for (int i=0; i<list_3Dview_win.size(); i++)
+//        {
+//            if ( list_3Dview_win.at(i)->getDataTitle().endsWith(canonicalFilePath) ||
+//                QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
+//            {
+//                v3dRMWFind = list_3Dview_win.at(i);
+//                numfind++;
+//            }
+//        }
+//    }
+//    if(numfind > 1)	//20110427 YuY
+//    {
+//        v3d_msg(QString("Too many windows sharing the same [partial] name. Please specify your image with whole name including absolute path and try again."), 1);
+//        return 0;
+//    }
+//    else if(numfind == 1)
+//    {
+//        return v3dRMWFind;
+//    }
+//    else
+//    {
+//        return 0;
+//    }
+    return 0;
 }
 void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool b_forceopen3dviewer)
 {
@@ -826,11 +821,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         if (existing_imgwin)
         {
 
-#if defined(USE_Qt5)
-            workspace->setActiveSubWindow(existing_imgwin);
-#else
-            workspace->setActiveWindow(existing_imgwin);
-#endif
+
+           // workspace->setActiveSubWindow(existing_imgwin);
+
             return;
         }
         V3dR_MainWindow *existing_3dviewer = find3DViewer(fileName);
@@ -875,11 +868,10 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
                             child_rawimg->show();
 
-#if defined(USE_Qt5)
+
                             workspace->cascadeSubWindows();
-#else
-                            workspace->cascade();
-#endif
+
+
                             //setCurrentFile(fileName);
                         } else {
                             child_rawimg->close();
@@ -903,11 +895,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             statusBar()->showMessage(tr("File loaded [%1]").arg(cc.labelfield_image_file_list.at(i)), 2000);
                             child_maskimg->show();
 
-#if defined(USE_Qt5)
+
                             workspace->cascadeSubWindows();
-#else
-                            workspace->cascade();
-#endif
+
                             //setCurrentFile(fileName);
                         } else {
                             child_maskimg->close();
@@ -965,27 +955,27 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 //081016. Note: an interesting side-effect of this ano open function is that the RAW-image window will have "memory" of the associated files.
                 //Therefore, when a 3D viewer win is closed, and re-open via clicking the "see in 3D", all the associated file will be opened again!
                 V3dR_MainWindow *my3dwin = 0;
-                try
-                {
-                    my3dwin = new V3dR_MainWindow(mypara_3Dview);
-                    my3dwin->setParent(0);
-                    my3dwin->setDataTitle(fileName);
-                    my3dwin->show();
-                    mypara_3Dview->window3D = my3dwin;
-                    if (child_rawimg)
-                    {
-                        child_rawimg->mypara_3Dview.window3D = my3dwin;
-                        child_rawimg->mypara_3Dview.image4d = mypara_3Dview->image4d;
-                        child_rawimg->mypara_3Dview.b_use_512x512x256 = mypara_3Dview->b_use_512x512x256;
-                        child_rawimg->mypara_3Dview.xwidget = mypara_3Dview->xwidget;
-                        child_rawimg->mypara_3Dview.b_still_open = true;
-                    }
-                }
-                catch (...)
-                {
-                    v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
-                    return;
-                }
+//                try
+//                {
+//                    my3dwin = new V3dR_MainWindow(mypara_3Dview);
+//                    my3dwin->setParent(0);
+//                    //my3dwin->setDataTitle(fileName);
+//                    my3dwin->show();
+//                    mypara_3Dview->window3D = my3dwin;
+//                    if (child_rawimg)
+//                    {
+//                        child_rawimg->mypara_3Dview.window3D = my3dwin;
+//                        child_rawimg->mypara_3Dview.image4d = mypara_3Dview->image4d;
+//                        child_rawimg->mypara_3Dview.b_use_512x512x256 = mypara_3Dview->b_use_512x512x256;
+//                        child_rawimg->mypara_3Dview.xwidget = mypara_3Dview->xwidget;
+//                        child_rawimg->mypara_3Dview.b_still_open = true;
+//                    }
+//                }
+//                catch (...)
+//                {
+//                    v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
+//                    return;
+//                }
             }
         }
         else if (cur_suffix=="MARKER" ||  cur_suffix=="CSV")
@@ -1034,19 +1024,19 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
             //
             V3dR_MainWindow *my3dwin = 0;
-            try
-            {
-                my3dwin = new V3dR_MainWindow(mypara_3Dview);
-                my3dwin->setParent(0);
-                my3dwin->setDataTitle(fileName);
-                my3dwin->show();
-                mypara_3Dview->window3D = my3dwin;
-            }
-            catch (...)
-            {
-                v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
-                return;
-            }
+//            try
+//            {
+//                my3dwin = new V3dR_MainWindow(mypara_3Dview);
+//                my3dwin->setParent(0);
+//                //my3dwin->setDataTitle(fileName);
+//                my3dwin->show();
+//                mypara_3Dview->window3D = my3dwin;
+//            }
+//            catch (...)
+//            {
+//                v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
+//                return;
+//            }
             //list_3Dview_win.append(my3dwin); //081003: no longer need to do this here. I changed the V3dR_MainWindow so that when it create, it will add it into the list; and close the window, then it will delete itself from the list
         }
         else if (cur_suffix=="ATLAS")
@@ -1075,11 +1065,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     statusBar()->showMessage(tr("File loaded [%1]").arg(cur_atlas_list[kk].imgfile), 2000);
                     child->show();
 
-#if defined(USE_Qt5)
+
                     workspace->cascadeSubWindows();
-#else
-                    workspace->cascade();
-#endif
+
                     //update the image data listAtlasFiles member
                     cur_atlas_list[kk].on = true; //since this one has been opened
                     child->getImageData()->listAtlasFiles = cur_atlas_list;
@@ -1549,11 +1537,9 @@ void MainWindow::import_GeneralImageFile()
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
 
-#if defined(USE_Qt5)
-            workspace->setActiveSubWindow(existing);
-#else
-            workspace->setActiveWindow(existing);
-#endif
+
+           // workspace->setActiveSubWindow(existing);
+
             return;
         }
         try
@@ -1581,11 +1567,9 @@ void MainWindow::import_Leica()
         XFormWidget *existing = findMdiChild(fileName);
         if (existing) {
 
-#if defined(USE_Qt5)
-            workspace->setActiveSubWindow(existing);
-#else
-            workspace->setActiveWindow(existing);
-#endif
+
+            //workspace->setActiveSubWindow(existing);
+
             return;
         }
         try
@@ -1761,19 +1745,19 @@ void MainWindow::save()
 {
     if (activeMdiChild())
         if (activeMdiChild()->saveData())
-	{
+    {
             setCurrentFile(activeMdiChild()->userFriendlyCurrentFile());
             statusBar()->showMessage(tr("File saved [%1]").arg(activeMdiChild()->userFriendlyCurrentFile()), 2000);
-	}
+    }
 }
 void MainWindow::saveAs()
 {
     if (activeMdiChild())
         if (activeMdiChild()->saveData())
-	{
+    {
             setCurrentFile(activeMdiChild()->userFriendlyCurrentFile());
             statusBar()->showMessage(tr("File saved"), 2000);
-	}
+    }
 }
 void MainWindow::cut()
 {
@@ -1929,16 +1913,16 @@ void MainWindow::updateMenus()
     procTracing_manualCorrect->setEnabled(hasMdiChild);
     if (hasMdiChild)
     {
-		QDir pluginsDir = QDir(qApp->applicationDirPath());
+        QDir pluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
-		if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
-			pluginsDir.cdUp();
+        if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+            pluginsDir.cdUp();
 #elif defined(Q_OS_MAC)
-		if (pluginsDir.dirName() == "MacOS") {
-			pluginsDir.cdUp();
-			pluginsDir.cdUp();
-			pluginsDir.cdUp();
-		}
+        if (pluginsDir.dirName() == "MacOS") {
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+        }
 #endif
         procTracing_APP2auto->setEnabled(pluginsDir.cd("plugins/neuron_tracing/Vaa3D_Neuron2"));
 
@@ -2025,11 +2009,9 @@ void MainWindow::updateWindowMenu()
     windowMenu->addAction(previousAct);
     windowMenu->addAction(separator_ImgWindows_Act);
 
-#if defined(USE_Qt5)
+
     QList<QMdiSubWindow *> windows = workspace->subWindowList();
-#else
-    QList<QWidget *> windows = workspace->windowList();
-#endif
+
     separator_ImgWindows_Act->setVisible(!windows.isEmpty());
     int i;
     for (i = 0; i < windows.size(); ++i) {
@@ -2058,18 +2040,18 @@ void MainWindow::updateWindowMenu()
         windowMenu->addSeparator();
         for (i = 0; i < list_3Dview_win.size(); ++i)
         {
-            V3dR_MainWindow *vchild = qobject_cast<V3dR_MainWindow *>(list_3Dview_win.at(i));
-            QString text;
-            if (i < 9) {
-                text = tr("%1: &%2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
-            } else {
-                text = tr("%1: %2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
-            }
-            QAction *action  = windowMenu->addAction(text);
-            action->setCheckable(true);
-            //raise() is the right function to bring it to front (not activateWindow() which is not a slot, or show()). by PHC. 090626
-            //however because raise does not mean the window is activated, thus I write a wrapper slot called raise_and_activate to call both raise() followed by activatedWindow()
-            connect(action, SIGNAL(triggered()), vchild, SLOT(raise_and_activate()));
+//            V3dR_MainWindow *vchild = qobject_cast<V3dR_MainWindow *>(list_3Dview_win.at(i));
+//            QString text;
+//            if (i < 9) {
+//                text = tr("%1: &%2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
+//            } else {
+//                text = tr("%1: %2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
+//            }
+//            QAction *action  = windowMenu->addAction(text);
+//            action->setCheckable(true);
+//            //raise() is the right function to bring it to front (not activateWindow() which is not a slot, or show()). by PHC. 090626
+//            //however because raise does not mean the window is activated, thus I write a wrapper slot called raise_and_activate to call both raise() followed by activatedWindow()
+//            connect(action, SIGNAL(triggered()), vchild, SLOT(raise_and_activate()));
         }
     }
 }
@@ -2365,7 +2347,7 @@ void MainWindow::createActions()
 
 
 //    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
-    connect(closeAllAct, SIGNAL(triggered()), this, SLOT(handleCoordinatedCloseEvent_real()));
+    //connect(closeAllAct, SIGNAL(triggered()), this, SLOT(handleCoordinatedCloseEvent_real()));
 
 
     tileAct = new QAction(tr("&Tile"), this);
@@ -2598,11 +2580,11 @@ void MainWindow::createActions()
     procModeDefault = new QAction(tr("Vaa3D Default"), this);
     procModeDefault->setCheckable(true);
     procModeDefault->setChecked(true);
-    connect(procModeDefault, SIGNAL(triggered()), this, SLOT(func_procModeDefault()));
+   // connect(procModeDefault, SIGNAL(triggered()), this, SLOT(func_procModeDefault()));
     procModeNeuronAnnotator = new QAction(tr("Janelia FlyWorkstation Annotator"), this);
     procModeNeuronAnnotator->setCheckable(true);
     procModeNeuronAnnotator->setChecked(false);
-    connect(procModeNeuronAnnotator, SIGNAL(triggered()), this, SLOT(func_procModeNeuronAnnotator()));
+    //connect(procModeNeuronAnnotator, SIGNAL(triggered()), this, SLOT(func_procModeNeuronAnnotator()));
 #endif
 }
 void MainWindow::createMenus()
@@ -2732,20 +2714,14 @@ XFormWidget *MainWindow::createMdiChild()
     //																	//080814: important fix to assure the destructor function will be called.
     XFormWidget *child = new XFormWidget((QWidget *)0);
 
-#if defined(USE_Qt5)
     workspace->addSubWindow(child);  //child is wrapped in his parentWidget()
-#else
-    workspace->addWindow(child);  //child is wrapped in his parentWidget()
-#endif
+
     //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help to update the workspace->windowList()
 
-#if defined(USE_Qt5)
+
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->subWindowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
     connect(workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)),  child, SLOT(onActivated(QMdiSubWindow *))); //110802 RZC
-#else
-    qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
-    connect(workspace, SIGNAL(windowActivated(QWidget *)),  child, SLOT(onActivated(QWidget *))); //110802 RZC
-#endif
+
     //workspace->setActiveWindow(child);
     //to enable coomunication of child windows
     child->setMainControlWindow(this);
@@ -2764,11 +2740,9 @@ XFormWidget *MainWindow::createMdiChild()
 XFormWidget *MainWindow::activeMdiChild()
 {
 
-#if defined(USE_Qt5)
+
     return qobject_cast<XFormWidget *>(workspace->activeSubWindow());
-#else
-    return qobject_cast<XFormWidget *>(workspace->activeWindow());
-#endif
+
 }
 XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 {
@@ -2777,11 +2751,9 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //090818 RZC 20110427 YuY
     XFormWidget *mdiChildFind;
 
-#if defined(USE_Qt5)
+
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
-#else
-    foreach (QWidget *window, workspace->windowList()) {
-#endif
+
         XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
         QString mdiChildPath = // CMB Oct-14-2010
                 QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
@@ -2799,11 +2771,8 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
     {
         // try find image name contains the input string from the end
 
-#if defined(USE_Qt5)
         foreach (QMdiSubWindow *window, workspace->subWindowList()) {
-#else
-        foreach (QWidget *window, workspace->windowList()) {
-#endif
+
             XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
             QString mdiChildPath = // CMB Oct-14-2010
                     QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
@@ -2832,11 +2801,9 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
 {
     nchild=0;
 
-#if defined(USE_Qt5)
+
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
-#else
-    foreach (QWidget *window, workspace->windowList()) {
-#endif
+
         nchild++;
     }
     if (nchild<=0)
@@ -2844,11 +2811,9 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
     XFormWidget ** plist = new XFormWidget * [nchild];
     int i=0;
 
-#if defined(USE_Qt5)
+
     foreach (QMdiSubWindow *window, workspace->subWindowList()) {
-#else
-    foreach (QWidget *window, workspace->windowList()) {
-#endif
+
         plist[i++] = qobject_cast<XFormWidget *>(window);
     }
     return plist;
@@ -2857,11 +2822,9 @@ bool MainWindow::setCurHiddenSelectedWindow( XFormWidget* a) //by PHC, 101009
 {
     bool b_found=false;
 
-#if defined(USE_Qt5)
+
     foreach (QMdiSubWindow *window, workspace->subWindowList()) //ensure the value is valid (especially the window has not been closed)
-#else
-    foreach (QWidget *window, workspace->windowList()) //ensure the value is valid (especially the window has not been closed)
-#endif
+
     {
         if (a == qobject_cast<XFormWidget *>(window))
         {b_found=true; break;}
@@ -2987,19 +2950,19 @@ void MainWindow::func_procCellSeg_manualCorrect(){if (activeMdiChild()) activeMd
 // Mode
 void MainWindow::func_procModeDefault()
 {
-    V3dApplication::deactivateNaMainWindow();
-    V3dApplication::activateMainWindow();
+//    V3dApplication::deactivateNaMainWindow();
+//    V3dApplication::activateMainWindow();
 }
 void MainWindow::func_procModeNeuronAnnotator()
 {
-    V3dApplication::deactivateMainWindow();
-    V3dApplication::activateNaMainWindow();
+//    V3dApplication::deactivateMainWindow();
+//    V3dApplication::activateNaMainWindow();
 }
 void MainWindow::setV3DDefaultModeCheck(bool checkState) {
-    procModeDefault->setChecked(checkState);
+//    //procModeDefault->setChecked(checkState);
 }
 void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
-    procModeNeuronAnnotator->setChecked(checkState);
+//    //procModeNeuronAnnotator->setChecked(checkState);
 }
 #endif
 
@@ -3007,21 +2970,21 @@ void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 void MainWindow::func_open_terafly()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    terafly::TeraFly::domenu("TeraFly", *pl, this);
+    //terafly::TeraFly::domenu("TeraFly", *pl, this);
 }
 void MainWindow::func_open_teraconverter()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    terafly::TeraFly::domenu("TeraConverter", *pl, this);
+    //terafly::TeraFly::domenu("TeraConverter", *pl, this);
 }
 
 void MainWindow::func_open_neuron_game()
 {
-	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-#ifdef __ALLOW_VR_FUNCS__
-    qRegisterMetaType<itm::integer_array>("itm::integer_array");
-	mozak::MozakUI::init(pl);
-#endif
+    V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+//#ifdef __ALLOW_VR_FUNCS__
+//    qRegisterMetaType<itm::integer_array>("itm::integer_array");
+//	mozak::MozakUI::init(pl);
+//#endif
 }
 #endif
 
@@ -3088,17 +3051,14 @@ void MainWindow::func_procPC_Atlas_view_atlas_computeVanoObjStat()
     //ask which channel to compute info
     bool ok1;
 
-#if defined(USE_Qt5)
+
     int ch_ind = QInputDialog::getInt(this, tr("channel"),
                                           tr("The selected directory contains %1 .ano files. <br><br> which image channel to compute the image objects statistics?").arg(listRecompute.size()),
                                           1, 1, 3, 1, &ok1) - 1;
     //now do for every file
-#else
-    int ch_ind = QInputDialog::getInteger(this, tr("channel"),
-                                          tr("The selected directory contains %1 .ano files. <br><br> which image channel to compute the image objects statistics?").arg(listRecompute.size()),
-                                          1, 1, 3, 1, &ok1) - 1;
+
     //now do for every file
-#endif
+
     My4DImage *grayimg=0, *maskimg=0;
     grayimg = new My4DImage;
     maskimg = new My4DImage;

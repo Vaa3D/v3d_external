@@ -12,7 +12,7 @@ class NeuronSelectionModelWriter;
 // that are visible/hidden, selected, or highlighted.
 class NeuronSelectionModel : public NaLockableData
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     friend class NeuronSelectionModelReader;
@@ -36,7 +36,7 @@ protected:
     void switchSelectedNeuron(int index);
     void switchSelectedNeuronUniquelyIfOn(int index);
 
-signals:
+//signals:
     void initialized(); // signal that data structures were initialized after new volume load
 
     // Visibility
@@ -53,7 +53,7 @@ signals:
 
     // TODO highlight signals (not selection)
 
-public slots:
+//public slots:
     // bool return values indicate whether the model was actually changed.  "true" if changed.  "false" otherwise.
     void initializeSelectionModel();
     // Visibility

@@ -60,12 +60,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
 
 // #include <QtOpenGL>
 // #include <QtTest>
-#if defined( USE_Qt5 )
+
+
   #include <QtWidgets>
   #include <QProgressDialog>
-#else
-  #include <QtGui>
-#endif
 
 #include <exception>
 #include <iostream>
@@ -254,6 +252,7 @@ extern QProgressDialog progress;
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <QVariant>
 
 // 090424RZC: because QColorDialog::getColor cannot handle correctly when user clicks Cancel
 inline bool v3dr_getColorDialog( QColor *color, QWidget *parent=0)
@@ -261,8 +260,8 @@ inline bool v3dr_getColorDialog( QColor *color, QWidget *parent=0)
 	QRgb input = 0xff000000;
 	if (color)	input = color->rgba();
 	bool ok;
-	QRgb ouput = QColorDialog::getRgba(input, &ok, parent);  //also include alpha channel
-	if (ok && color)  *color = QColor::fromRgba( ouput );
+//	QRgb ouput = QColorDialog::getRgba(input, &ok, parent);  //also include alpha channel
+//	if (ok && color)  *color = QColor::fromRgba( ouput );
 	return ok;
 }
 
@@ -279,15 +278,12 @@ inline RGBA8 RGBA8FromQColor(QColor qc)
 }
 
 #define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
-#define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
+//#define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
+#define VCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
 
-#if defined(USE_Qt5)
 #define QCOLORV(var)    (var.value<QColor>( ))
 #define RGBA8V(var)     RGBA8FromQColor(var.value<QColor>( ))
-#else
-#define QCOLORV(var)    (qVariantValue<QColor>( var ))
-#define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
-#endif
+
 
 //it's global factory, so use table->setEditTriggers(QAbstractItemView::NoEditTriggers) for local table
 #define TURNOFF_ITEM_EDITOR()  QItemEditorFactory::setDefaultFactory(new QItemEditorFactory())

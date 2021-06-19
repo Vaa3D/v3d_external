@@ -37,9 +37,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
   #include <QtGui>
 #endif
-
+#include <QLabel>
+#include <QCheckBox>
+#include<QPushButton>
+#include <QLineEdit>
 #include "dialog_rotate.h"
-
+#include <QSpinBox>
+#include <QVBoxLayout>
+#include <QGridLayout>
 Dialog_Rotate::Dialog_Rotate(QWidget *parent)
 	: QDialog(parent)
 {
@@ -97,7 +102,7 @@ Dialog_Rotate::Dialog_Rotate(QWidget *parent)
 	connect(moreButton, SIGNAL(toggled(bool)), extension, SLOT(setVisible(bool)));
 
 	QGridLayout *extensionLayout = new QGridLayout;
-	extensionLayout->setMargin(0);
+    //extensionLayout->setMargin(0);
 	extensionLayout->addWidget(xlabel, 0, 0, 1, 1);
 	extensionLayout->addWidget(centerXEdit, 0, 1, 1, 2);
 	extensionLayout->addWidget(ylabel, 1, 0, 1, 1);

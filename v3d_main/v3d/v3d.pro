@@ -91,16 +91,16 @@
 
 
 include(v3d_essential.pro)
-include(../terafly/terafly.pro)
+#include(../terafly/terafly.pro)
 
-# mozak module
-include(../mozak/m_terafly/m_teramanager.pro)
-RESOURCES += ../mozak/mozak.qrc
-HEADERS +=  ../mozak/MozakUI.h \
-            ../mozak/Mozak3DView.h \
-            customdebug.h
-SOURCES +=  ../mozak/MozakUI.cpp \
-            ../mozak/Mozak3DView.cpp
+## mozak module
+#include(../mozak/m_terafly/m_teramanager.pro)
+#RESOURCES += ../mozak/mozak.qrc
+#HEADERS +=  ../mozak/MozakUI.h \
+#            ../mozak/Mozak3DView.h \
+#            customdebug.h
+#SOURCES +=  ../mozak/MozakUI.cpp \
+#            ../mozak/Mozak3DView.cpp
 
 
 #CONFIG += console
@@ -237,107 +237,107 @@ HEADERS += \
 
 
 SOURCES += \
-    ../neuron_annotator/animation/AnimationFrame.cpp \
-    ../neuron_annotator/animation/interpolate.cpp \
-    ../neuron_annotator/gui/NaViewer.cpp \
-    ../neuron_annotator/gui/Na2DViewer.cpp \
-    ../neuron_annotator/gui/NaMainWindow.cpp \
-    ../neuron_annotator/gui/Na3DWidget.cpp \
-    ../neuron_annotator/gui/NaZStackWidget.cpp \
-    ../neuron_annotator/gui/NaLargeMIPWidget.cpp \
-    ../neuron_annotator/gui/PreferencesDialog.cpp \
-    ../neuron_annotator/render/ActorGL.cpp \
-    ../neuron_annotator/render/CubeTestActorGL.cpp \
-    ../neuron_annotator/render/CameraTransformGL.cpp \
-    ../neuron_annotator/render/LegacyVolumeActor.cpp \
-    ../neuron_annotator/render/ShaderProgramGL.cpp \
-    ../neuron_annotator/render/VoxelRayCastShader.cpp \
-    ../neuron_annotator/render/WireCube.cpp \
-    ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
-    ../neuron_annotator/utility/FileTreeSearcher.cpp \
-    ../neuron_annotator/utility/FooDebug.cpp \
-    ../neuron_annotator/utility/SingleNeuronLsmSetReader.cpp \
-    ../neuron_annotator/utility/StitchedFileUtility.cpp \
-    ../neuron_annotator/DataFlowModel.cpp \
-    ../neuron_annotator/utility/NeuronMaskEntry.cpp \
-    ../neuron_annotator/MultiColorImageStackNode.cpp \
-    ../neuron_annotator/data_model/CustomClipPlanes.cpp \
-    ../neuron_annotator/data_model/Dimension.cpp \
-    ../neuron_annotator/data_model/Fast3DTexture.cpp \
-    ../neuron_annotator/data_model/NaLockableData.cpp \
-    ../neuron_annotator/data_model/NaVolumeData.cpp \
-    ../neuron_annotator/data_model/MipFragmentData.cpp \
-    ../neuron_annotator/data_model/DataColorModel.cpp \
-    ../neuron_annotator/data_model/MipFragmentColors.cpp \
-    ../neuron_annotator/data_model/GalleryMipImages.cpp \
-    ../neuron_annotator/data_model/MipMergedData.cpp \
-    ../neuron_annotator/data_model/NeuronSelectionModel.cpp \
-    ../neuron_annotator/data_model/ZSliceColors.cpp \
-    ../neuron_annotator/data_model/SlotMerger.cpp \
-    ../neuron_annotator/data_model/NaSharedDataSignaller.cpp \
-    ../neuron_annotator/data_model/NaSharedDataModel.cpp \
-    ../neuron_annotator/data_model/NeuronFragmentData.cpp \
-    ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
-    ../neuron_annotator/data_model/PrivateNeuronFragmentData.cpp \
-    ../neuron_annotator/data_model/StagedFileLoader.cpp \
-    ../neuron_annotator/data_model/SampledVolumeMetadata.cpp \
-    ../neuron_annotator/data_model/VolumeTexture.cpp \
-    ../neuron_annotator/data_model/PrivateVolumeTexture.cpp \
-    ../neuron_annotator/entity_model/EntityData.cpp \
-    ../neuron_annotator/entity_model/Entity.cpp \
-    ../neuron_annotator/entity_model/Ontology.cpp \
-    ../neuron_annotator/entity_model/OntologyAnnotation.cpp \
-    ../neuron_annotator/entity_model/AnnotatedBranch.cpp \
-    ../neuron_annotator/entity_model/AnnotationSession.cpp \
-    ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
-    ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
-    ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \
-    ../neuron_annotator/gui/GalleryButton.cpp \
-    ../neuron_annotator/geometry/Vector3D.cpp \
-    ../neuron_annotator/geometry/Rotation3D.cpp \
-    ../neuron_annotator/geometry/CameraModel.cpp \
-    ../neuron_annotator/gui/GammaWidget.cpp \
-    ../neuron_annotator/gui/MouseClickManager.cpp \
-    ../neuron_annotator/gui/AngleWidget.cpp \
-    ../neuron_annotator/gui/AnnotationWidget.cpp \
-    ../neuron_annotator/gui/trees/EntityTreeItem.cpp \
-    ../neuron_annotator/gui/trees/EntityTreeModel.cpp \
-    ../neuron_annotator/gui/trees/AnnotatedBranchTreeModel.cpp \
-    ../neuron_annotator/gui/trees/OntologyTreeModel.cpp \
-    ../neuron_annotator/gui/trees/EntityTreeView.cpp \
-    ../neuron_annotator/gui/trees/AnnotatedBranchTreeView.cpp \
-    ../neuron_annotator/gui/trees/OntologyTreeView.cpp \
-    ../neuron_annotator/gui/ZoomSpinBox.cpp \
-    ../neuron_annotator/gui/ZoomWidget.cpp \
-    ../neuron_annotator/gui/CompartmentMapWidget.cpp \
-    ../neuron_annotator/gui/CompartmentMapComboBox.cpp \
-    ../neuron_annotator/gui/FragmentGalleryWidget.cpp \
-    ../neuron_annotator/gui/NeuronQAction.cpp \
-    ../neuron_annotator/gui/NeuronContextMenu.cpp \
-    ../neuron_annotator/gui/DynamicRangeTool.cpp \
-    ../neuron_annotator/gui/ColorRangeSliderWidget.cpp \
-    ../neuron_annotator/gui/Stereo3DMode.cpp \
-    ../neuron_annotator/gui/ScaleBar.cpp \
-    ../neuron_annotator/microCT/CutPlanner.cpp \
-    ../neuron_annotator/microCT/SingleCut.cpp \
-    ../neuron_annotator/NeuronSelector.cpp \
-    ../neuron_annotator/ExportFile.cpp \
-    ../neuron_annotator/utility/JacsUtil.cpp \
-    ../neuron_annotator/utility/Icons.cpp \
-    ../neuron_annotator/utility/DataThread.cpp \
-    ../neuron_annotator/utility/ConsoleObserver.cpp \
-    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
-    ../neuron_annotator/utility/ImageLoader.cpp \
-    ../neuron_annotator/utility/url_tools.cpp \
-    ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
-    ../neuron_annotator/analysis/AlignerUtils.cpp \
-    ../neuron_annotator/analysis/NeuronFragmentEditor.cpp \
-    ../neuron_annotator/analysis/VolumePatternIndex.cpp \
-    ../neuron_annotator/analysis/VolumeIndex.cpp \
-    ../neuron_annotator/analysis/SleepThread.cpp \
-    ../neuron_annotator/analysis/AnalysisTools.cpp \
-    ../neuron_annotator/analysis/MaskChan.cpp \
-    ../neuron_annotator/analysis/DilationErosion.cpp \
+#    ../neuron_annotator/animation/AnimationFrame.cpp \
+#    ../neuron_annotator/animation/interpolate.cpp \
+#    ../neuron_annotator/gui/NaViewer.cpp \
+#    ../neuron_annotator/gui/Na2DViewer.cpp \
+#    ../neuron_annotator/gui/NaMainWindow.cpp \
+#    ../neuron_annotator/gui/Na3DWidget.cpp \
+#    ../neuron_annotator/gui/NaZStackWidget.cpp \
+#    ../neuron_annotator/gui/NaLargeMIPWidget.cpp \
+#    ../neuron_annotator/gui/PreferencesDialog.cpp \
+#    ../neuron_annotator/render/ActorGL.cpp \
+#    ../neuron_annotator/render/CubeTestActorGL.cpp \
+#    ../neuron_annotator/render/CameraTransformGL.cpp \
+#    ../neuron_annotator/render/LegacyVolumeActor.cpp \
+#    ../neuron_annotator/render/ShaderProgramGL.cpp \
+#    ../neuron_annotator/render/VoxelRayCastShader.cpp \
+#    ../neuron_annotator/render/WireCube.cpp \
+#    ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
+#    ../neuron_annotator/utility/FileTreeSearcher.cpp \
+#    ../neuron_annotator/utility/FooDebug.cpp \
+#    ../neuron_annotator/utility/SingleNeuronLsmSetReader.cpp \
+#    ../neuron_annotator/utility/StitchedFileUtility.cpp \
+#    ../neuron_annotator/DataFlowModel.cpp \
+#    ../neuron_annotator/utility/NeuronMaskEntry.cpp \
+#    ../neuron_annotator/MultiColorImageStackNode.cpp \
+#    ../neuron_annotator/data_model/CustomClipPlanes.cpp \
+#    ../neuron_annotator/data_model/Dimension.cpp \
+#    ../neuron_annotator/data_model/Fast3DTexture.cpp \
+#    ../neuron_annotator/data_model/NaLockableData.cpp \
+#    ../neuron_annotator/data_model/NaVolumeData.cpp \
+#    ../neuron_annotator/data_model/MipFragmentData.cpp \
+#    ../neuron_annotator/data_model/DataColorModel.cpp \
+#    ../neuron_annotator/data_model/MipFragmentColors.cpp \
+#    ../neuron_annotator/data_model/GalleryMipImages.cpp \
+#    ../neuron_annotator/data_model/MipMergedData.cpp \
+#    ../neuron_annotator/data_model/NeuronSelectionModel.cpp \
+#    ../neuron_annotator/data_model/ZSliceColors.cpp \
+#    ../neuron_annotator/data_model/SlotMerger.cpp \
+#    ../neuron_annotator/data_model/NaSharedDataSignaller.cpp \
+#    ../neuron_annotator/data_model/NaSharedDataModel.cpp \
+#    ../neuron_annotator/data_model/NeuronFragmentData.cpp \
+#    ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
+#    ../neuron_annotator/data_model/PrivateNeuronFragmentData.cpp \
+#    ../neuron_annotator/data_model/StagedFileLoader.cpp \
+#    ../neuron_annotator/data_model/SampledVolumeMetadata.cpp \
+#    ../neuron_annotator/data_model/VolumeTexture.cpp \
+#    ../neuron_annotator/data_model/PrivateVolumeTexture.cpp \
+#    ../neuron_annotator/entity_model/EntityData.cpp \
+#    ../neuron_annotator/entity_model/Entity.cpp \
+#    ../neuron_annotator/entity_model/Ontology.cpp \
+#    ../neuron_annotator/entity_model/OntologyAnnotation.cpp \
+#    ../neuron_annotator/entity_model/AnnotatedBranch.cpp \
+#    ../neuron_annotator/entity_model/AnnotationSession.cpp \
+#    ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
+#    ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
+#   ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \
+#    ../neuron_annotator/gui/GalleryButton.cpp \
+#    ../neuron_annotator/geometry/Vector3D.cpp \
+#    ../neuron_annotator/geometry/Rotation3D.cpp \
+#    ../neuron_annotator/geometry/CameraModel.cpp \
+#    ../neuron_annotator/gui/GammaWidget.cpp \
+#    ../neuron_annotator/gui/MouseClickManager.cpp \
+#    ../neuron_annotator/gui/AngleWidget.cpp \
+#    ../neuron_annotator/gui/AnnotationWidget.cpp \
+#    ../neuron_annotator/gui/trees/EntityTreeItem.cpp \
+#    ../neuron_annotator/gui/trees/EntityTreeModel.cpp \
+#    ../neuron_annotator/gui/trees/AnnotatedBranchTreeModel.cpp \
+#    ../neuron_annotator/gui/trees/OntologyTreeModel.cpp \
+#    ../neuron_annotator/gui/trees/EntityTreeView.cpp \
+#    ../neuron_annotator/gui/trees/AnnotatedBranchTreeView.cpp \
+#    ../neuron_annotator/gui/trees/OntologyTreeView.cpp \
+#    ../neuron_annotator/gui/ZoomSpinBox.cpp \
+#    ../neuron_annotator/gui/ZoomWidget.cpp \
+#    ../neuron_annotator/gui/CompartmentMapWidget.cpp \
+#    ../neuron_annotator/gui/CompartmentMapComboBox.cpp \
+#    ../neuron_annotator/gui/FragmentGalleryWidget.cpp \
+#    ../neuron_annotator/gui/NeuronQAction.cpp \
+#    ../neuron_annotator/gui/NeuronContextMenu.cpp \
+#    ../neuron_annotator/gui/DynamicRangeTool.cpp \
+#    ../neuron_annotator/gui/ColorRangeSliderWidget.cpp \
+#    ../neuron_annotator/gui/Stereo3DMode.cpp \
+#    ../neuron_annotator/gui/ScaleBar.cpp \
+#    ../neuron_annotator/microCT/CutPlanner.cpp \
+#    ../neuron_annotator/microCT/SingleCut.cpp \
+#    ../neuron_annotator/NeuronSelector.cpp \
+#    ../neuron_annotator/ExportFile.cpp \
+#    ../neuron_annotator/utility/JacsUtil.cpp \
+#    ../neuron_annotator/utility/Icons.cpp \
+#    ../neuron_annotator/utility/DataThread.cpp \
+#    ../neuron_annotator/utility/ConsoleObserver.cpp \
+#    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
+#    ../neuron_annotator/utility/ImageLoader.cpp \
+#    ../neuron_annotator/utility/url_tools.cpp \
+#    ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
+#    ../neuron_annotator/analysis/AlignerUtils.cpp \
+#    ../neuron_annotator/analysis/NeuronFragmentEditor.cpp \
+#    ../neuron_annotator/analysis/VolumePatternIndex.cpp \
+#    ../neuron_annotator/analysis/VolumeIndex.cpp \
+#    ../neuron_annotator/analysis/SleepThread.cpp \
+#    ../neuron_annotator/analysis/AnalysisTools.cpp \
+#    ../neuron_annotator/analysis/MaskChan.cpp \
+#    ../neuron_annotator/analysis/DilationErosion.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \
     ../webservice/console/cdsC.cpp \
@@ -349,16 +349,16 @@ SOURCES += \
     ../cell_counter/CellCounter3D.cpp \
     CommandManager.cpp
 
-FORMS += \
-    ../neuron_annotator/gui/NaMainWindow.ui \
-    ../neuron_annotator/gui/GammaWidget.ui \
-    ../neuron_annotator/gui/AngleWidget.ui \
-    ../neuron_annotator/gui/AnnotationWidget.ui \
-    ../neuron_annotator/gui/DynamicRangeTool.ui \
-    ../neuron_annotator/gui/PreferencesNa.ui \
-    ../neuron_annotator/gui/ZoomWidget.ui \
-    ../neuron_annotator/microCT/micro_ct.ui \
-    ../neuron_annotator/microCT/single_cut.ui
+#FORMS += \
+#    ../neuron_annotator/gui/NaMainWindow.ui \
+#    ../neuron_annotator/gui/GammaWidget.ui \
+#    ../neuron_annotator/gui/AngleWidget.ui \
+#    ../neuron_annotator/gui/AnnotationWidget.ui \
+#    ../neuron_annotator/gui/DynamicRangeTool.ui \
+#    ../neuron_annotator/gui/PreferencesNa.ui \
+#    ../neuron_annotator/gui/ZoomWidget.ui \
+#    ../neuron_annotator/microCT/micro_ct.ui \
+#    ../neuron_annotator/microCT/single_cut.ui
 
 INCLUDEPATH = $$unique(INCLUDEPATH)
 #LIBS = $$unique(LIBS)  # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.

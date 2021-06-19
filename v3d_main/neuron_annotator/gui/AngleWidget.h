@@ -20,16 +20,16 @@ class QDESIGNER_WIDGET_EXPORT AngleWidget : public QWidget, public Ui::AngleWidg
 public:
 
     /* These properties are accessible by Qt Designer */
-    Q_PROPERTY(QString textLabel READ textLabel WRITE setTextLabel);
+    //Q_PROPERTY(QString textLabel READ textLabel WRITE setTextLabel);
 
     explicit AngleWidget(QWidget * parentObject = NULL, QString angleLabelText = "Rot");
     QString textLabel() const;
     void setTextLabel(QString l);
 
-signals:
+//signals:
     void angleChanged(int angleInDegrees);
 
-public slots:
+//public slots:
     void setAngle(qreal angle);
     void reset();
 };

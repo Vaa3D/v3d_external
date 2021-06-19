@@ -9,7 +9,7 @@ class PrivateNeuronFragmentData;
 // NeuronFragmentData contains information about Neuron Fragments
 class NeuronFragmentData : public NaSharedDataModel<PrivateNeuronFragmentData>
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     NeuronFragmentData();
@@ -18,7 +18,7 @@ public:
     NeuronFragmentData& operator=(const NeuronFragmentData&);
     virtual ~NeuronFragmentData();
 
-public slots:
+//public slots:
     virtual void update();
 
 protected:

@@ -555,25 +555,25 @@ void CellCounter3D::dialateOrErode(int type, unsigned char*** s, unsigned char**
     currentTarget=t;
     QList< QFuture<void> > deList;
     for (int z=0;z<zDim;z++) {
-        QFuture<void> qf = QtConcurrent::run(this, &CellCounter3D::dialateOrErodeZslice, type, z, elementSize, neighborsForThreshold);
-        deList.append(qf);
+     //   QFuture<void> qf = QtConcurrent::run(this, &CellCounter3D::dialateOrErodeZslice, type, z, elementSize, neighborsForThreshold);
+       // deList.append(qf);
     }
     while(1) {
-        SleepThread st;
-        st.msleep(5000);
-        int doneCount=0;
-        for (int i=0;i<deList.size();i++) {
-            QFuture<void> qf=deList.at(i);
-            if (qf.isFinished()) {
-                doneCount++;
-            }
-        }
-        int stillActive=deList.size()-doneCount;
-        if (stillActive==0) {
-            break;
-        } else {
-            qDebug() << "Waiting on " << stillActive << " z-slices";
-        }
+//        SleepThread st;
+//        st.msleep(5000);
+//        int doneCount=0;
+//        for (int i=0;i<deList.size();i++) {
+//            QFuture<void> qf=deList.at(i);
+//            if (qf.isFinished()) {
+//                doneCount++;
+//            }
+//        }
+//        int stillActive=deList.size()-doneCount;
+//        if (stillActive==0) {
+//            break;
+//        } else {
+//            qDebug() << "Waiting on " << stillActive << " z-slices";
+//        }
     }
 }
 
@@ -862,25 +862,11 @@ void CellCounter3D::centerSurroundFilter(unsigned char*** source, unsigned char*
 
     QList< QFuture<void> > csList;
     for (int z=0;z<zDim;z++) {
-        QFuture<void> qf = QtConcurrent::run(this, &CellCounter3D::centerSurroundFilterZSlice, z);
-        csList.append(qf);
+        //QFuture<void> qf = QtConcurrent::run(this, &CellCounter3D::centerSurroundFilterZSlice, z);
+        //csList.append(qf);
     }
     while(1) {
-        SleepThread st;
-        st.msleep(5000);
-        int doneCount=0;
-        for (int i=0;i<csList.size();i++) {
-            QFuture<void> qf=csList.at(i);
-            if (qf.isFinished()) {
-                doneCount++;
-            }
-        }
-        int stillActive=csList.size()-doneCount;
-        if (stillActive==0) {
-            break;
-        } else {
-            qDebug() << "Waiting on " << stillActive << " z-slices";
-        }
+
     }
 
     for (int z=0;z<zDim;z++) {
@@ -1162,9 +1148,9 @@ int CellCounter3D::processArgs(vector<char*> *argList) {
 }
 
 void CellCounter3D::processParameters(QString parameterLine) {
-    QRegExp splitRegex("\\s+");
-    QStringList plist=parameterLine.split(splitRegex);
-    processParameters(plist);
+    //QRegExp splitRegex("\\s+");
+    //QStringList plist=parameterLine.split(splitRegex);
+  //  processParameters(plist);
 }
 
 void CellCounter3D::processParameters(QStringList parameterList) {

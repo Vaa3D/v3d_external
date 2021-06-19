@@ -21,7 +21,7 @@
 
 class NutateThread : public QThread
 {
-    Q_OBJECT
+   // Q_OBJECT
   public:
     NutateThread( qreal cyclesPerSecond, QObject* parent = NULL );
     void run();
@@ -29,7 +29,7 @@ class NutateThread : public QThread
     void unpause();
     bool isPaused() {return paused;}
 
-  signals:
+  //signals:
     void nutate( const Rotation3D& );
 
   protected:
@@ -43,7 +43,7 @@ class NutateThread : public QThread
 
 class OpenFileAction : public QAction
 {
-    Q_OBJECT
+    //Q_OBJECT
 
   public:
     OpenFileAction( QObject* p_parent = NULL ) : QAction( p_parent )
@@ -56,10 +56,10 @@ class OpenFileAction : public QAction
         m_fileName = fileName;
     }
 
-  signals:
+  //signals:
     void openFileRequested( QString fileName );
 
-  protected slots:
+  //protected slots:
     void onTriggered() {emit openFileRequested( m_fileName );}
 
   protected:
@@ -69,7 +69,7 @@ class OpenFileAction : public QAction
 
 class NaMainWindow : public QMainWindow
 {
-    Q_OBJECT
+    //Q_OBJECT
 
     enum ViewerIndex {
         // indices correspond to children of ui.viewerStackedWidget
@@ -85,8 +85,8 @@ class NaMainWindow : public QMainWindow
     };
 
   public:
-    NaMainWindow( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
-    void setV3DDefaultModeCheck( bool checkState );
+    NaMainWindow( QWidget* parent = 0);
+    //void setV3DDefaultModeCheck( bool checkState );
     void setNeuronAnnotatorModeCheck( bool checkState );
     void setAuxillaryImagery( QString li_path, QString vli_path, QString channelSpec )
     {
@@ -99,7 +99,7 @@ class NaMainWindow : public QMainWindow
         visuallyLosslessImage = vli_path; losslessImage = li_path;
         channel_spec = channelSpec;
     }
-    void handleCoordinatedCloseEvent( QCloseEvent* event );
+   // void handleCoordinatedCloseEvent( QCloseEvent* event );
     virtual void keyPressEvent( QKeyEvent* e );
     bool loadSeparationDirectoryV1Pbd( QUrl folder );
     bool loadSeparationDirectoryV2Mpeg( QUrl folder );
@@ -111,7 +111,7 @@ class NaMainWindow : public QMainWindow
     Na3DWidget* get3DWidget() {return ui->v3dr_glwidget;}
     char* getConsoleURL();
 
-  signals:
+  //signals:
     void channelVisibilityChanged( int, bool );
     void nutatingChanged( bool );
     void defaultVaa3dFileLoadRequested( QString fileName );
@@ -125,7 +125,7 @@ class NaMainWindow : public QMainWindow
     void subsampleLabelPbdFileNamed( QUrl );
     void stagedLoadRequested();
 
-  public slots:
+  //public slots:
     void resetVolumeCutRange();
     void exitFullScreen();
     void setFullScreen( bool );
@@ -183,7 +183,7 @@ class NaMainWindow : public QMainWindow
     void setTitle( QString title );
     void setCrosshairVisibility( bool );
 
-  protected slots:
+  //protected slots:
     void resetBenchmarkTimer();
     void printBenchmarkTimer( QString message );
     void on3DViewerRotationChanged( const Rotation3D& rot );

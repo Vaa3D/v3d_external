@@ -125,9 +125,9 @@ extern "C" {
 
 //#define _ALLOW_WORKMODE_MENU_    //indeed this seems not really working well, as many plugins need to add additional src files, noted PHC, 20130127
 
-#ifdef _ALLOW_WORKMODE_MENU_
-#include "../neuron_annotator/utility/ImageLoaderBasic.h"
-#endif
+//#ifdef _ALLOW_WORKMODE_MENU_
+//#include "../neuron_annotator/utility/ImageLoaderBasic.h"
+//#endif
 
 
 #define b_VERBOSE_PRINT 1
@@ -3774,25 +3774,25 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_    
-	else if (curFileSuffix && ImageLoaderBasic::hasPbdExtension(imgSrcFile) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    else if (curFileSuffix/* && ImageLoaderBasic::hasPbdExtension(imgSrcFile) */) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
-		v3d_msg("prepare for pbd file loading", 0);
-		Image4DSimple *tmpimg=new Image4DSimple;
+//		v3d_msg("prepare for pbd file loading", 0);
+//		Image4DSimple *tmpimg=new Image4DSimple;
 		
-	    ImageLoaderBasic imageLoader;
-	    if (!imageLoader.loadImage(tmpimg, imgSrcFile)) {
-	        printf("Error happens in v3dpbd file reading. Stop. \n");
-	        return false;
-	    }
-	    // The following few lines are to avoid disturbing the existing code below
+//	    ImageLoaderBasic imageLoader;
+//	    if (!imageLoader.loadImage(tmpimg, imgSrcFile)) {
+//	        printf("Error happens in v3dpbd file reading. Stop. \n");
+//	        return false;
+//	    }
+//	    // The following few lines are to avoid disturbing the existing code below
 	    
-	    tmp_data1d = tmpimg->getRawData();
-	    tmp_datatype=tmpimg->getDatatype();
-	    tmp_sz=new V3DLONG[4];
-	    tmp_sz[0]=tmpimg->getXDim();
-	    tmp_sz[1]=tmpimg->getYDim();
-	    tmp_sz[2]=tmpimg->getZDim();
-	    tmp_sz[3]=tmpimg->getCDim();
+//	    tmp_data1d = tmpimg->getRawData();
+//	    tmp_datatype=tmpimg->getDatatype();
+//	    tmp_sz=new V3DLONG[4];
+//	    tmp_sz[0]=tmpimg->getXDim();
+//	    tmp_sz[1]=tmpimg->getYDim();
+//	    tmp_sz[2]=tmpimg->getZDim();
+//	    tmp_sz[3]=tmpimg->getCDim();
 	}
 #endif
 	else if ( curFileSuffix && strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
@@ -4078,12 +4078,12 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
     else if (curFileSuffix &&  (strcasecmp(curFileSuffix, "v3dpbd")==0)) //  v3dpbd - pack-bit-difference encoding for sparse stacks
         // || strcasecmp(curFileSuffix, "mp4")==0) ) //to add mp4 later
     {
-        v3d_msg("prepare for pbd file saving", 0);
-        ImageLoaderBasic imageLoader;
-        if (imageLoader.saveStack2RawPBD(filename, curtype, (unsigned char *)data1d, sz)) {
-            printf("Error happens in v3dpbd file saving. Stop. \n");
-            return false;
-        }
+        //v3d_msg("prepare for pbd file saving", 0);
+//        ImageLoaderBasic imageLoader;
+//        if (imageLoader.saveStack2RawPBD(filename, curtype, (unsigned char *)data1d, sz)) {
+//            printf("Error happens in v3dpbd file saving. Stop. \n");
+//            return false;
+//        }
     }
 #endif
     else //then assume it is Hanchuan's RAW format

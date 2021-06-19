@@ -36,9 +36,9 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     bShowBoundingBox = false;
     bShowBoundingBox2 = false;
 
-    setRenderTextureLast(true); // Everyone draws opaque geometry first.  Why is this not the default?
+    //setRenderTextureLast(true); // Everyone draws opaque geometry first.  Why is this not the default?
 
-    loadObj(); // create display lists for markers
+    //loadObj(); // create display lists for markers
 
     // initial alpha blending mode
     setAlphaBlending(false);
@@ -206,7 +206,7 @@ void RendererNeuronAnnotator::setAlphaBlending(bool b)
         return; // no change
     if (b)
     {
-        makeCurrent();
+        //makeCurrent();
         renderMode = Renderer::rmAlphaBlendingProjection;
         equAlphaBlendingProjection();
     }
@@ -237,7 +237,7 @@ static void linkGLShader(cwc::glShaderManager& SMgr,
                 const char* vertex, const char* fragment)
 {
         glGetError(); // clear error
-        shader = SMgr.loadfromMemory(vertex, fragment);
+        //shader = SMgr.loadfromMemory(vertex, fragment);
         if (shader==0)
         {
            qDebug() << "Renderer_gl2::init:  Error Loading, compiling or linking shader\n";
@@ -248,16 +248,16 @@ static void linkGLShader(cwc::glShaderManager& SMgr,
 /* virtual */
 void RendererNeuronAnnotator::cleanShader()
 {
-    makeCurrent();
+    //makeCurrent();
     texColormap = 0; // Don't let cleanShader() delete our colomap texture
-    Renderer_gl2::cleanShader();
+    //Renderer_gl2::cleanShader();
 }
 
 /* virtual */
 void RendererNeuronAnnotator::loadShader()
 {
     // qDebug() << "RendererNeuronAnnotator::loadShader()";
-    makeCurrent(); //ensure right context when multiple views animation or mouse drop
+    //makeCurrent(); //ensure right context when multiple views animation or mouse drop
     cleanShader(); //090705
 
     try {
@@ -311,38 +311,38 @@ void RendererNeuronAnnotator::loadShader()
 
 void RendererNeuronAnnotator::shaderTexBegin(bool stream)
 {
-    makeCurrent();
+    //makeCurrent();
         shader = (texture_unit0_3D && !stream)? shaderTex3D : shaderTex2D;
 
         int format_bgra = (stream && pbo_image_format==GL_BGRA)? 1:0;
 
         if (tryVolShader && shader && !b_selecting)
         {
-                shader->begin(); //must before setUniform
-                shader->setUniform1i("volume",   0); //GL_TEXTURE0
-                shader->setUniform1i("colormap", 1); //GL_TEXTURE1, 2D
-                shader->setUniform1i("neuronVisibility", 2); // GL_TEXTURE2, 2D 256x256 neuron index
-                shader->setUniform1i("neuronLabel", 3);
+//                shader->begin(); //must before setUniform
+//                shader->setUniform1i("volume",   0); //GL_TEXTURE0
+//                shader->setUniform1i("colormap", 1); //GL_TEXTURE1, 2D
+//                shader->setUniform1i("neuronVisibility", 2); // GL_TEXTURE2, 2D 256x256 neuron index
+//                shader->setUniform1i("neuronLabel", 3);
 
-                // float n = FILL_CHANNEL-1; // 0-based
-                float n = 4.0;
-                shader->setUniform4f("channel", 0.0/n, 1.0/n, 2.0/n, 3.0/n);
-                shader->setUniform1i("blend_mode", renderMode);
-                shader->setUniform1i("format_bgra", format_bgra);
+//                // float n = FILL_CHANNEL-1; // 0-based
+//                float n = 4.0;
+//                shader->setUniform4f("channel", 0.0/n, 1.0/n, 2.0/n, 3.0/n);
+//                shader->setUniform1i("blend_mode", renderMode);
+//                shader->setUniform1i("format_bgra", format_bgra);
 
                 // Define clip planes
                 for (int p = 0; p < customClipPlanes.size(); ++p)
                 {
                     const double* v = &customClipPlanes[p][0];
                     QString varStr = QString("clipPlane[%1]").arg(p);
-                    shader->setUniform4f(varStr.toStdString().c_str(), v[0], v[1], v[2], v[3]);
+                    //shader->setUniform4f(varStr.toStdString().c_str(), v[0], v[1], v[2], v[3]);
                 }
 
                 // And KEEP plane (for microCT)
                 // double keep[] = {-1,0,0,0.5}; // testing
                 // double keep[] = {0,0,0,0}; // keep nothing
                 const double* kpd = &keepPlane[0];
-                shader->setUniform4f("keepPlane", kpd[0], kpd[1], kpd[2], kpd[3]);
+                //shader->setUniform4f("keepPlane", kpd[0], kpd[1], kpd[2], kpd[3]);
 
                 glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
                 glEnable(GL_TEXTURE_2D);
@@ -368,7 +368,7 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
 
 void RendererNeuronAnnotator::shaderTexEnd()
 {
-    makeCurrent();
+    //makeCurrent();
         if (tryVolShader && shader && !b_selecting)
         {
                 // off colormap
@@ -392,7 +392,7 @@ void RendererNeuronAnnotator::shaderTexEnd()
 
 void RendererNeuronAnnotator::equAlphaBlendingProjection()
 {
-    makeCurrent();
+    //makeCurrent();
     // qDebug() << "RendererNeuronAnnotator::equAlphaBlendingProjection()";
 
     // Renderer_gl2::equAlphaBlendingProjection();
@@ -503,7 +503,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(
         double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
         // [0, 1] ==> [+1, -1]*(s)
         clipplane[3] = viewClip;
-        ViewPlaneToModel(markerViewMatrix, clipplane);
+        //ViewPlaneToModel(markerViewMatrix, clipplane);
 
         float selectval = 0;
         int selectchno = 0;
@@ -651,7 +651,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(
 
 void RendererNeuronAnnotator::loadVol()
 {
-    makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
+    //makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
     // Renderer_gl1::loadVol();
     cleanVol(); // 081006: move to before setting imageX/Y/Z, 090705 move to first line
@@ -912,13 +912,13 @@ int RendererNeuronAnnotator::_getTexFillSize(int w)
 /* virtual */
 void RendererNeuronAnnotator::cleanVol()
 {
-    makeCurrent();
+    //makeCurrent();
     // I manage the texture memory, not you.  So set to NULL before you get a chance to clear it.
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
     tex3D = 0;
     texColormap = 0;
-    Renderer_gl1::cleanVol();
+    //Renderer_gl1::cleanVol();
 }
 
 
@@ -930,7 +930,7 @@ void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
                 GLuint tex3D, GLuint texs[], int stack_i,
                 float direction, int section, bool b_tex3d, bool b_stream)
 {
-    makeCurrent();
+    //makeCurrent();
         //qDebug("		s(%g-%g)h(%g-%g)w(%g-%g)", s0,s1, h0,h1, w0,w1);
         if ((s1-s0<0)||(h1-h0<0)||(w1-w0<0)) return; // no draw
         if (thickness <1) return; // only support thickness>=1
@@ -1122,14 +1122,14 @@ void RendererNeuronAnnotator::renderVol()
     // tex3D is not a pointer, but a texture id
     if ( (0 == tex3D) && (NULL == Ztex_list) )
         return;
-    makeCurrent();
-    Renderer_gl1::renderVol();
+    //makeCurrent();
+    //Renderer_gl1::renderVol();
 }
 
 // Copied from Renderer_gl1::paint() 27 Sep 2011 CMB
 void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
 {
-    makeCurrent();
+    //makeCurrent();
         // turn_off_specular();
         //qDebug(" Renderer_gl1::paint(renderMode=%i)", renderMode);
 
@@ -1307,7 +1307,7 @@ void RendererNeuronAnnotator::setShowCornerAxes(bool b)
 // Draw a yellow line accross the screen for setting user clip plane
 void RendererNeuronAnnotator::paintClipGuide()
 {
-    makeCurrent();
+    //makeCurrent();
     glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -1337,7 +1337,7 @@ void RendererNeuronAnnotator::paintClipGuide()
 
 void RendererNeuronAnnotator::paintCornerAxes()
 {
-    makeCurrent();
+    //makeCurrent();
     // Keep rotation of scene, but not scale nor translation.
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();

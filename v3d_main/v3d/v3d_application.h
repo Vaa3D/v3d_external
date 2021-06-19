@@ -73,12 +73,12 @@ public:
     }
 
     static void handleCloseEvent(QCloseEvent* event) {
-        mainWindow->handleCoordinatedCloseEvent(event);
+        //mainWindow->handleCoordinatedCloseEvent(event);
 
 #ifdef _ALLOW_WORKMODE_MENU_
-        if (naMainWindow!=0) {
-            naMainWindow->handleCoordinatedCloseEvent(event);
-        }
+//        if (naMainWindow!=0) {
+//            naMainWindow->handleCoordinatedCloseEvent(event);
+//        }
 #endif
 
         QCoreApplication::postEvent(theApp, new QEvent(QEvent::Quit)); // this more OK
@@ -101,10 +101,10 @@ public:
         }
 
 #ifdef _ALLOW_WORKMODE_MENU_
-        if (naMainWindow!=0) {
-            naMainWindow->setV3DDefaultModeCheck(true);
-        }
-        mainWindow->setV3DDefaultModeCheck(true);
+//        if (naMainWindow!=0) {
+//            naMainWindow->setV3DDefaultModeCheck(true);
+//        }
+//        mainWindow->setV3DDefaultModeCheck(true);
 #endif
     }
 
@@ -114,10 +114,10 @@ public:
             mainWindowIsActive=false;
         }
 #ifdef _ALLOW_WORKMODE_MENU_
-        mainWindow->setV3DDefaultModeCheck(false);
-        if (naMainWindow!=0) {
-            naMainWindow->setV3DDefaultModeCheck(false);
-        }
+//        mainWindow->setV3DDefaultModeCheck(false);
+//        if (naMainWindow!=0) {
+//            naMainWindow->setV3DDefaultModeCheck(false);
+//        }
 #endif
     }
 

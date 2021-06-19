@@ -10,14 +10,14 @@ class ZoomWidget : public QWidget, public Ui::ZoomWidget
 public:
     explicit ZoomWidget(QWidget *parent = 0);
 
-signals:
+//signals:
     void zoomValueChanged(qreal zoomValue);
 
-public slots:
+//public slots:
     void setZoomValue(qreal doubleValue);
     void reset();
 
-protected slots:
+//protected slots:
     void onDialValueChanged(int);
     void onSpinBoxValueChanged(qreal);
 };

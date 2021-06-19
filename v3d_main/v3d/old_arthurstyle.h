@@ -44,16 +44,14 @@
 
 #include "../v3d/v3d_compile_constraints.h"
 
-#if defined(USE_Qt5)
-#include <QProxyStyle> //by PHC 20200129
-#else
-#include <QWindowsStyle> //by PHC 20200129
-#endif
 
-//@ADD: 2020-2-9 RZC
-#if defined(USE_Qt5)
-    #define  QWindowsStyle  QProxyStyle
-#endif
+#include <QProxyStyle> //by PHC 20200129
+
+
+
+
+#define  QWindowsStyle  QProxyStyle
+
 
 QT_USE_NAMESPACE
 

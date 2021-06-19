@@ -11,7 +11,7 @@
 // interactive select compartment
 class CompartmentMapWidget : public V3dR_GLWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     CompartmentMapWidget(QWidget* parent);
@@ -22,10 +22,10 @@ public:
     void setComboBox(CompartmentMapComboBox *compartmentComboBox);
     void setCurrentIndex(int row, bool flag);
 
-signals:
+//signals:
     void viscomp3dview(const QList <LabelSurf>);
 
-public slots:
+//public slots:
     void switchCompartment(int num);
     void setRotation(const Rotation3D&);
     void setFocus(const Vector3D& f);

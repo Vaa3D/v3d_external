@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <QtGui>
 #endif
-
+#include <QCheckBox>
 #include <QNetworkReply>
 // #include <QXmlSchema> // Qt 4.6 or later only
 #include <QtXml>
@@ -52,7 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QDebug>
 #include <QMessageBox>
 #include <QPalette>
-
+#include <QTextEdit>
 namespace v3d {
     // Set current version here.
 

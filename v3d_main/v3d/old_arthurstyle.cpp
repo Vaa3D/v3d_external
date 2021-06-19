@@ -50,11 +50,12 @@
 #include <QStyleOption>
 #include <QtDebug>
 #include <QtGlobal>
-
+#include <QPixmapCache>
+#include <QFontMetrics>
 QPixmap cached(const QString &img)
 {
-    if (QPixmap *p = QPixmapCache::find(img))
-        return *p;
+//    if (QPixmap *p = QPixmapCache::find(img))
+//        return *p;
 
     QPixmap pm;
     pm = QPixmap::fromImage(QImage(img), Qt::OrderedDither | Qt::OrderedAlphaDither);
@@ -67,9 +68,9 @@ QPixmap cached(const QString &img)
 
 
 //@ADD: 2020-2-9 RZC
-#if defined(USE_Qt5)
-    #define  QWindowsStyle  QProxyStyle
-#endif
+
+#define  QWindowsStyle  QProxyStyle
+
 // #ifdef USE_Qt5
 // ArthurStyle::ArthurStyle()
 //     : QProxyStyle() //by PHC 2020/01/31
@@ -83,9 +84,9 @@ QPixmap cached(const QString &img)
 ArthurStyle::ArthurStyle()
 	: QWindowsStyle() //by PHC 2020/01/31
 {
-#ifndef USE_Qt5
-	Q_INIT_RESOURCE(shared); //commented 20200201 by PHC as in QT5 it is found yet
-#endif
+
+//Q_INIT_RESOURCE(shared); //commented 20200201 by PHC as in QT5 it is found yet
+
 }
 
 //#endif
@@ -182,76 +183,76 @@ void ArthurStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
         }
         break;
 
-    case PE_FrameGroupBox:
-        if (const QStyleOptionFrameV2 *group
-                = qstyleoption_cast<const QStyleOptionFrameV2 *>(option)) {
-            const QRect &r = group->rect;
+//    case PE_FrameGroupBox:
+//        if (const QStyleOptionFrameV2 *group
+//                = qstyleoption_cast<const QStyleOptionFrameV2 *>(option)) {
+//            const QRect &r = group->rect;
 
-            painter->save();
-            int radius = 14;
-            int radius2 = radius*2;
-            QPainterPath clipPath;
-            clipPath.moveTo(radius, 0);
-            clipPath.arcTo(r.right() - radius2, 0, radius2, radius2, 90, -90);
-            clipPath.arcTo(r.right() - radius2, r.bottom() - radius2, radius2, radius2, 0, -90);
-            clipPath.arcTo(r.left(), r.bottom() - radius2, radius2, radius2, 270, -90);
-            clipPath.arcTo(r.left(), r.top(), radius2, radius2, 180, -90);
-            painter->setClipPath(clipPath);
-            QPixmap titleStretch = cached(":res/images/title_stretch.png");
-            QPixmap topLeft = cached(":res/images/groupframe_topleft.png");
-            QPixmap topRight = cached(":res/images/groupframe_topright.png");
-            QPixmap bottomLeft = cached(":res/images/groupframe_bottom_left.png");
-            QPixmap bottomRight = cached(":res/images/groupframe_bottom_right.png");
-            QPixmap leftStretch = cached(":res/images/groupframe_left_stretch.png");
-            QPixmap topStretch = cached(":res/images/groupframe_top_stretch.png");
-            QPixmap rightStretch = cached(":res/images/groupframe_right_stretch.png");
-            QPixmap bottomStretch = cached(":res/images/groupframe_bottom_stretch.png");
-            QLinearGradient lg(0, 0, 0, r.height());
-            lg.setColorAt(0, QColor(224,224,224));
-            lg.setColorAt(1, QColor(255,255,255));
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(lg);
-            painter->drawRect(r.adjusted(0, titleStretch.height()/2, 0, 0));
-            painter->setClipping(false);
+//            painter->save();
+//            int radius = 14;
+//            int radius2 = radius*2;
+//            QPainterPath clipPath;
+//            clipPath.moveTo(radius, 0);
+//            clipPath.arcTo(r.right() - radius2, 0, radius2, radius2, 90, -90);
+//            clipPath.arcTo(r.right() - radius2, r.bottom() - radius2, radius2, radius2, 0, -90);
+//            clipPath.arcTo(r.left(), r.bottom() - radius2, radius2, radius2, 270, -90);
+//            clipPath.arcTo(r.left(), r.top(), radius2, radius2, 180, -90);
+//            painter->setClipPath(clipPath);
+//            QPixmap titleStretch = cached(":res/images/title_stretch.png");
+//            QPixmap topLeft = cached(":res/images/groupframe_topleft.png");
+//            QPixmap topRight = cached(":res/images/groupframe_topright.png");
+//            QPixmap bottomLeft = cached(":res/images/groupframe_bottom_left.png");
+//            QPixmap bottomRight = cached(":res/images/groupframe_bottom_right.png");
+//            QPixmap leftStretch = cached(":res/images/groupframe_left_stretch.png");
+//            QPixmap topStretch = cached(":res/images/groupframe_top_stretch.png");
+//            QPixmap rightStretch = cached(":res/images/groupframe_right_stretch.png");
+//            QPixmap bottomStretch = cached(":res/images/groupframe_bottom_stretch.png");
+//            QLinearGradient lg(0, 0, 0, r.height());
+//            lg.setColorAt(0, QColor(224,224,224));
+//            lg.setColorAt(1, QColor(255,255,255));
+//            painter->setPen(Qt::NoPen);
+//            painter->setBrush(lg);
+//            painter->drawRect(r.adjusted(0, titleStretch.height()/2, 0, 0));
+//            painter->setClipping(false);
 
-            int topFrameOffset = titleStretch.height()/2 - 2;
-            painter->drawPixmap(r.topLeft() + QPoint(0, topFrameOffset), topLeft);
-            painter->drawPixmap(r.topRight() - QPoint(topRight.width()-1, 0)
-                                + QPoint(0, topFrameOffset), topRight);
-            painter->drawPixmap(r.bottomLeft() - QPoint(0, bottomLeft.height()-1), bottomLeft);
-            painter->drawPixmap(r.bottomRight() - QPoint(bottomRight.width()-1,
-                                bottomRight.height()-1), bottomRight);
+//            int topFrameOffset = titleStretch.height()/2 - 2;
+//            painter->drawPixmap(r.topLeft() + QPoint(0, topFrameOffset), topLeft);
+//            painter->drawPixmap(r.topRight() - QPoint(topRight.width()-1, 0)
+//                                + QPoint(0, topFrameOffset), topRight);
+//            painter->drawPixmap(r.bottomLeft() - QPoint(0, bottomLeft.height()-1), bottomLeft);
+//            painter->drawPixmap(r.bottomRight() - QPoint(bottomRight.width()-1,
+//                                bottomRight.height()-1), bottomRight);
 
-            QRect left = r;
-            left.setY(r.y() + topLeft.height() + topFrameOffset);
-            left.setWidth(leftStretch.width());
-            left.setHeight(r.height() - topLeft.height() - bottomLeft.height() - topFrameOffset);
-            painter->drawTiledPixmap(left, leftStretch);
+//            QRect left = r;
+//            left.setY(r.y() + topLeft.height() + topFrameOffset);
+//            left.setWidth(leftStretch.width());
+//            left.setHeight(r.height() - topLeft.height() - bottomLeft.height() - topFrameOffset);
+//            painter->drawTiledPixmap(left, leftStretch);
 
-            QRect top = r;
-            top.setX(r.x() + topLeft.width());
-            top.setY(r.y() + topFrameOffset);
-            top.setWidth(r.width() - topLeft.width() - topRight.width());
-            top.setHeight(topLeft.height());
-            painter->drawTiledPixmap(top, topStretch);
+//            QRect top = r;
+//            top.setX(r.x() + topLeft.width());
+//            top.setY(r.y() + topFrameOffset);
+//            top.setWidth(r.width() - topLeft.width() - topRight.width());
+//            top.setHeight(topLeft.height());
+//            painter->drawTiledPixmap(top, topStretch);
 
-            QRect right = r;
-            right.setX(r.right() - rightStretch.width()+1);
-            right.setY(r.y() + topRight.height() + topFrameOffset);
-            right.setWidth(rightStretch.width());
-            right.setHeight(r.height() - topRight.height()
-                            - bottomRight.height() - topFrameOffset);
-            painter->drawTiledPixmap(right, rightStretch);
+//            QRect right = r;
+//            right.setX(r.right() - rightStretch.width()+1);
+//            right.setY(r.y() + topRight.height() + topFrameOffset);
+//            right.setWidth(rightStretch.width());
+//            right.setHeight(r.height() - topRight.height()
+//                            - bottomRight.height() - topFrameOffset);
+//            painter->drawTiledPixmap(right, rightStretch);
 
-            QRect bottom = r;
-            bottom.setX(r.x() + bottomLeft.width());
-            bottom.setY(r.bottom() - bottomStretch.height()+1);
-            bottom.setWidth(r.width() - bottomLeft.width() - bottomRight.width());
-            bottom.setHeight(bottomLeft.height());
-            painter->drawTiledPixmap(bottom, bottomStretch);
-            painter->restore();
-        }
-        break;
+//            QRect bottom = r;
+//            bottom.setX(r.x() + bottomLeft.width());
+//            bottom.setY(r.bottom() - bottomStretch.height()+1);
+//            bottom.setWidth(r.width() - bottomLeft.width() - bottomRight.width());
+//            bottom.setHeight(bottomLeft.height());
+//            painter->drawTiledPixmap(bottom, bottomStretch);
+//            painter->restore();
+//        }
+//        break;
 
     default:
 #ifdef Q_OS_MAC // MK, Feb, 2020
@@ -312,8 +313,8 @@ void ArthurStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
                 QPixmap titleLeft = cached(":res/images/title_cap_left.png");
                 QPixmap titleRight = cached(":res/images/title_cap_right.png");
                 QPixmap titleStretch = cached(":res/images/title_stretch.png");
-                int txt_width = groupBox->fontMetrics.width(groupBox->text) + 20;
-                painter->drawPixmap(r.center().x() - txt_width/2, 0, titleLeft);
+                //int txt_width = groupBox->fontMetrics.width(groupBox->text) + 20;
+               // painter->drawPixmap(r.center().x() - txt_width/2, 0, titleLeft);
                 QRect tileRect = subControlRect(control, groupBox, SC_GroupBoxLabel, widget);
                 painter->drawTiledPixmap(tileRect, titleStretch);
                 painter->drawPixmap(tileRect.x() + tileRect.width(), 0, titleRight);
@@ -381,10 +382,10 @@ QRect ArthurStyle::subControlRect(ComplexControl control, const QStyleOptionComp
                 QPixmap titleLeft = cached(":res/images/title_cap_left.png");
                 QPixmap titleRight = cached(":res/images/title_cap_right.png");
                 QPixmap titleStretch = cached(":res/images/title_stretch.png");
-                int txt_width = group->fontMetrics.width(group->text) + 20;
-                rect = QRect(group->rect.center().x() - txt_width/2 + titleLeft.width(), 0,
-                             txt_width - titleLeft.width() - titleRight.width(),
-                             titleStretch.height());
+               // int txt_width = group->fontMetrics.width(group->text) + 20;
+               // rect = QRect(group->rect.center().x() - txt_width/2 + titleLeft.width(), 0,
+                            // txt_width - titleLeft.width() - titleRight.width(),
+                             //titleStretch.height());
                 break;
             }
         }
@@ -447,9 +448,9 @@ void ArthurStyle::polish(QWidget *widget)
     if (widget->layout() && qobject_cast<QGroupBox *>(widget)) {
         if (widget->findChildren<QGroupBox *>().size() == 0) {  //by PHC 20200131
             widget->layout()->setSpacing(0);
-            widget->layout()->setMargin(12);
+           // widget->layout()->setMargin(12);
         } else {
-            widget->layout()->setMargin(13);
+           // widget->layout()->setMargin(13);
         }
     }
 
@@ -461,7 +462,7 @@ void ArthurStyle::polish(QWidget *widget)
 
     QPalette pal = widget->palette();
     if (widget->isWindow()) {
-        pal.setColor(QPalette::Background, QColor(241, 241, 241));
+       // pal.setColor(QPalette::Background, QColor(241, 241, 241));
         widget->setPalette(pal);
     }
 
@@ -478,7 +479,7 @@ void ArthurStyle::unpolish(QWidget *widget)
 
 void ArthurStyle::polish(QPalette &palette)
 {
-    palette.setColor(QPalette::Background, QColor(241, 241, 241));
+   // palette.setColor(QPalette::Background, QColor(241, 241, 241));
 }
 
 QRect ArthurStyle::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const

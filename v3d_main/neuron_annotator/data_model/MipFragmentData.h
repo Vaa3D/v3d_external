@@ -12,12 +12,12 @@
 // TODO - deprecate MipData class in favor of MipFragmentData
 class MipFragmentData : public NaLockableData
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit MipFragmentData(const NaVolumeData& volumeDataParam);
     virtual ~MipFragmentData();
 
-public slots:
+//public slots:
     void updateFromVolumeData();
 
 private:

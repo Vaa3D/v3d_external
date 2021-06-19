@@ -13,7 +13,7 @@ class Entity;
 
 class AnnotatedBranchTreeModel : public EntityTreeModel
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     AnnotatedBranchTreeModel(AnnotatedBranch *annotatedBranch, QObject *parent = 0);

@@ -19,12 +19,12 @@ class Entity;
 //
 class ConsoleObserver : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit ConsoleObserver(NaMainWindow *mainWindow = 0, QObject *parent = 0);
     void loadOntology(qint64 rootId);
 
-signals:
+//signals:
     // These signals are emitted when a processed console event triggers an action
     void openOntology(Ontology *ontology);
     void openAnnotatedBranch(AnnotatedBranch *annotatedBranch);
@@ -36,7 +36,7 @@ signals:
     void updateCurrentSample(Entity *sample);
     void openStackWithVaa3d(Entity* entity);
 
-public slots:
+//public slots:
     // These slots implement the console observer interface.
     // They are called by the console observer service whenever
     // a new event is received from the console.
@@ -49,7 +49,7 @@ public slots:
     void sessionSelected(qint64 sessionId);
     void sessionDeselected();
 
-private slots:
+//private slots:
     // These slots are for listening to internal worker threads
     void annotatedBranchViewRequested(qint64 entityId);
     void loadOntologyResults(const void *results);

@@ -4,7 +4,7 @@
 #include <QString>
 #include <QtCore>
 #include <QDir>
-#include <QRegExp>
+//#include <QRegExp>
 #include "../../v3d/v3d_core.h"
 
 using namespace std;
@@ -40,7 +40,7 @@ private:
     QString outputFile;
     My4DImage* consolidatedMask;
     QStringList maskFileList;
-    QRegExp maskFileRegExp;
+    //QRegExp maskFileRegExp;
     int maskSizeX;
     int maskSizeY;
     int maskSizeZ;

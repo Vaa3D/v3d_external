@@ -1,6 +1,6 @@
 #include "EntityAdapter.h"
 #include <QtGui>
-
+#include <QRegion>
 EntityAdapter::EntityAdapter() {
 
     keyNameMap_Java2Qt.insert("ctrl","Meta"); // Qt names these two keys
@@ -58,7 +58,7 @@ EntityAdapter::EntityAdapter() {
 
 QString EntityAdapter::convertKeyBind(QString & javaKeyBind)
 {
-    QStringList list = javaKeyBind.split(QRegExp("\\s+"),QString::SkipEmptyParts);
+    QStringList list = javaKeyBind.split(("\\s+"));
 
     bool shiftPressed = false;
 
@@ -101,128 +101,128 @@ EntityAdapter &EntityAdapter::get()
   return obj;
 }
 
-EntityData* EntityAdapter::convert(cds::fw__entityData *fwEntityData, Entity *parent)
-{
+//EntityData* EntityAdapter::convert(cds::fw__entityData *fwEntityData, Entity *parent)
+//{
 
-    EntityData *entityData = new EntityData();
+//    EntityData *entityData = new EntityData();
 
-    if (fwEntityData->guid != NULL) entityData->id = new qint64(*fwEntityData->guid);
-    if (fwEntityData->orderIndex != NULL) entityData->orderIndex = new qint64(*fwEntityData->orderIndex);
-    if (fwEntityData->entityAttribute != NULL) entityData->attributeName = new QString(fwEntityData->entityAttribute->c_str());
-    if (fwEntityData->value != NULL) entityData->value = new QString(fwEntityData->value->c_str());
-    if (fwEntityData->user != NULL) entityData->user = new QString(fwEntityData->user->c_str());
+//    if (fwEntityData->guid != NULL) entityData->id = new qint64(*fwEntityData->guid);
+//    if (fwEntityData->orderIndex != NULL) entityData->orderIndex = new qint64(*fwEntityData->orderIndex);
+//    if (fwEntityData->entityAttribute != NULL) entityData->attributeName = new QString(fwEntityData->entityAttribute->c_str());
+//    if (fwEntityData->value != NULL) entityData->value = new QString(fwEntityData->value->c_str());
+//    if (fwEntityData->user != NULL) entityData->user = new QString(fwEntityData->user->c_str());
 
-    entityData->parentEntity = parent;
+//    entityData->parentEntity = parent;
 
-    if (fwEntityData->childEntity != NULL)
-    {
-        // Recursively convert children
-        entityData->childEntity = convert(fwEntityData->childEntity);
-    }
+//    if (fwEntityData->childEntity != NULL)
+//    {
+//        // Recursively convert children
+//        entityData->childEntity = convert(fwEntityData->childEntity);
+//    }
 
-    return entityData;
-}
+//    return entityData;
+//}
 
-Entity* EntityAdapter::convert(cds::fw__entity *fwEntity)
-{
-    Entity *entity = new Entity();
+//Entity* EntityAdapter::convert(cds::fw__entity *fwEntity)
+//{
+//    Entity *entity = new Entity();
 
-    if (fwEntity->guid != NULL) entity->id = new qint64(*fwEntity->guid);
-    if (fwEntity->name != NULL) entity->name = new QString(fwEntity->name->c_str());
-    if (fwEntity->user != NULL) entity->user = new QString(fwEntity->user->c_str());
-    if (fwEntity->entityType != NULL) entity->entityType = new QString(fwEntity->entityType->c_str());
-    if (fwEntity->entityStatus != NULL) entity->entityStatus = new QString(fwEntity->entityStatus->c_str());
+//    if (fwEntity->guid != NULL) entity->id = new qint64(*fwEntity->guid);
+//    if (fwEntity->name != NULL) entity->name = new QString(fwEntity->name->c_str());
+//    if (fwEntity->user != NULL) entity->user = new QString(fwEntity->user->c_str());
+//    if (fwEntity->entityType != NULL) entity->entityType = new QString(fwEntity->entityType->c_str());
+//    if (fwEntity->entityStatus != NULL) entity->entityStatus = new QString(fwEntity->entityStatus->c_str());
 
-    if (fwEntity->entityDataSet != NULL)
-    {
-        entity->entityDataSet.clear();
-        std::vector<class cds::fw__entityData *> children = fwEntity->entityDataSet->entityData;
+//    if (fwEntity->entityDataSet != NULL)
+//    {
+//        entity->entityDataSet.clear();
+//        std::vector<class cds::fw__entityData *> children = fwEntity->entityDataSet->entityData;
 
-        for (int c = 0; c < children.size(); ++c)
-        {
-            cds::fw__entityData *childED = children[c];
-            EntityData *entityData = convert(childED, entity);
-            entity->entityDataSet.insert(entityData);
-        }
-    }
+//        for (int c = 0; c < children.size(); ++c)
+//        {
+//            cds::fw__entityData *childED = children[c];
+//            EntityData *entityData = convert(childED, entity);
+//            entity->entityDataSet.insert(entityData);
+//        }
+//    }
 
-    return entity;
-}
+//    return entity;
+//}
 
-QList<Entity *>* EntityAdapter::convert(cds::fw__entityArray *array)
-{
-    QList<Entity *> *list = new QList<Entity *>;
-    if (array == NULL) return list;
-    std::vector<cds::fw__entity *> items = array->item;
-    for (int c = 0; c < items.size(); ++c)
-    {
-        list->append(convert(items[c]));
-    }
-    return list;
-}
+//QList<Entity *>* EntityAdapter::convert(cds::fw__entityArray *array)
+//{
+//    QList<Entity *> *list = new QList<Entity *>;
+//    if (array == NULL) return list;
+//    std::vector<cds::fw__entity *> items = array->item;
+//    for (int c = 0; c < items.size(); ++c)
+//    {
+//        list->append(convert(items[c]));
+//    }
+//    return list;
+//}
 
-QList<EntityData *>* EntityAdapter::convert(cds::fw__entityDataArray *array)
-{
-    QList<EntityData *> *list = new QList<EntityData *>;
-    if (array == NULL) return list;
-    std::vector<cds::fw__entityData *> items = array->item;
-    for (int c = 0; c < items.size(); ++c)
-    {
-        list->append(convert(items[c], NULL));
-    }
-    return list;
-}
+//QList<EntityData *>* EntityAdapter::convert(cds::fw__entityDataArray *array)
+//{
+//    QList<EntityData *> *list = new QList<EntityData *>;
+//    if (array == NULL) return list;
+//    std::vector<cds::fw__entityData *> items = array->item;
+//    for (int c = 0; c < items.size(); ++c)
+//    {
+//        list->append(convert(items[c], NULL));
+//    }
+//    return list;
+//}
 
-QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings *keyBindings)
-{
-    QMap<QKeySequence, qint64> *map = new QMap<QKeySequence, qint64>();
-    if (keyBindings->keyBindingSet == NULL) return map;
+//QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings *keyBindings)
+//{
+//    QMap<QKeySequence, qint64> *map = new QMap<QKeySequence, qint64>();
+//    if (keyBindings->keyBindingSet == NULL) return map;
 
-    std::vector<class cds::fw__ontologyKeyBind *> bindVector = keyBindings->keyBindingSet->keyBinding;
-    for (int c = 0; c < bindVector.size(); ++c)
-    {
-        cds::fw__ontologyKeyBind *keyBind = bindVector[c];
-        if (keyBind->key != NULL && keyBind->ontologyTermId != NULL)
-        {
-            QString javaKeyBind(QString::fromStdString(*keyBind->key));
-            QString qtKeyBind(get().convertKeyBind(javaKeyBind));
-            qint64 termId(*keyBind->ontologyTermId);
-            QKeySequence keySeq(qtKeyBind, QKeySequence::PortableText); 
-            map->insert(keySeq, termId);
-        }
-    }
-    return map;
-}
+//    std::vector<class cds::fw__ontologyKeyBind *> bindVector = keyBindings->keyBindingSet->keyBinding;
+//    for (int c = 0; c < bindVector.size(); ++c)
+//    {
+//        cds::fw__ontologyKeyBind *keyBind = bindVector[c];
+//        if (keyBind->key != NULL && keyBind->ontologyTermId != NULL)
+//        {
+//            QString javaKeyBind(QString::fromStdString(*keyBind->key));
+//            QString qtKeyBind(get().convertKeyBind(javaKeyBind));
+//            qint64 termId(*keyBind->ontologyTermId);
+//            QKeySequence keySeq(qtKeyBind, QKeySequence::PortableText);
+//            map->insert(keySeq, termId);
+//        }
+//    }
+//    return map;
+//}
 
-OntologyAnnotation* EntityAdapter::convert(cds::fw__ontologyAnnotation *fwAnnotation)
-{
-    OntologyAnnotation *annotation = new OntologyAnnotation;
-    if (fwAnnotation->sessionId != NULL) annotation->sessionId = new qint64(*fwAnnotation->sessionId);
-    if (fwAnnotation->targetEntityId != NULL) annotation->targetEntityId = new qint64(*fwAnnotation->targetEntityId);
-    if (fwAnnotation->keyEntityId != NULL) annotation->keyEntityId = new qint64(*fwAnnotation->keyEntityId);
-    if (fwAnnotation->keyString != NULL) annotation->keyString = new QString(fwAnnotation->keyString->c_str());
-    if (fwAnnotation->valueEntityId != NULL) annotation->valueEntityId = new qint64(*fwAnnotation->valueEntityId);
-    if (fwAnnotation->valueString != NULL) annotation->valueString = new QString(fwAnnotation->valueString->c_str());
-    return annotation;
-}
+//OntologyAnnotation* EntityAdapter::convert(cds::fw__ontologyAnnotation *fwAnnotation)
+//{
+//    OntologyAnnotation *annotation = new OntologyAnnotation;
+//    if (fwAnnotation->sessionId != NULL) annotation->sessionId = new qint64(*fwAnnotation->sessionId);
+//    if (fwAnnotation->targetEntityId != NULL) annotation->targetEntityId = new qint64(*fwAnnotation->targetEntityId);
+//    if (fwAnnotation->keyEntityId != NULL) annotation->keyEntityId = new qint64(*fwAnnotation->keyEntityId);
+//    if (fwAnnotation->keyString != NULL) annotation->keyString = new QString(fwAnnotation->keyString->c_str());
+//    if (fwAnnotation->valueEntityId != NULL) annotation->valueEntityId = new qint64(*fwAnnotation->valueEntityId);
+//    if (fwAnnotation->valueString != NULL) annotation->valueString = new QString(fwAnnotation->valueString->c_str());
+//    return annotation;
+//}
 
-cds::fw__ontologyAnnotation* EntityAdapter::convert(OntologyAnnotation* annotation)
-{
-    cds::fw__ontologyAnnotation *fwAnnotation = new cds::fw__ontologyAnnotation;
-    if (annotation->sessionId != NULL) fwAnnotation->sessionId = (LONG64 *)new qint64(*annotation->sessionId);
-    if (annotation->targetEntityId != NULL) fwAnnotation->targetEntityId =(LONG64 *) new qint64(*annotation->targetEntityId);
-    if (annotation->keyEntityId != NULL) fwAnnotation->keyEntityId = (LONG64 *)new qint64(*annotation->keyEntityId);
-    if (annotation->keyString != NULL) fwAnnotation->keyString = new std::string(annotation->keyString->toStdString());
-    if (annotation->valueEntityId != NULL) fwAnnotation->valueEntityId = (LONG64 *)new qint64(*annotation->valueEntityId);
-    if (annotation->valueString != NULL) fwAnnotation->valueString = new std::string(annotation->valueString->toStdString());
-    return fwAnnotation;
-}
+//cds::fw__ontologyAnnotation* EntityAdapter::convert(OntologyAnnotation* annotation)
+//{
+//    cds::fw__ontologyAnnotation *fwAnnotation = new cds::fw__ontologyAnnotation;
+//    if (annotation->sessionId != NULL) fwAnnotation->sessionId = (LONG64 *)new qint64(*annotation->sessionId);
+//    if (annotation->targetEntityId != NULL) fwAnnotation->targetEntityId =(LONG64 *) new qint64(*annotation->targetEntityId);
+//    if (annotation->keyEntityId != NULL) fwAnnotation->keyEntityId = (LONG64 *)new qint64(*annotation->keyEntityId);
+//    if (annotation->keyString != NULL) fwAnnotation->keyString = new std::string(annotation->keyString->toStdString());
+//    if (annotation->valueEntityId != NULL) fwAnnotation->valueEntityId = (LONG64 *)new qint64(*annotation->valueEntityId);
+//    if (annotation->valueString != NULL) fwAnnotation->valueString = new std::string(annotation->valueString->toStdString());
+//    return fwAnnotation;
+//}
 
-AnnotationSession* EntityAdapter::convert(cds::fw__annotationSession *fwAnnotationSession)
-{
-    AnnotationSession *annotationSession = new AnnotationSession;
-    if (fwAnnotationSession->id != NULL) annotationSession->sessionId = new qint64(*fwAnnotationSession->id);
-    if (fwAnnotationSession->name != NULL) annotationSession->name = new QString(fwAnnotationSession->name->c_str());
-    if (fwAnnotationSession->owner != NULL) annotationSession->owner = new QString(fwAnnotationSession->owner->c_str());
-    return annotationSession;
-}
+//AnnotationSession* EntityAdapter::convert(cds::fw__annotationSession *fwAnnotationSession)
+//{
+//    AnnotationSession *annotationSession = new AnnotationSession;
+//    if (fwAnnotationSession->id != NULL) annotationSession->sessionId = new qint64(*fwAnnotationSession->id);
+//    if (fwAnnotationSession->name != NULL) annotationSession->name = new QString(fwAnnotationSession->name->c_str());
+//    if (fwAnnotationSession->owner != NULL) annotationSession->owner = new QString(fwAnnotationSession->owner->c_str());
+//    return annotationSession;
+//}

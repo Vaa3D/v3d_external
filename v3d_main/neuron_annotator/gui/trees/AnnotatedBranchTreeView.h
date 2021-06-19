@@ -6,14 +6,14 @@
 
 class AnnotatedBranchTreeView : public EntityTreeView
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit AnnotatedBranchTreeView(QWidget *parent = 0);
 
-signals:
+//signals:
     void removeAnnotation(const Entity *annotation);
 
-private slots:
+//private slots:
     void showContextMenu(const QPoint& pnt);
     void removeAnnotation();
 

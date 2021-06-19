@@ -7,14 +7,14 @@
 // Underlying integer is log(double_val) * 100
 class ZoomSpinBox : public QSpinBox
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit ZoomSpinBox(QWidget *parent = 0);
 
-signals:
+//signals:
     void zoomValueChanged(qreal zoomValue);
 
-public slots:
+//public slots:
     void setZoomValue(qreal doubleValue);
     void onValueChanged(int intValue);
     void reset();

@@ -35,7 +35,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3d_core.h"
 #include "mainwindow.h"
-
+#include <QInputDialog>
 #include "import_images_tool_dialog.h"
 
 #include "../io/io_bioformats.h"
@@ -265,7 +265,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 	// 090731 RZC: fixed numerically sorting file names list, for XFormWidget::importGeneralImgSeries
 	//-----------------------------------------------------------------------
 	QString fileNameStr, fileNameDigits;	//absolute file name is separated to 2 parts: strings and digits
-        QRegExp r("(\\d+)");		//find digits
+        //QRegExp r("(\\d+)");		//find digits
 	QMap<V3DLONG, QString> mapList;
 
 	mapList.clear();
@@ -281,11 +281,11 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 
 		V3DLONG pos = 0;
 		fileNameDigits = "";
-        while ((pos = r.indexIn(fileFullNameStr, pos)) != -1)
-		{
-                    fileNameDigits = r.cap(1);
-                    pos += r.matchedLength();
-		}
+//        while ((pos = r.indexIn(fileFullNameStr, pos)) != -1)
+//		{
+//                    fileNameDigits = r.cap(1);
+//                    pos += r.matchedLength();
+//		}
 
 		if (fileNameDigits.isEmpty()) continue;
 
@@ -380,7 +380,7 @@ bool XFormWidget::importLeicaData()
 	QDir curFileDir = fileInfo.dir();
 
 	//further split
-	QStringList mylist = curFileBase.split(QRegExp("_"));
+    QStringList mylist = curFileBase.split("_");
 	for (i = 0; i < mylist.size(); ++i)
 		printf(" [ %s ]\n", mylist.at(i).toLocal8Bit().constData());
 	printf("\n");
@@ -412,7 +412,7 @@ bool XFormWidget::importLeicaData()
 	//then produce file names:
 	//first detect the lower and upper bounds of z planes and color channels
 	int zplane0, zplane1, c0, c1; bool ok;
-	mylist = filist.at(0).baseName().split(QRegExp("_"));
+    mylist = filist.at(0).baseName().split("_");
 	if (mylist.at(mylist.count()-2).startsWith("z", Qt::CaseInsensitive)==false ||
 	    mylist.at(mylist.count()-1).startsWith("ch", Qt::CaseInsensitive)==false)
 	{
@@ -440,7 +440,7 @@ bool XFormWidget::importLeicaData()
 
 	}
 
-	mylist = filist.at(filist.count()-1).baseName().split(QRegExp("_"));
+    mylist = filist.at(filist.count()-1).baseName().split("_");
 	if (mylist.at(mylist.count()-2).startsWith("z", Qt::CaseInsensitive)==false ||
 	    mylist.at(mylist.count()-1).startsWith("ch", Qt::CaseInsensitive)==false)
 	{
@@ -510,27 +510,19 @@ bool XFormWidget::importLeicaData()
 			if (!b_continue_use_user_specified_ch[i%ncolors])
 			{
 
-#if defined(USE_Qt5)
+
 				user_specified_ch[i%ncolors] = QInputDialog::getInt(0, tr("Specify a channel"),
 																	QString("The current file [%1] has [%2] colors which do not match the presumed number of colors/channels [=%3]. <br><br>Please specify a channel of this image you want to import data (start from 0):").arg(tmpstr).arg(cur_sz[3]).arg(ncolors),
 																	int(i%ncolors), 0, cur_sz[3]-1, 1, &ok);
-#else
-				user_specified_ch[i%ncolors] = QInputDialog::getInteger(0, tr("Specify a channel"),
-																		QString("The current file [%1] has [%2] colors which do not match the presumed number of colors/channels [=%3]. <br><br>Please specify a channel of this image you want to import data (start from 0):").arg(tmpstr).arg(cur_sz[3]).arg(ncolors),
-																		int(i%ncolors), 0, cur_sz[3]-1, 1, &ok);
-#endif
+
 				if (ok)
 				{
 
-#if defined(USE_Qt5)
+
 					b_continue_use_user_specified_ch[i%ncolors] = QInputDialog::getInt(0, tr("Question"),
 																						QString("Do you want to continue using the channel just specified for <br>importing for all remaining images in this series that have conflict? (0 for No, 1 for Yes)"),
 																						1, 0, 1, 1, &ok);
-#else
-					b_continue_use_user_specified_ch[i%ncolors] = QInputDialog::getInteger(0, tr("Question"),
-																						   QString("Do you want to continue using the channel just specified for <br>importing for all remaining images in this series that have conflict? (0 for No, 1 for Yes)"),
-																						   1, 0, 1, 1, &ok);
-#endif
+
 				}
 			}
 			else

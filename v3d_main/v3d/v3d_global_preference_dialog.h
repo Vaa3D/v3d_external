@@ -46,8 +46,8 @@ v3d_global_preference_dialog.h
 #ifndef __V3D_GLOBAL_PREFERENCE_DIALOG_H__
 #define __V3D_GLOBAL_PREFERENCE_DIALOG_H__
 
-#include <QtGui>
-
+//#include <QtGui>
+#include <QSettings>
 #include "ui_v3d_global_preference.h"
 
 #include "../basic_c_fun/v3d_global_preference.h"

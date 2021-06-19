@@ -23,13 +23,13 @@ struct Agent {
 };
 class FileSocket_send:public QTcpSocket
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit FileSocket_send(QString ip,QString port,QString anofile_path,QObject *parent=0);
 
     void sendFile(QString filepath,QString filename);
-public slots:
-    void readMSG();
+//public slots:
+    //void readMSG();
 private:
     QString anopath;
     QString anoname;
@@ -39,7 +39,7 @@ class My4DImage;
 class MainWindow;
 class ManageSocket:public QTcpSocket
 {
-	Q_OBJECT
+    //Q_OBJECT
 public:
 	explicit ManageSocket(QObject *parent=0);
 	QString ip;
@@ -47,16 +47,16 @@ public:
 	QString name;
 //    QString loadfile_name;
 
-public slots:
-    void onReadyRead();
-    void send1(QListWidgetItem*);
-    void send2(QListWidgetItem*);
-    void messageMade();
-//    void receivedfile(QString anofile);
-    void receivefile(QString anofile);
+//public slots:
+//    void onReadyRead();
+//    void send1(QListWidgetItem*);
+//    void send2(QListWidgetItem*);
+//    void messageMade();
+////    void receivedfile(QString anofile);
+//    void receivefile(QString anofile);
 protected:
 
-signals:
+//signals:
     void makeMessageSocket(QString ip,QString port,QString username);
     void loadANO(QString);
 //    void receivefile(QString anofile);
@@ -73,7 +73,7 @@ private:
 
 class V3dR_Communicator : public QWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit V3dR_Communicator(bool *client_flag = 0, V_NeuronSWC_list* ntlist=0);
@@ -92,18 +92,18 @@ public:
 	std::vector<Agent> Agents;
 //	ManageSocket * managesocket;
 	 QTcpSocket* socket;
-public slots:
-    bool SendLoginRequest(QString ip,QString port,QString username);
-	//void RunVRMainloop();
-	//void SendHMDPosition();
-	void CollaborationMainloop();
+//public slots:
+//    bool SendLoginRequest(QString ip,QString port,QString username);
+//	//void RunVRMainloop();
+//	//void SendHMDPosition();
+//	void CollaborationMainloop();
 
-private slots:
+//private slots:
 	
-    void onReadyRead();
-    void onConnected();
-    void onDisconnected();
-signals:
+//    void onReadyRead();
+//    void onConnected();
+//    void onDisconnected();
+//signals:
     void messageMade();
 private:
 	

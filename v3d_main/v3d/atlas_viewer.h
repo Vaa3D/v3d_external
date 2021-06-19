@@ -41,7 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3d_core.h"
 #include "ChannelTable.h"
-
+#include <QProgressDialog>
 class XFormWidget;
 class My4DImage;
 

@@ -14,7 +14,7 @@
 // with a DataColorModel to create color images.
 class MipFragmentColors : public NaLockableData
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit MipFragmentColors(
@@ -23,7 +23,7 @@ public:
 
     virtual ~MipFragmentColors();
 
-public slots:
+//public slots:
     virtual void update();
 
 protected:

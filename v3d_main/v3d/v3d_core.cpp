@@ -2033,7 +2033,8 @@ void XFormView::reset()
 
 void XFormView::wheelEvent(QWheelEvent * e) //add this on 2008-01-10
 {
-    int numDegrees = -e->delta() / 8; //change to -e on 080121
+   // int numDegrees = -e->delta() / 8; //change to -e on 080121
+    int numDegrees =  8;
     int numSteps = numDegrees / 15;
 
 	if (!imgData) return;
@@ -3368,20 +3369,20 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
             {
                 if (imgData->b_triviewTimerON)
                 {
-                    QString etime = QString("Elipsed time for triview timer is %1 seconds").arg(double(imgData->triviewTimer.elapsed())/1000);
-                    imgData->b_triviewTimerON = false;
-                    v3d_msg(etime);
-                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
-                        imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(etime);
+//                    QString etime = QString("Elipsed time for triview timer is %1 seconds").arg(double(imgData->triviewTimer.elapsed())/1000);
+//                    imgData->b_triviewTimerON = false;
+//                    v3d_msg(etime);
+//                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
+//                        imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(etime);
                 }
                 else
                 {
-                    imgData->triviewTimer.start(); //should I use restart() sometimes as well
-                    imgData->b_triviewTimerON = true;
-                    QString mymsg = "Timer for the current image starts...";
-                    v3d_msg(mymsg + "\n", 0);
-                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
-                        imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(mymsg, 5000);
+//                    imgData->triviewTimer.start(); //should I use restart() sometimes as well
+//                    imgData->b_triviewTimerON = true;
+//                    QString mymsg = "Timer for the current image starts...";
+//                    v3d_msg(mymsg + "\n", 0);
+//                    if (imgData->p_mainWidget && imgData->p_mainWidget->getMainControlWindow())
+//                        imgData->p_mainWidget->getMainControlWindow()->statusBar()->showMessage(mymsg, 5000);
                 }
             }
 			break;
@@ -4092,7 +4093,7 @@ void XFormWidget::createGUI()
     // focus planes group
 
     coordGroup = new QGroupBox(mainGroup);
-    coordGroup->setAttribute(Qt::WA_ContentsPropagated);
+   // coordGroup->setAttribute(Qt::WA_ContentsPropagated);
     coordGroup->setTitle("Focus Coordinates");
 
     xSlider = new QScrollBar(Qt::Horizontal, coordGroup);
@@ -4134,7 +4135,7 @@ void XFormWidget::createGUI()
     // scale factor group
 
     scaleGroup = new QGroupBox(mainGroup);
-    scaleGroup->setAttribute(Qt::WA_ContentsPropagated);
+   // scaleGroup->setAttribute(Qt::WA_ContentsPropagated);
     scaleGroup->setTitle("Zoom (Regular x1/4~x8, Looking glass x4)");
 
     xScaleSlider = new QScrollBar(Qt::Horizontal, scaleGroup);
@@ -4955,7 +4956,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 {
 	if (!b_local && mypara_3Dview.b_still_open)
 	{
-		mypara_3Dview.window3D->raise_and_activate(); // activateWindow();
+        //mypara_3Dview.window3D->raise_and_activate(); // activateWindow();
 		return;
 	}
 	if (b_local && mypara_3Dlocalview.b_still_open)
@@ -4963,7 +4964,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 		//mypara_3Dlocalview.window->raise_and_activate();
 
 		//090723: continue create a new view, wait 1 second for the last local 3D view closed
-		mypara_3Dlocalview.window3D->postClose();
+        //mypara_3Dlocalview.window3D->postClose();
 		if (b_local==1)
 			QTimer::singleShot(1000, this, SLOT(doImage3DLocalMarkerView()));
 		else if (b_local==2)
@@ -4979,11 +4980,11 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 	if (imgData)
 	{
 		V3DLONG nbytes = estimateRoughAmountUsedMemory();
-        if (nbytes>(V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
-		{
-            v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(TH_USE_MEMORY));
-			return;
-		}
+//        if (nbytes>(V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
+//		{
+//            v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(TH_USE_MEMORY));
+//			return;
+//		}
 
 		if (! b_local) //0 for entire image
 		{
@@ -5087,30 +5088,30 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 		}
 
 		V3dR_MainWindow *my3dwin = 0;
-		try
-		{
-			if (b_local)
-			{
-				my3dwin = new V3dR_MainWindow(&mypara_3Dlocalview); //090628 RZC
-				mypara_3Dlocalview.window3D = my3dwin;
-			}
-			else
-			{
-				my3dwin = new V3dR_MainWindow(&mypara_3Dview); //iDrawMainWindow-->V3dR_MainWindow, by RZC 20080921
-				mypara_3Dview.window3D = my3dwin;
-			}
-			my3dwin->setParent(0);
+//		try
+//		{
+//			if (b_local)
+//			{
+//				my3dwin = new V3dR_MainWindow(&mypara_3Dlocalview); //090628 RZC
+//				mypara_3Dlocalview.window3D = my3dwin;
+//			}
+//			else
+//			{
+//				my3dwin = new V3dR_MainWindow(&mypara_3Dview); //iDrawMainWindow-->V3dR_MainWindow, by RZC 20080921
+//				mypara_3Dview.window3D = my3dwin;
+//			}
+//			my3dwin->setParent(0);
 
-            // @ADDED by Alessandro on 2015-09-29. Postpone show() if required.
-            if(show)
-                my3dwin->show();
-		}
-		catch (...)
-		{
-			v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or "
-                    "try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
-			return;
-		}
+//            // @ADDED by Alessandro on 2015-09-29. Postpone show() if required.
+//            if(show)
+//                my3dwin->show();
+//		}
+//		catch (...)
+//		{
+//			v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or "
+//                    "try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
+//			return;
+//		}
 	}
 	else
 	{
@@ -5907,30 +5908,21 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 			//then select the channel of this image
 
-#if defined(USE_Qt5)
+
 			curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
-#else
-			curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
-#endif
+
 
 			//then select RGB info
 			int rgbVal;
 
-#if defined(USE_Qt5)
+
 			rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
 			curInfo.rr = rgbVal/255.0;
 			rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 			curInfo.gg = rgbVal/255.0;
 			rgbVal = QInputDialog::getInt(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 			curInfo.bb = rgbVal/255.0;
-#else
-			rgbVal = QInputDialog::getInteger(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
-			curInfo.rr = rgbVal/255.0;
-			rgbVal = QInputDialog::getInteger(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
-			curInfo.gg = rgbVal/255.0;
-			rgbVal = QInputDialog::getInteger(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
-			curInfo.bb = rgbVal/255.0;
-#endif
+
 
 			//add the selected info to the bList
 			bList.append(curInfo);
@@ -5947,30 +5939,20 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 
 				//then select the channel of this image
 
-#if defined(USE_Qt5)
+
 				curInfo.channo = QInputDialog::getInt(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
-#else
-				curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
-#endif
+
 
 				//then select RGB info
 				int rgbVal;
 
-#if defined(USE_Qt5)
 				rgbVal = QInputDialog::getInt(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.rr = rgbVal/255.0;
 				rgbVal = QInputDialog::getInt(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.gg = rgbVal/255.0;
 				rgbVal = QInputDialog::getInt(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.bb = rgbVal/255.0;
-#else
-				rgbVal = QInputDialog::getInteger(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
-				curInfo.rr = rgbVal/255.0;
-				rgbVal = QInputDialog::getInteger(this, tr("Green component"), tr("Green component"), 0, 0, BLEND_MAXVAL, 50, &ok);
-				curInfo.gg = rgbVal/255.0;
-				rgbVal = QInputDialog::getInteger(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
-				curInfo.bb = rgbVal/255.0;
-#endif
+
 
 				//add the selected info to the bList
 				bList.append(curInfo);
@@ -6564,17 +6546,17 @@ void LandmarkPropertyDialog::compute_rgn_stat()
 void load_segment_neuron(My4DImage* curImg, Renderer_gl1* curRen) // 090622 RZC: load segment neuron, used by algorithm test
 {
 	V_NeuronSWC null_neuron;
-	for (int i=0; i<curImg->tracedNeuron.last_seg_num; i++)	{
-	null_neuron.name = qPrintable(QString("%1").arg(i+1)); curRen->updateNeuronTree(null_neuron);}
-	for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
-		curRen->updateNeuronTree(curImg->tracedNeuron.seg[i]);
+    //for (int i=0; i<curImg->tracedNeuron.last_seg_num; i++)	{
+    //null_neuron.name = qPrintable(QString("%1").arg(i+1)); curRen->updateNeuronTree(null_neuron);}
+    //for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+        //curRen->updateNeuronTree(curImg->tracedNeuron.seg[i]);
 }
 void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 {
 	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
 	merged_neuron.name = curImg->tracedNeuron.name;
 	merged_neuron.file = curImg->tracedNeuron.file;
-    curRen->updateNeuronTree(merged_neuron);
+    //curRen->updateNeuronTree(merged_neuron);
 
 	for (size_t i = 0; i < curImg->tracedNeuron.seg.size(); ++i) // Generate a branchID -> segID map, MK, May, 2018
 	{

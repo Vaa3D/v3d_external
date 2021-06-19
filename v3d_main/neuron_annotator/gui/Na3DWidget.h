@@ -51,7 +51,7 @@ namespace jfrc {
  */
 class Na3DWidget : public V3dR_GLWidget, public NaViewer
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
     Na3DWidget(QWidget* parent);
@@ -92,7 +92,7 @@ public:
     void setCameraRotationInGround(const Rotation3D& rotation);
     float glUnitsPerImageVoxel() const;
 
-signals:
+//signals:
     void alphaBlendingChanged(bool);
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
@@ -112,7 +112,7 @@ signals:
     void slabPositionChanged(int);
     void volume3DUploaded();
 
-public slots:
+//public slots:
     void setShowCornerAxes(bool b);
     void setAlphaBlending(bool);
     void DEPRECATEDonVolumeTextureDataChanged();
@@ -121,11 +121,11 @@ public slots:
     void resetView();
     void resetRotation();
     void translateImage(int dx, int dy);
-    void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
+    void showCrosshair(bool b) {}
     void showScaleBar(bool b) {
         if (bPaintScaleBar == b) return;
         bPaintScaleBar = b;
-        update();
+
     }
     void updateHighlightNeurons();
     void onMouseSingleClick(QPoint pos);
@@ -158,7 +158,7 @@ public slots:
     bool resetSlabThickness();
     void clearImage(); // Avoid dangling image pointer
 
-protected slots:
+//protected slots:
     // focus setting should be done via cameraModel, not with these methods.
     void updateRendererZoomRatio(qreal relativeScale);
     void updateRotation(const Rotation3D&);
@@ -206,7 +206,7 @@ protected:
     virtual void preparingRenderer();
     void updateDefaultScale();
     // v3dr_glwidget::event() can cause crash
-    virtual bool event(QEvent* e) {return QOpenGLWidget_proxy::event(e);}
+    virtual bool event(QEvent* e) {}
 
     // BrightnessCalibrator<unsigned char> brightnessCalibrator;
     const DataColorModel * incrementalDataColorModel;

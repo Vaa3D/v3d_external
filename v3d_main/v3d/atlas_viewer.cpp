@@ -675,7 +675,7 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 		else //map==0
 			if (! curItem->isSelected()) continue; // skip un-selected
 
-		curItem->setData(0, qVariantFromValue(qcolor));
+        //curItem->setData(0, qVariantFromValue(qcolor));
 		//UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
 	}
 
@@ -786,8 +786,8 @@ void V3D_atlas_viewerDialog::colorSelected()
 		COLOR_ITEM_OF_TABLE(item, t, i);
 		if (item->isSelected())
 		{
-			item->setData(Qt::DecorationRole, qVariantFromValue(qcolor));
-			item->setData(Qt::DisplayRole, qVariantFromValue(qcolor));
+            //item->setData(Qt::DecorationRole, qVariantFromValue(qcolor));
+            //item->setData(Qt::DisplayRole, qVariantFromValue(qcolor));
 		}
 	}
 
@@ -950,10 +950,10 @@ void V3D_atlas_viewerDialog::setItemEditor()
 
 	//	QItemEditorCreatorBase *spinCreator = new QStandardItemEditorCreator<QSpinBox>();
 	//	QItemEditorCreatorBase *comboCreator = new QStandardItemEditorCreator<QComboBox>();
-	QItemEditorCreatorBase *colorCreator = new QStandardItemEditorCreator<ColorEditor>();
+    //QItemEditorCreatorBase *colorCreator = new QStandardItemEditorCreator<ColorEditor>();
 
 	factory->registerEditor(QVariant::String, 0);
-	factory->registerEditor(QVariant::Color, colorCreator);
+    //factory->registerEditor(QVariant::Color, colorCreator);
 
 	QItemEditorFactory::setDefaultFactory(factory);
 }

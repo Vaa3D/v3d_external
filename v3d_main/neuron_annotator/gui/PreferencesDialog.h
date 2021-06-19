@@ -6,16 +6,16 @@
 
 class PreferencesDialog : public QDialog
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit PreferencesDialog(QWidget *parent = 0);
     int getVideoMegabytes() const;
     void setVideoMegabytes(int mb);
 
-signals:
+//signals:
 
-public slots:
+//public slots:
     void savePreferences();
     void loadPreferences();
 

@@ -7,7 +7,7 @@
 #else
   #include <QtGui>
 #endif
-
+#include <QFileDialog>
 QString getAppPath()
 {
     QString v3dAppPath("~/Work/v3d_external/v3d");

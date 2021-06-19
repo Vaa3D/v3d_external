@@ -7,7 +7,7 @@
 #include <QTextStream>
 #include <QDateTime>
 #include <iostream>
-
+#include <QTextStream>
 
 void customMessageHandler(QtMsgType type, const char *msg)
 {
@@ -39,7 +39,7 @@ void customMessageHandler(QtMsgType type, const char *msg)
     outputFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream textStream(&outputFile);
     time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
-    textStream << time<<":"<<txtMessage << endl;
+    //textStream << time<<":"<<txtMessage << endl;
     std::cout<<time.toStdString().data()<<txtMessage.toStdString().data()<<"\n";
 }
 
