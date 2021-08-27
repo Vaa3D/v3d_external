@@ -33,9 +33,9 @@
 #include "IM_config.h"
 
 //////// Added by MK, 11/27/2016, for Qt5/VS2015 environment 
-#if defined(USE_Qt5)
+
 #include <QtWidgets>
-#endif
+
 //////////////////////////////////////////////////////////////
 
 using namespace terafly;
@@ -81,8 +81,10 @@ void CSettings::loadDefaultSettings()
     annotationMarkerSize = 20;
     previewMode = true;
     pyramidResamplingFactor = 2;
-    viewerHeight = qApp->desktop()->availableGeometry().height();
-    viewerWidth = qApp->desktop()->availableGeometry().width()-380;
+
+    //注释
+    //viewerHeight = qApp->desktop()->availableGeometry().height();
+    //viewerWidth = qApp->desktop()->availableGeometry().width()-380;
     ramLimitGB = 1.0f;
     vpEmptyVizMethod = tf::VirtualPyramid::SALT_AND_PEPPER;
     vpEmptyVizIntensity = 255;

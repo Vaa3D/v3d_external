@@ -72,7 +72,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 ****************************************************************************/
 
 #include "gradients.h"
-
+#include <stdlib.h>
 #define __running_road__
 //------------ initialize -------------------------------------------------------------------------------
 // GradientEditor::setNormalCurve()                       /// input colormap curve
@@ -94,6 +94,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 #define __ShadeWidget__
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QLineF>
+#include <QPushButton>
 
 ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
     : QWidget(parent), m_shade_type(type)
@@ -116,8 +120,8 @@ ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
         setAutoFillBackground(true);
 
     } else {
-        setAttribute(Qt::WA_NoBackground); //filled by gradient brush later
-
+        //setAttribute(Qt::WA_NoBackground); //filled by gradient brush later
+        setAttribute(Qt::WA_StaticContents,true);
     }
 
     m_hoverPoints = new HoverPoints(this, HoverPoints::CircleShape);
@@ -267,7 +271,8 @@ GradientEditor::GradientEditor(QWidget *parent)
 {
     QVBoxLayout *vbox = new QVBoxLayout(parent); // CORRECTION: this==>parent, 081214 RZC
     vbox->setSpacing(10);
-    vbox->setMargin(5);
+   //注释 vbox->setMargin(5);
+
 
     m_red_shade=m_green_shade=m_blue_shade=m_alpha_shade=0;
     m_red_shade = new ShadeWidget(ShadeWidget::RedShade, this);
@@ -322,8 +327,8 @@ QGradientStops GradientEditor::updateAlphaStops()
     if (m_green_shade)  points += m_green_shade->hoverPoints()->points();
     if (m_blue_shade)   points += m_blue_shade->hoverPoints()->points();
     if (m_alpha_shade)  points += m_alpha_shade->hoverPoints()->points();
-
-    qSort(points.begin(), points.end(), my_x_less_than);
+    std::sort(points.begin(), points.end(), my_x_less_than);
+   // qSort(points.begin(), points.end(), my_x_less_than);貌似被弃用了
 
     QGradientStops stops;
 
@@ -496,7 +501,7 @@ void GradientRenderer::setGradientStops(const QGradientStops &stops)
 
 void GradientRenderer::mousePressEvent(QMouseEvent *)
 {
-//    setDescriptionEnabled(false);
+    //setDescriptionEnabled(false);
 }
 
 void GradientRenderer::paint(QPainter *p)
@@ -515,7 +520,8 @@ void GradientRenderer::paint(QPainter *p)
         g = QRadialGradient(line.p1(), qMin(width(), height()) / 3.0, line.p2());
     } else {
         QLineF l(pts.at(0), pts.at(1));
-        qreal angle = l.angle(QLineF(0, 0, 1, 0));
+        //注释qreal angle = l.angle(QLineF(0, 0, 1, 0));
+        qreal angle = l.angle();
         if (l.dy() > 0)
             angle = 360 - angle;
         g = QConicalGradient(pts.at(0), angle);
@@ -547,26 +553,27 @@ GradientWidget::GradientWidget(QWidget *parent)
     mainGroup->setTitle("Gradients");
 
     QGroupBox *editorGroup = new QGroupBox(mainGroup);
-    editorGroup->setAttribute(Qt::WA_ContentsPropagated);
+    editorGroup->setAttribute(Qt::WA_StaticContents,true);
     editorGroup->setTitle("Color Editor");
     m_editor = new GradientEditor(editorGroup);
 
     QGroupBox *typeGroup = new QGroupBox(mainGroup);
-    typeGroup->setAttribute(Qt::WA_ContentsPropagated);
+    typeGroup->setAttribute(Qt::WA_StaticContents,true);
     typeGroup->setTitle("Gradient Type");
     m_linearButton = new QRadioButton("Linear Gradient", typeGroup);
     m_radialButton = new QRadioButton("Radial Gradient", typeGroup);
     m_conicalButton = new QRadioButton("Conical Gradient", typeGroup);
 
     QGroupBox *spreadGroup = new QGroupBox(mainGroup);
-    spreadGroup->setAttribute(Qt::WA_ContentsPropagated);
+    //已经被弃用了 自己改的spreadGroup->setAttribute(Qt::WA_ContentsPropagated);
+    spreadGroup->setAttribute(Qt::WA_StaticContents,true);
     spreadGroup->setTitle("Spread Method");
     m_padSpreadButton = new QRadioButton("Pad Spread", spreadGroup);
     m_reflectSpreadButton = new QRadioButton("Reflect Spread", spreadGroup);
     m_repeatSpreadButton = new QRadioButton("Repeat Spread", spreadGroup);
 
     QGroupBox *defaultsGroup = new QGroupBox(mainGroup);
-    defaultsGroup->setAttribute(Qt::WA_ContentsPropagated);
+    defaultsGroup->setAttribute(Qt::WA_StaticContents,true);
     defaultsGroup->setTitle("Defaults");
     QPushButton *default1Button = new QPushButton("1", defaultsGroup);
     QPushButton *default2Button = new QPushButton("2", defaultsGroup);

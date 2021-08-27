@@ -42,6 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "mapview.h"
 
+
 #include <QMdiSubWindow>
 #include <QMenu>
 
@@ -60,7 +61,7 @@ struct iDrawExternalParameter
 	XFormWidget *xwidget;
 	V3dR_MainWindow *window3D; //pointer to 3DView main window, by RZC 080921, 090503
 	QList <V3dR_MainWindow *> * p_list_3Dview_win; //by PHC, 081003. This is linked to a mainwindow, which will keep record of all generated V3dR_MainWindows
-	MainWindow *V3Dmainwindow; //the pointer to the V3D main window, so that V3dR can get the global setting preferences. add on 090503
+    MainWindow *V3Dmainwindow; //the pointer to the V3D main window, so that V3dR can get the global setting preferences. add on 090503
 
 	QStringList swc_file_list;
 	QStringList pointcloud_file_list;
@@ -128,7 +129,8 @@ struct iDrawExternalParameter
 #if defined(USE_Qt5)
 class XFormWidget : public QMdiSubWindow, public TriviewControl //class XFormWidget : public QMainWindow
 #else
-class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
+//class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
+class XFormWidget : public QMdiSubWindow, public TriviewControl
 #endif
 {
     Q_OBJECT;
@@ -267,6 +269,7 @@ private:
 	QCheckBox *lookingGlassCheckBox;
 	QPushButton *zoomWholeViewButton;
 
+
     QRadioButton *colorRedType, *colorGreenType, *colorBlueType, *colorAllType;
     QRadioButton *colorRed2GrayType, *colorGreen2GrayType, *colorBlue2GrayType, *colorAll2GrayType;
     QRadioButton *colorMapDispType;
@@ -327,7 +330,8 @@ public slots:
 #if defined(USE_Qt5)
 	void onActivated(QMdiSubWindow* );
 #else
-	void onActivated(QWidget* );
+    //void onActivated(QWidget* );
+    void onActivated(QMdiSubWindow*);
 #endif
 //110803 RZC, for sync multiple ChannelTabWidget
 	void syncChannelTabWidgets(ChannelTabWidget* sender);

@@ -73,7 +73,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #ifndef GRADIENTS_H
 #define GRADIENTS_H
-
+#include <QWidget>
 #include <version_control.h>
 #if defined(USE_Qt5)
 #include <QtWidgets>
@@ -82,10 +82,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 //#include <hoverpoints.h> //by PHC 2020/1/31
 #include "v3d_hoverpoints.h"
-
+#include <QRadioButton>
 class ShadeWidget : public QWidget
 {
-   // Q_OBJECT;
+    Q_OBJECT;
 
 public:
     enum ShadeType {
@@ -106,13 +106,13 @@ public:
     QRgb colorF(qreal f); // 0<=f<=1
     QRgb colorX(qreal x); //to interpolate color from stops of curve
 
-//public slots:
-//    void changeColors(const QPolygonF &pts) { emit colorsChanged(m_shade_type, pts); } //m_hoverPoints --> this
-//signals:
-//    void colorsChanged(int type, const QPolygonF &); // this --> parent(GradientEditor)
+public slots:
+    void changeColors(const QPolygonF &pts) { emit colorsChanged(m_shade_type, pts); } //m_hoverPoints --> this
+signals:
+    void colorsChanged(int type, const QPolygonF &); // this --> parent(GradientEditor)
 
 protected:
-    //virtual void paintEvent(QPaintEvent *e);
+    virtual void paintEvent(QPaintEvent *e);
 
 private:
     void generateShade();
@@ -127,7 +127,7 @@ private:
 
 class GradientEditor : public QWidget
 {
-    //Q_OBJECT;
+    Q_OBJECT;
 
 public:
     GradientEditor(QWidget *parent);
@@ -148,12 +148,12 @@ public:
         return qRgba(r, g, b, a);
     }
 
-//public slots:
-////    void pointsUpdated(int type, const QPolygonF &);
-////    QGradientStops updateAlphaStops(); //081220, Separated from pointsUpdated
+public slots:
+    void pointsUpdated(int type, const QPolygonF &);
+    QGradientStops updateAlphaStops(); //081220, Separated from pointsUpdated
 
-//signals:
-//    void gradientStopsChanged(const QGradientStops&); //trigger external slot to output colormap
+signals:
+    void gradientStopsChanged(const QGradientStops&); //trigger external slot to output colormap
 
 protected:
     ShadeWidget *m_red_shade;
@@ -168,7 +168,7 @@ protected:
 
 class GradientRenderer : public QWidget //ArthurFrame
 {
-    //Q_OBJECT;
+    Q_OBJECT;
 
 public:
     GradientRenderer(QWidget *parent);
@@ -177,18 +177,18 @@ public:
     QSize sizeHint() const { return QSize(400, 400); }
 
     HoverPoints *hoverPoints() const { return m_hoverPoints; }
-    //void mousePressEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);
 
-//public slots:
-//    void setGradientStops(const QGradientStops &stops);
+public slots:
+    void setGradientStops(const QGradientStops &stops);
 
-//    void setPadSpread() { m_spread = QGradient::PadSpread; update(); }
-//    void setRepeatSpread() { m_spread = QGradient::RepeatSpread; update(); }
-//    void setReflectSpread() { m_spread = QGradient::ReflectSpread; update(); }
+    void setPadSpread() { m_spread = QGradient::PadSpread; update(); }
+    void setRepeatSpread() { m_spread = QGradient::RepeatSpread; update(); }
+    void setReflectSpread() { m_spread = QGradient::ReflectSpread; update(); }
 
-//    void setLinearGradient() { m_gradientType = Qt::LinearGradientPattern; update(); }
-//    void setRadialGradient() { m_gradientType = Qt::RadialGradientPattern; update(); }
-//    void setConicalGradient() { m_gradientType = Qt::ConicalGradientPattern; update(); }
+    void setLinearGradient() { m_gradientType = Qt::LinearGradientPattern; update(); }
+    void setRadialGradient() { m_gradientType = Qt::RadialGradientPattern; update(); }
+    void setConicalGradient() { m_gradientType = Qt::ConicalGradientPattern; update(); }
 
 
 private:
@@ -202,16 +202,16 @@ private:
 
 class GradientWidget : public QWidget
 {
-   // Q_OBJECT;
+    Q_OBJECT;
 
 public:
     GradientWidget(QWidget *parent=0);
 
-//public slots:
-//    void setDefault1() { setDefault(1); }
-//    void setDefault2() { setDefault(2); }
-//    void setDefault3() { setDefault(3); }
-//    void setDefault4() { setDefault(4); }
+public slots:
+    void setDefault1() { setDefault(1); }
+    void setDefault2() { setDefault(2); }
+    void setDefault3() { setDefault(3); }
+    void setDefault4() { setDefault(4); }
 
 private:
     void setDefault(int i);

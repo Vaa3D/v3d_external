@@ -2,6 +2,11 @@
 #include <cmath>
 #include <fstream>
 #include "PLog.h"
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QMessageBox>
+
+
 
 using namespace terafly;
 

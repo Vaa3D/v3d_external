@@ -214,7 +214,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
         	// call m_widget to paint
             QWidget *that_widget = m_widget;
             m_widget = 0; //prevent to re-enter
-            QApplication::sendEvent(object, event);
+            QCoreApplication::sendEvent(object, event);
             m_widget = that_widget;
 
             paintPoints();
@@ -330,9 +330,9 @@ void HoverPoints::firePointChange()
         }
 
         if (m_sortType == XSort)
-            qSort(m_points.begin(), m_points.end(), x_less_than);
+            std::sort(m_points.begin(), m_points.end(), x_less_than);
         else if (m_sortType == YSort)
-            qSort(m_points.begin(), m_points.end(), y_less_than);
+            std::sort(m_points.begin(), m_points.end(), y_less_than);
 
         // Compensate for changed order...
         if (m_currentIndex != -1) {

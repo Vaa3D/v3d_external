@@ -1,6 +1,6 @@
 #include "QPixmapToolTip.h"
 #include "../control/CImageUtils.h"
-
+#include <QStackedLayout>
 using namespace terafly;
 
 QPixmapToolTip* QPixmapToolTip::uniqueInstance = 0;

@@ -72,7 +72,7 @@ public:
 //
 class V3dr_surfaceDialog: public SharedToolDialog
 {
-    //Q_OBJECT;
+    Q_OBJECT;
 
 public:
     V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent=0);
@@ -96,69 +96,70 @@ protected:
     void createFirst();
 
 public slots:
-//    virtual void linkTo(QWidget* w); //link to new view
-//    virtual int DecRef(QWidget* w); //override for attached widget closing
-//    void onAttached(bool);
+    virtual void linkTo(QWidget* w); //link to new view
+    virtual int DecRef(QWidget* w); //override for attached widget closing
+    void onAttached(bool);
 
-//    void undo();
+    void undo();
 
-//    void selectAll();
-//    void deselectAll();
-//    void selectInverse();
+    void selectAll();
+    void deselectAll();
+    void selectInverse();
 
-//    void selectedOnOff(bool state);
-//    void selectedOn()  {selectedOnOff(true);}
-//    void selectedOff() {selectedOnOff(false);}
+    void selectedOnOff(bool state);
+    void selectedOn()  {selectedOnOff(true);}
+    void selectedOff() {selectedOnOff(false);}
 
-//    void doMenuOfColor();
-//    void selectedColor(int map=0);
-//    void mapSegmentColor() {selectedColor(1);}
-//    void mapMultiNeuronColor() {selectedColor(2);}
-//    void mapHanchuanColor() {selectedColor(-2);}
-//    void mapRandomColor()   {selectedColor(-1);}
+    void doMenuOfColor();
+    void selectedColor(int map=0);
+    void mapSegmentColor() {selectedColor(1);}
+    void mapMultiNeuronColor() {selectedColor(2);}
+    void mapHanchuanColor() {selectedColor(-2);}
+    void mapRandomColor()   {selectedColor(-1);}
 
-//    void doMenuOfDisplayMode();
-//    void setSWCDisplayMode(int v);
-//    void setSWCDisplayUsingGlobalSettings() {setSWCDisplayMode(-1);}
-//    void setSWCDisplayUsingLine() {setSWCDisplayMode(1);}
-//    void setSWCDisplayUsingTube() {setSWCDisplayMode(0);}
-    /*void setMeshDensity(int newMeshDensity);
-    void setMeshDensity27() {setMeshDensity(27);}
-    void setMeshDensity18() {setMeshDensity(18);}
-    void setMeshDensity9() {setMeshDensity(9);}
-    void setMeshDensityDefault() {setMeshDensity(36);}*/
+    void doMenuOfDisplayMode();
+    void setSWCDisplayMode(int v);
+    void setSWCDisplayUsingGlobalSettings() {setSWCDisplayMode(-1);}
+    void setSWCDisplayUsingLine() {setSWCDisplayMode(1);}
+    void setSWCDisplayUsingTube() {setSWCDisplayMode(0);}
+//注释了
+//    void setMeshDensity(int newMeshDensity);
+//    void setMeshDensity27() {setMeshDensity(27);}
+//    void setMeshDensity18() {setMeshDensity(18);}
+//    void setMeshDensity9() {setMeshDensity(9);}
+//    void setMeshDensityDefault() {setMeshDensity(36);}
 
-//    void pressedClickHandler(int row, int col);
-//    void doubleClickHandler(int row, int col);
-//    void pickSurf(int row, int col);
-//    void pickNeuronSegment(int row, int col);
-//    void pickSWC(int row, int col);
-//    void pickAPO(int row, int col);
-//    void pickAPO_Set(int row, int col);
-//    void pickMarker(int row, int col);
+    void pressedClickHandler(int row, int col);
+    void doubleClickHandler(int row, int col);
+    void pickSurf(int row, int col);
+    void pickNeuronSegment(int row, int col);
+    void pickSWC(int row, int col);
+    void pickAPO(int row, int col);
+    void pickAPO_Set(int row, int col);
+    void pickMarker(int row, int col);
 
-//    void editObjNameAndComments();
+    void editObjNameAndComments();
 #ifdef _YUN_
     void labelSortMarkers();
 #endif
-//    void editNeuronSegmentType();
+    void editNeuronSegmentType();
 
-//    void findNext();
-//    void findPrev();
-//    void findAllHighlight();
+    void findNext();
+    void findPrev();
+    void findAllHighlight();
 
-//    void onMarkerLocalView();
+    void onMarkerLocalView();
 
-//    void zoomMarkerLocation();
+    void zoomMarkerLocation();
 
-//    void updateMarkerList(QList <ImageMarker> markers); // sync object_manager with renderer
+    void updateMarkerList(QList <ImageMarker> markers); // sync object_manager with renderer
 
-//    // -- MK, June, 2018
-//    void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).
-//    int getMarkerNum() { return this->listMarker.size(); }
+    // -- MK, June, 2018
+    void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).
+    int getMarkerNum() { return this->listMarker.size(); }
 
-    //
-   // void sortNeuronSegmentByType(QTableWidgetItem* item);
+
+    void sortNeuronSegmentByType(QTableWidgetItem* item);
 
 protected:
     void clearTables_fromTab();

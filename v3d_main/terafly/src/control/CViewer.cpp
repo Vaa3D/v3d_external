@@ -57,6 +57,11 @@
 #include "v3d_application.h"
 #include <cmath>
 
+
+#include <QScreen>
+#include <QWindow>
+
+
 using namespace tf;
 
 CViewer* CViewer::first = 0;
@@ -234,10 +239,12 @@ void CViewer::show()
 
 			// update annotation space
 			updateAnnotationSpace();
-
+    //注释
             //centering the current 3D window and the plugin's window
-            int screen_height = qApp->desktop()->availableGeometry().height();
-            int screen_width = qApp->desktop()->availableGeometry().width();
+           // int screen_height = qApp->desktop()->availableGeometry().height();
+            //int screen_width = qApp->desktop()->availableGeometry().width();
+            int screen_height = 50;
+            int screen_width = 50;
             int window_x = (screen_width - (window3D->width() + pMain->width()))/2;
             int window_y = (screen_height - window3D->height()) / 2;
             window3D->move(window_x, window_y);
@@ -358,7 +365,7 @@ void CViewer::show()
 #if defined(USE_Qt5)
         this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
 #else
-        this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+        this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
 #endif
         Vaa3D_rotationchanged(0);
 
@@ -1515,7 +1522,7 @@ tf::uint8* CViewer::getVOI(int x0, int x1,              // VOI [x0, x1) in the l
                            int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
                            int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
                            int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
-throw (RuntimeException)
+noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, xDim = %d, yDim = %d, zDim = %d",
                                         titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp).c_str(), __itm__current__function__);
@@ -1672,7 +1679,7 @@ tf::uint8*
                             tf::direction dir /* = z */,
                             bool to_BGRA /* = false */,             //true if mip data must be stored into BGRA format
                             tf::uint8 alpha /* = 255 */)           //alpha transparency used if to_BGRA is true
-throw (tf::RuntimeException)
+noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, dir = %d, to_BGRA = %s, alpha = %d",
                                         titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, dir, to_BGRA ? "true" : "false", alpha).c_str(), __itm__current__function__);
@@ -1693,7 +1700,7 @@ throw (tf::RuntimeException)
 * Makes the current view the last one by  deleting (and deallocting) its subsequent
 * views.
 ***********************************************************************************/
-void CViewer::makeLastView() throw (RuntimeException)
+void CViewer::makeLastView() noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1767,7 +1774,7 @@ void CViewer::restoreSubvolSpinboxState()
 /**********************************************************************************
 * Annotations are stored/loaded to/from the <CAnnotations> object
 ***********************************************************************************/
-void CViewer::storeAnnotations() throw (RuntimeException)
+void CViewer::storeAnnotations() noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1885,7 +1892,7 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     }
 }
 
-void CViewer::clearAnnotations() throw (RuntimeException)
+void CViewer::clearAnnotations() noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1901,7 +1908,7 @@ void CViewer::clearAnnotations() throw (RuntimeException)
 }
 
 
-void CViewer::deleteSelectedMarkers() throw (RuntimeException)
+void CViewer::deleteSelectedMarkers() noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1952,7 +1959,7 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
 }
 
 
-void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
+void CViewer::createMarkerAt(int x, int y) noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
@@ -1973,7 +1980,7 @@ void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
-void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
+void CViewer::createMarker2At(int x, int y) noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
@@ -2003,7 +2010,7 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
     }
 }
 
-void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */) throw (tf::RuntimeException)
+void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */) noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
 
@@ -2054,7 +2061,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
-void CViewer::updateAnnotationSpace() throw (tf::RuntimeException)
+void CViewer::updateAnnotationSpace() noexcept(false)
 {
      /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2108,7 +2115,7 @@ void CViewer::updateAnnotationSpace() throw (tf::RuntimeException)
 
 }
 
-void CViewer::loadAnnotations() throw (RuntimeException)
+void CViewer::loadAnnotations() noexcept(false)
 {
 	myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
@@ -2198,7 +2205,7 @@ void CViewer::loadAnnotations() throw (RuntimeException)
 * Called by the next(prev) <CViewer>  when the user  zooms out(in) and  the
 * lower(higher) resoolution has to be reestabilished.
 ***********************************************************************************/
-void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
+void CViewer::restoreViewerFrom(CViewer* source) noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, source->title = %s", titleShort.c_str(), source->titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2510,7 +2517,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 * renderer at the given location.
 * This is based on the Vaa3D 3D point selection with one mouse click.
 ***********************************************************************************/
-XYZ CViewer::getRenderer3DPoint(int x, int y)  throw (RuntimeException)
+XYZ CViewer::getRenderer3DPoint(int x, int y)  noexcept(false)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
 
@@ -3219,7 +3226,8 @@ void CViewer::setWaitingForData(bool wait, bool pre_wait /* = false */)
             // change GUI appearance
             QPalette palette = pMain.frameCoord->palette();
             palette.setColor(QPalette::Base, QColor(255, 255, 181));
-            palette.setColor(QPalette::Background, QColor(255, 255, 181));
+            //注释
+            //palette.setColor(QPalette::Background, QColor(255, 255, 181));
             pMain.frameCoord->setPalette(palette);
             pMain.setPalette(palette);
             window3D->setPalette(palette);
@@ -3259,7 +3267,7 @@ void CViewer::setCursor(const QCursor& cur, bool renderer_only /* = false */)
 /**********************************************************************************
 * Refresh image data (if viewer is not busy - otherwise no refresh is possible)
 ***********************************************************************************/
-void CViewer::refresh() throw (tf::RuntimeException)
+void CViewer::refresh() noexcept(false)
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -3284,7 +3292,7 @@ void CViewer::refresh() throw (tf::RuntimeException)
     //this->setWaitingForData(true);
 }
 
-const Image4DSimple* CViewer::getImage() throw (tf::RuntimeException)
+const Image4DSimple* CViewer::getImage() noexcept(false)
 {
     if(imgData == 0)
         throw tf::RuntimeException("Image not yet allocated");
@@ -3303,7 +3311,7 @@ const Image4DSimple* CViewer::getImage() throw (tf::RuntimeException)
     return image;
 }
 
-void CViewer::setImage(int x, int y, int z) throw (tf::RuntimeException)
+void CViewer::setImage(int x, int y, int z) noexcept(false)
 {
     int current_x = (x-H0_sbox_min)/((H1_sbox_max-H0_sbox_min+1)/(volH1-volH0));
     int current_y = (y-V0_sbox_min)/((V1_sbox_max-V0_sbox_min+1)/(volV1-volV0));

@@ -61,7 +61,7 @@
 #include "v3d_application.h"
 
 #ifndef test_main_cpp
-
+#include <QElapsedTimer>
 #include "../v3d/v3d_compile_constraints.h"
 #include "../v3d/landmark_property_dialog.h"
 #include "../v3d/surfaceobj_annotation_dialog.h"
@@ -81,7 +81,7 @@
 //#include <boost/thread/thread.hpp>
 
 #ifndef Q_OS_MAC
-    #include <omp.h>
+    //注释#include <omp.h>
 #endif
 
 #include <boost/algorithm/string.hpp>
@@ -1435,7 +1435,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
                                             int index //the idnex to which stroke this function is computing on, assuming there may be multiple strokes
                                             )
 {
-    QTime t;
+    QElapsedTimer t;
     t.start();
 
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
@@ -1962,14 +1962,15 @@ if (0)
 	{
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
+
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
 
             bool b_startnodeisspecialmarker=false;
 
             float ratio = getZoomRatio();
-            int resindex = tf::PluginInterface::getRes();
+            //int resindex = tf::PluginInterface::getRes();
 
-            double th_times = (7-resindex); //adaptive th_times, by XZ, 20190721
+           // double th_times = (7-resindex); //adaptive th_times, by XZ, 20190721
 
             My4DImage* image4d = v3dr_getImage4d(_idep);
             if(image4d)
@@ -1988,8 +1989,8 @@ if (0)
                 {
                     XYZ cur_node_xyz = XYZ(listLoc.at(marker_id_start).x-1, listLoc.at(marker_id_start).y-1, listLoc.at(marker_id_start).z-1);
                     qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z;
-                    qDebug()<<"th_merge_m: "<<th_merge_m<<endl;
-                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(0))<<endl;
+                    qDebug()<<"th_merge_m: "<<th_merge_m;
+                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(0));
                     if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge_m)
                     {
                         loc_vec.at(0) = cur_node_xyz;
@@ -2003,8 +2004,8 @@ if (0)
                 {
                     XYZ cur_node_xyz = XYZ(listLoc.at(marker_id_end).x-1, listLoc.at(marker_id_end).y-1, listLoc.at(marker_id_end).z-1);
                     qDebug()<<cur_node_xyz.x<<" "<<cur_node_xyz.y<<" "<<cur_node_xyz.z;
-                    qDebug()<<"th_merge_m: "<<th_merge_m<<endl;
-                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(N-1))<<endl;
+                    qDebug()<<"th_merge_m: "<<th_merge_m;
+                    qDebug()<<"dist: "<<dist_L2(cur_node_xyz,loc_vec.at(N-1));
                     if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge_m)
                     {
                         loc_vec.at(N-1) = cur_node_xyz;
@@ -3352,7 +3353,7 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 
     // inform TeraFly (SAFE)
     // this does nothing except when TeraFly is active
-    tf::TeraFly::doaction("marker multiselect");
+   //注释 tf::TeraFly::doaction("marker multiselect");
 }
 
 // @ADDED by Alessandro on 2015-05-07.
@@ -4645,7 +4646,7 @@ void Renderer_gl1::loopDetection()
 		}
 	}
 
-	w->progressBarPtr = new QProgressBar;
+    w->progressBarPtr = new QProgressBar;
 	w->progressBarPtr->show();
 	w->progressBarPtr->move(w->x() + w->width() - w->progressBarPtr->width() / 2, w->y() + w->height() - w->progressBarPtr->height() / 2);
 	w->progressBarPtr->setTextVisible(true);
@@ -6552,7 +6553,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                                          "\n else -- custom \n"),
                                              currentTraceType, 0, 100, 1, &ok);
 #else
-            node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+            node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
                                                  QObject::tr("SWC type: "
                                                              "\n 0 -- undefined (white)"
                                                              "\n 1 -- soma (black)"

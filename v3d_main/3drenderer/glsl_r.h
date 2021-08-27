@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -275,16 +275,16 @@ namespace cwc
       bool        setVertexAttrib4ui(GLuint index, GLuint v0, GLuint v1, GLuint v2, GLuint v3); //!< Specify value of attribute. \warning Requires GL_EXT_gpu_shader4.
 
       //! Enable this Shader:
-	   void        enable(void) //!< Enables Shader (Shader is enabled by default)
-	   {
-	      _bEnabled = true;
-	   }
+       void        enable(void) //!< Enables Shader (Shader is enabled by default)
+       {
+          _bEnabled = true;
+       }
 
       //! Disable this Shader:
-	   void        disable(void) //!< Disables Shader.
-	   {
-	      _bEnabled = false;
-	   }
+       void        disable(void) //!< Disables Shader.
+       {
+          _bEnabled = false;
+       }
 
    protected:
       void        manageMemory(void){_bManageMemory = true;}
@@ -311,7 +311,7 @@ namespace cwc
 
 //-----------------------------------------------------------------------------
 
-	//! To simplify the process loading/compiling/linking shaders this high level interface to simplify setup of a vertex/fragment shader was created. \ingroup GLSL \author Martin Christen
+    //! To simplify the process loading/compiling/linking shaders this high level interface to simplify setup of a vertex/fragment shader was created. \ingroup GLSL \author Martin Christen
    class GLSLAPI glShaderManager
    {
    public:
@@ -336,7 +336,7 @@ namespace cwc
        bool      free(glShader* o); //!< Remove the shader and free the memory occupied by this shader.
 
    private:
-	   char                  info_log[1000]; // RZC 081125 add
+       char                  info_log[1000]; // RZC 081125 add
 
        std::vector<glShader*>  _shaderObjectList;
        int                     _nInputPrimitiveType;

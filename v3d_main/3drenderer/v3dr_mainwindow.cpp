@@ -46,7 +46,7 @@ last update: 060903
 
 #include "v3dr_mainwindow.h"
 #include "v3dr_glwidget.h"
-
+#include <QElapsedTimer>
 #include "v3dr_control_signal.cpp" // create control widgets and connect signals
 
 ///QTimer V3dR_MainWindow::animate_timer;// for static
@@ -156,17 +156,25 @@ V3dR_MainWindow::~V3dR_MainWindow()
 	// must closed before there! and do nothing is most OK, by RZC 2008-09-27
 }
 
+////////DLC add/////////////////////////////////
+//void V3dR_MainWindow::onShowBtnClicked()
+//{
+//    //点击后即可弹出一个新窗口，显示opengl渲染结果
+//        qDebug()<<"槽函数被调用了";
+//        //QMainWindow *newQMain = new QMainWindow(this);
+//        showTriangle* myWin = new showTriangle(this);
+//        myWin->resize(500, 500);
+//        qDebug()<<"show之前";
+//        myWin->show();
+//        qDebug()<<"show之后";
+//}
+//////////////////////////////////////////
 
 V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
 {
 	qDebug("V3dR_MainWindow::V3dR_MainWindow =====================================");
-	//setAttribute ( Qt::WA_DeleteOnClose, true ); // maybe cause Non-aligned pointer being freed error, when do'not use deleteLater, by RZC 080814, 090427
-	//setAttribute ( Qt::WA_AlwaysShowToolTips, true ); //090427 RZC: force show tooltip, may show some rubbish.
-	//090427 Always tooltip disappears after press any Modifier Key (Shift, Control, Option, Command). Because posting KeyPressEvent to glWidget make CPU 100% load.
 
-	///////////////////////////////////////////////////////////////
     init_members();    // this is important to clear zero before new object, by RZC 080818
-	////////////////////////////////////////////////////////////////
 
 	title_prefix = "3D View";
 	data_title = "";
@@ -211,28 +219,31 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
 
     //////////////////////////////////////////////////////////////////
     glWidget = 0;
+    qDebug("glWidget = new V3dR_GLWidget jazz debug in v3dr_mainwindow.cpp");
     glWidget = new V3dR_GLWidget(_idep, this, data_title); // 'this' pointer for glWidget calling back
 #if defined(USE_Qt5)
     if ( !glWidget ) //Under Qt5, the GL Widget is not valid until after it's shown
 #else
-    if (!glWidget || !(glWidget->isValid()))
+   // if (!glWidget || !(glWidget->isValid()))
+     if ( !glWidget )
 #endif
     {
-    	MESSAGE("ERROR: Failed to create OpenGL Widget or Context!!! \n");
+        MESSAGE("ERROR: Failed to create OpenGL Widget or Context!!! \n");
     }
     //////////////////////////////////////////////////////////////////
 
     //if (glWidget)	POST_EVENT(glWidget, QEvent::Type(QEvent_OpenFiles)); // move to V3dR_GLWidget::initializeGL for dynamic renderer, 081122 by RZC
 
 
-	//qDebug("V3dR_MainWindow::createControlWidgets");
+    //创建控制信号
+    qDebug("V3dR_MainWindow::createControlWidgets");
     createControlWidgets(); // RZC 080930, 090420: included connectSignal() & initControlValue()
 
 
     setAcceptDrops(true); //081031
-	setFocusPolicy(Qt::StrongFocus); // STRANGE: cannot accept foucusInEvent when mouse click, 081119
+    setFocusPolicy(Qt::StrongFocus); // STRANGE: cannot accept foucusInEvent when mouse click, 081119
 
-	//qDebug("V3dR_MainWindow::V3dR_MainWindow ===== end");
+    qDebug("V3dR_MainWindow::V3dR_MainWindow ===== end");
 }
 
 void V3dR_MainWindow::setDataTitle(QString newdt)
@@ -270,7 +281,7 @@ V3DLONG V3dR_MainWindow::animate(QString& loop_script, int rotation_time_ms,
 		return 0;
 	}
 
-	animate_option.loop_list = loop_script.split(" ",QString::SkipEmptyParts);
+    animate_option.loop_list = loop_script.split(" ",Qt::SkipEmptyParts);
 	animate_option.frame_time_ms = (rotation_frames<=0)? rotation_time_ms : rotation_time_ms/rotation_frames;
 	animate_option.rotation_frames = rotation_frames;
 	animate_option.rotation_timepoints = rotation_timepoints;
@@ -389,7 +400,7 @@ int V3dR_MainWindow::getAnimateRotTimePoints(QString qtitle, bool* ok, int v)
 #if defined(USE_Qt5)
 		timepoints = QInputDialog::getInt(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
 #else
-		timepoints = QInputDialog::getInteger(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
+        timepoints = QInputDialog::getInt(0, qtitle, QObject::tr("Time-points per rotation:"), timepoints, 0, 1000, 1, ok);
 #endif
 	}
 	else
@@ -424,7 +435,7 @@ void V3dR_MainWindow::setAnimateRotSpeedSec()
 	int time_sec = QInputDialog::getInt(0, QObject::tr("Animation"),
 									QObject::tr("Seconds per rotation of speed:"), rotationSpeedSec, 0, 1000, 1, &ok);
 #else
-	int time_sec = QInputDialog::getInteger(0, QObject::tr("Animation"),
+    int time_sec = QInputDialog::getInt(0, QObject::tr("Animation"),
 									QObject::tr("Seconds per rotation of speed:"), rotationSpeedSec, 0, 1000, 1, &ok);
 #endif
 	if (ok)  rotationSpeedSec = time_sec;
@@ -441,7 +452,7 @@ QString V3dR_MainWindow::previewMovie(QString& loop_script, int rotation_frames,
 	movieSaveButton->setEnabled(false);
 
 	V3DLONG frames = animate(loop_script, 0, rotation_frames, rotation_timepoints, false); // rotation_time_ms>0 for processing blocked events
-	QTime qtime;  qtime.start();
+    QElapsedTimer qtime;  qtime.start();
 
 	if (glWidget)  glWidget->setStill(false); //use sampled resolution
 	while (sAnimate==1)
@@ -484,24 +495,25 @@ void V3dR_MainWindow::doSaveMovie(QString& loop_script, int rotation_frames, int
 bool V3dR_GLWidget::screenShot(QString filename)
 {
 #if defined(USE_Qt5)
-	QImage image1 = this->grabFramebuffer();
+    QImage image1 = this->grabFramebuffer();
 #else
-	QImage image1 = this->grabFrameBuffer();
-#endif        
+    //QImage image1 = this->grabFrameBuffer();
+    QImage image1 = this->grabFramebuffer();
+#endif
 
         const char* format = SAVE_IMG_FORMAT;
-	QString curfile = filename + "." + format;
-	bool r =false;
-	if (image1.save(curfile, format, 100)) //uncompressed
-	{
-		printf("Successful to save screen-shot: [%s]\n",  curfile.toUtf8().data());
-		r = true;
-	}
-	else
-	{
-		printf("Failed to save screen-shot: [%s]\n",  curfile.toUtf8().data());
-	}
-	return r;
+    QString curfile = filename + "." + format;
+    bool r =false;
+    if (image1.save(curfile, format, 100)) //uncompressed
+    {
+        printf("Successful to save screen-shot: [%s]\n",  curfile.toUtf8().data());
+        r = true;
+    }
+    else
+    {
+        printf("Failed to save screen-shot: [%s]\n",  curfile.toUtf8().data());
+    }
+    return r;
 }
 
 void V3dR_MainWindow::saveFrameFunc(int i)
@@ -512,22 +524,22 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 		return;
 	}
 
-#if defined(USE_Qt5)
-	QImage image1 = glWidget->grabFramebuffer();
-#else
-	QImage image1 = glWidget->grabFrameBuffer();
-#endif        
+//#if defined(USE_Qt5)
+//	QImage image1 = glWidget->grabFramebuffer();
+//#else
+//	QImage image1 = glWidget->grabFrameBuffer();
+//#endif
 
         const char* format = SAVE_IMG_FORMAT;
 	QString curfile = QString("%1/a%2.%3").arg(outputDir).arg(i).arg(format);
-	if (image1.save(curfile, format, 100)) //uncompressed
-	{
-		printf("Successful to save frame %d: [%s]\n", i, curfile.toUtf8().data());
-	}
-	else
-	{
-		printf("Failed to save frame %d: [%s]\n", i, curfile.toUtf8().data());
-	}
+//	if (image1.save(curfile, format, 100)) //uncompressed
+//	{
+//		printf("Successful to save frame %d: [%s]\n", i, curfile.toUtf8().data());
+//	}
+//	else
+//	{
+//		printf("Failed to save frame %d: [%s]\n", i, curfile.toUtf8().data());
+//	}
 }
 
 void V3dR_MainWindow::saveMovie()
@@ -566,7 +578,7 @@ void V3dR_MainWindow::saveMovie()
 #if defined(USE_Qt5)
 			rotation_frames = QInputDialog::getInt(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
 #else
-			rotation_frames = QInputDialog::getInteger(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
+            rotation_frames = QInputDialog::getInt(0, qtitle, QObject::tr("Frames per rotation:"), rotation_frames, 0, 1000, 1, &ok);
 #endif
 			if (! ok) return;
 		}
@@ -633,7 +645,7 @@ void V3dR_MainWindow::saveMovie()
 
 void V3dR_MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
-    //qDebug("V3dR_MainWindow::dragEnterEvent");
+    qDebug("V3dR_MainWindow::dragEnterEvent");
 	//if (event->mimeData()->hasUrls()) // filename use urls
     event->acceptProposedAction();
 }
@@ -710,12 +722,12 @@ void V3dR_MainWindow::focusOutEvent(QFocusEvent*)
 }
 void V3dR_MainWindow::enterEvent(QEvent*)
 {
-	//qDebug("V3dR_MainWindow::enterEvent");
-	//setFocus();
+    qDebug("V3dR_MainWindow::enterEvent");
+    setFocus();
 }
 void V3dR_MainWindow::leaveEvent(QEvent*)
 {
-	//qDebug("V3dR_MainWindow::leaveEvent");
+    qDebug("V3dR_MainWindow::leaveEvent");
 }
 
 
@@ -982,4 +994,5 @@ QSize V3dR_MainWindow::getSize()
     return glWidget->size();
 }
 */
+
 

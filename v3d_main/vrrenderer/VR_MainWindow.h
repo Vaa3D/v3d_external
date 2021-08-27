@@ -21,7 +21,7 @@ class My4DImage;
 class MainWindow;
 class VR_MainWindow : public QWidget
 {
-   // Q_OBJECT
+    Q_OBJECT
 
 public:
     explicit VR_MainWindow(V3dR_Communicator* TeraflyCommunicator);
@@ -35,18 +35,18 @@ public:
 	XYZ VRvolumeMaxRes;
 	int ResIndex;
 	VRoutInfo VROutinfo;
-//public slots:
-//	void RunVRMainloop(XYZ* zoomPOS = 0);
-//	void SendHMDPosition();
-//	void onReadySend();
-//private slots:
+public slots:
+	void RunVRMainloop(XYZ* zoomPOS = 0);
+	void SendHMDPosition();
+	void onReadySend();
+private slots:
 
-//    void onReadyRead();
-//    void onConnected();
-//    void onDisconnected();
+    void onReadyRead();
+    void onConnected();
+    void onDisconnected();
 public:
 	CMainApplication *pMainApplication;
-//signals:
+signals:
 	void VRSocketDisconnect();
 	void sendPoolHead();
 private:

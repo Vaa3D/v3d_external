@@ -89,9 +89,9 @@ class terafly::CConverter : public QThread
         ~CConverter();
 
         //GET and SET methods
-        void setMembers(PConverter* pConverter) throw (RuntimeException);
+        void setMembers(PConverter* pConverter) noexcept(false);
         bool isConversionModeEnabled(){return conversionMode;}
-        VolumeConverter* getVolumeConverter() throw (RuntimeException)
+        VolumeConverter* getVolumeConverter() noexcept(false)
         {
             if(vc == 0)
                 throw RuntimeException("in CConverter::getVolumeConverter(): volume converter object does not exist");

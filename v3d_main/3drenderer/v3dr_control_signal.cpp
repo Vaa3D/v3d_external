@@ -37,9 +37,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * last update: 090618: by Hanchuan Peng, add global option to default video card compress, axes display and bounding box display states
  */
 
+//这个文件注释了很多东西
 #include "v3dr_mainwindow.h"
 
-
+#include <QComboBox>
 #ifndef MIN
 #define MIN(a, b)  ( ((a)<(b))? (a) : (b) )
 #endif
@@ -48,40 +49,44 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 
 
+#include "v3dr_glwidget.h"//需要包含这个头文件
+
 QString xCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 {
-	V3dR_GLWidget* w;
-	if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
-		return w->Cut_altTip(1, v, minv, maxv, offset);
-	else
+    qDebug("jazz debug xCut_altTip in v3dr_control_signal.cpp");
+    V3dR_GLWidget* w;
+    if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
+        return w->Cut_altTip(1, v, minv, maxv, offset);
+    else
 		return "";
 }
 QString yCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 {
-	V3dR_GLWidget* w;
-	if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
-		return w->Cut_altTip(2, v, minv, maxv, offset);
-	else
+     qDebug("jazz debug yCut_altTip in v3dr_control_signal.cpp");
+    V3dR_GLWidget* w;
+    if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
+        return w->Cut_altTip(2, v, minv, maxv, offset);
+    else
 		return "";
 }
 QString zCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 {
-	V3dR_GLWidget* w;
-	if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
-		return w->Cut_altTip(3, v, minv, maxv, offset);
-	else
+     qDebug("jazz debug zCut_altTip in v3dr_control_signal.cpp");
+    V3dR_GLWidget* w;
+    if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
+        return w->Cut_altTip(3, v, minv, maxv, offset);
+    else
 		return "";
 }
 
 
 void V3dR_MainWindow::createControlWidgets()
 {
-	//qDebug("V3dR_MainWindow::createControlWigdets");
+    qDebug("V3dR_MainWindow::createControlWigdets 右边信号构造函数");
 	int i;
-
     toolBtnGroup = new QWidget;
     QHBoxLayout *layout_toolBtnGroup = new QHBoxLayout(toolBtnGroup);
-
+    //这些是右边下方部分
     volumeColormapButton = new QPushButton("Vol Colormap");
     surfobjManagerButton = new QPushButton("Object Manager"); //Pick/Color"); // 090422 RZC
     layout_toolBtnGroup->addWidget(volumeColormapButton);
@@ -91,7 +96,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __volume_display_option_box__
 	//------------------------------------------------------------------------------
 	//volume display option box
-
+    qDebug()<<"jazz debug #define __volume_display_option_box__ in v3dr_control_signal.cpp";
     QWidget *volDisplayOptGroup = new QWidget;
     //QGroupBox *volDisplayOptGroup = new QGroupBox();
     //volDisplayOptGroup->setTitle("Volume display options");
@@ -160,7 +165,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __surface_display_option_box__
     //------------------------------------------------------------------------------
 	//surface display option box
-
+    qDebug()<<"jazz debug #define __surface_display_option_box__ in v3dr_control_signal.cpp";
 	QWidget *surfDisplayOptGroup = new QWidget;
     QGridLayout *surfDisplayOptLayout = new QGridLayout(surfDisplayOptGroup);
 
@@ -199,7 +204,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __others_display_option_box__
     //------------------------------------------------------------------
     //others display option box
-
+    qDebug()<<"jazz debug #define __others_display_option_box__ in v3dr_control_signal.cpp";
     QWidget *miscDisplayOptGroup = new QWidget(); // 090422 RZC
 //    QGroupBox *miscDisplayOptGroup = new QGroupBox();
 //    miscDisplayOptGroup->setTitle("Other options");
@@ -235,7 +240,7 @@ void V3dR_MainWindow::createControlWidgets()
 
     //==============================================================================
 	//volume/surface/misc tab box
-
+    //这是上方部分
 	tabOptions = new QTabWidget(); //AutoTabWidget(); //commented by PHC, 090117
 	tabOptions->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	i= tabOptions->addTab(volDisplayOptGroup, "Volume");
@@ -251,7 +256,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __rotation_slider_box__
     //------------------------------------------------------------------------------
 	//rotation sliders
-
+ qDebug()<<"jazz debug #define __rotation_slider_box__ in v3dr_control_signal.cpp";
     QWidget *rotateBarGroup = new QWidget;
     //QGroupBox *rotateBarGroup = new QGroupBox();
     //rotateBarGroup->setTitle("Rotations around axes");
@@ -260,9 +265,11 @@ void V3dR_MainWindow::createControlWidgets()
     //QFont smallFont;   smallFont.setPixelSize(12); smallFont.setBold(false);
     //rotateBarGroup->setFont(smallFont); // no any use
 
+    //这三个是三个小圆圈
 	xRotSlider = createRotateSlider();
     yRotSlider = createRotateSlider();
     zRotSlider = createRotateSlider();
+    //这三个是有度的东西
 	  xRotBox = createRotateSpinBox();
 	  yRotBox = createRotateSpinBox();
 	  zRotBox = createRotateSpinBox();
@@ -274,15 +281,6 @@ void V3dR_MainWindow::createControlWidgets()
 	  rotAbsolutePose = new QPushButton("Freeze", rotateBarGroup);
 	  rotAbsolutePose->setToolTip("Absolutize rotation pose about X-Y-Z sequentially for Going back next time");
 
-
-//    rotateBarBoxLayout->addWidget(xrotateLabel, 1, 0, 1, 5);
-//    rotateBarBoxLayout->addWidget(xRotSlider, 1, 6, 1, 15);
-//
-//    rotateBarBoxLayout->addWidget(yrotateLabel, 2, 0, 1, 5);
-//    rotateBarBoxLayout->addWidget(yRotSlider, 2, 6, 1, 15);
-//
-//    rotateBarBoxLayout->addWidget(zrotateLabel, 3, 0, 1, 5);
-//    rotateBarBoxLayout->addWidget(zRotSlider, 3, 6, 1, 15);
 
 	rotateBarBoxLayout->addWidget(new QLabel("X-"), 1, 0, 1, 7);
 	rotateBarBoxLayout->addWidget(new QLabel("Y-"), 1, 7, 1, 7);
@@ -307,10 +305,9 @@ void V3dR_MainWindow::createControlWidgets()
 #define __zoom_shift_slider_box__
 	//------------------------------------------------------------------------
     // zoom & shift slider
-
+ qDebug()<<"jazz debug #define __zoom_shift_slider_box__ in v3dr_control_signal.cpp";
     QWidget *zoomBarGroup = new QWidget;
-    //QGroupBox *zoomBarGroup = new QGroupBox();
-    //zoomBarGroup->setTitle("Zoom && Shift");
+
     QGridLayout *zoomBarBoxLayout = new QGridLayout(zoomBarGroup);
 
 	zoomSlider = createZoomSlider( Qt::Vertical); //080930
@@ -321,15 +318,6 @@ void V3dR_MainWindow::createControlWidgets()
 	  yShiftBox = createShiftSpinBox();
 	  zoomBox = createZoomSpinBox();
 
-//    zoomBarBoxLayout->addWidget(zoomLabel, 1, 0, 1, 4);
-//    zoomBarBoxLayout->addWidget(zoomSlider, 1, 1+4, 1, 11);
-//    zoomBarBoxLayout->addWidget(zoomReset, 1, 1+4+11, 1, 20-11-4);
-//
-//    zoomBarBoxLayout->addWidget(xshiftLabel, 2, 0, 1, 4);
-//    zoomBarBoxLayout->addWidget(xShiftSlider, 2, 1+4, 1, 20-4);
-//
-//    zoomBarBoxLayout->addWidget(yshiftLabel, 3, 0, 1, 4);
-//    zoomBarBoxLayout->addWidget(yShiftSlider, 3, 1+4, 1, 20-4);
 
 	QLabel* zoomLabel;
     zoomBarBoxLayout->addWidget(zoomLabel= new QLabel("Zoom"), 1, 0, 1, 5);
@@ -354,7 +342,7 @@ void V3dR_MainWindow::createControlWidgets()
 
 	//=============================================================================
 	// rotation/zoom-shift tab box
-
+    //创建右边最下面的
 	tabRotZoom = new QTabWidget();//tabRotZoom = new AutoTabWidget(); //commented by PHC, 090117
 	tabRotZoom->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	i= tabRotZoom->addTab(rotateBarGroup, "Rotation");
@@ -368,27 +356,27 @@ void V3dR_MainWindow::createControlWidgets()
 #define __cut_plane_slider_box__
     //-----------------------------------------------------------------------------
     //cut-plane boxes (1-volume & 2-section shared same place, 3-surface)
-
+ qDebug()<<"jazz debug #define __cut_plane_slider_box__ in v3dr_control_signal.cpp";
 	QWidget *cutPlaneGroup[1+3];
 	cutPlaneGroup[1] = new QWidget;
 	cutPlaneGroup[2] = new QWidget;
 	cutPlaneGroup[3] = new QWidget;
-//	QGroupBox *cutPlaneGroup[1+3];
-//	cutPlaneGroup[1] = new QGroupBox();
-//	cutPlaneGroup[2] = new QGroupBox();
-//	cutPlaneGroup[3] = new QGroupBox();
-//	cutPlaneGroup[1]->setTitle("Volume cut-planes");
-//	cutPlaneGroup[2]->setTitle("X-section planes");
-//	cutPlaneGroup[3]->setTitle("Surface cut-planes");
+
+    qDebug()<<"jazz debug cut_plane_slider_box in v3dr_control_singnal.cpp";
+
 	QGridLayout *cutPlaneRgnLayout[1+3];
 	for (int i=1; i<=3; i++)
 	switch (i)
 	{
 	case 1: {// volume
 		int d1, d2, d3;
-		d1 = MAX(0, glWidget->dataDim1()-1);
-		d2 = MAX(0, glWidget->dataDim2()-1);
-		d3 = MAX(0, glWidget->dataDim3()-1);
+
+        d1 = MAX(0, glWidget->dataDim1()-1);
+        d2 = MAX(0, glWidget->dataDim2()-1);
+        d3 = MAX(0, glWidget->dataDim3()-1);
+//        d1 = 5;
+//        d2 = 5;
+//        d3 = 5;
 		xcminSlider = createCutPlaneSlider(d1);
 		xcmaxSlider = createCutPlaneSlider(d1);
 		ycminSlider = createCutPlaneSlider(d2);
@@ -396,32 +384,12 @@ void V3dR_MainWindow::createControlWidgets()
 		zcminSlider = createCutPlaneSlider(d3);
 		zcmaxSlider = createCutPlaneSlider(d3);
 		fcutSlider = createRangeSlider(0, CLIP_RANGE);
-//		xcLock = new QCheckBox();
-//		ycLock = new QCheckBox();
-//		zcLock = new QCheckBox();
 		xcLock = new QToolButton(); xcLock->setCheckable(true);
 		ycLock = new QToolButton(); ycLock->setCheckable(true);
 		zcLock = new QToolButton(); zcLock->setCheckable(true);
 
 		cutPlaneRgnLayout[i] = new QGridLayout(cutPlaneGroup[i]);
 
-//		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-min"), 1, 0, 1, 5);
-//		cutPlaneRgnLayout[i]->addWidget(xcminSlider, 1, 6, 1, 15);
-//
-//		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-max"), 2, 0, 1, 5);
-//		cutPlaneRgnLayout[i]->addWidget(xcmaxSlider, 2, 6, 1, 15);
-//
-//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Y-min"), 3, 0, 1, 5);
-//		cutPlaneRgnLayout[i]->addWidget(ycminSlider, 3, 6, 1, 15);
-//
-//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Y-max"), 4, 0, 1, 5);
-//		cutPlaneRgnLayout[i]->addWidget(ycmaxSlider, 4, 6, 1, 15);
-//
-//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-min"), 5, 0, 1, 5);
-//		cutPlaneRgnLayout[i]->addWidget(zcminSlider, 5, 6, 1, 15);
-//
-//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-max"), 6, 0, 1, 5);
-//		cutPlaneRgnLayout[i]->addWidget(zcmaxSlider, 6, 6, 1, 15);
 
 		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-cut"), 1, 0, 1, 5);
 		cutPlaneRgnLayout[i]->addWidget(xcminSlider, 1, 6, 1, 15);
@@ -449,9 +417,13 @@ void V3dR_MainWindow::createControlWidgets()
 	}break;
 	case 2: {// x-section
 		int d1, d2, d3;
-		d1 = MAX(0, glWidget->dataDim1()-1);
-		d2 = MAX(0, glWidget->dataDim2()-1);
-		d3 = MAX(0, glWidget->dataDim3()-1);
+
+        d1 = MAX(0, glWidget->dataDim1()-1);
+        d2 = MAX(0, glWidget->dataDim2()-1);
+        d3 = MAX(0, glWidget->dataDim3()-1);
+//        d1 = 5;
+//        d2 = 5;
+//        d3 = 5;
 		xCSSlider = createCutPlaneSlider(d1);
 		yCSSlider = createCutPlaneSlider(d2);
 		zCSSlider = createCutPlaneSlider(d3);
@@ -472,6 +444,7 @@ void V3dR_MainWindow::createControlWidgets()
 		cutPlaneRgnLayout[i]->addWidget(fCSSlider, 4, 6, 1, 15);
 
 	}break;
+
 	case 3: {// surface
 		xSminSlider = createCutPlaneSlider(CLIP_RANGE);
 		xSmaxSlider = createCutPlaneSlider(CLIP_RANGE);
@@ -509,10 +482,7 @@ void V3dR_MainWindow::createControlWidgets()
 	// cut-planes tab box
 
 	tabCutPlane = new QTabWidget(); //new AutoTabWidget(); //commented by PHC, 090117
-	tabCutPlane->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-//	i= tabCutPlane->insertTab(1, cutPlaneGroup[1], "Volume");    // qDebug("insertTab(1) = %d", i);
-//  i= tabCutPlane->insertTab(2, cutPlaneGroup[2], "X-section"); // qDebug("insertTab(2) = %d", i);
-//  i= tabCutPlane->insertTab(3, cutPlaneGroup[3], "Surface");   // qDebug("insertTab(3) = %d", i);
+
 	QWidget * stackedVolPage = new QWidget;
 	stackedCutPlane = new QStackedLayout(stackedVolPage);
 	i= stackedCutPlane->addWidget(cutPlaneGroup[1]);
@@ -526,74 +496,12 @@ void V3dR_MainWindow::createControlWidgets()
 
 
 
-/*	////////////////////////////////////////////////////////////
-	//movie rotation
-
-	xstep=2; ystep=0; zstep=0; nsteps_rot_movie=180;
-
-	QGroupBox *movieCtrlGroup = new QGroupBox(btnGroup);
-    movieCtrlGroup->setTitle("Movie");
-    QGridLayout *movieCtrlLayout = new QGridLayout(movieCtrlGroup);
-
-	xRotBox = new QSpinBox;
-    xRotBox->setRange(-90, 90);
-    xRotBox->setSingleStep(1);
-    xRotBox->setValue(xstep);
-	QLabel *xRotBoxLabel = new QLabel("X Step", movieCtrlGroup);
-
-	yRotBox = new QSpinBox;
-    yRotBox->setRange(-90, 90);
-    yRotBox->setSingleStep(1);
-    yRotBox->setValue(ystep);
-	QLabel *yRotBoxLabel = new QLabel("Y Step", movieCtrlGroup);
-
-	zRotBox = new QSpinBox;
-    zRotBox->setRange(-90, 90);
-    zRotBox->setSingleStep(1);
-    zRotBox->setValue(zstep);
-	QLabel *zRotBoxLabel = new QLabel("Z Step", movieCtrlGroup);
-
-	nStepBox = new QSpinBox;
-    nStepBox->setRange(1, 500);
-    nStepBox->setSingleStep(1);
-    nStepBox->setValue(nsteps_rot_movie);
-	QLabel *nStepBoxLabel = new QLabel("# Steps", movieCtrlGroup);
-
-    moviePreViewButton = new QPushButton(movieCtrlGroup);
-    moviePreViewButton->setText("Preview Movie");
-
-    movieSaveButton = new QPushButton(movieCtrlGroup);
-    movieSaveButton->setText("Save Movie Now...");
-
-    movieCtrlLayout->addWidget(xRotBoxLabel, 0, 0, 1, 4);
-    movieCtrlLayout->addWidget(xRotBox, 0, 5, 1, 9);
-
-    movieCtrlLayout->addWidget(yRotBoxLabel, 1, 0, 1, 4);
-    movieCtrlLayout->addWidget(yRotBox, 1, 5, 1, 9);
-
-    movieCtrlLayout->addWidget(zRotBoxLabel, 2, 0, 1, 4);
-    movieCtrlLayout->addWidget(zRotBox, 2, 5, 1, 9);
-
-    movieCtrlLayout->addWidget(nStepBoxLabel, 3, 0, 1, 4);
-    movieCtrlLayout->addWidget(nStepBox, 3, 5, 1, 9);
-
-    movieCtrlLayout->addWidget(moviePreViewButton, 4, 0, 1, 13);
-
-    movieCtrlLayout->addWidget(movieSaveButton, 5, 0, 1, 13);
-
-	connect(xRotBox, SIGNAL(valueChanged(int)), this, SLOT(setXRotStep(int)));
-	connect(yRotBox, SIGNAL(valueChanged(int)), this, SLOT(setYRotStep(int)));
-	connect(zRotBox, SIGNAL(valueChanged(int)), this, SLOT(setZRotStep(int)));
-	connect(nStepBox, SIGNAL(valueChanged(int)), this, SLOT(setNSteps(int)));
-*/
-
 
 #define __manage_layout_and_call_connect_signal__
 	//===========================================================================================
     //Managing the layout
-
+ qDebug()<<"jazz debug #define __manage_layout_and_call_connect_signal__ in v3dr_control_signal.cpp";
     QGroupBox* viewGroup = new QGroupBox();
-    //QFrame *viewGroup = new QFrame;  viewGroup->setFrameStyle(QFrame::StyledPanel);
 
     glWidgetArea = new QScrollArea;
     glWidgetArea->setWidgetResizable(true);
@@ -601,7 +509,10 @@ void V3dR_MainWindow::createControlWidgets()
     glWidgetArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     glWidgetArea->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding); //QSizePolicy::Ignored, QSizePolicy::Ignored);
     glWidgetArea->setMinimumSize(MINVIEW_SIZEX, MINVIEW_SIZEY);
-    if (glWidget)  	glWidgetArea->setWidget(glWidget);
+    if(glWidget)  	glWidgetArea->setWidget(glWidget);
+
+
+
 
     timeSlider = new QScrollBar(Qt::Horizontal);
     timeSlider->setRange(0,0);
@@ -616,7 +527,7 @@ void V3dR_MainWindow::createControlWidgets()
     //------------------------------------------------
 
     controlGroup = new QGroupBox();
-    //QFrame *controlGroup = new QFrame;  controlGroup->setFrameStyle(QFrame::StyledPanel);
+
     controlGroup->setFixedWidth(CTRL_SIZEX);
     controlGroup->setTitle("Controls");
     controlGroup->setFocusPolicy(Qt::StrongFocus);
@@ -626,6 +537,7 @@ void V3dR_MainWindow::createControlWidgets()
     controlLayout->addWidget(toolBtnGroup); //090712 RZC
     controlLayout->addWidget(tabCutPlane); //cutPlaneGroup);
     controlLayout->addWidget(tabRotZoom); //rotateBarGroup);
+
 
 #ifdef __ALLOW_VR_FUNCS__
 	//=============================================================================
@@ -640,7 +552,7 @@ void V3dR_MainWindow::createControlWidgets()
 	controlLayout->addWidget(rotVRView);
 
 #endif
-	
+
     controlLayout->addStretch(0);
     controlLayout->setSpacing(0);
     //------------------------------------------------
@@ -668,14 +580,12 @@ void V3dR_MainWindow::createControlWidgets()
     connectSignal();
     ////////////////////////////////////////////////////////////////////////////////////
 
-    // after connectSignal then set widget's initial values, by RZC 080821
-    // 090503 RZC: deferred until glWigdet->initialGL for correct settings, because the renderer is created dynamically
-    // initControlValue();
+
 
 
 #define __tip_filter_and_button_menu__
 	//===========================================================================================
-
+ qDebug()<<"jazz debug #define __tip_filter_and_button_menu__ in v3dr_control_signal.cpp";
 	SliderTipFilter *TsliderTip = new SliderTipFilter(this, "time = ", "", 0);
 	timeSlider->installEventFilter(TsliderTip);
 
@@ -852,7 +762,7 @@ void V3dR_MainWindow::connectSignal()
 
 #define __connect_rotation__
 	//rotation group //////////////////////////////////////////////////
-
+    //信号连接
 	if (xRotSlider) {
 		connect(xRotSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setXRotation(int)));
 		connect(glWidget, SIGNAL(xRotationChanged(int)), xRotSlider, SLOT(setValue(int)));
@@ -923,7 +833,6 @@ void V3dR_MainWindow::connectSignal()
 			connect(yShiftBox, SIGNAL(valueChanged(int)), yShiftSlider, SLOT(setValue(int)));
 		}
 	}
-
 	if (rotReset)
 	{
 		connect(rotReset, SIGNAL(clicked()), glWidget, SLOT(resetRotation()));
@@ -1195,7 +1104,6 @@ void V3dR_MainWindow::initControlValue()
 	//////////////////////////////////////////////////////////////////////////
 	// updateGL here immediately to prevent a delay flash due to following Renderer::init when using POST_updateGL, by RZC 080927
 	if (glWidget) glWidget->update();  // 081122, CAUTION: call updateGL from initializeGL will cause infinite loop call
-	//////////////////////////////////////////////////////////////////////////
 }
 
 void V3dR_MainWindow::setXCutLockIcon(bool b)
@@ -1255,19 +1163,24 @@ void V3dR_MainWindow::setZCutLockIcon(bool b)
 
 void V3dR_MainWindow::initVolumeTimeRange()
 {
+    qDebug()<<"jazz debug V3dR_MainWindow::initVolumeTimeRange in v3dr_control_signal.cpp";
 	if (! glWidget) return;
 
 	int t;
+    /*
 	t = MAX(0, glWidget->dataDim5()-1);
 
 	if (timeSlider) {
 		timeSlider->setMaximum(t);
 		timeSlider->setValue(0);
 	}
+    */
 }
 
 void V3dR_MainWindow::initVolumeCutRange()
 {
+    qDebug()<<"jazz debug V3dR_MainWindow::initVolumeCutRange in v3dr_control_signal.cpp";
+
 	if (! glWidget) return;
 
 	int d1, d2, d3;
@@ -1331,6 +1244,7 @@ void V3dR_MainWindow::initVolumeCutRange()
 		zCSSlider->setMaximum(d3);
 		zCSSlider->setValue((zCSSlider->minimum()+zCSSlider->maximum())/2);
 	}
+
 }
 
 void V3dR_MainWindow::initSurfaceCutRange()
@@ -1346,6 +1260,7 @@ void V3dR_MainWindow::initSurfaceCutRange()
 
 void V3dR_MainWindow::createMenuOfAnimate()
 {
+    qDebug()<<"jazz brain debug V3dR_MainWindow::createMenuOfAnimate() in v3dr_control_signal.cpp";
     QAction* Act;
 
     Act = new QAction(tr("&Animation On"), this);
@@ -1387,6 +1302,8 @@ static const char* i2strRGB[] = //{"R", "G", "B"};
 
 void V3dR_MainWindow::createMenuOfSurfFile()
 {
+    qDebug()<<"jazz debug V3dR_MainWindow::createMenuOfSurfFile in v3dr_control_signal.cpp";
+
     QAction* Act;
     if (! glWidget)
 	{
@@ -1432,6 +1349,7 @@ void V3dR_MainWindow::createMenuOfSurfFile()
 		}
     }
 #endif
+
 }
 
 void V3dR_MainWindow::doMenuOfSurfFile()
@@ -1486,7 +1404,9 @@ QSpinBox *V3dR_MainWindow::createRotateSpinBox()
 {
 	QSpinBox *box = new QSpinBox;
 	box->setRange(0, 360);
-	box->setSuffix("\xB0");
+    //box->setSuffix("\xB0");
+    box->setSuffix("°");
+
 	return box;
 }
 
@@ -1608,9 +1528,9 @@ QSpinBox *V3dR_MainWindow::createMarkerSizeSpinBox()
 QComboBox *V3dR_MainWindow::createChannelComboBox()
 {
 	QComboBox *box = new QComboBox;
-	//box->setRange(1, 3);
-    //box->setSingleStep(1.0);
-    //box->setValue(1);
-	//box->setSuffix(" %o");
+//    box->setRange(1, 3);
+//    box->setSingleStep(1.0);
+//    box->setValue(1);
+//    box->setSuffix(" %o");
 	return box;
 }

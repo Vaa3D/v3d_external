@@ -3,6 +3,8 @@
  * All rights reserved.
  */
 
+#include <QString>
+
 
 /************
 																								********* LICENSE NOTICE ************

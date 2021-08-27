@@ -46,11 +46,12 @@ Last update: 080814: move iDrawExternalParameter to v3d_core.h
 #include "qtr_widget.h"
 
 
+
 class V3dR_GLWidget;
 
 class V3dR_MainWindow : public QWidget
 {
-    //Q_OBJECT
+    Q_OBJECT
 
 public:
     V3dR_MainWindow(iDrawExternalParameter* idep);
@@ -61,60 +62,63 @@ public:
 	QString getDataTitle() {return data_title;}
 	V3dR_GLWidget * getGLWidget() {return glWidget;}
 
+
 protected:
-//    virtual void closeEvent(QCloseEvent* e);
-//    virtual void dragEnterEvent(QDragEnterEvent *e);
-//    virtual void dropEvent ( QDropEvent * e);
-//    virtual void focusInEvent(QFocusEvent* e);
-//    virtual void focusOutEvent(QFocusEvent* e);
-//    virtual void enterEvent(QEvent *e);
-//    virtual void leaveEvent(QEvent *e);
-//    virtual void changeEvent(QEvent* e);
-//	virtual void keyPressEvent(QKeyEvent * e);
-//	virtual void keyReleaseEvent(QKeyEvent * e);
+    virtual void closeEvent(QCloseEvent* e);
+    virtual void dragEnterEvent(QDragEnterEvent *e);
+    virtual void dropEvent ( QDropEvent * e);
+    virtual void focusInEvent(QFocusEvent* e);
+    virtual void focusOutEvent(QFocusEvent* e);
+    virtual void enterEvent(QEvent *e);
+    virtual void leaveEvent(QEvent *e);
+    virtual void changeEvent(QEvent* e);
+    virtual void keyPressEvent(QKeyEvent * e);
+    virtual void keyReleaseEvent(QKeyEvent * e);
 
-//public slots:
-//	void postClose();
+public slots:
+    void postClose();
 
-//	void setXCutLockIcon(bool);
-//	void setYCutLockIcon(bool);
-//	void setZCutLockIcon(bool);
+    void setXCutLockIcon(bool);
+    void setYCutLockIcon(bool);
+    void setZCutLockIcon(bool);
 
-//	void initControlValue(); // easy to edit, by RZC 080828, easy to reset 081122
-//	void initVolumeTimeRange();
-//	void initVolumeCutRange();  // called by initControlValue
-//	void initSurfaceCutRange(); // called by initControlValue
+    void initControlValue(); // easy to edit, by RZC 080828, easy to reset 081122
+    void initVolumeTimeRange();
+    void initVolumeCutRange();  // called by initControlValue
+    void initSurfaceCutRange(); // called by initControlValue
 
-//	void onlySurfaceObjTab() {if(tabOptions) tabOptions->setCurrentIndex(1); if(tabCutPlane) tabCutPlane->setCurrentIndex(1);}
+    void onlySurfaceObjTab() {if(tabOptions) tabOptions->setCurrentIndex(1); if(tabCutPlane) tabCutPlane->setCurrentIndex(1);}
 
-//	void doMenuOfSurfFile();
-//	void doMenuOfAnimate();
+    void doMenuOfSurfFile();
+    void doMenuOfAnimate();
 
-//    // previewMovie() also return the rendering benchmark information
-//	QString previewMovie(QString& loop_scpript, int rotation_frames, int rotation_timepoints);
-//    void doSaveMovie(QString& loop_scpript, int rotation_frames, int rotation_timepoints);
-//    void saveMovie();
+    // previewMovie() also return the rendering benchmark information
+    QString previewMovie(QString& loop_scpript, int rotation_frames, int rotation_timepoints);
+    void doSaveMovie(QString& loop_scpript, int rotation_frames, int rotation_timepoints);
+    void saveMovie();
 
-//	void animateOn();
-//	void animateOff();
-//    void animateStep();
-//	QString getAnimateRotType(QString qtitle, bool* ok);
-//	void setAnimateRotType();
-//	int getAnimateRotTimePoints(QString qtitle, bool* ok, int v);
-//	void setAnimateRotTimePoints();
-//	void setAnimateRotSpeedSec();
+    void animateOn();
+    void animateOff();
+    void animateStep();
+    QString getAnimateRotType(QString qtitle, bool* ok);
+    void setAnimateRotType();
+    int getAnimateRotTimePoints(QString qtitle, bool* ok, int v);
+    void setAnimateRotTimePoints();
+    void setAnimateRotSpeedSec();
 
-//	void raise_and_activate() {if (isMinimized()) showNormal(); raise(); activateWindow();} //by PHC. 090626 to bring a 3D viewer to front and activate it
+    void raise_and_activate() {if (isMinimized()) showNormal(); raise(); activateWindow();} //by PHC. 090626 to bring a 3D viewer to front and activate it
 
-//    // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
-//    void hideDisplayControls();
+    // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
+    void hideDisplayControls();
+    //注释
+  //  void about();
+    //for movie control
 
-//	void about();
-//    //for movie control
 //    void setXRotStep(int t);
 //    void setYRotStep(int t);
 //    void setZRotStep(int t);
 //    void setNSteps(int t);
+
 
 public:
 	iDrawExternalParameter null_idep; //090918: for editing swc
@@ -250,6 +254,7 @@ public:
 
 	void init_members() // more clear putting them here, by RZC 080828
 	{
+        qDebug()<<"jazzbrain debug init_members in v3dr_mainwindow.h";
 		default_animate_para();
 	    sAnimate = 0;
 		bAnimating = false;
@@ -313,14 +318,14 @@ public:
 	void connectSignal();
 	//void disconnectSignal(); // no need to disconnect
 
-//    QMenu *fileMenu;
-//    QMenu *helpMenu;
-//    QAction *grabFrameBufferAct;
-//    QAction *renderIntoPixmapAct;
-//    QAction *clearPixmapAct;
-//    QAction *exitAct;
-//    QAction *aboutAct;
-//    QAction *aboutQtAct;
+    QMenu *fileMenu;
+    QMenu *helpMenu;
+    QAction *grabFrameBufferAct;
+    QAction *renderIntoPixmapAct;
+    QAction *clearPixmapAct;
+    QAction *exitAct;
+    QAction *aboutAct;
+    QAction *aboutQtAct;
 };
 
 

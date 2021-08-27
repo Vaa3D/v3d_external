@@ -1,5 +1,5 @@
 #include "QHelpBox.h"
-
+#include <QStackedLayout>
 using namespace terafly;
 
 QHelpBox::QHelpBox(QWidget *_parent) : QWidget(_parent)

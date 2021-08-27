@@ -18,7 +18,7 @@
 #include "../presentation/PLog.h"
 //#include "renderer_gl1.h"
 //#include "renderer.h"
-#include "../../../../3drenderer/v3dr_surfaceDialog.h"
+#include "../3drenderer/v3dr_surfaceDialog.h"
 
 double SOMA_X = -1.1;
 double SOMA_Y = -1.1;
@@ -42,7 +42,7 @@ tf::uint64 annotation::destroyed = 0;
 
 bool isMarker (annotation* ano) { return ano->type == 0;}
 
-annotation::annotation() throw (tf::RuntimeException){
+annotation::annotation() {
     type = subtype  = -1;
     r = x = y = z = -1;
     parent = 0;
@@ -139,7 +139,7 @@ CAnnotations::~CAnnotations()
 }
 
 //recursive support method of 'clear' method
-void CAnnotations::Octree::_rec_clear(const Poctant& p_octant) throw(RuntimeException)
+void CAnnotations::Octree::_rec_clear(const Poctant& p_octant)
 {
     if(p_octant)
     {
@@ -165,7 +165,7 @@ void CAnnotations::Octree::_rec_clear(const Poctant& p_octant) throw(RuntimeExce
 }
 
 //recursive support method of 'insert' method
-void CAnnotations::Octree::_rec_insert(const Poctant& p_octant, annotation& neuron) throw(RuntimeException)
+void CAnnotations::Octree::_rec_insert(const Poctant& p_octant, annotation& neuron)
 {
     //if the octant is greater than a point, the insert is recursively postponed until a 1x1x1 leaf octant is reached
     if(p_octant->V_dim > 1 || p_octant->H_dim > 1 || p_octant->D_dim > 1)
@@ -315,7 +315,7 @@ void CAnnotations::Octree::_rec_insert(const Poctant& p_octant, annotation& neur
 }
 
 //recursive support method of 'remove' method
-void CAnnotations::Octree::_rec_remove(const Poctant& p_octant, annotation *neuron) throw(RuntimeException)
+void CAnnotations::Octree::_rec_remove(const Poctant& p_octant, annotation *neuron)
 {
     //if the octant is greater than a point, the remove operation is recursively postponed until a 1x1x1 leaf octant is reached
     if(p_octant->V_dim > 1 || p_octant->H_dim > 1 || p_octant->D_dim > 1)
@@ -439,7 +439,7 @@ void CAnnotations::Octree::_rec_remove(const Poctant& p_octant, annotation *neur
 }
 
 //recursive support method of 'deep_count' method
-tf::uint32 CAnnotations::Octree::_rec_deep_count(const Poctant& p_octant) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::_rec_deep_count(const Poctant& p_octant)
 {
     if(p_octant)
         if(p_octant->V_dim == 1 && p_octant->H_dim == 1 && p_octant->D_dim == 1)
@@ -452,7 +452,7 @@ tf::uint32 CAnnotations::Octree::_rec_deep_count(const Poctant& p_octant) throw(
 }
 
 //recursive support method of 'toNeuronTree' method
-void CAnnotations::Octree::_rec_to_neuron_tree(const Poctant& p_octant, QList<NeuronSWC> &segments) throw(tf::RuntimeException)
+void CAnnotations::Octree::_rec_to_neuron_tree(const Poctant& p_octant, QList<NeuronSWC> &segments)
 {
     if(p_octant && p_octant->V_dim > 1 && p_octant->H_dim > 1 && p_octant->D_dim > 1)
 //    if(p_octant)
@@ -550,7 +550,7 @@ void CAnnotations::Octree::_rec_to_neuron_tree(const Poctant& p_octant, QList<Ne
 }
 
 //recursive support method of 'height' method
-tf::uint32 CAnnotations::Octree::_rec_height(const Poctant& p_octant) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::_rec_height(const Poctant& p_octant)
 {
     if(p_octant)
     {
@@ -589,7 +589,7 @@ void CAnnotations::Octree::_rec_print(const Poctant& p_octant)
 }
 
 //recursive support method of 'prune' method
-void CAnnotations::Octree::_rec_prune(const Poctant& p_octant) throw(tf::RuntimeException)
+void CAnnotations::Octree::_rec_prune(const Poctant& p_octant)
 {
     if(p_octant)
     {
@@ -652,7 +652,7 @@ void CAnnotations::Octree::_rec_prune(const Poctant& p_octant) throw(tf::Runtime
 }
 
 //recursive support method of 'find' method
-void CAnnotations::Octree::_rec_search(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int, std::list<annotation*>& neurons)  throw(RuntimeException)
+void CAnnotations::Octree::_rec_search(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int, std::list<annotation*>& neurons)
 {
     if(p_octant)
     {
@@ -698,7 +698,7 @@ void CAnnotations::Octree::_rec_search(const Poctant& p_octant, const interval_t
 }
 
 //recursive support method of 'rec_find' method
-CAnnotations::Octree::Poctant CAnnotations::Octree::_rec_find(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) throw(RuntimeException)
+CAnnotations::Octree::Poctant CAnnotations::Octree::_rec_find(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int)
 {
     //printf("\n_rec_find(p_octant=%d, V_int=[%d-%d), H_int=[%d-%d), D_int=[%d-%d))\n", p_octant, V_int.start, V_int.end, H_int.start, H_int.end, D_int.start, D_int.end);
 
@@ -768,7 +768,7 @@ CAnnotations::Octree::Poctant CAnnotations::Octree::_rec_find(const Poctant& p_o
 }
 
 //recursive support method of 'count' method
-tf::uint32 CAnnotations::Octree::_rec_count(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::_rec_count(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int)
 {
     if(p_octant)
     {
@@ -816,7 +816,7 @@ tf::uint32 CAnnotations::Octree::_rec_count(const Poctant& p_octant, const inter
 
 //returns true if two given volumes intersect each other
 bool inline CAnnotations::Octree::intersects(const interval_t& V1_int,		 const interval_t& H1_int,		   const interval_t& D1_int,
-                                                           int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim) throw(RuntimeException)
+                                                           int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)
 {
     return 	( V1_int.start  < (V2_start + V2_dim)	&&
               V1_int.end    >  V2_start             &&
@@ -828,7 +828,7 @@ bool inline CAnnotations::Octree::intersects(const interval_t& V1_int,		 const i
 
 //returns true if first volume contains second volume
 bool inline CAnnotations::Octree::contains  (const interval_t& V1_int,		 const interval_t& H1_int,		   const interval_t& D1_int,
-                                             int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim) throw(RuntimeException)
+                                             int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)
 {
     return (  V1_int.start  <=  V2_start            &&
               V1_int.end    >=  (V2_start+V2_dim)	&&
@@ -869,7 +869,7 @@ CAnnotations::Octree::~Octree(void)
 }
 
 //clears octree content and deallocates used memory
-void CAnnotations::Octree::clear() throw(RuntimeException)
+void CAnnotations::Octree::clear()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -878,7 +878,7 @@ void CAnnotations::Octree::clear() throw(RuntimeException)
 }
 
 //prunes the octree by removing all nodes duplicates while maintaining the same branched structure
-void CAnnotations::Octree::prune() throw(tf::RuntimeException)
+void CAnnotations::Octree::prune()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -886,7 +886,7 @@ void CAnnotations::Octree::prune() throw(tf::RuntimeException)
 }
 
 //insert given neuron in the octree
-void CAnnotations::Octree::insert(annotation& neuron)  throw(RuntimeException)
+void CAnnotations::Octree::insert(annotation& neuron)
 {
     // @FIXED by Alessandro on 2017-09-03: set negative coordinates to zero so that annotation can be stored in the octree
     neuron.x = std::max(neuron.x, 0.f);
@@ -897,7 +897,7 @@ void CAnnotations::Octree::insert(annotation& neuron)  throw(RuntimeException)
 }
 
 //remove given neuron from the octree (returns 1 if succeeds)
-bool CAnnotations::Octree::remove(annotation *neuron) throw(tf::RuntimeException)
+bool CAnnotations::Octree::remove(annotation *neuron)
 {
     std::list<annotation*>* matching_nodes = this->find(neuron->x, neuron->y, neuron->z);
     if(std::find(matching_nodes->begin(), matching_nodes->end(), neuron) == matching_nodes->end())
@@ -910,7 +910,7 @@ bool CAnnotations::Octree::remove(annotation *neuron) throw(tf::RuntimeException
 }
 
 //search for the annotations at the given coordinate. If found, returns the address of the annotations list
-std::list<annotation*>* CAnnotations::Octree::find(float x, float y, float z) throw(RuntimeException)
+std::list<annotation*>* CAnnotations::Octree::find(float x, float y, float z)
 {
     interval_t V_range(static_cast<int>(floor(y)), static_cast<int>(ceil(y)));
     interval_t H_range(static_cast<int>(floor(x)), static_cast<int>(ceil(x)));
@@ -929,13 +929,13 @@ std::list<annotation*>* CAnnotations::Octree::find(float x, float y, float z) th
 }
 
 //returns the number of neurons (=leafs) in the octree by exploring the entire data structure
-tf::uint32 CAnnotations::Octree::deep_count() throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::deep_count()
 {
     return _rec_deep_count(root);
 }
 
 //returns the octree height
-tf::uint32 CAnnotations::Octree::height() throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::height()
 {
     return _rec_height(root);
 }
@@ -949,7 +949,7 @@ void CAnnotations::Octree::print()
 }
 
 //search for neurons in the given 3D volume and puts found neurons into 'neurons'
-void CAnnotations::Octree::find(interval_t V_int, interval_t H_int, interval_t D_int, std::list<annotation*>& neurons) throw(RuntimeException)
+void CAnnotations::Octree::find(interval_t V_int, interval_t H_int, interval_t D_int, std::list<annotation*>& neurons)
 {
 	// check interval validity
 	if( H_int.start < 0 || H_int.end < 0 || (H_int.end-H_int.start < 0) || 
@@ -965,7 +965,7 @@ void CAnnotations::Octree::find(interval_t V_int, interval_t H_int, interval_t D
 }
 
 //returns the number of neurons (=leafs) in the given volume without exploring the entire data structure
-tf::uint32 CAnnotations::Octree::count(interval_t V_int, interval_t H_int, interval_t D_int) throw(RuntimeException)
+tf::uint32 CAnnotations::Octree::count(interval_t V_int, interval_t H_int, interval_t D_int)
 {
     //adjusting default parameters
     V_int.start = V_int.start == -1 ? 0		: V_int.start;
@@ -982,7 +982,7 @@ tf::uint32 CAnnotations::Octree::count(interval_t V_int, interval_t H_int, inter
 /*********************************************************************************
 * Adds the given annotation(s)
 **********************************************************************************/
-void CAnnotations::addLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, LandmarkList &markers) throw (RuntimeException)
+void CAnnotations::addLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, LandmarkList &markers)
 {
     /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d), markers.size = %d",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end, markers.size()).c_str(), __itm__current__function__);
@@ -1022,7 +1022,7 @@ void CAnnotations::addLandmarks(tf::interval_t X_range, tf::interval_t Y_range, 
     /**/tf::debug(tf::LEV3, strprintf("%d markers after insertions", count()).c_str(), __itm__current__function__);
 }
 
-void CAnnotations::clearCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) throw (tf::RuntimeException)
+void CAnnotations::clearCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range)
 {
     /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
@@ -1063,7 +1063,7 @@ void CAnnotations::clearCurves(tf::interval_t X_range, tf::interval_t Y_range, t
     PLog::instance()->appendOperation(new AnnotationOperation("clear curves: clear all segments starting from the retrieved root nodes", tf::CPU, timer.elapsed()));
 }
 
-void CAnnotations::clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) throw (tf::RuntimeException)
+void CAnnotations::clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range)
 {
     /**/tf::debug(tf::LEV3, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
@@ -1089,7 +1089,7 @@ void CAnnotations::clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range
     PLog::instance()->appendOperation(new AnnotationOperation("clear landmarks: remove landmarks", tf::CPU, timer.elapsed()));
 }
 
-void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, NeuronTree& nt) throw (tf::RuntimeException)
+void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, NeuronTree& nt)
 {
     /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
@@ -1163,7 +1163,7 @@ void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf:
 /*********************************************************************************
 * Retrieves the annotation(s) in the given volume space
 **********************************************************************************/
-void CAnnotations::findLandmarks(interval_t X_range, interval_t Y_range, interval_t Z_range, QList<LocationSimple> &markers) throw (RuntimeException)
+void CAnnotations::findLandmarks(interval_t X_range, interval_t Y_range, interval_t Z_range, QList<LocationSimple> &markers)
 {
     /**/tf::debug(tf::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
@@ -1206,7 +1206,7 @@ void CAnnotations::findLandmarks(interval_t X_range, interval_t Y_range, interva
     PLog::instance()->appendOperation(new AnnotationOperation("find landmarks: select landmarks only", tf::CPU, timer.elapsed()));
 }
 
-void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t Z_range, QList<NeuronSWC> &curves) throw (RuntimeException)
+void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t Z_range, QList<NeuronSWC> &curves)
 {
     /**/tf::debug(tf::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
@@ -1386,9 +1386,9 @@ void CAnnotations::removeDuplicatedNode(QList<NeuronSWC> &neuron,QList<NeuronSWC
 }
 #define VOID 1000000000
 
-QHash<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT)
+QMultiMap<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLONG> & idlist, const QMultiMap<V3DLONG,V3DLONG> & LUT)
 {
-    QHash<V3DLONG, V3DLONG> cp;
+    QMultiMap<V3DLONG, V3DLONG> cp;
     for (V3DLONG i=0;i<neurons.size(); i++)
     {
         if (neurons.at(i).pn==-1)
@@ -1401,10 +1401,10 @@ QHash<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLO
         return cp;
 }
 
-QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
+QMultiMap<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
 {
     // Range of LUT values: [0, # deduplicated neuron list)
-    QHash<V3DLONG,V3DLONG> LUT;
+    QMultiMap<V3DLONG,V3DLONG> LUT;
     V3DLONG cur_id=0;
     for (V3DLONG i=0;i<neurons.size();i++)
     {
@@ -1449,13 +1449,13 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
 {
     double thres=0;
     //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
-    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+    QMultiMap<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
 
     //create a new id list to give every different neuron a new id
-    QList<V3DLONG> idlist = ((QSet<V3DLONG>)LUT.values().toSet()).toList();
+    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values().toList());
 
     //create a child-parent table, both child and parent id refers to the index of idlist
-    QHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
+    QMultiMap<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
 
 
     V3DLONG siz = idlist.size();
@@ -1643,13 +1643,14 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
     return(true);
 
 }
-QVector< QVector<V3DLONG> > get_neighbors(QList<NeuronSWC> &neurons, const QHash<V3DLONG,V3DLONG> & LUT)
+QVector< QVector<V3DLONG> > get_neighbors(QList<NeuronSWC> &neurons, const QMultiMap<V3DLONG,V3DLONG> & LUT)
 {
     // generate neighbor lists for each node, using new ids.
     // LUT (look-up table): old name -> new ids
     // ids are the line numbers
     // names are the node names (neurons.name)
-    QList<V3DLONG> idlist = ((QSet<V3DLONG>)LUT.values().toSet()).toList();
+    //修改
+    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values().toList());
     int siz = idlist.size();
     QList<int> nlist;
     for(V3DLONG i=0; i<neurons.size(); i++){nlist.append(neurons.at(i).n);}
@@ -1752,10 +1753,10 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     }
 
     //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
-    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+    QMultiMap<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
 
     //create a new id list to give every different neuron a new id
-    QList<V3DLONG> idlist = ((QSet<V3DLONG>)LUT.values().toSet()).toList();
+    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values().toList());
     V3DLONG siz = idlist.size();
 
     // create a vector to keep neighbors of each node
@@ -1965,7 +1966,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     neighbors.clear();
     return(true);
 }
-void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) throw (RuntimeException)
+void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
 {
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
 
@@ -2240,7 +2241,7 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
 
     PLog::instance()->appendOperation(new AnnotationOperation("save annotations: save .ano to disk", tf::IO, timer.elapsed()));
 }
-void CAnnotations::deleteOldAnnotations(const char *filepath)throw (RuntimeException)
+void CAnnotations::deleteOldAnnotations(const char *filepath)
 {
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
     std::ifstream f(filepath);
@@ -2276,7 +2277,7 @@ void CAnnotations::deleteOldAnnotations(const char *filepath)throw (RuntimeExcep
     std::remove(filepath);
 }
 
-void CAnnotations::load(const char* filepath) throw (RuntimeException)
+void CAnnotations::load(const char* filepath)
 {
     SOMA_FOUND = 0;
     /**/tf::debug(tf::LEV1, strprintf("filepath = \"%s\"", filepath).c_str(), __itm__current__function__);
@@ -2399,7 +2400,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
 /*********************************************************************************
 * Conversion from VTK to APO files
 **********************************************************************************/
-void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath) throw (tf::RuntimeException)
+void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath)
 {
     /**/tf::debug(tf::LEV1, strprintf("vtkPath = \"%s\", apoPath = \"%s\"", vtkPath.c_str(), apoPath.c_str()).c_str(), __itm__current__function__);
 
@@ -2465,7 +2466,7 @@ void CAnnotations::convertVtk2APO(std::string vtkPath, std::string apoPath) thro
 /*********************************************************************************
 * Conversion from VTK to APO files
 **********************************************************************************/
-void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) throw (tf::RuntimeException)
+void CAnnotations::convertMaMuT2APO(std::string MaMuTPath, std::string apoPath)
 {
     QList<CellAPO> cells;
     int count = 0;
@@ -2554,7 +2555,7 @@ std::pair<int, int>                                             // return pair<f
                                           int d,                // maximum distance between a finding that matches with a truth
                                           std::string filter,   // filter cells in apo2 by name
                                           const std::string & outputPath /*=*/)
-throw (tf::RuntimeException)
+
 {
     // read cells
     QList<CellAPO> truth = readAPO_file(apo1Path.c_str());
@@ -2638,7 +2639,7 @@ void CAnnotations::diffAPO( std::string apo1Path,               // first apo fil
                             int y0 /*=0*/, int y1 /*=-1*/,      // VOI [y0, y1) in the global reference sys
                             int z0 /*=0*/, int z1 /*=-1*/,      // VOI [z0, z1) in the global reference sys
                             std::string diffPath)               // path where the difference apo file (containing only FPs and FNs) has to be stored (optional)
-throw (tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV1, strprintf("apo1Path = \"%s\", apo2Path = \"%s\", x0 = %d, x1 =%d, y0 = %d, y1 = %d, z0 = %d, z1 = %d",
                                         apo1Path.c_str(), apo2Path.c_str(), x0, x1, y0, y1, z0, z1).c_str(), __itm__current__function__);
@@ -2819,7 +2820,7 @@ void CAnnotations::trimAPO( std::string inputPath,  // input apo file path
                             int x0 /*=0*/, int x1 /*=-1*/,    // VOI [x0, x1) in the global reference sys
                             int y0 /*=0*/, int y1 /*=-1*/,    // VOI [y0, y1) in the global reference sys
                             int z0 /*=0*/, int z1 /*=-1*/)    // VOI [z0, z1) in the global reference sys
-throw (tf::RuntimeException)
+
 {
     // parse default parameters
     x1 = x1 > 0 ? x1 : std::numeric_limits<int>::max();
@@ -2855,7 +2856,7 @@ void tf::CAnnotations::labelDuplicates(
                             std::string outputPath, // where output apo file is saved
                             int d,                  // maximum distance between 2 duplicates
                             RGBA8 color)            // VOI [y0, y1) in the global reference sys
-throw (tf::RuntimeException)
+
 {
     // read cells
     QList<CellAPO> cells = readAPO_file(inputPath.c_str());
@@ -2881,7 +2882,7 @@ throw (tf::RuntimeException)
 /*********************************************************************************
 * Counts markers having distance <= d from each other
 **********************************************************************************/
-tf::uint32 CAnnotations::countDuplicateMarkers(int d) throw (tf::RuntimeException)
+tf::uint32 CAnnotations::countDuplicateMarkers(int d)
 {
     std::list<annotation*> nodes;
     octree->find(tf::interval_t(0, std::numeric_limits<int>::max()),
@@ -2906,7 +2907,7 @@ tf::uint32 CAnnotations::countDuplicateMarkers(int d) throw (tf::RuntimeExceptio
 **********************************************************************************/
 void CAnnotations::diffnAPO(QStringList apos,         // inputs
                     std::string outputPath)         // where output apo file is saved
-throw (tf::RuntimeException)
+
 {
     // get distinct colors
     std::vector<RGBA8> colors = tf::CImageUtils::distinctColors(apos.size());
@@ -2959,7 +2960,7 @@ void CAnnotations::mergeImageJCellCounterXMLs(QStringList xmls,  // inputs
                     int x0 /*=0*/,          // (0,0,0) block X-coordinate
                     int y0 /*=0*/,          // (0,0,0) block Y-coordinate
                     int z0 /*=0*/)          // (0,0,0) block Z-coordinate
-throw (tf::RuntimeException)
+
 {
     // parse xmls
     QList<CellAPO> cells;
@@ -3032,7 +3033,7 @@ throw (tf::RuntimeException)
 /*********************************************************************************
 * Converts the octree to a NeuronTree. This is actually a draw method.
 **********************************************************************************/
-NeuronTree CAnnotations::Octree::toNeuronTree() throw (tf::RuntimeException)
+NeuronTree CAnnotations::Octree::toNeuronTree()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 

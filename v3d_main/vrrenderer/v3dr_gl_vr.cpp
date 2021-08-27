@@ -1,12 +1,11 @@
 ﻿#include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
 #include"./spline.h"
-//#include <GL/glew.h>
+#include <GL/glew.h>
 #include <SDL_opengl.h>
 
 #include "../v3d/vr_vaa3d_call.h"
 #include "../neuron_tracing/fastmarching_linker.h"
-
 
 
 #if defined( OSX )
@@ -91,7 +90,7 @@ bool CMainApplication::showshootingPad = false;
 #define timegm _mkgmtime
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
-const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
+const double neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
 { 255.0 , 255.0 , 255.0 }, //white
 { 255.0 , 255.0 , 251.062496062 },
 { 255.0 , 255.0 , 247.124992125 },
@@ -3437,8 +3436,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							//sketchedNTList.removeAt(segInfo[1]);
 							//SetupSingleMorphologyLine(segInfo[0],2);
 							//SetupSingleMorphologyLine(segInfo[1],2);
-							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
-							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
+//							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
+//							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
 							QString tempdelname = sketchedNTList.at(segInfo[0]).name;
 							QString tempdelname1 = sketchedNTList.at(segInfo[1]).name;
 							bool delerror1 = DeleteSegment(tempdelname);
@@ -6429,7 +6428,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	if( !bIsInputCapturedByAnotherProcess )
 	{
 		glUseProgram( m_unControllerRayProgramID );
-		glUniformMatrix4fv( m_nControllerRayMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+        glUniformMatrix4fv( m_nControllerRayMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
 		glBindVertexArray( m_iControllerRayVAO );
 		glEnable(GL_DEPTH_TEST);
 		glLineWidth(6);
@@ -6706,14 +6705,14 @@ QString CMainApplication::NT2QString()
 
 void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
 {	
-	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
+    QStringList qsl = QString(msg).trimmed().split(" ",Qt::SkipEmptyParts);
 	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
 	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
 	NeuronSWC S_temp;
 	NeuronTree newTempNT;
 	newTempNT.listNeuron.clear();
 	newTempNT.hashNeuron.clear();
-    qDebug()<<"type"<<type<<endl;
+    qDebug()<<"type"<<type;
 	//each segment has a unique ID storing as its name
 	newTempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
 	for(int i=0;i<str_size;i++)
