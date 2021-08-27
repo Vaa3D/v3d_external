@@ -51,7 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 class V3dr_colormapDialog : public SharedToolDialog
 {
-   // Q_OBJECT;
+    Q_OBJECT;
 
 public:
     V3dr_colormapDialog(V3dR_GLWidget* w, QWidget *parent=0);
@@ -73,76 +73,76 @@ protected:
     void loadColormapFile(const QString& filename);
     void saveColormapFile(const QString& filename);
 
-    //void setDefault(int ich, int jch, int k);
+    void setDefault(int ich, int jch, int k);
     // k= 0(0-0), 1(1-1), 2(0.5-0.5), 3,4(0-1), 5(1-0), 6(0-1-0), 7(0-1-1-0), 8(0-1-0-1)
 
-//public slots:
-//    virtual void linkTo(QWidget* w); //link to new view
+public slots:
+    virtual void linkTo(QWidget* w); //link to new view
 
-//    void setDefault(int k)
-//    {
-//        switch(k)
-//        {
-//        default:
-//        case 0: // RGB A(0-1)
-//            setDefault(0,0, 1); setDefault(0,1, 0); setDefault(0,2, 0); setDefault(0,3, 4);
-//            setDefault(1,0, 0); setDefault(1,1, 1); setDefault(1,2, 0); setDefault(1,3, 4);
-//            setDefault(2,0, 0); setDefault(2,1, 0); setDefault(2,2, 1); setDefault(2,3, 4);
-//            break;
-//        case 1: // Gray A(0-1)
-//            setDefault(0,0, 1); setDefault(0,1, 1); setDefault(0,2, 1); setDefault(0,3, 4);
-//            setDefault(1,0, 1); setDefault(1,1, 1); setDefault(1,2, 1); setDefault(1,3, 4);
-//            setDefault(2,0, 1); setDefault(2,1, 1); setDefault(2,2, 1); setDefault(2,3, 4);
-//            break;
-//        case 2: // Red2gray
-//            setDefault(0,0, 1); setDefault(0,1, 1); setDefault(0,2, 1); setDefault(0,3, 4);
-//            setDefault(1,0, 0); setDefault(1,1, 1); setDefault(1,2, 0); setDefault(1,3, 0);
-//            setDefault(2,0, 0); setDefault(2,1, 0); setDefault(2,2, 1); setDefault(2,3, 0);
-//            break;
-//        case 3: // Green2gray
-//            setDefault(0,0, 1); setDefault(0,1, 0); setDefault(0,2, 0); setDefault(0,3, 0);
-//            setDefault(1,0, 1); setDefault(1,1, 1); setDefault(1,2, 1); setDefault(1,3, 4);
-//            setDefault(2,0, 0); setDefault(2,1, 0); setDefault(2,2, 1); setDefault(2,3, 0);
-//            break;
-//        case 4: // Blue2gray
-//            setDefault(0,0, 1); setDefault(0,1, 0); setDefault(0,2, 0); setDefault(0,3, 0);
-//            setDefault(1,0, 0); setDefault(1,1, 1); setDefault(1,2, 0); setDefault(1,3, 0);
-//            setDefault(2,0, 1); setDefault(2,1, 1); setDefault(2,2, 1); setDefault(2,3, 4);
-//            break;
-//        case 5: // CMY^2 A(0-1)
-//            setDefault(0,0, 0); setDefault(0,1, 4); setDefault(0,2, 4); setDefault(0,3, 4);
-//            setDefault(1,0, 4); setDefault(1,1, 0); setDefault(1,2, 4); setDefault(1,3, 4);
-//            setDefault(2,0, 4); setDefault(2,1, 4); setDefault(2,2, 0); setDefault(2,3, 4);
-//            break;
-//        case 6: // GBR^2 A(0-1-1-0)
-//            setDefault(0,0, 0); setDefault(0,1, 0); setDefault(0,2, 4); setDefault(0,3, 7);
-//            setDefault(1,0, 4); setDefault(1,1, 0); setDefault(1,2, 0); setDefault(1,3, 7);
-//            setDefault(2,0, 0); setDefault(2,1, 4); setDefault(2,2, 0); setDefault(2,3, 7);
-//            break;
-//		case 5: // CMY A(0-1-0-1)
-//			setDefault(0,0, 0); setDefault(0,1, 2); setDefault(0,2, 2); setDefault(0,3, 8);
-//			setDefault(1,0, 2); setDefault(1,1, 0); setDefault(1,2, 2); setDefault(1,3, 8);
-//			setDefault(2,0, 2); setDefault(2,1, 2); setDefault(2,2, 0); setDefault(2,3, 8);
-//			break;
-//        }
-//        updateColormap();
-//    }
-//    void setDefault0() {setDefault(0);}
-//    void setDefault1() {setDefault(1);}
-//    void setDefault2() {setDefault(2);}
-//    void setDefault3() {setDefault(3);}
-//    void setDefault4() {setDefault(4);}
-//    void setDefault5() {setDefault(5);}
-//    void setDefault6() {setDefault(6);}
+    void setDefault(int k)
+    {
+        switch(k)
+        {
+        default:
+        case 0: // RGB A(0-1)
+            setDefault(0,0, 1); setDefault(0,1, 0); setDefault(0,2, 0); setDefault(0,3, 4);
+            setDefault(1,0, 0); setDefault(1,1, 1); setDefault(1,2, 0); setDefault(1,3, 4);
+            setDefault(2,0, 0); setDefault(2,1, 0); setDefault(2,2, 1); setDefault(2,3, 4);
+            break;
+        case 1: // Gray A(0-1)
+            setDefault(0,0, 1); setDefault(0,1, 1); setDefault(0,2, 1); setDefault(0,3, 4);
+            setDefault(1,0, 1); setDefault(1,1, 1); setDefault(1,2, 1); setDefault(1,3, 4);
+            setDefault(2,0, 1); setDefault(2,1, 1); setDefault(2,2, 1); setDefault(2,3, 4);
+            break;
+        case 2: // Red2gray
+            setDefault(0,0, 1); setDefault(0,1, 1); setDefault(0,2, 1); setDefault(0,3, 4);
+            setDefault(1,0, 0); setDefault(1,1, 1); setDefault(1,2, 0); setDefault(1,3, 0);
+            setDefault(2,0, 0); setDefault(2,1, 0); setDefault(2,2, 1); setDefault(2,3, 0);
+            break;
+        case 3: // Green2gray
+            setDefault(0,0, 1); setDefault(0,1, 0); setDefault(0,2, 0); setDefault(0,3, 0);
+            setDefault(1,0, 1); setDefault(1,1, 1); setDefault(1,2, 1); setDefault(1,3, 4);
+            setDefault(2,0, 0); setDefault(2,1, 0); setDefault(2,2, 1); setDefault(2,3, 0);
+            break;
+        case 4: // Blue2gray
+            setDefault(0,0, 1); setDefault(0,1, 0); setDefault(0,2, 0); setDefault(0,3, 0);
+            setDefault(1,0, 0); setDefault(1,1, 1); setDefault(1,2, 0); setDefault(1,3, 0);
+            setDefault(2,0, 1); setDefault(2,1, 1); setDefault(2,2, 1); setDefault(2,3, 4);
+            break;
+        case 5: // CMY^2 A(0-1)
+            setDefault(0,0, 0); setDefault(0,1, 4); setDefault(0,2, 4); setDefault(0,3, 4);
+            setDefault(1,0, 4); setDefault(1,1, 0); setDefault(1,2, 4); setDefault(1,3, 4);
+            setDefault(2,0, 4); setDefault(2,1, 4); setDefault(2,2, 0); setDefault(2,3, 4);
+            break;
+        case 6: // GBR^2 A(0-1-1-0)
+            setDefault(0,0, 0); setDefault(0,1, 0); setDefault(0,2, 4); setDefault(0,3, 7);
+            setDefault(1,0, 4); setDefault(1,1, 0); setDefault(1,2, 0); setDefault(1,3, 7);
+            setDefault(2,0, 0); setDefault(2,1, 4); setDefault(2,2, 0); setDefault(2,3, 7);
+            break;
+        case 7: // CMY A(0-1-0-1)
+            setDefault(0,0, 0); setDefault(0,1, 2); setDefault(0,2, 2); setDefault(0,3, 8);
+            setDefault(1,0, 2); setDefault(1,1, 0); setDefault(1,2, 2); setDefault(1,3, 8);
+            setDefault(2,0, 2); setDefault(2,1, 2); setDefault(2,2, 0); setDefault(2,3, 8);
+            break;
+        }
+        updateColormap();
+    }
+    void setDefault0() {setDefault(0);}
+    void setDefault1() {setDefault(1);}
+    void setDefault2() {setDefault(2);}
+    void setDefault3() {setDefault(3);}
+    void setDefault4() {setDefault(4);}
+    void setDefault5() {setDefault(5);}
+    void setDefault6() {setDefault(6);}
 
-//    void undo();
-//    void updateStops();
-//    void updateColormap();
+    void undo();
+    void updateStops();
+    void updateColormap();
 
-//    void load();
-//    void save();
+    void load();
+    void save();
 
-//    void applyToImage();
+    void applyToImage();
 
 };
 

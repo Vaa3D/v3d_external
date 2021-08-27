@@ -45,7 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
   #include <QtGui>
 #endif
-
+#include <QWidget>
 inline QIcon colorIcon(QColor qcolor)
 {
 	QPixmap pm(16,16);
@@ -58,7 +58,7 @@ void setItemEditor();
 
 class ColorEditor : public QWidget
 {
-    //Q_OBJECT                                                     //Qt's signals/slots or meta-object system
+    Q_OBJECT                                                     //Qt's signals/slots or meta-object system
    // Q_PROPERTY(QColor color READ color WRITE setColor USER true) //Qt's Property through meta-object system
 
     QColor qcolor;
@@ -70,7 +70,7 @@ public:
     void setColor(QColor c);
 
 protected:
-	//virtual void mousePressEvent(QMouseEvent* e);
+    virtual void mousePressEvent(QMouseEvent* e);
 };
 
 

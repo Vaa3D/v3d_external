@@ -84,10 +84,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //QT_FORWARD_DECLARE_CLASS(QBypassWidget)
 
-
+#include <QWidget>
 class HoverPoints : public QObject
 {
-   // Q_OBJECT;
+    Q_OBJECT;
 
 public:
     enum PointShape {
@@ -146,17 +146,17 @@ public:
     void setEditable(bool editable) { m_editable = editable; }
     bool editable() const { return m_editable; }
 
-//public slots:
-//    void setEnabled(bool enabled){
-//        if (m_enabled != enabled) {
-//            m_enabled = enabled;
-//            m_widget->update();
-//        }
-//    };
-//    void setDisabled(bool disabled) { setEnabled(!disabled); }
+public slots:
+    void setEnabled(bool enabled){
+        if (m_enabled != enabled) {
+            m_enabled = enabled;
+            m_widget->update();
+        }
+    };
+    void setDisabled(bool disabled) { setEnabled(!disabled); }
 
-//signals:
-//    void pointsChanged(const QPolygonF &points);
+signals:
+    void pointsChanged(const QPolygonF &points);
 
 
 protected:

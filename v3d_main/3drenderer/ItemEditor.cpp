@@ -80,9 +80,9 @@ void ColorEditor::setColor(QColor c)
 	qcolor = c;
 }
 
-//void ColorEditor::mousePressEvent(QMouseEvent* event)
-//{
-//	qDebug("ColorEditor::mousePressEvent");
-//	if (event->button()==Qt::LeftButton)
-//		color();
-//}
+void ColorEditor::mousePressEvent(QMouseEvent* event)
+{
+    qDebug("ColorEditor::mousePressEvent");
+    if (event->button()==Qt::LeftButton)
+        color();
+}
