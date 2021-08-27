@@ -666,7 +666,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
     {
         qDebug() <<tr("  drop Text data: ")+(mimeData->text().trimmed());
         QString url = mimeData->text().trimmed();
-
+        url.remove(0,8);
 #ifdef Q_OS_LINUX
         url.remove(0,7); // remove the first 'file://' of the name string, 090125
         url.replace("%20"," ");//fixed the space path issue in 3D viewer on Linux machine by Zhi Zhou May 15 2015
