@@ -1,10 +1,10 @@
 
 #include "renderer_gl1.h"
 
-//#if defined(USE_Qt5)
+
 //#include <QtCore>
 //#include <QtGui>
-//#endif
+
 #include "QGLRefSys.h"
 
 #ifndef GL_MULTISAMPLE
@@ -124,7 +124,8 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
         };//////////////////////////////////////////////////////////////////////////////////
 const int neuron_type_color_num = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
-QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+//修改QGLRefSys::QGLRefSys(QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+QGLRefSys::QGLRefSys(QWidget *parent) : QOpenGLWidget()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -456,7 +457,7 @@ void QGLRefSys::setDims(int dimX, int dimY, int dimZ,
         }
     }*/
     //qDebug("xyzDim is %f and %f and %f.",xDim,yDim,zDim);
-    updateGL();
+    update();
 }
 
 
@@ -466,7 +467,7 @@ void QGLRefSys::setXRotation(int angle)
     if (angle != xRot) {
         xRot = angle;
         emit xRotationChanged(angle);
-        updateGL();
+        update();
     }
 }
 
@@ -476,7 +477,7 @@ void QGLRefSys::setYRotation(int angle)
     if (angle != yRot) {
         yRot = angle;
         emit yRotationChanged(angle);
-        updateGL();
+        update();
     }
 }
 
@@ -486,13 +487,13 @@ void QGLRefSys::setZRotation(int angle)
     if (angle != zRot) {
         zRot = angle;
         emit zRotationChanged(angle);
-        updateGL();
+        update();
     }
 }
 
 void QGLRefSys::initializeGL()
 {
-    qglClearColor(QWidget::palette().color(QWidget::backgroundRole())); // background color
+    //qglClearColor(QWidget::palette().color(QWidget::backgroundRole())); // background color
     glEnable(GL_DEPTH_TEST);       // activate the depth buffer
     glShadeModel(GL_SMOOTH);       // select shade model (can be either smooth or flat)
     glEnable(GL_MULTISAMPLE);      // activate multisample
@@ -1135,7 +1136,7 @@ void QGLRefSys::mousePressEvent(QMouseEvent *event)
                 yRot=0;//(abs(yRot%360)<=90&&abs(yRot%360)>=270)?0:180;
                 zRot=0;//(abs(zRot%360)<=90&&abs(zRot%360)>=270)?0:180;
                 zoom=-zoomInit;
-                updateGL();
+                update();
             }
         }
     }
@@ -1161,13 +1162,13 @@ void QGLRefSys::mouseReleaseEvent(QMouseEvent *event)
     emit mouseReleased();
 }
 
-void QGLRefSys::wheelEvent(QWheelEvent *event)
+void QGLRefSys::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     zoom += event->delta() < 0 ? 1.0 : -1.0;
     zoom = std::max(zoom, -29.0);
     zoom = std::min(zoom, -zoomInit);
 //    printf("zoomFactor = %.0f\n", zoom);
-    updateGL();
+    update();
 }
 
 void QGLRefSys::enterEvent(QEvent *event)

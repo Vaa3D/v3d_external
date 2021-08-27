@@ -91,7 +91,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
         // launch PConverter's GUI
         PConverter::instance(&callback, 0);
         PConverter::instance()->show();
-        PConverter::instance()->move(QApplication::desktop()->screen()->rect().center() - PConverter::instance()->rect().center());
+       //注释 PConverter::instance()->move(QApplication::desktop()->screen()->rect().center() - PConverter::instance()->rect().center());
         PConverter::instance()->raise();
         PConverter::instance()->activateWindow();
     }

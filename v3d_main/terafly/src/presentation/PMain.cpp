@@ -56,10 +56,11 @@
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
 # include <algorithm>
+#include <QRegExp>
 #include <QMessageBox>
 #include <QFile>
 #ifdef __ALLOW_VR_FUNCS__
-#include "../../../../vrrenderer/V3dR_Communicator.h"
+#include "../vrrenderer/V3dR_Communicator.h"
 #endif
 
 
@@ -265,7 +266,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         importAction->setEnabled(false);
         downAction->setEnabled(false);
         loadAction->setEnabled(false);
-        managesocket=0;
+        //managesocket=0;
 #endif
     /*---------------------------------------------------*/
 
@@ -1180,7 +1181,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     //setFixedSize(width(), height());
 
     // move to center(vertical)-right(horizontal)
-    move(qApp->desktop()->availableGeometry().width() - width(), 0);
+   //注释 move(qApp->desktop()->availableGeometry().width() - width(), 0);
 
 
     // register this as event filter
@@ -3961,20 +3962,6 @@ int PMain::getCViewerID()
 void PMain::login()
 {
     qDebug()<<"in login()";
-
-//    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
-//    {
-
-//        qDebug()<<"123";
-//        qDebug()<<"test 1,manage point :"<<managesocket;
-//        if(managesocket->state()==QAbstractSocket::ConnectedState)
-//        {
-//            qDebug()<<"when in login, mansgesocket is connected";
-//            QMessageBox::information(0, tr("Error"),tr("have been logged."));
-//            return;
-//        }
-
-//    }
     qDebug()<<"QSettings settings";
     QSettings settings("HHMI", "Vaa3D");
     QString serverNameDefault = "";
@@ -4028,7 +4015,7 @@ void PMain::login()
         }
     }
     qDebug()<<"test login ";
-//    if(managesocket!=0)    delete managesocket;
+
     qDebug()<<"tset 2";
     managesocket=new ManageSocket;
     managesocket->ip=serverName;

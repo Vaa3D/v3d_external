@@ -144,7 +144,7 @@ V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 
 	pluginList.clear();
 
-	rescanPlugins();
+    rescanPlugins();
 }
 
 V3d_PluginLoader::V3d_PluginLoader(MainWindow* mainwindow)
@@ -307,9 +307,9 @@ void V3d_PluginLoader::updated_recentPlugins()
                     V3DLONG j = i;
                     while(j > 0 && recentpluginsIndex_temp.at(j-1).toInt()<recentpluginsIndex_temp.at(j).toInt())
                     {
-//                        recentpluginsIndex_temp.swap(j,j-1);
-//                        sort_index.swap(j,j-1);
-//                        j--;
+                        recentpluginsIndex_temp.swapItemsAt(j,j-1);
+                        sort_index.swapItemsAt(j,j-1);
+                        j--;
                     }
                 }
             }

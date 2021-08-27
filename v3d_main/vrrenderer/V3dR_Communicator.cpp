@@ -360,7 +360,7 @@ QString V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 
 void V3dR_Communicator::MsgToV_NeuronSWC(QString msg)
 {
-	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
+    QStringList qsl = QString(msg).trimmed().split(" ",Qt::SkipEmptyParts);
 	int str_size = qsl.size()-(qsl.size()%3);//to make sure that the string list size always be 3*N;
 	qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
 	vector<XYZ> loclist_temp;

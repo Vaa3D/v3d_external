@@ -5,7 +5,8 @@
 
 #include <glew/GL/glew.h>
 #include <SDL.h>
-
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 //#include "../basic_c_fun/v3d_interface.h"
 
 #include <openvr.h>
@@ -89,7 +90,7 @@ class Sphere;
 class Cylinder;
 class My4DImage;
 class MainWindow;
-class CGLRenderModel
+class CGLRenderModel : public QOpenGLExtraFunctions
 {
 public:
 	CGLRenderModel( const std::string & sRenderModelName );
@@ -109,7 +110,7 @@ private:
 	std::string m_sModelName;
 };
 template<class T>
-class MinMaxOctree
+class MinMaxOctree : public QOpenGLExtraFunctions
 {
 public:
 	MinMaxOctree(int width, int height, int depth,int step);
@@ -127,7 +128,7 @@ private:
 	int step;
 };
 
-class TransferControlPoint
+class TransferControlPoint : public QOpenGLExtraFunctions
 {
 public:
 	TransferControlPoint(float r,float g,float b,int isovalue)
@@ -154,7 +155,7 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-class CMainApplication
+class CMainApplication : public QOpenGLExtraFunctions
 {
 public:
 	CMainApplication(int argc = 0, char *argv[] = 0);

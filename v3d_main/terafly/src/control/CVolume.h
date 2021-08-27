@@ -128,7 +128,7 @@ class terafly::CVolume : public QThread
         int getVoiT0(){return voiT0;}
         int getVoiT1(){return voiT1;}
         int getVoiResIndex(){return voiResIndex;}
-        void setVoi(QWidget* _sourceObject, int _voiResIndex, int _V0, int _V1, int _H0, int _H1, int _D0, int _D1, int _T0, int _T1) throw (tf::RuntimeException)
+        void setVoi(QWidget* _sourceObject, int _voiResIndex, int _V0, int _V1, int _H0, int _H1, int _D0, int _D1, int _T0, int _T1) noexcept(false)
         {
             /**/tf::debug(tf::LEV1, strprintf("_voiResIndex = %d, _V0 = %d, _V1=%d, _H0 = %d, _H1=%d, _D0 = %d, _D1=%d, _T0 = %d, _T1=%d",
                                                 _voiResIndex, _V0, _V1, _H0, _H1, _D0, _D1, _T0, _T1).c_str(), __itm__current__function__);
@@ -157,7 +157,7 @@ class terafly::CVolume : public QThread
         }
         void setSource(QWidget* _sourceObject){source =_sourceObject;}
 
-        void setVoiT(int _T0, int _T1, int _cur_t = -1) throw (tf::RuntimeException)
+        void setVoiT(int _T0, int _T1, int _cur_t = -1) noexcept(false)
         {
             /**/tf::debug(tf::LEV1, strprintf("asked to set [%d, %d] and _cur_t = %d",_T0, _T1, _cur_t).c_str(), __itm__current__function__);
             iim::VirtualVolume* volume = CImport::instance()->getVolume(voiResIndex);
@@ -179,7 +179,7 @@ class terafly::CVolume : public QThread
         }
 
         template<typename T>
-        static inline T scaleCoord(T coord, int srcRes, int dstRes, iim::axis dir, bool round) throw (tf::RuntimeException)
+        static inline T scaleCoord(T coord, int srcRes, int dstRes, iim::axis dir, bool round) noexcept(false)
         {
             #ifdef terafly_enable_debug_max_level
             /**/tf::debug(tf::LEV3, tf::strprintf("coord = %s, srcRes = %d, dstRes = %d, dir = %d, round = %s", tf::num2str(coord).c_str(), srcRes, dstRes, dir, round ? "true": "false").c_str(), __itm__current__function__);
@@ -489,7 +489,7 @@ class terafly::CVolume : public QThread
 //        }
 
         // load data using the currently set VOI
-        tf::uint8* loadData() throw (tf::RuntimeException);
+        tf::uint8* loadData() noexcept(false);
 
         friend class CViewer;
 

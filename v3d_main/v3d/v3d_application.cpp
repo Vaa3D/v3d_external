@@ -11,11 +11,11 @@ bool V3dApplication::naMainWindowIsActive;
 V3dApplication::V3dApplication(int & argc, char ** argv) 
     : QApplication(argc, argv)
 {
-#if defined(USE_Qt5)
+
 	QSurfaceFormat format;
   format.setDepthBufferSize(24);
   QSurfaceFormat::setDefaultFormat(format);
-#endif
+
   
 	if (!V3dApplication::mainWindow) //force checking. by Hanchuan Peng, 20110705
 		V3dApplication::mainWindow = new MainWindow();

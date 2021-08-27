@@ -4,7 +4,8 @@
 #include "theader.h"
 
 #include "../control/CPlugin.h"
-
+#include <QToolButton>
+#include <QToolBar>
 class terafly::PAnoToolBar : public QWidget
 {
     Q_OBJECT

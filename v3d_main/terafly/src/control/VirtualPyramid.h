@@ -50,12 +50,12 @@ class terafly::VirtualPyramid
         VirtualPyramid(){}
 
         // object utility methods
-        void initPath(bool local = true) throw (iim::IOException, iom::exception, tf::RuntimeException);
-        void initVolume() throw (iim::IOException, iom::exception, tf::RuntimeException);
+        void initPath(bool local = true) noexcept(false);
+        void initVolume() noexcept(false);
         void initPyramid(
                 tf::xyz<size_t> block_dim	= tf::xyz<size_t>(256), // block dimensions
                 const std::string block_format = ".tif"             // block file format
-        ) throw (iim::IOException, iom::exception, tf::RuntimeException);
+        ) noexcept(false);
 
 
     public:
@@ -72,7 +72,7 @@ class terafly::VirtualPyramid
                 int local = true,                           // store data on local drive (i.e. exe's folder) or remote storage (i.e. volume's folder)
                 xyz<size_t> block_dim = xyz<size_t>(256),   // x-y-z dimensions of virtual pyramid blocks
                 const std::string block_format = ".tif")    // block file format
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
 
         // constructor 2 (first time instance / Virtual Pyramid files do not exist)
@@ -86,7 +86,7 @@ class terafly::VirtualPyramid
                 int local = true,                           // store data on local drive (i.e. exe's folder) or remote storage (i.e. volume's folder)
                 xyz<size_t> block_dim = xyz<size_t>(256),   // x-y-z dimensions of virtual pyramid blocks
                 const std::string block_format = ".tif")    // block file format
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
 
         // constructor 3 (Virtual Pyramid files already exist)
@@ -94,10 +94,10 @@ class terafly::VirtualPyramid
                 std::string highresPath,                   // highest-res (unconverted) volume path
                 iim::VirtualVolume* highresVol = 0,        // highest-res (unconverted) volume, if null will be instantiated on-the-fly
                 int local = true)                           // store data on local drive (i.e. exe's folder) or remote storage (i.e. volume's folder)
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
         // destructor
-		~VirtualPyramid() throw(iim::IOException);
+        ~VirtualPyramid() noexcept(false);
 
 
         // GET methods
@@ -113,7 +113,7 @@ class terafly::VirtualPyramid
                 xyz<size_t> start,  // xyz range [start, end)
                 xyz<size_t> end,    // xyz range [start, end)
                 int level)          // pyramid layer (0=highest resolution, the higher the lower the resolution)
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
 
         // refills pyramid by searching the first noncomplete block in the given cache layer and VOI and populating it with real image data
@@ -126,14 +126,14 @@ class terafly::VirtualPyramid
                 refill_strategy strategy = REFILL_RANDOM,               // refill strategy
                 tf::xyz<size_t> block_dim = tf::xyz<size_t>::biggest()  // block dimension
         )
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
 
         // clear cached data
         void clear(
                 bool ask_to_save = true,    // user is asked whether to save modified data (if any)
                 int layer = -1)             // layer selection (-1 = all layers)
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
 
         // *** PATH (local, remote, lowres image, ...) getters and checkers ***
@@ -158,11 +158,11 @@ class terafly::VirtualPyramid
             iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
             int reduction_factor,                       // pyramid reduction factor (i.e. divide by reduction_factor along all axes for all layers)
             float lower_bound                           // lower bound (in MVoxels) for the lowest-res pyramid image (i.e. divide by reduction_factor until the lowest-res has size <= lower_bound)
-        ) throw (tf::RuntimeException);
+        ) noexcept(false);
         static float predictGB(
             iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
             std::vector< xyz<int> > reduction_factors   // pyramid reduction factors (i.e. divide by reduction_factors[i].x along X for layer i)
-        ) throw (tf::RuntimeException);
+        ) noexcept(false);
 
 
         // class options
@@ -198,19 +198,19 @@ class terafly::VirtualPyramidLayer : public iim::VirtualVolume
                 int _level,                         // pyramid level (0 = highest-res, the coarser the resolution the higher)
                 tf::VirtualPyramid* _parent,        // container
                 tf::xyz<int> _reduction_factor)     // reduction factor relative to the highest-res image
-        throw (iim::IOException);
+        noexcept(false);
 
         // deconstructor
-		virtual ~VirtualPyramidLayer() throw (iim::IOException);
+        virtual ~VirtualPyramidLayer();
 
         // GET methods
         tf::VirtualPyramid* pyramid(){return _parent;}
         tf::xyz<int> resamplingFactor(){return _resamplingFactor;}
 
         // inherited pure virtual methods, to implement
-        virtual void initChannels ( ) throw (iim::IOException);
-        virtual iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1)  throw (iim::IOException);
-        virtual iim::uint8 *loadSubvolume_to_UINT8(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1, int *channels=0, int ret_type=iim::DEF_IMG_DEPTH) throw (iim::IOException);
+        virtual void initChannels () ;
+        virtual iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1);
+        virtual iim::uint8 *loadSubvolume_to_UINT8(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1, int *channels=0, int ret_type=iim::DEF_IMG_DEPTH);
         virtual float getVXL_1(){return VXL_H;}
         virtual float getVXL_2(){return VXL_V;}
         virtual float getVXL_3(){return VXL_D;}
@@ -252,10 +252,10 @@ class terafly::HyperGridCache
 
         // object methods
         HyperGridCache(){}                          // disable default constructor
-        void load() throw (iim::IOException, tf::RuntimeException, iom::exception);		// load from disk
-        void save() throw (iim::IOException, tf::RuntimeException, iom::exception);		// save to disk
-        void init() throw (iim::IOException, tf::RuntimeException, iom::exception);		// init object
-        void initHyperGrid() throw (iim::IOException, tf::RuntimeException);            // init 'hypergrid' 5D matrix
+        void load() noexcept(false);		// load from disk
+        void save() noexcept(false);		// save to disk
+        void init() noexcept(false);		// init object
+        void initHyperGrid() noexcept(false);            // init 'hypergrid' 5D matrix
 
     public:
 
@@ -265,10 +265,10 @@ class terafly::HyperGridCache
                 tf::xyzct<size_t> image_dim = tf::xyzct<size_t>(),		// image dimensions along X, Y, Z, C (channel), and T (time)
                 tf::xyzct<size_t> block_dim = tf::xyzct<size_t>(),      // hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
                 const std::string block_fmt = ".tif")                   // hypergrid block file format
-        throw (iim::IOException, tf::RuntimeException, iom::exception);
+        noexcept(false);
 
         // destructor
-        ~HyperGridCache() throw (iim::IOException);
+        ~HyperGridCache() noexcept(false);
 
 
         // get block size
@@ -297,7 +297,7 @@ class terafly::HyperGridCache
         float completeness(
                 iim::voi3D<> voi = iim::voi3D<>::biggest(),
                 bool force_load_image = false
-        ) throw (iim::IOException, iom::exception, tf::RuntimeException);
+        ) noexcept(false);
 
 
         // read data from the cache (rescaling on-the-fly supported)
@@ -305,7 +305,7 @@ class terafly::HyperGridCache
         readData(tf::voi4D<int> voi,                                    // 4D VOI in X,Y,Z,T space
                 tf::active_channels<> channels,                         // channels to load
                 tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
 
         // put data into the cache (rescaling on-the-fly supported)
@@ -313,7 +313,7 @@ class terafly::HyperGridCache
                 const tf::image5D<uint8> &img,							// 5D image input
 				tf::xyzt<size_t> offset,								// offset relative to (0,0,0,0), it is up(or down)scaled if needed
                 tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling) 
-        throw (iim::IOException, iom::exception, tf::RuntimeException);
+        noexcept(false);
 
 
         // clear all data
@@ -341,7 +341,7 @@ class terafly::HyperGridCache
 
                 // object utility methods
                 CacheBlock(){}                              // disable default constructor
-                void load() throw (iim::IOException, iom::exception, tf::RuntimeException);   // load from disk
+                void load() noexcept(false);   // load from disk
                 void updateEmptyCount();                    // update empty voxel count
 
 
@@ -354,10 +354,10 @@ class terafly::HyperGridCache
                         tf::xyzct<size_t> origin,           // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
                         tf::xyzct<size_t> dims,             // dimensions of the block
                         tf::xyzct<size_t> index)            // 5D index in the parent hypergrid
-                throw (iim::IOException, iom::exception);
+                noexcept(false);
 
                 // destructor
-                ~CacheBlock() throw (iim::IOException, iom::exception);
+                ~CacheBlock() noexcept(false);
 
                 // get origin
                 tf::xyzct<size_t> origin(){return _origin;}
@@ -426,7 +426,7 @@ class terafly::HyperGridCache
 					tf::voi4D<int> image_voi,				// image VOI (already scaled)
 					tf::voi4D<int> block_voi,				// current block VOI (already scaled)
 					tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
-                ) throw (iim::IOException, iom::exception, tf::RuntimeException);
+                ) noexcept(false);
 
                 // read data from block and put into image buffer (rescaling on-the-fly supported)
                 void readData(
@@ -434,10 +434,10 @@ class terafly::HyperGridCache
                     tf::voi4D<int> image_voi,				// image VOI (already scaled)
                     tf::voi4D<int> block_voi,				// current block VOI (already scaled)
                     tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
-                ) throw (iim::IOException, iom::exception, tf::RuntimeException);
+                ) noexcept(false);
 
                 // save to disk
-                void save() throw (iim::IOException, iom::exception, tf::RuntimeException);
+                void save() noexcept(false);
 
                 // clear data
                 void clear()

@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
-
+#include <QInputDialog>
 
 
 std::vector<Agent> Agents;
@@ -468,7 +468,7 @@ void VR_MainWindow::onReadyRead() {
             QStringList MSGs = messageRex.cap(1).split(" ");
             for(int i=0;i<MSGs.size();i++)
             {
-                qDebug()<<MSGs.at(i)<<endl;
+                qDebug()<<MSGs.at(i);
             }
 			QString user = MSGs.at(0);
             QString message;
@@ -479,7 +479,7 @@ void VR_MainWindow::onReadyRead() {
                     message +=" ";
 
 
-                qDebug()<<MSGs.at(i)<<endl;
+                qDebug()<<MSGs.at(i);
             }
             qDebug()<<"user, "<<user<<" said: "<<message;
 			if(pMainApplication)
@@ -489,7 +489,7 @@ void VR_MainWindow::onReadyRead() {
 					pMainApplication->READY_TO_SEND=false;
 					CURRENT_DATA_IS_SENT=false;
 					pMainApplication->ClearCurrentNT();
-                    qDebug()<<"liqiqiqiqiqiqiqi NT "<<endl;
+                    qDebug()<<"liqiqiqiqiqiqiqi NT ";
 				}
 
                 int colortype;

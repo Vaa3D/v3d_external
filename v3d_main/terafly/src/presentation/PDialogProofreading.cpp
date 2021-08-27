@@ -4,7 +4,7 @@
 #include "PDialogProofreading.h"
 #include "PMain.h"
 #include "../control/CVolume.h"
-
+#include <QScreen>
 std::vector<tf::block_t> tf::PDialogProofreading::blocks;
 int tf::PDialogProofreading::blocks_res=0;
 
@@ -195,7 +195,8 @@ tf::PDialogProofreading::PDialogProofreading(tf::PMain *_parent) : QWidget(0)
     setWindowTitle("Proofreading mode");
     this->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint);
     setFixedWidth(500);
-    move(QApplication::desktop()->screen()->rect().center() - rect().center());
+   //注释 move(QApplication::desktop()->screen()->rect().center() - rect().center());
+
 
     updateBlocks(0);
 }

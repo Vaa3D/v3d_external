@@ -16,7 +16,7 @@ void
         uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
         uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
         tf::xyz<int> scaling)			// downscaling factors along X,Y,Z (positive integers only)
-throw (tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV1, strprintf("src_dims = (%d x %d x %d x %d x %d), src_offset = (%d, %d, %d, ignored, %d), src_count = (%d, %d, %d, ignored, %d), dst_dims = (%d x %d x %d x %d x %d), dst_offset = (%d, %d, %d, ignored, %d), scaling = (%d,%d,%d)",
         int(src_dims[0]), int(src_dims[1]), int(src_dims[2]), int(src_dims[3]), int(src_dims[4]), int(src_offset[0]), int(src_offset[1]), int(src_offset[2]), int(src_offset[4]), int(src_count[0]), int(src_count[1]), int(src_count[2]), int(src_count[4]),
@@ -208,7 +208,7 @@ void
         uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
         uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
         tf::xyz<int> scaling)           // rescaling factors along X,Y,Z (> 0 upscaling, < 0 rescaling)
-throw (tf::RuntimeException)
+
 {
     // check scaling
     if(!scaling.x || !scaling.y || !scaling.z)
@@ -240,7 +240,7 @@ void
         uint dst_dims[5],           // dimensions of "dst" along X, Y, Z, channels and T
         uint dst_offset[5],         // offset of "dst" along X, Y, Z, <empty> and T
          tf::xyz<int> scaling)		// upscaling factors along X,Y,Z (positive integers only)
-throw (RuntimeException)
+
 {
     /**/tf::debug(tf::LEV1, strprintf("src_dims = (%d x %d x %d x %d x %d), src_offset = (%d, %d, %d, ignored, %d), src_count = (%d, %d, %d, ignored, %d), dst_dims = (%d x %d x %d x %d x %d), dst_offset = (%d, %d, %d, %d, %d), scaling = (%d,%d,%d)",
                                         src_dims[0], src_dims[1],src_dims[2],src_dims[3],src_dims[4], src_offset[0],src_offset[1],src_offset[2], src_offset[4],src_count[0],src_count[1],src_count[2], src_count[4],
@@ -349,7 +349,7 @@ tf::uint8*
                         tf::direction dir,     //direction of projection
                         bool to_BGRA /*=false*/,//true if mip data must be stored into BGRA format
                         tf::uint8 alpha /* = 255 */)//alpha transparency (used if to_BGRA = true)
-   throw (tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV1, strprintf("src_dims = (%u x %u x %u x %u x %u), src_offset = (%u, %u, %u, %u, %u), src_count = (%u, %u, %u, %u, %u), "
                                         "direction = %d, to_BGRA = %s, alpha = %d",
@@ -587,7 +587,7 @@ Image4DSimple* CImageUtils::interpolateLinear(
     Image4DSimple* im2,         // second image
     int i,                      // step  index
     int N)                      // steps number
-throw (tf::RuntimeException)
+
 {
     // checks
     if(!im1 || !im1->getRawData())
@@ -639,7 +639,7 @@ throw (tf::RuntimeException)
 Image4DSimple* CImageUtils::addGaussianNoise(
         Image4DSimple* im,      // input image
         float w)                // gaussian noise weight (1 = only noise, 0 = no noise)
-throw (tf::RuntimeException)
+
 {
     // checks
     if(!im || !im->getRawData())

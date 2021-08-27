@@ -2,11 +2,13 @@
 #define QGLREFSYS_H
 
 //#include "renderer_gl1.h"
+#include <QGraphicsSceneWheelEvent>
 
-#include <QGLWidget>
+//#include <QGLWidget>
+
 #include "../control/CPlugin.h"
-
-class terafly::QGLRefSys : public QGLWidget
+#include<QOpenGLWidget>
+class terafly::QGLRefSys : public QOpenGLWidget
 {
     Q_OBJECT
 
@@ -60,9 +62,11 @@ class terafly::QGLRefSys : public QGLWidget
         int getZRot(){return zRot;}
         void setDims(int dimX, int dimY, int dimZ, int _ROIxDim=0, int _ROIyDim=0, int _ROIzDim=0, int _ROIxShift=0, int _ROIyShift=0, int _ROIzShift=0);
         void setRender(Renderer_gl1* _gl1){renderer=_gl1;}
-        void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); /*markList.clear();*/updateGL();}
+       //这里改了 void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); /*markList.clear();*/update();}
         void setZoom(double _zoom){zoom = _zoom;}
-        void resetZoom(){zoom = -15.0; updateGL();}
+        //这里改了void resetZoom(){zoom = -15.0; updateGL();}
+        void setFilled(bool _filled){filled = _filled; nt.listNeuron.clear(); /*markList.clear();*/update();}
+        void resetZoom(){zoom = -15.0; update();}
         void setVoxelSize(double x, double y, double z){vx = x; vy = y; vz = z;}
         Renderer_gl1 *renderer;
         NeuronTree nt,nt_init;
@@ -105,7 +109,8 @@ class terafly::QGLRefSys : public QGLWidget
         void mousePressEvent(QMouseEvent *event);
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
-        void wheelEvent(QWheelEvent *event);
+        void wheelEvent(QGraphicsSceneWheelEvent *event);
+
         void enterEvent(QEvent *event);
         //XYZ get3Dpoint(int x,int y);
 

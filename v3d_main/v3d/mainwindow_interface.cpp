@@ -409,14 +409,14 @@ void XFormWidget::finishEditingSWC()
 			&& (w = mypara_3Dview.window3D->getGLWidget()))
 	{
 		Renderer_gl1* r= (Renderer_gl1*)(w->getRenderer());
-        //if (r)
-            //r->finishEditingNeuronTree();
+        if (r)
+            r->finishEditingNeuronTree();
 	}
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
 		Renderer_gl1* r= (Renderer_gl1*)(w->getRenderer());
-        //if (r) r->finishEditingNeuronTree();
+        if (r) r->finishEditingNeuronTree();
 	}
 }
 
