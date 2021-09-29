@@ -34,7 +34,7 @@
 
 //////// Added by MK, 11/27/2016, for Qt5/VS2015 environment 
 
-#include <QtWidgets>
+//#include <QtWidgets>
 
 //////////////////////////////////////////////////////////////
 

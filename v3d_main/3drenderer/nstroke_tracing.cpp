@@ -81,7 +81,7 @@
 //#include <boost/thread/thread.hpp>
 
 #ifndef Q_OS_MAC
-    //注释#include <omp.h>
+    //include <omp.h>
 #endif
 
 #include <boost/algorithm/string.hpp>
@@ -3353,7 +3353,7 @@ void Renderer_gl1::selectMultiMarkersByStroke()
 
     // inform TeraFly (SAFE)
     // this does nothing except when TeraFly is active
-   //注释 tf::TeraFly::doaction("marker multiselect");
+   tf::TeraFly::doaction("marker multiselect");
 }
 
 // @ADDED by Alessandro on 2015-05-07.

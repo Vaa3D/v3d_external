@@ -43,8 +43,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
   #include <QtWidgets>
   #include "qwidget.h"
 #else
-  #include <QtGui>
+  //#include <QtGui>
 #endif
+#include <QIcon>
 #include <QWidget>
 inline QIcon colorIcon(QColor qcolor)
 {

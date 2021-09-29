@@ -1,7 +1,7 @@
 #if defined(USE_Qt5)
 #include <QPainter>
 #endif
-
+#include <QPainter>
 #include "QGradientBar.h"
 
 using namespace terafly;

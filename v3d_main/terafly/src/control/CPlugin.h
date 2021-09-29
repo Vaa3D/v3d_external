@@ -36,8 +36,9 @@
 #if defined(USE_Qt5)
 #include <QWidget>
 #else
-#include <QtGui>
+//#include <QtGui>
 #endif
+//#include <QWidget>
 #include <limits>
 #include <sstream>
 #include <algorithm>

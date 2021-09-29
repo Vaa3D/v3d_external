@@ -30,7 +30,7 @@
 #define PCONVETER_GUI_H
 
 #include <QProgressBar>
-#include <QtGui>
+//#include <QtGui>
 #include <v3d_interface.h>
 #include "../control/CPlugin.h"
 #include "QHelpBox.h"

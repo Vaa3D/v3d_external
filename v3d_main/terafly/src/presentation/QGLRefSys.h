@@ -3,11 +3,14 @@
 
 //#include "renderer_gl1.h"
 #include <QGraphicsSceneWheelEvent>
-
+#include<QOpenGLWidget>
 //#include <QGLWidget>
 
 #include "../control/CPlugin.h"
-#include<QOpenGLWidget>
+
+
+
+typedef unsigned char byte;
 class terafly::QGLRefSys : public QOpenGLWidget
 {
     Q_OBJECT

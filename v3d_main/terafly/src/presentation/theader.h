@@ -10,9 +10,11 @@
 #include <QtConcurrent/QtConcurrent> //by PHC 2020/01/31
 
 #else
+//#include <QtWidgets>
+#include <QtConcurrent/QtConcurrent> //by PHC 2020/01/31
 
-#include <QtGui>
-#include <QWidget>
+//#include <QtGui>
+//#include <QWidget>
 
 #endif
 
