@@ -1,0 +1,15 @@
+#!/bin/csh -f
+while (1)
+	rm -f testit.log
+	set count=1
+	while ($count)
+		./burst_szip 8 8 10000 16 image.in
+		./example
+		if ($status) then
+#			tail testit.log
+			exit 1
+		endif
+
+		@ count--
+	end
+end

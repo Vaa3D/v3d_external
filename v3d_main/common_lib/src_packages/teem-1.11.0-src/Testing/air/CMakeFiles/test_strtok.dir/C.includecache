@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/teem-1.11.0-src/Testing/air/strtok.c
+teem/air.h
+F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/teem-1.11.0-src/Testing/air/teem/air.h
+
+include/teem/air.h
+stdio.h
+-
+stdlib.h
+-
+math.h
+-
+string.h
+-
+ctype.h
+-
+stdarg.h
+-
+float.h
+-
+stddef.h
+-
+

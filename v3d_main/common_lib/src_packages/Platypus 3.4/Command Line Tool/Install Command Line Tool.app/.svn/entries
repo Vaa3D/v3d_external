@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="17"
+   name=""
+   committed-date="2006-07-25T13:46:40.731559Z"
+   url="svn+ssh://arakkis/svnroot/sveinbjorn/Platypus/platypus%20command%20line%20tool/Install%20Command%20Line%20Tool.app"
+   last-author="sveinbjorn"
+   kind="dir"
+   repos="svn+ssh://arakkis/svnroot/sveinbjorn"
+   revision="17"/>
+<entry
+   name="Contents"
+   kind="dir"/>
+</wc-entries>

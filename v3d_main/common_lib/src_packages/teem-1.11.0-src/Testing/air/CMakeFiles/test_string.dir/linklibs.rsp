@@ -1,0 +1,1 @@
+ ../../bin/libteem.a F:/idea/Library/lib/libbz2.lib F:/idea/Library/lib/z.lib F:/idea/Library/lib/libpng.lib F:/idea/Library/lib/z.lib F:/idea/Library/lib/libpng.lib -lpthread -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

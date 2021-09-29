@@ -1,0 +1,17 @@
+Value of the 22nd bit of a 32-bit quiet-NaN is 1TestQnanhibit.c produced following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/teem-1.11.0-src/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_16b06/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_16b06.dir\build.make CMakeFiles/cmTC_16b06.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/teem-1.11.0-src/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_16b06.dir/TestQnanhibit.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe    -o CMakeFiles\cmTC_16b06.dir\TestQnanhibit.c.obj -c F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\teem-1.11.0-src\CMake\TestQnanhibit.c
+Linking C executable cmTC_16b06.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_16b06.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_16b06.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_16b06.dir/objects.a @CMakeFiles\cmTC_16b06.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\cmTC_16b06.dir/objects.a -Wl,--no-whole-archive -o cmTC_16b06.exe -Wl,--out-implib,libcmTC_16b06.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_16b06.dir\linklibs.rsp
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/teem-1.11.0-src/CMakeFiles/CMakeTmp'
+
+-DTEEM_QNANHIBIT=1
+
+

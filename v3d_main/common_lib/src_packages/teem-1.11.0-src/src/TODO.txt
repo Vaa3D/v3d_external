@@ -1,0 +1,281 @@
+
+========
+for Teem 2.0:
+
+teem/include/teemEndian.h should NOT be setting TEEM_ENDIAN; it should
+be set by the build system.
+
+decide on a uniform way of indicating if a given external is available
+(e.g. airThreadCapable vs nrrdFFTWEnabled vs #if TEEM_LEVMAR: not uniform).
+"meet" is the logical place for collecting this info, and would be
+useful for Teem-using apps to have an API for this.  Libraries within
+Teem can't use "meet", but there should at least be consistent naming
+conventions.
+
+Consider doing away with "experimental" libraries and applications:
+its annoying to have two totally different kinds of Teem installs,
+especially when it means that it would mean two different python
+wrappings.
+
+Consider inserting SVN revision numbers in code itself:
+http://addisu.taddese.com/blog/inserting-svn-revision-number-in-your-cc-code/
+
+Consider extending const-correctness of function input not just to
+pointers, but to all values as well.
+
+all:
+* scrutinize use of strncpy, consider using airStrcpy
+* remove '_'s from enum value names in non-elf non-tijk libraries
+* decide if <LIB>_EXPORT should just be TEEM_EXPORT
+* enforce consistent use of AIR_CALLOC/AIR_MALLOC
+
+air:
+* consider nixing AIR_ENDIAN, AIR_QNANHIBIT, and AIR_DIO
+* airArray->len should probably be size_t, not unsigned int. Along with
+this is biffMsgErrNum and nrrdKeyValueSize.
+* consider changing airIndexULL and airIndexClampULL to work with
+size_t instead of unsigned long long, or at least adding versions that
+work with size_t
+* either change AIR_STRLEN_* to AIR_BUFFSIZE_* (or something similar,
+or take out the +1 from their definition and it into usage: the
+STRLEN is misleading as is.
+* important: change airArray implementation to re-allocate the array size
+multiplicatively (by some adjustable factor, default around 1.5 or 2.0),
+rather than the linear increments used now.  References:
+http://en.wikipedia.org/wiki/Dynamic_array
+http://hg.python.org/cpython/file/e3be2941c834/Objects/listobject.c
+* consider terminating airEnum->strEqv with NULL (just like argv)
+instead of with empty string ""
+* reconcile names of "unsigned int airUIrandMT_r()" vs
+  "unsigned int airRandInt()" and "unsigned int airRandInt_r()"
+* consider having something like a teemContext, which might be:
+ - the destination of thread-safe generating of error messages
+ - a place for doing progress indication in multi-threaded callers
+ - uniform place for indicating desired verbosity of complex functions
+ - storage for other things that are current globals.
+The problem is that such a thing would have to be an argument
+to a great many functions (or else it itself would be a global),
+and then how do you know which functions should take it?
+
+hest:
+* consider renaming hestParmFree --> hestParmNix
+* all the hest defaults (hestVerbosity, hestRespFileEnable), etc,
+should start with hestDef, not just hest
+* air/hest: remove the airType* enum. The following sort of code looks
+correct but is completely wrong
+  if (nrrdAlloc(nout, airTypeFloat, 3, size[0], size[1], size[2])) { ...
+because "airTypeFloat" is there instead of "nrrdTypeFloat".  All
+things airType were created for the sake of hest. Instead of taking an
+airType enum value for hestOptAdd, hestOptAdd can take a string
+(e.g. "uchar", "float", "enum", "callback" for airTypeOther).
+
+biff:
+* biffMove(destKey, err, srcKey) --> biffMove(destKey, srcKey, err)
+so that it matches biffMovef
+* rename biffCheck --> biffErrNum
+* consider biffGetStrlen --> biffStrlenGet, biffSetStr --> biffStrSet
+* a few biff functions are never used in Teem, is that ok?
+
+nrrd:
+* ponder utility of having "const void *constdata" field in the Nrrd struct,
+  to allow a nrrd to wrap around data it doesn't own.  Would this supersede
+  the nrrdNuke vs nrrdNix distinction?
+* nrrdKeyValueGet() is problematic: it either returns a pointer internal
+  to nrrd, which the user had better not free, or something newly allocated.
+  This completely goes against (at least the spirit of) const-correctness,
+  even though nrrdKeyValueGet() takes a const Nrrd *nrrd.  Consider breaking
+  this into const-returning nrrdKeyValuePointer() and allocate-on-return
+  nrrdKeyValueDup(), or some other way of making that distinction
+* int nrrdAxisInfoCopy(Nrrd *nout, const Nrrd *nin,
+                       const int *axmap, int excludeBitflag)
+  presents a problem for the principle that axis indices should be
+  unsigned, because axmap[i]==-1 means something special.  Should
+  this be changed to axmap[i]==UINT_MAX?
+* resolve basic confusion between unsigned and signed int with
+  return of nrrdIoStateGet (now int, including for learning
+  nio->charsPerLine and nio->valsPerLine, which are unsigned int,
+  just like nrrdDefaultWriteCharsPerLine and nrrdDefaultWriteValsPerLine)
+  and argument to nrrdIoStateSet.
+* with NrrdKernel:
+ - add fields for "what is my derivative" or "what is my integral", but
+   how to do that at compile time?
+ - "when parsing from string, parm[0] is needed" vs "parm[0] defaults to 1.0"
+   OR, maybe simplify things by saying that all parameters are always needed
+ - add method for answering "do I interpolate?"
+ - add fields for "if I don't interpolate, what's my approximate inverse?"
+ - add statement of accuracy (in a Taylor series sense)
+ - add: am I an odd or even function
+ - rename numParm --> parmNum
+ - fix the kernels that meetNrrdKernelAllCheck revealed to be broken
+ - consider nixing nrrdDefaultKernelParm0, nrrdEnvVarDefaultKernelParm0
+* with NrrdFormat:
+ - There is now an available() method, but this is incomplete - EPS is
+   something that can be written for images, but not read in general.
+   Should there be more ways of describing its support?
+ - supposing a general airBuffer utility is not implemented, there may be
+   formats that can be read from disk (fseek-able) but not from stdin.
+   Is this something else that NrrdFormat should represent?
+* should re-evaluate the need for all the nrrdDefault and nrrdState
+  global variables, especially nrrdStateGrayscaleImage3D,
+  nrrdEnvVarStateGrayscaleImage3D,
+  nrrdDefaultSpacing, nrrdEnvVarDefaultSpacing, which seem antiquated
+* the percentile-based bounds specification now supported in e.g
+  "unu histo", "unu quantize", and "unu jhisto" should be migrated down
+  to the nrrd library.  Consider doing this with a sorting of highest/lowest
+  values rather than a histogram (one less parameter, and often more accurate)
+* nrrdSpaceVecNorm(unsigned int sdim, const double vec[]) should
+  have its two args switch order in order to conform to Teem convention
+  of "array first, length second"
+* revisit how FFTW is called and used.  How have others dealt with the
+  weird global nature of reading/writing wisdom?  Should "rigor" be an
+  argument to nrrdFFT?  Is there really no error reporting on fftw_execute,
+  fftw_export_wisdom_to_file?
+* make the verbosity level a field in NrrdIoState, remove nrrdStateVerboseIO
+* add support for 16-bit float "half" (start with Milan's patch)
+* rename nrrd<Func>_nva() --> nrrd<Func>()
+* rename nrrdResampleNrrdSet --> nrrdResampleInputSet ?
+* permit replacements for malloc/free (e.g. fftw_malloc, fftw_free) of data
+* rename NRRD_KERNEL_PARMS_NUM --> NRRD_KERNEL_PARM_MAXNUM
+* remove "minsm" as synonym for nrrdTernaryOpMinSmooth
+* resampler: why can't you set a kernel prior to setting input?
+[nrrd] nrrdDeringExecute: trouble on setup
+[nrrd] deringPtxfAlloc: couldn't set up resampler
+[nrrd] nrrdResampleKernelSet: haven't set input nrrd yet
+* for nrrdCropAuto: consider adding some minimum remaining size requirement,
+  in addition to offset
+* all of the code in apply1D.c is ancient, and has not been brought into
+  the world of using unsigned int and size_t.  Also very confusing. Needs
+  to be walked through and tested thoroughly.
+* why is _nrrdCheck (different than nrrdCheck) public?  Should be renamed?
+
+unu:
+* the UNRRDU_QUIET_QUIT functionality should be enabled by default instead
+of having to set an environment variable to get it
+* unu dice -ff should change from using %d to %u
+* unu resample:
+-- should permit saying "resample this axis to whatever
+best preserves the aspect ratio relative to the one axis which is
+being resampled via the older "N" or "xF" means"
+-- consider supporting more sophisticated expressions e.g. "x2" --> "x2+1"
+-- reconsider whether normalization should be turned on by default
+(always a surprise when using purposely small kernels like cos4sup or
+small gauss)
+
+gage:
+* clean up gageVolumeCheck vs gageKindVolumeCheck mess
+* in a gageKinds, the airEnum for the items, and the assocaited table of
+pre-requisites, should really be compiled from some other description
+which is more reliably written and upated (updating a gageKind now is
+EXTREMELY error-prone).  More radically, perhaps the entire thing
+can be created at run-time, and perhaps there could be per-item function.
+Should investigate if calling per-item functions is faster than the
+bizarrely-long chain of if{}s that currently control item computation.
+
+ten:
+* tend helix and tend satin should not generate physically implausible
+diffusivity values (i.e. not exceeding 0.003 mm^2/sec)
+
+dye:
+* remove it, assuming its smarts have been copied into nrrd
+
+push:
+* remove it, assuming its smarts have been moved into pull
+
+========
+
+** The items below have accumulated over time, but the importance of them
+** for Teem 2.0 or any other release should be re-evaluated.
+
+large-scale fix: when using sizeof with memcpy or memset, should be using
+the variable name itself instead of type as argument to sizeof()
+
+for cmake:
+ - build pv on windows
+ - see if wild-card expansion works as expected on windows
+ - make cmd-line utilities link with static libs
+
+unrrdu: standardize hest framework for doing unu/gkms/tend style programs
+
+[portable54-250:~/d/parepi/6] gk%
+tend estim -new -sigma 0.01 -est wls -i 6crop-dwi.nrrd \
+   -B kvp -knownB0 false -t 250 -o tmp.nrrd
+   0.0%tend estim: trouble doing estimation:
+[ten] tenEstimate1TensorVolume4D: failed at sample 40
+[ten] tenEstimate1TensorSingle_d:
+[ten] _tenEstimate1TensorSingle: estimation failed
+[ten] _tenEstimate1Tensor_WLS: trying to improve on first WLS
+[ten] _tenEstimate1TensorSimulateSingle
+
+gage: re-modularize to facilitate probing bricked data
+
+make system really botched: change the size of the tenFiberContext
+(added a field or two), do a make ten/install,
+then cd ../push; rm -f test/pusher
+
+air: make airOneLine return number of bytes read; current return
+  of string length is entirely redundant with return of strlen()
+  and then enable the ftell() check after PNG magic read
+
+bin/unu: valgrid parsing of encoding stuff
+
+gage changes into bane:
+- try gkms hvol with three explicit ranges
+- remove excess NULL pointer checks between answer and answer wrapper
+- valgrind
+- ADD gkms back into teem bins
+
+ell: debug SVD of things based on negative eigenvalues
+ - add flag to say: always positive sv's, or always right-handed rotations
+
+leaf: do it
+
+hest: add commenting via # or something else
+
+bane: finish updating tutorial
+
+dye: see if dyeColorParse should allocate the thing and return it
+
+image registration tool for small translational errors
+
+limn: make it smarter- so that joining parts together is possible in a
+way that facilitates transformations and correct drawing.  This really
+requires general data structures for 2-D graphics primatives...
+
+limn: either debug or remove limnQN16border1
+
+dye: colormaps
+
+dye: hest callbacks
+
+air:  think about implementing a fabs() and dabs() with bitmasking
+
+write a paper about nrrd!
+include a list of published papers using teem:
+Kindlmann: Superquadric Tensor Glyphs
+Kindlmann Vis03: Curvature-Based Transfer Functions
+Lefohn Vis03: Interactive Deformation and Visualization of Level Set Surfaces Using Graphics Hardware
+Lefohn TVCG July/August 04: A Streaming Narrow-Band Algorithm: Interactive Computation and Visualization of Level Sets
+Kniss VisSym04: Medical Applications of Multi-field Volume Rendering and VR Techniques
+Deschamps TVCG04: Fast Evolution of Image Manifolds and Application to Filtering and Segmentation in 3D Medical Images
+ikits Vis03: A Constraint-based Technique for Haptic Volume Exploration
+fout Eurovis 05: High-Quality Rendering of Compressed Volume Data Formats
+callahan TVCG May/June 05: Hardware-Assisted Visibility Sorting for Unstructured Volume Rendering
+jorik blaas vis05 fiber paper
+
+(less of an issue now that CMake is in use) make install; make; and
+you'll STILL get memory errors due to seeing library/object files
+which use the older context size.  Do a top-level make clobber, and
+then things work.  This is crap.  I think the problem is that
+development object files of push were not recompiled when they should
+have been- doing a make clobber; make in push solved the problem...
+Examples of this:
+- change limn.h, cd ../ten, make, nothing to be done WRONG
+- make a change in nrrdEnums.h, which unrrdu/project.c
+  uses directly. recompile, and nrrd gets compiled, but not unrrdu,
+  so unu doesn't get updated correctly!
+- add a macro in ELL, make install in ell,
+  cd limn, make ../limn/test/tiso, doesn't see new header
+  and fails at link-time with "<new macro> symbol undefined"
+- want seperate directories for static and shared libraries
+- want bin/dev and bin/install targets
+

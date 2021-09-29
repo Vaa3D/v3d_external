@@ -1,0 +1,5 @@
+add scale-space scalar test
+add (non-SS)    vector test
+add scale-space vector test
+add (non-SS)    tensor test
+add scale-space tensor test

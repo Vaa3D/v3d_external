@@ -1,0 +1,20 @@
+Index: ctypeslib-gccxml-0.9/ctypeslib/codegen/codegenerator.py
+===================================================================
+--- ctypeslib-gccxml-0.9/ctypeslib/codegen/codegenerator.py	(revision 75605)
++++ ctypeslib-gccxml-0.9/ctypeslib/codegen/codegenerator.py	(working copy)
+@@ -451,6 +451,15 @@
+         self._variables += 1
+         if tp.init is None:
+             # wtypes.h contains IID_IProcessInitControl, for example
++            dllname = self.find_dllname(tp)
++            if dllname:
++                libname = self.get_sharedlib(dllname, "cdecl")
++                self.generate(tp.typ)
++                print >> self.stream, "%s = (%s).in_dll(%s, %r)" % (tp.name,
++                                                                    self.type_name(tp.typ, True),
++                                                                    libname,
++                                                                    tp.name)
++                self.names.add(tp.name)
+             return
+         try:
+             value = self.initialize(tp.typ, tp.init)

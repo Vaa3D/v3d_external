@@ -1,0 +1,83 @@
+This file contains history of SZIP library releases
+
+%%%%%SZIP 2.1.1%%%%%
+
+                      Release notes for SZIP 2.1.1
+                          January 13, 2017
+
+
+Bug fixes:
+
+   -- None.
+
+New features:
+
+   -- Add CMake support.
+
+Know problems:
+
+   -- On IRIX64-6.5, shared library version 3.0 is created instead of 2.0.
+   -- There is no support for shared library on the AIX 5.* systems.
+
+User support:
+    Report all problems to help@hdfgroup.org.
+    For more information on SZIP, see:
+        http://www.hdfgroup.org/doc_resource/SZIP/
+
+
+%%%%%SZIP 2.1%%%%%
+
+                      Release notes for SZIP 2.1
+                          November 10, 2008
+
+
+Bug fixes:
+
+   -- Modified a test in a configure script forcing to perform
+      a real calculation to determine if math library is needed.
+
+New features:
+
+   -- None.
+
+Know problems:
+
+   -- On IRIX64-6.5, shared library version 3.0 is created instead of 2.0.
+   -- There is no support for shared library on the AIX 5.* systems.
+
+User support:
+    Report all problems to help@hdfgroup.org.
+    For more information on SZIP, see:
+        http://www.hdfgroup.org/doc_resource/SZIP/
+
+
+%%%%%SZIP 2.0%%%%%
+                      Release notes for SZIP 2.0
+                          February, 2005
+
+
+Bug fixes:
+
+   -- Few bugs that caused overflow of the output buffer were fixed.
+
+New features:
+
+   -- For information about changes in the SZIP source code see
+      http://hdf.ncsa.uiuc.edu/doc_resource/SZIP/Release_notes_2_0.pdf
+   -- This release supports shared libraries.
+      See "Known problems" section for additional information.
+
+Know problems:
+
+   -- On IRIX64-6.5 shared library version 3.0 is created instead of 2.0
+   -- On AIX 5.1 shared library is built but not installed. To bypass
+      the problem modify libsz.la in the src/.libs directory:
+      replace line #11
+          library_names='libsz.a libsz.a'
+      with
+          library_names='libsz.so.2'
+
+      before running "make install"
+
+User's support:
+    Report all problems to help@hdfgroup.org

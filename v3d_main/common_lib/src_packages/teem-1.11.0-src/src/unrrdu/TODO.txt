@@ -1,0 +1,16 @@
+examples of usage with the important unu commands
+
+make "unu make" into a nrrd function
+
+enable the unu 2op and 3op operations that output integers to save
+the output as, say, signed char, instead of float.  This is different
+than being able to change input type, for operations like "gt".
+
+make darn sure that nobody uses printf(), only fprintf()
+
+standardize and document use of special single characters
+for meaning as unrrdu arguments:
+M : max position along an axis, equal to #samples-1
+# : ?
+- : standard in and standard out
+any others?

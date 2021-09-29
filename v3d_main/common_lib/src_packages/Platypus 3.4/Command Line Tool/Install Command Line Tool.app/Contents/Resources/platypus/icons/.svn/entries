@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="17"
+   name=""
+   committed-date="2006-07-25T13:46:40.731559Z"
+   url="svn+ssh://arakkis/svnroot/sveinbjorn/Platypus/platypus%20command%20line%20tool/Install%20Command%20Line%20Tool.app/Contents/Resources/platypus/icons"
+   last-author="sveinbjorn"
+   kind="dir"
+   repos="svn+ssh://arakkis/svnroot/sveinbjorn"
+   revision="17"/>
+<entry
+   committed-rev="17"
+   name="AppleScript.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="6d60d07b83121f26dd48a6bf1554ffef"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="PlatypusDefault.icns"
+   text-time="2006-07-24T19:09:42.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="5327a54d5fe2150d08750127c3db0201"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="PHPBird.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="72d53965279f2937aa00b675e59eb912"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="PlatypusDflt.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="5327a54d5fe2150d08750127c3db0201"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="RubyGoat.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="678d3d369ca73467b1f297a098f4cef8"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="installer.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="accb732766a4aae18dd0c4230aecad56"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="TclFlamingo.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="1d1578b3b8bec2abbd1e85462544e051"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="HexleyApp.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="0400c8b541ff0c761c0ffcec4c62ac16"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="PythonSnake.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="24b91da80073386c280649ec7db7252c"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="PerlCamel.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="1077a1820bfd013fdd16f89ec317484c"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="platypusScript.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="ca0a34d0dcf3588e4c992913623d16f7"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="PlatypusPlate.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="8af7f207026fb3bc7bb719922896b4b4"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="ExpectMonkey.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="0f18ba77bbd666998150ad0cbdf082c9"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="PlatypusDroplet.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="310ca124858b924a9ddd0dae3a57059d"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="HexleyFork.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="08794d8af6bf56612ab94c87023b08a1"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   committed-rev="17"
+   name="platypus.icns"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="e917c4ae76e4c2aaa6b0e14e27167b2f"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+</wc-entries>

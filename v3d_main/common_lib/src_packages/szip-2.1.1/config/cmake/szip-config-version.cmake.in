@@ -1,0 +1,27 @@
+#-----------------------------------------------------------------------------
+# SZIP Version file for install directory
+#-----------------------------------------------------------------------------
+
+set (PACKAGE_VERSION @SZIP_VERSION_STRING@)
+
+if ("${PACKAGE_FIND_VERSION_MAJOR}" EQUAL @SZIP_VERSION_MAJOR@)
+
+  # exact match for version @SZIP_VERSION_MAJOR@.@SZIP_VERSION_MINOR@
+  if ("${PACKAGE_FIND_VERSION_MINOR}" EQUAL @SZIP_VERSION_MINOR@)
+
+    # compatible with any version @SZIP_VERSION_MAJOR@.@SZIP_VERSION_MINOR@.x
+    set (PACKAGE_VERSION_COMPATIBLE 1)
+
+    if ("${PACKAGE_FIND_VERSION_PATCH}" EQUAL @SZIP_VERSION_RELEASE@)
+      set (PACKAGE_VERSION_EXACT 1)
+
+      if ("${PACKAGE_FIND_VERSION_TWEAK}" EQUAL @SZIP_VERSION_SUBRELEASE@)
+        # not using this yet
+      endif ()
+
+    endif ()
+
+  endif ()
+endif ()
+
+

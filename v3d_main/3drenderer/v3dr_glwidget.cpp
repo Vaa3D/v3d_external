@@ -3857,7 +3857,7 @@ void V3dR_GLWidget::callStrokeRetypeMultiNeurons()
     if (renderer)
     {
         renderer->callStrokeRetypeMultiNeurons();
-        POST_updateGL();
+        update();
     }
 }
 
@@ -3875,7 +3875,7 @@ void V3dR_GLWidget::callStrokeSplitMultiNeurons()
     if (renderer)
     {
         renderer->callStrokeSplitMultiNeurons();
-        POST_updateGL();
+        update();
     }
 }
 
@@ -3884,7 +3884,7 @@ void V3dR_GLWidget::callStrokeConnectMultiNeurons()
     if (renderer)
     {
         renderer->callStrokeConnectMultiNeurons();
-        POST_updateGL();
+        update();
     }
 }
 
@@ -3893,7 +3893,7 @@ void V3dR_GLWidget::callShowBreakPoints()
     if (renderer)
     {
         renderer->callShowBreakPoints();
-        POST_updateGL();
+        update();
     }
 }
 
@@ -3902,7 +3902,7 @@ void V3dR_GLWidget::callShowSubtree()
     if (renderer)
     {
         renderer->callShowSubtree();
-        POST_updateGL();
+        update();
     }
 }
 
@@ -3911,7 +3911,7 @@ void V3dR_GLWidget::callShowConnectedSegs()
     if (renderer)
     {
         renderer->callShowConnectedSegs();
-        POST_updateGL();
+        update();
     }
 }
 

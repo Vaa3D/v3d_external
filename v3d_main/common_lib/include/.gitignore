@@ -1,0 +1,10 @@
+eigen_3_3_4/
+glew/
+glm/
+hdf5/
+hdf5-unix64/
+hdf5-win64/
+openvr/
+SDL/
+teem/
+boost/

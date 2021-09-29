@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="17"
+   name=""
+   committed-date="2006-07-25T13:46:40.731559Z"
+   url="svn+ssh://arakkis/svnroot/sveinbjorn/Platypus/platypus%20command%20line%20tool/Uninstall%20Command%20Line%20Tool.app/Contents/Resources"
+   last-author="sveinbjorn"
+   kind="dir"
+   repos="svn+ssh://arakkis/svnroot/sveinbjorn"
+   revision="17"/>
+<entry
+   committed-rev="17"
+   name=".script"
+   text-time="2006-07-25T13:26:36.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="d41d8cd98f00b204e9800998ecf8427e"
+   last-author="sveinbjorn"
+   kind="file"/>
+<entry
+   committed-rev="17"
+   name="appIcon.icns"
+   text-time="2006-07-25T13:26:37.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="0093aea481d134d482944d192dd60fdd"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:31.000000Z"/>
+<entry
+   committed-rev="17"
+   name="script"
+   text-time="2006-07-25T13:26:36.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="1b6f7068643e28099233cf00e18196ec"
+   last-author="sveinbjorn"
+   kind="file"/>
+<entry
+   name="en.lproj"
+   kind="dir"/>
+<entry
+   committed-rev="17"
+   name="AppSettings.plist"
+   text-time="2006-07-25T13:26:36.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="5c10147367ea1a0107f89e23ba1994be"
+   last-author="sveinbjorn"
+   kind="file"/>
+</wc-entries>

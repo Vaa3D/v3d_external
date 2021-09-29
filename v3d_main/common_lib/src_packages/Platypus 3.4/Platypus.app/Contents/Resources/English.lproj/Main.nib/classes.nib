@@ -1,0 +1,212 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {
+                add = id; 
+                apply = id; 
+                clear = id; 
+                help = id; 
+                remove = id; 
+                resetDefaults = id; 
+                show = id; 
+            }; 
+            CLASS = EnvController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                addButton = id; 
+                clearButton = id; 
+                envTableView = id; 
+                envWindow = id; 
+                removeButton = id; 
+                window = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {
+                addFileToFileList = id; 
+                clearFileList = id; 
+                removeFileFromFileList = id; 
+                revealFileInFileList = id; 
+            }; 
+            CLASS = FileList; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                addFileButton = id; 
+                bundleSizeTextField = id; 
+                clearFileListButton = id; 
+                contextualMenu = id; 
+                removeFileButton = id; 
+                revealFileButton = id; 
+                tableView = id; 
+                window = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {
+                addSuffix = id; 
+                addType = id; 
+                clearSuffixList = id; 
+                clearTypesList = id; 
+                closeTypesSheet = id; 
+                openTypesSheet = id; 
+                removeSuffix = id; 
+                removeType = id; 
+                setDefaultTypes = id; 
+            }; 
+            CLASS = FileTypesController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                addSuffixButton = id; 
+                addTypeButton = id; 
+                appFunctionRadioButtons = id; 
+                numSuffixesTextField = id; 
+                numTypesTextField = id; 
+                removeSuffixButton = id; 
+                removeTypeButton = id; 
+                suffixListDataBrowser = id; 
+                suffixTextField = id; 
+                typeCodeTextField = id; 
+                typesErrorTextField = id; 
+                typesListDataBrowser = id; 
+                typesWindow = id; 
+                window = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {"" = id; }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {
+                copyIcon = id; 
+                iconDidChange = id; 
+                importIcon = id; 
+                nextIcon = id; 
+                pasteIcon = id; 
+                previousIcon = id; 
+                selectIcnsFile = id; 
+                selectIcon = id; 
+                setIconForAppType = id; 
+                switchIcons = id; 
+            }; 
+            CLASS = IconController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                iconImageWell = id; 
+                iconNameTextField = id; 
+                iconToggleButton = id; 
+                window = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = NSLevelIndicator; LANGUAGE = ObjC; SUPERCLASS = NSControl; }, 
+        {CLASS = NSSegmentedControl; LANGUAGE = ObjC; SUPERCLASS = NSControl; }, 
+        {
+            ACTIONS = {
+                addSuffix = id; 
+                addType = id; 
+                applyPrefs = id; 
+                checkSyntaxOfScript = id; 
+                clearAllFields = id; 
+                clearAllProfiles = id; 
+                clearSuffixList = id; 
+                clearTypesList = id; 
+                closeCommandWindow = id; 
+                closeEditProfilesSheet = id; 
+                closeSyntaxCheckerWindow = id; 
+                closeTypesSheet = id; 
+                createButtonPressed = id; 
+                editProfiles = id; 
+                editScript = id; 
+                editorCancel = id; 
+                editorCheckSyntax = id; 
+                editorSave = id; 
+                isDroppableWasClicked = id; 
+                loadProfile = id; 
+                newScript = id; 
+                nextIcon = id; 
+                openTypesSheet = id; 
+                removeProfile = id; 
+                removeSuffix = id; 
+                removeType = id; 
+                restoreDefaultPrefs = id; 
+                revealScript = id; 
+                runScript = id; 
+                saveProfile = id; 
+                scriptTypeSelected = id; 
+                selectCustomIcon = id; 
+                selectScript = id; 
+                selectScriptEditor = id; 
+                setDefaultTypes = id; 
+                showCommandLineString = id; 
+                showHelp = id; 
+                showManPage = id; 
+                showPrefs = id; 
+                showReadme = id; 
+                switchIcons = id; 
+                toggleAdvancedOptions = id; 
+            }; 
+            CLASS = Platypus; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                appNameTextField = id; 
+                authorTextField = id; 
+                bundleIdentifierTextField = id; 
+                bundleSizeTextField = id; 
+                commandTextField = id; 
+                commandWindow = id; 
+                createAppButton = id; 
+                defaultAuthorTextField = id; 
+                defaultBundleIdentifierTextField = id; 
+                defaultEditorMenu = id; 
+                editScriptButton = id; 
+                editTypesButton = id; 
+                editorCheckSyntaxButton = id; 
+                editorScriptPath = id; 
+                editorText = id; 
+                editorWindow = id; 
+                encryptCheckbox = id; 
+                envControl = id; 
+                fileList = id; 
+                iconControl = id; 
+                interpreterTextField = id; 
+                isDroppableCheckbox = id; 
+                loadProfileButton = id; 
+                openRecentMenu = id; 
+                outputTypeRadioButtons = id; 
+                parseShebangCheckbox = id; 
+                prefsWindow = id; 
+                profilesDataBrowser = id; 
+                profilesMenu = id; 
+                profilesWindow = id; 
+                remainRunningCheckbox = id; 
+                removeProfileButton = id; 
+                revealAppCheckbox = id; 
+                revealScriptButton = id; 
+                rootPrivilegesCheckbox = id; 
+                scriptPathTextField = id; 
+                scriptTypeRadioButtons = id; 
+                showAdvancedArrow = id; 
+                showInDockCheckbox = id; 
+                showOptionsTextField = id; 
+                signatureTextField = id; 
+                syntaxCheckerTextField = id; 
+                syntaxCheckerWindow = id; 
+                syntaxScriptPathTextField = id; 
+                toggleAdvancedMenuItem = id; 
+                typesControl = id; 
+                versionTextField = id; 
+                window = id; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {CLASS = STFileList; LANGUAGE = ObjC; SUPERCLASS = NSTableView; }, 
+        {CLASS = STSignatureFormatter; LANGUAGE = ObjC; SUPERCLASS = NSFormatter; }
+    ); 
+    IBVersion = 1; 
+}

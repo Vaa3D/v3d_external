@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="17"
+   name=""
+   committed-date="2006-07-25T13:46:40.731559Z"
+   url="svn+ssh://arakkis/svnroot/sveinbjorn/Platypus/platypus%20command%20line%20tool/Install%20Command%20Line%20Tool.app/Contents/Resources/platypus"
+   last-author="sveinbjorn"
+   kind="dir"
+   repos="svn+ssh://arakkis/svnroot/sveinbjorn"
+   revision="17"/>
+<entry
+   name="MainMenu.nib"
+   kind="dir"/>
+<entry
+   committed-rev="17"
+   name="exec"
+   text-time="2006-07-24T19:09:43.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="7133fd103a37bf93fb238673ce0f5886"
+   last-author="sveinbjorn"
+   kind="file"
+   prop-time="2006-07-25T13:46:28.000000Z"/>
+<entry
+   name="icons"
+   kind="dir"/>
+</wc-entries>

@@ -1,0 +1,3 @@
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\tiff2rgba.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\tiff2rgba.dir/objects.a @CMakeFiles\tiff2rgba.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--whole-archive CMakeFiles\tiff2rgba.dir/objects.a -Wl,--no-whole-archive -o tiff2rgba.exe -Wl,--out-implib,libtiff2rgba.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\tiff2rgba.dir\linklibs.rsp

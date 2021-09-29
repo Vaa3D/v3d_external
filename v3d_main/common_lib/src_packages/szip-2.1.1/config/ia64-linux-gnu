@@ -1,0 +1,42 @@
+#							-*- shell-script -*-
+#
+# This file is part of the HDF5 build script.  It is processed shortly
+# after configure starts and defines, among other things, flags for
+# the various compile modes.
+
+# Use Intel C compiler by default (if it's available).
+if test "X$CC" = "X" && which ecc > /dev/null; then
+    CC=ecc
+    CC_BASENAME=ecc
+fi
+
+#----------------------------------------------------------------------------
+# Compiler flags. The CPPFLAGS values should not include package debug
+# flags like `-DH5G_DEBUG' since these are added with the
+# `--enable-debug' switch of configure.
+
+case $CC_BASENAME in
+    ecc)
+	CFLAGS="$CFLAGS -std=c99 -w2 -Wall"
+	DEBUG_CFLAGS="-g -O0"
+	DEBUG_CPPFLAGS=
+	PROD_CFLAGS=""		# ecc has -O2 as default
+	PROD_CPPFLAGS=
+	PROFILE_CFLAGS="-p"
+	PROFILE_CPPFLAGS=
+	;;
+
+    gcc)
+	. $srcdir/config/gnu-flags
+	;;
+
+    *)
+	CFLAGS="$CFLAGS -ansi"
+	DEBUG_CFLAGS="-g"
+	DEBUG_CPPFLAGS=
+	PROD_CFLAGS="-O"
+	PROD_CPPFLAGS=
+	PROFILE_CFLAGS="-pg"
+	PROFILE_CPPFLAGS=
+	;;
+esac

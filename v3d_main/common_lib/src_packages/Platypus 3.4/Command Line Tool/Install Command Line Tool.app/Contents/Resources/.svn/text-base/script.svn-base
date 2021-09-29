@@ -1,0 +1,33 @@
+#!/bin/sh
+
+TOOL_VERSION="1.3"
+
+if [ -e "/usr/local/share/platypus" ]; then
+	echo "Removing previous version of Platypus Command Line Tool"
+	rm -R "/usr/local/share/platypus"
+	rm "/usr/local/bin/platypus"
+	rm "/usr/share/man/man1/platypus.1"
+fi
+
+echo "Installing Platypus Command Line Tool version $TOOL_VERSION"
+
+# Binary
+echo "  - Installing 'platypus' binary in /usr/local/bin"
+# Create /usr/local/bin/ if it doesn't exist
+mkdir -p /usr/local/bin/
+# Create /usr/local/share/
+mkdir -p /usr/local/share/
+cp "$1/Contents/Resources/binary/platypus" "/usr/local/bin/platypus"
+chmod 755 "/usr/local/bin/platypus"
+
+# Man page
+echo "  - Installing platypus.1 man page in /usr/share/man/man1"
+cp "$1/Contents/Resources/platypus.1" "/usr/share/man/man1"
+
+# Support files
+echo "  - Installing support files in /usr/local/share/platypus"
+cp -R "$1/Contents/Resources/platypus" "/usr/local/share/"
+chmod -R 755 "/usr/local/share/platypus"
+
+echo "Installation complete"
+echo "Please note that you may need to add "/usr/local/bin" to your PATH"

@@ -1,0 +1,2 @@
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe qc ..\bin\libszip-static.a CMakeFiles/szip-static.dir/rice.c.obj CMakeFiles/szip-static.dir/sz_api.c.obj CMakeFiles/szip-static.dir/encoding.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ranlib.exe ..\bin\libszip-static.a

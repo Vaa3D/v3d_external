@@ -1,0 +1,3 @@
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\ilk.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\ilk.dir/objects.a @CMakeFiles\ilk.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\ilk.dir/objects.a -Wl,--no-whole-archive -o ..\..\bin\ilk.exe -Wl,--out-implib,..\..\bin\libilk.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\ilk.dir\linklibs.rsp

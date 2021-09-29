@@ -1,0 +1,120 @@
+#! /bin/sh
+#
+
+# A script to reconfigure autotools for szip
+
+    # If paths to autotools are not specified, use whatever the system
+    # has installed as the default. We use 'which <tool>' to
+    # show exactly what's being used.
+    if test -z ${HDF_AUTOCONF}; then
+        HDF_AUTOCONF=$(which autoconf)
+    fi
+    if test -z ${HDF_AUTOMAKE}; then
+        HDF_AUTOMAKE=$(which automake)
+    fi
+    if test -z ${HDF_AUTOHEADER}; then
+        HDF_AUTOHEADER=$(which autoheader)
+    fi
+    if test -z ${HDF_ACLOCAL}; then
+        HDF_ACLOCAL=$(which aclocal)
+    fi
+    if test -z ${HDF_LIBTOOL}; then
+        case "`uname`" in
+        Darwin*)
+            # libtool on OS-X is non-gnu
+            HDF_LIBTOOL=$(which glibtool)
+            ;;
+        *)
+            HDF_LIBTOOL=$(which libtool)
+            ;;
+        esac
+    fi
+    if test -z ${HDF_M4}; then
+        HDF_M4=$(which m4)
+    fi
+
+# Make sure that these versions of the autotools are in the path
+AUTOCONF_DIR=`dirname ${HDF_AUTOCONF}`
+LIBTOOL_DIR=`dirname ${HDF_LIBTOOL}`
+M4_DIR=`dirname ${HDF_M4}`
+PATH=${AUTOCONF_DIR}:${LIBTOOL_DIR}:${M4_DIR}:$PATH
+
+# Make libtoolize match the specified libtool
+case "`uname`" in
+Darwin*)
+    # On OS X, libtoolize could be named glibtoolize or
+    # libtoolize. Try the former first, then fall back
+    # to the latter if it's not found.
+    HDF_LIBTOOLIZE="${LIBTOOL_DIR}/glibtoolize"
+    if [ ! -f $HDF_LIBTOOLIZE ] ; then
+        HDF_LIBTOOLIZE="${LIBTOOL_DIR}/libtoolize"
+    fi
+    ;;
+*)
+    HDF_LIBTOOLIZE="${LIBTOOL_DIR}/libtoolize"
+    ;;
+esac
+
+# Run autotools in order
+#
+# When available, we use the --force option to ensure all files are
+# updated. This prevents the autotools from re-running to fix dependencies
+# during the 'make' step, which can be a problem if environment variables
+# were set on the command line during autogen invocation.
+
+# Some versions of libtoolize will suggest that we add ACLOCAL_AMFLAGS
+# = '-I m4'. This is already done in commence.am, which is included
+# in Makefile.am. You can ignore this suggestion.
+
+# LIBTOOLIZE
+libtoolize_cmd="${HDF_LIBTOOLIZE} --copy --force"
+echo ${libtoolize_cmd}
+if [ "$verbose" = true ] ; then
+    ${HDF_LIBTOOLIZE} --version
+fi
+${libtoolize_cmd} || exit 1
+echo
+echo "NOTE: You can ignore the warning about adding -I m4."
+echo "      We already do this in an included file."
+echo
+
+# ACLOCAL
+if test -e "${LIBTOOL_DIR}/../share/aclocal" ; then
+    aclocal_include="-I ${LIBTOOL_DIR}/../share/aclocal"
+fi
+aclocal_cmd="${HDF_ACLOCAL} --force -I m4 ${aclocal_include}"
+echo ${aclocal_cmd}
+if [ "$verbose" = true ] ; then
+    ${HDF_ACLOCAL} --version
+fi
+${aclocal_cmd} || exit 1
+echo
+
+# AUTOHEADER
+autoheader_cmd="${HDF_AUTOHEADER} --force"
+echo ${autoheader_cmd}
+if [ "$verbose" = true ] ; then
+    ${HDF_AUTOHEADER} --version
+fi
+${autoheader_cmd} || exit 1
+echo
+
+# AUTOMAKE
+automake_cmd="${HDF_AUTOMAKE} --copy --add-missing --force-missing"
+echo ${automake_cmd}
+if [ "$verbose" = true ] ; then
+    ${HDF_AUTOMAKE} --version
+fi
+${automake_cmd} || exit 1
+echo
+
+# AUTOCONF
+autoconf_cmd="${HDF_AUTOCONF} --force"
+echo ${autoconf_cmd}
+if [ "$verbose" = true ] ; then
+    ${HDF_AUTOCONF} --version
+fi
+${autoconf_cmd} || exit 1
+echo
+
+exit 0

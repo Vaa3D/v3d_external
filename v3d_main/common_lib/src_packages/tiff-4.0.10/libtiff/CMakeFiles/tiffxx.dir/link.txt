@@ -1,0 +1,3 @@
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\tiffxx.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\tiffxx.dir/objects.a @CMakeFiles\tiffxx.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\G__~1.EXE -Wl,--version-script=F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/tiff-4.0.10/libtiff/libtiffxx.map -shared -o libtiffxx.dll -Wl,--out-implib,libtiffxx.dll.a -Wl,--major-image-version,5,--minor-image-version,4 -Wl,--whole-archive CMakeFiles\tiffxx.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\tiffxx.dir\linklibs.rsp

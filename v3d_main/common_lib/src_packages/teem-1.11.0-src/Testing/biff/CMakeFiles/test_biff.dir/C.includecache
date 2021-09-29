@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/teem-1.11.0-src/Testing/biff/test.c
+teem/biff.h
+F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/teem-1.11.0-src/Testing/biff/teem/biff.h
+
+include/teem/air.h
+stdio.h
+-
+stdlib.h
+-
+math.h
+-
+string.h
+-
+ctype.h
+-
+stdarg.h
+-
+float.h
+-
+stddef.h
+-
+
+include/teem/biff.h
+stdio.h
+-
+string.h
+-
+stdarg.h
+-
+teem/air.h
+-
+

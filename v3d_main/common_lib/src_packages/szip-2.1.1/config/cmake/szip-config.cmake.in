@@ -1,0 +1,59 @@
+#-----------------------------------------------------------------------------
+# SZIP Config file for compiling against SZIP build directory
+#-----------------------------------------------------------------------------
+@PACKAGE_INIT@
+
+string(TOUPPER @SZIP_PACKAGE@ SZIP_PACKAGE_NAME)
+
+set (${SZIP_PACKAGE_NAME}_VALID_COMPONENTS static shared)
+
+#-----------------------------------------------------------------------------
+# User Options
+#-----------------------------------------------------------------------------
+set (${SZIP_PACKAGE_NAME}_ENABLE_ENCODING      @SZIP_ENABLE_ENCODING@)
+set (${SZIP_PACKAGE_NAME}_BUILD_SHARED_LIBS    @BUILD_SHARED_LIBS@)
+set (${SZIP_PACKAGE_NAME}_EXPORT_LIBRARIES     @SZIP_LIBRARIES_TO_EXPORT@)
+
+#-----------------------------------------------------------------------------
+# Directories
+#-----------------------------------------------------------------------------
+set (${SZIP_PACKAGE_NAME}_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+
+set (${SZIP_PACKAGE_NAME}_SHARE_DIR "@PACKAGE_SHARE_INSTALL_DIR@")
+set_and_check (${SZIP_PACKAGE_NAME}_BUILD_DIR "@PACKAGE_CURRENT_BUILD_DIR@")
+
+#-----------------------------------------------------------------------------
+# Version Strings
+#-----------------------------------------------------------------------------
+set (${SZIP_PACKAGE_NAME}_VERSION_STRING @SZIP_VERSION_STRING@)
+set (${SZIP_PACKAGE_NAME}_VERSION_MAJOR  @SZIP_VERSION_MAJOR@)
+set (${SZIP_PACKAGE_NAME}_VERSION_MINOR  @SZIP_VERSION_MINOR@)
+
+#-----------------------------------------------------------------------------
+# Don't include targets if this file is being picked up by another
+# project which has already build SZIP as a subproject
+#-----------------------------------------------------------------------------
+if (NOT TARGET "@SZIP_PACKAGE@")
+  include (@PACKAGE_SHARE_INSTALL_DIR@/@SZIP_PACKAGE@@HDF_PACKAGE_EXT@-targets.cmake)
+endif ()
+
+# Handle default component(static) :
+if (NOT ${SZIP_PACKAGE_NAME}_FIND_COMPONENTS)
+    set (${SZIP_PACKAGE_NAME}_FIND_COMPONENTS static)
+    set (${SZIP_PACKAGE_NAME}_FIND_REQUIRED_static true)
+endif ()
+
+# Handle requested components:
+list (REMOVE_DUPLICATES ${SZIP_PACKAGE_NAME}_FIND_COMPONENTS)
+foreach (comp IN LISTS ${SZIP_PACKAGE_NAME}_FIND_COMPONENTS)
+    list (FIND ${SZIP_PACKAGE_NAME}_EXPORT_LIBRARIES "@SZIP_LIB_CORENAME@-${comp}" HAVE_COMP) 
+    if (${HAVE_COMP} LESS 0) 
+      set (${SZIP_PACKAGE_NAME}_${comp}_FOUND 0)
+    else ()
+      set (${SZIP_PACKAGE_NAME}_${comp}_FOUND 1)
+      string(TOUPPER ${SZIP_PACKAGE_NAME}_${comp}_LIBRARY COMP_LIBRARY)
+      set (${COMP_LIBRARY} ${${COMP_LIBRARY}} @SZIP_LIB_CORENAME@-${comp})
+    endif ()
+endforeach ()
+
+check_required_components (${SZIP_PACKAGE_NAME})

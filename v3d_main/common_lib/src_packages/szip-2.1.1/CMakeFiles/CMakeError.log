@@ -1,0 +1,399 @@
+Determining if the function gethostname exists in the ucb; failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_4aa97/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_4aa97.dir\build.make CMakeFiles/cmTC_4aa97.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4aa97.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=gethostname -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_4aa97.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_4aa97.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_4aa97.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_4aa97.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_4aa97.dir/objects.a @CMakeFiles\cmTC_4aa97.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=gethostname -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_4aa97.dir/objects.a -Wl,--no-whole-archive -o cmTC_4aa97.exe -Wl,--out-implib,libcmTC_4aa97.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_4aa97.dir\linklibs.rsp
+C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find -lucb
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_4aa97.dir\build.make:107: cmTC_4aa97.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_4aa97/fast] Error 2
+
+
+
+Determining if files windows.h;unistd.h;sys/stat.h;sys/types.h;stddef.h;stdint.h;io.h;winsock2.h;pthread.h;string.h;strings.h;time.h;stdlib.h;memory.h;dlfcn.h exist failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_459fd/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_459fd.dir\build.make CMakeFiles/cmTC_459fd.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_459fd.dir/HAVE_DLFCN_H.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_459fd.dir\HAVE_DLFCN_H.c.obj -c F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\CMakeFiles\CheckIncludeFiles\HAVE_DLFCN_H.c
+F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\CMakeFiles\CheckIncludeFiles\HAVE_DLFCN_H.c:16:10: fatal error: dlfcn.h: No such file or directory
+ #include <dlfcn.h>
+          ^~~~~~~~~
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_459fd.dir\build.make:84: CMakeFiles/cmTC_459fd.dir/HAVE_DLFCN_H.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_459fd/fast] Error 2
+
+
+Source:
+/* */
+#include <windows.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <io.h>
+#include <winsock2.h>
+#include <pthread.h>
+#include <string.h>
+#include <strings.h>
+#include <time.h>
+#include <stdlib.h>
+#include <memory.h>
+#include <dlfcn.h>
+
+
+int main(void){return 0;}
+
+Determining if the function fstat64 exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_b9252/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_b9252.dir\build.make CMakeFiles/cmTC_b9252.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b9252.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=fstat64 -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_b9252.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_b9252.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_b9252.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_b9252.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_b9252.dir/objects.a @CMakeFiles\cmTC_b9252.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=fstat64 -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_b9252.dir/objects.a -Wl,--no-whole-archive -o cmTC_b9252.exe -Wl,--out-implib,libcmTC_b9252.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_b9252.dir\linklibs.rsp
+CMakeFiles\cmTC_b9252.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `fstat64'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_b9252.dir\build.make:107: cmTC_b9252.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_b9252/fast] Error 2
+
+
+
+Determining if the function stat64 exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_02a77/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_02a77.dir\build.make CMakeFiles/cmTC_02a77.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_02a77.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=stat64 -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_02a77.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_02a77.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_02a77.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_02a77.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_02a77.dir/objects.a @CMakeFiles\cmTC_02a77.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=stat64 -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_02a77.dir/objects.a -Wl,--no-whole-archive -o cmTC_02a77.exe -Wl,--out-implib,libcmTC_02a77.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_02a77.dir\linklibs.rsp
+CMakeFiles\cmTC_02a77.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `stat64'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_02a77.dir\build.make:107: cmTC_02a77.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_02a77/fast] Error 2
+
+
+
+Performing Other Test HAVE_STAT_ST_BLOCKS failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_61f82/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_61f82.dir\build.make CMakeFiles/cmTC_61f82.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_61f82.dir/SZIPTests.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DHAVE_STAT_ST_BLOCKS -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -DHAVE_UNISTD_H -DHAVE_SYS_TYPES_H -o CMakeFiles\cmTC_61f82.dir\SZIPTests.c.obj -c F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c
+F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c: In function 'main':
+F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c:198:32: error: 'struct stat' has no member named 'st_blocks'; did you mean 'st_nlink'?
+ SIMPLE_TEST(struct stat sb; sb.st_blocks=0);
+                                ^~~~~~~~~
+F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c:1:36: note: in definition of macro 'SIMPLE_TEST'
+ #define SIMPLE_TEST(x) int main(){ x; return 0; }
+                                    ^
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_61f82.dir\build.make:84: CMakeFiles/cmTC_61f82.dir/SZIPTests.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_61f82/fast] Error 2
+
+
+Determining if the function fork exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_284c2/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_284c2.dir\build.make CMakeFiles/cmTC_284c2.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_284c2.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=fork -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_284c2.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+<command-line>: warning: conflicting types for built-in function 'fork' [-Wbuiltin-declaration-mismatch]
+F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c:7:3: note: in expansion of macro 'CHECK_FUNCTION_EXISTS'
+   CHECK_FUNCTION_EXISTS(void);
+   ^~~~~~~~~~~~~~~~~~~~~
+Linking C executable cmTC_284c2.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_284c2.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_284c2.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_284c2.dir/objects.a @CMakeFiles\cmTC_284c2.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=fork -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_284c2.dir/objects.a -Wl,--no-whole-archive -o cmTC_284c2.exe -Wl,--out-implib,libcmTC_284c2.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_284c2.dir\linklibs.rsp
+CMakeFiles\cmTC_284c2.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `fork'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_284c2.dir\build.make:107: cmTC_284c2.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_284c2/fast] Error 2
+
+
+
+Determining if the function getpwuid exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_c8b14/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_c8b14.dir\build.make CMakeFiles/cmTC_c8b14.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_c8b14.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=getpwuid -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_c8b14.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_c8b14.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_c8b14.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_c8b14.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_c8b14.dir/objects.a @CMakeFiles\cmTC_c8b14.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=getpwuid -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_c8b14.dir/objects.a -Wl,--no-whole-archive -o cmTC_c8b14.exe -Wl,--out-implib,libcmTC_c8b14.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_c8b14.dir\linklibs.rsp
+CMakeFiles\cmTC_c8b14.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `getpwuid'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_c8b14.dir\build.make:107: cmTC_c8b14.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_c8b14/fast] Error 2
+
+
+
+Determining if the function getrusage exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_95e4c/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_95e4c.dir\build.make CMakeFiles/cmTC_95e4c.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_95e4c.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=getrusage -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_95e4c.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_95e4c.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_95e4c.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_95e4c.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_95e4c.dir/objects.a @CMakeFiles\cmTC_95e4c.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=getrusage -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_95e4c.dir/objects.a -Wl,--no-whole-archive -o cmTC_95e4c.exe -Wl,--out-implib,libcmTC_95e4c.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_95e4c.dir\linklibs.rsp
+CMakeFiles\cmTC_95e4c.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `getrusage'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_95e4c.dir\build.make:107: cmTC_95e4c.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_95e4c/fast] Error 2
+
+
+
+Determining if the function lstat exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_ce589/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_ce589.dir\build.make CMakeFiles/cmTC_ce589.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ce589.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=lstat -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_ce589.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_ce589.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_ce589.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_ce589.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_ce589.dir/objects.a @CMakeFiles\cmTC_ce589.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=lstat -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_ce589.dir/objects.a -Wl,--no-whole-archive -o cmTC_ce589.exe -Wl,--out-implib,libcmTC_ce589.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_ce589.dir\linklibs.rsp
+CMakeFiles\cmTC_ce589.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `lstat'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_ce589.dir\build.make:107: cmTC_ce589.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_ce589/fast] Error 2
+
+
+
+Determining if the function rand_r exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_7a320/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_7a320.dir\build.make CMakeFiles/cmTC_7a320.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7a320.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=rand_r -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_7a320.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_7a320.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_7a320.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_7a320.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_7a320.dir/objects.a @CMakeFiles\cmTC_7a320.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=rand_r -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_7a320.dir/objects.a -Wl,--no-whole-archive -o cmTC_7a320.exe -Wl,--out-implib,libcmTC_7a320.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_7a320.dir\linklibs.rsp
+CMakeFiles\cmTC_7a320.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `rand_r'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_7a320.dir\build.make:107: cmTC_7a320.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_7a320/fast] Error 2
+
+
+
+Determining if the function random exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_49e5d/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_49e5d.dir\build.make CMakeFiles/cmTC_49e5d.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_49e5d.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=random -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_49e5d.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_49e5d.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_49e5d.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_49e5d.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_49e5d.dir/objects.a @CMakeFiles\cmTC_49e5d.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=random -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_49e5d.dir/objects.a -Wl,--no-whole-archive -o cmTC_49e5d.exe -Wl,--out-implib,libcmTC_49e5d.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_49e5d.dir\linklibs.rsp
+CMakeFiles\cmTC_49e5d.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `random'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_49e5d.dir\build.make:107: cmTC_49e5d.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_49e5d/fast] Error 2
+
+
+
+Determining if the function setsysinfo exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_da871/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_da871.dir\build.make CMakeFiles/cmTC_da871.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_da871.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=setsysinfo -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_da871.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_da871.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_da871.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_da871.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_da871.dir/objects.a @CMakeFiles\cmTC_da871.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=setsysinfo -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_da871.dir/objects.a -Wl,--no-whole-archive -o cmTC_da871.exe -Wl,--out-implib,libcmTC_da871.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_da871.dir\linklibs.rsp
+CMakeFiles\cmTC_da871.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `setsysinfo'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_da871.dir\build.make:107: cmTC_da871.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_da871/fast] Error 2
+
+
+
+Determining if the function siglongjmp exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_b68de/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_b68de.dir\build.make CMakeFiles/cmTC_b68de.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b68de.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=siglongjmp -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_b68de.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_b68de.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_b68de.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_b68de.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_b68de.dir/objects.a @CMakeFiles\cmTC_b68de.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=siglongjmp -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_b68de.dir/objects.a -Wl,--no-whole-archive -o cmTC_b68de.exe -Wl,--out-implib,libcmTC_b68de.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_b68de.dir\linklibs.rsp
+CMakeFiles\cmTC_b68de.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `siglongjmp'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_b68de.dir\build.make:107: cmTC_b68de.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_b68de/fast] Error 2
+
+
+
+Determining if the function sigsetjmp exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_2370c/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_2370c.dir\build.make CMakeFiles/cmTC_2370c.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_2370c.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=sigsetjmp -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_2370c.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_2370c.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_2370c.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_2370c.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_2370c.dir/objects.a @CMakeFiles\cmTC_2370c.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=sigsetjmp -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_2370c.dir/objects.a -Wl,--no-whole-archive -o cmTC_2370c.exe -Wl,--out-implib,libcmTC_2370c.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_2370c.dir\linklibs.rsp
+CMakeFiles\cmTC_2370c.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `sigsetjmp'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_2370c.dir\build.make:107: cmTC_2370c.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_2370c/fast] Error 2
+
+
+
+Determining if the function sigaction exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_40f58/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_40f58.dir\build.make CMakeFiles/cmTC_40f58.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_40f58.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=sigaction -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_40f58.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_40f58.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_40f58.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_40f58.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_40f58.dir/objects.a @CMakeFiles\cmTC_40f58.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=sigaction -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_40f58.dir/objects.a -Wl,--no-whole-archive -o cmTC_40f58.exe -Wl,--out-implib,libcmTC_40f58.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_40f58.dir\linklibs.rsp
+CMakeFiles\cmTC_40f58.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `sigaction'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_40f58.dir\build.make:107: cmTC_40f58.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_40f58/fast] Error 2
+
+
+
+Determining if the function sigprocmask exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_a1e1c/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_a1e1c.dir\build.make CMakeFiles/cmTC_a1e1c.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a1e1c.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=sigprocmask -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_a1e1c.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_a1e1c.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_a1e1c.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_a1e1c.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_a1e1c.dir/objects.a @CMakeFiles\cmTC_a1e1c.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=sigprocmask -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_a1e1c.dir/objects.a -Wl,--no-whole-archive -o cmTC_a1e1c.exe -Wl,--out-implib,libcmTC_a1e1c.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_a1e1c.dir\linklibs.rsp
+CMakeFiles\cmTC_a1e1c.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `sigprocmask'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_a1e1c.dir\build.make:107: cmTC_a1e1c.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_a1e1c/fast] Error 2
+
+
+
+Determining if the function srandom exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_a326f/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_a326f.dir\build.make CMakeFiles/cmTC_a326f.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a326f.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=srandom -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_a326f.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_a326f.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_a326f.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_a326f.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_a326f.dir/objects.a @CMakeFiles\cmTC_a326f.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=srandom -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_a326f.dir/objects.a -Wl,--no-whole-archive -o cmTC_a326f.exe -Wl,--out-implib,libcmTC_a326f.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_a326f.dir\linklibs.rsp
+CMakeFiles\cmTC_a326f.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `srandom'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_a326f.dir\build.make:107: cmTC_a326f.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_a326f/fast] Error 2
+
+
+
+Determining if the function symlink exists failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_3b313/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_3b313.dir\build.make CMakeFiles/cmTC_3b313.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3b313.dir/CheckFunctionExists.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DCHECK_FUNCTION_EXISTS=symlink -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -o CMakeFiles\cmTC_3b313.dir\CheckFunctionExists.c.obj -c F:\Cmake\share\cmake-3.18\Modules\CheckFunctionExists.c
+Linking C executable cmTC_3b313.exe
+F:\Cmake\bin\cmake.exe -E cmake_link_script CMakeFiles\cmTC_3b313.dir\link.txt --verbose=1
+F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\cmTC_3b313.dir/objects.a
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\cmTC_3b313.dir/objects.a @CMakeFiles\cmTC_3b313.dir\objects1.rsp
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -DCHECK_FUNCTION_EXISTS=symlink -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -Wl,--whole-archive CMakeFiles\cmTC_3b313.dir/objects.a -Wl,--no-whole-archive -o cmTC_3b313.exe -Wl,--out-implib,libcmTC_3b313.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_3b313.dir\linklibs.rsp
+CMakeFiles\cmTC_3b313.dir/objects.a(CheckFunctionExists.c.obj):CheckFunctionExists.c:(.text+0x15): undefined reference to `symlink'
+collect2.exe: error: ld returned 1 exit status
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_3b313.dir\build.make:107: cmTC_3b313.exe] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_3b313/fast] Error 2
+
+
+
+Performing Other Test HAVE_STAT_ST_BLOCKS failed with the following output:
+Change Dir: F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe cmTC_baf77/fast && C:/PROGRA~1/MINGW-~1/X86_64~1.0-W/mingw64/bin/mingw32-make.exe  -f CMakeFiles\cmTC_baf77.dir\build.make CMakeFiles/cmTC_baf77.dir/build
+mingw32-make.exe[1]: Entering directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_baf77.dir/SZIPTests.c.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -DHAVE_STAT_ST_BLOCKS -DWIN32_LEAN_AND_MEAN=1 -DNOGDI=1 -DHAVE_UNISTD_H -DHAVE_SYS_TYPES_H -o CMakeFiles\cmTC_baf77.dir\SZIPTests.c.obj -c F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c
+F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c: In function 'main':
+F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c:198:32: error: 'struct stat' has no member named 'st_blocks'; did you mean 'st_nlink'?
+ SIMPLE_TEST(struct stat sb; sb.st_blocks=0);
+                                ^~~~~~~~~
+F:\v3d_mingw1\v3d_external\v3d_main\common_lib\src_packages\szip-2.1.1\config\cmake\SZIPTests.c:1:36: note: in definition of macro 'SIMPLE_TEST'
+ #define SIMPLE_TEST(x) int main(){ x; return 0; }
+                                    ^
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_baf77.dir\build.make:84: CMakeFiles/cmTC_baf77.dir/SZIPTests.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'F:/v3d_mingw1/v3d_external/v3d_main/common_lib/src_packages/szip-2.1.1/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:139: cmTC_baf77/fast] Error 2
+
+

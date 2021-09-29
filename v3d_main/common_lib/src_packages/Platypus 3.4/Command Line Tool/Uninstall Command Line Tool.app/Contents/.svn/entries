@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="17"
+   name=""
+   committed-date="2006-07-25T13:46:40.731559Z"
+   url="svn+ssh://arakkis/svnroot/sveinbjorn/Platypus/platypus%20command%20line%20tool/Uninstall%20Command%20Line%20Tool.app/Contents"
+   last-author="sveinbjorn"
+   kind="dir"
+   repos="svn+ssh://arakkis/svnroot/sveinbjorn"
+   revision="17"/>
+<entry
+   name="MacOS"
+   kind="dir"/>
+<entry
+   committed-rev="17"
+   name="Info.plist"
+   text-time="2006-07-25T13:26:37.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="352561592bbedd41fd085fc1754aba5f"
+   last-author="sveinbjorn"
+   kind="file"/>
+<entry
+   name="Resources"
+   kind="dir"/>
+<entry
+   committed-rev="17"
+   name="PkgInfo"
+   text-time="2006-07-25T13:26:36.000000Z"
+   committed-date="2006-07-25T13:46:40.731559Z"
+   checksum="23b7d7d024abb0f558420e098800bf27"
+   last-author="sveinbjorn"
+   kind="file"/>
+</wc-entries>
