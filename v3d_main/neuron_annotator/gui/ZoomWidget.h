@@ -6,7 +6,7 @@
 
 class ZoomWidget : public QWidget, public Ui::ZoomWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit ZoomWidget(QWidget *parent = 0);
 

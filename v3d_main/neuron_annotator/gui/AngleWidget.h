@@ -15,7 +15,7 @@
 
 class QDESIGNER_WIDGET_EXPORT AngleWidget : public QWidget, public Ui::AngleWidget
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
 
