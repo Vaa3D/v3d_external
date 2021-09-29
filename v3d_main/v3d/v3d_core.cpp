@@ -4831,8 +4831,8 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 
     if (imgData)
     {
-        V3DLONG nbytes = 0 ;
         //V3DLONG nbytes = estimateRoughAmountUsedMemory();
+        V3DLONG nbytes = 0;
 //        if (nbytes>(V3DLONG)((double(1024)*1024*1024*TH_USE_MEMORY)))
 //        {
 //            v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(TH_USE_MEMORY));

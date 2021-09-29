@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "vano_linker_loader_dialog.h"
 
-#include <QtGui>
+//#include <QtGui>
 
 #include <QFileInfo>
 #include <QFile>

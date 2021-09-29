@@ -35,7 +35,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #if defined(USE_Qt5)
   #include <QtWidgets>
 #else
-  #include <QtGui>
+  //#include <QtGui>
 #endif
 #include <QLabel>
 #include <QCheckBox>
