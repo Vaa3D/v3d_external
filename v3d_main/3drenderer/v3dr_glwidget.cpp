@@ -82,7 +82,7 @@ V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
  #define POST_updateGL update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
  #define DO_updateGL	update  // macro to control direct updateGL or post update, by RZC 081007
 #else
- #define POST_updateGL QOpenGLWidget::update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
+#define POST_updateGL QOpenGLWidget::update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
 // #define DO_updateGL	updateGL  // macro to control direct updateGL or post update, by RZC 081007
 //修改了
 #define DO_updateGL	QOpenGLWidget::update
@@ -1281,7 +1281,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 callAutoTracers();
             break;
         case Qt::Key_D:
-            if (IS_ALT_MODIFIER)
+            if (Qt::Key_Alt)
             {
                 callStrokeDeleteMultiNeurons(); //For multiple segments deleting shortcut, by ZZ,02212018
             }
@@ -4235,7 +4235,7 @@ void V3dR_GLWidget::setEditMode()
     if (renderer)
     {
         renderer->setEditMode();
-        POST_updateGL();
+        update();
     }
 }
 

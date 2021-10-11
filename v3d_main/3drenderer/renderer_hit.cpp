@@ -1904,7 +1904,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     {
         if (NEURON_CONDITION)
         {
-               selectMode = smDeleteMultiNeurons;
+            selectMode = smDeleteMultiNeurons;
                b_addthiscurve = false;
                if (w) { editinput = 3; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         }
