@@ -48,7 +48,7 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
-//#include "../terafly/src/control/CPlugin.h"
+#include "../terafly/src/control/CPlugin.h"
 //#ifdef __ALLOW_VR_FUNCS__
 //#include "../mozak/MozakUI.h"
 //#endif
@@ -1000,19 +1000,19 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
 #define ___trace_history_append___
 void My4DImage::proj_trace_history_append()
 {
-//    proj_trace_history_append(tracedNeuron);
+    proj_trace_history_append(tracedNeuron);
 
-//    // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
-//    // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
-//    tf::TeraFly::doaction("neuron edit");
+    // @ADDED by Alessandro on 2015-10-01 to integrate undo/redo on both markers and neurons.
+    // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
+    tf::TeraFly::doaction("neuron edit");
 
-////#ifdef __ALLOW_VR_FUNCS__
-////    //20170803 RZC
-////    mozak::MozakUI::onImageTraceHistoryChanged();
-////#endif
+//#ifdef __ALLOW_VR_FUNCS__
+//    //20170803 RZC
+//    mozak::MozakUI::onImageTraceHistoryChanged();
+//#endif
     
-//    emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
-//	SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
+    emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
+    SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
 }
 
 void My4DImage::proj_trace_history_append(V_NeuronSWC_list & tNeuron)

@@ -1331,6 +1331,7 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
 void Renderer_gl1::callStrokeDeleteMultiNeurons()
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    qDebug()<<"ctrl+d debug:----1";
     if (w && listNeuronTree.size()>0)
     {
         w->setEditMode();

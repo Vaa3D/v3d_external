@@ -905,7 +905,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     else if (act == actShowFullPath)
     {
         //注释了
-      //  v3d_msg(QString("The full path=[").append(w->data_title).append("]"));
+        v3d_msg(QString("The full path=[").append(w->data_title).append("]"));
     }
     else if (act == actVolColormap)
     {
@@ -937,6 +937,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     }
     else if (act == actColor)
     {
+        qDebug()<<"20211021===========1";
         update = 1;
         switch (names[1])
         {
@@ -955,10 +956,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #ifndef test_main_cpp
         {
             My4DImage* image4d = v3dr_getImage4d(_idep);
+            qDebug()<<"20211021===========2";
             if (image4d)
             {
+                qDebug()<<"20211021===========3";
                 if (names[2]-1>=0 && names[2]-1<listMarker.size())
                 {
+                    qDebug()<<"20211021===========4";
                     RGBA8 cc = listMarker.at(names[2]-1).color;
                     LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
                     s->color = cc;

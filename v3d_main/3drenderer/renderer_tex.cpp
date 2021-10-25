@@ -184,7 +184,7 @@ void Renderer_gl1::setupData(void* idep)
      //           qtime.elapsed()*0.001);
 
      // }else
-     {
+
           // creating data for 3dviewer when needed
           isSimulatedData = false;
           bool bLocal = false;
@@ -336,7 +336,7 @@ void Renderer_gl1::setupData(void* idep)
                if (dim4==1)   rgba3d_r2gray(total_rgbaBuf, bufSize); //081103
           }
          // qDebug("   data4dp_to_rgba3d ............................................... cost time = %g sec", qtime.elapsed()*0.001);
-     } // end if else for creating data for 3dviewer
+      // end if else for creating data for 3dviewer
 
 }
 

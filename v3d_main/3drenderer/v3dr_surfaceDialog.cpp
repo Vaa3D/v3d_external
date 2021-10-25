@@ -767,8 +767,8 @@ void V3dr_surfaceDialog::selectedColor(int map)
 	QColor qcolor0(255,255,255,255);
 	if (map==0)
 	{
-		//qcolor0 = QColorDialog::getColor(QColor());
-		//if (! qcolor0.isValid()) return;           // this is no use for clicking Cancel by user, Qt's bug !!!
+        qcolor0 = QColorDialog::getColor(QColor());
+        // if (! qcolor0.isValid()) return;           // this is no use for clicking Cancel by user, Qt's bug !!!
 		if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
 	}
 

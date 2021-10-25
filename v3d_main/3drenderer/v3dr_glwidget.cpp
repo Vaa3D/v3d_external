@@ -1281,7 +1281,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 callAutoTracers();
             break;
         case Qt::Key_D:
-            if (Qt::Key_Alt)
+            if (IS_ALT_MODIFIER)
             {
                 callStrokeDeleteMultiNeurons(); //For multiple segments deleting shortcut, by ZZ,02212018
             }

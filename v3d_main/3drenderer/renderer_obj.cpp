@@ -1963,7 +1963,7 @@ void Renderer_gl1::toggleEditMode()
 void Renderer_gl1::setEditMode()
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    My4DImage* curImg = 0;       if (w){ qDebug()<<"ctrl+d debug:----2"; curImg = v3dr_getImage4d(_idep); }
 
     if(listNeuronTree.size()>=1 && w && curImg)
     {
@@ -1979,12 +1979,14 @@ void Renderer_gl1::setEditMode()
 
             if (listNeuronTree.size()==1)
             {
+                qDebug()<<"ctrl+d debug:----3";
                 p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
                 curEditingNeuron = 1;
                 realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
             }
             else
             {
+                qDebug()<<"ctrl+d debug:----4";
                 p_tree = (NeuronTree *)(&(listNeuronTree.at(1)));
                 curEditingNeuron = 2;
                 realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
