@@ -219,7 +219,6 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
 
     //////////////////////////////////////////////////////////////////
     glWidget = 0;
-    qDebug("glWidget = new V3dR_GLWidget jazz debug in v3dr_mainwindow.cpp");
     glWidget = new V3dR_GLWidget(_idep, this, data_title); // 'this' pointer for glWidget calling back
 #if defined(USE_Qt5)
     if ( !glWidget ) //Under Qt5, the GL Widget is not valid until after it's shown

@@ -764,12 +764,12 @@ void V3dr_surfaceDialog::selectedColor(int map)
 	QTableWidget* t = currentTableWidget();
 	if (! t) return;
 
-	QColor qcolor0(255,255,255,255);
-	if (map==0)
+    QColor qcolor0(255,255,255,255);
+    if (map == 0)
 	{
-        qcolor0 = QColorDialog::getColor(QColor());
+        // qcolor0 = QColorDialog::getColor(QColorDialog::ShowAlphaChannel);
         // if (! qcolor0.isValid()) return;           // this is no use for clicking Cancel by user, Qt's bug !!!
-		if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
+        if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
 	}
 
 	PROGRESS_DIALOG("Updating color    ", this);

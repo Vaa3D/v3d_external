@@ -170,7 +170,6 @@ int Renderer::selectObj(int x, int y, bool b_menu, char* pTip)
 {
     makeCurrent(); //090715 make sure in correct OpenGL context
 
-    qDebug(" Renderer::selectObj in renderer.cpp by jazz brain");
     if (b_selecting)  return 0;  // prevent re-enter
 
     if (selectMode >smObject && pTip) return 0; //prevent tool-tip when definition

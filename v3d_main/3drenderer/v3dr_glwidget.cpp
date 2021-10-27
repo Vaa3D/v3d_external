@@ -565,13 +565,12 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 void V3dR_GLWidget::enterEvent(QEvent*)
 {
-    qDebug("V3dR_GLWidget::enterEvent in v3dr_glwidget.cpp");
+    // qDebug("V3dR_GLWidget::enterEvent in v3dr_glwidget.cpp");
     mouse_in_view = 1;
     //setFocus();
 }
 void V3dR_GLWidget::leaveEvent(QEvent*)
 {
-    qDebug("V3dR_GLWidget::leaveEvent");
     mouse_in_view = 0;
     update();  //DLC ADD
 }

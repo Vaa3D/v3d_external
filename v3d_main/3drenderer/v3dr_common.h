@@ -257,12 +257,10 @@ extern QProgressDialog progress;
 // 090424RZC: because QColorDialog::getColor cannot handle correctly when user clicks Cancel
 inline bool v3dr_getColorDialog( QColor *color, QWidget *parent=0)
 {
-	QRgb input = 0xff000000;
-	if (color)	input = color->rgba();
-	bool ok;
-//	QRgb ouput = QColorDialog::getRgba(input, &ok, parent);  //also include alpha channel
-//	if (ok && color)  *color = QColor::fromRgba( ouput );
-	return ok;
+    bool ok = true;
+    if (ok)  *color = QColorDialog::getColor(*color, parent, "Select Color");
+
+    return ok;
 }
 
 inline QColor QColorFromRGBA8(RGBA8 c)
@@ -303,7 +301,7 @@ My4DImage* v3dr_getImage4d(void* idep)
 	{
 		image4d = ( ((iDrawExternalParameter*)idep)->image4d );
 	}
-	return (image4d); // && image4d->valid())? image4d : 0L;
+    return image4d; // && image4d->valid())? image4d : 0L;
 }
 inline
 XFormWidget* v3dr_getXWidget(void* idep)

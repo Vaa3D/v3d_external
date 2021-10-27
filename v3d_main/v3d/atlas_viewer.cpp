@@ -395,7 +395,7 @@ void V3D_atlas_viewerDialog::create()
 	if (onSelectButton)		connect(onSelectButton, SIGNAL(clicked()),    this, SLOT(onSelected()));
 	if (offSelectButton)	connect(offSelectButton, SIGNAL(clicked()),   this, SLOT(offSelected()));
 
-	//if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(colorSelected()));
+    // if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(colorSelected()));
 	if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(doMenuOfColor()));
 
 	if (channelSpinBox) connect(channelSpinBox, SIGNAL(valueChanged(int)),   this, SLOT(colorChannelSelected(int)));
@@ -786,8 +786,8 @@ void V3D_atlas_viewerDialog::colorSelected()
 		COLOR_ITEM_OF_TABLE(item, t, i);
 		if (item->isSelected())
 		{
-            //item->setData(Qt::DecorationRole, qVariantFromValue(qcolor));
-            //item->setData(Qt::DisplayRole, qVariantFromValue(qcolor));
+            item->setData(Qt::DecorationRole, QVariant::fromValue(qcolor));
+            item->setData(Qt::DisplayRole, QVariant::fromValue(qcolor));
 		}
 	}
 
