@@ -36,6 +36,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  *  Last update: 090204 update processHit().
  *  Last change: 2010-Dec-09. by Hanchuan Peng. add template functions at the end
  */
+// this is a template class
 
 #ifndef V3D_RENDERER_H
 #define V3D_RENDERER_H
