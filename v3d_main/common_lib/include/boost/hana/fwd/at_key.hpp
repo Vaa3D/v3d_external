@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::at_key`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -47,14 +47,6 @@ BOOST_HANA_NAMESPACE_BEGIN
     //! Example
     //! -------
     //! @include example/at_key.cpp
-    //!
-    //!
-    //! Benchmarks
-    //! ----------
-    //! <div class="benchmark-chart"
-    //!      style="min-width: 310px; height: 400px; margin: 0 auto"
-    //!      data-dataset="benchmark.at_key.number_of_lookups.chart.json">
-    //! </div>
 #ifdef BOOST_HANA_DOXYGEN_INVOKED
     constexpr auto at_key = [](auto&& xs, auto const& key) -> decltype(auto) {
         return tag-dispatched;
@@ -68,7 +60,7 @@ BOOST_HANA_NAMESPACE_BEGIN
         constexpr decltype(auto) operator()(Xs&& xs, Key const& key) const;
     };
 
-    constexpr at_key_t at_key{};
+    BOOST_HANA_INLINE_VARIABLE constexpr at_key_t at_key{};
 #endif
 BOOST_HANA_NAMESPACE_END
 

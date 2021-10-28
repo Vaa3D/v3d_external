@@ -28,7 +28,7 @@
 #ifndef BOOST_IOSTREAMS_DETAIL_EXECUTE_HPP_INCLUDED
 #define BOOST_IOSTREAMS_DETAIL_EXECUTE_HPP_INCLUDED
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#if defined(_MSC_VER)
 # pragma once
 #endif
 
@@ -67,7 +67,7 @@ struct execute_traits_impl<void> {
 template< typename Op, 
           typename Result = // VC6.5 workaround.
               #if !defined(BOOST_NO_RESULT_OF) && \
-                  !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x592))
+                  !BOOST_WORKAROUND(BOOST_BORLANDC, BOOST_TESTED_AT(0x592))
                   typename boost::result_of<Op()>::type
               #else
                   BOOST_DEDUCED_TYPENAME Op::result_type

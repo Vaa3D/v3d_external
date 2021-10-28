@@ -45,7 +45,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include <string>
 #include <cmath>
 #include <QPainter>
+#ifdef MACOS_SYSTEM
+#include <gl.h>
+#else
 #include <GL/gl.h>
+#endif
 #include <GL/glew.h>
 Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
 

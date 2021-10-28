@@ -39,7 +39,7 @@
 #     include <boost/regex/v4/cpp_regex_traits.hpp>
 #  endif
 #endif
-#if !BOOST_WORKAROUND(__BORLANDC__, < 0x560)
+#if !BOOST_WORKAROUND(BOOST_BORLANDC, < 0x560)
 #  ifndef BOOST_C_REGEX_TRAITS_HPP_INCLUDED
 #     include <boost/regex/v4/c_regex_traits.hpp>
 #  endif
@@ -109,7 +109,7 @@ struct default_wrapper : public BaseT
    {
       return ((c & 0x7f) == c) ? get_default_escape_syntax_type(static_cast<char>(c)) : ::boost::regex_constants::escape_type_identity;
    }
-   int toi(const char_type*& p1, const char_type* p2, int radix)const
+   boost::intmax_t toi(const char_type*& p1, const char_type* p2, int radix)const
    {
       return ::boost::BOOST_REGEX_DETAIL_NS::global_toi(p1, p2, radix, *this);
    }

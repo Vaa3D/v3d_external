@@ -2,9 +2,8 @@
 
 // Copyright (c) 2007-2015 Barend Gehrels, Amsterdam, the Netherlands.
 
-// This file was modified by Oracle on 2015.
-// Modifications copyright (c) 2015 Oracle and/or its affiliates.
-
+// This file was modified by Oracle on 2015, 2016.
+// Modifications copyright (c) 2015-2016 Oracle and/or its affiliates.
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Use, modification and distribution is subject to the Boost Software License,
@@ -14,12 +13,9 @@
 #ifndef BOOST_GEOMETRY_STRATEGIES_INTERSECTION_RESULT_HPP
 #define BOOST_GEOMETRY_STRATEGIES_INTERSECTION_RESULT_HPP
 
-#if defined(HAVE_MATRIX_AS_STRING)
-#include <string>
-#endif
-
 #include <cstddef>
 
+#include <boost/geometry/policies/robustness/segment_ratio.hpp>
 
 
 namespace boost { namespace geometry
@@ -58,7 +54,11 @@ struct fraction_type
 \brief return-type for segment-intersection
 \note Set in intersection_points.hpp, from segment_intersection_info
 */
-template <typename Point, typename SegmentRatio>
+template
+<
+    typename Point,
+    typename SegmentRatio = segment_ratio<typename coordinate_type<Point>::type>
+>
 struct segment_intersection_points
 {
     std::size_t count; // The number of intersection points
@@ -72,19 +72,6 @@ struct segment_intersection_points
         : count(0)
     {}
 };
-
-// All assigned in cart_intersect, passed to intersection_points
-template <typename CoordinateType, typename PromotedType, typename SegmentRatio>
-struct segment_intersection_info
-{
-    typedef PromotedType promoted_type;
-
-    CoordinateType dx_a, dy_a;
-    CoordinateType dx_b, dy_b;
-    SegmentRatio robust_ra;
-    SegmentRatio robust_rb;
-};
-
 
 }} // namespace boost::geometry
 

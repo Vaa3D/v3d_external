@@ -4,6 +4,11 @@
 // Copyright (c) 2008-2012 Barend Gehrels, Amsterdam, the Netherlands.
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 
+// This file was modified by Oracle on 2018.
+// Modifications copyright (c) 2018, Oracle and/or its affiliates.
+
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
+
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
 
@@ -16,6 +21,8 @@
 
 
 #include <boost/geometry/core/access.hpp>
+
+#include <boost/geometry/geometries/concepts/point_concept.hpp>
 
 #include <boost/geometry/strategies/distance.hpp>
 
@@ -91,8 +98,8 @@ public :
     static inline typename calculation_type<Point1, Point2>::type
     apply(Point1 const& p1, Point2 const& p2)
     {
-        BOOST_CONCEPT_ASSERT( (concept::ConstPoint<Point1>) );
-        BOOST_CONCEPT_ASSERT( (concept::ConstPoint<Point2>) );
+        BOOST_CONCEPT_ASSERT( (concepts::ConstPoint<Point1>) );
+        BOOST_CONCEPT_ASSERT( (concepts::ConstPoint<Point2>) );
 
         // Calculate distance using Pythagoras
         // (Leave comment above for Doxygen)

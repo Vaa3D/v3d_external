@@ -1589,7 +1589,7 @@ SOAP_FMAC3 char * SOAP_FMAC4 soap_in_byte(struct soap *soap, const char *tag, ch
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_byte(struct soap *soap, const char *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_byte);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_byte);
 	if (soap_out_byte(soap, tag?tag:"byte", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -1626,7 +1626,7 @@ SOAP_FMAC3 int * SOAP_FMAC4 soap_in_int(struct soap *soap, const char *tag, int 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_int(struct soap *soap, const int *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_int);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_int);
 	if (soap_out_int(soap, tag?tag:"int", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -1663,7 +1663,7 @@ SOAP_FMAC3 LONG64 * SOAP_FMAC4 soap_in_LONG64(struct soap *soap, const char *tag
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_LONG64(struct soap *soap, const LONG64 *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_LONG64);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_LONG64);
 	if (soap_out_LONG64(soap, tag?tag:"long", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -1747,7 +1747,7 @@ SOAP_FMAC3 bool * SOAP_FMAC4 soap_in_bool(struct soap *soap, const char *tag, bo
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_bool(struct soap *soap, const bool *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_bool);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_bool);
 	if (soap_out_bool(soap, tag?tag:"boolean", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -1834,7 +1834,7 @@ SOAP_FMAC3 _fw__ontologyKeyBindings_keyBindingSet * SOAP_FMAC4 soap_in__fw__onto
 
 int _fw__ontologyKeyBindings_keyBindingSet::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds__fw__ontologyKeyBindings_keyBindingSet);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds__fw__ontologyKeyBindings_keyBindingSet);
 	if (this->soap_out(soap, tag?tag:"fw:ontologyKeyBindings-keyBindingSet", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -1958,7 +1958,7 @@ SOAP_FMAC3 _fw__entity_entityDataSet * SOAP_FMAC4 soap_in__fw__entity_entityData
 
 int _fw__entity_entityDataSet::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds__fw__entity_entityDataSet);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds__fw__entity_entityDataSet);
 	if (this->soap_out(soap, tag?tag:"fw:entity-entityDataSet", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2046,7 +2046,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_in_fw__entityType(struct soap *soap, co
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__entityType(struct soap *soap, const std::string *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__entityType);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__entityType);
 	if (soap_out_fw__entityType(soap, tag?tag:"fw:entityType", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2097,7 +2097,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_in_fw__entityStatus(struct soap *soap, 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__entityStatus(struct soap *soap, const std::string *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__entityStatus);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__entityStatus);
 	if (soap_out_fw__entityStatus(soap, tag?tag:"fw:entityStatus", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2148,7 +2148,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_in_fw__user(struct soap *soap, const ch
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__user(struct soap *soap, const std::string *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__user);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__user);
 	if (soap_out_fw__user(soap, tag?tag:"fw:user", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2199,7 +2199,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_in_fw__entityAttribute(struct soap *soa
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__entityAttribute(struct soap *soap, const std::string *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__entityAttribute);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__entityAttribute);
 	if (soap_out_fw__entityAttribute(soap, tag?tag:"fw:entityAttribute", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2260,7 +2260,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_in_std__string(struct soap *soap, const
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_std__string(struct soap *soap, const std::string *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_std__string);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_std__string);
 	if (soap_out_std__string(soap, tag?tag:"string", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2383,7 +2383,7 @@ SOAP_FMAC3 ns2__longArray * SOAP_FMAC4 soap_in_ns2__longArray(struct soap *soap,
 
 int ns2__longArray::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_ns2__longArray);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_ns2__longArray);
 	if (this->soap_out(soap, tag?tag:"ns2:longArray", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2514,7 +2514,7 @@ SOAP_FMAC3 fw__entityArray * SOAP_FMAC4 soap_in_fw__entityArray(struct soap *soa
 
 int fw__entityArray::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entityArray);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entityArray);
 	if (this->soap_out(soap, tag?tag:"fw:entityArray", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2645,7 +2645,7 @@ SOAP_FMAC3 fw__entityDataArray * SOAP_FMAC4 soap_in_fw__entityDataArray(struct s
 
 int fw__entityDataArray::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entityDataArray);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entityDataArray);
 	if (this->soap_out(soap, tag?tag:"fw:entityDataArray", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -2819,7 +2819,7 @@ SOAP_FMAC3 fw__annotationSession * SOAP_FMAC4 soap_in_fw__annotationSession(stru
 
 int fw__annotationSession::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__annotationSession);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__annotationSession);
 	if (this->soap_out(soap, tag?tag:"fw:annotationSession", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -3019,7 +3019,7 @@ SOAP_FMAC3 fw__ontologyAnnotation * SOAP_FMAC4 soap_in_fw__ontologyAnnotation(st
 
 int fw__ontologyAnnotation::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__ontologyAnnotation);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__ontologyAnnotation);
 	if (this->soap_out(soap, tag?tag:"fw:ontologyAnnotation", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -3163,7 +3163,7 @@ SOAP_FMAC3 fw__ontologyKeyBind * SOAP_FMAC4 soap_in_fw__ontologyKeyBind(struct s
 
 int fw__ontologyKeyBind::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__ontologyKeyBind);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__ontologyKeyBind);
 	if (this->soap_out(soap, tag?tag:"fw:ontologyKeyBind", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -3317,7 +3317,7 @@ SOAP_FMAC3 fw__ontologyKeyBindings * SOAP_FMAC4 soap_in_fw__ontologyKeyBindings(
 
 int fw__ontologyKeyBindings::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__ontologyKeyBindings);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__ontologyKeyBindings);
 	if (this->soap_out(soap, tag?tag:"fw:ontologyKeyBindings", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -3507,7 +3507,7 @@ SOAP_FMAC3 fw__entity * SOAP_FMAC4 soap_in_fw__entity(struct soap *soap, const c
 
 int fw__entity::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entity);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entity);
 	if (this->soap_out(soap, tag?tag:"fw:entity", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -3697,7 +3697,7 @@ SOAP_FMAC3 fw__entityData * SOAP_FMAC4 soap_in_fw__entityData(struct soap *soap,
 
 int fw__entityData::soap_put(struct soap *soap, const char *tag, const  char *type) const
 {
-	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entityData);
+     int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__entityData);
 	if (this->soap_out(soap, tag?tag:"fw:entityData", id, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -3893,7 +3893,7 @@ SOAP_FMAC3 struct SOAP_ENV__Fault * SOAP_FMAC4 soap_in_SOAP_ENV__Fault(struct so
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_SOAP_ENV__Fault(struct soap *soap, const struct SOAP_ENV__Fault *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Fault);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Fault);
 	if (soap_out_SOAP_ENV__Fault(soap, tag?tag:"SOAP-ENV:Fault", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4004,7 +4004,7 @@ SOAP_FMAC3 struct SOAP_ENV__Reason * SOAP_FMAC4 soap_in_SOAP_ENV__Reason(struct 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_SOAP_ENV__Reason(struct soap *soap, const struct SOAP_ENV__Reason *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Reason);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Reason);
 	if (soap_out_SOAP_ENV__Reason(soap, tag?tag:"SOAP-ENV:Reason", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4122,7 +4122,7 @@ SOAP_FMAC3 struct SOAP_ENV__Detail * SOAP_FMAC4 soap_in_SOAP_ENV__Detail(struct 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_SOAP_ENV__Detail(struct soap *soap, const struct SOAP_ENV__Detail *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Detail);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Detail);
 	if (soap_out_SOAP_ENV__Detail(soap, tag?tag:"SOAP-ENV:Detail", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4242,7 +4242,7 @@ SOAP_FMAC3 struct SOAP_ENV__Code * SOAP_FMAC4 soap_in_SOAP_ENV__Code(struct soap
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_SOAP_ENV__Code(struct soap *soap, const struct SOAP_ENV__Code *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Code);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Code);
 	if (soap_out_SOAP_ENV__Code(soap, tag?tag:"SOAP-ENV:Code", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4341,7 +4341,7 @@ SOAP_FMAC3 struct SOAP_ENV__Header * SOAP_FMAC4 soap_in_SOAP_ENV__Header(struct 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_SOAP_ENV__Header(struct soap *soap, const struct SOAP_ENV__Header *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Header);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_SOAP_ENV__Header);
 	if (soap_out_SOAP_ENV__Header(soap, tag?tag:"SOAP-ENV:Header", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4452,7 +4452,7 @@ SOAP_FMAC3 struct fw__getParentEntityDataArray * SOAP_FMAC4 soap_in_fw__getParen
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getParentEntityDataArray(struct soap *soap, const struct fw__getParentEntityDataArray *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityDataArray);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityDataArray);
 	if (soap_out_fw__getParentEntityDataArray(soap, tag?tag:"fw:getParentEntityDataArray", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4557,7 +4557,7 @@ SOAP_FMAC3 struct fw__getParentEntityDataArrayResponse * SOAP_FMAC4 soap_in_fw__
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getParentEntityDataArrayResponse(struct soap *soap, const struct fw__getParentEntityDataArrayResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse);
 	if (soap_out_fw__getParentEntityDataArrayResponse(soap, tag?tag:"fw:getParentEntityDataArrayResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4666,7 +4666,7 @@ SOAP_FMAC3 struct fw__getParentEntityArray * SOAP_FMAC4 soap_in_fw__getParentEnt
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getParentEntityArray(struct soap *soap, const struct fw__getParentEntityArray *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityArray);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityArray);
 	if (soap_out_fw__getParentEntityArray(soap, tag?tag:"fw:getParentEntityArray", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4771,7 +4771,7 @@ SOAP_FMAC3 struct fw__getParentEntityArrayResponse * SOAP_FMAC4 soap_in_fw__getP
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getParentEntityArrayResponse(struct soap *soap, const struct fw__getParentEntityArrayResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityArrayResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityArrayResponse);
 	if (soap_out_fw__getParentEntityArrayResponse(soap, tag?tag:"fw:getParentEntityArrayResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4880,7 +4880,7 @@ SOAP_FMAC3 struct fw__getKeybindings * SOAP_FMAC4 soap_in_fw__getKeybindings(str
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getKeybindings(struct soap *soap, const struct fw__getKeybindings *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getKeybindings);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getKeybindings);
 	if (soap_out_fw__getKeybindings(soap, tag?tag:"fw:getKeybindings", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -4985,7 +4985,7 @@ SOAP_FMAC3 struct fw__getKeybindingsResponse * SOAP_FMAC4 soap_in_fw__getKeybind
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getKeybindingsResponse(struct soap *soap, const struct fw__getKeybindingsResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getKeybindingsResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getKeybindingsResponse);
 	if (soap_out_fw__getKeybindingsResponse(soap, tag?tag:"fw:getKeybindingsResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5090,7 +5090,7 @@ SOAP_FMAC3 struct fw__createAnnotation * SOAP_FMAC4 soap_in_fw__createAnnotation
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__createAnnotation(struct soap *soap, const struct fw__createAnnotation *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__createAnnotation);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__createAnnotation);
 	if (soap_out_fw__createAnnotation(soap, tag?tag:"fw:createAnnotation", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5185,7 +5185,7 @@ SOAP_FMAC3 struct fw__createAnnotationResponse * SOAP_FMAC4 soap_in_fw__createAn
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__createAnnotationResponse(struct soap *soap, const struct fw__createAnnotationResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__createAnnotationResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__createAnnotationResponse);
 	if (soap_out_fw__createAnnotationResponse(soap, tag?tag:"fw:createAnnotationResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5305,7 +5305,7 @@ SOAP_FMAC3 struct fw__registerClient * SOAP_FMAC4 soap_in_fw__registerClient(str
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__registerClient(struct soap *soap, const struct fw__registerClient *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__registerClient);
+    int id= soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__registerClient);
 	if (soap_out_fw__registerClient(soap, tag?tag:"fw:registerClient", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5400,7 +5400,7 @@ SOAP_FMAC3 struct fw__registerClientResponse * SOAP_FMAC4 soap_in_fw__registerCl
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__registerClientResponse(struct soap *soap, const struct fw__registerClientResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__registerClientResponse);
+    int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__registerClientResponse);
 	if (soap_out_fw__registerClientResponse(soap, tag?tag:"fw:registerClientResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5510,7 +5510,7 @@ SOAP_FMAC3 struct fw__reservePort * SOAP_FMAC4 soap_in_fw__reservePort(struct so
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__reservePort(struct soap *soap, const struct fw__reservePort *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__reservePort);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__reservePort);
 	if (soap_out_fw__reservePort(soap, tag?tag:"fw:reservePort", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5619,7 +5619,7 @@ SOAP_FMAC3 struct fw__reservePortResponse * SOAP_FMAC4 soap_in_fw__reservePortRe
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__reservePortResponse(struct soap *soap, const struct fw__reservePortResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__reservePortResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__reservePortResponse);
 	if (soap_out_fw__reservePortResponse(soap, tag?tag:"fw:reservePortResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5728,7 +5728,7 @@ SOAP_FMAC3 struct fw__deselectEntity * SOAP_FMAC4 soap_in_fw__deselectEntity(str
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__deselectEntity(struct soap *soap, const struct fw__deselectEntity *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__deselectEntity);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__deselectEntity);
 	if (soap_out_fw__deselectEntity(soap, tag?tag:"fw:deselectEntity", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5823,7 +5823,7 @@ SOAP_FMAC3 struct fw__deselectEntityResponse * SOAP_FMAC4 soap_in_fw__deselectEn
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__deselectEntityResponse(struct soap *soap, const struct fw__deselectEntityResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__deselectEntityResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__deselectEntityResponse);
 	if (soap_out_fw__deselectEntityResponse(soap, tag?tag:"fw:deselectEntityResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -5941,7 +5941,7 @@ SOAP_FMAC3 struct fw__selectEntity * SOAP_FMAC4 soap_in_fw__selectEntity(struct 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__selectEntity(struct soap *soap, const struct fw__selectEntity *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__selectEntity);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__selectEntity);
 	if (soap_out_fw__selectEntity(soap, tag?tag:"fw:selectEntity", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6036,7 +6036,7 @@ SOAP_FMAC3 struct fw__selectEntityResponse * SOAP_FMAC4 soap_in_fw__selectEntity
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__selectEntityResponse(struct soap *soap, const struct fw__selectEntityResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__selectEntityResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__selectEntityResponse);
 	if (soap_out_fw__selectEntityResponse(soap, tag?tag:"fw:selectEntityResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6146,7 +6146,7 @@ SOAP_FMAC3 struct fw__getUserAnnotationColor * SOAP_FMAC4 soap_in_fw__getUserAnn
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getUserAnnotationColor(struct soap *soap, const struct fw__getUserAnnotationColor *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getUserAnnotationColor);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getUserAnnotationColor);
 	if (soap_out_fw__getUserAnnotationColor(soap, tag?tag:"fw:getUserAnnotationColor", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6256,7 +6256,7 @@ SOAP_FMAC3 struct fw__getUserAnnotationColorResponse * SOAP_FMAC4 soap_in_fw__ge
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getUserAnnotationColorResponse(struct soap *soap, const struct fw__getUserAnnotationColorResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getUserAnnotationColorResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getUserAnnotationColorResponse);
 	if (soap_out_fw__getUserAnnotationColorResponse(soap, tag?tag:"fw:getUserAnnotationColorResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6376,7 +6376,7 @@ SOAP_FMAC3 struct fw__getAncestorWithType * SOAP_FMAC4 soap_in_fw__getAncestorWi
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAncestorWithType(struct soap *soap, const struct fw__getAncestorWithType *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAncestorWithType);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAncestorWithType);
 	if (soap_out_fw__getAncestorWithType(soap, tag?tag:"fw:getAncestorWithType", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6481,7 +6481,7 @@ SOAP_FMAC3 struct fw__getAncestorWithTypeResponse * SOAP_FMAC4 soap_in_fw__getAn
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAncestorWithTypeResponse(struct soap *soap, const struct fw__getAncestorWithTypeResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAncestorWithTypeResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAncestorWithTypeResponse);
 	if (soap_out_fw__getAncestorWithTypeResponse(soap, tag?tag:"fw:getAncestorWithTypeResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6586,7 +6586,7 @@ SOAP_FMAC3 struct fw__getAnnotationsForEntities * SOAP_FMAC4 soap_in_fw__getAnno
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationsForEntities(struct soap *soap, const struct fw__getAnnotationsForEntities *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntities);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntities);
 	if (soap_out_fw__getAnnotationsForEntities(soap, tag?tag:"fw:getAnnotationsForEntities", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6691,7 +6691,7 @@ SOAP_FMAC3 struct fw__getAnnotationsForEntitiesResponse * SOAP_FMAC4 soap_in_fw_
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationsForEntitiesResponse(struct soap *soap, const struct fw__getAnnotationsForEntitiesResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse);
 	if (soap_out_fw__getAnnotationsForEntitiesResponse(soap, tag?tag:"fw:getAnnotationsForEntitiesResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6800,7 +6800,7 @@ SOAP_FMAC3 struct fw__getAnnotationsForEntity * SOAP_FMAC4 soap_in_fw__getAnnota
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationsForEntity(struct soap *soap, const struct fw__getAnnotationsForEntity *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntity);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntity);
 	if (soap_out_fw__getAnnotationsForEntity(soap, tag?tag:"fw:getAnnotationsForEntity", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -6905,7 +6905,7 @@ SOAP_FMAC3 struct fw__getAnnotationsForEntityResponse * SOAP_FMAC4 soap_in_fw__g
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationsForEntityResponse(struct soap *soap, const struct fw__getAnnotationsForEntityResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse);
 	if (soap_out_fw__getAnnotationsForEntityResponse(soap, tag?tag:"fw:getAnnotationsForEntityResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7014,7 +7014,7 @@ SOAP_FMAC3 struct fw__getEntityTree * SOAP_FMAC4 soap_in_fw__getEntityTree(struc
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityTree(struct soap *soap, const struct fw__getEntityTree *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityTree);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityTree);
 	if (soap_out_fw__getEntityTree(soap, tag?tag:"fw:getEntityTree", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7119,7 +7119,7 @@ SOAP_FMAC3 struct fw__getEntityTreeResponse * SOAP_FMAC4 soap_in_fw__getEntityTr
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityTreeResponse(struct soap *soap, const struct fw__getEntityTreeResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityTreeResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityTreeResponse);
 	if (soap_out_fw__getEntityTreeResponse(soap, tag?tag:"fw:getEntityTreeResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7228,7 +7228,7 @@ SOAP_FMAC3 struct fw__getEntityAndChildren * SOAP_FMAC4 soap_in_fw__getEntityAnd
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityAndChildren(struct soap *soap, const struct fw__getEntityAndChildren *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityAndChildren);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityAndChildren);
 	if (soap_out_fw__getEntityAndChildren(soap, tag?tag:"fw:getEntityAndChildren", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7333,7 +7333,7 @@ SOAP_FMAC3 struct fw__getEntityAndChildrenResponse * SOAP_FMAC4 soap_in_fw__getE
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityAndChildrenResponse(struct soap *soap, const struct fw__getEntityAndChildrenResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityAndChildrenResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityAndChildrenResponse);
 	if (soap_out_fw__getEntityAndChildrenResponse(soap, tag?tag:"fw:getEntityAndChildrenResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7442,7 +7442,7 @@ SOAP_FMAC3 struct fw__getAnnotationSession * SOAP_FMAC4 soap_in_fw__getAnnotatio
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationSession(struct soap *soap, const struct fw__getAnnotationSession *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationSession);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationSession);
 	if (soap_out_fw__getAnnotationSession(soap, tag?tag:"fw:getAnnotationSession", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7547,7 +7547,7 @@ SOAP_FMAC3 struct fw__getAnnotationSessionResponse * SOAP_FMAC4 soap_in_fw__getA
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationSessionResponse(struct soap *soap, const struct fw__getAnnotationSessionResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationSessionResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationSessionResponse);
 	if (soap_out_fw__getAnnotationSessionResponse(soap, tag?tag:"fw:getAnnotationSessionResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7656,7 +7656,7 @@ SOAP_FMAC3 struct fw__getOntology * SOAP_FMAC4 soap_in_fw__getOntology(struct so
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getOntology(struct soap *soap, const struct fw__getOntology *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getOntology);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getOntology);
 	if (soap_out_fw__getOntology(soap, tag?tag:"fw:getOntology", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7761,7 +7761,7 @@ SOAP_FMAC3 struct fw__getOntologyResponse * SOAP_FMAC4 soap_in_fw__getOntologyRe
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getOntologyResponse(struct soap *soap, const struct fw__getOntologyResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getOntologyResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getOntologyResponse);
 	if (soap_out_fw__getOntologyResponse(soap, tag?tag:"fw:getOntologyResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7870,7 +7870,7 @@ SOAP_FMAC3 struct fw__removeAnnotation * SOAP_FMAC4 soap_in_fw__removeAnnotation
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__removeAnnotation(struct soap *soap, const struct fw__removeAnnotation *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotation);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotation);
 	if (soap_out_fw__removeAnnotation(soap, tag?tag:"fw:removeAnnotation", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -7965,7 +7965,7 @@ SOAP_FMAC3 struct fw__removeAnnotationResponse * SOAP_FMAC4 soap_in_fw__removeAn
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__removeAnnotationResponse(struct soap *soap, const struct fw__removeAnnotationResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotationResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotationResponse);
 	if (soap_out_fw__removeAnnotationResponse(soap, tag?tag:"fw:removeAnnotationResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8074,7 +8074,7 @@ SOAP_FMAC3 struct fw__getEntityById * SOAP_FMAC4 soap_in_fw__getEntityById(struc
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityById(struct soap *soap, const struct fw__getEntityById *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityById);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityById);
 	if (soap_out_fw__getEntityById(soap, tag?tag:"fw:getEntityById", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8179,7 +8179,7 @@ SOAP_FMAC3 struct fw__getEntityByIdResponse * SOAP_FMAC4 soap_in_fw__getEntityBy
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityByIdResponse(struct soap *soap, const struct fw__getEntityByIdResponse *a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityByIdResponse);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getEntityByIdResponse);
 	if (soap_out_fw__getEntityByIdResponse(soap, tag?tag:"fw:getEntityByIdResponse", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8264,7 +8264,7 @@ SOAP_FMAC3 struct SOAP_ENV__Reason ** SOAP_FMAC4 soap_in_PointerToSOAP_ENV__Reas
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToSOAP_ENV__Reason(struct soap *soap, struct SOAP_ENV__Reason *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToSOAP_ENV__Reason);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToSOAP_ENV__Reason);
 	if (soap_out_PointerToSOAP_ENV__Reason(soap, tag?tag:"SOAP-ENV:Reason", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8319,7 +8319,7 @@ SOAP_FMAC3 struct SOAP_ENV__Detail ** SOAP_FMAC4 soap_in_PointerToSOAP_ENV__Deta
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToSOAP_ENV__Detail(struct soap *soap, struct SOAP_ENV__Detail *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToSOAP_ENV__Detail);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToSOAP_ENV__Detail);
 	if (soap_out_PointerToSOAP_ENV__Detail(soap, tag?tag:"SOAP-ENV:Detail", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8374,7 +8374,7 @@ SOAP_FMAC3 struct SOAP_ENV__Code ** SOAP_FMAC4 soap_in_PointerToSOAP_ENV__Code(s
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToSOAP_ENV__Code(struct soap *soap, struct SOAP_ENV__Code *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToSOAP_ENV__Code);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToSOAP_ENV__Code);
 	if (soap_out_PointerToSOAP_ENV__Code(soap, tag?tag:"SOAP-ENV:Code", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8431,7 +8431,7 @@ SOAP_FMAC3 fw__entityDataArray ** SOAP_FMAC4 soap_in_PointerTofw__entityDataArra
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityDataArray(struct soap *soap, fw__entityDataArray *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityDataArray);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityDataArray);
 	if (soap_out_PointerTofw__entityDataArray(soap, tag?tag:"fw:entityDataArray", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8486,7 +8486,7 @@ SOAP_FMAC3 fw__ontologyKeyBindings ** SOAP_FMAC4 soap_in_PointerTofw__ontologyKe
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__ontologyKeyBindings(struct soap *soap, fw__ontologyKeyBindings *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__ontologyKeyBindings);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__ontologyKeyBindings);
 	if (soap_out_PointerTofw__ontologyKeyBindings(soap, tag?tag:"fw:ontologyKeyBindings", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8541,7 +8541,7 @@ SOAP_FMAC3 fw__ontologyAnnotation ** SOAP_FMAC4 soap_in_PointerTofw__ontologyAnn
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__ontologyAnnotation(struct soap *soap, fw__ontologyAnnotation *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__ontologyAnnotation);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__ontologyAnnotation);
 	if (soap_out_PointerTofw__ontologyAnnotation(soap, tag?tag:"fw:ontologyAnnotation", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8596,7 +8596,7 @@ SOAP_FMAC3 ns2__longArray ** SOAP_FMAC4 soap_in_PointerTons2__longArray(struct s
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTons2__longArray(struct soap *soap, ns2__longArray *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTons2__longArray);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTons2__longArray);
 	if (soap_out_PointerTons2__longArray(soap, tag?tag:"ns2:longArray", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8651,7 +8651,7 @@ SOAP_FMAC3 fw__entityArray ** SOAP_FMAC4 soap_in_PointerTofw__entityArray(struct
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityArray(struct soap *soap, fw__entityArray *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityArray);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityArray);
 	if (soap_out_PointerTofw__entityArray(soap, tag?tag:"fw:entityArray", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8706,7 +8706,7 @@ SOAP_FMAC3 fw__annotationSession ** SOAP_FMAC4 soap_in_PointerTofw__annotationSe
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__annotationSession(struct soap *soap, fw__annotationSession *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__annotationSession);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__annotationSession);
 	if (soap_out_PointerTofw__annotationSession(soap, tag?tag:"fw:annotationSession", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8761,7 +8761,7 @@ SOAP_FMAC3 _fw__ontologyKeyBindings_keyBindingSet ** SOAP_FMAC4 soap_in_PointerT
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTo_fw__ontologyKeyBindings_keyBindingSet(struct soap *soap, _fw__ontologyKeyBindings_keyBindingSet *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet);
 	if (soap_out_PointerTo_fw__ontologyKeyBindings_keyBindingSet(soap, tag?tag:"fw:ontologyKeyBindings-keyBindingSet", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8816,7 +8816,7 @@ SOAP_FMAC3 fw__ontologyKeyBind ** SOAP_FMAC4 soap_in_PointerTofw__ontologyKeyBin
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__ontologyKeyBind(struct soap *soap, fw__ontologyKeyBind *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__ontologyKeyBind);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__ontologyKeyBind);
 	if (soap_out_PointerTofw__ontologyKeyBind(soap, tag?tag:"fw:ontologyKeyBind", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8871,7 +8871,7 @@ SOAP_FMAC3 _fw__entity_entityDataSet ** SOAP_FMAC4 soap_in_PointerTo_fw__entity_
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTo_fw__entity_entityDataSet(struct soap *soap, _fw__entity_entityDataSet *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTo_fw__entity_entityDataSet);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTo_fw__entity_entityDataSet);
 	if (soap_out_PointerTo_fw__entity_entityDataSet(soap, tag?tag:"fw:entity-entityDataSet", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8926,7 +8926,7 @@ SOAP_FMAC3 fw__entityData ** SOAP_FMAC4 soap_in_PointerTofw__entityData(struct s
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityData(struct soap *soap, fw__entityData *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityData);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityData);
 	if (soap_out_PointerTofw__entityData(soap, tag?tag:"fw:entityData", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -8977,7 +8977,7 @@ SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_in_PointerTofw__entityType(struct soap
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityType(struct soap *soap, std::string *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityType);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityType);
 	if (soap_out_PointerTofw__entityType(soap, tag?tag:"fw:entityType", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9028,7 +9028,7 @@ SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_in_PointerTofw__entityStatus(struct so
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityStatus(struct soap *soap, std::string *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityStatus);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityStatus);
 	if (soap_out_PointerTofw__entityStatus(soap, tag?tag:"fw:entityStatus", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9078,7 +9078,7 @@ SOAP_FMAC3 LONG64 ** SOAP_FMAC4 soap_in_PointerToLONG64(struct soap *soap, const
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToLONG64(struct soap *soap, LONG64 *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToLONG64);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToLONG64);
 	if (soap_out_PointerToLONG64(soap, tag?tag:"long", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9128,7 +9128,7 @@ SOAP_FMAC3 int ** SOAP_FMAC4 soap_in_PointerToint(struct soap *soap, const char 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToint(struct soap *soap, int *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToint);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerToint);
 	if (soap_out_PointerToint(soap, tag?tag:"int", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9179,7 +9179,7 @@ SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_in_PointerTostd__string(struct soap *s
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTostd__string(struct soap *soap, std::string *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTostd__string);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTostd__string);
 	if (soap_out_PointerTostd__string(soap, tag?tag:"string", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9230,7 +9230,7 @@ SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_in_PointerTofw__user(struct soap *soap
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__user(struct soap *soap, std::string *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__user);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__user);
 	if (soap_out_PointerTofw__user(soap, tag?tag:"fw:user", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9285,7 +9285,7 @@ SOAP_FMAC3 fw__entity ** SOAP_FMAC4 soap_in_PointerTofw__entity(struct soap *soa
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entity(struct soap *soap, fw__entity *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entity);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entity);
 	if (soap_out_PointerTofw__entity(soap, tag?tag:"fw:entity", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9336,7 +9336,7 @@ SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_in_PointerTofw__entityAttribute(struct
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityAttribute(struct soap *soap, std::string *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityAttribute);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__entityAttribute);
 	if (soap_out_PointerTofw__entityAttribute(soap, tag?tag:"fw:entityAttribute", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9363,7 +9363,7 @@ SOAP_FMAC3 char * * SOAP_FMAC4 soap_in__QName(struct soap *soap, const char *tag
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put__QName(struct soap *soap, char *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds__QName);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds__QName);
 	if (soap_out__QName(soap, tag?tag:"byte", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);
@@ -9405,7 +9405,7 @@ SOAP_FMAC3 char * * SOAP_FMAC4 soap_in_string(struct soap *soap, const char *tag
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_put_string(struct soap *soap, char *const*a, const char *tag, const char *type)
 {
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_string);
+     int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_string);
 	if (soap_out_string(soap, tag?tag:"byte", id, a, type))
 		return soap->error;
 	return soap_putindependent(soap);

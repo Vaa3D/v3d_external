@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\test_tskip.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\test_tskip.dir/objects.a @CMakeFiles\test_tskip.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\test_tskip.dir/objects.a -Wl,--no-whole-archive -o ..\..\bin\test_tskip.exe -Wl,--out-implib,..\..\bin\libtest_tskip.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\test_tskip.dir\linklibs.rsp

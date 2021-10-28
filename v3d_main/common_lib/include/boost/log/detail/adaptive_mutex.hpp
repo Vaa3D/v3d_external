@@ -26,6 +26,7 @@
 
 #include <boost/throw_exception.hpp>
 #include <boost/thread/exceptions.hpp>
+#include <boost/assert/source_location.hpp>
 
 #if defined(BOOST_THREAD_POSIX) // This one can be defined by users, so it should go first
 #define BOOST_LOG_ADAPTIVE_MUTEX_USE_PTHREAD
@@ -37,21 +38,15 @@
 
 #if defined(BOOST_LOG_ADAPTIVE_MUTEX_USE_WINAPI)
 
+#include <boost/log/detail/pause.hpp>
+#include <boost/winapi/thread.hpp>
 #include <boost/detail/interlocked.hpp>
-#include <boost/detail/winapi/thread.hpp>
 
 #if defined(__INTEL_COMPILER) || defined(_MSC_VER)
-#    if defined(_M_IX86)
-#        define BOOST_LOG_PAUSE_OP __asm { pause }
-#    elif defined(_M_AMD64)
-extern "C" void _mm_pause(void);
-#        if defined(BOOST_MSVC)
-#            pragma intrinsic(_mm_pause)
-#        endif
-#        define BOOST_LOG_PAUSE_OP _mm_pause()
-#    endif
 #    if defined(__INTEL_COMPILER)
 #        define BOOST_LOG_COMPILER_BARRIER __memory_barrier()
+#    elif defined(__clang__) // clang-win also defines _MSC_VER
+#        define BOOST_LOG_COMPILER_BARRIER __atomic_signal_fence(__ATOMIC_SEQ_CST)
 #    else
 extern "C" void _ReadWriteBarrier(void);
 #        if defined(BOOST_MSVC)
@@ -60,7 +55,6 @@ extern "C" void _ReadWriteBarrier(void);
 #        define BOOST_LOG_COMPILER_BARRIER _ReadWriteBarrier()
 #    endif
 #elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
-#    define BOOST_LOG_PAUSE_OP __asm__ __volatile__("pause;")
 #    define BOOST_LOG_COMPILER_BARRIER __asm__ __volatile__("" : : : "memory")
 #endif
 
@@ -94,17 +88,17 @@ public:
 
     void lock()
     {
-#if defined(BOOST_LOG_PAUSE_OP)
+#if defined(BOOST_LOG_AUX_PAUSE)
         unsigned int pause_count = initial_pause;
 #endif
         while (!try_lock())
         {
-#if defined(BOOST_LOG_PAUSE_OP)
+#if defined(BOOST_LOG_AUX_PAUSE)
             if (pause_count < max_pause)
             {
                 for (unsigned int i = 0; i < pause_count; ++i)
                 {
-                    BOOST_LOG_PAUSE_OP;
+                    BOOST_LOG_AUX_PAUSE;
                 }
                 pause_count += pause_count;
             }
@@ -112,10 +106,10 @@ public:
             {
                 // Restart spinning after waking up this thread
                 pause_count = initial_pause;
-                SwitchToThread();
+                boost::winapi::SwitchToThread();
             }
 #else
-            SwitchToThread();
+            boost::winapi::SwitchToThread();
 #endif
         }
     }
@@ -136,7 +130,7 @@ public:
     BOOST_DELETED_FUNCTION(adaptive_mutex& operator= (adaptive_mutex const&))
 };
 
-#undef BOOST_LOG_PAUSE_OP
+#undef BOOST_LOG_AUX_PAUSE
 #undef BOOST_LOG_COMPILER_BARRIER
 
 } // namespace aux
@@ -221,11 +215,7 @@ private:
     template< typename ExceptionT >
     static BOOST_NOINLINE BOOST_LOG_NORETURN void throw_exception(int err, const char* descr, const char* func, const char* file, int line)
     {
-#if !defined(BOOST_EXCEPTION_DISABLE)
-        boost::exception_detail::throw_exception_(ExceptionT(err, descr), func, file, line);
-#else
-        boost::throw_exception(ExceptionT(err, descr));
-#endif
+        boost::throw_exception(ExceptionT(err, descr), boost::source_location(file, line, func));
     }
 };
 

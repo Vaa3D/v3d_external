@@ -16,7 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/assert.hpp>
-#include <boost/detail/workaround.hpp>
+#include <boost/config/workaround.hpp>
 
 namespace boost
 {
@@ -104,7 +104,7 @@ private:
     }
 
     // Note: invoked automatically by shared_ptr; do not call
-    template<class X, class Y> void _internal_accept_owner( shared_ptr<X> * ppx, Y * py ) const
+    template<class X, class Y> void _internal_accept_owner( shared_ptr<X> * ppx, Y * ) const
     {
         BOOST_ASSERT( ppx != 0 );
 
@@ -144,8 +144,7 @@ template<typename T>
 boost::weak_ptr<T> weak_from_raw(T *p)
 {
     BOOST_ASSERT(p != 0);
-    boost::weak_ptr<T> result;
-    result._internal_aliasing_assign(p->enable_shared_from_raw::weak_from_this(), p);
+    boost::weak_ptr<T> result(p->enable_shared_from_raw::weak_from_this(), p);
     return result;
 }
 

@@ -4,6 +4,9 @@
 // Copyright (c) 2008-2012 Bruno Lalande, Paris, France.
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 
+// Copyright (c) 2020, Oracle and/or its affiliates.
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
+
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
 
@@ -14,7 +17,11 @@
 #ifndef BOOST_GEOMETRY_ALGORITHMS_MAKE_HPP
 #define BOOST_GEOMETRY_ALGORITHMS_MAKE_HPP
 
+#include <type_traits>
+
 #include <boost/geometry/algorithms/assign.hpp>
+
+#include <boost/geometry/core/make.hpp>
 
 #include <boost/geometry/geometries/concepts/check.hpp>
 
@@ -32,12 +39,10 @@ namespace detail { namespace make
 \tparam Range \tparam_range_point
 \param range \param_range_point
 \return The constructed geometry, here: a linestring or a ring
-
 \qbk{distinguish, with a range}
 \qbk{
 [heading Example]
 [make_with_range] [make_with_range_output]
-
 [heading See also]
 \* [link geometry.reference.algorithms.assign.assign_points assign]
 }
@@ -45,7 +50,7 @@ namespace detail { namespace make
 template <typename Geometry, typename Range>
 inline Geometry make_points(Range const& range)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     Geometry geometry;
     geometry::append(geometry, range);
@@ -75,10 +80,15 @@ inline Geometry make_points(Range const& range)
 \* [link geometry.reference.algorithms.assign.assign_values_3_2_coordinate_values assign]
 }
 */
-template <typename Geometry, typename Type>
+template
+<
+    typename Geometry,
+    typename Type,
+    std::enable_if_t<! traits::make<Geometry>::is_specialized, int> = 0
+>
 inline Geometry make(Type const& c1, Type const& c2)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     Geometry geometry;
     dispatch::assign
@@ -89,6 +99,23 @@ inline Geometry make(Type const& c1, Type const& c2)
         >::apply(geometry, c1, c2);
     return geometry;
 }
+
+
+template
+<
+    typename Geometry,
+    typename Type,
+    std::enable_if_t<traits::make<Geometry>::is_specialized, int> = 0
+>
+constexpr inline Geometry make(Type const& c1, Type const& c2)
+{
+    concepts::check<Geometry>();
+
+    // NOTE: This is not fully equivalent to the above because assign uses
+    //       numeric_cast which can't be used here since it's not constexpr.
+    return traits::make<Geometry>::apply(c1, c2);
+}
+
 
 /*!
 \brief Construct a geometry
@@ -109,10 +136,15 @@ inline Geometry make(Type const& c1, Type const& c2)
 \* [link geometry.reference.algorithms.assign.assign_values_4_3_coordinate_values assign]
 }
  */
-template <typename Geometry, typename Type>
+template
+<
+    typename Geometry,
+    typename Type,
+    std::enable_if_t<! traits::make<Geometry>::is_specialized, int> = 0
+>
 inline Geometry make(Type const& c1, Type const& c2, Type const& c3)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     Geometry geometry;
     dispatch::assign
@@ -124,10 +156,26 @@ inline Geometry make(Type const& c1, Type const& c2, Type const& c3)
     return geometry;
 }
 
+template
+<
+    typename Geometry,
+    typename Type,
+    std::enable_if_t<traits::make<Geometry>::is_specialized, int> = 0
+>
+constexpr inline Geometry make(Type const& c1, Type const& c2, Type const& c3)
+{
+    concepts::check<Geometry>();
+
+    // NOTE: This is not fully equivalent to the above because assign uses
+    //       numeric_cast which can't be used here since it's not constexpr.
+    return traits::make<Geometry>::apply(c1, c2, c3);
+}
+
+
 template <typename Geometry, typename Type>
 inline Geometry make(Type const& c1, Type const& c2, Type const& c3, Type const& c4)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     Geometry geometry;
     dispatch::assign
@@ -163,7 +211,7 @@ inline Geometry make(Type const& c1, Type const& c2, Type const& c3, Type const&
 template <typename Geometry>
 inline Geometry make_inverse()
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     Geometry geometry;
     dispatch::assign_inverse
@@ -184,7 +232,7 @@ inline Geometry make_inverse()
 template <typename Geometry>
 inline Geometry make_zero()
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     Geometry geometry;
     dispatch::assign_zero

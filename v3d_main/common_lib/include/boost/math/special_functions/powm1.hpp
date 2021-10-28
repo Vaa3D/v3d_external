@@ -8,13 +8,15 @@
 
 #ifdef _MSC_VER
 #pragma once
+#pragma warning(push)
+#pragma warning(disable:4702) // Unreachable code (release mode only warning)
 #endif
 
 #include <boost/math/special_functions/math_fwd.hpp>
 #include <boost/math/special_functions/log1p.hpp>
 #include <boost/math/special_functions/expm1.hpp>
 #include <boost/math/special_functions/trunc.hpp>
-#include <boost/assert.hpp>
+#include <boost/math/tools/assert.hpp>
 
 namespace boost{ namespace math{ namespace detail{
 
@@ -32,7 +34,7 @@ inline T powm1_imp(const T x, const T y, const Policy& pol)
          // so just try it and see:
          T l = y * log(x);
          if (l < 0.5)
-            return boost::math::expm1(l);
+            return boost::math::expm1(l, pol);
          if (l > boost::math::tools::log_max_value<T>())
             return boost::math::policies::raise_overflow_error<T>(function, 0, pol);
          // fall through....
@@ -69,6 +71,10 @@ inline typename tools::promote_args<T1, T2>::type
 
 } // namespace math
 } // namespace boost
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif // BOOST_MATH_POWM1
 

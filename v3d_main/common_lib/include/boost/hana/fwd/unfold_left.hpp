@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::unfold_left`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -78,7 +78,7 @@ BOOST_HANA_NAMESPACE_BEGIN
     struct unfold_left_t;
 
     template <typename S>
-    constexpr unfold_left_t<S> unfold_left{};
+    BOOST_HANA_INLINE_VARIABLE constexpr unfold_left_t<S> unfold_left{};
 #endif
 BOOST_HANA_NAMESPACE_END
 

@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\test_kernall.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\test_kernall.dir/objects.a @CMakeFiles\test_kernall.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\test_kernall.dir/objects.a -Wl,--no-whole-archive -o ..\..\bin\test_kernall.exe -Wl,--out-implib,..\..\bin\libtest_kernall.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\test_kernall.dir\linklibs.rsp

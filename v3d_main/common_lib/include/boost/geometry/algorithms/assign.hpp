@@ -5,6 +5,10 @@
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 // Copyright (c) 2014 Samuel Debionne, Grenoble, France.
 
+// This file was modified by Oracle on 2020-2021.
+// Modifications copyright (c) 2020-2021 Oracle and/or its affiliates.
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
+
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
 
@@ -20,8 +24,6 @@
 
 #include <boost/concept/requires.hpp>
 #include <boost/concept_check.hpp>
-#include <boost/mpl/assert.hpp>
-#include <boost/mpl/if.hpp>
 #include <boost/numeric/conversion/bounds.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
@@ -38,11 +40,10 @@
 #include <boost/geometry/arithmetic/arithmetic.hpp>
 #include <boost/geometry/core/access.hpp>
 #include <boost/geometry/core/exterior_ring.hpp>
+#include <boost/geometry/core/static_assert.hpp>
 #include <boost/geometry/core/tags.hpp>
 
 #include <boost/geometry/geometries/concepts/check.hpp>
-
-#include <boost/geometry/util/for_each_coordinate.hpp>
 
 namespace boost { namespace geometry
 {
@@ -69,7 +70,7 @@ namespace boost { namespace geometry
 template <typename Geometry, typename Range>
 inline void assign_points(Geometry& geometry, Range const& range)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     clear(geometry);
     geometry::append(geometry, range, -1, 0);
@@ -96,7 +97,7 @@ collect the minimum bounding box of a geometry.
 template <typename Geometry>
 inline void assign_inverse(Geometry& geometry)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     dispatch::assign_inverse
         <
@@ -116,7 +117,7 @@ inline void assign_inverse(Geometry& geometry)
 template <typename Geometry>
 inline void assign_zero(Geometry& geometry)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     dispatch::assign_zero
         <
@@ -146,7 +147,7 @@ inline void assign_zero(Geometry& geometry)
 template <typename Geometry, typename Type>
 inline void assign_values(Geometry& geometry, Type const& c1, Type const& c2)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     dispatch::assign
         <
@@ -179,7 +180,7 @@ template <typename Geometry, typename Type>
 inline void assign_values(Geometry& geometry,
             Type const& c1, Type const& c2, Type const& c3)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     dispatch::assign
         <
@@ -206,7 +207,7 @@ template <typename Geometry, typename Type>
 inline void assign_values(Geometry& geometry,
                 Type const& c1, Type const& c2, Type const& c3, Type const& c4)
 {
-    concept::check<Geometry>();
+    concepts::check<Geometry>();
 
     dispatch::assign
         <
@@ -227,26 +228,22 @@ struct assign
     static inline void
     apply(Geometry1& geometry1, const Geometry2& geometry2)
     {
-        concept::check<Geometry1>();
-        concept::check<Geometry2 const>();
-        concept::check_concepts_and_equal_dimensions<Geometry1, Geometry2 const>();
+        concepts::check<Geometry1>();
+        concepts::check<Geometry2 const>();
+        concepts::check_concepts_and_equal_dimensions<Geometry1, Geometry2 const>();
             
         static bool const same_point_order
             = point_order<Geometry1>::value == point_order<Geometry2>::value;
-        BOOST_MPL_ASSERT_MSG
-        (
-            (same_point_order),
-            ASSIGN_IS_NOT_SUPPORTED_FOR_DIFFERENT_POINT_ORDER,
-            (types<Geometry1, Geometry2>)
-        );
+        BOOST_GEOMETRY_STATIC_ASSERT(
+            same_point_order,
+            "Assign is not supported for different point orders.",
+            Geometry1, Geometry2);
         static bool const same_closure
             = closure<Geometry1>::value == closure<Geometry2>::value;
-        BOOST_MPL_ASSERT_MSG
-        (
-            (same_closure),
-            ASSIGN_IS_NOT_SUPPORTED_FOR_DIFFERENT_CLOSURE,
-            (types<Geometry1, Geometry2>)
-        );
+        BOOST_GEOMETRY_STATIC_ASSERT(
+            same_closure,
+            "Assign is not supported for different closures.",
+            Geometry1, Geometry2);
             
         dispatch::convert<Geometry2, Geometry1>::apply(geometry2, geometry1);
     }

@@ -15,18 +15,19 @@
 #ifndef BOOST_GEOMETRY_GEOMETRIES_CONCEPTS_BOX_CONCEPT_HPP
 #define BOOST_GEOMETRY_GEOMETRIES_CONCEPTS_BOX_CONCEPT_HPP
 
-
 #include <cstddef>
 
 #include <boost/concept_check.hpp>
-
+#include <boost/core/ignore_unused.hpp>
 
 #include <boost/geometry/core/access.hpp>
 #include <boost/geometry/core/coordinate_dimension.hpp>
 #include <boost/geometry/core/point_type.hpp>
 
+#include <boost/geometry/geometries/concepts/concept_type.hpp>
 
-namespace boost { namespace geometry { namespace concept
+
+namespace boost { namespace geometry { namespace concepts
 {
 
 
@@ -109,7 +110,7 @@ class ConstBox
         {
             const Geometry* b = 0;
             coordinate_type coord(geometry::get<Index, Dimension>(*b));
-            boost::ignore_unused_variable_warning(coord);
+            boost::ignore_unused(coord);
             dimension_checker<Index, Dimension + 1, DimensionCount>::apply();
         }
     };
@@ -130,7 +131,21 @@ public :
 #endif
 };
 
-}}} // namespace boost::geometry::concept
+
+template <typename Geometry>
+struct concept_type<Geometry, box_tag>
+{
+    using type = Box<Geometry>;
+};
+
+template <typename Geometry>
+struct concept_type<Geometry const, box_tag>
+{
+    using type = ConstBox<Geometry>;
+};
+
+
+}}} // namespace boost::geometry::concepts
 
 
 #endif // BOOST_GEOMETRY_GEOMETRIES_CONCEPTS_BOX_CONCEPT_HPP

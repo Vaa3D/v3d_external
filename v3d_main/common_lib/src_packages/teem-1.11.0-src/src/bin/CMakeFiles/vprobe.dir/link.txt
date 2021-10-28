@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\vprobe.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\vprobe.dir/objects.a @CMakeFiles\vprobe.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\vprobe.dir/objects.a -Wl,--no-whole-archive -o ..\..\bin\vprobe.exe -Wl,--out-implib,..\..\bin\libvprobe.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\vprobe.dir\linklibs.rsp

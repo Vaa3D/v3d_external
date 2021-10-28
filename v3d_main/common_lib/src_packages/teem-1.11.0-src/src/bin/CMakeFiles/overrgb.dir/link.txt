@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\overrgb.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\overrgb.dir/objects.a @CMakeFiles\overrgb.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\overrgb.dir/objects.a -Wl,--no-whole-archive -o ..\..\bin\overrgb.exe -Wl,--out-implib,..\..\bin\liboverrgb.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\overrgb.dir\linklibs.rsp

@@ -14,7 +14,6 @@
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/move/move.hpp>
-#include <boost/range.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/utility/explicit_operator_bool.hpp>
 
@@ -144,12 +143,18 @@ public:
         return * this;
     }
 
-    class iterator : public std::iterator< std::output_iterator_tag, void, void, void, void >
+    class iterator
     {
     private:
        push_coroutine< Arg >    *   c_;
 
     public:
+        typedef std::output_iterator_tag iterator_category;
+        typedef void value_type;
+        typedef void difference_type;
+        typedef void pointer;
+        typedef void reference;
+
         iterator() :
            c_( 0)
         {}
@@ -283,12 +288,18 @@ public:
         return * this;
     }
 
-    class iterator : public std::iterator< std::output_iterator_tag, void, void, void, void >
+    class iterator
     {
     private:
        push_coroutine< Arg & >  *   c_;
 
     public:
+        typedef std::output_iterator_tag iterator_category;
+        typedef void value_type;
+        typedef void difference_type;
+        typedef void pointer;
+        typedef void reference;
+
         iterator() :
            c_( 0)
         {}
@@ -717,7 +728,7 @@ public:
         return impl_->get();
     }
 
-    class iterator : public std::iterator< std::input_iterator_tag, typename remove_reference< R >::type >
+    class iterator
     {
     private:
         pull_coroutine< R > *   c_;
@@ -746,8 +757,14 @@ public:
         }
 
     public:
-        typedef typename iterator::pointer      pointer_t;
-        typedef typename iterator::reference    reference_t;
+        typedef std::input_iterator_tag iterator_category;
+        typedef typename remove_reference< R >::type value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef value_type * pointer;
+        typedef value_type & reference;
+
+        typedef pointer   pointer_t;
+        typedef reference reference_t;
 
         iterator() :
             c_( 0), val_( 0)
@@ -800,7 +817,7 @@ public:
         }
     };
 
-    class const_iterator : public std::iterator< std::input_iterator_tag, const typename remove_reference< R >::type >
+    class const_iterator
     {
     private:
         pull_coroutine< R > *   c_;
@@ -829,8 +846,14 @@ public:
         }
 
     public:
-        typedef typename const_iterator::pointer      pointer_t;
-        typedef typename const_iterator::reference    reference_t;
+        typedef std::input_iterator_tag iterator_category;
+        typedef const typename remove_reference< R >::type value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef value_type * pointer;
+        typedef value_type & reference;
+
+        typedef pointer   pointer_t;
+        typedef reference reference_t;
 
         const_iterator() :
             c_( 0), val_( 0)
@@ -1173,7 +1196,7 @@ public:
     R & get() const
     { return impl_->get(); }
 
-    class iterator : public std::iterator< std::input_iterator_tag, typename remove_reference< R >::type >
+    class iterator
     {
     private:
         pull_coroutine< R & >   *   c_;
@@ -1202,8 +1225,14 @@ public:
         }
 
     public:
-        typedef typename iterator::pointer      pointer_t;
-        typedef typename iterator::reference    reference_t;
+        typedef std::input_iterator_tag iterator_category;
+        typedef typename remove_reference< R >::type value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef value_type * pointer;
+        typedef value_type & reference;
+
+        typedef pointer   pointer_t;
+        typedef reference reference_t;
 
         iterator() :
             c_( 0), val_( 0)
@@ -1256,7 +1285,7 @@ public:
         }
     };
 
-    class const_iterator : public std::iterator< std::input_iterator_tag, const typename remove_reference< R >::type >
+    class const_iterator
     {
     private:
         pull_coroutine< R & >   *   c_;
@@ -1285,8 +1314,14 @@ public:
         }
 
     public:
-        typedef typename const_iterator::pointer      pointer_t;
-        typedef typename const_iterator::reference    reference_t;
+        typedef std::input_iterator_tag iterator_category;
+        typedef const typename remove_reference< R >::type value_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef value_type * pointer;
+        typedef value_type & reference;
+
+        typedef pointer   pointer_t;
+        typedef reference reference_t;
 
         const_iterator() :
             c_( 0), val_( 0)
@@ -2326,41 +2361,48 @@ struct coroutine
 template< typename R >
 typename pull_coroutine< R >::iterator
 begin( pull_coroutine< R > & c)
-{ return boost::begin( c); }
+{ return coroutines::range_begin( c); }
 
 template< typename R >
 typename pull_coroutine< R >::const_iterator
 begin( pull_coroutine< R > const& c)
-{ return boost::begin( c); }
+{ return coroutines::range_begin( c); }
 
 template< typename R >
 typename pull_coroutine< R >::iterator
 end( pull_coroutine< R > & c)
-{ return boost::end( c); }
+{ return coroutines::range_end( c); }
 
 template< typename R >
 typename pull_coroutine< R >::const_iterator
 end( pull_coroutine< R > const& c)
-{ return boost::end( c); }
+{ return coroutines::range_end( c); }
 
 template< typename R >
 typename push_coroutine< R >::iterator
 begin( push_coroutine< R > & c)
-{ return boost::begin( c); }
+{ return coroutines::range_begin( c); }
 
 template< typename R >
 typename push_coroutine< R >::iterator
 end( push_coroutine< R > & c)
-{ return boost::end( c); }
+{ return coroutines::range_end( c); }
 
 }
 
+// forward declaration of Boost.Range traits to break dependency on it
+template<typename C, typename Enabler>
+struct range_mutable_iterator;
+
+template<typename C, typename Enabler>
+struct range_const_iterator;
+
 template< typename Arg >
-struct range_mutable_iterator< coroutines::push_coroutine< Arg > >
+struct range_mutable_iterator< coroutines::push_coroutine< Arg >, void >
 { typedef typename coroutines::push_coroutine< Arg >::iterator type; };
 
 template< typename R >
-struct range_mutable_iterator< coroutines::pull_coroutine< R > >
+struct range_mutable_iterator< coroutines::pull_coroutine< R >, void >
 { typedef typename coroutines::pull_coroutine< R >::iterator type; };
 
 }

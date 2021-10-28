@@ -6,7 +6,7 @@
 #include "basic_4dimage.h"
 #include <QMessageBox>
 #include <QProgressDialog>
-
+#include <algorithm>
 /********************************
 *   VIRTUAL PYRAMID definitions *
 *********************************
@@ -718,8 +718,10 @@ tf::VirtualPyramid::refill(
     }
 
     // apply scan strategy
-    if(strategy == REFILL_RANDOM)
-        std::random_shuffle(tiles.begin(), tiles.end());
+    if(strategy == REFILL_RANDOM){
+        std::shuffle(tiles.begin(), tiles.end(),std::default_random_engine(time(NULL)));
+    }
+//        std::random_shuffle(tiles.begin(), tiles.end());
     else if(strategy == REFILL_ZYX)
         std::sort(tiles.begin(), tiles.end());
     else if(strategy == REFILL_CENTER)

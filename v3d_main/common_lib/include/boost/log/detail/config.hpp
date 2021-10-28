@@ -17,17 +17,11 @@
 #ifndef BOOST_LOG_DETAIL_CONFIG_HPP_INCLUDED_
 #define BOOST_LOG_DETAIL_CONFIG_HPP_INCLUDED_
 
-// This check must be before any system headers are included, or __MSVCRT_VERSION__ may get defined to 0x0600
-#if defined(__MINGW32__) && !defined(__MSVCRT_VERSION__)
-// Target MinGW headers to at least MSVC 7.0 runtime by default. This will enable some useful functions.
-#define __MSVCRT_VERSION__ 0x0700
-#endif
-
 #include <boost/predef/os.h>
 
 // Try including WinAPI config as soon as possible so that any other headers don't include Windows SDK headers
 #if defined(BOOST_OS_WINDOWS_AVAILABLE)
-#include <boost/detail/winapi/config.hpp>
+#include <boost/winapi/config.hpp>
 #endif
 
 #include <limits.h> // To bring in libc macros
@@ -116,6 +110,19 @@
 #   define BOOST_LOG_NO_ASIO
 #endif
 
+#if defined(__VXWORKS__)
+#   define BOOST_LOG_NO_GETPGRP
+#   define BOOST_LOG_NO_GETSID
+    // for _WRS_CONFIG_USER_MANAGEMENT used below
+#   include <vsbConfig.h>
+#endif
+
+#if (!defined(__CRYSTAX__) && defined(__ANDROID__) && (__ANDROID_API__+0) < 21) \
+     || (defined(__VXWORKS__) && !defined(_WRS_CONFIG_USER_MANAGEMENT))
+// Until Android API version 21 Google NDK does not provide getpwuid_r
+#    define BOOST_LOG_NO_GETPWUID_R
+#endif
+
 #if !defined(BOOST_LOG_USE_NATIVE_SYSLOG) && defined(BOOST_LOG_NO_ASIO)
 #   ifndef BOOST_LOG_WITHOUT_SYSLOG
 #       define BOOST_LOG_WITHOUT_SYSLOG
@@ -134,10 +141,23 @@
 #define BOOST_LOG_NO_CXX11_ARG_PACKS_TO_NON_VARIADIC_ARGS_EXPANSION
 #endif
 
+#if defined(BOOST_NO_CXX11_CONSTEXPR) || (defined(BOOST_GCC) && ((BOOST_GCC+0) / 100) <= 406)
+// GCC 4.6 does not support in-class brace initializers for static constexpr array members
+#define BOOST_LOG_NO_CXX11_CONSTEXPR_DATA_MEMBER_BRACE_INITIALIZERS
+#endif
+
+#if defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) || (defined(BOOST_GCC) && ((BOOST_GCC+0) / 100) <= 406)
+// GCC 4.6 cannot handle a defaulted function with noexcept specifier
+#define BOOST_LOG_NO_CXX11_DEFAULTED_NOEXCEPT_FUNCTIONS
+#endif
+
+#if defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) || (defined(BOOST_CLANG) && (((__clang_major__+0) == 3) && ((__clang_minor__+0) <= 1)))
+// Clang 3.1 cannot handle a defaulted constexpr constructor in some cases (presumably, if the class contains a member with a constexpr constructor)
+#define BOOST_LOG_NO_CXX11_DEFAULTED_CONSTEXPR_CONSTRUCTORS
+#endif
+
 #if defined(_MSC_VER)
 #   define BOOST_LOG_NO_VTABLE __declspec(novtable)
-#elif defined(__GNUC__)
-#   define BOOST_LOG_NO_VTABLE
 #else
 #   define BOOST_LOG_NO_VTABLE
 #endif
@@ -145,6 +165,14 @@
 // An MS-like compilers' extension that allows to optimize away the needless code
 #if defined(_MSC_VER)
 #   define BOOST_LOG_ASSUME(expr) __assume(expr)
+#elif defined(__has_builtin)
+// Clang 3.6 adds __builtin_assume, but enabling it causes weird compilation errors, where the compiler
+// doesn't see one of attachable_sstream_buf::append overloads. It works fine with Clang 3.7 and later.
+#   if __has_builtin(__builtin_assume) && (!defined(__clang__) || (__clang_major__ * 100 + __clang_minor__) >= 307)
+#       define BOOST_LOG_ASSUME(expr) __builtin_assume(expr)
+#   else
+#       define BOOST_LOG_ASSUME(expr)
+#   endif
 #else
 #   define BOOST_LOG_ASSUME(expr)
 #endif
@@ -168,6 +196,14 @@
 #   define BOOST_LOG_UNREACHABLE_RETURN(r) BOOST_LOG_UNREACHABLE()
 #endif
 
+// The macro efficiently returns a local lvalue from a function.
+// It employs NRVO, if supported by compiler, or uses a move constructor otherwise.
+#if defined(BOOST_HAS_NRVO)
+#define BOOST_LOG_NRVO_RESULT(x) x
+#else
+#define BOOST_LOG_NRVO_RESULT(x) boost::move(x)
+#endif
+
 // Some compilers support a special attribute that shows that a function won't return
 #if defined(__GNUC__) || (defined(__SUNPRO_CC) && __SUNPRO_CC >= 0x590)
     // GCC and Sun Studio 12 support attribute syntax
@@ -181,18 +217,14 @@
 #   define BOOST_LOG_NORETURN
 #endif
 
-// GCC and compatible compilers may require marking types that may alias other types
-#if defined(__GNUC__)
-#   define BOOST_LOG_MAY_ALIAS __attribute__ ((__may_alias__))
-#else
-#   define BOOST_LOG_MAY_ALIAS
-#endif
+// Some compilers may require marking types that may alias other types
+#define BOOST_LOG_MAY_ALIAS BOOST_MAY_ALIAS
 
 #if !defined(BOOST_LOG_BUILDING_THE_LIB)
 
 // Detect if we're dealing with dll
 #   if defined(BOOST_LOG_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)
-#        define BOOST_LOG_DLL
+#       define BOOST_LOG_DLL
 #   endif
 
 #   if defined(BOOST_LOG_DLL)
@@ -278,7 +310,13 @@
 
 #ifndef BOOST_LOG_CPU_CACHE_LINE_SIZE
 //! The macro defines the CPU cache line size for the target architecture. This is mostly used for optimization.
+#if defined(__s390__) || defined(__s390x__)
+#define BOOST_LOG_CPU_CACHE_LINE_SIZE 256
+#elif defined(powerpc) || defined(__powerpc__) || defined(__ppc__)
+#define BOOST_LOG_CPU_CACHE_LINE_SIZE 128
+#else
 #define BOOST_LOG_CPU_CACHE_LINE_SIZE 64
+#endif
 #endif
 
 namespace boost {
@@ -325,9 +363,16 @@ namespace log {
 #   if !defined(BOOST_NO_CXX11_INLINE_NAMESPACES)
 
 inline namespace BOOST_LOG_VERSION_NAMESPACE {}
-}
 
 #       define BOOST_LOG_OPEN_NAMESPACE namespace log { inline namespace BOOST_LOG_VERSION_NAMESPACE {
+#       define BOOST_LOG_CLOSE_NAMESPACE }}
+
+#   elif defined(BOOST_GCC) && (BOOST_GCC+0) >= 40400
+
+// GCC 7 deprecated strong using directives but allows inline namespaces in C++03 mode since GCC 4.4.
+__extension__ inline namespace BOOST_LOG_VERSION_NAMESPACE {}
+
+#       define BOOST_LOG_OPEN_NAMESPACE namespace log { __extension__ inline namespace BOOST_LOG_VERSION_NAMESPACE {
 #       define BOOST_LOG_CLOSE_NAMESPACE }}
 
 #   else
@@ -340,11 +385,11 @@ __attribute__((__strong__))
 #       endif
 ;
 
-}
-
 #       define BOOST_LOG_OPEN_NAMESPACE namespace log { namespace BOOST_LOG_VERSION_NAMESPACE {
 #       define BOOST_LOG_CLOSE_NAMESPACE }}
 #   endif
+
+} // namespace log
 
 #else // !defined(BOOST_LOG_DOXYGEN_PASS)
 

@@ -362,7 +362,7 @@ bool point_bdb_minus_2d_localwinmass(unsigned char ** inimg_data2d, V3DLONG inim
 			{
 				for (ix=x0;ix<x1;ix++)
 				{
-					register unsigned char tmpval = inimg_data2d[iy][ix];
+                     unsigned char tmpval = inimg_data2d[iy][ix];
 					if (tmpval)
 					{
 						sum_x += tmpval;
@@ -991,7 +991,7 @@ bool point_bdb_minus_3d_localwinmass(unsigned char *** inimg_data3d, V3DLONG ini
 					{
 						dx = fabs(ix-xc); dx*=dx;
 						if (dx+dy>r2) continue;
-						register unsigned char tmpval = inimg_data3d[iz][iy][ix];
+                         unsigned char tmpval = inimg_data3d[iz][iy][ix];
 						if (tmpval)
 						{
 							sum_x += tmpval;

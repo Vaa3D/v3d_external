@@ -10,7 +10,7 @@
 #ifndef BOOST_IOSTREAMS_COMPOSE_HPP_INCLUDED
 #define BOOST_IOSTREAMS_COMPOSE_HPP_INCLUDED
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#if defined(_MSC_VER)
 # pragma once
 #endif
 
@@ -378,8 +378,7 @@ compose( const Filter& flt, const FilterOrDevice& fod
          BOOST_IOSTREAMS_DISABLE_IF_STREAM(T) )
 { return compose(flt, fod, is_std_io<FilterOrDevice>()); }
 
-# if !BOOST_WORKAROUND(__BORLANDC__, < 0x600) && \
-     !BOOST_WORKAROUND(BOOST_MSVC, <= 1300) && \
+# if !BOOST_WORKAROUND(BOOST_BORLANDC, < 0x600) && \
      !defined(__GNUC__) // ---------------------------------------------------//
 
 template<typename Filter, typename FilterOrDevice>
@@ -387,7 +386,7 @@ composite<Filter, FilterOrDevice>
 compose (const Filter& filter, FilterOrDevice& fod)
 { return composite<Filter, FilterOrDevice>(filter, fod); }
 
-# endif // Borland 5.x, VC6-7.0 or GCC 2.9x //--------------------------------//
+# endif // Borland 5.x or GCC //--------------------------------//
 #endif // #ifndef BOOST_IOSTREAMS_BROKEN_OVERLOAD_RESOLUTION //---------------//
 
 //----------------------------------------------------------------------------//

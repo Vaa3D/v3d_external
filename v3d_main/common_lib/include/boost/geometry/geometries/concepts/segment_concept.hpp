@@ -4,6 +4,10 @@
 // Copyright (c) 2008-2012 Barend Gehrels, Amsterdam, the Netherlands.
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 
+// This file was modified by Oracle on 2021.
+// Modifications copyright (c) 2021 Oracle and/or its affiliates.
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
+
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
 
@@ -16,14 +20,16 @@
 
 
 #include <boost/concept_check.hpp>
-
-#include <boost/geometry/geometries/concepts/point_concept.hpp>
+#include <boost/core/ignore_unused.hpp>
 
 #include <boost/geometry/core/access.hpp>
 #include <boost/geometry/core/point_type.hpp>
 
+#include <boost/geometry/geometries/concepts/concept_type.hpp>
+#include <boost/geometry/geometries/concepts/point_concept.hpp>
 
-namespace boost { namespace geometry { namespace concept
+
+namespace boost { namespace geometry { namespace concepts
 {
 
 
@@ -51,7 +57,7 @@ class Segment
 #ifndef DOXYGEN_NO_CONCEPT_MEMBERS
     typedef typename point_type<Geometry>::type point_type;
 
-    BOOST_CONCEPT_ASSERT( (concept::Point<point_type>) );
+    BOOST_CONCEPT_ASSERT( (concepts::Point<point_type>) );
 
 
     template <size_t Index, size_t Dimension, size_t DimensionCount>
@@ -96,7 +102,7 @@ class ConstSegment
     typedef typename point_type<Geometry>::type point_type;
     typedef typename coordinate_type<Geometry>::type coordinate_type;
 
-    BOOST_CONCEPT_ASSERT( (concept::ConstPoint<point_type>) );
+    BOOST_CONCEPT_ASSERT( (concepts::ConstPoint<point_type>) );
 
 
     template <size_t Index, size_t Dimension, size_t DimensionCount>
@@ -106,7 +112,7 @@ class ConstSegment
         {
             const Geometry* s = 0;
             coordinate_type coord(geometry::get<Index, Dimension>(*s));
-            boost::ignore_unused_variable_warning(coord);
+            boost::ignore_unused(coord);
             dimension_checker<Index, Dimension + 1, DimensionCount>::apply();
         }
     };
@@ -129,7 +135,20 @@ public :
 };
 
 
-}}} // namespace boost::geometry::concept
+template <typename Geometry>
+struct concept_type<Geometry, segment_tag>
+{
+    using type = Segment<Geometry>;
+};
+
+template <typename Geometry>
+struct concept_type<Geometry const, segment_tag>
+{
+    using type = ConstSegment<Geometry>;
+};
+
+
+}}} // namespace boost::geometry::concepts
 
 
 #endif // BOOST_GEOMETRY_GEOMETRIES_CONCEPTS_SEGMENT_CONCEPT_HPP

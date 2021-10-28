@@ -4,10 +4,11 @@
 // Copyright (c) 2008-2014 Bruno Lalande, Paris, France.
 // Copyright (c) 2009-2014 Mateusz Loskot, London, UK.
 
-// This file was modified by Oracle on 2014.
-// Modifications copyright (c) 2014, Oracle and/or its affiliates.
+// This file was modified by Oracle on 2014-2021.
+// Modifications copyright (c) 2014-2021, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -19,13 +20,18 @@
 #ifndef BOOST_GEOMETRY_ALGORITHMS_DETAIL_COMPARABLE_DISTANCE_INTERFACE_HPP
 #define BOOST_GEOMETRY_ALGORITHMS_DETAIL_COMPARABLE_DISTANCE_INTERFACE_HPP
 
+
+#include <boost/geometry/algorithms/detail/distance/interface.hpp>
+
+#include <boost/geometry/geometries/adapted/boost_variant.hpp> // For backward compatibility
 #include <boost/geometry/geometries/concepts/check.hpp>
 
 #include <boost/geometry/strategies/comparable_distance_result.hpp>
 #include <boost/geometry/strategies/default_comparable_distance_result.hpp>
 #include <boost/geometry/strategies/distance.hpp>
 
-#include <boost/geometry/algorithms/detail/distance/interface.hpp>
+#include <boost/geometry/strategies/distance/comparable.hpp>
+#include <boost/geometry/strategies/distance/services.hpp>
 
 
 namespace boost { namespace geometry
@@ -35,31 +41,64 @@ namespace boost { namespace geometry
 namespace resolve_strategy
 {
 
+
+template
+<
+    typename Strategies,
+    bool IsUmbrella = strategies::detail::is_umbrella_strategy<Strategies>::value
+>
 struct comparable_distance
 {
-    template <typename Geometry1, typename Geometry2, typename Strategy>
+    template <typename Geometry1, typename Geometry2>
+    static inline
+    typename comparable_distance_result<Geometry1, Geometry2, Strategies>::type
+    apply(Geometry1 const& geometry1,
+          Geometry2 const& geometry2,
+          Strategies const& strategies)
+    {
+        return dispatch::distance
+            <
+                Geometry1, Geometry2,
+                strategies::distance::detail::comparable<Strategies>
+            >::apply(geometry1,
+                     geometry2,
+                     strategies::distance::detail::comparable<Strategies>(strategies));
+    }
+};
+
+template <typename Strategy>
+struct comparable_distance<Strategy, false>
+{
+    template <typename Geometry1, typename Geometry2>
     static inline
     typename comparable_distance_result<Geometry1, Geometry2, Strategy>::type
     apply(Geometry1 const& geometry1,
           Geometry2 const& geometry2,
           Strategy const& strategy)
     {
-        typedef typename strategy::distance::services::comparable_type
-            <
-                Strategy
-            >::type comparable_strategy_type;
+        using strategies::distance::services::strategy_converter;
 
+        typedef decltype(strategy_converter<Strategy>::get(strategy))
+            strategies_type;
+        typedef strategies::distance::detail::comparable
+            <
+                strategies_type
+            > comparable_strategies_type;
+        
         return dispatch::distance
             <
-                Geometry1, Geometry2, comparable_strategy_type
+                Geometry1, Geometry2,
+                comparable_strategies_type
             >::apply(geometry1,
                      geometry2,
-                     strategy::distance::services::get_comparable
-                         <
-                             Strategy
-                         >::apply(strategy));
+                     comparable_strategies_type(
+                         strategy_converter<Strategy>::get(strategy)));
     }
+};
 
+template <>
+struct comparable_distance<default_strategy, false>
+{
     template <typename Geometry1, typename Geometry2>
     static inline typename comparable_distance_result
         <
@@ -69,13 +108,13 @@ struct comparable_distance
           Geometry2 const& geometry2,
           default_strategy)
     {
-        typedef typename strategy::distance::services::comparable_type
+        typedef strategies::distance::detail::comparable
             <
-                typename detail::distance::default_strategy
+                typename strategies::distance::services::default_strategy
                     <
                         Geometry1, Geometry2
                     >::type
-            >::type comparable_strategy_type;
+            > comparable_strategy_type;
 
         return dispatch::distance
             <
@@ -101,9 +140,10 @@ struct comparable_distance
           Geometry2 const& geometry2,
           Strategy const& strategy)
     {
-        return resolve_strategy::comparable_distance::apply(geometry1,
-                                                            geometry2,
-                                                            strategy);
+        return resolve_strategy::comparable_distance
+            <
+                Strategy
+            >::apply(geometry1, geometry2, strategy);
     }
 };
 
@@ -318,8 +358,8 @@ inline typename comparable_distance_result<Geometry1, Geometry2, Strategy>::type
 comparable_distance(Geometry1 const& geometry1, Geometry2 const& geometry2,
                     Strategy const& strategy)
 {
-    concept::check<Geometry1 const>();
-    concept::check<Geometry2 const>();
+    concepts::check<Geometry1 const>();
+    concepts::check<Geometry2 const>();
 
     return resolve_variant::comparable_distance
         <
@@ -350,8 +390,8 @@ template <typename Geometry1, typename Geometry2>
 inline typename default_comparable_distance_result<Geometry1, Geometry2>::type
 comparable_distance(Geometry1 const& geometry1, Geometry2 const& geometry2)
 {
-    concept::check<Geometry1 const>();
-    concept::check<Geometry2 const>();
+    concepts::check<Geometry1 const>();
+    concepts::check<Geometry2 const>();
 
     return geometry::comparable_distance(geometry1, geometry2, default_strategy());
 }

@@ -229,7 +229,7 @@ void ColorMap::initialize(ImageDisplayColorType c, int length)
 	
 	unsigned char *amap=0;
 	V3DLONG colorMapSz;
-	register int t;
+    int t;
 	
 	switch (ctype)
 	{

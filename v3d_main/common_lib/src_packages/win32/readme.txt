@@ -1,1 +1,0 @@
-Move these files to the directory above to get a visual studio project.

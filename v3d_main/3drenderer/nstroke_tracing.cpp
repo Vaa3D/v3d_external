@@ -2026,7 +2026,8 @@ if (0)
                 {
                     QList <LocationSimple> ::iterator it=listLoc.begin();
                     V3DLONG marker_index = (b_start_merged)?marker_id_start:marker_id_end;
-                    listLoc.erase(it+marker_index);
+                    it=it+(qsizetype)marker_index;
+                    listLoc.erase(it);
                     XYZ loc(loc_vec.at(N-1).x,loc_vec.at(N-1).y,loc_vec.at(N-1).z);
                     addSpecialMarker(loc);
                 }
@@ -3526,7 +3527,8 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
     {
         QList <LocationSimple> ::iterator it = listloc.begin();
-        listloc.erase(it+specialmarkerlocindex);
+        it=it+(qsizetype)specialmarkerlocindex;
+        listloc.erase(it);
         bool islastseg = false;
         while(!islastseg)
         {

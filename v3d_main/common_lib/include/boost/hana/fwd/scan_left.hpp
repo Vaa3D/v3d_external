@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::scan_left`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -98,7 +98,7 @@ BOOST_HANA_NAMESPACE_BEGIN
         constexpr auto operator()(Xs&& xs, F const& f) const;
     };
 
-    constexpr scan_left_t scan_left{};
+    BOOST_HANA_INLINE_VARIABLE constexpr scan_left_t scan_left{};
 #endif
 BOOST_HANA_NAMESPACE_END
 

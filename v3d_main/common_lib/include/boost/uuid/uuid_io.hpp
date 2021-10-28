@@ -3,7 +3,7 @@
 // Copyright 2009 Andy Tompkins.
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
+// https://www.boost.org/LICENSE_1_0.txt)
 
 // Revision History
 //  20 Mar 2009 - Initial Revision
@@ -46,7 +46,7 @@ template <typename ch, typename char_traits>
             }
         }
 
-        os << std::hex;
+        os << std::hex << std::right;
         os.fill(os.widen('0'));
 
         std::size_t i=0;
@@ -57,13 +57,13 @@ template <typename ch, typename char_traits>
                 os << os.widen('-');
             }
         }
-        
+
         if (flags & std::ios_base::left) {
             for (std::streamsize s=uuid_width; s<width; s++) {
                 os << fill;
             }
         }
-        
+
         os.width(0); //used the width so reset it
     }
     return os;
@@ -146,23 +146,38 @@ inline wchar_t to_wchar(size_t i) {
 
 } // namespace detail
 
-inline std::string to_string(uuid const& u)
+template<class OutputIterator>
+OutputIterator to_chars(uuid const& u, OutputIterator out)
 {
-    std::string result;
-    result.reserve(36);
-
     std::size_t i=0;
     for (uuid::const_iterator it_data = u.begin(); it_data!=u.end(); ++it_data, ++i) {
         const size_t hi = ((*it_data) >> 4) & 0x0F;
-        result += detail::to_char(hi);
+        *out++ = detail::to_char(hi);
 
         const size_t lo = (*it_data) & 0x0F;
-        result += detail::to_char(lo);
+        *out++ = detail::to_char(lo);
 
         if (i == 3 || i == 5 || i == 7 || i == 9) {
-            result += '-';
+            *out++ = '-';
         }
     }
+    return out;
+}
+
+inline bool to_chars(uuid const& u, char* first, char* last)
+{
+    if (last - first < 36) {
+        return false;
+    }
+    to_chars(u, first);
+    return true;
+}
+
+inline std::string to_string(uuid const& u)
+{
+    std::string result(36, char());
+    // string::data() returns const char* before C++17
+    to_chars(u, &result[0]);
     return result;
 }
 

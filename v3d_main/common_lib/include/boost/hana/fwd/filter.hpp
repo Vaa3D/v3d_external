@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::filter`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -61,13 +61,6 @@ BOOST_HANA_NAMESPACE_BEGIN
     //! Example
     //! -------
     //! @include example/filter.cpp
-    //!
-    //! Benchmarks
-    //! ----------
-    //! <div class="benchmark-chart"
-    //!      style="min-width: 310px; height: 400px; margin: 0 auto"
-    //!      data-dataset="benchmark.filter.compile.json">
-    //! </div>
 #ifdef BOOST_HANA_DOXYGEN_INVOKED
     constexpr auto filter = [](auto&& xs, auto&& pred) {
         return tag-dispatched;
@@ -81,7 +74,7 @@ BOOST_HANA_NAMESPACE_BEGIN
         constexpr auto operator()(Xs&& xs, Pred&& pred) const;
     };
 
-    constexpr filter_t filter{};
+    BOOST_HANA_INLINE_VARIABLE constexpr filter_t filter{};
 #endif
 BOOST_HANA_NAMESPACE_END
 

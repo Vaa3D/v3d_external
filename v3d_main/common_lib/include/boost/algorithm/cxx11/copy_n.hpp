@@ -12,7 +12,7 @@
 #ifndef BOOST_ALGORITHM_COPY_N_HPP
 #define BOOST_ALGORITHM_COPY_N_HPP
 
-#include <algorithm>    // for std::copy_n, if available
+#include <boost/config.hpp>
 
 namespace boost { namespace algorithm {
 
@@ -25,10 +25,8 @@ namespace boost { namespace algorithm {
 /// \param n        The number of elements to copy
 /// \param result   An output iterator to write the results into
 /// \note           This function is part of the C++2011 standard library.
-///  We will use the standard one if it is available, 
-///     otherwise we have our own implementation.
 template <typename InputIterator, typename Size, typename OutputIterator>
-OutputIterator copy_n ( InputIterator first, Size n, OutputIterator result )
+BOOST_CXX14_CONSTEXPR OutputIterator copy_n ( InputIterator first, Size n, OutputIterator result )
 {
     for ( ; n > 0; --n, ++first, ++result )
         *result = *first;

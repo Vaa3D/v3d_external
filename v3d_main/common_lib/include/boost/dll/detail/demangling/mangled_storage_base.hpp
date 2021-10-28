@@ -12,7 +12,8 @@
 #include <map>
 #include <boost/dll/detail/demangling/demangle_symbol.hpp>
 #include <boost/dll/library_info.hpp>
-#include <boost/type_index/stl_type_index.hpp>
+#include <boost/type_index/ctti_type_index.hpp>
+#include <boost/type_traits/remove_reference.hpp>
 
 namespace boost { namespace dll { namespace detail {
 
@@ -33,7 +34,7 @@ struct mangled_storage_base
 protected:
     std::vector<entry> storage_;
     ///if a unknown class is imported it can be overloaded by this type
-    std::map<boost::typeindex::stl_type_index, std::string> aliases_;
+    std::map<boost::typeindex::ctti_type_index, std::string> aliases_;
 public:
     void assign(const mangled_storage_base & storage)
     {
@@ -50,11 +51,12 @@ public:
         storage_.clear();
         aliases_.clear();
     }
-    const std::vector<entry> & get_storage() const {return storage_;};
+    std::vector<entry> & get_storage() {return storage_;};
     template<typename T>
     std::string get_name() const
     {
-        auto tx = boost::typeindex::stl_type_index::type_id<T>();
+        using boost::typeindex::ctti_type_index;
+        auto tx = ctti_type_index::type_id<T>();
         auto val = (aliases_.count(tx) > 0) ? aliases_.at(tx) : tx.pretty_name();
         return val;
     }
@@ -68,7 +70,7 @@ public:
     explicit mangled_storage_base(library_info & li) : mangled_storage_base(li.symbols()) {}
 
     explicit mangled_storage_base(
-            const boost::filesystem::path& library_path,
+            const boost::dll::fs::path& library_path,
             bool throw_if_not_native_format = true)
         : mangled_storage_base(library_info(library_path, throw_if_not_native_format).symbols())
     {
@@ -76,7 +78,7 @@ public:
     }
 
     void load(library_info & li) { storage_.clear(); add_symbols(li.symbols()); };
-    void load(const boost::filesystem::path& library_path,
+    void load(const boost::dll::fs::path& library_path,
             bool throw_if_not_native_format = true)
     {
         storage_.clear();
@@ -93,7 +95,7 @@ public:
     template<typename Alias> void add_alias(const std::string& name)
     {
         aliases_.emplace(
-            boost::typeindex::stl_type_index::type_id<Alias>(),
+            boost::typeindex::ctti_type_index::type_id<Alias>(),
             name
             );
     }
@@ -115,4 +117,4 @@ public:
 
 }}}
 
-#endif /* INCLUDE_BOOST_DLL_DETAIL_MANGLE_STORAGE_HPP_ */
+#endif /* BOOST_DLL_DETAIL_MANGLE_STORAGE_HPP_ */

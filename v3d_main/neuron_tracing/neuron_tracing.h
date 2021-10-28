@@ -445,7 +445,7 @@ bool point_bdb_minus_3d_localwinmass_prior(unsigned char*** img3d, V3DLONG dim0,
 							dx = fabs(ix-xc); dx*=dx;
 							if (dx+dy>r2) continue;
 
-							register unsigned char tmpval = img3d[iz][iy][ix];
+                             unsigned char tmpval = img3d[iz][iy][ix];
 							if (tmpval)
 							{
 								sum_x += tmpval;

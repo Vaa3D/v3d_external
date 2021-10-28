@@ -12,7 +12,6 @@
 #include <boost/math/special_functions/expm1.hpp>
 #include <boost/math/distributions/complement.hpp>
 #include <boost/math/distributions/detail/common_error_handling.hpp>
-#include <boost/config/no_tr1/cmath.hpp>
 
 //
 // This is the maximum extreme value distribution, see
@@ -22,8 +21,9 @@
 // distribution or a Gumbel distribution.
 
 #include <utility>
+#include <cmath>
 
-#ifdef BOOST_MSVC
+#ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4702) // unreachable code (return after domain_error throw).
 #endif
@@ -228,7 +228,7 @@ inline RealType mean(const extreme_value_distribution<RealType, Policy>& dist)
    RealType result = 0;
    if(0 == detail::verify_scale_b("boost::math::mean(const extreme_value_distribution<%1%>&)", b, &result, Policy()))
       return result;
-   if(0 == detail::check_scale("boost::math::mean(const extreme_value_distribution<%1%>&)", a, &result, Policy()))
+   if (0 == detail::check_finite("boost::math::mean(const extreme_value_distribution<%1%>&)", a, &result, Policy()))
       return result;
    return a + constants::euler<RealType>() * b;
 }
@@ -242,7 +242,7 @@ inline RealType standard_deviation(const extreme_value_distribution<RealType, Po
    RealType result = 0;
    if(0 == detail::verify_scale_b("boost::math::standard_deviation(const extreme_value_distribution<%1%>&)", b, &result, Policy()))
       return result;
-   if(0 == detail::check_scale("boost::math::standard_deviation(const extreme_value_distribution<%1%>&)", dist.location(), &result, Policy()))
+   if(0 == detail::check_finite("boost::math::standard_deviation(const extreme_value_distribution<%1%>&)", dist.location(), &result, Policy()))
       return result;
    return constants::pi<RealType>() * b / sqrt(static_cast<RealType>(6));
 }
@@ -288,7 +288,7 @@ inline RealType kurtosis_excess(const extreme_value_distribution<RealType, Polic
 } // namespace math
 } // namespace boost
 
-#ifdef BOOST_MSVC
+#ifdef _MSC_VER
 # pragma warning(pop)
 #endif
 

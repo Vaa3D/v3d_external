@@ -1,7 +1,11 @@
 // Boost.Container varray
 //
-// Copyright (c) 2012-2015 Adam Wulkiewicz, Lodz, Poland.
 // Copyright (c) 2011-2013 Andrew Hundt.
+// Copyright (c) 2012-2015 Adam Wulkiewicz, Lodz, Poland.
+//
+// This file was modified by Oracle on 2020.
+// Modifications copyright (c) 2020, Oracle and/or its affiliates.
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 //
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -18,15 +22,11 @@
 #include <boost/move/detail/fwd_macros.hpp>
 #endif
 
+#include <boost/concept_check.hpp>
 #include <boost/config.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <boost/swap.hpp>
 #include <boost/integer.hpp>
-
-#include <boost/mpl/assert.hpp>
-
-#include <boost/type_traits/is_unsigned.hpp>
-#include <boost/type_traits/alignment_of.hpp>
-#include <boost/type_traits/aligned_storage.hpp>
 
 // TODO - use std::reverse_iterator and std::iterator_traits
 // instead Boost.Iterator to remove dependency?
@@ -34,12 +34,15 @@
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/iterator/iterator_concepts.hpp>
 
+#include <boost/type_traits/alignment_of.hpp>
+#include <boost/type_traits/aligned_storage.hpp>
+
+#include <boost/geometry/core/static_assert.hpp>
+
 #include <boost/geometry/index/detail/assert.hpp>
 #include <boost/geometry/index/detail/exception.hpp>
 
 #include <boost/geometry/index/detail/varray_detail.hpp>
-
-#include <boost/concept_check.hpp>
 
 /*!
 \defgroup varray_non_member varray non-member functions
@@ -60,9 +63,9 @@ struct varray_traits
     typedef Value & reference;
     typedef const Value & const_reference;
 
-    typedef boost::false_type use_memop_in_swap_and_move;
-    typedef boost::false_type use_optimized_swap;
-    typedef boost::false_type disable_trivial_init;
+    typedef std::false_type use_memop_in_swap_and_move;
+    typedef std::false_type use_optimized_swap;
+    typedef std::false_type disable_trivial_init;
 };
 
 template <typename Varray>
@@ -75,8 +78,7 @@ struct checker
     {
         BOOST_GEOMETRY_INDEX_ASSERT(s <= v.capacity(), "size too big");
 
-        ::boost::ignore_unused_variable_warning(v);
-        ::boost::ignore_unused_variable_warning(s);
+        ::boost::ignore_unused(v, s);
     }
 
     static inline void throw_out_of_bounds(Varray const& v, size_type i)
@@ -84,39 +86,35 @@ struct checker
         if ( v.size() <= i )
             throw_out_of_range("index out of bounds");
 
-        ::boost::ignore_unused_variable_warning(v);
-        ::boost::ignore_unused_variable_warning(i);
+        ::boost::ignore_unused(v, i);
     }
 
     static inline void check_index(Varray const& v, size_type i)
     {
         BOOST_GEOMETRY_INDEX_ASSERT(i < v.size(), "index out of bounds");
 
-        ::boost::ignore_unused_variable_warning(v);
-        ::boost::ignore_unused_variable_warning(i);
+        ::boost::ignore_unused(v, i);
     }
 
     static inline void check_not_empty(Varray const& v)
     {
         BOOST_GEOMETRY_INDEX_ASSERT(!v.empty(), "the container is empty");
         
-        ::boost::ignore_unused_variable_warning(v);
+        ::boost::ignore_unused(v);
     }
 
     static inline void check_iterator_end_neq(Varray const& v, const_iterator position)
     {
         BOOST_GEOMETRY_INDEX_ASSERT(v.begin() <= position && position < v.end(), "iterator out of bounds");
 
-        ::boost::ignore_unused_variable_warning(v);
-        ::boost::ignore_unused_variable_warning(position);
+        ::boost::ignore_unused(v, position);
     }
 
     static inline void check_iterator_end_eq(Varray const& v, const_iterator position)
     {
         BOOST_GEOMETRY_INDEX_ASSERT(v.begin() <= position && position <= v.end(), "iterator out of bounds");
 
-        ::boost::ignore_unused_variable_warning(v);
-        ::boost::ignore_unused_variable_warning(position);
+        ::boost::ignore_unused(v, position);
     }
 };
 
@@ -159,11 +157,11 @@ class varray
     typedef varray_detail::varray_traits<Value, Capacity> vt;
     typedef varray_detail::checker<varray> errh;
 
-    BOOST_MPL_ASSERT_MSG(
-        ( boost::is_unsigned<typename vt::size_type>::value &&
+    BOOST_GEOMETRY_STATIC_ASSERT(
+        ( std::is_unsigned<typename vt::size_type>::value &&
           sizeof(typename boost::uint_value_t<Capacity>::least) <= sizeof(typename vt::size_type) ),
-        SIZE_TYPE_IS_TOO_SMALL_FOR_SPECIFIED_CAPACITY,
-        (varray)
+        "Size type is too small for specified capacity.",
+        typename vt::size_type, std::integral_constant<std::size_t, Capacity>
     );
 
     typedef boost::aligned_storage<
@@ -1502,7 +1500,7 @@ private:
     // @par Complexity
     //   Linear O(N).
     template <std::size_t C>
-    void move_ctor_dispatch(varray<value_type, C> & other, boost::true_type /*use_memop*/)
+    void move_ctor_dispatch(varray<value_type, C> & other, std::true_type /*use_memop*/)
     {
         ::memcpy(this->data(), other.data(), sizeof(Value) * other.m_size);
         m_size = other.m_size;
@@ -1514,7 +1512,7 @@ private:
     // @par Complexity
     //   Linear O(N).
     template <std::size_t C>
-    void move_ctor_dispatch(varray<value_type, C> & other, boost::false_type /*use_memop*/)
+    void move_ctor_dispatch(varray<value_type, C> & other, std::false_type /*use_memop*/)
     {
         namespace sv = varray_detail;
         sv::uninitialized_move_if_noexcept(other.begin(), other.end(), this->begin());                  // may throw
@@ -1526,7 +1524,7 @@ private:
     // @par Complexity
     //   Linear O(N).
     template <std::size_t C>
-    void move_assign_dispatch(varray<value_type, C> & other, boost::true_type /*use_memop*/)
+    void move_assign_dispatch(varray<value_type, C> & other, std::true_type /*use_memop*/)
     {
         this->clear();
 
@@ -1540,7 +1538,7 @@ private:
     // @par Complexity
     //   Linear O(N).
     template <std::size_t C>
-    void move_assign_dispatch(varray<value_type, C> & other, boost::false_type /*use_memop*/)
+    void move_assign_dispatch(varray<value_type, C> & other, std::false_type /*use_memop*/)
     {
         namespace sv = varray_detail;
         if ( m_size <= static_cast<size_type>(other.size()) )
@@ -1562,15 +1560,14 @@ private:
     // @par Complexity
     //   Linear O(N).
     template <std::size_t C>
-    void swap_dispatch(varray<value_type, C> & other, boost::true_type const& /*use_optimized_swap*/)
+    void swap_dispatch(varray<value_type, C> & other, std::true_type /*use_optimized_swap*/)
     {
-        typedef typename
-        boost::mpl::if_c<
-            Capacity < C,
-            aligned_storage_type,
-            typename varray<value_type, C>::aligned_storage_type
-        >::type
-        storage_type;
+        typedef std::conditional_t
+            <
+                (Capacity < C),
+                aligned_storage_type,
+                typename varray<value_type, C>::aligned_storage_type
+            > storage_type;
         
         storage_type temp;
         Value * temp_ptr = reinterpret_cast<Value*>(temp.address());
@@ -1588,7 +1585,7 @@ private:
     // @par Complexity
     //   Linear O(N).
     template <std::size_t C>
-    void swap_dispatch(varray<value_type, C> & other, boost::false_type const& /*use_optimized_swap*/)
+    void swap_dispatch(varray<value_type, C> & other, std::false_type /*use_optimized_swap*/)
     {
         namespace sv = varray_detail;
 
@@ -1606,7 +1603,7 @@ private:
     //   Nothing.
     // @par Complexity
     //   Linear O(N).
-    void swap_dispatch_impl(iterator first_sm, iterator last_sm, iterator first_la, iterator last_la, boost::true_type const& /*use_memop*/)
+    void swap_dispatch_impl(iterator first_sm, iterator last_sm, iterator first_la, iterator last_la, std::true_type /*use_memop*/)
     {
         //BOOST_GEOMETRY_INDEX_ASSERT(std::distance(first_sm, last_sm) <= std::distance(first_la, last_la),
         //                            "incompatible ranges");
@@ -1632,7 +1629,7 @@ private:
     //   If Value's move constructor or move assignment throws.
     // @par Complexity
     //   Linear O(N).
-    void swap_dispatch_impl(iterator first_sm, iterator last_sm, iterator first_la, iterator last_la, boost::false_type const& /*use_memop*/)
+    void swap_dispatch_impl(iterator first_sm, iterator last_sm, iterator first_la, iterator last_la, std::false_type /*use_memop*/)
     {
         //BOOST_GEOMETRY_INDEX_ASSERT(std::distance(first_sm, last_sm) <= std::distance(first_la, last_la),
         //                            "incompatible ranges");
@@ -1941,7 +1938,7 @@ public:
     template <typename Iterator>
     void insert(iterator, Iterator first, Iterator last)
     {
-        // TODO - add MPL_ASSERT, check if Iterator is really an iterator
+        // TODO - add BOOST_GEOMETRY_STATIC_ASSERT, check if Iterator is really an iterator
         errh::check_capacity(*this, std::distance(first, last));                    // may throw
     }
 
@@ -1964,7 +1961,7 @@ public:
     template <typename Iterator>
     void assign(Iterator first, Iterator last)
     {
-        // TODO - add MPL_ASSERT, check if Iterator is really an iterator
+        // TODO - add BOOST_GEOMETRY_STATIC_ASSERT, check if Iterator is really an iterator
         errh::check_capacity(*this, std::distance(first, last));                    // may throw
     }
 

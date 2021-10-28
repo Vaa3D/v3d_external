@@ -12,11 +12,12 @@
 #ifndef BOOST_ALGORITHM_IS_PERMUTATION11_HPP
 #define BOOST_ALGORITHM_IS_PERMUTATION11_HPP
 
-#include <algorithm>    // for std::less, tie, mismatch and is_permutation (if available)
-#include <utility>      // for std::make_pair
+#include <algorithm>    // for std::find_if, count_if, mismatch
+#include <utility>      // for std::pair
 #include <functional>   // for std::equal_to
 #include <iterator>
 
+#include <boost/config.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -108,8 +109,6 @@ namespace detail {
 /// \param p        The predicate to compare elements with
 ///
 /// \note           This function is part of the C++2011 standard library.
-///  We will use the standard one if it is available,
-///     otherwise we have our own implementation.
 template< class ForwardIterator1, class ForwardIterator2, class BinaryPredicate >
 bool is_permutation ( ForwardIterator1 first1, ForwardIterator1 last1,
                       ForwardIterator2 first2, BinaryPredicate p )
@@ -135,8 +134,6 @@ bool is_permutation ( ForwardIterator1 first1, ForwardIterator1 last1,
 /// \param last2    One past the end of the input sequence
 /// \param first2   The start of the second sequence
 /// \note           This function is part of the C++2011 standard library.
-///  We will use the standard one if it is available,
-///     otherwise we have our own implementation.
 template< class ForwardIterator1, class ForwardIterator2 >
 bool is_permutation ( ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2 )
 {

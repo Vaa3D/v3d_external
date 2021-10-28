@@ -46,7 +46,7 @@ namespace boost
             // Computing discrete mixtures of continuous
             // distributions: noncentral chisquare, noncentral t
             // and the distribution of the square of the sample
-            // multiple correlation coeficient.
+            // multiple correlation coefficient.
             // D. Benton, K. Krishnamoorthy.
             // Computational Statistics & Data Analysis 43 (2003) 249 - 267
             //
@@ -62,7 +62,7 @@ namespace boost
             T lambda = theta / 2;
             T del = f / 2;
             T y = x / 2;
-            boost::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
+            std::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
             T errtol = boost::math::policies::get_epsilon<T, Policy>();
             T sum = init_sum;
             //
@@ -89,7 +89,7 @@ namespace boost
             // recurrences:
             //
             int i;
-            for(i = k; static_cast<boost::uintmax_t>(i-k) < max_iter; ++i)
+            for(i = k; static_cast<std::uintmax_t>(i-k) < max_iter; ++i)
             {
                T term = poisf * gamf;
                sum += term;
@@ -100,14 +100,14 @@ namespace boost
                   break;
             }
             //Error check:
-            if(static_cast<boost::uintmax_t>(i-k) >= max_iter)
+            if(static_cast<std::uintmax_t>(i-k) >= max_iter)
                return policies::raise_evaluation_error(
                   "cdf(non_central_chi_squared_distribution<%1%>, %1%)",
                   "Series did not converge, closest value was %1%", sum, pol);
             //
             // Now backwards iteration: the gamma
             // function recurrences are unstable in this
-            // direction, we rely on the terms deminishing in size
+            // direction, we rely on the terms diminishing in size
             // faster than we introduce cancellation errors.
             // For this reason it's very important that we start
             // *before* the largest term so that backwards iteration
@@ -141,7 +141,7 @@ namespace boost
             // This uses a stable forward iteration to sum the
             // CDF, unfortunately this can not be used for large
             // values of the non-centrality parameter because:
-            // * The first term may underfow to zero.
+            // * The first term may underflow to zero.
             // * We may need an extra-ordinary number of terms
             //   before we reach the first *significant* term.
             //
@@ -157,12 +157,12 @@ namespace boost
             if(sum == 0)
                return sum;
 
-            boost::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
+            std::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
             T errtol = boost::math::policies::get_epsilon<T, Policy>();
 
             int i;
             T lterm(0), term(0);
-            for(i = 1; static_cast<boost::uintmax_t>(i) < max_iter; ++i)
+            for(i = 1; static_cast<std::uintmax_t>(i) < max_iter; ++i)
             {
                tk = tk * x / (f + 2 * i);
                uk = uk * lambda / i;
@@ -174,7 +174,7 @@ namespace boost
                   break;
             }
             //Error check:
-            if(static_cast<boost::uintmax_t>(i) >= max_iter)
+            if(static_cast<std::uintmax_t>(i) >= max_iter)
                return policies::raise_evaluation_error(
                   "cdf(non_central_chi_squared_distribution<%1%>, %1%)",
                   "Series did not converge, closest value was %1%", sum, pol);
@@ -191,7 +191,7 @@ namespace boost
             // Computing discrete mixtures of continuous
             // distributions: noncentral chisquare, noncentral t
             // and the distribution of the square of the sample
-            // multiple correlation coeficient.
+            // multiple correlation coefficient.
             // D. Benton, K. Krishnamoorthy.
             // Computational Statistics & Data Analysis 43 (2003) 249 - 267
             //
@@ -202,7 +202,7 @@ namespace boost
             // Special case:
             if(y == 0)
                return 0;
-            boost::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
+            std::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
             T errtol = boost::math::policies::get_epsilon<T, Policy>();
             T errorf(0), errorb(0);
 
@@ -270,10 +270,10 @@ namespace boost
                errorf = poiskf * gamkf;
                sum += errorf;
                ++i;
-            }while((fabs(errorf / sum) > errtol) && (static_cast<boost::uintmax_t>(i) < max_iter));
+            }while((fabs(errorf / sum) > errtol) && (static_cast<std::uintmax_t>(i) < max_iter));
 
             //Error check:
-            if(static_cast<boost::uintmax_t>(i) >= max_iter)
+            if(static_cast<std::uintmax_t>(i) >= max_iter)
                return policies::raise_evaluation_error(
                   "cdf(non_central_chi_squared_distribution<%1%>, %1%)",
                   "Series did not converge, closest value was %1%", sum, pol);
@@ -288,7 +288,7 @@ namespace boost
             // As above but for the PDF:
             //
             BOOST_MATH_STD_USING
-            boost::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
+            std::uintmax_t max_iter = policies::get_max_series_iterations<Policy>();
             T errtol = boost::math::policies::get_epsilon<T, Policy>();
             T x2 = x / 2;
             T n2 = n / 2;
@@ -304,7 +304,7 @@ namespace boost
                sum += pois;
                if(pois / sum < errtol)
                   break;
-               if(static_cast<boost::uintmax_t>(i - k) >= max_iter)
+               if(static_cast<std::uintmax_t>(i - k) >= max_iter)
                   return policies::raise_evaluation_error(
                      "pdf(non_central_chi_squared_distribution<%1%>, %1%)",
                      "Series did not converge, closest value was %1%", sum, pol);
@@ -438,7 +438,7 @@ namespace boost
                return comp ? 0 : policies::raise_overflow_error<RealType>(function, 0, Policy());
             //
             // This is Pearson's approximation to the quantile, see
-            // Pearson, E. S. (1959) "Note on an approximation to the distribution of 
+            // Pearson, E. S. (1959) "Note on an approximation to the distribution of
             // noncentral chi squared", Biometrika 46: 364.
             // See also:
             // "A comparison of approximations to percentiles of the noncentral chi2-distribution",
@@ -460,10 +460,13 @@ namespace boost
             //
             // Sometimes guess goes very small or negative, in that case we have
             // to do something else for the initial guess, this approximation
-            // was provided in a private communication from Thomas Luu, PhD candidate, 
+            // was provided in a private communication from Thomas Luu, PhD candidate,
             // University College London.  It's an asymptotic expansion for the
             // quantile which usually gets us within an order of magnitude of the
             // correct answer.
+            // Fast and accurate parallel computation of quantile functions for random number generation,
+            // Thomas LuuDoctorial Thesis 2016
+            // http://discovery.ucl.ac.uk/1482128/
             //
             if(guess < 0.005)
             {
@@ -584,7 +587,7 @@ namespace boost
             }
             degrees_of_freedom_finder<RealType, Policy> f(lam, x, p < q ? p : q, p < q ? false : true);
             tools::eps_tolerance<RealType> tol(policies::digits<RealType, Policy>());
-            boost::uintmax_t max_iter = policies::get_max_root_iterations<Policy>();
+            std::uintmax_t max_iter = policies::get_max_root_iterations<Policy>();
             //
             // Pick an initial guess that we know will give us a probability
             // right around 0.5.
@@ -640,7 +643,7 @@ namespace boost
             }
             non_centrality_finder<RealType, Policy> f(v, x, p < q ? p : q, p < q ? false : true);
             tools::eps_tolerance<RealType> tol(policies::digits<RealType, Policy>());
-            boost::uintmax_t max_iter = policies::get_max_root_iterations<Policy>();
+            std::uintmax_t max_iter = policies::get_max_root_iterations<Policy>();
             //
             // Pick an initial guess that we know will give us a probability
             // right around 0.5.

@@ -35,6 +35,14 @@ namespace posix_time {
     return date_time::parse_iso_time<ptime>(s, 'T');
   }
 
+  inline ptime from_iso_extended_string(const std::string& s) {
+    if (s.size() == 10) { //assume we just have a date which is 10 chars
+      gregorian::date d = gregorian::from_simple_string(s);
+      return ptime( d );
+    }
+    return date_time::parse_delimited_time<ptime>(s, 'T');
+  }
+
 
 
 } } //namespace posix_time

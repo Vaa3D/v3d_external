@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::min`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -44,7 +44,7 @@ BOOST_HANA_NAMESPACE_BEGIN
         constexpr decltype(auto) operator()(X&& x, Y&& y) const;
     };
 
-    constexpr min_t min{};
+    BOOST_HANA_INLINE_VARIABLE constexpr min_t min{};
 #endif
 BOOST_HANA_NAMESPACE_END
 

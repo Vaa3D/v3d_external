@@ -4,10 +4,10 @@
 // Copyright (c) 2008-2014 Barend Gehrels, Amsterdam, the Netherlands.
 // Copyright (c) 2009-2014 Mateusz Loskot, London, UK.
 
-// This file was modified by Oracle on 2014.
-// Modifications copyright (c) 2014, Oracle and/or its affiliates.
-
+// This file was modified by Oracle on 2014-2021.
+// Modifications copyright (c) 2014-2021, Oracle and/or its affiliates.
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -20,9 +20,10 @@
 #define BOOST_GEOMETRY_STRATEGIES_CARTESIAN_DISTANCE_PROJECTED_POINT_HPP
 
 
+#include <type_traits>
+
 #include <boost/concept_check.hpp>
-#include <boost/mpl/if.hpp>
-#include <boost/type_traits/is_void.hpp>
+#include <boost/core/ignore_unused.hpp>
 
 #include <boost/geometry/core/access.hpp>
 #include <boost/geometry/core/point_type.hpp>
@@ -35,8 +36,8 @@
 #include <boost/geometry/strategies/distance.hpp>
 #include <boost/geometry/strategies/default_distance_result.hpp>
 #include <boost/geometry/strategies/cartesian/distance_pythagoras.hpp>
-
-#include <boost/geometry/util/select_coordinate_type.hpp>
+#include <boost/geometry/strategies/cartesian/point_in_point.hpp>
+#include <boost/geometry/strategies/cartesian/intersection.hpp>
 
 // Helper geometry (projected point on line)
 #include <boost/geometry/geometries/point.hpp>
@@ -74,7 +75,7 @@ template
 >
 class projected_point
 {
-public :
+public:
     // The three typedefs below are necessary to calculate distances
     // from segments defined in integer coordinates.
 
@@ -93,8 +94,6 @@ public :
                   >::type
           >
     {};
-
-public :
 
     template <typename Point, typename PointOfSegment>
     inline typename calculation_type<Point, PointOfSegment>::type
@@ -137,7 +136,7 @@ public :
         subtract_point(w, projected);
 
         Strategy strategy;
-        boost::ignore_unused_variable_warning(strategy);
+        boost::ignore_unused(strategy);
 
         calculation_type const zero = calculation_type();
         calculation_type const c1 = dot_product(w, v);
@@ -159,6 +158,13 @@ public :
 
         return strategy.apply(p, projected);
     }
+
+    template <typename CT>
+    inline CT vertical_or_meridian(CT const& lat1, CT const& lat2) const
+    {
+        return lat1 - lat2;
+    }
+
 };
 
 #ifndef DOXYGEN_NO_STRATEGY_SPECIALIZATIONS
@@ -235,19 +241,19 @@ struct default_strategy
     >
 {
     typedef strategy::distance::projected_point
-    <
-        void,
-        typename boost::mpl::if_
-            <
-                boost::is_void<Strategy>,
-                typename default_strategy
-                    <
-                        point_tag, point_tag, Point, PointOfSegment,
-                        cartesian_tag, cartesian_tag
-                    >::type,
-                Strategy
-            >::type
-    > type;
+        <
+            void,
+            std::conditional_t
+                <
+                    std::is_void<Strategy>::value,
+                    typename default_strategy
+                        <
+                            point_tag, point_tag, Point, PointOfSegment,
+                            cartesian_tag, cartesian_tag
+                        >::type,
+                    Strategy
+                >
+        > type;
 };
 
 template <typename PointOfSegment, typename Point, typename Strategy>

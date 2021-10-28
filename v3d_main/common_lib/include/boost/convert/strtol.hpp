@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2014 Vladimir Batov.
+// Copyright (c) 2009-2020 Vladimir Batov.
 // Use, modification and distribution are subject to the Boost Software License,
 // Version 1.0. See http://www.boost.org/LICENSE_1_0.txt.
 
@@ -6,20 +6,10 @@
 #define BOOST_CONVERT_STRTOL_CONVERTER_HPP
 
 #include <boost/convert/base.hpp>
-#include <boost/type_traits/make_unsigned.hpp>
-#include <boost/type_traits/is_same.hpp>
 #include <boost/math/special_functions/round.hpp>
 #include <limits>
-#include <cmath>
-#include <cstdlib>
 #include <climits>
-
-#if __GNUC__ == 4 && __GNUC_MINOR__ <= 2
-namespace std
-{
-    using ::strtold; // Tests indicated that gcc-4.2.1 does not have 'std::strtold'
-}
-#endif
+#include <cstdlib>
 
 namespace boost { namespace cnv
 {
@@ -31,20 +21,8 @@ namespace boost { namespace cnv
 
 struct boost::cnv::strtol : public boost::cnv::cnvbase<boost::cnv::strtol>
 {
-    // C2. Old C-strings have an advantage over [begin, end) ranges. They do not need the 'end' iterator!
-    //     Instead, they provide a sentinel (0 terminator). Consequently, C strings can be traversed
-    //     without the need to compare if the 'end' has been reached (i.e. "for (; it != end; ++it)").
-    //     Instead, the current character is checked if it's 0 (i.e. "for (; *p; ++p)") which is faster.
-    //
-    //     So, the implementation takes advantage of the fact. Namely, we simply check if *cnv_end == 0
-    //     instead of traversing once with strlen() to find the end iterator and then comparing to it as in
-    //
-    //         char const* str_end = str + strlen(str); // Unnecessary traversal!
-    //         ...
-    //         bool const     good = ... && cnv_end == str_end;
-
-    typedef boost::cnv::strtol             this_type;
-    typedef boost::cnv::cnvbase<this_type> base_type;
+    using this_type = boost::cnv::strtol;
+    using base_type = boost::cnv::cnvbase<this_type>;
 
     using base_type::operator();
 
@@ -86,18 +64,19 @@ boost::cnv::strtol::i_to_str(Type in_value, char_type* buf) const
 {
     // C1. Base=10 optimization improves performance 10%
 
-    typedef typename boost::make_unsigned<Type>::type unsigned_type;
+    using unsigned_type = typename std::make_unsigned<Type>::type;
 
-    char_type*         beg = buf + bufsize_ / 2;
-    char_type*         end = beg;
-    bool const is_negative = in_value < 0;
-    unsigned_type    value = static_cast<unsigned_type>(is_negative ? -in_value : in_value);
+    char_type*      beg = buf + bufsize_ / 2;
+    char_type*      end = beg;
+    bool const   is_neg = std::is_signed<Type>::value && in_value < 0;
+    unsigned_type value = static_cast<unsigned_type>(is_neg ? -in_value : in_value);
+    int            base = int(base_);
 
-    if (base_ == 10) for (; value; *(--beg) = int(value % 10) + '0', value /= 10); //C1
-    else             for (; value; *(--beg) = get_char(value % base_), value /= base_);
+    if (base == 10) for (; value; *(--beg) = int(value % 10) + '0', value /= 10); //C1
+    else            for (; value; *(--beg) = get_char(value % base), value /= base);
 
-    if (beg == end)  *(--beg) = '0';
-    if (is_negative) *(--beg) = '-';
+    if (beg == end) *(--beg) = '0';
+    if (is_neg)     *(--beg) = '-';
 
     return cnv::range<char_type*>(beg, end);
 }
@@ -133,14 +112,14 @@ inline
 boost::cnv::range<char_type*>
 boost::cnv::strtol::to_str(double value, char_type* buf) const
 {
-    char_type*         beg = buf + bufsize_ / 2;
-    char_type*         end = beg;
-    char_type*        ipos = end - 1;
-    bool const is_negative = (value < 0) ? (value = -value, true) : false;
-    double           ipart = std::floor(value);
-    double           fpart = adjust_fraction(value - ipart, precision_);
-    int          precision = precision_;
-    int const         base = 10;
+    char_type*   beg = buf + bufsize_ / 2;
+    char_type*   end = beg;
+    char_type*  ipos = end - 1;
+    bool is_negative = (value < 0) ? (value = -value, true) : false;
+    double     ipart = std::floor(value);
+    double     fpart = adjust_fraction(value - ipart, precision_);
+    int    precision = precision_;
+    int const   base = 10;
 
     for (; 1 <= ipart; ipart /= base)
         *(--beg) = get_char(int(ipart - std::floor(ipart / base) * base));
@@ -169,23 +148,25 @@ template<typename string_type, typename out_type>
 void
 boost::cnv::strtol::str_to_i(cnv::range<string_type> range, boost::optional<out_type>& result_out) const
 {
-    typedef typename boost::make_unsigned<out_type>::type unsigned_type;
-    typedef cnv::range<string_type>                          range_type;
-    typedef typename range_type::iterator                      iterator;
+    using     uint_type = unsigned int;
+    using unsigned_type = typename std::make_unsigned<out_type>::type;
+    using    range_type = cnv::range<string_type>;
+    using      iterator = typename range_type::iterator;
 
     iterator             s = range.begin();
-    unsigned int        ch = *s;
+    uint_type           ch = *s;
     bool const is_negative = ch == '-' ? (ch = *++s, true) : ch == '+' ? (ch = *++s, false) : false;
-    bool const is_unsigned = boost::is_same<out_type, unsigned_type>::value;
-    unsigned int      base = base_;
+    bool const is_unsigned = std::is_same<out_type, unsigned_type>::value;
+    uint_type         base = uint_type(base_);
 
     /**/ if (is_negative && is_unsigned) return;
     else if ((base == 0 || base == 16) && ch == '0' && (*++s == 'x' || *s == 'X')) ++s, base = 16;
     else if (base == 0) base = ch == '0' ? (++s, 8) : 10;
 
-    unsigned_type const    max = (std::numeric_limits<out_type>::max)() + (is_negative ? 1 : 0);
-    unsigned_type const cutoff = max / base;
-    unsigned int  const cutlim = max % base;
+    unsigned_type const    max = (std::numeric_limits<out_type>::max)();
+    unsigned_type const   umax = max + (is_negative ? 1 : 0);
+    unsigned_type const cutoff = umax / base;
+    uint_type     const cutlim = umax % base;
     unsigned_type       result = 0;
 
     for (; s != range.sentry(); ++s)
@@ -209,14 +190,20 @@ template<typename string_type, typename out_type>
 void
 boost::cnv::strtol::str_to_d(cnv::range<string_type> range, optional<out_type>& result_out) const
 {
-    typedef cnv::range<string_type>        range_type;
-    typedef typename range_type::value_type char_type;
+    // C1. Because of strtold() currently only works with 'char'
+    // C2. strtold() does not work with ranges.
+    //     Consequently, we have to copy the supplied range into a string for strtold().
+    // C3. Check if the end-of-string was reached -- *cnv_end == 0.
 
-    char_type const*   str = &*range.begin(); // Currently only works with 'char'
-    char*          cnv_end = 0;
-    ldbl_type const result = strtold(str, &cnv_end);
-    bool const        good = result != -HUGE_VALL && result != HUGE_VALL && *cnv_end == 0/*C2*/;
-    out_type const     max = (std::numeric_limits<out_type>::max)();
+    using range_type = cnv::range<string_type>;
+    using    ch_type = typename range_type::value_type;
+
+    size_t const  sz = 128;
+    ch_type  str[sz] = {0}; std::strncpy(str, &*range.begin(), (std::min)(sz - 1, range.size()));
+    char*    cnv_end = 0;
+    ldbl_type result = strtold(str, &cnv_end);
+    bool        good = result != -HUGE_VALL && result != HUGE_VALL && *cnv_end == 0; //C3
+    out_type     max = (std::numeric_limits<out_type>::max)();
 
     if (good && -max <= result && result <= max)
         result_out = out_type(result);

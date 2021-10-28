@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\custom_dir.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\custom_dir.dir/objects.a @CMakeFiles\custom_dir.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--whole-archive CMakeFiles\custom_dir.dir/objects.a -Wl,--no-whole-archive -o custom_dir.exe -Wl,--out-implib,libcustom_dir.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\custom_dir.dir\linklibs.rsp

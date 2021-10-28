@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\test_pptest.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\test_pptest.dir/objects.a @CMakeFiles\test_pptest.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe -Wl,--whole-archive CMakeFiles\test_pptest.dir/objects.a -Wl,--no-whole-archive -o ..\..\bin\test_pptest.exe -Wl,--out-implib,..\..\bin\libtest_pptest.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\test_pptest.dir\linklibs.rsp

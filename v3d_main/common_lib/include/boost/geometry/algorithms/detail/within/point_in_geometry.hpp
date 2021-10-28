@@ -5,8 +5,9 @@
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 // Copyright (c) 2014 Adam Wulkiewicz, Lodz, Poland.
 
-// This file was modified by Oracle on 2013, 2014, 2015.
-// Modifications copyright (c) 2013-2015, Oracle and/or its affiliates.
+// This file was modified by Oracle on 2013-2021.
+// Modifications copyright (c) 2013-2021, Oracle and/or its affiliates.
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -15,57 +16,40 @@
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
-
 #ifndef BOOST_GEOMETRY_ALGORITHMS_DETAIL_WITHIN_POINT_IN_GEOMETRY_HPP
 #define BOOST_GEOMETRY_ALGORITHMS_DETAIL_WITHIN_POINT_IN_GEOMETRY_HPP
 
 
 #include <boost/core/ignore_unused.hpp>
-#include <boost/mpl/assert.hpp>
-#include <boost/range.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/remove_reference.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
+#include <boost/range/size.hpp>
+#include <boost/range/value_type.hpp>
 
 #include <boost/geometry/core/assert.hpp>
 
+#include <boost/geometry/algorithms/detail/assign_indexed_point.hpp>
 #include <boost/geometry/algorithms/detail/equals/point_point.hpp>
 #include <boost/geometry/algorithms/detail/interior_iterator.hpp>
 
 #include <boost/geometry/geometries/concepts/check.hpp>
 #include <boost/geometry/strategies/concepts/within_concept.hpp>
-#include <boost/geometry/strategies/default_strategy.hpp>
-#include <boost/geometry/strategies/within.hpp>
-#include <boost/geometry/strategies/covered_by.hpp>
 
 #include <boost/geometry/util/range.hpp>
-#include <boost/geometry/views/detail/normalized_view.hpp>
+#include <boost/geometry/views/detail/closed_clockwise_view.hpp>
 
 namespace boost { namespace geometry {
 
 #ifndef DOXYGEN_NO_DETAIL
 namespace detail { namespace within {
 
-// TODO: is this needed?
-inline int check_result_type(int result)
-{
-    return result;
-}
-
-template <typename T>
-inline T check_result_type(T result)
-{
-    BOOST_GEOMETRY_ASSERT(false);
-    return result;
-}
 
 template <typename Point, typename Range, typename Strategy> inline
 int point_in_range(Point const& point, Range const& range, Strategy const& strategy)
 {
-    boost::ignore_unused(strategy);
+    typename Strategy::state_type state;
 
     typedef typename boost::range_iterator<Range const>::type iterator_type;
-    typename Strategy::state_type state;
     iterator_type it = boost::begin(range);
     iterator_type end = boost::end(range);
 
@@ -77,57 +61,7 @@ int point_in_range(Point const& point, Range const& range, Strategy const& strat
         }
     }
 
-    return check_result_type(strategy.result(state));
-}
-
-template <typename Geometry, typename Point, typename Range>
-inline int point_in_range(Point const& point, Range const& range)
-{
-    typedef typename point_type<Point>::type point_type1;
-    typedef typename point_type<Geometry>::type point_type2;
-
-    typedef typename strategy::within::services::default_strategy
-        <
-            typename tag<Point>::type,
-            typename tag<Geometry>::type,
-            typename tag<Point>::type,
-            typename tag_cast<typename tag<Geometry>::type, areal_tag>::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type1>::type, spherical_tag
-                >::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type2>::type, spherical_tag
-                >::type,
-            Point,
-            Geometry
-        >::type strategy_type;
-
-    typedef typename strategy::covered_by::services::default_strategy
-        <
-            typename tag<Point>::type,
-            typename tag<Geometry>::type,
-            typename tag<Point>::type,
-            typename tag_cast<typename tag<Geometry>::type, areal_tag>::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type1>::type, spherical_tag
-                >::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type2>::type, spherical_tag
-                >::type,
-            Point,
-            Geometry
-        >::type strategy_type2;
-
-    static const bool same_strategies = boost::is_same<strategy_type, strategy_type2>::value;
-    BOOST_MPL_ASSERT_MSG((same_strategies),
-                         DEFAULT_WITHIN_AND_COVERED_BY_STRATEGIES_NOT_COMPATIBLE,
-                         (strategy_type, strategy_type2));
-
-    return point_in_range(point, range, strategy_type());
+    return strategy.result(state);
 }
 
 }} // namespace detail::within
@@ -151,8 +85,8 @@ struct point_in_geometry<Point2, point_tag>
     template <typename Point1, typename Strategy> static inline
     int apply(Point1 const& point1, Point2 const& point2, Strategy const& strategy)
     {
-        boost::ignore_unused(strategy);
-        return strategy.apply(point1, point2) ? 1 : -1;
+        typedef decltype(strategy.relate(point1, point2)) strategy_type;
+        return strategy_type::apply(point1, point2) ? 1 : -1;
     }
 };
 
@@ -162,24 +96,23 @@ struct point_in_geometry<Segment, segment_tag>
     template <typename Point, typename Strategy> static inline
     int apply(Point const& point, Segment const& segment, Strategy const& strategy)
     {
-        boost::ignore_unused(strategy);
-
         typedef typename geometry::point_type<Segment>::type point_type;
         point_type p0, p1;
 // TODO: don't copy points
         detail::assign_point_from_index<0>(segment, p0);
         detail::assign_point_from_index<1>(segment, p1);
 
-        typename Strategy::state_type state;
-        strategy.apply(point, p0, p1, state);
-        int r = detail::within::check_result_type(strategy.result(state));
+        auto const s = strategy.relate(point, segment);
+        typename decltype(s)::state_type state;
+        s.apply(point, p0, p1, state);
+        int r = s.result(state);
 
         if ( r != 0 )
             return -1; // exterior
 
         // if the point is equal to the one of the terminal points
-        if ( detail::equals::equals_point_point(point, p0)
-          || detail::equals::equals_point_point(point, p1) )
+        if ( detail::equals::equals_point_point(point, p0, strategy)
+          || detail::equals::equals_point_point(point, p1, strategy) )
             return 0; // boundary
         else
             return 1; // interior
@@ -196,24 +129,37 @@ struct point_in_geometry<Linestring, linestring_tag>
         std::size_t count = boost::size(linestring);
         if ( count > 1 )
         {
-            if ( detail::within::point_in_range(point, linestring, strategy) != 0 )
+            if ( detail::within::point_in_range(point, linestring,
+                                    strategy.relate(point, linestring)) != 0 )
+            {
                 return -1; // exterior
+            }
+
+            typedef typename boost::range_value<Linestring>::type point_type;
+            point_type const& front = range::front(linestring);
+            point_type const& back = range::back(linestring);
 
             // if the linestring doesn't have a boundary
-            if (detail::equals::equals_point_point(range::front(linestring), range::back(linestring)))
+            if ( detail::equals::equals_point_point(front, back, strategy) )
+            {
                 return 1; // interior
+            }
             // else if the point is equal to the one of the terminal points
-            else if (detail::equals::equals_point_point(point, range::front(linestring))
-                || detail::equals::equals_point_point(point, range::back(linestring)))
+            else if ( detail::equals::equals_point_point(point, front, strategy)
+                   || detail::equals::equals_point_point(point, back, strategy) )
+            {
                 return 0; // boundary
+            }
             else
+            {
                 return 1; // interior
+            }
         }
 // TODO: for now degenerated linestrings are ignored
 //       throw an exception here?
         /*else if ( count == 1 )
         {
-            if ( detail::equals::equals_point_point(point, range::front(linestring)) )
+            if ( detail::equals::equals_point_point(point, front, strategy) )
                 return 1;
         }*/
 
@@ -235,8 +181,9 @@ struct point_in_geometry<Ring, ring_tag>
             return -1;
         }
 
-        detail::normalized_view<Ring const> view(ring);
-        return detail::within::point_in_range(point, view, strategy);
+        detail::closed_clockwise_view<Ring const> view(ring);
+        return detail::within::point_in_range(point, view,
+                                              strategy.relate(point, ring));
     }
 };
 
@@ -343,12 +290,12 @@ struct point_in_geometry<Geometry, multi_linestring_tag>
             point_type const& back = range::back(*it);
 
             // is closed_ring - no boundary
-            if ( detail::equals::equals_point_point(front, back) )
+            if ( detail::equals::equals_point_point(front, back, strategy) )
                 continue;
 
             // is point on boundary
-            if ( detail::equals::equals_point_point(point, front)
-              || detail::equals::equals_point_point(point, back) )
+            if ( detail::equals::equals_point_point(point, front, strategy)
+              || detail::equals::equals_point_point(point, back, strategy) )
             {
                 ++boundaries;
             }
@@ -400,65 +347,21 @@ namespace detail { namespace within {
 template <typename Point, typename Geometry, typename Strategy>
 inline int point_in_geometry(Point const& point, Geometry const& geometry, Strategy const& strategy)
 {
-    concept::within::check
-        <
-            typename tag<Point>::type,
-            typename tag<Geometry>::type,
-            typename tag_cast<typename tag<Geometry>::type, areal_tag>::type,
-            Strategy
-        >();
+    concepts::within::check<Point, Geometry, Strategy>();
 
     return detail_dispatch::within::point_in_geometry<Geometry>::apply(point, geometry, strategy);
 }
 
-template <typename Point, typename Geometry>
-inline int point_in_geometry(Point const& point, Geometry const& geometry)
+template <typename Point, typename Geometry, typename Strategy>
+inline bool within_point_geometry(Point const& point, Geometry const& geometry, Strategy const& strategy)
 {
-    typedef typename point_type<Point>::type point_type1;
-    typedef typename point_type<Geometry>::type point_type2;
+    return point_in_geometry(point, geometry, strategy) > 0;
+}
 
-    typedef typename strategy::within::services::default_strategy
-        <
-            typename tag<Point>::type,
-            typename tag<Geometry>::type,
-            typename tag<Point>::type,
-            typename tag_cast<typename tag<Geometry>::type, areal_tag>::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type1>::type, spherical_tag
-                >::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type2>::type, spherical_tag
-                >::type,
-            Point,
-            Geometry
-        >::type strategy_type;
-
-    typedef typename strategy::covered_by::services::default_strategy
-        <
-            typename tag<Point>::type,
-            typename tag<Geometry>::type,
-            typename tag<Point>::type,
-            typename tag_cast<typename tag<Geometry>::type, areal_tag>::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type1>::type, spherical_tag
-                >::type,
-            typename tag_cast
-                <
-                    typename cs_tag<point_type2>::type, spherical_tag
-                >::type,
-            Point,
-            Geometry
-        >::type strategy_type2;
-
-    static const bool same_strategies = boost::is_same<strategy_type, strategy_type2>::value;
-    BOOST_MPL_ASSERT_MSG((same_strategies),
-                         DEFAULT_WITHIN_AND_COVERED_BY_STRATEGIES_NOT_COMPATIBLE,
-                         (strategy_type, strategy_type2));
-
-    return point_in_geometry(point, geometry, strategy_type());
+template <typename Point, typename Geometry, typename Strategy>
+inline bool covered_by_point_geometry(Point const& point, Geometry const& geometry, Strategy const& strategy)
+{
+    return point_in_geometry(point, geometry, strategy) >= 0;
 }
 
 }} // namespace detail::within

@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\iptcutil.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\iptcutil.dir/objects.a @CMakeFiles\iptcutil.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--whole-archive CMakeFiles\iptcutil.dir/objects.a -Wl,--no-whole-archive -o iptcutil.exe -Wl,--out-implib,libiptcutil.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\iptcutil.dir\linklibs.rsp

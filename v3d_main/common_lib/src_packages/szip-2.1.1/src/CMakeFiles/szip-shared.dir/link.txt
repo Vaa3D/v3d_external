@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\szip-shared.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\szip-shared.dir/objects.a @CMakeFiles\szip-shared.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe   -std=c99 -fomit-frame-pointer -finline-functions -fno-common -fmessage-length=0 -shared -o ..\bin\szip-shared.dll -Wl,--out-implib,..\bin\szip-shared.lib -Wl,--major-image-version,2,--minor-image-version,1 -Wl,--whole-archive CMakeFiles\szip-shared.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\szip-shared.dir\linklibs.rsp

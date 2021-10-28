@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::basic_tuple`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -21,6 +21,11 @@ BOOST_HANA_NAMESPACE_BEGIN
     //! Whereas `hana::tuple` aims to provide an interface somewhat close to a
     //! `std::tuple`, `basic_tuple` provides the strict minimum required to
     //! implement a closure with maximum compile-time efficiency.
+    //!
+    //! @note
+    //! When you use a container, remember not to make assumptions about its
+    //! representation, unless the documentation gives you those guarantees.
+    //! More details [in the tutorial](@ref tutorial-containers-types).
     //!
     //!
     //! Modeled concepts
@@ -59,7 +64,7 @@ BOOST_HANA_NAMESPACE_BEGIN
     //! Example
     //! -------
     //! @include example/basic_tuple/make.cpp
-    constexpr auto make_basic_tuple = make<basic_tuple_tag>;
+    BOOST_HANA_INLINE_VARIABLE constexpr auto make_basic_tuple = make<basic_tuple_tag>;
 BOOST_HANA_NAMESPACE_END
 
 #endif // !BOOST_HANA_FWD_BASIC_TUPLE_HPP

@@ -2,7 +2,7 @@
 @file
 Defines `boost::hana::detail::variadic::split_at`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -147,7 +147,7 @@ BOOST_HANA_NAMESPACE_BEGIN namespace detail { namespace variadic {
     };
 
     template <std::size_t n>
-    constexpr _makesplit_at_t<n> split_at{};
+    BOOST_HANA_INLINE_VARIABLE constexpr _makesplit_at_t<n> split_at{};
 }} BOOST_HANA_NAMESPACE_END
 
 #endif // !BOOST_HANA_DETAIL_VARIADIC_SPLIT_AT_HPP

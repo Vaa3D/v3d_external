@@ -221,9 +221,9 @@ bool template_matching_seg(Vol3DSimple <unsigned char> *img3d, Vol3DSimple <unsi
 					bool b_merge=false; int celllabel;
 					for (int pii=0;pii<detectedPos.size();pii++)
 					{
-						register float tmpx = detectedPos.at(pii).x-lncx;
-						register float tmpy = detectedPos.at(pii).y-lncy;
-						register float tmpz = detectedPos.at(pii).z-lncz;
+                         float tmpx = detectedPos.at(pii).x-lncx;
+                         float tmpy = detectedPos.at(pii).y-lncy;
+                         float tmpz = detectedPos.at(pii).z-lncz;
 						if (tmpx*tmpx+tmpy*tmpy+tmpz*tmpz<mypara.merge_radius*mypara.merge_radius) //400=20*20
 						{
 							b_merge=true;

@@ -5,8 +5,8 @@
 // Copyright (c) 2009-2014 Mateusz Loskot, London, UK.
 // Copyright (c) 2013-2014 Adam Wulkiewicz, Lodz, Poland.
 
-// This file was modified by Oracle on 2013-2014.
-// Modifications copyright (c) 2013-2014, Oracle and/or its affiliates.
+// This file was modified by Oracle on 2013-2021.
+// Modifications copyright (c) 2013-2021, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
@@ -23,143 +23,186 @@
 
 #include <cstddef>
 
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
-#include <boost/variant/variant_fwd.hpp>
+#include <boost/geometry/algorithms/detail/relate/interface.hpp>
+#include <boost/geometry/algorithms/detail/visit.hpp>
+#include <boost/geometry/algorithms/dispatch/disjoint.hpp>
 
+#include <boost/geometry/geometries/adapted/boost_variant.hpp> // For backward compatibility
 #include <boost/geometry/geometries/concepts/check.hpp>
 
-#include <boost/geometry/algorithms/dispatch/disjoint.hpp>
+#include <boost/geometry/strategies/default_strategy.hpp>
+#include <boost/geometry/strategies/detail.hpp>
+#include <boost/geometry/strategies/relate/services.hpp>
 
 
 namespace boost { namespace geometry
 {
 
-
-#ifndef DOXYGEN_NO_DISPATCH
-namespace dispatch
+namespace resolve_strategy
 {
 
-
-// If reversal is needed, perform it
 template
 <
-    typename Geometry1, typename Geometry2,
-    std::size_t DimensionCount,
-    typename Tag1, typename Tag2
+    typename Strategy,
+    bool IsUmbrella = strategies::detail::is_umbrella_strategy<Strategy>::value
 >
-struct disjoint<Geometry1, Geometry2, DimensionCount, Tag1, Tag2, true>
+struct disjoint
 {
-    static inline bool apply(Geometry1 const& g1, Geometry2 const& g2)
+    template <typename Geometry1, typename Geometry2>
+    static inline bool apply(Geometry1 const& geometry1,
+                             Geometry2 const& geometry2,
+                             Strategy const& strategy)
     {
-        return disjoint
-            <
-                Geometry2, Geometry1,
-                DimensionCount,
-                Tag2, Tag1
-            >::apply(g2, g1);
+        return dispatch::disjoint
+                <
+                    Geometry1, Geometry2
+                >::apply(geometry1, geometry2, strategy);
     }
 };
 
+template <typename Strategy>
+struct disjoint<Strategy, false>
+{
+    template <typename Geometry1, typename Geometry2>
+    static inline bool apply(Geometry1 const& geometry1,
+                             Geometry2 const& geometry2,
+                             Strategy const& strategy)
+    {
+        using strategies::relate::services::strategy_converter;
 
-} // namespace dispatch
-#endif // DOXYGEN_NO_DISPATCH
+        return dispatch::disjoint
+                <
+                    Geometry1, Geometry2
+                >::apply(geometry1, geometry2,
+                         strategy_converter<Strategy>::get(strategy));
+    }
+};
+
+template <>
+struct disjoint<default_strategy, false>
+{
+    template <typename Geometry1, typename Geometry2>
+    static inline bool apply(Geometry1 const& geometry1,
+                             Geometry2 const& geometry2,
+                             default_strategy)
+    {
+        typedef typename strategies::relate::services::default_strategy
+            <
+                Geometry1, Geometry2
+            >::type strategy_type;
+
+        return dispatch::disjoint
+                <
+                    Geometry1, Geometry2
+                >::apply(geometry1, geometry2, strategy_type());
+    }
+};
+
+} // namespace resolve_strategy
 
 
-namespace resolve_variant {
+namespace resolve_dynamic {
 
-template <typename Geometry1, typename Geometry2>
+template
+<
+    typename Geometry1, typename Geometry2,
+    bool IsDynamic = util::is_dynamic_geometry<Geometry1>::value
+                  || util::is_dynamic_geometry<Geometry2>::value,
+    bool IsCollection = util::is_geometry_collection<Geometry1>::value
+                     || util::is_geometry_collection<Geometry2>::value
+>
 struct disjoint
 {
-    static inline bool apply(Geometry1 const& geometry1, Geometry2 const& geometry2)
+    template <typename Strategy>
+    static inline bool apply(Geometry1 const& geometry1, Geometry2 const& geometry2,
+                             Strategy const& strategy)
     {
-        concept::check_concepts_and_equal_dimensions
+        concepts::check_concepts_and_equal_dimensions
             <
                 Geometry1 const,
                 Geometry2 const
             >();
 
-        return dispatch::disjoint<Geometry1, Geometry2>::apply(geometry1, geometry2);
+        return resolve_strategy::disjoint
+            <
+                Strategy
+            >::apply(geometry1, geometry2, strategy);
     }
 };
 
-template <BOOST_VARIANT_ENUM_PARAMS(typename T), typename Geometry2>
-struct disjoint<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>, Geometry2>
+template <typename Geometry1, typename Geometry2>
+struct disjoint<Geometry1, Geometry2, true, false>
 {
-    struct visitor: boost::static_visitor<bool>
+    template <typename Strategy>
+    static inline bool apply(Geometry1 const& geometry1, Geometry2 const& geometry2,
+                             Strategy const& strategy)
     {
-        Geometry2 const& m_geometry2;
-
-        visitor(Geometry2 const& geometry2): m_geometry2(geometry2) {}
-
-        template <typename Geometry1>
-        bool operator()(Geometry1 const& geometry1) const
+        bool result = true;
+        detail::visit([&](auto const& g1, auto const& g2)
         {
-            return disjoint<Geometry1, Geometry2>::apply(geometry1, m_geometry2);
-        }
-    };
-
-    static inline bool
-    apply(boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> const& geometry1,
-          Geometry2 const& geometry2)
-    {
-        return boost::apply_visitor(visitor(geometry2), geometry1);
+            result = disjoint
+                <
+                    util::remove_cref_t<decltype(g1)>, util::remove_cref_t<decltype(g2)>
+                >::apply(g1, g2, strategy);
+        }, geometry1, geometry2);
+        return result;
     }
 };
 
-template <typename Geometry1, BOOST_VARIANT_ENUM_PARAMS(typename T)>
-struct disjoint<Geometry1, boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> >
+// TODO: The complexity is quadratic for two GCs
+//   Decrease e.g. with spatial index
+template <typename Geometry1, typename Geometry2, bool IsDynamic>
+struct disjoint<Geometry1, Geometry2, IsDynamic, true>
 {
-    struct visitor: boost::static_visitor<bool>
+    template <typename Strategy>
+    static inline bool apply(Geometry1 const& geometry1, Geometry2 const& geometry2,
+                             Strategy const& strategy)
     {
-        Geometry1 const& m_geometry1;
-
-        visitor(Geometry1 const& geometry1): m_geometry1(geometry1) {}
-
-        template <typename Geometry2>
-        bool operator()(Geometry2 const& geometry2) const
+        bool result = true;
+        detail::visit_breadth_first([&](auto const& g1)
         {
-            return disjoint<Geometry1, Geometry2>::apply(m_geometry1, geometry2);
-        }
-    };
-
-    static inline bool
-    apply(Geometry1 const& geometry1,
-          boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> const& geometry2)
-    {
-        return boost::apply_visitor(visitor(geometry1), geometry2);
+            detail::visit_breadth_first([&](auto const& g2)
+            {
+                result = disjoint
+                    <
+                        util::remove_cref_t<decltype(g1)>, util::remove_cref_t<decltype(g2)>
+                    >::apply(g1, g2, strategy);
+                // If any of the combination intersects then the final result is not disjoint
+                return result;
+            }, geometry2);
+            return result;
+        }, geometry1);
+        return result;
     }
 };
 
-template <
-    BOOST_VARIANT_ENUM_PARAMS(typename T1),
-    BOOST_VARIANT_ENUM_PARAMS(typename T2)
->
-struct disjoint<
-    boost::variant<BOOST_VARIANT_ENUM_PARAMS(T1)>,
-    boost::variant<BOOST_VARIANT_ENUM_PARAMS(T2)>
->
+} // namespace resolve_dynamic
+
+
+/*!
+\brief \brief_check2{are disjoint}
+\ingroup disjoint
+\tparam Geometry1 \tparam_geometry
+\tparam Geometry2 \tparam_geometry
+\tparam Strategy \tparam_strategy{Disjoint}
+\param geometry1 \param_geometry
+\param geometry2 \param_geometry
+\param strategy \param_strategy{disjoint}
+\return \return_check2{are disjoint}
+
+\qbk{distinguish,with strategy}
+\qbk{[include reference/algorithms/disjoint.qbk]}
+*/
+template <typename Geometry1, typename Geometry2, typename Strategy>
+inline bool disjoint(Geometry1 const& geometry1,
+                     Geometry2 const& geometry2,
+                     Strategy const& strategy)
 {
-    struct visitor: boost::static_visitor<bool>
-    {
-        template <typename Geometry1, typename Geometry2>
-        bool operator()(Geometry1 const& geometry1,
-                        Geometry2 const& geometry2) const
-        {
-            return disjoint<Geometry1, Geometry2>::apply(geometry1, geometry2);
-        }
-    };
-
-    static inline bool
-    apply(boost::variant<BOOST_VARIANT_ENUM_PARAMS(T1)> const& geometry1,
-          boost::variant<BOOST_VARIANT_ENUM_PARAMS(T2)> const& geometry2)
-    {
-        return boost::apply_visitor(visitor(), geometry1, geometry2);
-    }
-};
-
-} // namespace resolve_variant
-
+    return resolve_dynamic::disjoint
+            <
+                Geometry1, Geometry2
+            >::apply(geometry1, geometry2, strategy);
+}
 
 
 /*!
@@ -172,12 +215,20 @@ struct disjoint<
 \return \return_check2{are disjoint}
 
 \qbk{[include reference/algorithms/disjoint.qbk]}
+\qbk{
+[heading Examples]
+[disjoint]
+[disjoint_output]
+}
 */
 template <typename Geometry1, typename Geometry2>
 inline bool disjoint(Geometry1 const& geometry1,
                      Geometry2 const& geometry2)
 {
-    return resolve_variant::disjoint<Geometry1, Geometry2>::apply(geometry1, geometry2);
+    return resolve_dynamic::disjoint
+            <
+                Geometry1, Geometry2
+            >::apply(geometry1, geometry2, default_strategy());
 }
 
 

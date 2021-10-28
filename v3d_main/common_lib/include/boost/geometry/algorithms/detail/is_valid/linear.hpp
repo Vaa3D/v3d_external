@@ -1,6 +1,6 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2014-2015, Oracle and/or its affiliates.
+// Copyright (c) 2014-2021, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
@@ -13,14 +13,10 @@
 
 #include <cstddef>
 
-#include <boost/range.hpp>
-
-#include <boost/geometry/core/closure.hpp>
-#include <boost/geometry/core/point_type.hpp>
-#include <boost/geometry/core/tags.hpp>
-
-#include <boost/geometry/util/condition.hpp>
-#include <boost/geometry/util/range.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/empty.hpp>
+#include <boost/range/end.hpp>
+#include <boost/range/size.hpp>
 
 #include <boost/geometry/algorithms/equals.hpp>
 #include <boost/geometry/algorithms/validity_failure_type.hpp>
@@ -30,6 +26,12 @@
 #include <boost/geometry/algorithms/detail/num_distinct_consecutive_points.hpp>
 
 #include <boost/geometry/algorithms/dispatch/is_valid.hpp>
+
+#include <boost/geometry/core/closure.hpp>
+#include <boost/geometry/core/point_type.hpp>
+#include <boost/geometry/core/tags.hpp>
+
+#include <boost/geometry/util/condition.hpp>
 
 
 namespace boost { namespace geometry
@@ -43,10 +45,13 @@ namespace detail { namespace is_valid
 template <typename Linestring>
 struct is_valid_linestring
 {
-    template <typename VisitPolicy>
+    template <typename VisitPolicy, typename Strategy>
     static inline bool apply(Linestring const& linestring,
-                             VisitPolicy& visitor)
+                             VisitPolicy& visitor,
+                             Strategy const& strategy)
     {
+        // TODO: Consider checking coordinates based on coordinate system
+        //       Right now they are only checked for infinity in all systems.
         if (has_invalid_coordinate<Linestring>::apply(linestring, visitor))
         {
             return false;
@@ -59,11 +64,8 @@ struct is_valid_linestring
 
         std::size_t num_distinct = detail::num_distinct_consecutive_points
             <
-                Linestring,
-                3u,
-                true,
-                not_equal_to<typename point_type<Linestring>::type>
-            >::apply(linestring);
+                Linestring, 3u, true
+            >::apply(linestring, strategy);
 
         if (num_distinct < 2u)
         {
@@ -75,7 +77,13 @@ struct is_valid_linestring
         {
             return visitor.template apply<no_failure>();
         }
-        return ! has_spikes<Linestring, closed>::apply(linestring, visitor);
+
+        // TODO: This algorithm iterates over the linestring until a spike is
+        //   found and only then the decision about the validity is made. This
+        //   is done regardless of VisitPolicy.
+        //   An obvious improvement is to avoid calling the algorithm at all if
+        //   spikes are allowed which is the default.
+        return ! has_spikes<Linestring>::apply(linestring, visitor, strategy);
     }
 };
 
@@ -124,10 +132,13 @@ class is_valid
     >
 {
 private:
-    template <typename VisitPolicy>
+    template <typename VisitPolicy, typename Strategy>
     struct per_linestring
     {
-        per_linestring(VisitPolicy& policy) : m_policy(policy) {}
+        per_linestring(VisitPolicy& policy, Strategy const& strategy)
+            : m_policy(policy)
+            , m_strategy(strategy)
+        {}
 
         template <typename Linestring>
         inline bool apply(Linestring const& linestring) const
@@ -135,16 +146,18 @@ private:
             return detail::is_valid::is_valid_linestring
                 <
                     Linestring
-                >::apply(linestring, m_policy);
+                >::apply(linestring, m_policy, m_strategy);
         }
 
         VisitPolicy& m_policy;
+        Strategy const& m_strategy;
     };
 
 public:
-    template <typename VisitPolicy>
+    template <typename VisitPolicy, typename Strategy>
     static inline bool apply(MultiLinestring const& multilinestring,
-                             VisitPolicy& visitor)
+                             VisitPolicy& visitor,
+                             Strategy const& strategy)
     {
         if (BOOST_GEOMETRY_CONDITION(
                 AllowEmptyMultiGeometries && boost::empty(multilinestring)))
@@ -152,13 +165,15 @@ public:
             return visitor.template apply<no_failure>();
         }
 
+        typedef per_linestring<VisitPolicy, Strategy> per_ls;
+
         return detail::check_iterator_range
             <
-                per_linestring<VisitPolicy>,
+                per_ls,
                 false // do not check for empty multilinestring (done above)
             >::apply(boost::begin(multilinestring),
                      boost::end(multilinestring),
-                     per_linestring<VisitPolicy>(visitor));
+                     per_ls(visitor, strategy));
     }
 };
 

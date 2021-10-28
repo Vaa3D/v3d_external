@@ -2,7 +2,7 @@
 @file
 Defines `boost::hana::tag_of` and `boost::hana::tag_of_t`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -14,6 +14,8 @@ Distributed under the Boost Software License, Version 1.0.
 
 #include <boost/hana/config.hpp>
 #include <boost/hana/core/when.hpp>
+
+#include <type_traits>
 
 
 BOOST_HANA_NAMESPACE_BEGIN
@@ -44,6 +46,14 @@ BOOST_HANA_NAMESPACE_BEGIN
     template <typename T> struct tag_of<T const volatile> : tag_of<T> { };
     template <typename T> struct tag_of<T&> : tag_of<T> { };
     template <typename T> struct tag_of<T&&> : tag_of<T> { };
+
+    namespace detail {
+        template <typename T>
+        struct has_idempotent_tag
+            : std::is_same<hana::tag_of_t<T>,
+                           std::remove_const_t<std::remove_reference_t<T>>>
+        { };
+    }
 BOOST_HANA_NAMESPACE_END
 
 #endif // !BOOST_HANA_CORE_TAG_OF_HPP

@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\tiffcrop.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\tiffcrop.dir/objects.a @CMakeFiles\tiffcrop.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--whole-archive CMakeFiles\tiffcrop.dir/objects.a -Wl,--no-whole-archive -o tiffcrop.exe -Wl,--out-implib,libtiffcrop.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\tiffcrop.dir\linklibs.rsp

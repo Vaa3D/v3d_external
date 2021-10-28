@@ -72,7 +72,13 @@ Make sure to check extension "GL_EXT_geometry_shader4" before using Geometry sha
 #include <windows.h>
 typedef char GLchar;
 #endif
+
+#ifdef MACOS_SYSTEM
+#include <gl.h>
+#else
 #include <GL/gl.h>
+#endif
+
 
 #include <vector>
 #include <iostream>

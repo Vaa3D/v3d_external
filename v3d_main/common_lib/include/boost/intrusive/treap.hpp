@@ -50,7 +50,23 @@ struct treap_defaults
    : bstree_defaults
 {
    typedef void priority;
+   typedef void priority_of_value;
 };
+
+template<class ValuePtr, class VoidOrPrioOfValue, class VoidOrPrioComp>
+struct treap_prio_types
+{
+   typedef typename
+      boost::movelib::pointer_element<ValuePtr>::type value_type;
+   typedef typename get_key_of_value
+      < VoidOrPrioOfValue, value_type>::type          priority_of_value;
+   typedef typename priority_of_value::type           priority_type;
+   typedef typename get_prio_comp< VoidOrPrioComp
+                      , priority_type
+                      >::type                         priority_compare;
+};
+
+struct treap_tag;
 
 /// @endcond
 
@@ -66,22 +82,19 @@ struct treap_defaults
 //! The container supports the following options:
 //! \c base_hook<>/member_hook<>/value_traits<>,
 //! \c constant_time_size<>, \c size_type<>,
-//! \c compare<> and \c priority_compare<>
+//! \c compare<>, \c priority<> and \c priority_of_value<>
 #if defined(BOOST_INTRUSIVE_DOXYGEN_INVOKED)
 template<class T, class ...Options>
 #else
-template<class ValueTraits, class VoidOrKeyOfValue, class VoidOrKeyComp, class VoidOrPrioComp, class SizeType, bool ConstantTimeSize, typename HeaderHolder>
+template<class ValueTraits, class VoidOrKeyOfValue, class VoidOrKeyComp, class VoidOrPrioOfValue, class VoidOrPrioComp, class SizeType, bool ConstantTimeSize, typename HeaderHolder>
 #endif
 class treap_impl
    /// @cond
    : public bstree_impl<ValueTraits, VoidOrKeyOfValue, VoidOrKeyComp, SizeType, ConstantTimeSize, BsTreeAlgorithms, HeaderHolder>
    //Use public inheritance to avoid MSVC bugs with closures
    , public detail::ebo_functor_holder
-         < typename get_prio
-            < VoidOrPrioComp
-            , typename bstree_impl
-               <ValueTraits, VoidOrKeyOfValue, VoidOrKeyComp, SizeType, ConstantTimeSize, BsTreeAlgorithms, HeaderHolder>::key_type>::type
-         >
+         < typename treap_prio_types<typename ValueTraits::pointer, VoidOrPrioOfValue, VoidOrPrioComp>::priority_compare
+         , treap_tag>
    /// @endcond
 {
    public:
@@ -91,12 +104,12 @@ class treap_impl
                       , ConstantTimeSize, BsTreeAlgorithms
                       , HeaderHolder>                                tree_type;
    typedef tree_type                                                 implementation_defined;
-   typedef get_prio
-               < VoidOrPrioComp
-               , typename tree_type::key_type>                       get_prio_type;
+   typedef treap_prio_types
+      < typename ValueTraits::pointer
+      , VoidOrPrioOfValue, VoidOrPrioComp>                           treap_prio_types_t;
 
    typedef detail::ebo_functor_holder
-      <typename get_prio_type::type>                                 prio_base;
+      <typename treap_prio_types_t::priority_compare, treap_tag>     prio_base;
 
    /// @endcond
 
@@ -120,17 +133,22 @@ class treap_impl
    typedef typename implementation_defined::node_ptr                 node_ptr;
    typedef typename implementation_defined::const_node_ptr           const_node_ptr;
    typedef BOOST_INTRUSIVE_IMPDEF(treap_algorithms<node_traits>)     node_algorithms;
-   typedef BOOST_INTRUSIVE_IMPDEF(typename get_prio_type::type)      priority_compare;
+   typedef BOOST_INTRUSIVE_IMPDEF
+      (typename treap_prio_types_t::priority_type)                   priority_type;
+   typedef BOOST_INTRUSIVE_IMPDEF
+      (typename treap_prio_types_t::priority_of_value)               priority_of_value;
+   typedef BOOST_INTRUSIVE_IMPDEF
+      (typename treap_prio_types_t::priority_compare)                priority_compare;
 
    static const bool constant_time_size      = implementation_defined::constant_time_size;
    static const bool stateful_value_traits   = implementation_defined::stateful_value_traits;
    static const bool safemode_or_autounlink = is_safe_autounlink<value_traits::link_mode>::value;
 
-   typedef detail::key_nodeptr_comp<priority_compare, value_traits, key_of_value> key_node_prio_comp_t;
+   typedef detail::key_nodeptr_comp<priority_compare, value_traits, priority_of_value> prio_node_prio_comp_t;
 
-   template<class KeyPrioComp>
-   detail::key_nodeptr_comp<KeyPrioComp, value_traits, key_of_value> key_node_prio_comp(KeyPrioComp keypriocomp) const
-   {  return detail::key_nodeptr_comp<KeyPrioComp, value_traits, key_of_value>(keypriocomp, &this->get_value_traits());  }
+   template<class PrioPrioComp>
+   detail::key_nodeptr_comp<PrioPrioComp, value_traits, priority_of_value> prio_node_prio_comp(PrioPrioComp priopriocomp) const
+   {  return detail::key_nodeptr_comp<PrioPrioComp, value_traits, priority_of_value>(priopriocomp, &this->get_value_traits());  }
 
    /// @cond
    private:
@@ -157,7 +175,7 @@ class treap_impl
    //!   constructor throws (this does not happen with predefined Boost.Intrusive hooks)
    //!   or the copy constructor of the value_compare/priority_compare objects throw. Basic guarantee.
    treap_impl()
-      : tree_type(), prio_base(priority_compare())
+      : tree_type(), prio_base()
    {}
 
    //! <b>Effects</b>: Constructs an empty container.
@@ -214,22 +232,22 @@ class treap_impl
    ~treap_impl();
 
    //! @copydoc ::boost::intrusive::bstree::begin()
-   iterator begin();
+   iterator begin() BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::begin()const
-   const_iterator begin() const;
+   const_iterator begin() const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::cbegin()const
-   const_iterator cbegin() const;
+   const_iterator cbegin() const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::end()
-   iterator end();
+   iterator end() BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::end()const
-   const_iterator end() const;
+   const_iterator end() const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::cend()const
-   const_iterator cend() const;
+   const_iterator cend() const BOOST_NOEXCEPT;
    #endif
 
    //! <b>Effects</b>: Returns an iterator pointing to the highest priority object of the treap.
@@ -237,7 +255,7 @@ class treap_impl
    //! <b>Complexity</b>: Constant.
    //!
    //! <b>Throws</b>: Nothing.
-   iterator top()
+   BOOST_INTRUSIVE_FORCEINLINE iterator top() BOOST_NOEXCEPT
    {  return this->tree_type::root();   }
 
    //! <b>Effects</b>: Returns a const_iterator pointing to the highest priority object of the treap..
@@ -245,7 +263,7 @@ class treap_impl
    //! <b>Complexity</b>: Constant.
    //!
    //! <b>Throws</b>: Nothing.
-   const_iterator top() const
+   BOOST_INTRUSIVE_FORCEINLINE const_iterator top() const BOOST_NOEXCEPT
    {  return this->ctop();   }
 
    //! <b>Effects</b>: Returns a const_iterator pointing to the highest priority object of the treap..
@@ -253,27 +271,37 @@ class treap_impl
    //! <b>Complexity</b>: Constant.
    //!
    //! <b>Throws</b>: Nothing.
-   const_iterator ctop() const
+   BOOST_INTRUSIVE_FORCEINLINE const_iterator ctop() const BOOST_NOEXCEPT
    {  return this->tree_type::root();   }
 
    #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
    //! @copydoc ::boost::intrusive::bstree::rbegin()
-   reverse_iterator rbegin();
+   reverse_iterator rbegin() BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::rbegin()const
-   const_reverse_iterator rbegin() const;
+   const_reverse_iterator rbegin() const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::crbegin()const
-   const_reverse_iterator crbegin() const;
+   const_reverse_iterator crbegin() const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::rend()
-   reverse_iterator rend();
+   reverse_iterator rend() BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::rend()const
-   const_reverse_iterator rend() const;
+   const_reverse_iterator rend() const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::crend()const
-   const_reverse_iterator crend() const;
+   const_reverse_iterator crend() const BOOST_NOEXCEPT;
+
+   //! @copydoc ::boost::intrusive::bstree::root()
+   iterator root() BOOST_NOEXCEPT;
+
+   //! @copydoc ::boost::intrusive::bstree::root()const
+   const_iterator root() const BOOST_NOEXCEPT;
+
+   //! @copydoc ::boost::intrusive::bstree::croot()const
+   const_iterator croot() const BOOST_NOEXCEPT;
+
    #endif
 
    //! <b>Effects</b>: Returns a reverse_iterator pointing to the highest priority object of the
@@ -282,7 +310,7 @@ class treap_impl
    //! <b>Complexity</b>: Constant.
    //!
    //! <b>Throws</b>: Nothing.
-   reverse_iterator rtop()
+   BOOST_INTRUSIVE_FORCEINLINE reverse_iterator rtop() BOOST_NOEXCEPT
    {  return reverse_iterator(this->top());  }
 
    //! <b>Effects</b>: Returns a const_reverse_iterator pointing to the highest priority objec
@@ -291,7 +319,7 @@ class treap_impl
    //! <b>Complexity</b>: Constant.
    //!
    //! <b>Throws</b>: Nothing.
-   const_reverse_iterator rtop() const
+   BOOST_INTRUSIVE_FORCEINLINE const_reverse_iterator rtop() const BOOST_NOEXCEPT
    {  return const_reverse_iterator(this->top());  }
 
    //! <b>Effects</b>: Returns a const_reverse_iterator pointing to the highest priority object
@@ -300,21 +328,21 @@ class treap_impl
    //! <b>Complexity</b>: Constant.
    //!
    //! <b>Throws</b>: Nothing.
-   const_reverse_iterator crtop() const
+   BOOST_INTRUSIVE_FORCEINLINE const_reverse_iterator crtop() const BOOST_NOEXCEPT
    {  return const_reverse_iterator(this->top());  }
 
    #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
    //! @copydoc ::boost::intrusive::bstree::container_from_end_iterator(iterator)
-   static treap_impl &container_from_end_iterator(iterator end_iterator);
+   static treap_impl &container_from_end_iterator(iterator end_iterator) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::container_from_end_iterator(const_iterator)
-   static const treap_impl &container_from_end_iterator(const_iterator end_iterator);
+   static const treap_impl &container_from_end_iterator(const_iterator end_iterator) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::container_from_iterator(iterator)
-   static treap_impl &container_from_iterator(iterator it);
+   static treap_impl &container_from_iterator(iterator it) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::container_from_iterator(const_iterator)
-   static const treap_impl &container_from_iterator(const_iterator it);
+   static const treap_impl &container_from_iterator(const_iterator it) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::key_comp()const
    key_compare key_comp() const;
@@ -323,10 +351,10 @@ class treap_impl
    value_compare value_comp() const;
 
    //! @copydoc ::boost::intrusive::bstree::empty()const
-   bool empty() const;
+   bool empty() const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::size()const
-   size_type size() const;
+   size_type size() const BOOST_NOEXCEPT;
    #endif   //#ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    //! <b>Effects</b>: Returns the priority_compare object used by the container.
@@ -344,9 +372,9 @@ class treap_impl
    //! <b>Throws</b>: If the comparison functor's swap call throws.
    void swap(treap_impl& other)
    {
-      tree_type::swap(other);
       //This can throw
       ::boost::adl_move_swap(this->priv_pcomp(), other.priv_pcomp());
+      tree_type::swap(other);
    }
 
    //! <b>Requires</b>: Disposer::operator()(pointer) shouldn't throw.
@@ -411,7 +439,7 @@ class treap_impl
             ( this->tree_type::header_ptr()
             , to_insert
             , this->key_node_comp(this->key_comp())
-            , this->key_node_prio_comp(this->priv_pcomp()))
+            , this->prio_node_prio_comp(this->priv_pcomp()))
          , this->priv_value_traits_ptr());
       this->tree_type::sz_traits().increment();
       return ret;
@@ -441,7 +469,7 @@ class treap_impl
             , hint.pointed_node()
             , to_insert
             , this->key_node_comp(this->key_comp())
-            , this->key_node_prio_comp(this->priv_pcomp()))
+            , this->prio_node_prio_comp(this->priv_pcomp()))
          , this->priv_value_traits_ptr());
       this->tree_type::sz_traits().increment();
       return ret;
@@ -486,7 +514,7 @@ class treap_impl
    std::pair<iterator, bool> insert_unique(reference value)
    {
       insert_commit_data commit_data;
-      std::pair<iterator, bool> ret = this->insert_unique_check(key_of_value()(value), commit_data);
+      std::pair<iterator, bool> ret = this->insert_unique_check(key_of_value()(value), priority_of_value()(value), commit_data);
       if(!ret.second)
          return ret;
       return std::pair<iterator, bool> (this->insert_unique_commit(value, commit_data), true);
@@ -510,7 +538,7 @@ class treap_impl
    iterator insert_unique(const_iterator hint, reference value)
    {
       insert_commit_data commit_data;
-      std::pair<iterator, bool> ret = this->insert_unique_check(hint, key_of_value()(value), commit_data);
+      std::pair<iterator, bool> ret = this->insert_unique_check(hint, key_of_value()(value), priority_of_value()(value), commit_data);
       if(!ret.second)
          return ret.first;
       return this->insert_unique_commit(value, commit_data);
@@ -571,8 +599,8 @@ class treap_impl
    //!   "commit_data" remains valid for a subsequent "insert_commit" only if no more
    //!   objects are inserted or erased from the container.
    std::pair<iterator, bool> insert_unique_check
-      ( const key_type &key, insert_commit_data &commit_data)
-   {  return this->insert_unique_check(key, this->key_comp(), this->priv_pcomp(), commit_data); }
+      ( const key_type &key, const priority_type &prio, insert_commit_data &commit_data)
+   {  return this->insert_unique_check(key, this->key_comp(), prio, this->priv_pcomp(), commit_data); }
 
    //! <b>Effects</b>: Checks if a value can be inserted in the container, using
    //!   a user provided key instead of the value itself, using "hint"
@@ -603,14 +631,14 @@ class treap_impl
    //!   "commit_data" remains valid for a subsequent "insert_commit" only if no more
    //!   objects are inserted or erased from the container.
    std::pair<iterator, bool> insert_unique_check
-      ( const_iterator hint, const key_type &key, insert_commit_data &commit_data)
-   {  return this->insert_unique_check(hint, key, this->key_comp(), this->priv_pcomp(), commit_data); }
+      ( const_iterator hint, const key_type &key, const priority_type &prio, insert_commit_data &commit_data)
+   {  return this->insert_unique_check(hint, key, this->key_comp(), prio, this->priv_pcomp(), commit_data); }
 
    //! <b>Requires</b>: comp must be a comparison function that induces
    //!   the same strict weak ordering as key_compare.
-   //!   key_value_pcomp must be a comparison function that induces
+   //!   prio_value_pcomp must be a comparison function that induces
    //!   the same strict weak ordering as priority_compare. The difference is that
-   //!   key_value_pcomp and comp compare an arbitrary key with the contained values.
+   //!   prio_value_pcomp and comp compare an arbitrary key/priority with the contained values.
    //!
    //! <b>Effects</b>: Checks if a value can be inserted in the container, using
    //!   a user provided key instead of the value itself.
@@ -623,7 +651,7 @@ class treap_impl
    //!
    //! <b>Complexity</b>: Average complexity is at most logarithmic.
    //!
-   //! <b>Throws</b>: If the comp or key_value_pcomp
+   //! <b>Throws</b>: If the comp or prio_value_pcomp
    //!   ordering functions throw. Strong guarantee.
    //!
    //! <b>Notes</b>: This function is used to improve performance when constructing
@@ -639,27 +667,29 @@ class treap_impl
    //!
    //!   "commit_data" remains valid for a subsequent "insert_commit" only if no more
    //!   objects are inserted or erased from the container.
-   template<class KeyType, class KeyTypeKeyCompare, class KeyValuePrioCompare>
+   template<class KeyType, class KeyTypeKeyCompare, class PrioType, class PrioValuePrioCompare>
    BOOST_INTRUSIVE_DOC1ST(std::pair<iterator BOOST_INTRUSIVE_I bool>
       , typename detail::disable_if_convertible
          <KeyType BOOST_INTRUSIVE_I const_iterator BOOST_INTRUSIVE_I 
          std::pair<iterator BOOST_INTRUSIVE_I bool> >::type)
       insert_unique_check
       ( const KeyType &key, KeyTypeKeyCompare comp
-      , KeyValuePrioCompare key_value_pcomp, insert_commit_data &commit_data)
+      , const PrioType &prio, PrioValuePrioCompare prio_value_pcomp, insert_commit_data &commit_data)
    {
       std::pair<node_ptr, bool> const ret =
          (node_algorithms::insert_unique_check
-            ( this->tree_type::header_ptr(), key
-            , this->key_node_comp(comp), this->key_node_prio_comp(key_value_pcomp), commit_data));
+            ( this->tree_type::header_ptr()
+            , key, this->key_node_comp(comp)
+            , prio, this->prio_node_prio_comp(prio_value_pcomp)
+            , commit_data));
       return std::pair<iterator, bool>(iterator(ret.first, this->priv_value_traits_ptr()), ret.second);
    }
 
    //! <b>Requires</b>: comp must be a comparison function that induces
    //!   the same strict weak ordering as key_compare.
-   //!   key_value_pcomp must be a comparison function that induces
+   //!   prio_value_pcomp must be a comparison function that induces
    //!   the same strict weak ordering as priority_compare. The difference is that
-   //!   key_value_pcomp and comp compare an arbitrary key with the contained values.
+   //!   prio_value_pcomp and comp compare an arbitrary key/priority with the contained values.
    //!
    //! <b>Effects</b>: Checks if a value can be inserted in the container, using
    //!   a user provided key instead of the value itself, using "hint"
@@ -674,7 +704,7 @@ class treap_impl
    //! <b>Complexity</b>: Logarithmic in general, but it's amortized
    //!   constant time if t is inserted immediately before hint.
    //!
-   //! <b>Throws</b>: If the comp or key_value_pcomp
+   //! <b>Throws</b>: If the comp or prio_value_pcomp
    //!   ordering functions throw. Strong guarantee.
    //!
    //! <b>Notes</b>: This function is used to improve performance when constructing
@@ -690,17 +720,21 @@ class treap_impl
    //!
    //!   "commit_data" remains valid for a subsequent "insert_commit" only if no more
    //!   objects are inserted or erased from the container.
-   template<class KeyType, class KeyTypeKeyCompare, class KeyValuePrioCompare>
+   template<class KeyType, class KeyTypeKeyCompare, class PrioType, class PrioValuePrioCompare>
    std::pair<iterator, bool> insert_unique_check
-      ( const_iterator hint, const KeyType &key
+      ( const_iterator hint
+      , const KeyType &key
       , KeyTypeKeyCompare comp
-      , KeyValuePrioCompare key_value_pcomp
+      , const PrioType &prio
+      , PrioValuePrioCompare prio_value_pcomp
       , insert_commit_data &commit_data)
    {
       std::pair<node_ptr, bool> const ret =
          (node_algorithms::insert_unique_check
-            ( this->tree_type::header_ptr(), hint.pointed_node(), key
-            , this->key_node_comp(comp), this->key_node_prio_comp(key_value_pcomp), commit_data));
+            ( this->tree_type::header_ptr(), hint.pointed_node()
+            , key, this->key_node_comp(comp)
+            , prio, this->prio_node_prio_comp(prio_value_pcomp)
+            , commit_data));
       return std::pair<iterator, bool>(iterator(ret.first, this->priv_value_traits_ptr()), ret.second);
    }
 
@@ -721,7 +755,7 @@ class treap_impl
    //! <b>Notes</b>: This function has only sense if a "insert_check" has been
    //!   previously executed to fill "commit_data". No value should be inserted or
    //!   erased between the "insert_check" and "insert_commit" calls.
-   iterator insert_unique_commit(reference value, const insert_commit_data &commit_data)
+   iterator insert_unique_commit(reference value, const insert_commit_data &commit_data) BOOST_NOEXCEPT
    {
       node_ptr to_insert(this->get_value_traits().to_node_ptr(value));
       BOOST_INTRUSIVE_SAFE_HOOK_DEFAULT_ASSERT(!safemode_or_autounlink || node_algorithms::unique(to_insert));
@@ -744,7 +778,7 @@ class treap_impl
    //! the successor of "value" container ordering invariant will be broken.
    //! This is a low-level function to be used only for performance reasons
    //! by advanced users.
-   iterator insert_before(const_iterator pos, reference value)
+   iterator insert_before(const_iterator pos, reference value) BOOST_NOEXCEPT
    {
       node_ptr to_insert(this->get_value_traits().to_node_ptr(value));
       BOOST_INTRUSIVE_SAFE_HOOK_DEFAULT_ASSERT(!safemode_or_autounlink || node_algorithms::unique(to_insert));
@@ -753,7 +787,7 @@ class treap_impl
             ( this->tree_type::header_ptr()
             , pos.pointed_node()
             , to_insert
-            , this->key_node_prio_comp(this->priv_pcomp())
+            , this->prio_node_prio_comp(this->priv_pcomp())
             )
          , this->priv_value_traits_ptr());
       this->tree_type::sz_traits().increment();
@@ -774,12 +808,12 @@ class treap_impl
    //!   This function is slightly more efficient than using "insert_before".
    //!   This is a low-level function to be used only for performance reasons
    //!   by advanced users.
-   void push_back(reference value)
+   void push_back(reference value) BOOST_NOEXCEPT
    {
       node_ptr to_insert(this->get_value_traits().to_node_ptr(value));
       BOOST_INTRUSIVE_SAFE_HOOK_DEFAULT_ASSERT(!safemode_or_autounlink || node_algorithms::unique(to_insert));
       node_algorithms::push_back
-         (this->tree_type::header_ptr(), to_insert, this->key_node_prio_comp(this->priv_pcomp()));
+         (this->tree_type::header_ptr(), to_insert, this->prio_node_prio_comp(this->priv_pcomp()));
       this->tree_type::sz_traits().increment();
    }
 
@@ -797,12 +831,12 @@ class treap_impl
    //!   This function is slightly more efficient than using "insert_before".
    //!   This is a low-level function to be used only for performance reasons
    //!   by advanced users.
-   void push_front(reference value)
+   void push_front(reference value) BOOST_NOEXCEPT
    {
       node_ptr to_insert(this->get_value_traits().to_node_ptr(value));
       BOOST_INTRUSIVE_SAFE_HOOK_DEFAULT_ASSERT(!safemode_or_autounlink || node_algorithms::unique(to_insert));
       node_algorithms::push_front
-         (this->tree_type::header_ptr(), to_insert, this->key_node_prio_comp(this->priv_pcomp()));
+         (this->tree_type::header_ptr(), to_insert, this->prio_node_prio_comp(this->priv_pcomp()));
       this->tree_type::sz_traits().increment();
    }
 
@@ -814,16 +848,16 @@ class treap_impl
    //!
    //! <b>Note</b>: Invalidates the iterators (but not the references)
    //!    to the erased elements. No destructors are called.
-   iterator erase(const_iterator i)
+   iterator erase(const_iterator i) BOOST_NOEXCEPT
    {
       const_iterator ret(i);
       ++ret;
       node_ptr to_erase(i.pointed_node());
       BOOST_INTRUSIVE_SAFE_HOOK_DEFAULT_ASSERT(!safemode_or_autounlink || !node_algorithms::unique(to_erase));
       node_algorithms::erase
-         (this->tree_type::header_ptr(), to_erase, this->key_node_prio_comp(this->priv_pcomp()));
+         (this->tree_type::header_ptr(), to_erase, this->prio_node_prio_comp(this->priv_pcomp()));
       this->tree_type::sz_traits().decrement();
-      if(safemode_or_autounlink)
+      BOOST_IF_CONSTEXPR(safemode_or_autounlink)
          node_algorithms::init(to_erase);
       return ret.unconst();
    }
@@ -837,7 +871,7 @@ class treap_impl
    //!
    //! <b>Note</b>: Invalidates the iterators (but not the references)
    //!    to the erased elements. No destructors are called.
-   iterator erase(const_iterator b, const_iterator e)
+   iterator erase(const_iterator b, const_iterator e) BOOST_NOEXCEPT
    {  size_type n;   return private_erase(b, e, n);   }
 
    //! <b>Effects</b>: Erases all the elements with the given value.
@@ -888,7 +922,7 @@ class treap_impl
    //! <b>Note</b>: Invalidates the iterators
    //!    to the erased elements.
    template<class Disposer>
-   iterator erase_and_dispose(const_iterator i, Disposer disposer)
+   iterator erase_and_dispose(const_iterator i, Disposer disposer) BOOST_NOEXCEPT
    {
       node_ptr to_erase(i.pointed_node());
       iterator ret(this->erase(i));
@@ -898,7 +932,7 @@ class treap_impl
 
    #if !defined(BOOST_INTRUSIVE_DOXYGEN_INVOKED)
    template<class Disposer>
-   iterator erase_and_dispose(iterator i, Disposer disposer)
+   iterator erase_and_dispose(iterator i, Disposer disposer) BOOST_NOEXCEPT
    {  return this->erase_and_dispose(const_iterator(i), disposer);   }
    #endif
 
@@ -915,7 +949,7 @@ class treap_impl
    //! <b>Note</b>: Invalidates the iterators
    //!    to the erased elements.
    template<class Disposer>
-   iterator erase_and_dispose(const_iterator b, const_iterator e, Disposer disposer)
+   iterator erase_and_dispose(const_iterator b, const_iterator e, Disposer disposer) BOOST_NOEXCEPT
    {  size_type n;   return private_erase(b, e, n, disposer);   }
 
    //! <b>Requires</b>: Disposer::operator()(pointer) shouldn't throw.
@@ -976,7 +1010,7 @@ class treap_impl
    //!
    //! <b>Note</b>: Invalidates the iterators (but not the references)
    //!    to the erased elements. No destructors are called.
-   void clear()
+   void clear() BOOST_NOEXCEPT
    {  tree_type::clear(); }
 
    //! <b>Effects</b>: Erases all of the elements calling disposer(p) for
@@ -989,7 +1023,7 @@ class treap_impl
    //! <b>Note</b>: Invalidates the iterators (but not the references)
    //!    to the erased elements. Calls N times to disposer functor.
    template<class Disposer>
-   void clear_and_dispose(Disposer disposer)
+   void clear_and_dispose(Disposer disposer) BOOST_NOEXCEPT
    {
       node_algorithms::clear_and_dispose(this->tree_type::header_ptr()
          , detail::node_disposer<Disposer, value_traits, TreapAlgorithms>(disposer, &this->get_value_traits()));
@@ -997,14 +1031,64 @@ class treap_impl
       this->tree_type::sz_traits().set_size(0);
    }
 
+   #if defined(BOOST_INTRUSIVE_DOXYGEN_INVOKED)
+   //! @copydoc ::boost::intrusive::bstree::merge_unique
+   template<class T, class ...Options2> void merge_unique(sgtree<T, Options2...> &);
+   #else
+   template<class Compare2>
+   void merge_unique(treap_impl
+      <ValueTraits, VoidOrKeyOfValue, Compare2, VoidOrPrioOfValue, VoidOrPrioComp, SizeType, ConstantTimeSize, HeaderHolder> &source)
+   #endif
+   {
+      node_ptr it   (node_algorithms::begin_node(source.header_ptr()))
+             , itend(node_algorithms::end_node  (source.header_ptr()));
+
+      while(it != itend){
+         node_ptr const p(it);
+         BOOST_INTRUSIVE_SAFE_HOOK_DEFAULT_ASSERT(!safemode_or_autounlink || !node_algorithms::unique(p));
+         it = node_algorithms::next_node(it);
+
+         if( node_algorithms::transfer_unique
+               ( this->header_ptr(), this->key_node_comp(this->key_comp())
+               , this->prio_node_prio_comp(this->priv_pcomp()), source.header_ptr(), p) ){
+            this->sz_traits().increment();
+            source.sz_traits().decrement();
+         }
+      }
+   }
+
+   #if defined(BOOST_INTRUSIVE_DOXYGEN_INVOKED)
+   //! @copydoc ::boost::intrusive::bstree::merge_equal(bstree<T, Options2...>&)
+   template<class T, class ...Options2> void merge_equal(sgtree<T, Options2...> &);
+   #else
+   template<class Compare2>
+   void merge_equal(treap_impl
+      <ValueTraits, VoidOrKeyOfValue, Compare2, VoidOrPrioOfValue, VoidOrPrioComp, SizeType, ConstantTimeSize, HeaderHolder> &source)
+   #endif
+   {
+      node_ptr it   (node_algorithms::begin_node(source.header_ptr()))
+             , itend(node_algorithms::end_node  (source.header_ptr()));
+
+      while(it != itend){
+         node_ptr const p(it);
+         BOOST_INTRUSIVE_SAFE_HOOK_DEFAULT_ASSERT(!safemode_or_autounlink || !node_algorithms::unique(p));
+         it = node_algorithms::next_node(it);
+         node_algorithms::transfer_equal
+            ( this->header_ptr(), this->key_node_comp(this->key_comp())
+            , this->prio_node_prio_comp(this->priv_pcomp()), source.header_ptr(), p);
+         this->sz_traits().increment();
+         source.sz_traits().decrement();
+      }
+   }
+
    //! @copydoc ::boost::intrusive::bstree::check(ExtraChecker)const
    template <class ExtraChecker>
    void check(ExtraChecker extra_checker) const
    {
-      typedef detail::key_nodeptr_comp<priority_compare, value_traits, key_of_value> nodeptr_prio_comp_t;
+      typedef detail::key_nodeptr_comp<priority_compare, value_traits, priority_of_value> nodeptr_prio_comp_t;
       tree_type::check(detail::treap_node_extra_checker
          <ValueTraits, nodeptr_prio_comp_t, ExtraChecker>
-            (this->key_node_prio_comp(this->priv_pcomp()), extra_checker));
+            (this->prio_node_prio_comp(this->priv_pcomp()), extra_checker));
    }
 
    //! @copydoc ::boost::intrusive::bstree::check()const
@@ -1096,28 +1180,28 @@ class treap_impl
          (const KeyType& lower_key, const KeyType& upper_key, KeyTypeKeyCompare comp, bool left_closed, bool right_closed) const;
 
    //! @copydoc ::boost::intrusive::bstree::s_iterator_to(reference)
-   static iterator s_iterator_to(reference value);
+   static iterator s_iterator_to(reference value) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::s_iterator_to(const_reference)
-   static const_iterator s_iterator_to(const_reference value);
+   static const_iterator s_iterator_to(const_reference value) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::iterator_to(reference)
-   iterator iterator_to(reference value);
+   iterator iterator_to(reference value) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::iterator_to(const_reference)const
-   const_iterator iterator_to(const_reference value) const;
+   const_iterator iterator_to(const_reference value) const BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::init_node(reference)
-   static void init_node(reference value);
+   static void init_node(reference value) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::unlink_leftmost_without_rebalance
-   pointer unlink_leftmost_without_rebalance();
+   pointer unlink_leftmost_without_rebalance() BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::replace_node
-   void replace_node(iterator replace_this, reference with_this);
+   void replace_node(iterator replace_this, reference with_this) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree::remove_node
-   void remove_node(reference value);
+   void remove_node(reference value) BOOST_NOEXCEPT;
 
    friend bool operator< (const treap_impl &x, const treap_impl &y);
 
@@ -1162,14 +1246,15 @@ template<class T, class ...Options>
 #else
 template<class T, class O1 = void, class O2 = void
                 , class O3 = void, class O4 = void
-                , class O5 = void, class O6 = void>
+                , class O5 = void, class O6 = void
+                , class O7 = void>
 #endif
 struct make_treap
 {
    typedef typename pack_options
       < treap_defaults,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4, O5, O6
+      O1, O2, O3, O4, O5, O6, O7
       #else
       Options...
       #endif
@@ -1182,6 +1267,7 @@ struct make_treap
          < value_traits
          , typename packed_options::key_of_value
          , typename packed_options::compare
+         , typename packed_options::priority_of_value
          , typename packed_options::priority
          , typename packed_options::size_type
          , packed_options::constant_time_size
@@ -1194,14 +1280,14 @@ struct make_treap
 #ifndef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
 #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-template<class T, class O1, class O2, class O3, class O4, class O5, class O6>
+template<class T, class O1, class O2, class O3, class O4, class O5, class O6, class O7>
 #else
 template<class T, class ...Options>
 #endif
 class treap
    :  public make_treap<T,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4, O5, O6
+      O1, O2, O3, O4, O5, O6, O7
       #else
       Options...
       #endif
@@ -1210,7 +1296,7 @@ class treap
    typedef typename make_treap
       <T,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4, O5, O6
+      O1, O2, O3, O4, O5, O6, O7
       #else
       Options...
       #endif
@@ -1228,49 +1314,50 @@ class treap
 
    //Assert if passed value traits are compatible with the type
    BOOST_STATIC_ASSERT((detail::is_same<typename value_traits::value_type, T>::value));
-   treap()
+
+   BOOST_INTRUSIVE_FORCEINLINE treap()
       :  Base()
    {}
 
-   explicit treap( const key_compare &cmp
+   BOOST_INTRUSIVE_FORCEINLINE explicit treap( const key_compare &cmp
                  , const priority_compare &pcmp = priority_compare()
                  , const value_traits &v_traits = value_traits())
       :  Base(cmp, pcmp, v_traits)
    {}
 
    template<class Iterator>
-   treap( bool unique, Iterator b, Iterator e
+   BOOST_INTRUSIVE_FORCEINLINE treap( bool unique, Iterator b, Iterator e
        , const key_compare &cmp = key_compare()
        , const priority_compare &pcmp = priority_compare()
        , const value_traits &v_traits = value_traits())
       :  Base(unique, b, e, cmp, pcmp, v_traits)
    {}
 
-   treap(BOOST_RV_REF(treap) x)
+   BOOST_INTRUSIVE_FORCEINLINE treap(BOOST_RV_REF(treap) x)
       :  Base(BOOST_MOVE_BASE(Base, x))
    {}
 
-   treap& operator=(BOOST_RV_REF(treap) x)
+   BOOST_INTRUSIVE_FORCEINLINE treap& operator=(BOOST_RV_REF(treap) x)
    {  return static_cast<treap&>(this->Base::operator=(BOOST_MOVE_BASE(Base, x)));  }
 
    template <class Cloner, class Disposer>
-   void clone_from(const treap &src, Cloner cloner, Disposer disposer)
+   BOOST_INTRUSIVE_FORCEINLINE void clone_from(const treap &src, Cloner cloner, Disposer disposer)
    {  Base::clone_from(src, cloner, disposer);  }
 
    template <class Cloner, class Disposer>
-   void clone_from(BOOST_RV_REF(treap) src, Cloner cloner, Disposer disposer)
+   BOOST_INTRUSIVE_FORCEINLINE void clone_from(BOOST_RV_REF(treap) src, Cloner cloner, Disposer disposer)
    {  Base::clone_from(BOOST_MOVE_BASE(Base, src), cloner, disposer);  }
 
-   static treap &container_from_end_iterator(iterator end_iterator)
+   BOOST_INTRUSIVE_FORCEINLINE static treap &container_from_end_iterator(iterator end_iterator) BOOST_NOEXCEPT
    {  return static_cast<treap &>(Base::container_from_end_iterator(end_iterator));   }
 
-   static const treap &container_from_end_iterator(const_iterator end_iterator)
+   BOOST_INTRUSIVE_FORCEINLINE static const treap &container_from_end_iterator(const_iterator end_iterator) BOOST_NOEXCEPT
    {  return static_cast<const treap &>(Base::container_from_end_iterator(end_iterator));   }
 
-   static treap &container_from_iterator(iterator it)
+   BOOST_INTRUSIVE_FORCEINLINE static treap &container_from_iterator(iterator it) BOOST_NOEXCEPT
    {  return static_cast<treap &>(Base::container_from_iterator(it));   }
 
-   static const treap &container_from_iterator(const_iterator it)
+   BOOST_INTRUSIVE_FORCEINLINE static const treap &container_from_iterator(const_iterator it) BOOST_NOEXCEPT
    {  return static_cast<const treap &>(Base::container_from_iterator(it));   }
 };
 

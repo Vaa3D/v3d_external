@@ -32,6 +32,8 @@ namespace boost {
 template< typename >
 class lock_guard;
 template< typename >
+class shared_lock_guard;
+template< typename >
 class shared_lock;
 template< typename >
 class upgrade_lock;
@@ -53,7 +55,7 @@ public:
     /*!
      * Constructs the pseudo-lock. The mutex is not affected during the construction.
      */
-    explicit no_lock(MutexT&) {}
+    explicit no_lock(MutexT&) BOOST_NOEXCEPT {}
 
 private:
     no_lock(no_lock const&);
@@ -92,11 +94,30 @@ struct is_shared_lockable
     enum value_t { value = sizeof(check_shared_lockable((MutexT*)NULL)) == sizeof(true_type) };
 };
 
+//! A scope guard that automatically unlocks the mutex on destruction
+template< typename MutexT >
+struct exclusive_auto_unlocker
+{
+    explicit exclusive_auto_unlocker(MutexT& m) BOOST_NOEXCEPT : m_Mutex(m)
+    {
+    }
+    ~exclusive_auto_unlocker()
+    {
+        m_Mutex.unlock();
+    }
+
+    BOOST_DELETED_FUNCTION(exclusive_auto_unlocker(exclusive_auto_unlocker const&))
+    BOOST_DELETED_FUNCTION(exclusive_auto_unlocker& operator= (exclusive_auto_unlocker const&))
+
+protected:
+    MutexT& m_Mutex;
+};
+
 //! An analogue to the minimalistic \c lock_guard template. Defined here to avoid including Boost.Thread.
 template< typename MutexT >
 struct exclusive_lock_guard
 {
-    explicit exclusive_lock_guard(MutexT& m) : m_Mutex(m)
+    explicit exclusive_lock_guard(MutexT& m) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m.lock())) : m_Mutex(m)
     {
         m.lock();
     }
@@ -105,9 +126,8 @@ struct exclusive_lock_guard
         m_Mutex.unlock();
     }
 
-private:
-    exclusive_lock_guard(exclusive_lock_guard const&);
-    exclusive_lock_guard& operator= (exclusive_lock_guard const&);
+    BOOST_DELETED_FUNCTION(exclusive_lock_guard(exclusive_lock_guard const&))
+    BOOST_DELETED_FUNCTION(exclusive_lock_guard& operator= (exclusive_lock_guard const&))
 
 private:
     MutexT& m_Mutex;
@@ -117,7 +137,7 @@ private:
 template< typename MutexT >
 struct shared_lock_guard
 {
-    explicit shared_lock_guard(MutexT& m) : m_Mutex(m)
+    explicit shared_lock_guard(MutexT& m) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m.lock_shared())) : m_Mutex(m)
     {
         m.lock_shared();
     }
@@ -126,9 +146,8 @@ struct shared_lock_guard
         m_Mutex.unlock_shared();
     }
 
-private:
-    shared_lock_guard(shared_lock_guard const&);
-    shared_lock_guard& operator= (shared_lock_guard const&);
+    BOOST_DELETED_FUNCTION(shared_lock_guard(shared_lock_guard const&))
+    BOOST_DELETED_FUNCTION(shared_lock_guard& operator= (shared_lock_guard const&))
 
 private:
     MutexT& m_Mutex;
@@ -139,7 +158,7 @@ template< typename MutexT1, typename MutexT2 >
 class multiple_unique_lock2
 {
 public:
-    multiple_unique_lock2(MutexT1& m1, MutexT2& m2) :
+    multiple_unique_lock2(MutexT1& m1, MutexT2& m2) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m1.lock()) && BOOST_NOEXCEPT_EXPR(m2.lock())) :
         m_p1(&m1),
         m_p2(&m2)
     {

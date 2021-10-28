@@ -94,7 +94,7 @@ class rbtree_best_fit
    typedef ipcdetail::basic_multiallocation_chain<VoidPointer>  multiallocation_chain;
 
    typedef typename boost::intrusive::pointer_traits<char_ptr>::difference_type difference_type;
-   typedef typename boost::container::container_detail::make_unsigned<difference_type>::type     size_type;
+   typedef typename boost::container::dtl::make_unsigned<difference_type>::type     size_type;
 
    #if !defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
@@ -109,7 +109,7 @@ class rbtree_best_fit
    {
       //!This block's memory size (including block_ctrl
       //!header) in Alignment units
-      size_type m_prev_size :  sizeof(size_type)*CHAR_BIT;
+      size_type m_prev_size;
       size_type m_size      :  sizeof(size_type)*CHAR_BIT - 2;
       size_type m_prev_allocated :  1;
       size_type m_allocated :  1;
@@ -331,8 +331,8 @@ class rbtree_best_fit
    public:
 
    static const size_type Alignment = !MemAlignment
-      ? size_type(::boost::container::container_detail::alignment_of
-                  < ::boost::container::container_detail::max_align_t>::value)
+      ? size_type(::boost::container::dtl::alignment_of
+                  < ::boost::container::dtl::max_align_t>::value)
       : size_type(MemAlignment)
       ;
 
@@ -340,7 +340,7 @@ class rbtree_best_fit
    //Due to embedded bits in size, Alignment must be at least 4
    BOOST_STATIC_ASSERT((Alignment >= 4));
    //Due to rbtree size optimizations, Alignment must have at least pointer alignment
-   BOOST_STATIC_ASSERT((Alignment >= ::boost::container::container_detail::alignment_of<void_pointer>::value));
+   BOOST_STATIC_ASSERT((Alignment >= ::boost::container::dtl::alignment_of<void_pointer>::value));
    static const size_type AlignmentMask = (Alignment - 1);
    static const size_type BlockCtrlBytes = ipcdetail::ct_rounded_size<sizeof(block_ctrl), Alignment>::value;
    static const size_type BlockCtrlUnits = BlockCtrlBytes/Alignment;
@@ -424,7 +424,7 @@ inline typename rbtree_best_fit<MutexFamily, VoidPointer, MemAlignment>::block_c
        rbtree_best_fit<MutexFamily, VoidPointer, MemAlignment>
    ::priv_first_block()
 {
-   size_type block1_off = priv_first_block_offset_from_this(this, m_header.m_extra_hdr_bytes);
+   const size_type block1_off = priv_first_block_offset_from_this(this, m_header.m_extra_hdr_bytes);
    return reinterpret_cast<block_ctrl *>(reinterpret_cast<char*>(this) + block1_off);
 }
 
@@ -433,10 +433,10 @@ inline typename rbtree_best_fit<MutexFamily, VoidPointer, MemAlignment>::block_c
        rbtree_best_fit<MutexFamily, VoidPointer, MemAlignment>
    ::priv_end_block()
 {
-   size_type block1_off  = priv_first_block_offset_from_this(this, m_header.m_extra_hdr_bytes);
-   const size_type original_first_block_size = m_header.m_size/Alignment*Alignment - block1_off/Alignment*Alignment - EndCtrlBlockBytes;
+   const size_type block1_off = priv_first_block_offset_from_this(this, m_header.m_extra_hdr_bytes);
+   const size_type original_first_block_size = (m_header.m_size - block1_off)/Alignment - EndCtrlBlockUnits;
    block_ctrl *end_block = reinterpret_cast<block_ctrl*>
-      (reinterpret_cast<char*>(this) + block1_off + original_first_block_size);
+      (reinterpret_cast<char*>(this) + block1_off + original_first_block_size*Alignment);
    return end_block;
 }
 
@@ -692,7 +692,7 @@ inline T* rbtree_best_fit<MutexFamily, VoidPointer, MemAlignment>::
    void* raw_reuse = reuse;
    void* const ret = priv_allocation_command(command, limit_size, prefer_in_recvd_out_size, raw_reuse, sizeof(T));
    reuse = static_cast<T*>(raw_reuse);
-   BOOST_ASSERT(0 == ((std::size_t)ret % ::boost::container::container_detail::alignment_of<T>::value));
+   BOOST_ASSERT(0 == ((std::size_t)ret % ::boost::container::dtl::alignment_of<T>::value));
    return static_cast<T*>(ret);
 }
 

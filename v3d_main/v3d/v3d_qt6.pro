@@ -1,30 +1,70 @@
 #-----------From v3d.pro-------------------------
-#include(v3d_essential.pro)
 include(../terafly/terafly.pro)
 
-## mozak module
-#include(../mozak/m_terafly/m_teramanager.pro)
-#RESOURCES += ../mozak/mozak.qrc
-#HEADERS +=  ../mozak/MozakUI.h \
-#            ../mozak/Mozak3DView.h \
-#            customdebug.h
-#SOURCES +=  ../mozak/MozakUI.cpp \
-#            ../mozak/Mozak3DView.cpp
+QT += core gui widgets opengl openglwidgets network xml svg
+TEMPLATE = app
+TARGET +=
+DEPENDPATH += . v3d
+INCLUDEPATH += . ../common_lib/include #./basic_c_funss
 
-
-#CONFIG += console
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
 
-#CONFIG  += debug
+CONFIG += c++11 warn_off thread
 
 # Flags for gsoap (web services)
 QMAKE_CXXFLAGS += -DWITH_NONAMESPACES
 QMAKE_CXXFLAGS += -DWITH_PURE_VIRTUAL
+QMAKE_CXXFLAGS += -DTEEM_STATIC
+QMAKE_CXXFLAGS += -std=c++11
+INCLUDEPATH = $$unique(INCLUDEPATH)
 
+#------------From v3d_essential.pro------------------
+
+DEFINES *= TEEM_STATIC
+
+#unix:LIBS += -lglut -lGLU
+
+macx{
+    DEFINES += MACOS_SYSTEM
+
+    LIBS += -L../common_lib/lib_mac64 -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz -lhdf5 -lszip
+    LIBS += -framework CoreServices
+
+    #dragdropfix
+    DEFINES += _ENABLE_MACX_DRAG_DROP_FIX_
+    OBJECTIVE_SOURCES += yosemiteFileURLfix.mm
+    QMAKE_LFLAGS += -F /System/Library/Frameworks/Foundation.framework/
+    LIBS += -framework Foundation
+}
+
+win32{
+    DEFINES += WINDOWS_SYSTEM
+
+    LIBS += -lm -lv3dtiff -lv3dnewmat
+    LIBS += -lOpengl32  -lglu32
+    LIBS += -L../common_lib/mingw64 -lglew32 -lhdf5 -lszip -lzlib -lSDL2 -lteem  -lz -lopenvr_api -lwsock32 #for nrrd support #for nrrd support
+}
+
+unix:!macx {
+    DEFINES += LINUX_SYSTEM
+
+    LIBS += -L../common_lib/lib
+    LIBS += -lm -lv3dtiff
+    LIBS += -lv3dnewmat
+    LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
+    LIBS += -L../common_lib/lib_unix64  -lteem  -lbz2 -lz  -lGLU #for nrrd support
+}
+
+#removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
+INCLUDEPATH = $$unique(INCLUDEPATH)
+
+message(CONFIG=$$CONFIG)
+message(DEFINES=$$DEFINES)
+#next is input file
 # Resources such as icons
 RESOURCES += ../neuron_annotator/resources.qrc
-
+RESOURCES += v3d.qrc ../3drenderer/3drenderer.qrc
 # Input
 HEADERS += \
     ../neuron_annotator/animation/AnimationFrame.h \
@@ -271,110 +311,6 @@ SOURCES += \
 #    ../neuron_annotator/microCT/micro_ct.ui \
 #    ../neuron_annotator/microCT/single_cut.ui
 
-INCLUDEPATH = $$unique(INCLUDEPATH)
-#LIBS = $$unique(LIBS)  # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
-message(CONFIG=$$CONFIG)
-message(DEFINES=$$DEFINES)
-
-# aborted attempt to implement reentrant tiff image loading
-# SOURCES -= ../basic_c_fun/mg_image_lib.cpp
-# SOURCES += ../neuron_annotator/utility/mg_image_lib_reentrant.cpp
-
-
-#------------From v3d_essential.pro------------------
-TEMPLATE = app
-TARGET +=
-DEPENDPATH += . v3d
-INCLUDEPATH += .
-
-
-#DEFINES += USE_Qt5  #this might be invoked from commandline like "~/Qt5.4.1/5.4/clang_64/bin/qmake DEFINES+=USE_Qt5 vaa3d64.pro", however it seems there is some bug
-
-
-# commented the -app_bundle as on Mac the not-automatically closed terminal is quite annoying!
-# macx: CONFIG-=app_bundle #by PHC, 101119
-
-# cross-OS-platform, cross-Qt-version
-QT_DIR = $$[QT_INSTALL_PREFIX]
-LOCAL_DIR = ../common_lib/ 				# unix-liked platform: macx, unix, win32-msys-mingw
-
-MINGW_DIR = /mingw # platform: win32-msys-mingw
-win32 { # platform: win32-command-mingw
-	MINGW_DIR = c:/mingw
-	LOCAL_DIR = ../common_lib/      # c:/msys/local
-	CONFIG = $$unique(CONFIG)
-	CONFIG -= debug # for Qt-win32 which only has release install(no debug)
-    CONFIG += console
-LIBS += -L$$MINGW_DIR/lib \
-	-L$$LOCAL_DIR/lib_win32
-    
-    DEFINES += __ALLOW_VR_FUNCS__  
-    
-    # @ADD 2020-2-14 RZC: Microsoft C errors: 
-    # error C2589: '(' : illegal token on right side of '::' for std::min/max 
-    # error C2011: 'sockaddr' : 'struct' type redefinition
-    DEFINES += NOMINMAX  _WINSOCKAPI_
- 
-}
-
-
-INCLUDEPATH += $$LOCAL_DIR/include #./basic_c_fun
-LIBS += -L$$LOCAL_DIR/lib
-
-USE_Qt5 {
-  INCLUDEPATH += $$QT_DIR/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
-  #SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
-  SHARED_FOLDER = ./painting/shared/ # for arthurwidgets
-  include($$SHARED_FOLDER/shared.pri)
-  INCLUDEPATH += $$SHARED_FOLDER
-  LIBS += -L$$SHARED_FOLDER
-} else {
-#  SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
-#  include($$SHARED_FOLDER/shared.pri)
-  INCLUDEPATH += $$SHARED_FOLDER
-  LIBS += -L$$SHARED_FOLDER
-}
-
-win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
-
-macx {
-    # Mac possible location of arthurwidgets.h with official Qt 4.7 installer
-    QTINST_SHARED_FOLDER = /Developer/Examples/Qt/Demos/shared
-    include($$QTINST_SHARED_FOLDER/shared.pri)
-    INCLUDEPATH += $$QTINST_SHARED_FOLDER
-    LIBS += -L$$QTINST_SHARED_FOLDER
-    # For faster neuron toggling. CMB 20 June 2011
-    QMAKE_CXXFLAGS+=-O3
-    CXXFLAGS+=-O3
-    # On mountain lion use clang compiler, not broken llvm/gcc compiler
-#    QMAKE_CXX=c++  #commented this on 2013-08-09 by HP as this sentence will make the building on Qt 4.7 and OSX 10.7 fail.
-                    #Indeed it seems the compiler is better to be set by a symbolic link on the local machine, instead of in
-                    #the generic pro file here. See the Vaa3D Google Code page http://code.google.com/p/vaa3d/wiki/BuildVaa3D
-                    #at the section "What you need: Qt & C++ compilers"
-
-#    for Mac OS X 10.9
-#    QMAKE_CXXFLAGS += " -stdlib=libstdc++"
-#    QMAKE_LFLAGS += " -stdlib=libstdc++"
-}
-
-unix:!macx {
-    # Ubuntu linux possible location of arthurwidgets.h with official Qt install
-    # QTINST_SHARED_FOLDER = /usr/lib/qt4/demos/shared
-    QTINST_SHARED_FOLDER = /usr/lib64/qt4/demos/shared
-    include($$QTINST_SHARED_FOLDER/shared.pri)
-    INCLUDEPATH += $$QTINST_SHARED_FOLDER
-    LIBS += -L$$QTINST_SHARED_FOLDER
-}
-
-# the following trick was figured out by Ruan Zongcai
-CONFIG += warn_off  # only work for complier
-#CONFIG += debug  # Fabrice and Luis tracking a bug. disable by PHC, 100819
-#macx: QMAKE_LFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden # turn off this type warnings
-#macx: QMAKE_CXXFLAGS += -gdwarf-2 # turn off visibility warnings
-# need Qt 4.5.0 above and reCreate Makefile, this will be automatic.
-CONFIG += thread
-
-#CONFIG += console
 
 # Input
 HEADERS += ../basic_c_fun/mg_utilities.h \
@@ -482,10 +418,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ./old_arthurstyle.h \
     ./old_arthurwidgets.h
 
-
-unix:HEADERS += ../basic_c_fun/imageio_mylib.h
-#macx:HEADERS += ../basic_c_fun/imageio_mylib.h
-
 #v3d_main/v3d
 SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/mg_image_lib.cpp \
@@ -568,9 +500,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ./old_arthurstyle.cpp \
     ./old_arthurwidgets.cpp
 
+unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
-#macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
-
 unix:INCLUDEPATH += ../common_lib/include/glew/  #by RZC 2020-2-15
 
 win32 {
@@ -625,66 +556,40 @@ FORMS += landmark_property.ui \
 
 
 
-RESOURCES += v3d.qrc
-RESOURCES += ../3drenderer/3drenderer.qrc
-QT += core gui widgets opengl openglwidgets
-QT += network
-QT += xml svg
 
-LIBS += -L../jba/c++
+#MINGW_DIR = /mingw # platform: win32-msys-mingw
+#win32 { # platform: win32-command-mingw
+#	MINGW_DIR = c:/mingw
+#	LOCAL_DIR = ../common_lib/      # c:/msys/local
+#	CONFIG = $$unique(CONFIG)
+#	CONFIG -= debug # for Qt-win32 which only has release install(no debug)
+#    CONFIG += console
+#LIBS += -L$$MINGW_DIR/lib \
+#	-L$$LOCAL_DIR/lib_win32
 
-unix:!macx {
-  LIBS += -L../common_lib/lib
-  LIBS += -lm -lv3dtiff
-  LIBS += -lv3dnewmat
-#unix:LIBS += -L/usr/lib/qt4/demos/shared -ldemo_shared
-  LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
-  LIBS += -L../common_lib/lib_unix64  -lteem  -lbz2 -lz  -lGLU #for nrrd support
-  ### LIBS += -lGLEW # static link by including glew.c
-}
+#    DEFINES += __ALLOW_VR_FUNCS__
 
-#added 20140324 to cope with centos 64bit GL library issue. by HP
-#add -lglut -lGLU to fix the GL referencing issue on Ubuntu, otherwise it complains 
-unix!macx:LIBS += -lglut -lGLU
+#    # @ADD 2020-2-14 RZC: Microsoft C errors:
+#    # error C2589: '(' : illegal token on right side of '::' for std::min/max
+#    # error C2011: 'sockaddr' : 'struct' type redefinition
+#    DEFINES += NOMINMAX  _WINSOCKAPI_
 
-macx:LIBS += -L../common_lib/lib_mac32
-macx:LIBS += -lm -lv3dtiff -lv3dnewmat
-#    -framework GLUT
-macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
-macx:LIBS += -L../common_lib/lib_mac64 -lteem  -lbz2 -lz  #for nrrd support
-# CMB Nov 29 2010 Snow leopard GLee_r.o requires CoreServices framework
-macx:LIBS += -framework CoreServices
-
-# @ADDED by Alessandro on 2015-05-09. Method to get the path-based URL from the file-based URL
-#CONFIG += dragdropfix
-macx:dragdropfix{
-    DEFINES += _ENABLE_MACX_DRAG_DROP_FIX_
-    OBJECTIVE_SOURCES += yosemiteFileURLfix.mm
-    QMAKE_LFLAGS += -F /System/Library/Frameworks/Foundation.framework/
-    LIBS += -framework Foundation
-}
+#}
 
 
-# NOT REALLY USED, LIBS are replaced by vaa3d_msvc.pro
-win32:LIBS += -lm -lv3dtiff \
--lv3dnewmat
 
-win32:LIBS += -L../common_lib/mingw64 -lglew32 -lhdf5 -lszip -lzlib -lSDL2 -lteem  -lz -lopenvr_api -lwsock32 #for nrrd support #for nrrd support
-#    -lglut32 # win32-mingw, on unix link libglut.a
-#win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	#for win32 disable using MYLIB
+#无用
+#USE_Qt5 {
+#  INCLUDEPATH += $$QT_DIR/lib/QtConcurrent.framework/Versions/5/Headers  # for QtConcurrent, by PHC 2015May
+#  SHARED_FOLDER = ./painting/shared/ # for arthurwidgets #没有
+#  include($$SHARED_FOLDER/shared.pri)
+#  INCLUDEPATH += $$SHARED_FOLDER
+#  LIBS += -L$$SHARED_FOLDER
+#} else {
+##  SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
+##  include($$SHARED_FOLDER/shared.pri)
+#  INCLUDEPATH += $$SHARED_FOLDER
+#  LIBS += -L$$SHARED_FOLDER
+#}
 
-
-INCLUDEPATH += ../common_lib/include
-DEFINES *= TEEM_STATIC
-QMAKE_CXXFLAGS += -DTEEM_STATIC
-
-#removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
-INCLUDEPATH = $$unique(INCLUDEPATH)
-# LIBS = $$unique(LIBS) # @FIXED by Alessandro on 2015-05-11. Proven buggy on Qt 4.7.1/MacOSX10.10 since it removed some -framework from LIBS.
-# CONFIG = $$unique(CONFIG) # this only DOESN'T work on macx, very strange, by RZC 20080923
-message(CONFIG=$$CONFIG)
-
-#自己加的，不然会出现gl函数没有实现的问题
-win32:LIBS += -lOpengl32 \
-               -lglu32
-unix:LIBS += -lglut -lGLU
+#win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)

@@ -1,3 +1,0 @@
-F:\Cmake\bin\cmake.exe -E rm -f CMakeFiles\rgb2ycbcr.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\ar.exe cr CMakeFiles\rgb2ycbcr.dir/objects.a @CMakeFiles\rgb2ycbcr.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-W\mingw64\bin\gcc.exe  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -Wl,--whole-archive CMakeFiles\rgb2ycbcr.dir/objects.a -Wl,--no-whole-archive -o rgb2ycbcr.exe -Wl,--out-implib,librgb2ycbcr.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\rgb2ycbcr.dir\linklibs.rsp

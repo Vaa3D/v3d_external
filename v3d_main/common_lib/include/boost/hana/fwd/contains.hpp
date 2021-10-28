@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::contains` and `boost::hana::in`.
 
-@copyright Louis Dionne 2013-2016
+@copyright Louis Dionne 2013-2017
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -51,7 +51,7 @@ BOOST_HANA_NAMESPACE_BEGIN
         constexpr auto operator()(Xs&& xs, Key&& key) const;
     };
 
-    constexpr auto contains = hana::infix(contains_t{});
+    BOOST_HANA_INLINE_VARIABLE constexpr auto contains = hana::infix(contains_t{});
 #endif
 
     //! Return whether the key occurs in the structure.
@@ -67,7 +67,7 @@ BOOST_HANA_NAMESPACE_BEGIN
     //! Example
     //! -------
     //! @include example/in.cpp
-    constexpr auto in = hana::infix(hana::flip(hana::contains));
+    BOOST_HANA_INLINE_VARIABLE constexpr auto in = hana::infix(hana::flip(hana::contains));
 BOOST_HANA_NAMESPACE_END
 
 #endif // !BOOST_HANA_FWD_CONTAINS_HPP

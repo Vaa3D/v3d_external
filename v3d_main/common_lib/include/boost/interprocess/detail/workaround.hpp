@@ -19,19 +19,25 @@
 #  pragma once
 #endif
 
+#if defined(BOOST_INTERPROCESS_FORCE_NATIVE_EMULATION) && defined(BOOST_INTERPROCESS_FORCE_GENERIC_EMULATION) 
+#error "BOOST_INTERPROCESS_FORCE_NATIVE_EMULATION && BOOST_INTERPROCESS_FORCE_GENERIC_EMULATION can't be defined at the same time"
+#endif
+
+//#define BOOST_INTERPROCESS_FORCE_NATIVE_EMULATION
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
    #define BOOST_INTERPROCESS_WINDOWS
-   #define BOOST_INTERPROCESS_FORCE_GENERIC_EMULATION
+   #if !defined(BOOST_INTERPROCESS_FORCE_NATIVE_EMULATION) && !defined(BOOST_INTERPROCESS_FORCE_GENERIC_EMULATION)
+      #define BOOST_INTERPROCESS_FORCE_GENERIC_EMULATION
+   #endif
    #define BOOST_INTERPROCESS_HAS_KERNEL_BOOTTIME
-   //Define this to connect with shared memory created with versions < 1.54
-   //#define BOOST_INTERPROCESS_BOOTSTAMP_IS_LASTBOOTUPTIME
 #else
    #include <unistd.h>
 
    //////////////////////////////////////////////////////
    //Check for XSI shared memory objects. They are available in nearly all UNIX platforms
    //////////////////////////////////////////////////////
-   #if !defined(__QNXNTO__) && !defined(__ANDROID__) && !defined(__HAIKU__)
+   #if !defined(__QNXNTO__) && !defined(__ANDROID__) && !defined(__HAIKU__) && !(__VXWORKS__)
       #define BOOST_INTERPROCESS_XSI_SHARED_MEMORY_OBJECTS
    #endif
 
@@ -49,17 +55,12 @@
       //Cygwin defines _POSIX_THREAD_PROCESS_SHARED but does not implement it.
       #if defined(__CYGWIN__)
          #define BOOST_INTERPROCESS_BUGGY_POSIX_PROCESS_SHARED
-      //Mac Os X < Lion (10.7) might define _POSIX_THREAD_PROCESS_SHARED but there is no real support.
       #elif defined(__APPLE__)
-         #include "TargetConditionals.h"
-         //Check we're on Mac OS target
-         #if defined(TARGET_OS_MAC)
-            #include "AvailabilityMacros.h"
-            //If minimum target for this compilation is older than Mac Os Lion, then we are out of luck
-            #if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
-               #define BOOST_INTERPROCESS_BUGGY_POSIX_PROCESS_SHARED
-            #endif
-         #endif
+         //The pthreads implementation of darwin stores a pointer to a mutex inside the condition
+         //structure so real sharing between processes is broken. See:
+         //https://opensource.apple.com/source/libpthread/libpthread-301.30.1/src/pthread_cond.c.auto.html
+         //in method pthread_cond_wait
+         #define BOOST_INTERPROCESS_BUGGY_POSIX_PROCESS_SHARED
       #endif
 
       //If buggy _POSIX_THREAD_PROCESS_SHARED is detected avoid using it
@@ -154,6 +155,14 @@
        (defined (_FILE_OFFSET_BITS) &&(_FILE_OFFSET_BITS  - 0 >= 64))
       #define BOOST_INTERPROCESS_UNIX_64_BIT_OR_BIGGER_OFF_T
    #endif
+
+   //////////////////////////////////////////////////////
+   //posix_fallocate
+   //////////////////////////////////////////////////////
+   #if (_XOPEN_SOURCE >= 600 || __POSIX_C_SOURCE >= 200112L)
+   #define BOOST_INTERPROCESS_POSIX_FALLOCATE
+   #endif
+
 #endif   //!defined(BOOST_INTERPROCESS_WINDOWS)
 
 #if defined(BOOST_INTERPROCESS_WINDOWS) || defined(BOOST_INTERPROCESS_POSIX_MAPPED_FILES)
@@ -198,8 +207,35 @@
 #elif defined(BOOST_MSVC) && defined(_DEBUG)
    //"__forceinline" and MSVC seems to have some bugs in debug mode
    #define BOOST_INTERPROCESS_FORCEINLINE inline
+#elif defined(__GNUC__) && ((__GNUC__ < 4) || (__GNUC__ == 4 && (__GNUC_MINOR__ < 5)))
+   //Older GCCs have problems with forceinline
+   #define BOOST_INTERPROCESS_FORCEINLINE inline
 #else
    #define BOOST_INTERPROCESS_FORCEINLINE BOOST_FORCEINLINE
+#endif
+
+#ifdef BOOST_WINDOWS
+
+#define BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES
+
+#ifdef __clang__
+   #define BOOST_INTERPROCESS_DISABLE_DEPRECATED_WARNING _Pragma("clang diagnostic push") \
+                                                         _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+   #define BOOST_INTERPROCESS_RESTORE_WARNING            _Pragma("clang diagnostic pop")
+#else // __clang__
+   #define BOOST_INTERPROCESS_DISABLE_DEPRECATED_WARNING __pragma(warning(push)) \
+                                                         __pragma(warning(disable : 4996))
+   #define BOOST_INTERPROCESS_RESTORE_WARNING            __pragma(warning(pop))
+#endif // __clang__
+
+#endif
+
+#if defined(BOOST_HAS_THREADS) 
+#  if defined(_MSC_VER) || defined(__MWERKS__) || defined(__MINGW32__) ||  defined(__BORLANDC__)
+     //no reentrant posix functions (eg: localtime_r)
+#  elif (!defined(__hpux) || (defined(__hpux) && defined(_REENTRANT)))
+#   define BOOST_INTERPROCESS_HAS_REENTRANT_STD_FUNCTIONS
+#  endif
 #endif
 
 #endif   //#ifndef BOOST_INTERPROCESS_DETAIL_WORKAROUND_HPP
