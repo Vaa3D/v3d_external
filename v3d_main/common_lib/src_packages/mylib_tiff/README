@@ -1,0 +1,8 @@
+This folder contains the TIFF file reading/writing library developed by Gene Myers. 
+This library only includes the parts for TIFF/LSM IO and is in-complete in the sense
+of other files in MYLIB.
+
+Check the LICENSE information in the MY_TIFF folder.
+
+Noted by Hanchuan Peng. Aug-18, 2010.
+

@@ -1,0 +1,170 @@
+/*
+  INDEX of interface to the MyTiff library
+
+  Author:  Gene Myers
+  Date  :  December 2008
+
+  (c) July 27, '09, Dr. Gene Myers and Howard Hughes Medical Institute
+      Copyrighted as per the full copy in the associated 'README' file
+
+  Declarative terms used in this index:
+
+     class : a proper class of objects that implicitly have Copy, Pack, Inc, Free, Kill,
+               Usage, and Reset routines.
+
+     bundle : a short-term structure that holds a multi-valued input or function return.  A
+                bundle returned as a function result is not guaranteed to exist beyond the
+                interim to the next call of the function or reset of a relevant class.  Bundles
+                are always distinguished by virtue of their type name ending with the suffix
+                "_Bundle".
+
+  Parameter and return value annotation:
+
+     Every parameter and function name can be surrounded by a one-letter annotation that indicates
+       how the parameter / return value is treated by the routine in question.  A parameter with
+       no annotation is used strictly as input.  A function name with no annotation is returning
+       either a primitive, an existing object parameter, or a bundle.  The notations used are as
+       follows:
+
+           M(x): parameter x is (M)odified by the routine, i.e. input & output
+           O(x): parameter x is set by the routine, i.e. (O)utput only
+
+           G(x): function is a (G)enerator.  If function returns a bundle then all objects of
+                   the bundle are generated (but not the bundle!)
+           R(x): parameter x is the (R)eturn value
+
+           I(x): parameter x has its reference count (I)ncremented
+           C(x): a reference to parameter x is (C)onsumed
+           S(x): a reference to parameter x is (S)ubsumed, i.e. made a (S)ub-object
+           F(x): parameter x is (F)reed by the routine
+           K(x): parameter x is (K)illed by the routine
+
+           X(x): comment on parameters or effect of routine
+
+       Note that (a) at most one parameter can be annotated R, (b) a function name can only
+         be annotated with G, and (c) a function name cannot be annotated G if a
+         parameter is R.
+*/
+
+///////////////////////////////////////
+//    Tiff I/O                       //
+///////////////////////////////////////
+
+    enum Tiff_Type = { TIFF_BYTE TIFF_ASCII TIFF_SHORT TIFF_LONG TIFF_RATIONAL TIFF_SBTYE
+                       TIFF_UNDEFINED TIFF_SSHORT TIFF_SLONG TIFF_SRATIONAL TIFF_FLOAT
+                       TIFF_DOUBLE TIFF_LONG64
+                     }
+
+    constant TIFF_NEW_SUB_FILE_TYPE = 254   // Tiff tags and values
+    constant TIFF_SUB_FILE_TYPE     = 255
+    constant TIFF_IMAGE_WIDTH       = 256
+    ...
+        (see tiff_io.h for the complete list)
+
+    int   Native_Endian();
+    int   Tiff_Is_LSM(void *tif);
+
+    char *Tiff_Error_String();
+    char *Tiff_Error_Source();
+    
+    class Tiff_Reader;
+    
+        Tiff_Reader *G(Open_Tiff_Reader)(char *name, int *O(big_endian), int *O(flag64), int lsm);
+        void         Rewind_Tiff_Reader(Tiff_Reader *M(tif));
+        int          Advance_Tiff_Reader(Tiff_Reader *M(tif));
+        int          End_Of_Tiff(Tiff_Reader *tif);
+    
+    class Tiff_Writer;
+    
+        Tiff_Writer *G(Open_Tiff_Writer)(char *name, int flag64, int lsm);
+    
+    class Tiff_IFD;
+    
+        Tiff_IFD    *G(Read_Tiff_IFD)(Tiff_Reader *tif);
+        int          Write_Tiff_IFD(Tiff_Writer *M(tif), Tiff_IFD *ifd);
+        void         Print_Tiff_IFD(Tiff_IFD *ifd, FILE *output, int indent);
+        Tiff_IFD    *G(Create_Tiff_IFD)(int num_tags, void *image);
+    
+        void     *Get_Tiff_Tag(Tiff_IFD *ifd, int label, Tiff_Type *O(type), int *O(count));
+        void     *Allocate_Tiff_Tag(Tiff_IFD *ifd, int lael, Tiff_Type type, int count);
+        int       Set_Tiff_Tag(Tiff_IFD *M(ifd), int label, Tiff_Type type, int count, void *data);
+        void      Delete_Tiff_Tag(Tiff_IFD *M(ifd), int label);
+
+        int       Count_Tiff_Tags(Tiff_IFD *ifd);
+        int       Get_Tiff_Label(Tiff_IFD *ifd, int idx);
+    
+    class Tiff_Annotator;
+
+        enum Annotator_Status { ANNOTATOR_CANT_OPEN ANNOTATOR_GIBBERISH
+                                ANNOTATOR_NOT_FORMATTED ANNOTATOR_FORMATTED 
+                              }
+
+        Annotator_Status Tiff_Annotation_Status(char *name);
+      
+        Tiff_Annotator *G(Open_Tiff_Annotator)(char *name);
+        char           *Get_Tiff_Annotation(Tiff_Annotator *tif, int *O(length));
+        void            Set_Tiff_Annotation(Tiff_Annotator *M(tif), char *anno, int length);
+        void            Close_Tiff_Annotator(Tiff_Annotator *tif);
+	int             Format_Tiff_For_Annotation(char *name);
+    
+        Tiff_IFD *Convert_2_RGB(Tiff_IFD *R(M(ifd)), int source, int target);
+        int      *Get_LSM_Colors(Tiff_IFD *ifd, int *O(nchannels));
+
+
+///////////////////////////////////////
+//    Tiff Image                     //
+///////////////////////////////////////
+
+    class Tiff_Image
+      { int             width;            //  The width of every channel plane
+        int             height;           //  The height of every chanel plane
+        int             number_channels;  //  The number of channels (samples_per_pixel)
+        Tiff_Channel  **channels;         //  [0..number_channels-1] gives the Channel objects
+      }
+
+    class Tiff_Channel
+      { int             width;            //  The width of every channel plane
+        int             height;           //  The height of every chanel plane
+        Channel_Meaning interpretation;   //  Any interpretation hint (if any) provided by the tiff
+        unsigned short *map;              //  The color map for those channels that are CHAN_MAPPED
+        int             scale;            //  The # of bits per value in this channel
+        int             bytes_per_pixel;  //  The # of bytes each value is stored in (1, 2, or 4)
+        Channel_Type    type;             //  The nature of the values
+        void           *plane;            //  A width x height array of values in row major order
+        Tiff_Histogram *histogram;        //  Histogram of channel values (NULL if not computed)
+      }
+
+    enum Channel_Meaning { CHAN_WHITE CHAN_BLACK CHAN_MAPPED CHAN_RED CHAN_GREEN CHAN_BLUE
+                           CHAN_ALPHA CHAN_MATTE CHAN_MASK CHAN_OTHER } 
+    
+    enum Channel_Type { CHAN_UNSIGNED CHAN_SIGNED CHAN_FLOAT }
+
+    class Tiff_Histogram
+      { int          bitshift;     // The largest non-zero bit position
+        int          total;        // Sum of all counts in the histogram
+        unsigned int counts[512];  // Bitshift is at least 1/2*max value, giving 8-bit
+      }                            //   precision when max >= 256
+
+    enum Tiff_Compress { DONT_COMPRESS, LZW_COMPRESS, PACKBITS_COMPRESS }
+
+        Tiff_Image *G(Extract_Image_From_IFD)(Tiff_IFD *ifd);
+        int           Load_Tiff_Image_Planes(Tiff_Image *M(image),
+                                             void *data, unsigned long long *offsets);
+
+        Tiff_Image *G(Create_Tiff_Image)(int width, int height);
+        int         Add_Tiff_Image_Channel(Tiff_Image *M(image),
+                                           Channel_Meaning meaning, int scale, Channel_Type type);
+
+        Tiff_IFD *G(Make_IFD_For_Image)(Tiff_Image *image, Tiff_Compress compression,
+                                        unsigned int tile_width, unsigned int tile_height);
+
+        void Scale_Tiff_Channel(Tiff_Channel *M(channel), int scale);
+        void Range_Tiff_Channel(Tiff_Channel *channel, double *O(minval), double *O(maxval));
+        void Shift_Tiff_Channel(Tiff_Channel *M(channel), int shift);
+
+        void Scale_Tiff_Image(Tiff_Image *M(image), int scale);
+        void Shift_Tiff_Image(Tiff_Image *M(image), int shift);
+
+        Tiff_Histogram *G(Histogram_Tiff_Channel)(Tiff_Channel *channel)
+        void            Histogram_Tiff_Image_Channels(Tiff_Image *M(image));
+        void            Tiff_Histogram_Merge(Tiff_Histogram *M(h1), Tiff_Histogram *h2);
