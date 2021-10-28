@@ -254,6 +254,7 @@ public:
 
 	void init_members() // more clear putting them here, by RZC 080828
 	{
+        qDebug()<<"jazzbrain debug init_members in v3dr_mainwindow.h";
 		default_animate_para();
 	    sAnimate = 0;
 		bAnimating = false;

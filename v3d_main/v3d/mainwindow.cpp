@@ -2266,7 +2266,7 @@ void MainWindow::createActions()
     // New Open Web URL action, based on Open Action (openAct) example
     // By CMB 06-Oct-2010
     openWebUrlAct = new QAction(QIcon(":/pic/web.png"), tr("&Open web image/stack/surface_file ..."), this);
-    openWebUrlAct->setShortcut(QKeySequence("Ctrl+D"));
+    openWebUrlAct->setShortcut(tr("Ctrl+W"));
     openWebUrlAct->setStatusTip(tr("Open a web (URL) image"));
     connect(openWebUrlAct, SIGNAL(triggered()), this, SLOT(openWebUrl()));
 #ifdef __v3d_custom_toolbar__

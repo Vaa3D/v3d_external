@@ -52,7 +52,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"//需要包含这个头文件
 
 QString xCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
-{    
+{
+    qDebug("jazz debug xCut_altTip in v3dr_control_signal.cpp");
     V3dR_GLWidget* w;
     if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
         return w->Cut_altTip(1, v, minv, maxv, offset);
@@ -61,6 +62,7 @@ QString xCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 }
 QString yCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 {
+     qDebug("jazz debug yCut_altTip in v3dr_control_signal.cpp");
     V3dR_GLWidget* w;
     if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
         return w->Cut_altTip(2, v, minv, maxv, offset);
@@ -69,6 +71,7 @@ QString yCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 }
 QString zCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 {
+     qDebug("jazz debug zCut_altTip in v3dr_control_signal.cpp");
     V3dR_GLWidget* w;
     if (parent && (w = ((V3dR_MainWindow*)parent)->getGLWidget()))
         return w->Cut_altTip(3, v, minv, maxv, offset);
@@ -79,6 +82,7 @@ QString zCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 
 void V3dR_MainWindow::createControlWidgets()
 {
+    qDebug("V3dR_MainWindow::createControlWigdets 右边信号构造函数");
 	int i;
     toolBtnGroup = new QWidget;
     QHBoxLayout *layout_toolBtnGroup = new QHBoxLayout(toolBtnGroup);
@@ -92,6 +96,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __volume_display_option_box__
 	//------------------------------------------------------------------------------
 	//volume display option box
+    qDebug()<<"jazz debug #define __volume_display_option_box__ in v3dr_control_signal.cpp";
     QWidget *volDisplayOptGroup = new QWidget;
     //QGroupBox *volDisplayOptGroup = new QGroupBox();
     //volDisplayOptGroup->setTitle("Volume display options");
@@ -160,6 +165,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __surface_display_option_box__
     //------------------------------------------------------------------------------
 	//surface display option box
+    qDebug()<<"jazz debug #define __surface_display_option_box__ in v3dr_control_signal.cpp";
 	QWidget *surfDisplayOptGroup = new QWidget;
     QGridLayout *surfDisplayOptLayout = new QGridLayout(surfDisplayOptGroup);
 
@@ -198,6 +204,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __others_display_option_box__
     //------------------------------------------------------------------
     //others display option box
+    qDebug()<<"jazz debug #define __others_display_option_box__ in v3dr_control_signal.cpp";
     QWidget *miscDisplayOptGroup = new QWidget(); // 090422 RZC
 //    QGroupBox *miscDisplayOptGroup = new QGroupBox();
 //    miscDisplayOptGroup->setTitle("Other options");
@@ -249,6 +256,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __rotation_slider_box__
     //------------------------------------------------------------------------------
 	//rotation sliders
+ qDebug()<<"jazz debug #define __rotation_slider_box__ in v3dr_control_signal.cpp";
     QWidget *rotateBarGroup = new QWidget;
     //QGroupBox *rotateBarGroup = new QGroupBox();
     //rotateBarGroup->setTitle("Rotations around axes");
@@ -297,6 +305,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __zoom_shift_slider_box__
 	//------------------------------------------------------------------------
     // zoom & shift slider
+ qDebug()<<"jazz debug #define __zoom_shift_slider_box__ in v3dr_control_signal.cpp";
     QWidget *zoomBarGroup = new QWidget;
 
     QGridLayout *zoomBarBoxLayout = new QGridLayout(zoomBarGroup);
@@ -347,10 +356,13 @@ void V3dR_MainWindow::createControlWidgets()
 #define __cut_plane_slider_box__
     //-----------------------------------------------------------------------------
     //cut-plane boxes (1-volume & 2-section shared same place, 3-surface)
+ qDebug()<<"jazz debug #define __cut_plane_slider_box__ in v3dr_control_signal.cpp";
 	QWidget *cutPlaneGroup[1+3];
 	cutPlaneGroup[1] = new QWidget;
 	cutPlaneGroup[2] = new QWidget;
 	cutPlaneGroup[3] = new QWidget;
+
+    qDebug()<<"jazz debug cut_plane_slider_box in v3dr_control_singnal.cpp";
 
 	QGridLayout *cutPlaneRgnLayout[1+3];
 	for (int i=1; i<=3; i++)
@@ -488,6 +500,7 @@ void V3dR_MainWindow::createControlWidgets()
 #define __manage_layout_and_call_connect_signal__
 	//===========================================================================================
     //Managing the layout
+ qDebug()<<"jazz debug #define __manage_layout_and_call_connect_signal__ in v3dr_control_signal.cpp";
     QGroupBox* viewGroup = new QGroupBox();
 
     glWidgetArea = new QScrollArea;
@@ -572,6 +585,7 @@ void V3dR_MainWindow::createControlWidgets()
 
 #define __tip_filter_and_button_menu__
 	//===========================================================================================
+ qDebug()<<"jazz debug #define __tip_filter_and_button_menu__ in v3dr_control_signal.cpp";
 	SliderTipFilter *TsliderTip = new SliderTipFilter(this, "time = ", "", 0);
 	timeSlider->installEventFilter(TsliderTip);
 
@@ -1149,6 +1163,7 @@ void V3dR_MainWindow::setZCutLockIcon(bool b)
 
 void V3dR_MainWindow::initVolumeTimeRange()
 {
+    qDebug()<<"jazz debug V3dR_MainWindow::initVolumeTimeRange in v3dr_control_signal.cpp";
 	if (! glWidget) return;
 
 	int t;
@@ -1164,6 +1179,8 @@ void V3dR_MainWindow::initVolumeTimeRange()
 
 void V3dR_MainWindow::initVolumeCutRange()
 {
+    qDebug()<<"jazz debug V3dR_MainWindow::initVolumeCutRange in v3dr_control_signal.cpp";
+
 	if (! glWidget) return;
 
 	int d1, d2, d3;
@@ -1243,6 +1260,7 @@ void V3dR_MainWindow::initSurfaceCutRange()
 
 void V3dR_MainWindow::createMenuOfAnimate()
 {
+    qDebug()<<"jazz brain debug V3dR_MainWindow::createMenuOfAnimate() in v3dr_control_signal.cpp";
     QAction* Act;
 
     Act = new QAction(tr("&Animation On"), this);
@@ -1284,6 +1302,7 @@ static const char* i2strRGB[] = //{"R", "G", "B"};
 
 void V3dR_MainWindow::createMenuOfSurfFile()
 {
+    qDebug()<<"jazz debug V3dR_MainWindow::createMenuOfSurfFile in v3dr_control_signal.cpp";
 
     QAction* Act;
     if (! glWidget)

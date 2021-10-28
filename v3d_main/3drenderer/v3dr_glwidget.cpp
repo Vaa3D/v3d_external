@@ -82,7 +82,7 @@ V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
  #define POST_updateGL update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
  #define DO_updateGL	update  // macro to control direct updateGL or post update, by RZC 081007
 #else
-#define POST_updateGL QOpenGLWidget::update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
+ #define POST_updateGL QOpenGLWidget::update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
 // #define DO_updateGL	updateGL  // macro to control direct updateGL or post update, by RZC 081007
 //修改了
 #define DO_updateGL	QOpenGLWidget::update
@@ -565,12 +565,13 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 void V3dR_GLWidget::enterEvent(QEvent*)
 {
-    // qDebug("V3dR_GLWidget::enterEvent in v3dr_glwidget.cpp");
+    qDebug("V3dR_GLWidget::enterEvent in v3dr_glwidget.cpp");
     mouse_in_view = 1;
     //setFocus();
 }
 void V3dR_GLWidget::leaveEvent(QEvent*)
 {
+    qDebug("V3dR_GLWidget::leaveEvent");
     mouse_in_view = 0;
     update();  //DLC ADD
 }
@@ -4234,7 +4235,7 @@ void V3dR_GLWidget::setEditMode()
     if (renderer)
     {
         renderer->setEditMode();
-        update();
+        POST_updateGL();
     }
 }
 

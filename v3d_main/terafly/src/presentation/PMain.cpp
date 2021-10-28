@@ -3536,8 +3536,9 @@ void PMain::annotationsChanged()
 
     // update mini-map, realtime update is slow
     annotationChanged = true;
-    // updateOverview();
-
+    qDebug()<<"jazz debug------------------------------------------2";
+    updateOverview();
+    qDebug()<<"jazz debug------------------------------------------2";
     //
     #ifdef Q_OS_MAC
     if(tabs->count() < 4)

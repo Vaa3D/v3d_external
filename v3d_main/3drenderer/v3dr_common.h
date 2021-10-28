@@ -255,10 +255,12 @@ extern QProgressDialog progress;
 #include <QVariant>
 
 // 090424RZC: because QColorDialog::getColor cannot handle correctly when user clicks Cancel
-inline bool v3dr_getColorDialog( QColor *color, QWidget *parent=0)
+inline bool v3dr_getColorDialog(QColor *color, QWidget *parent=0)
 {
+
     bool ok = true;
-    if (ok)  *color = QColorDialog::getColor(*color, parent, "Select Color");
+
+    if (ok)  *color = QColorDialog::getColor(*color,parent,"Select Color");
 
     return ok;
 }
@@ -301,7 +303,7 @@ My4DImage* v3dr_getImage4d(void* idep)
 	{
 		image4d = ( ((iDrawExternalParameter*)idep)->image4d );
 	}
-    return image4d; // && image4d->valid())? image4d : 0L;
+	return (image4d); // && image4d->valid())? image4d : 0L;
 }
 inline
 XFormWidget* v3dr_getXWidget(void* idep)

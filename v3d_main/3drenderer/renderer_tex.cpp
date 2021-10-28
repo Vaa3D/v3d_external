@@ -184,7 +184,7 @@ void Renderer_gl1::setupData(void* idep)
      //           qtime.elapsed()*0.001);
 
      // }else
-
+     {
           // creating data for 3dviewer when needed
           isSimulatedData = false;
           bool bLocal = false;
@@ -336,7 +336,7 @@ void Renderer_gl1::setupData(void* idep)
                if (dim4==1)   rgba3d_r2gray(total_rgbaBuf, bufSize); //081103
           }
          // qDebug("   data4dp_to_rgba3d ............................................... cost time = %g sec", qtime.elapsed()*0.001);
-      // end if else for creating data for 3dviewer
+     } // end if else for creating data for 3dviewer
 
 }
 
@@ -662,7 +662,7 @@ void Renderer_gl1::paint()
 
 void Renderer_gl1::prepareVol()
 {
-
+    qDebug()<<"jazz debug in renderer_tex.cpp Renderer_gl1::prepareVol()";
     // In the b_renderTextureLast case we need to clear the volume before we draw the markers, not after.
     // Note that in the case where the textures are rendered first, drawVol() will
     // clear the volume if MIP is the mode, so we don't have to do it here.
@@ -875,6 +875,7 @@ void Renderer_gl1::drawVol()
         }
         glEnable(GL_BLEND);      equMaxIntensityProjection();
         glEnable(GL_ALPHA_TEST); glAlphaFunc(GL_GEQUAL, alpha_threshold); // >= threshold Alpha, 080930
+        qDebug()<<__FUNCTION__<<__LINE__;
         break;
 
     case rmMinIntensityProjection:
@@ -1752,6 +1753,7 @@ void Renderer_gl1::setUnitVolumeSpace()
 
     // form unit volume space ==> fit in [-1, +1]^3
     glScaled(s[0], s[1], s[2]);
+    qDebug()<<__FUNCTION__<<__LINE__;
     //qDebug("Scale from [0,1]: x=%f, y=%f, z=%f", s[0],s[1],s[2]);
     glTranslated(-.5, -.5, -.5);
 }
@@ -1768,14 +1770,14 @@ void Renderer_gl1::drawUnitVolume()
     if (b_stream   //091014: for streamed method
         || tryTexStream == -1) //091016
     {
-        //    qDebug() << "Renderer_gl1::drawUnitVolume() - setting realX,Y,Z to imageX,Y,Z   b_stream=" << b_stream << " tryTexStream=" << tryTexStream;
+            qDebug() << "Renderer_gl1::drawUnitVolume() - setting realX,Y,Z to imageX,Y,Z   b_stream=" << b_stream << " tryTexStream=" << tryTexStream;
         realX = imageX;
         realY = imageY;
         realZ = imageZ;
     }
     else
     {
-        //    qDebug() << "Renderer_gl1::drawUnitVolume() - settting realX,Y,Z to safeX,Y,Z";
+            qDebug() << "Renderer_gl1::drawUnitVolume() - settting realX,Y,Z to safeX,Y,Z";
         realX = safeX;
         realY = safeY;
         realZ = safeZ;

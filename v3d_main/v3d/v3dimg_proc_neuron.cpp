@@ -1006,32 +1006,37 @@ void My4DImage::proj_trace_history_append()
     // this is SAFE: it only informs TeraFly (SAFE) that a neuron has been edited.
     tf::TeraFly::doaction("neuron edit");
 
-//#ifdef __ALLOW_VR_FUNCS__
-//    //20170803 RZC
-//    mozak::MozakUI::onImageTraceHistoryChanged();
-//#endif
+////#ifdef __ALLOW_VR_FUNCS__
+////    //20170803 RZC
+////    mozak::MozakUI::onImageTraceHistoryChanged();
+////#endif
     
-    emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
-    SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
+//    emit signal_trace_history_append();      //20170801 RZC: not convenient for other widgets except xform widget
+//	SEND_EVENT(qApp, QEvent_HistoryChanged); //20170801 RZC: notify by qApp event filter
 }
 
 void My4DImage::proj_trace_history_append(V_NeuronSWC_list & tNeuron)
 {
-	//if (tracedNeuron.seg.size()<=0) return;
+
+    if (tracedNeuron.seg.size()<=0) return;
 	//null seg is also a undo/redo status
 
 	// remove from cur_history+1
-	for (int i=cur_history+1; i>=0 && i<tracedNeuron_historylist.size();i++) tracedNeuron_historylist.removeAt(i);
+
+    for (int i=cur_history+1; i>=0 && i<tracedNeuron_historylist.size();i++) {
+        qDebug()<<tracedNeuron_historylist.size();
+
+        tracedNeuron_historylist.removeAt(i);
+    }
 
 	// make size <= MAX_history
+
 	while (tracedNeuron_historylist.size()>=MAX_history) tracedNeuron_historylist.pop_front();
 
 	tracedNeuron_historylist.push_back(tNeuron);
 	cur_history = tracedNeuron_historylist.size()-1;
 
-	//	qDebug()<<"***************************************************************";
-	//	qDebug()<<"APPEND historylist last ="<<tracedNeuron_historylist.size()-1<<"  cur_history ="<<cur_history;
-	//	qDebug()<<"***************************************************************";
+
 }
 
 void My4DImage::proj_trace_history_undo()

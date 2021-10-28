@@ -67,10 +67,10 @@ ColorEditor::ColorEditor(QWidget* w)
 
 QColor ColorEditor::color()
 {
-    QColor c = QColorDialog::getColor(qcolor, this);
+	//QColor c = QColorDialog::getColor(qcolor, this);
 	//QColor c = QColor::fromRgba( QColorDialog::getRgba(qcolor.rgba(), 0, this) );
-    if (c.isValid())  qcolor = c;
-	v3dr_getColorDialog( &qcolor, this); //090424 RZC
+	//if (c.isValid())  qcolor = c;
+    v3dr_getColorDialog( &qcolor, this); //090424 RZC
 
 	return (qcolor);
 }

@@ -129,14 +129,16 @@ void TeraFly::doaction(const QString &action_name)
     {
         if(CViewer::getCurrent())
         {
+            qDebug()<<"-------------------------------0";
             CViewer::getCurrent()->undoStack.beginMacro("vaa3d action");
             CViewer::getCurrent()->undoStack.push(new QUndoVaa3DNeuron(CViewer::getCurrent()));
             CViewer::getCurrent()->undoStack.endMacro();
             PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
     }
-    else
+    else{
         QMessageBox::information(0, "Information", tf::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());
+}
 }
 
 // returns true if version >= min_required_version, where version format is version.major.minor

@@ -1821,10 +1821,10 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 
             //qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
             //if (! listNeuron.contains(S)) // 081024
-
+            {
                 listNeuron.append(S);
                 hashNeuron.insert(S.n, listNeuron.size()-1);
-
+            }
         }
         qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
         if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
@@ -1963,33 +1963,28 @@ void Renderer_gl1::toggleEditMode()
 void Renderer_gl1::setEditMode()
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-    My4DImage* curImg = 0;       if (w){ qDebug()<<"ctrl+d debug:----2"; curImg = v3dr_getImage4d(_idep); }
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 
     if(listNeuronTree.size()>=1 && w && curImg)
     {
-        qDebug()<<"ListNeuronTree.size() = "<< listNeuronTree.size();
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
-            qDebug()<<"ctrl + d debug: ----3";
             return;
-        }
-        else
+        }else
+
         {
-            qDebug()<<"ctrl + d debug: ----4";
             listNeuronTree_old = listNeuronTree;
 
             NeuronTree *p_tree = 0;
 
             if (listNeuronTree.size()==1)
             {
-                qDebug()<<"ctrl+d debug:----5";
                 p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
                 curEditingNeuron = 1;
                 realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
             }
             else
             {
-                qDebug()<<"ctrl+d debug:----6";
                 p_tree = (NeuronTree *)(&(listNeuronTree.at(1)));
                 curEditingNeuron = 2;
                 realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
