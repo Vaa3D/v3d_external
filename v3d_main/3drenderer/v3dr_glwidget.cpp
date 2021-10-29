@@ -2124,7 +2124,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
             if(myvrwin)
                 delete myvrwin;
             myvrwin = 0;
-            myvrwin = new VR_MainWindow(TeraflyCommunicator);
+            myvrwin = new VR_MainWindow();
             myvrwin->setWindowTitle("VR MainWindow");
             //bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 
@@ -2135,7 +2135,16 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
             qDebug()<<"VR get data_title = "<<VRinfo;
             resumeCollaborationVR = false;//reset resumeCollaborationVR
             myvrwin->ResIndex = Resindex;
-            int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,TeraflyCommunicator,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
+            int _call_that_func = myvrwin->StartVRScene(
+                        listNeuronTrees,
+                        img4d,
+                        (MainWindow *)(this->getMainWindow()),
+                        1,
+                        VRinfo,
+                        CollaborationCreatorRes,
+                        &teraflyZoomInPOS,
+                        &CollaborationCreatorPos,
+                        collaborationMaxResolution);
 
             qDebug()<<"result is "<<_call_that_func;
             qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;

@@ -54,11 +54,12 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 //#endif
 
 //LMG for cross-platform UTC Timestamp 15/10/2018
-#if defined(Q_OS_WIN32)
-    #define timegm _mkgmtime
-#elif defined(Q_OS_WIN64)
-    #define timegm _mkgmtime
-#endif
+//define by hl
+//#if defined(Q_OS_WIN32)
+//    #define timegm _mkgmtime
+//#elif defined(Q_OS_WIN64)
+//    #define timegm _mkgmtime
+//#endif
 
 //------------------------------------------------------------------------------------------
 
@@ -862,7 +863,8 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
 
     time(&timer2);  /* get current time; same as: timer = time(NULL)  */
 
-    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
+//    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
+    seconds=1;//define by hl
     qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
 
     for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) if(cur_seg.row[k].timestamp == 0) cur_seg.row[k].timestamp = seconds;
@@ -935,7 +937,8 @@ NeuronTree My4DImage::proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ
 
     time(&timer2);  /* get current time; same as: timer = time(NULL)  */
 
-    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 26/10/2018
+//    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 26/10/2018
+        seconds=1;//define by hl
     qDebug("Timestamp at proj_trace_add_curve_segment (seconds since January 1, 2000 in UTC): %.0f", seconds);
 
     for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) if(cur_seg.row[k].timestamp == 0) cur_seg.row[k].timestamp = seconds;

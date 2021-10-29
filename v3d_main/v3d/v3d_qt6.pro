@@ -23,12 +23,10 @@ INCLUDEPATH = $$unique(INCLUDEPATH)
 
 DEFINES *= TEEM_STATIC
 
-#unix:LIBS += -lglut -lGLU
-
 macx{
     DEFINES += MACOS_SYSTEM
 
-    LIBS += -L../common_lib/lib_mac64 -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz -lhdf5 -lszip
+    LIBS += -L../common_lib/lib_mac64 -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lhdf5 -lszip
     LIBS += -framework CoreServices
 
     #dragdropfix
@@ -40,20 +38,19 @@ macx{
 
 win32{
     DEFINES += WINDOWS_SYSTEM
-
+    DEFINES += __ALLOW_VR_FUNCS__
     LIBS += -lm -lv3dtiff -lv3dnewmat
     LIBS += -lOpengl32  -lglu32
-    LIBS += -L../common_lib/mingw64 -lglew32 -lhdf5 -lszip -lzlib -lSDL2 -lteem  -lz -lopenvr_api -lwsock32 #for nrrd support #for nrrd support
+    LIBS += -L../common_lib/mingw64  -lhdf5 -lszip -lzlib  -lteem  -lz  -lwsock32 #for nrrd support #for nrrd support
+
 }
 
 unix:!macx {
     DEFINES += LINUX_SYSTEM
+    DEFINES += __ALLOW_VR_FUNCS__
+    LIBS =  -lGLU -lglut
+    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip
 
-    LIBS += -L../common_lib/lib
-    LIBS += -lm -lv3dtiff
-    LIBS += -lv3dnewmat
-    LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
-    LIBS += -L../common_lib/lib_unix64  -lteem  -lbz2 -lz  -lGLU #for nrrd support
 }
 
 #removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709
@@ -504,11 +501,42 @@ unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 unix:INCLUDEPATH += ../common_lib/include/glew/  #by RZC 2020-2-15
 
+
+#VR SUPPORT
 win32 {
 INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
 INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
 INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
+    LIBS += -L../common_lib/mingw64  -lSDL2 -lopenvr_api -lglew32
 
+HEADERS += \
+    ../vrrenderer/v3dr_gl_vr.h \
+    ../vrrenderer/Cylinder.h \
+    ../vrrenderer/Sphere.h \
+    ../vrrenderer/Matrices.h \
+    ../vrrenderer/lodepng.h \
+    ../vrrenderer/RenderableObject.h \
+    ../vrrenderer/VRFinger.h \
+    ../vrrenderer/V3dR_Communicator.h \
+    ../vrrenderer/VR_MainWindow.h
+
+SOURCES += \
+    ../vrrenderer/v3dr_gl_vr.cpp \
+    ../vrrenderer/Cylinder.cpp \
+    ../vrrenderer/Sphere.cpp \
+    ../vrrenderer/Matrices.cpp \
+    ../vrrenderer/lodepng.cpp \
+    ../vrrenderer/RenderableObject.cpp \
+    ../vrrenderer/VRFinger.cpp \
+    ../vrrenderer/V3dR_Communicator.cpp \
+    ../vrrenderer/VR_MainWindow.cpp
+}
+
+unix:!macx{
+INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
+    LIBS += -L../common_lib/lib_ubuntu  -lSDL2 -lopenvr_api -lGLEW -ldl
 HEADERS += \
     ../vrrenderer/v3dr_gl_vr.h \
     ../vrrenderer/Cylinder.h \
@@ -553,7 +581,6 @@ FORMS += landmark_property.ui \
     dialog_update_downloading.ui \
     dialog_update_checking.ui \
     ../3drenderer/setVoxSize.ui
-
 
 
 

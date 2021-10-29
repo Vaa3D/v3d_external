@@ -57,8 +57,9 @@ LIBS += -L$$V3DMAINPATH/common_lib/lib_mac64 -lhdf5 -lszip -lz
 }
 
 unix {
-INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
-LIBS += -L$$V3DMAINPATH/common_lib/lib_unix64 -lhdf5 -lszip -lz -ldl
+    INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
+
+    LIBS += -L$$V3DMAINPATH/common_lib/lib_ubuntu -lhdf5 -lszip -lz -ldl
 }
 #Vaa3D headers and sources needed by the plugin
 INCLUDEPATH+= $$QT_PATH/demos/shared

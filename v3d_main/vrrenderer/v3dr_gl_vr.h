@@ -3,26 +3,30 @@
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
 
-#include <glew/GL/glew.h>
-#include <SDL.h>
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-//#include "../basic_c_fun/v3d_interface.h"
+#include <SDL/SDL.h>
 
-#include <openvr.h>
+#include "../basic_c_fun/v3d_interface.h"
+
+
+#include <openvr/openvr.h>
 #include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
-////#include <GL/glew.h>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "V3dR_Communicator.h"
+
 //#include <gltext.hpp>//include freetype and gltest library
 
 #include "mainwindow.h"
 
-#include "../basic_c_fun/v3d_interface.h"
+struct Agent {
+	QString name;
+	bool isItSelf;
+	int colorType;
+	float position[16];
+};
 
 
 enum ModelControlR
@@ -90,7 +94,7 @@ class Sphere;
 class Cylinder;
 class My4DImage;
 class MainWindow;
-class CGLRenderModel : public QOpenGLExtraFunctions
+class CGLRenderModel
 {
 public:
 	CGLRenderModel( const std::string & sRenderModelName );
@@ -110,7 +114,7 @@ private:
 	std::string m_sModelName;
 };
 template<class T>
-class MinMaxOctree : public QOpenGLExtraFunctions
+class MinMaxOctree
 {
 public:
 	MinMaxOctree(int width, int height, int depth,int step);
@@ -128,7 +132,7 @@ private:
 	int step;
 };
 
-class TransferControlPoint : public QOpenGLExtraFunctions
+class TransferControlPoint
 {
 public:
 	TransferControlPoint(float r,float g,float b,int isovalue)
@@ -155,7 +159,7 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-class CMainApplication : public QOpenGLExtraFunctions
+class CMainApplication
 {
 public:
 	CMainApplication(int argc = 0, char *argv[] = 0);
@@ -240,7 +244,6 @@ public:
 	void SetupRenderModelForTrackedDevice( vr::TrackedDeviceIndex_t unTrackedDeviceIndex );
 	CGLRenderModel *FindOrLoadRenderModel( const char *pchRenderModelName );
 
-	float GetGlobalScale();
 public:
 
 	MainWindow *mainwindow;
@@ -286,9 +289,8 @@ private:
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
-	public:
 	NeuronTree currentNT;// currently drawn stroke of neuron
-	private:
+	
 	NeuronTree tempNT;//used somewhere, can be change to a local variable
 	BoundingBox swcBB;
 	QList<ImageMarker> drawnMarkerList;
@@ -566,12 +568,12 @@ private:
 	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
-	__int64 CounterStart;
+    int64 CounterStart;
 
 	int frameCount;
 	int fps;
 
-	__int64 frameTimeOld;
+    int64 frameTimeOld;
 	double frameTime;
 
 	void StartTimer();

@@ -1,11 +1,12 @@
 ﻿#include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
 #include"./spline.h"
-#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <GL/glew.h>
+#include <SDL/SDL_opengl.h>
 
 #include "../v3d/vr_vaa3d_call.h"
 #include "../neuron_tracing/fastmarching_linker.h"
+
 
 
 #if defined( OSX )
@@ -653,17 +654,17 @@ static bool g_bPrintf = true;
 //-----------------------------------------------------------------------------
 void dprintf( const char *fmt, ... )
 {
-	va_list args;
-	char buffer[ 2048 ];
+//	va_list args;
+//	char buffer[ 2048 ];
 
-	va_start( args, fmt );
-	vsprintf_s( buffer, fmt, args );
-	va_end( args );
+//	va_start( args, fmt );
+//	vsprintf_s( buffer, fmt, args );
+//	va_end( args );
 
-	if ( g_bPrintf )
-		printf( "%s", buffer );
+//	if ( g_bPrintf )
+//		printf( "%s", buffer );
 
-	OutputDebugStringA( buffer );
+//	OutputDebugStringA( buffer );
 }
 
 
@@ -2397,13 +2398,16 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
 				//m_bFrozen is used to control texture
-                m_bFrozen = !m_bFrozen;
+				//m_bFrozen = !m_bFrozen;
 
 
-                    if (fBrightness >= -0.9) fBrightness = -1.0;
-                    else fBrightness = 0.0;
+				if (fBrightness >= -0.9) fBrightness = -1.0;
+				else fBrightness = 0.0;
+				
 
-                break;
+				
+
+				break;
 			}
 		case _Contrast://contrast func is moved to right controller touch pad , grip button+/-
 			{
@@ -3436,8 +3440,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							//sketchedNTList.removeAt(segInfo[1]);
 							//SetupSingleMorphologyLine(segInfo[0],2);
 							//SetupSingleMorphologyLine(segInfo[1],2);
-//							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
-//							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
+							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
+							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
 							QString tempdelname = sketchedNTList.at(segInfo[0]).name;
 							QString tempdelname1 = sketchedNTList.at(segInfo[1]).name;
 							bool delerror1 = DeleteSegment(tempdelname);
@@ -3539,14 +3543,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				{
 					ClearUndoRedoVectors();
 					IsmarkerValid = RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
-					cout<<"m_v4DevicePose.x"<<m_v4DevicePose.x<<"m_v4DevicePose.y"<<m_v4DevicePose.y<<"m_v4DevicePose.z"<<m_v4DevicePose.z<<endl;
-					cout<<"img4d->getYDim()"<<img4d->getYDim()<<"img4d->getXDim()"<<img4d->getXDim()<<"img4d->getZDim()"<<img4d->getZDim()<<endl;
-
-					bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
-						||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
-						||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
-
-					if((!IsmarkerValid)&&(!IsOutofBounds))
+					if(!IsmarkerValid)
 					{
 						SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
 					}
@@ -5830,7 +5827,6 @@ void CMainApplication::SetupGlobalMatrix()
 	qDebug("old: center.x = %f,center.y = %f,center.z = %f\n",loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z);
 
 	m_globalScale = 1 / maxD * 2; // these numbers are related to room size
-	
 	float trans_x = 0.6 ;
 	float trans_y = 1.5 ;
 	float trans_z = 0.4 ;
@@ -6428,7 +6424,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 	if( !bIsInputCapturedByAnotherProcess )
 	{
 		glUseProgram( m_unControllerRayProgramID );
-        glUniformMatrix4fv( m_nControllerRayMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
+		glUniformMatrix4fv( m_nControllerRayMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
 		glBindVertexArray( m_iControllerRayVAO );
 		glEnable(GL_DEPTH_TEST);
 		glLineWidth(6);
@@ -6705,14 +6701,13 @@ QString CMainApplication::NT2QString()
 
 void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
 {	
-    QStringList qsl = QString(msg).trimmed().split(" ",Qt::SkipEmptyParts);
+	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
 	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
 	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
 	NeuronSWC S_temp;
 	NeuronTree newTempNT;
 	newTempNT.listNeuron.clear();
 	newTempNT.hashNeuron.clear();
-    qDebug()<<"type"<<type;
 	//each segment has a unique ID storing as its name
 	newTempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
 	for(int i=0;i<str_size;i++)
@@ -6981,11 +6976,6 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 	return pRenderModel;
 }
 
-
-float CMainApplication::GetGlobalScale()
-{
-	return m_globalScale;
-}
 
 //-----------------------------------------------------------------------------
 // Purpose: Create/destroy GL a Render Model for a single tracked device
@@ -8052,7 +8042,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
 		{
-            m_modeGrip_L = _Freeze;
+			m_modeGrip_L = _Freeze;
 		}
 		 if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
 		{

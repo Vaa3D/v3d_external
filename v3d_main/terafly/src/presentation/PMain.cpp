@@ -243,29 +243,29 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(exitAction);
 #ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
-        collaborateMenu=menuBar->addMenu("Collaborate");
-        loginAction=new QAction("Login",this);
-        logoutAction=new QAction("Logout",this);
-        importAction=new QAction("Import annotation to cloud",this);
-        downAction=new QAction("Download annotation from cloud",this);
-        loadAction= new QAction("Load annotation and collaborate",this);
+    //        collaborateMenu=menuBar->addMenu("Collaborate");
+    //        loginAction=new QAction("Login",this);
+    //        logoutAction=new QAction("Logout",this);
+    //        importAction=new QAction("Import annotation to cloud",this);
+    //        downAction=new QAction("Download annotation from cloud",this);
+    //        loadAction= new QAction("Load annotation and collaborate",this);
 
-        collaborateMenu->addAction(loginAction);
-        collaborateMenu->addAction(importAction);
-        collaborateMenu->addAction(downAction);
-        collaborateMenu->addAction(loadAction);
-        collaborateMenu->addAction(logoutAction);
+    //        collaborateMenu->addAction(loginAction);
+    //        collaborateMenu->addAction(importAction);
+    //        collaborateMenu->addAction(downAction);
+    //        collaborateMenu->addAction(loadAction);
+    //        collaborateMenu->addAction(logoutAction);
 
-        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
-        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
-        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
-        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
-        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
+    //        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
+    //        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
+    //        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
+    //        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
+    //        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
 
-        logoutAction->setEnabled(false);
-        importAction->setEnabled(false);
-        downAction->setEnabled(false);
-        loadAction->setEnabled(false);
+    //        logoutAction->setEnabled(false);
+    //        importAction->setEnabled(false);
+    //        downAction->setEnabled(false);
+    //        loadAction->setEnabled(false);
         //managesocket=0;
 #endif
     /*---------------------------------------------------*/
@@ -3960,243 +3960,7 @@ int PMain::getCViewerID()
 
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
-void PMain::login()
-{
-    qDebug()<<"in login()";
-    qDebug()<<"QSettings settings";
-    QSettings settings("HHMI", "Vaa3D");
-    QString serverNameDefault = "";
-    if(!settings.value("vr_serverName").toString().isEmpty())
-        serverNameDefault = settings.value("vr_serverName").toString();
-    bool ok1;
-    QString serverName = QInputDialog::getText(0, "Server Address",
-        "Please enter the server address:", QLineEdit::Normal,
-        serverNameDefault, &ok1);
-    QString manageserver_Port;
-    QString userName;
 
-    if(!ok1||serverName.isEmpty())
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        return ;
-    }else
-    {
-        settings.setValue("vr_serverName", serverName);
-        QString PortDefault = "";
-        if(!settings.value("vr_PORT").toString().isEmpty())
-            PortDefault = settings.value("vr_PORT").toString();
-        bool ok2;
-         manageserver_Port = QInputDialog::getText(0, "Port",//
-            "Please enter server port:", QLineEdit::Normal,
-            PortDefault, &ok2);
-
-        if(!ok2 || manageserver_Port.isEmpty())//
-        {
-            qDebug()<<"WRONG!EMPTY! ";
-            return ;
-        }
-        else
-        {
-            settings.setValue("vr_PORT", manageserver_Port);//
-            QString userNameDefault = "";
-            if(!settings.value("vr_userName").toString().isEmpty())
-                userNameDefault = settings.value("vr_userName").toString();
-            bool ok3;
-             userName = QInputDialog::getText(0, "Lgoin Name",
-                "Please enter your login name:", QLineEdit::Normal,
-                userNameDefault, &ok3);
-
-            if(!ok3 || userName.isEmpty())
-            {
-                qDebug()<<"WRONG!EMPTY! ";
-                //return SendLoginRequest();
-                return ;
-            }else
-                settings.setValue("vr_userName", userName);
-        }
-    }
-    qDebug()<<"test login ";
-
-    qDebug()<<"tset 2";
-    managesocket=new ManageSocket;
-    managesocket->ip=serverName;
-    managesocket->manageport=manageserver_Port;
-    managesocket->name=userName;
-    qDebug()<<"test 3";
-
-    managesocket->connectToHost(serverName,manageserver_Port.toInt());
-
-    if( !managesocket->waitForConnected())
-    {
-//        managesocket->deleteLater();
-        QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
-        delete  managesocket;
-        return;
-    }
-    else{
-        qDebug()<<"send:"<<QString(userName+":login."+"\n");
-        connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
-        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-
-        managesocket->write(QString(userName+":login."+"\n").toUtf8());
-
-        loginAction->setText(serverName);
-        loginAction->setEnabled(false);
-        logoutAction->setEnabled(true);
-        importAction->setEnabled(true);
-        downAction->setEnabled(true);
-        loadAction->setEnabled(true);
-    }
-}
-
-void PMain::logout()
-{
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        managesocket->write(QString(managesocket->name+":logout."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::import()
-{
-
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        managesocket->write(QString(managesocket->name+":import."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-
-}
-
-void PMain::download()
-{
-
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-
-        managesocket->write(QString(managesocket->name+":down."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::load()
-{
-    CViewer *cur_win = CViewer::getCurrent();
-    if(!cur_win)
-    {
-        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
-        return;
-    }
-
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        qDebug()<<"-----------------load annotation----------";
-        connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
-
-        cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
-
-        connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(SendLoginRequest(QString,QString,QString)));
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
-                managesocket,SLOT(messageMade()));
-        connect(managesocket,SIGNAL(disconnected()),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));//注意，可能需要修改
-        managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::deleteManageSocket()
-{
-    qDebug()<<"delete managesocket";
-    qDebug()<<managesocket;
-    managesocket->deleteLater();
-//    delete managesocket;
-//    managesocket=NULL;
-//    managesocket->deleteLater();
-    loginAction->setText("log in");
-    loginAction->setEnabled(true);
-    logoutAction->setEnabled(false);
-    downAction->setEnabled(false);
-    importAction->setEnabled(false);
-    loadAction->setEnabled(false);
-    return;
-}
-
-void PMain::ColLoadANO(QString ANOfile)
-{
-    qDebug()<<"load ANO:"<<ANOfile;
-    CViewer *cur_win = CViewer::getCurrent();
-    QString ANOpath="./clouddata/"+ANOfile;
-    qDebug()<<"test path= "<<ANOpath;
-    if(!ANOpath.isEmpty())
-    {
-
-        annotationsPathLRU = ANOpath.toStdString();
-        CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
-        NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
-
-        // save current cursor and set wait cursor
-        QCursor cursor = cur_win->view3DWidget->cursor();
-        if(PAnoToolBar::isInstantiated())
-            PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-        CViewer::setCursor(Qt::WaitCursor);
-
-        // load
-        cur_win->loadAnnotations();
-        saveAnnotationsAction->setEnabled(true);
-        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
-        virtualSpaceSizeMenu->setEnabled(false);
-        myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
-
-        // reset saved cursor
-        CViewer::setCursor(cursor);
-        if(PAnoToolBar::isInstantiated())
-			//PAnoToolBar::instance()->setCursor(cursor);
-			PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
-        annotationChanged = true;
-        updateOverview();
-        qDebug()<<"ok";
-
-        QRegExp anoExp("(.*).ano");
-        QString tmp;
-        if(anoExp.indexIn(ANOpath)!=-1)
-        {
-            tmp=anoExp.cap(1);
-        }
-        QFile *f = new QFile(tmp+".ano");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
-
-        f = new QFile(tmp+".ano.eswc");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
-
-        f = new QFile(tmp+".ano.apo");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
-
-
-    }
-}
 
 #endif
 
