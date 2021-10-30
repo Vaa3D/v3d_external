@@ -198,19 +198,19 @@ class terafly::VirtualPyramidLayer : public iim::VirtualVolume
                 int _level,                         // pyramid level (0 = highest-res, the coarser the resolution the higher)
                 tf::VirtualPyramid* _parent,        // container
                 tf::xyz<int> _reduction_factor)     // reduction factor relative to the highest-res image
-        throw (iim::IOException);
+         ;
 
         // deconstructor
-		virtual ~VirtualPyramidLayer() throw (iim::IOException);
+        virtual ~VirtualPyramidLayer() ;
 
         // GET methods
         tf::VirtualPyramid* pyramid(){return _parent;}
         tf::xyz<int> resamplingFactor(){return _resamplingFactor;}
 
         // inherited pure virtual methods, to implement
-        virtual void initChannels ( ) throw (iim::IOException);
-        virtual iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1)  throw (iim::IOException);
-        virtual iim::uint8 *loadSubvolume_to_UINT8(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1, int *channels=0, int ret_type=iim::DEF_IMG_DEPTH) throw (iim::IOException);
+        virtual void initChannels ( )  ;
+        virtual iim::real32 *loadSubvolume_to_real32(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1)   ;
+        virtual iim::uint8 *loadSubvolume_to_UINT8(int V0=-1,int V1=-1, int H0=-1, int H1=-1, int D0=-1, int D1=-1, int *channels=0, int ret_type=iim::DEF_IMG_DEPTH)  ;
         virtual float getVXL_1(){return VXL_H;}
         virtual float getVXL_2(){return VXL_V;}
         virtual float getVXL_3(){return VXL_D;}
@@ -268,7 +268,7 @@ class terafly::HyperGridCache
         throw (iim::IOException, tf::RuntimeException, iom::exception);
 
         // destructor
-        ~HyperGridCache() throw (iim::IOException);
+        ~HyperGridCache()  ;
 
 
         // get block size

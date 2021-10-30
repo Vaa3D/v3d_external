@@ -92,7 +92,7 @@
 
 include(v3d_essential.pro)
 include(../terafly/terafly.pro)
-
+QMAKE_CXXFLAGS +=-std=c++0x
 # mozak module
 include(../mozak/m_terafly/m_teramanager.pro)
 RESOURCES += ../mozak/mozak.qrc

@@ -3,16 +3,16 @@
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 #include "../basic_c_fun/v3d_interface.h"
 
 
-#include <openvr.h>
+#include <openvr/openvr.h>
 #include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
-#include <GL/glew.h>
+#include <glew/GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -539,12 +539,12 @@ private:
 	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
-	__int64 CounterStart;
+    int64 CounterStart;
 
 	int frameCount;
 	int fps;
 
-	__int64 frameTimeOld;
+    int64 frameTimeOld;
 	double frameTime;
 
 	void StartTimer();

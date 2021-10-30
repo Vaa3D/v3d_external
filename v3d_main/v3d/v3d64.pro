@@ -2,7 +2,7 @@
 # Created: 2009-7-6 v3d64 v0.1 
 # Last change: 2014-09-21
 # ######################################################################
-
+QMAKE_CXXFLAGS +=-std=c++0x
 message(CONFIG=$$unique(CONFIG))
 macx {
         message(configure for MACX -arch x86_64)

@@ -94,7 +94,7 @@ TARGET +=
 DEPENDPATH += . v3d
 INCLUDEPATH += .
 
-
+QMAKE_CXXFLAGS +=-std=c++0x
 #DEFINES += USE_Qt5  #this might be invoked from commandline like "~/Qt5.4.1/5.4/clang_64/bin/qmake DEFINES+=USE_Qt5 vaa3d64.pro", however it seems there is some bug
 
 
@@ -111,10 +111,10 @@ win32 { # platform: win32-command-mingw
 	LOCAL_DIR = ../common_lib/      # c:/msys/local
 	CONFIG = $$unique(CONFIG)
 	CONFIG -= debug # for Qt-win32 which only has release install(no debug)
-    CONFIG += console
-LIBS += -L$$MINGW_DIR/lib \
-	-L$$LOCAL_DIR/lib_win32
-    DEFINES += __ALLOW_VR_FUNCS__
+        CONFIG += console
+        LIBS += -L$$MINGW_DIR/lib \
+            -L$$LOCAL_DIR/lib_win32
+
 
 }
 
@@ -371,6 +371,7 @@ unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 
 win32 {
+DEFINES += __ALLOW_VR_FUNCS__
 INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
 INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
 INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
@@ -385,6 +386,35 @@ HEADERS += \
     ../vrrenderer/VRFinger.h \
     ../vrrenderer/V3dR_Communicator.h \
     ../vrrenderer/VR_MainWindow.h 
+
+SOURCES += \
+    ../vrrenderer/v3dr_gl_vr.cpp \
+    ../vrrenderer/Cylinder.cpp \
+    ../vrrenderer/Sphere.cpp \
+    ../vrrenderer/Matrices.cpp \
+    ../vrrenderer/lodepng.cpp \
+    ../vrrenderer/RenderableObject.cpp \
+    ../vrrenderer/VRFinger.cpp \
+    ../vrrenderer/V3dR_Communicator.cpp \
+    ../vrrenderer/VR_MainWindow.cpp
+}
+
+unix:!macx {
+DEFINES += __ALLOW_VR_FUNCS__
+INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
+LIBS += -L../common_lib/lib_unix64 -lSDL2  -lGLEW -lopenvr_api
+HEADERS += \
+    ../vrrenderer/v3dr_gl_vr.h \
+    ../vrrenderer/Cylinder.h \
+    ../vrrenderer/Sphere.h \
+    ../vrrenderer/Matrices.h \
+    ../vrrenderer/lodepng.h \
+    ../vrrenderer/RenderableObject.h \
+    ../vrrenderer/VRFinger.h \
+    ../vrrenderer/V3dR_Communicator.h \
+    ../vrrenderer/VR_MainWindow.h
 
 SOURCES += \
     ../vrrenderer/v3dr_gl_vr.cpp \
