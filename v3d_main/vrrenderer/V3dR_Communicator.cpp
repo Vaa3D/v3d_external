@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 
-static struct Agent {
+struct Agent {
 	QString name;
 	bool isItSelf;
 	int colorType;

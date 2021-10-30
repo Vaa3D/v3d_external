@@ -32,7 +32,7 @@ CONFIG += use_experimental_features
 #set up Vaa3D and Qt source path
 V3DMAINPATH =  ..
 QT_PATH = $$dirname(QMAKE_QMAKE)/..
-
+QMAKE_CXXFLAGS +=-std=c++0x
 #HDF5 headers and precompiled library and dependencies (libz and libszip)
 INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 
@@ -85,7 +85,8 @@ DEFINES += TERACONVERTER_PATCH
 
 #setup iomanager
 INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
-HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h
+HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h \
+
 HEADERS += ../terafly/src/terarepo/src/iomanager/ioplugins.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/IOPluginAPI.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/exampleplugin2D/exampleplugin2D.h
@@ -94,7 +95,8 @@ HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/dcimg/dcimg.h
 #HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/opencv2D/opencv2D.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff2D/tiff2D.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff3D/tiff3D.h
-SOURCES += ../terafly/src/terarepo/src/iomanager/iomanager.config.cpp
+SOURCES += ../terafly/src/terarepo/src/iomanager/iomanager.config.cpp \
+
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/exampleplugin2D/exampleplugin2D.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/IMS_HDF5/IMS_HDF5.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/dcimg/dcimg.cpp
@@ -105,6 +107,8 @@ SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/tiff3D/tiff3D.cpp
 #setup imagemanager
 INCLUDEPATH += ../terafly/src/terarepo/src/imagemanager
 HEADERS += ../terafly/src/terarepo/src/imagemanager/BDVVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/MultiCycleVolume.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/MultiSliceVolume.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/HDF5Mngr.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/imBlock.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/dirent_win.h
@@ -124,6 +128,7 @@ HEADERS += ../terafly/src/terarepo/src/imagemanager/VirtualFmtMngr.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/VirtualVolume.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/UnstitchedVolume.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/IMS_HDF5Mngr.h
+HEADERS += ../terafly/src/terarepo/src/imagemanager/ComposedVolume.h
 SOURCES += ../terafly/src/terarepo/src/imagemanager/IMS_HDF5Mngr.cpp
 SOURCES += ../terafly/src/terarepo/src/imagemanager/BDVVolume.cpp
 SOURCES += ../terafly/src/terarepo/src/imagemanager/HDF5Mngr.cpp
@@ -144,8 +149,9 @@ SOURCES += ../terafly/src/terarepo/src/imagemanager/TimeSeries.cpp
 SOURCES += ../terafly/src/terarepo/src/imagemanager/VirtualFmtMngr.cpp
 SOURCES += ../terafly/src/terarepo/src/imagemanager/VirtualVolume.cpp
 SOURCES += ../terafly/src/terarepo/src/imagemanager/UnstitchedVolume.cpp
-
-
+SOURCES += ../terafly/src/terarepo/src/imagemanager/MultiCycleVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/MultiSliceVolume.cpp
+SOURCES += ../terafly/src/terarepo/src/imagemanager/ComposedVolume.cpp
 # set up stitcher
 INCLUDEPATH += ../terafly/src/terarepo/src/stitcher
 HEADERS += ../terafly/src/terarepo/src/stitcher/S_config.h
@@ -158,6 +164,8 @@ HEADERS += ../terafly/src/terarepo/src/stitcher/StackStitcher.h
 HEADERS += ../terafly/src/terarepo/src/stitcher/TPAlgo.h
 HEADERS += ../terafly/src/terarepo/src/stitcher/TPAlgoMST.h
 HEADERS += ../terafly/src/terarepo/src/stitcher/resumer.h
+HEADERS += ../terafly/src/terarepo/src/stitcher/TPAlgoLQP.h
+
 SOURCES += ../terafly/src/terarepo/src/stitcher/Displacement.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/DisplacementMIPNCC.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/MergeTiles.cpp
@@ -168,7 +176,7 @@ SOURCES += ../terafly/src/terarepo/src/stitcher/StackStitcher.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgo.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgoMST.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/resumer.cpp
-
+SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgoLQP.cpp
 # set up volumeconverter
 INCLUDEPATH += ../terafly/src/terarepo/src/utils/volumeconverter
 #HEADERS += ../terafly/src/terarepo/src/utils/volumeconverter/S_config.h

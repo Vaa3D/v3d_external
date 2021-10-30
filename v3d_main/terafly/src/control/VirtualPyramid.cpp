@@ -918,7 +918,7 @@ tf::VirtualPyramidLayer::VirtualPyramidLayer(
         int level,                         // pyramid level (0 for the highest-res, the coarser the resolution the higher)
         VirtualPyramid* parent,            // container
         xyz<int> _reduction_factor)         // reduction factor relative to the highest-res image
-throw (iim::IOException) : VirtualVolume()
+  : VirtualVolume()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -942,7 +942,7 @@ throw (iim::IOException) : VirtualVolume()
     DIM_D = _parent->_vol->getDIM_D()/static_cast<float>(_resamplingFactor.z);
 }
 
-void tf::VirtualPyramidLayer::initChannels() throw (iim::IOException)
+void tf::VirtualPyramidLayer::initChannels()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -956,7 +956,7 @@ void tf::VirtualPyramidLayer::initChannels() throw (iim::IOException)
 }
 
 // VirtualPyramidLayer deconstructor
-tf::VirtualPyramidLayer::~VirtualPyramidLayer() throw (iim::IOException)
+tf::VirtualPyramidLayer::~VirtualPyramidLayer()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
     active = 0;
@@ -981,7 +981,7 @@ iim::real32* tf::VirtualPyramidLayer::loadSubvolume_to_real32(
         int H1 /* = -1 */,
         int D0 /* = -1 */,
         int D1 /* = -1 */)
-throw (iim::IOException)
+
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -999,7 +999,7 @@ iim::uint8* tf::VirtualPyramidLayer::loadSubvolume_to_UINT8(
         int D1 /* = -1 */,
         int *channels /* = 0 */,
         int ret_type /* =iim::DEF_IMG_DEPTH */)
-throw (iim::IOException)
+
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -1083,7 +1083,7 @@ throw (iim::IOException, tf::RuntimeException, iom::exception)
 }
 
 // destructor
-tf::HyperGridCache::~HyperGridCache() throw (iim::IOException)
+tf::HyperGridCache::~HyperGridCache()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 

@@ -2,7 +2,7 @@
 
 #include <vector>
 // GL Includes
-#include <GL/glew.h> // Contains all the necessery OpenGL includes
+#include <glew/GL/glew.h> // Contains all the necessery OpenGL includes
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

@@ -156,7 +156,8 @@ void  VectorToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list,int nttype, double
 
     time(&timer2);  /* get current time; same as: timer = time(NULL)  */
 
-    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
+//    seconds = difftime(timer2,timegm(&y2k)); //Timestamp LMG 27/9/2018
+    seconds=1;
     qDebug("Timestamp at VectorToNeuronTree (VR) (seconds since January 1, 2000 in UTC): %.0f", seconds);
 
      int count = 0;

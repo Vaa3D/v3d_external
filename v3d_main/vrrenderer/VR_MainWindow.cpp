@@ -577,7 +577,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	{
 		if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
-			onReadySend(pMainApplication->NT2QString());
+            auto tmp=pMainApplication->NT2QString();
+            onReadySend(tmp);
 			CURRENT_DATA_IS_SENT=true;
 			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
 		}
