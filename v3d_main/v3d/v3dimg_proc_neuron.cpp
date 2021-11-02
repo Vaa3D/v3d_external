@@ -1528,16 +1528,16 @@ bool My4DImage::proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree,
 		if (b_do_all_seg && seg_id!=seg_id0)
 			continue; //in this case only display the pinpointed seg in figure
 
-//		if (b_dispfig)
-//		{
-//			barFigureDialog *dlg1 = new barFigureDialog(vvec1, labelsLT1, labelRB, 0, QSize(500, 150), QColor(50,50,50));
-//			dlg1->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Total Mass").arg(p_tree->file).arg(seg_id));
-//			dlg1->show();
+        if (b_dispfig)
+        {
+            barFigureDialog *dlg1 = new barFigureDialog(vvec1, labelsLT1, labelRB, 0, QSize(500, 150), QColor(50,50,50));
+            dlg1->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Total Mass").arg(p_tree->file).arg(seg_id));
+            dlg1->show();
 
-//			barFigureDialog *dlg2 = new barFigureDialog(vvec2, labelsLT2, labelRB, 0, QSize(500, 150), QColor(50,50,50));
-//			dlg2->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Mean Intensity").arg(p_tree->file).arg(seg_id));
-//			dlg2->show();
-//		}
+            barFigureDialog *dlg2 = new barFigureDialog(vvec2, labelsLT2, labelRB, 0, QSize(500, 150), QColor(50,50,50));
+            dlg2->setWindowTitle(QObject::tr("Profile (neuron #%1 : seg #%2) Mean Intensity").arg(p_tree->file).arg(seg_id));
+            dlg2->show();
+        }
 	}
 	return res;
 }

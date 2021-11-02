@@ -721,7 +721,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
         QPaintEvent *pEvent;
         paintEvent(pEvent);
 
-        //DO_updateGL(); //how do I instantly display pen track without using updateGL?
+        // DO_updateGL();
 
 
         return;

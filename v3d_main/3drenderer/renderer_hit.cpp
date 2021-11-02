@@ -2432,7 +2432,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
             else if (selectMode == smDeleteMultiNeurons)
             {
-              //  deleteMultiNeuronsByStroke();
+                deleteMultiNeuronsByStroke();
             }
             else if (selectMode == smRetypeMultiNeurons)
             {
@@ -2445,7 +2445,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             else if (selectMode == smBreakTwoNeurons)
             {
                 //breakMultiNeuronsByStroke(true);
-             //   breakTwoNeuronsByStroke(); //20170731 RZC: make a separate function for mozak to prevent confusion and interference
+                breakTwoNeuronsByStroke(); //20170731 RZC: make a separate function for mozak to prevent confusion and interference
             }
             // @ADDED by Alessandro on 2015-09-30. Select multiple markers with one-mouse stroke
             else if( selectMode == smSelectMultiMarkers)
