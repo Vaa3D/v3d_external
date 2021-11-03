@@ -117,7 +117,9 @@ int main(int argc, char **argv)
  {
      v3d_msg(QString("[%1]").arg(argv[myii]));
  }
-
+#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Floor);
+#endif
 
 #ifdef COMPILE_TO_COMMANDLINE
 

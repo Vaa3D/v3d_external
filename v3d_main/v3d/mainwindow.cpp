@@ -266,7 +266,7 @@ MainWindow::MainWindow()
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 
     const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
-    qDebug()<<"使用openGL version为："<< QString((char*)OpenGLVersion); //DLC,显示不出来，失败
+
 
 }
 
