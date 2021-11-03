@@ -39,9 +39,8 @@ macx{
 win32{
     DEFINES += WINDOWS_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
-    LIBS += -lm -lv3dtiff -lv3dnewmat
-    LIBS += -lOpengl32  -lglu32
-    LIBS += -L../common_lib/mingw64  -lhdf5 -lszip -lzlib  -lteem  -lz  -lwsock32 #for nrrd support #for nrrd support
+
+    LIBS += -L../common_lib/mingw64  -lhdf5 -lszip -lzlib  -lteem  -lz -lv3dtiff -lv3dnewmat -lOpengl32  -lglu32 -lmylib#for nrrd support #for nrrd support
 
 }
 
