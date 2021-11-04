@@ -1529,7 +1529,7 @@ tf::uint8* CViewer::getVOI(int x0, int x1,              // VOI [x0, x1) in the l
                            int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
                            int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
                            int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
-noexcept(false)
+
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, xDim = %d, yDim = %d, zDim = %d",
                                         titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp).c_str(), __itm__current__function__);
@@ -1686,7 +1686,7 @@ tf::uint8*
                             tf::direction dir /* = z */,
                             bool to_BGRA /* = false */,             //true if mip data must be stored into BGRA format
                             tf::uint8 alpha /* = 255 */)           //alpha transparency used if to_BGRA is true
-noexcept(false)
+
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, dir = %d, to_BGRA = %s, alpha = %d",
                                         titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, dir, to_BGRA ? "true" : "false", alpha).c_str(), __itm__current__function__);
@@ -1707,7 +1707,7 @@ noexcept(false)
 * Makes the current view the last one by  deleting (and deallocting) its subsequent
 * views.
 ***********************************************************************************/
-void CViewer::makeLastView() noexcept(false)
+void CViewer::makeLastView() 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1781,7 +1781,7 @@ void CViewer::restoreSubvolSpinboxState()
 /**********************************************************************************
 * Annotations are stored/loaded to/from the <CAnnotations> object
 ***********************************************************************************/
-void CViewer::storeAnnotations() noexcept(false)
+void CViewer::storeAnnotations() 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1899,7 +1899,7 @@ void CViewer::storeAnnotations() noexcept(false)
     }
 }
 
-void CViewer::clearAnnotations() noexcept(false)
+void CViewer::clearAnnotations() 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1915,7 +1915,7 @@ void CViewer::clearAnnotations() noexcept(false)
 }
 
 
-void CViewer::deleteSelectedMarkers() noexcept(false)
+void CViewer::deleteSelectedMarkers() 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1966,7 +1966,7 @@ void CViewer::deleteSelectedMarkers() noexcept(false)
 }
 
 
-void CViewer::createMarkerAt(int x, int y) noexcept(false)
+void CViewer::createMarkerAt(int x, int y) 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
@@ -1987,7 +1987,7 @@ void CViewer::createMarkerAt(int x, int y) noexcept(false)
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
-void CViewer::createMarker2At(int x, int y) noexcept(false)
+void CViewer::createMarker2At(int x, int y) 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
@@ -2017,7 +2017,7 @@ void CViewer::createMarker2At(int x, int y) noexcept(false)
     }
 }
 
-void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */) noexcept(false)
+void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */) 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
 
@@ -2068,7 +2068,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
-void CViewer::updateAnnotationSpace() noexcept(false)
+void CViewer::updateAnnotationSpace() 
 {
      /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2122,7 +2122,7 @@ void CViewer::updateAnnotationSpace() noexcept(false)
 
 }
 
-void CViewer::loadAnnotations() noexcept(false)
+void CViewer::loadAnnotations() 
 {
     myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
@@ -2212,7 +2212,7 @@ void CViewer::loadAnnotations() noexcept(false)
 * Called by the next(prev) <CViewer>  when the user  zooms out(in) and  the
 * lower(higher) resoolution has to be reestabilished.
 ***********************************************************************************/
-void CViewer::restoreViewerFrom(CViewer* source) noexcept(false)
+void CViewer::restoreViewerFrom(CViewer* source) 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, source->title = %s", titleShort.c_str(), source->titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2524,7 +2524,7 @@ void CViewer::restoreViewerFrom(CViewer* source) noexcept(false)
 * renderer at the given location.
 * This is based on the Vaa3D 3D point selection with one mouse click.
 ***********************************************************************************/
-XYZ CViewer::getRenderer3DPoint(int x, int y)  noexcept(false)
+XYZ CViewer::getRenderer3DPoint(int x, int y)  
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
 
@@ -3274,7 +3274,7 @@ void CViewer::setCursor(const QCursor& cur, bool renderer_only /* = false */)
 /**********************************************************************************
 * Refresh image data (if viewer is not busy - otherwise no refresh is possible)
 ***********************************************************************************/
-void CViewer::refresh() noexcept(false)
+void CViewer::refresh() 
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -3299,7 +3299,7 @@ void CViewer::refresh() noexcept(false)
     //this->setWaitingForData(true);
 }
 
-const Image4DSimple* CViewer::getImage() noexcept(false)
+const Image4DSimple* CViewer::getImage() 
 {
     if(imgData == 0)
         throw tf::RuntimeException("Image not yet allocated");
@@ -3318,7 +3318,7 @@ const Image4DSimple* CViewer::getImage() noexcept(false)
     return image;
 }
 
-void CViewer::setImage(int x, int y, int z) noexcept(false)
+void CViewer::setImage(int x, int y, int z) 
 {
     int current_x = (x-H0_sbox_min)/((H1_sbox_max-H0_sbox_min+1)/(volH1-volH0));
     int current_y = (y-V0_sbox_min)/((V1_sbox_max-V0_sbox_min+1)/(volV1-volV0));

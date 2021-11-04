@@ -7,10 +7,10 @@ SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgoLQP.cpp
 
 
 QT += core5compat widgets opengl openglwidgets
-CONFIG   += c++11
+#CONFIG   += c++11
 # enable Vaa3D-TeraFly mode
 DEFINES += _VAA3D_TERAFLY_PLUGIN_MODE
-QMAKE_CXXFLAGS += -std=c++11
+#QMAKE_CXXFLAGS += -std=c++11
 #generic set up
 CONFIG += use_experimental_features
 #DEFINES += QT_NO_DEBUG_STREAM

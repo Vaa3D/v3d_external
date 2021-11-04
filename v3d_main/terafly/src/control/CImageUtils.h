@@ -25,7 +25,7 @@ class terafly::CImageUtils
                 uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
                 uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
                 tf::xyz<int> scaling = tf::xyz<int>(1,1,1))	// rescaling factors along X,Y,Z (> 0 upscaling, < 0 rescaling)
-        noexcept(false);
+        ;
 
 
         /**********************************************************************************
@@ -40,7 +40,7 @@ class terafly::CImageUtils
                 uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
                 uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
                 tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// upscaling factors along X,Y,Z (positive integers only)
-        noexcept(false);
+        ;
 
         /*****************************************************************************************
         * Copy the given VOI from "src" to "dst". Offsets and downscaling on-the-fly are supported.
@@ -55,7 +55,7 @@ class terafly::CImageUtils
                 uint dst_dims[5],				// dimensions of "dst" along X, Y, Z, channels and T
                 uint dst_offset[5],				// offset of "dst" along X, Y, Z, <empty> and T
                 tf::xyz<int> scaling = tf::xyz<int>(1,1,1))				// downscaling factors along X,Y,Z (positive integers only)
-        noexcept(false);
+        ;
 
         /**********************************************************************************
         * Returns the Maximum Intensity Projection of the given VOI in a newly allocated array.
@@ -68,7 +68,7 @@ class terafly::CImageUtils
                    tf::direction dir,      //direction of projection
                    bool to_BGRA = false,    //true if mip data must be stored into BGRA format
                    tf::uint8 alpha = 255)  //alpha transparency (used if to_BGRA = true)
-           noexcept(false);
+           ;
 
 
         /**********************************************************************************
@@ -121,7 +121,7 @@ class terafly::CImageUtils
             Image4DSimple* im2,         // second image
             int i,                      // step  index
             int N)                      // steps number
-        noexcept(false);
+        ;
 
 
         /**********************************************************************************
@@ -130,7 +130,7 @@ class terafly::CImageUtils
         static Image4DSimple* addGaussianNoise(
                 Image4DSimple* im,      // input image
                 float w)                // gaussian noise weight (1 = only noise, 0 = no noise)
-        noexcept(false);
+        ;
 
 
         /**********************************************************************************

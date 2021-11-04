@@ -10,13 +10,13 @@ INCLUDEPATH += . ../common_lib/include #./basic_c_funss
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
 
-CONFIG += c++11 warn_off thread
+CONFIG +=  warn_off thread
 
 # Flags for gsoap (web services)
 QMAKE_CXXFLAGS += -DWITH_NONAMESPACES
 QMAKE_CXXFLAGS += -DWITH_PURE_VIRTUAL
 QMAKE_CXXFLAGS += -DTEEM_STATIC
-QMAKE_CXXFLAGS += -std=c++11
+#QMAKE_CXXFLAGS += -std=c++11
 INCLUDEPATH = $$unique(INCLUDEPATH)
 
 #------------From v3d_essential.pro------------------

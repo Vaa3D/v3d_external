@@ -65,7 +65,7 @@ CConverter::~CConverter()
     /**/tf::debug(tf::LEV1, "object successfully DESTROYED", __itm__current__function__);
 }
 
-void CConverter::setMembers(PConverter* pConverter) noexcept(false)
+void CConverter::setMembers(PConverter* pConverter) 
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 

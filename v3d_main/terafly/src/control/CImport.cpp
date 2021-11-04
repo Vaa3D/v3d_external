@@ -449,7 +449,7 @@ void CImport::run()
 // 2) it is not compatible with the current version OR
 // 3) contains a number of 'T' frames with T < vmapTDimMax
 bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
-                                          std::string min_required_version) noexcept(false)
+                                          std::string min_required_version) 
 {
     /**/tf::debug(tf::LEV1, strprintf("vmapFilepath = \"%s\", min_required_version = \"%s\"",
                                         vmapFilepath.c_str(), min_required_version.c_str()).c_str(), __itm__current__function__);

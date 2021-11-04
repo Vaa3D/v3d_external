@@ -164,7 +164,7 @@ class terafly::CImport : public QThread
                 return (volumes.back()->getDIM_V()-1.0f)/(volumes[resIndex]->getDIM_V()-1.0f);
             else return 1.0f;
         }
-        inline float getRescaleFactor(int res0, int res1, iim::axis dir) noexcept(false)
+        inline float getRescaleFactor(int res0, int res1, iim::axis dir) 
         {
             try{
                 return volumes[res0]->getDIM(dir)/static_cast<float>(volumes[res1]->getDIM(dir));

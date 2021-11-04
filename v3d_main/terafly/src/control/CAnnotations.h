@@ -16,7 +16,7 @@
 
 
 
-//...............................注意noexcept(false)全部都换成了noexcept(false);
+//...............................注意全部都换成了;
 
 
 //annotation structure
@@ -40,7 +40,7 @@ struct terafly::annotation
     double timestamp;               //for timestamping and quality control LMG 8/10/2018
     int tfresindex;                 //for keeping TeraFly resolution index LMG 13/12/2018
     // constructor and deconstructor
-    annotation() noexcept(false);
+    annotation() ;
     annotation(const CellAPO & c)
     {
         x = c.x;
@@ -143,25 +143,25 @@ class terafly::CAnnotations
                 /*** SUPPORT methods ***/
 
                 //recursive support methods
-                void        _rec_clear(const Poctant& p_octant) noexcept(false);
-                void        _rec_insert(const Poctant& p_octant, annotation& neuron) noexcept(false);
-                void        _rec_remove(const Poctant& p_octant, annotation* neuron) noexcept(false);
-                tf::uint32 _rec_deep_count(const Poctant& p_octant) noexcept(false);
-                tf::uint32 _rec_height(const Poctant& p_octant) noexcept(false);
+                void        _rec_clear(const Poctant& p_octant) ;
+                void        _rec_insert(const Poctant& p_octant, annotation& neuron) ;
+                void        _rec_remove(const Poctant& p_octant, annotation* neuron) ;
+                tf::uint32 _rec_deep_count(const Poctant& p_octant) ;
+                tf::uint32 _rec_height(const Poctant& p_octant) ;
                 void        _rec_print(const Poctant& p_octant);
-                void        _rec_search(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int, std::list<annotation*>& neurons) noexcept(false);
-                Poctant     _rec_find(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) noexcept(false);
-                tf::uint32 _rec_count(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) noexcept(false);
-                void        _rec_prune(const Poctant& p_octant) noexcept(false);
-                void        _rec_to_neuron_tree(const Poctant& p_octant, QList<NeuronSWC> &segments) noexcept(false);
+                void        _rec_search(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int, std::list<annotation*>& neurons) ;
+                Poctant     _rec_find(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) ;
+                tf::uint32 _rec_count(const Poctant& p_octant, const interval_t& V_int, const interval_t& H_int, const interval_t& D_int) ;
+                void        _rec_prune(const Poctant& p_octant) ;
+                void        _rec_to_neuron_tree(const Poctant& p_octant, QList<NeuronSWC> &segments) ;
 
                 //returns true if two given volumes intersect each other
                 bool inline intersects(const interval_t& V1_int,const interval_t& H1_int,const interval_t& D1_int,
-                                       int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)  noexcept(false);
+                                       int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)  ;
 
                 //returns true if first volume contains second volume
                 bool inline contains  (const interval_t& V1_int, const interval_t& H1_int, const interval_t& D1_int,
-                                       int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)  noexcept(false);
+                                       int& V2_start, int& V2_dim, int& H2_start, int& H2_dim, int& D2_start, int& D2_dim)  ;
 
             public:
 
@@ -170,31 +170,31 @@ class terafly::CAnnotations
                 ~Octree(void);
 
                 //clears octree content and deallocates used memory
-                void clear() noexcept(false);
+                void clear() ;
 
                 //insert given neuron in the octree
-                void insert(annotation& neuron) noexcept(false);
+                void insert(annotation& neuron) ;
 
                 //remove given neuron from the octree (returns 1 if succeeds)
-                bool remove(annotation* neuron) noexcept(false);
+                bool remove(annotation* neuron) ;
 
                 //search for neurons in the given 3D volume and puts found neurons into 'neurons'
-                void find(interval_t V_int, interval_t H_int, interval_t D_int, std::list<annotation*>& neurons) noexcept(false);
+                void find(interval_t V_int, interval_t H_int, interval_t D_int, std::list<annotation*>& neurons) ;
 
                 //search for the annotations at the given coordinate. If found, returns the address of the annotations list
-                std::list<annotation*>* find(float x, float y, float z) noexcept(false);
+                std::list<annotation*>* find(float x, float y, float z) ;
 
                 //returns the number of neurons (=leafs) in the given volume without exploring the entire data structure
-                tf::uint32 count(interval_t V_int = interval_t(-1,-1), interval_t H_int = interval_t(-1,-1), interval_t D_int = interval_t(-1,-1))  noexcept(false);
+                tf::uint32 count(interval_t V_int = interval_t(-1,-1), interval_t H_int = interval_t(-1,-1), interval_t D_int = interval_t(-1,-1))  ;
 
                 //returns the number of neurons (=leafs) in the octree by exploring the entire data structure
-                tf::uint32 deep_count()  noexcept(false);
+                tf::uint32 deep_count()  ;
 
                 //returns the octree height
-                tf::uint32 height()  noexcept(false);
+                tf::uint32 height()  ;
 
                 //prunes the octree by removing all nodes duplicates while maintaining the same branched structure
-                void prune() noexcept(false);
+                void prune() ;
 
                 //print the octree content
                 void print();
@@ -202,7 +202,7 @@ class terafly::CAnnotations
                 /*********************************************************************************
                 * Converts the octree to a NeuronTree. This is actually a draw method.
                 **********************************************************************************/
-                NeuronTree toNeuronTree() noexcept(false);
+                NeuronTree toNeuronTree() ;
 
                 friend class CAnnotations;
                 friend struct annotation;
@@ -249,7 +249,7 @@ class terafly::CAnnotations
                 uniqueInstance = new CAnnotations(volHeight, volWidth, volDepth);
             return uniqueInstance;
         }
-        static CAnnotations* getInstance() noexcept(false)
+        static CAnnotations* getInstance() 
         {
             if(uniqueInstance)
                 return uniqueInstance;
@@ -262,13 +262,13 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Find/Add/Clear annotation(s)
         **********************************************************************************/
-        void findLandmarks (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, QList<LocationSimple> &markers) noexcept(false);
-        void addLandmarks  (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, LandmarkList& markers) noexcept(false);
-        void clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) noexcept(false);
+        void findLandmarks (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, QList<LocationSimple> &markers) ;
+        void addLandmarks  (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, LandmarkList& markers) ;
+        void clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) ;
 
-        void findCurves (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, QList<NeuronSWC> &curves) noexcept(false);
-        void addCurves  (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, NeuronTree& nt) noexcept(false);
-        void clearCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) noexcept(false);
+        void findCurves (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, QList<NeuronSWC> &curves) ;
+        void addCurves  (tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range, NeuronTree& nt) ;
+        void clearCurves(tf::interval_t X_range, tf::interval_t Y_range, tf::interval_t Z_range) ;
 
         // @obsolete void removeCurves(std::list<NeuronSWC> &curves) throw (RuntimeException);
         // @obsolote void removeLandmarks(std::list<LocationSimple> &markers) throw (RuntimeException);
@@ -278,9 +278,9 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Save/load method
         **********************************************************************************/
-        void save(const char* filepath,bool removedupnode, bool as_swc) noexcept(false);
-        void load(const char* filepath) noexcept(false);
-        void deleteOldAnnotations(const char* filepath) noexcept(false);
+        void save(const char* filepath,bool removedupnode, bool as_swc) ;
+        void load(const char* filepath) ;
+        void deleteOldAnnotations(const char* filepath) ;
 
         void removeDuplicatedNode(QList<NeuronSWC> &saveSWC,QList<NeuronSWC> &result);
         bool Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & result, V3DLONG newrootid=-1);
@@ -288,7 +288,7 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Removes all the annotations from the octree
         **********************************************************************************/
-        void clear()  noexcept(false)
+        void clear()  
         {
             /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -321,13 +321,13 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Counts markers having distance <= d from each other
         **********************************************************************************/
-        tf::uint32 countDuplicateMarkers(int d=0) noexcept(false);
+        tf::uint32 countDuplicateMarkers(int d=0) ;
 
 
         /*********************************************************************************
         * Prunes the octree by removing duplicate nodes w/o altering the branching structure
         **********************************************************************************/
-        void prune() noexcept(false)
+        void prune() 
         {
             if(octree)
                 octree->prune();
@@ -338,12 +338,12 @@ class terafly::CAnnotations
         /*********************************************************************************
         * Conversion from VTK to APO files
         **********************************************************************************/
-        static void convertVtk2APO(std::string vtkPath, std::string apoPath) noexcept(false);
+        static void convertVtk2APO(std::string vtkPath, std::string apoPath) ;
 
         /*********************************************************************************
         * Conversion from MaMuT to APO files
         **********************************************************************************/
-        static void convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) noexcept(false);
+        static void convertMaMuT2APO(std::string MaMuTPath, std::string apoPath) ;
 
         /*********************************************************************************
         * Diff between two APO files
@@ -354,7 +354,7 @@ class terafly::CAnnotations
                             int y0=0, int y1=-1,    // VOI [y0, y1) in the global reference sys
                             int z0=0, int z1=-1,    // VOI [z0, z1) in the global reference sys
                             std::string diffPath="")// path where the difference apo file (containing only FPs and FNs) has to be stored (optional)
-        noexcept(false);
+        ;
 
 
         /*********************************************************************************
@@ -366,7 +366,7 @@ class terafly::CAnnotations
                                int d,               // maximum distance between a finding that matches with a truth
                                std::string filter,  // filter cells in apo2 by name
                                const std::string & outputPath = "")
-        noexcept(false);
+        ;
 
 
         /*********************************************************************************
@@ -377,7 +377,7 @@ class terafly::CAnnotations
                             int x0=0, int x1=-1,    // VOI [x0, x1) in the global reference sys
                             int y0=0, int y1=-1,    // VOI [y0, y1) in the global reference sys
                             int z0=0, int z1=-1)    // VOI [z0, z1) in the global reference sys
-        noexcept(false);
+        ;
 
 
         /*********************************************************************************
@@ -387,7 +387,7 @@ class terafly::CAnnotations
                                     std::string outputPath, // where output apo file is saved
                                     int d,                  // maximum distance between 2 duplicates
                                     RGBA8 color)            // VOI [y0, y1) in the global reference sys
-        noexcept(false);
+        ;
 
 
         /*********************************************************************************
@@ -400,14 +400,14 @@ class terafly::CAnnotations
                             int x0=0,               // (0,0,0) block X-coordinate
                             int y0=0,               // (0,0,0) block Y-coordinate
                             int z0=0)               // (0,0,0) block Z-coordinate
-        noexcept(false);
+        ;
 
         /*********************************************************************************
         *
         **********************************************************************************/
         static void diffnAPO(QStringList apos,        // inputs
                             std::string outputPath) // where output apo file is saved
-        noexcept(false);
+        ;
 
 
         static inline bool isMarkerOutOfRendererBounds(const LocationSimple& marker, tf::CViewer &w){
