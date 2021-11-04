@@ -28,18 +28,16 @@ public:
 	bool SendLoginRequest();
 	//void StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess);
 	void Update3DViewNTList(QString &msg, int type);
-	
-	void Collaborationsendmessage();
-	void Collaborationaskmessage();
+
 public slots:
 	//void RunVRMainloop();
 	//void SendHMDPosition();
-	void CollaborationMainloop();
 private slots:
-	
+
     void onReadyRead();
     void onConnected();
     void onDisconnected();
+
 private:
 	
     QTcpSocket* socket;
@@ -49,7 +47,6 @@ private:
 	bool * clienton;
 	QList<NeuronTree> *NTList_3Dview;	
 	int NTNumReceieved;
-	int NTNumcurrentUser;
 };
 
 

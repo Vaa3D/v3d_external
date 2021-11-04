@@ -27,15 +27,7 @@ public:
     ~VR_MainWindow();
 	void onReadySend(QString &send_MSG);
 	bool SendLoginRequest(bool resume = false);
-    int StartVRScene(QList<NeuronTree>* ntlist,
-                     My4DImage *i4d,
-                     MainWindow *pmain,
-                     bool isLinkSuccess,
-                     QString ImageVolumeInfo,
-                     int &CreatorRes,
-                     XYZ* zoomPOS = 0,
-                     XYZ *CreatorPos = 0,
-                     XYZ  MaxResolution = 0);
+	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
 	XYZ VRVolumeStartPoint;
 	XYZ VRVolumeEndPoint;
 	XYZ VRVolumeCurrentRes;

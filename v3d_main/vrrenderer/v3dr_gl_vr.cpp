@@ -2,7 +2,7 @@
 #include "VRFinger.h"
 #include"./spline.h"
 //#include <GL/glew.h>
-#include <SDL/SDL_opengl.h>
+#include <SDL_opengl.h>
 
 #include "../v3d/vr_vaa3d_call.h"
 #include "../neuron_tracing/fastmarching_linker.h"
@@ -71,7 +71,7 @@ bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
 float CMainApplication::iscaleZ =1;
-float CMainApplication::fBrightness = 0.0;
+float CMainApplication::fBrightness = 0.9;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
@@ -654,17 +654,17 @@ static bool g_bPrintf = true;
 //-----------------------------------------------------------------------------
 void dprintf( const char *fmt, ... )
 {
-//	va_list args;
-//	char buffer[ 2048 ];
+	va_list args;
+	char buffer[ 2048 ];
 
-//	va_start( args, fmt );
-//	vsprintf_s( buffer, fmt, args );
-//	va_end( args );
+	va_start( args, fmt );
+	vsprintf_s( buffer, fmt, args );
+	va_end( args );
 
-//	if ( g_bPrintf )
-//		printf( "%s", buffer );
+	if ( g_bPrintf )
+		printf( "%s", buffer );
 
-//	OutputDebugStringA( buffer );
+	OutputDebugStringA( buffer );
 }
 
 
@@ -2398,33 +2398,50 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			{
 				//m_bControllerModelON = !m_bControllerModelON;
 				//m_bFrozen is used to control texture
-				//m_bFrozen = !m_bFrozen;
+				m_bFrozen = !m_bFrozen;
 
-
-				if (fBrightness >= -0.9) fBrightness = -1.0;
-				else fBrightness = 0.0;
+				//this part is used to change image texture
+				/*if(!img4d_replace)
+				{
+					img4d_replace = new My4DImage;
+					img4d_replace->loadImage("C:/Users/SHU/Desktop/18454-1.v3draw");
+				}
+				else
+					replacetexture = !replacetexture;
 				
-
+				SetupVolumeRendering();*/
+				if (fBrightness > 0.5) fBrightness = 0.1;
+				else fBrightness = 0.9;
 				
+				//if(m_bFrozen)
+				//	qDebug()<<"Freeze View ON";
+				//else
+				//	qDebug()<<"Freeze View OFF";
+
+
 
 				break;
 			}
 		case _Contrast://contrast func is moved to right controller touch pad , grip button+/-
 			{
-				 if(temp_x>0)
-				 {
-					fBrightness+= 0.02f;
-					if(fBrightness>0.9f)
-						fBrightness = 0.9f;
-				}
-				else
-				{
-					fBrightness-= 0.02f;
-					if(fBrightness<-0.9)
-						fBrightness = -0.9;
-				}
-
-
+				// if(temp_x>0)
+				// {
+				// 	fContrast+=1;
+				// 	if (fContrast>50)
+				// 		fContrast = 50;
+				// 	//fBrightness+= 0.01f;
+				// 	//if(fBrightness>0.8f)
+				// 	//	fBrightness = 0.8f;
+				// }
+				// else
+				// {
+				// 	fContrast-=1;
+				// 	if (fContrast<1)
+				// 		fContrast = 1;
+				// 	//fBrightness-= 0.01f;
+				// 	//if(fBrightness<0)
+				// 	//	fBrightness = 0;
+				// }
 				break;
 			}
 		case _UndoRedo:
@@ -3440,8 +3457,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							//sketchedNTList.removeAt(segInfo[1]);
 							//SetupSingleMorphologyLine(segInfo[0],2);
 							//SetupSingleMorphologyLine(segInfo[1],2);
-							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
-							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
+                            qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<Qt::endl;
+                            qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<Qt::endl;
 							QString tempdelname = sketchedNTList.at(segInfo[0]).name;
 							QString tempdelname1 = sketchedNTList.at(segInfo[1]).name;
 							bool delerror1 = DeleteSegment(tempdelname);
@@ -6701,7 +6718,7 @@ QString CMainApplication::NT2QString()
 
 void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
 {	
-	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
+    QStringList qsl = QString(msg).trimmed().split(" ",Qt::SkipEmptyParts);
 	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
 	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
 	NeuronSWC S_temp;
@@ -8101,10 +8118,6 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <=0.8))
 		{
 			m_modeGrip_L = _MovetoCreator;
-		}
-		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
-		{
-			m_modeGrip_L = _Contrast;
 		}
 		//else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		//{

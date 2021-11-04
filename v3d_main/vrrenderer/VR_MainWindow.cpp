@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
+#include <QInputDialog>
 std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow() :
 	QWidget()
@@ -605,7 +606,8 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 	{
 		if(pMainApplication->m_modeGrip_R==m_drawMode)
 		{
-			onReadySend(pMainApplication->NT2QString());
+            auto tmp=pMainApplication->NT2QString();
+            onReadySend(tmp);
 			CURRENT_DATA_IS_SENT=true;
 			qDebug()<<"CURRENT_DATA_IS_SENT=true;";
 		}
@@ -775,7 +777,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 	qDebug()<<"GetResindexandStartPointfromVRInfo........";
 	qDebug()<<VRinfo;
 	QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");   
-	if (rx.indexIn(VRinfo) != -1 && (ResIndex != -1)) {
+	if (rx.indexIn(VRinfo) != -1) {
 		qDebug()<<"get  VRResindex and VRVolume Start point ";
 		VRVolumeStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
 		VRVolumeEndPoint = XYZ(rx.cap(5).toInt(),rx.cap(7).toInt(),rx.cap(9).toInt());
@@ -787,22 +789,9 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 		qDebug()<<"current Res X = "<<VRVolumeCurrentRes.x<<"current Res Y = "<<VRVolumeCurrentRes.y<<"current Res Z = "<<VRVolumeCurrentRes.z;
 		qDebug()<<"Collaboration Max Res X = "<<CollaborationMaxResolution.x<<"Collaboration Max Y = "<<CollaborationMaxResolution.y<<"Collaboration Max Z = "<<CollaborationMaxResolution.z;
 	}
-	else
-	{
-		VRVolumeStartPoint = XYZ(1,1,1);
-		VRVolumeEndPoint = CollaborationMaxResolution;
-		VRVolumeCurrentRes = CollaborationMaxResolution;
-		VRvolumeMaxRes = CollaborationMaxResolution;
-		qDebug()<<"get Resindex = "<<ResIndex;
-		qDebug()<<"Start X = "<<VRVolumeStartPoint.x<<"Start Y = "<<VRVolumeStartPoint.y<<"Start Z = "<<VRVolumeStartPoint.z;
-		qDebug()<<"End X = "<<VRVolumeEndPoint.x<<"End Y = "<<VRVolumeEndPoint.y<<"End Z = "<<VRVolumeEndPoint.z;
-		qDebug()<<"current Res X = "<<VRVolumeCurrentRes.x<<"current Res Y = "<<VRVolumeCurrentRes.y<<"current Res Z = "<<VRVolumeCurrentRes.z;
-		qDebug()<<"Collaboration Max Res X = "<<CollaborationMaxResolution.x<<"Collaboration Max Y = "<<CollaborationMaxResolution.y<<"Collaboration Max Z = "<<CollaborationMaxResolution.z;
-
-	}
 	//pass Resindex and VRvolumeStartPoint to PMAIN  to  offer parameter to NT2QString
 	pMainApplication->CmainResIndex = ResIndex;
-	pMainApplication->CmainVRVolumeStartPoint = XYZ(1,1,1);
+	pMainApplication->CmainVRVolumeStartPoint = VRVolumeStartPoint;
 	pMainApplication->collaboration_creator_res = ResIndex;
 	cout<<"pMainApplication->collaboration_creator_res = "<<pMainApplication->collaboration_creator_res<<endl;
 	pMainApplication->CollaborationMaxResolution = CollaborationMaxResolution;
