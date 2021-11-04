@@ -82,7 +82,7 @@ V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
  #define POST_updateGL update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
  #define DO_updateGL	update  // macro to control direct updateGL or post update, by RZC 081007
 #else
- #define POST_updateGL QOpenGLWidget::update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
+#define POST_updateGL QOpenGLWidget::update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
 // #define DO_updateGL	updateGL  // macro to control direct updateGL or post update, by RZC 081007
 //修改了
 #define DO_updateGL	QOpenGLWidget::update
@@ -565,13 +565,12 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
 void V3dR_GLWidget::enterEvent(QEvent*)
 {
-    qDebug("V3dR_GLWidget::enterEvent in v3dr_glwidget.cpp");
+    // qDebug("V3dR_GLWidget::enterEvent in v3dr_glwidget.cpp");
     mouse_in_view = 1;
     //setFocus();
 }
 void V3dR_GLWidget::leaveEvent(QEvent*)
 {
-    qDebug("V3dR_GLWidget::leaveEvent");
     mouse_in_view = 0;
     update();  //DLC ADD
 }
@@ -709,7 +708,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
     //091025: use 'QMouseEvent::buttons()&' instead of 'button()=='
     //qDebug()<<"V3dR_GLWidget::mouseMoveEvent  buttons = "<< event->buttons();
 
-   // setFocus(); // accept KeyPressEvent, by RZC 080831
+    // setFocus(); // accept KeyPressEvent, by RZC 080831
 
     int dx = event->x() - lastPos.x();
     int dy = event->y() - lastPos.y();
@@ -722,7 +721,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
         QPaintEvent *pEvent;
         paintEvent(pEvent);
 
-        //DO_updateGL(); //how do I instantly display pen track without using updateGL?
+        // DO_updateGL(); // instantly display pen track, dlc comment for bug
 
 
         return;
@@ -1558,7 +1557,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                     My4DImage* curImg = 0;
                     if (this) curImg = v3dr_getImage4d(_idep);
 
-                //	注释了thisRenderer->loopDetection();
+                thisRenderer->loopDetection();
                 }
             }
             break;
@@ -2124,7 +2123,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
             if(myvrwin)
                 delete myvrwin;
             myvrwin = 0;
-            myvrwin = new VR_MainWindow();
+            myvrwin = new VR_MainWindow(TeraflyCommunicator);
             myvrwin->setWindowTitle("VR MainWindow");
             //bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 
@@ -2135,16 +2134,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
             qDebug()<<"VR get data_title = "<<VRinfo;
             resumeCollaborationVR = false;//reset resumeCollaborationVR
             myvrwin->ResIndex = Resindex;
-            int _call_that_func = myvrwin->StartVRScene(
-                        listNeuronTrees,
-                        img4d,
-                        (MainWindow *)(this->getMainWindow()),
-                        1,
-                        VRinfo,
-                        CollaborationCreatorRes,
-                        &teraflyZoomInPOS,
-                        &CollaborationCreatorPos,
-                        collaborationMaxResolution);
+            int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,TeraflyCommunicator,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
 
             qDebug()<<"result is "<<_call_that_func;
             qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -4244,7 +4234,7 @@ void V3dR_GLWidget::setEditMode()
     if (renderer)
     {
         renderer->setEditMode();
-        POST_updateGL();
+        update();
     }
 }
 
@@ -4594,5 +4584,3 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 ///////////////////////////////////////////////////////////////////////////////////////////
 #define __end_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////
-
-

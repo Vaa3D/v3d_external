@@ -265,11 +265,8 @@ MainWindow::MainWindow()
     /// RZC 20170620: disable auto launch
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 
-//    const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
-//    if(OpenGLVersion==NULL)
-//        qDebug()<<"glGetString Failed! ";
-//    else
-//        qDebug()<<"使用openGL version为："<< QString((char*)OpenGLVersion); //DLC,显示不出来，失败
+    const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
+
 
 }
 
@@ -2269,7 +2266,7 @@ void MainWindow::createActions()
     // New Open Web URL action, based on Open Action (openAct) example
     // By CMB 06-Oct-2010
     openWebUrlAct = new QAction(QIcon(":/pic/web.png"), tr("&Open web image/stack/surface_file ..."), this);
-    openWebUrlAct->setShortcut(tr("Ctrl+W"));
+    openWebUrlAct->setShortcut(QKeySequence("Ctrl+D"));
     openWebUrlAct->setStatusTip(tr("Open a web (URL) image"));
     connect(openWebUrlAct, SIGNAL(triggered()), this, SLOT(openWebUrl()));
 #ifdef __v3d_custom_toolbar__
@@ -3216,3 +3213,4 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     // Delegate to parent if we don't want to consume the event
     return QMainWindow::eventFilter(obj, event);
 }
+
