@@ -801,9 +801,9 @@ void V3dR_MainWindow::connectSignal()
 	if(rotVRView){
 		connect(rotVRView, SIGNAL(clicked()), glWidget, SLOT(doimage3DVRView()));
 	}
-	if(rotCView){
-		connect(rotCView, SIGNAL(clicked()), glWidget, SLOT(doimage3DVRView()));
-	}
+//	if(rotCView){
+//		connect(rotCView, SIGNAL(clicked()), glWidget, SLOT(doimage3DVRView()));
+//	}
 #endif
 
 #define __connnect_zoom_shift__
