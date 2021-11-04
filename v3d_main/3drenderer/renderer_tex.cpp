@@ -870,7 +870,7 @@ void Renderer_gl1::drawVol()
     case rmMaxIntensityProjection:        
         if (has_image() && !b_renderTextureLast) // if rendering texture first, we can clear - otherwise this is done in prepareVol()
         {           
-            glColor3f(0.0f, 0.0f, 0.0f);           
+            glColor3f(0.0f, 0.0f, 0.0f);
             drawBackFillVolCube(); // clear the project region to zero for MIP
         }
         glEnable(GL_BLEND);      equMaxIntensityProjection();

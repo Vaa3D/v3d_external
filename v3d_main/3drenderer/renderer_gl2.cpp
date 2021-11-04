@@ -146,6 +146,7 @@ static void linkGLShader(cwc::glShaderManager& SMgr,
 #define IF_VOL_SHADER  (tryVolShader && shader && !b_selecting)
 #define IF_OBJ_SHADER  (tryObjShader && shader && !b_selecting)
 
+
 void Renderer_gl2::drawObj()
 {
     shader = shaderObj;

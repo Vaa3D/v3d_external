@@ -708,7 +708,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
     //091025: use 'QMouseEvent::buttons()&' instead of 'button()=='
     //qDebug()<<"V3dR_GLWidget::mouseMoveEvent  buttons = "<< event->buttons();
 
-   // setFocus(); // accept KeyPressEvent, by RZC 080831
+    // setFocus(); // accept KeyPressEvent, by RZC 080831
 
     int dx = event->x() - lastPos.x();
     int dy = event->y() - lastPos.y();
@@ -721,7 +721,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
         QPaintEvent *pEvent;
         paintEvent(pEvent);
 
-        // DO_updateGL();
+        // DO_updateGL(); // instantly display pen track, dlc comment for bug
 
 
         return;
@@ -1557,7 +1557,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                     My4DImage* curImg = 0;
                     if (this) curImg = v3dr_getImage4d(_idep);
 
-                //	注释了thisRenderer->loopDetection();
+                thisRenderer->loopDetection();
                 }
             }
             break;

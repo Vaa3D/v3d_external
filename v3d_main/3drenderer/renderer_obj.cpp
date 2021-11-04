@@ -700,13 +700,14 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
         else if (filename.endsWith(".v3ds", Qt::CaseInsensitive) || filename.endsWith(".vaa3ds", Qt::CaseInsensitive) )
         {
             type = stLabelSurface;
-            loadV3DSurface(filename);
+            //loadV3DSurface(filename); DLC, load .v3ds file failed, so use next function
+            loadV3DSFile(filename);
             ep->surface_file = filename;
         }
         else if (filename.endsWith(".marker", Qt::CaseInsensitive) || filename.endsWith(".csv", Qt::CaseInsensitive))
         {
             type = stImageMarker;
-            //注释loadLandmarks_from_file(filename);
+            loadLandmarks_from_file(filename);
         }
         // if swc
         else if (filename.endsWith(".swc", Qt::CaseInsensitive))
@@ -2083,7 +2084,7 @@ case 3:
     break;
 case 4:
     glColor3ub(180,180,180);
-    //注释if (segmentParentDict.isEmpty()) setColorAncestryInfo();
+    if (segmentParentDict.isEmpty()) setColorAncestryInfo();
     if (segmentParentDict.value(s.seg_id)==-1){
     glColor3ub(240,230,10);
     }
