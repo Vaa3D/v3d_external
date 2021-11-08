@@ -2077,6 +2077,7 @@ void CMainApplication::RunMainLoop()
 
 	while ( !bQuit )
 	{
+        QCoreApplication::processEvents();
 		bQuit = HandleInput();
 		if (bQuit) break;
 		RenderFrame();
