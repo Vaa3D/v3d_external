@@ -702,7 +702,6 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS)
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
-
 	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
@@ -760,7 +759,7 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	pMainApplication->RunMainLoop();
 
 	pMainApplication->Shutdown();
-
+    qDebug()<<"shut down VR";
 	// bool _call_that_plugin = pMainApplication->_call_assemble_plugin;
 	int _call_that_function = pMainApplication->postVRFunctionCallMode;
 	zoomPOS->x = pMainApplication->teraflyPOS.x;

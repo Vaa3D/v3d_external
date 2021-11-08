@@ -1,8 +1,10 @@
-﻿#include "./v3dr_gl_vr.h"
+﻿#include <windows.h>
+#include <GL/glew.h>
+#include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
 #include"./spline.h"
 //#include <GL/glew.h>
-#include <SDL_opengl.h>
+//#include <SDL_opengl.h>
 
 #include "../v3d/vr_vaa3d_call.h"
 #include "../neuron_tracing/fastmarching_linker.h"
@@ -23,6 +25,7 @@
 #include <stdio.h>
 #include <string>
 #include <cstdlib>
+#include <QThread>
 
 #include "shader_m.h"
 #include "Sphere.h"
@@ -36,6 +39,9 @@
 #define APIENTRY
 #endif
 
+//#ifdef _WIN32
+//#include <windows.h>
+//#endif
 #ifndef _countof
 #define _countof(x) (sizeof(x)/sizeof((x)[0]))
 #endif
@@ -66,12 +72,12 @@ int checkForOpenGLError(const char* file, int line)
     return retCode;
 }
 
-float CMainApplication::fContrast = 1;
+float CMainApplication::fContrast = 5;
 bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 1;
 float CMainApplication::iscaleZ =1;
-float CMainApplication::fBrightness = 0.9;
+float CMainApplication::fBrightness = 0;
 int CMainApplication::m_curMarkerColorType = 6;
 int CMainApplication::m_modeControlGrip_L = 0;
 glm::mat4 CMainApplication::m_globalMatrix = glm::mat4();
@@ -637,10 +643,11 @@ const int neuron_type_color_num = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 void ThreadSleep( unsigned long nMilliseconds )
 {
 #if defined(_WIN32)
-	::Sleep( nMilliseconds );
+    ::Sleep( nMilliseconds );
 #elif defined(POSIX)
 	usleep( nMilliseconds * 1000 );
 #endif
+//    QThread::msleep(nMilliseconds);
 }
 
 
@@ -664,7 +671,7 @@ void dprintf( const char *fmt, ... )
 	if ( g_bPrintf )
 		printf( "%s", buffer );
 
-	OutputDebugStringA( buffer );
+    OutputDebugStringA( buffer );
 }
 
 
@@ -673,11 +680,11 @@ void dprintf( const char *fmt, ... )
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
 CMainApplication::CMainApplication( int argc, char *argv[] )
-	: m_pCompanionWindow(NULL)
-	, m_pContext(NULL)
-	, m_nCompanionWindowWidth(3200)//( 1600 )//(640)//
-	, m_nCompanionWindowHeight(1600)//(800)//( 320 )//
-	, morphologyShader ( NULL )
+//	: m_pCompanionWindow(NULL)
+//	, m_pContext(NULL)
+//	, m_nCompanionWindowWidth(3200)//( 1600 )//(640)//
+//	, m_nCompanionWindowHeight(1600)//(800)//( 320 )//
+    :morphologyShader ( NULL )
 	, raycastingShader ( NULL )
 	, clipPatchShader (NULL)
 	, backfaceShader ( NULL )
@@ -810,11 +817,11 @@ std::string GetTrackedDeviceString( vr::IVRSystem *pHmd, vr::TrackedDeviceIndex_
 //-----------------------------------------------------------------------------
 bool CMainApplication::BInit()
 {
-	if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 )
-	{
-		printf("%s - SDL could not initialize! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
-		return false;
-	}
+//	if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 )
+//	{
+//		printf("%s - SDL could not initialize! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
+//		return false;
+//	}
 
 	// Loading the SteamVR Runtime
 	vr::EVRInitError eError = vr::VRInitError_None;
@@ -825,7 +832,7 @@ bool CMainApplication::BInit()
 		m_pHMD = NULL;
 		char buf[1024];
 		sprintf_s( buf, sizeof( buf ), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+//		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
 
@@ -841,7 +848,7 @@ bool CMainApplication::BInit()
 
 		char buf[1024];
 		sprintf_s( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+//		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
 	m_pChaperone = (vr::IVRChaperone *)vr::VR_GetGenericInterface( vr::IVRChaperone_Version, &eError );
@@ -854,7 +861,7 @@ bool CMainApplication::BInit()
 
 		char buf[1024];
 		sprintf_s( buf, sizeof( buf ), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+//		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
 
@@ -871,38 +878,38 @@ bool CMainApplication::BInit()
 	 frameTimeOld = 0;
 	 frameTime;
 
-	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
-	/*m_flashtype = noflash;
-	m_Flashcolor = 0;
-	m_FlashCount = 0;*/
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
-	//SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+//	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+//	/*m_flashtype = noflash;
+//	m_Flashcolor = 0;
+//	m_FlashCount = 0;*/
+//	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
+//	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
+//	//SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY );
+//	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
-	if( m_bDebugOpenGL )
-		SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
-
-
+//	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
+//	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
+//	if( m_bDebugOpenGL )
+//		SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
 
 
 
 
-	m_pCompanionWindow = SDL_CreateWindow( "TeraVR", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
-	if (m_pCompanionWindow == NULL)
-	{
-		printf( "%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
-		return false;
-	}
 
-	m_pContext = SDL_GL_CreateContext(m_pCompanionWindow);
-	if (m_pContext == NULL)
-	{
-		printf( "%s - OpenGL context could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
-		return false;
-	}
+
+//	m_pCompanionWindow = SDL_CreateWindow( "TeraVR", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
+//	if (m_pCompanionWindow == NULL)
+//	{
+//		printf( "%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
+//		return false;
+//	}
+
+//	m_pContext = SDL_GL_CreateContext(m_pCompanionWindow);
+//	if (m_pContext == NULL)
+//	{
+//		printf( "%s - OpenGL context could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
+//		return false;
+//	}
 
 	glewExperimental = GL_TRUE;
 	GLenum nGlewError = glewInit();
@@ -913,11 +920,11 @@ bool CMainApplication::BInit()
 	}
 	glGetError(); // to clear the error caused deep in GLEW
 
-	if ( SDL_GL_SetSwapInterval( m_bVblank ? 1 : 0 ) < 0 )
-	{
-		printf( "%s - Warning: Unable to set VSync! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
-		return false;
-	}
+//	if ( SDL_GL_SetSwapInterval( m_bVblank ? 1 : 0 ) < 0 )
+//	{
+//		printf( "%s - Warning: Unable to set VSync! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
+//		return false;
+//	}
 
 	m_strDriver = "No Driver";
 	m_strDisplay = "No Display";
@@ -927,7 +934,7 @@ bool CMainApplication::BInit()
 
 	//std::string strWindowTitle = "Vaa3D VR - " + m_strDriver + " " + m_strDisplay;
 	std::string strWindowTitle = "TeraVR - Initializing";
-	SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
+//	SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 
 	
 	m_fNearClip = 0.1f;
@@ -982,8 +989,8 @@ bool CMainApplication::BInit()
 	u_clippoint = glm::vec3(0.0,0.0,2.0);
 	teraflyPOS = 0;
 	CollaborationCreatorPos = 0;
-	SDL_StartTextInput();
-	SDL_ShowCursor( SDL_DISABLE );
+//	SDL_StartTextInput();
+//	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
 	currentNT.hashNeuron.clear();
 
@@ -998,7 +1005,7 @@ bool CMainApplication::BInit()
 //          All other parameters are ignored.
 //          Does not return any meaningful value or reference.
 //-----------------------------------------------------------------------------
-void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam)
+void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam)
 {
 	dprintf( "GL Error: %s\n", message );
 }
@@ -1201,232 +1208,232 @@ void CMainApplication::Shutdown()
 	}
 	m_vecRenderModels.clear();
 
-	if( m_pContext )
-	{
-		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE );
-		glDebugMessageCallback(nullptr, nullptr);
+//	if( m_pContext )
+//	{
+//		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE );
+//		glDebugMessageCallback(nullptr, nullptr);
 
-		if (morphologyShader != NULL)
-		{
-			delete morphologyShader;
-			morphologyShader =NULL;
-		}
-		if (raycastingShader != NULL)
-		{
-			delete raycastingShader;
-			raycastingShader =NULL;
-		}
-		if (backfaceShader != NULL)
-		{
-			delete backfaceShader;
-			backfaceShader =NULL;
-		}
-		if (clipPatchShader != NULL)
-		{
-			delete clipPatchShader;
-			clipPatchShader =NULL;
-		}
-		if ( m_unControllerTransformProgramID )
-		{
-			glDeleteProgram( m_unControllerTransformProgramID );
-		}
-		if ( m_unRenderModelProgramID )
-		{
-			glDeleteProgram( m_unRenderModelProgramID );
-		}
-		if ( m_unCompanionWindowProgramID )
-		{
-			glDeleteProgram( m_unCompanionWindowProgramID );
-		}
-		if ( m_unControllerRayProgramID )
-		{
-			glDeleteProgram( m_unControllerRayProgramID );
-		}
+//		if (morphologyShader != NULL)
+//		{
+//			delete morphologyShader;
+//			morphologyShader =NULL;
+//		}
+//		if (raycastingShader != NULL)
+//		{
+//			delete raycastingShader;
+//			raycastingShader =NULL;
+//		}
+//		if (backfaceShader != NULL)
+//		{
+//			delete backfaceShader;
+//			backfaceShader =NULL;
+//		}
+//		if (clipPatchShader != NULL)
+//		{
+//			delete clipPatchShader;
+//			clipPatchShader =NULL;
+//		}
+//		if ( m_unControllerTransformProgramID )
+//		{
+//			glDeleteProgram( m_unControllerTransformProgramID );
+//		}
+//		if ( m_unRenderModelProgramID )
+//		{
+//			glDeleteProgram( m_unRenderModelProgramID );
+//		}
+//		if ( m_unCompanionWindowProgramID )
+//		{
+//			glDeleteProgram( m_unCompanionWindowProgramID );
+//		}
+//		if ( m_unControllerRayProgramID )
+//		{
+//			glDeleteProgram( m_unControllerRayProgramID );
+//		}
 
-		glDeleteRenderbuffers( 1, &leftEyeDesc.m_nDepthBufferId );
-		glDeleteTextures( 1, &leftEyeDesc.m_nRenderTextureId );
-		glDeleteFramebuffers( 1, &leftEyeDesc.m_nRenderFramebufferId );
-		glDeleteTextures( 1, &leftEyeDesc.m_nResolveTextureId );
-		glDeleteFramebuffers( 1, &leftEyeDesc.m_nResolveFramebufferId );
+//		glDeleteRenderbuffers( 1, &leftEyeDesc.m_nDepthBufferId );
+//		glDeleteTextures( 1, &leftEyeDesc.m_nRenderTextureId );
+//		glDeleteFramebuffers( 1, &leftEyeDesc.m_nRenderFramebufferId );
+//		glDeleteTextures( 1, &leftEyeDesc.m_nResolveTextureId );
+//		glDeleteFramebuffers( 1, &leftEyeDesc.m_nResolveFramebufferId );
 
-		glDeleteRenderbuffers( 1, &rightEyeDesc.m_nDepthBufferId );
-		glDeleteTextures( 1, &rightEyeDesc.m_nRenderTextureId );
-		glDeleteFramebuffers( 1, &rightEyeDesc.m_nRenderFramebufferId );
-		glDeleteTextures( 1, &rightEyeDesc.m_nResolveTextureId );
-		glDeleteFramebuffers( 1, &rightEyeDesc.m_nResolveFramebufferId );
+//		glDeleteRenderbuffers( 1, &rightEyeDesc.m_nDepthBufferId );
+//		glDeleteTextures( 1, &rightEyeDesc.m_nRenderTextureId );
+//		glDeleteFramebuffers( 1, &rightEyeDesc.m_nRenderFramebufferId );
+//		glDeleteTextures( 1, &rightEyeDesc.m_nResolveTextureId );
+//		glDeleteFramebuffers( 1, &rightEyeDesc.m_nResolveFramebufferId );
 
-		glDeleteFramebuffers( 1, &g_frameBufferBackface );
-		glDeleteTextures( 1, &g_tffTexObj );
-		glDeleteTextures( 1, &g_bfTexObj );
-		glDeleteTextures( 1, &g_volTexObj );
+//		glDeleteFramebuffers( 1, &g_frameBufferBackface );
+//		glDeleteTextures( 1, &g_tffTexObj );
+//		glDeleteTextures( 1, &g_bfTexObj );
+//		glDeleteTextures( 1, &g_volTexObj );
 
-		if(m_ControllerTexVAO!=0)
-		{
-			glDeleteVertexArrays(1, &m_ControllerTexVAO);
-			glDeleteBuffers(1, &m_ControllerTexVBO);
-		}
+//		if(m_ControllerTexVAO!=0)
+//		{
+//			glDeleteVertexArrays(1, &m_ControllerTexVAO);
+//			glDeleteBuffers(1, &m_ControllerTexVBO);
+//		}
 
-		if(m_iTexture!=0)
-			glDeleteTextures(1, &m_iTexture );
+//		if(m_iTexture!=0)
+//			glDeleteTextures(1, &m_iTexture );
 
-		if ( m_unCtrTexProgramID )
-		{
-			glDeleteProgram( m_unCtrTexProgramID );
-		}
+//		if ( m_unCtrTexProgramID )
+//		{
+//			glDeleteProgram( m_unCtrTexProgramID );
+//		}
 
 		
-		if (iSketchNTLMorphologyVAO.size()>0)
-		{
-			for(int i=0;i<iSketchNTLMorphologyVAO.size();i++)
-			{
-				glDeleteVertexArrays( 1, &iSketchNTLMorphologyVAO.at(i) );
-				glDeleteBuffers(1, &iSketchNTLMorphologyVertBuffer.at(i));
-				glDeleteBuffers(1, &iSketchNTLMorphologyIndexBuffer.at(i));
-			}
-			iSketchNTLMorphologyVAO.clear();
-			iSketchNTLMorphologyVertBuffer.clear();
-			iSketchNTLMorphologyIndexBuffer.clear();
-			iSketchNTLMorphologyVertcount.clear();
-		}
+//		if (iSketchNTLMorphologyVAO.size()>0)
+//		{
+//			for(int i=0;i<iSketchNTLMorphologyVAO.size();i++)
+//			{
+//				glDeleteVertexArrays( 1, &iSketchNTLMorphologyVAO.at(i) );
+//				glDeleteBuffers(1, &iSketchNTLMorphologyVertBuffer.at(i));
+//				glDeleteBuffers(1, &iSketchNTLMorphologyIndexBuffer.at(i));
+//			}
+//			iSketchNTLMorphologyVAO.clear();
+//			iSketchNTLMorphologyVertBuffer.clear();
+//			iSketchNTLMorphologyIndexBuffer.clear();
+//			iSketchNTLMorphologyVertcount.clear();
+//		}
 
-		//for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
-		//{
-		//	delete (*i);
-		//}
-		qDebug()<<"Start to delete sphere....";
-		int j;
-		j=0;
-		for(auto i = loaded_spheres.begin();i!=loaded_spheres.end();i++) 
-		{
-				delete (*i);
-				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-				j++;
-		}
-		j=0;
-		for(auto i = loaded_cylinders.begin();i!=loaded_cylinders.end();i++) 
-		{
-				delete (*i);
-				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-				j++;
-		}
-		j=0;
-		for(auto i = sketch_spheres.begin();i!=sketch_spheres.end();i++) 
-		{
-				delete (*i);
-				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-				j++;
-		}
-		j=0;
-		for(auto i = sketch_cylinders.begin();i!=sketch_cylinders.end();i++)
-		{
-				delete (*i);
-				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-				j++;
-		}
-		j=0;
-		for(auto i = Agents_spheres.begin();i!=Agents_spheres.end();i++)
-		{
-				delete (*i);
-				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-				j++;
-		}
-		j=0;
-		for(auto i = Markers_spheres.begin();i!=Markers_spheres.end();i++) 
-		{
-				delete (*i);
-				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-				j++;
-		}
+//		//for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
+//		//{
+//		//	delete (*i);
+//		//}
+//		qDebug()<<"Start to delete sphere....";
+//		int j;
+//		j=0;
+//		for(auto i = loaded_spheres.begin();i!=loaded_spheres.end();i++)
+//		{
+//				delete (*i);
+//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+//				j++;
+//		}
+//		j=0;
+//		for(auto i = loaded_cylinders.begin();i!=loaded_cylinders.end();i++)
+//		{
+//				delete (*i);
+//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+//				j++;
+//		}
+//		j=0;
+//		for(auto i = sketch_spheres.begin();i!=sketch_spheres.end();i++)
+//		{
+//				delete (*i);
+//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+//				j++;
+//		}
+//		j=0;
+//		for(auto i = sketch_cylinders.begin();i!=sketch_cylinders.end();i++)
+//		{
+//				delete (*i);
+//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+//				j++;
+//		}
+//		j=0;
+//		for(auto i = Agents_spheres.begin();i!=Agents_spheres.end();i++)
+//		{
+//				delete (*i);
+//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+//				j++;
+//		}
+//		j=0;
+//		for(auto i = Markers_spheres.begin();i!=Markers_spheres.end();i++)
+//		{
+//				delete (*i);
+//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+//				j++;
+//		}
 
-		if(ctrSphere)
-			delete ctrSphere;
+//		if(ctrSphere)
+//			delete ctrSphere;
 
 			
-		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
-		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
-		//for (int i=0;i<sketch_spheres.size();i++) delete sketch_spheres[i];
-		//for (int i=0;i<sketch_cylinders.size();i++) delete sketch_cylinders[i];
+//		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
+//		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
+//		//for (int i=0;i<sketch_spheres.size();i++) delete sketch_spheres[i];
+//		//for (int i=0;i<sketch_cylinders.size();i++) delete sketch_cylinders[i];
 
-		//for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
+//		//for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
 
-		//for (int i=0;i<Markers_spheres.size();i++) delete Markers_spheres[i];
+//		//for (int i=0;i<Markers_spheres.size();i++) delete Markers_spheres[i];
 
-		loaded_spheres.clear();
-		loaded_spheresPos.clear();
-		loaded_spheresColor.clear();
-		loaded_cylinders.clear();
-		sketch_spheres.clear();
-		sketch_spheresPos.clear();
-		sketch_cylinders.clear();
+//		loaded_spheres.clear();
+//		loaded_spheresPos.clear();
+//		loaded_spheresColor.clear();
+//		loaded_cylinders.clear();
+//		sketch_spheres.clear();
+//		sketch_spheresPos.clear();
+//		sketch_cylinders.clear();
 
-		Agents_spheres.clear();
-		Agents_spheresPos.clear();
-		Agents_spheresColor.clear();
+//		Agents_spheres.clear();
+//		Agents_spheresPos.clear();
+//		Agents_spheresColor.clear();
 
-		Markers_spheres.clear();
-		Markers_spheresPos.clear();
-		Markers_spheresColor.clear();
+//		Markers_spheres.clear();
+//		Markers_spheresPos.clear();
+//		Markers_spheresColor.clear();
 
-		sketchedNTList.clear();
-		drawnMarkerList.clear();
-		markerVisibility.clear();
+//		sketchedNTList.clear();
+//		drawnMarkerList.clear();
+//		markerVisibility.clear();
 
-		if(pick_node)  pick_node = 0;
-		if( m_unMorphologyLineModeVAO != 0 )
-		{
-			glDeleteVertexArrays( 1, &m_unMorphologyLineModeVAO );
-			glDeleteBuffers(1, &m_glMorphologyLineModeVertBuffer);
-			glDeleteBuffers(1, &m_glMorphologyLineModeIndexBuffer);
-		}
+//		if(pick_node)  pick_node = 0;
+//		if( m_unMorphologyLineModeVAO != 0 )
+//		{
+//			glDeleteVertexArrays( 1, &m_unMorphologyLineModeVAO );
+//			glDeleteBuffers(1, &m_glMorphologyLineModeVertBuffer);
+//			glDeleteBuffers(1, &m_glMorphologyLineModeIndexBuffer);
+//		}
 		
-		if( m_unSketchMorphologyLineModeVAO != 0 )
-		{
-			glDeleteVertexArrays( 1, &m_unSketchMorphologyLineModeVAO );
-			glDeleteBuffers(1, &m_glSketchMorphologyLineModeVertBuffer);
-			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
-		}
+//		if( m_unSketchMorphologyLineModeVAO != 0 )
+//		{
+//			glDeleteVertexArrays( 1, &m_unSketchMorphologyLineModeVAO );
+//			glDeleteBuffers(1, &m_glSketchMorphologyLineModeVertBuffer);
+//			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
+//		}
 
-		if( m_VolumeImageVAO != 0 )
-		{
-			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
-			//glDeleteBuffers(1, &m_imageVBO);
-		}
+//		if( m_VolumeImageVAO != 0 )
+//		{
+//			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
+//			//glDeleteBuffers(1, &m_imageVBO);
+//		}
 
-		if( m_clipPatchVAO != 0 )
-		{
-			glDeleteVertexArrays( 1, &m_clipPatchVAO );
-			//glDeleteBuffers(1, &m_imageVBO);
-		}
+//		if( m_clipPatchVAO != 0 )
+//		{
+//			glDeleteVertexArrays( 1, &m_clipPatchVAO );
+//			//glDeleteBuffers(1, &m_imageVBO);
+//		}
 
-		if( m_unCompanionWindowVAO != 0 )
-		{
-			glDeleteVertexArrays( 1, &m_unCompanionWindowVAO );
-			glDeleteBuffers(1, &m_glCompanionWindowIDVertBuffer);
-			glDeleteBuffers(1, &m_glCompanionWindowIDIndexBuffer);
-		}
-		if( m_unControllerVAO != 0 )
-		{
-			glDeleteVertexArrays( 1, &m_unControllerVAO );
-			glDeleteBuffers(1, &m_glControllerVertBuffer);
-		} 
-	}
+//		if( m_unCompanionWindowVAO != 0 )
+//		{
+//			glDeleteVertexArrays( 1, &m_unCompanionWindowVAO );
+//			glDeleteBuffers(1, &m_glCompanionWindowIDVertBuffer);
+//			glDeleteBuffers(1, &m_glCompanionWindowIDIndexBuffer);
+//		}
+//		if( m_unControllerVAO != 0 )
+//		{
+//			glDeleteVertexArrays( 1, &m_unControllerVAO );
+//			glDeleteBuffers(1, &m_glControllerVertBuffer);
+//		}
+//	}
 
-	if( m_pCompanionWindow )
-	{
-	//	if(font_VR->self)
-	//	{
-	//		delete font_VR->self;
-	//		qDebug()<<"delete self ";
-	//		font_VR->self = 0;
-	//	}
-	//	delete font_VR;
-	//	qDebug()<<"delete font ";
-	//	font_VR = NULL;
-	//	qDebug()<<"deleted font of VR";
-		SDL_DestroyWindow(m_pCompanionWindow);
-		m_pCompanionWindow = NULL;
-	}
-	SDL_Quit();
+//	if( m_pCompanionWindow )
+//	{
+//	//	if(font_VR->self)
+//	//	{
+//	//		delete font_VR->self;
+//	//		qDebug()<<"delete self ";
+//	//		font_VR->self = 0;
+//	//	}
+//	//	delete font_VR;
+//	//	qDebug()<<"delete font ";
+//	//	font_VR = NULL;
+//	//	qDebug()<<"deleted font of VR";
+//		SDL_DestroyWindow(m_pCompanionWindow);
+//		m_pCompanionWindow = NULL;
+//	}
+//	SDL_Quit();
 }
 
 //-----------------------------------------------------------------------------
@@ -1434,31 +1441,31 @@ void CMainApplication::Shutdown()
 //-----------------------------------------------------------------------------
 bool CMainApplication::HandleInput()
 {
-	SDL_Event sdlEvent;
+//	SDL_Event sdlEvent;
 	bool bRet = false;
 
-	while ( SDL_PollEvent( &sdlEvent ) != 0 )
-	{
-		if ( sdlEvent.type == SDL_QUIT )
-		{
-			bRet = true;
-		}
-		else if ( sdlEvent.type == SDL_KEYDOWN )
-		{
-			if ( sdlEvent.key.keysym.sym == SDLK_ESCAPE 
-			     || sdlEvent.key.keysym.sym == SDLK_q )
-			{
-				bRet = true;
-			}
-			if( sdlEvent.key.keysym.sym == SDLK_c )
+//	while ( SDL_PollEvent( &sdlEvent ) != 0 )
+//	{
+//		if ( sdlEvent.type == SDL_QUIT )
+//		{
+//			bRet = true;
+//		}
+//		else if ( sdlEvent.type == SDL_KEYDOWN )
+//		{
+//			if ( sdlEvent.key.keysym.sym == SDLK_ESCAPE
+//			     || sdlEvent.key.keysym.sym == SDLK_q )
+//			{
+//				bRet = true;
+//			}
+//			if( sdlEvent.key.keysym.sym == SDLK_c )
 
-			{
-				m_bShowMorphologyLine = !m_bShowMorphologyLine;
-				m_bShowMorphologySurface = !m_bShowMorphologySurface;
-				m_bShowMorphologyMarker = !m_bShowMorphologyMarker;
-			}
-		}
-	}//*/
+//			{
+//				m_bShowMorphologyLine = !m_bShowMorphologyLine;
+//				m_bShowMorphologySurface = !m_bShowMorphologySurface;
+//				m_bShowMorphologyMarker = !m_bShowMorphologyMarker;
+//			}
+//		}
+//	}//*/
 
 	m_iControllerIDLeft = m_pHMD->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);	
 	m_iControllerIDRight = m_pHMD->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
@@ -1818,7 +1825,7 @@ bool CMainApplication::HandleInput()
 				{
 					if (m_fTouchPosY > 0)
 					{
-						fContrast += 0.5;
+                        fContrast += 1;
 						if (fContrast > 50)
 							fContrast = 50;
 						//fBrightness+= 0.01f;
@@ -1827,9 +1834,9 @@ bool CMainApplication::HandleInput()
 					}
 					else
 					{
-						fContrast -= 0.5;
-						if (fContrast < 1)
-							fContrast = 1;
+                        fContrast -= 1;
+                        if (fContrast < 1)
+                            fContrast = 1;
 						//fBrightness-= 0.01f;
 						//if(fBrightness<0)
 						//	fBrightness = 0;
@@ -2074,7 +2081,7 @@ void CMainApplication::RunMainLoop()
 		if (bQuit) break;
 		RenderFrame();
 	}
-	SDL_StopTextInput();
+//	SDL_StopTextInput();
 }
 // using in VR_MainWindow.cpp
 bool CMainApplication::HandleOneIteration()
@@ -4154,7 +4161,7 @@ void CMainApplication::RenderFrame()
 		QString AgentsNum = QString("%1").arg(Agents_spheres.size()+1);
 		std::string strWindowTitle = "TeraVR [Username: "+current_agent_name+
 			"][Color: "+current_agent_color+"][#Online users: "+AgentsNum.toStdString() + "]";
-		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
+//		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();
 		SetupControllerTexture();
 		SetupControllerRay();
@@ -4173,7 +4180,7 @@ void CMainApplication::RenderFrame()
 		}
 
 		RenderStereoTargets();
-		RenderCompanionWindow();
+//        RenderCompanionWindow(); DLC
 		vr::Texture_t leftEyeTexture = {(void*)(uintptr_t)leftEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture );
 		vr::Texture_t rightEyeTexture = {(void*)(uintptr_t)rightEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
@@ -4190,7 +4197,7 @@ void CMainApplication::RenderFrame()
 	}
 	// SwapWindow
 	{
-		SDL_GL_SwapWindow( m_pCompanionWindow );
+//		SDL_GL_SwapWindow( m_pCompanionWindow );
 	}
 
 	// Clear
@@ -5670,7 +5677,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 void CMainApplication::RenderControllerAxes() //note: note render, actually setup VAO and VBO for axes
 {
 	// don't draw controllers if somebody else has input focus
-	if( m_pHMD->IsInputFocusCapturedByAnotherProcess() )
+    if( m_pHMD->IsInputAvailable() )
 		return;
 
 	std::vector<float> vertdataarray;
@@ -6092,34 +6099,34 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 ///*
 	//=================== draw volume image ======================
-	if (m_bHasImage4D)
-	{	
-		// render to texture
-		glDisable(GL_DEPTH_TEST);
+    if (m_bHasImage4D)
+    {
+        // render to texture
+        glDisable(GL_DEPTH_TEST);
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
-		backfaceShader->use();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		RenderImage4D(backfaceShader,nEye,GL_BACK); 
-		glUseProgram(0);
-		///*
-		// bind to previous framebuffer again
-		if (nEye == vr::Eye_Left)
-		{
-			glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId );
-		}
-		else if (nEye == vr::Eye_Right)
-		{
-			glBindFramebuffer( GL_FRAMEBUFFER, rightEyeDesc.m_nRenderFramebufferId );
-		}
-		// ray casting
-		raycastingShader->use();
-		SetUinformsForRayCasting();
-		RenderImage4D(raycastingShader,nEye,GL_FRONT); //*/
-		//to make the image not block the morphology surface
-		glEnable(GL_DEPTH_TEST);
-		//glClear(GL_DEPTH_BUFFER_BIT);
-	}
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface);
+        backfaceShader->use();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        RenderImage4D(backfaceShader,nEye,GL_BACK);
+        glUseProgram(0);
+        ///*
+        // bind to previous framebuffer again
+        if (nEye == vr::Eye_Left)
+        {
+            glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId );
+        }
+        else if (nEye == vr::Eye_Right)
+        {
+            glBindFramebuffer( GL_FRAMEBUFFER, rightEyeDesc.m_nRenderFramebufferId );
+        }
+        // ray casting
+        raycastingShader->use();
+        SetUinformsForRayCasting();
+        RenderImage4D(raycastingShader,nEye,GL_FRONT); //*/
+        //to make the image not block the morphology surface
+        glEnable(GL_DEPTH_TEST);
+        //glClear(GL_DEPTH_BUFFER_BIT);
+    }
 	//=================== draw agent postion with sphere ====================
 	{
 		morphologyShader->use();
@@ -6426,7 +6433,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 	}
 	//=================== draw the controller axis lines ======================
-	bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
+    bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputAvailable();
 	if( !bIsInputCapturedByAnotherProcess&&m_modeTouchPad_R == tr_clipplane)
 	{
 		glUseProgram( m_unControllerTransformProgramID );
@@ -6499,35 +6506,35 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 //-----------------------------------------------------------------------------
 void CMainApplication::RenderCompanionWindow()
 {
-	glDisable(GL_DEPTH_TEST);
-	glViewport( 0, 0, m_nCompanionWindowWidth, m_nCompanionWindowHeight );
+//	glDisable(GL_DEPTH_TEST);
+//	glViewport( 0, 0, m_nCompanionWindowWidth, m_nCompanionWindowHeight );
 
-	glBindVertexArray( m_unCompanionWindowVAO );
-	glUseProgram( m_unCompanionWindowProgramID );
+//	glBindVertexArray( m_unCompanionWindowVAO );
+//	glUseProgram( m_unCompanionWindowProgramID );
 
-	// render left eye (first half of index array )
-	if (leftEyeDesc.m_nResolveTextureId != 0)
-	{
-		glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, 0 );
+//	// render left eye (first half of index array )
+//	if (leftEyeDesc.m_nResolveTextureId != 0)
+//	{
+//		glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+//		glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, 0 );
 
-	}
-	// render right eye (second half of index array )
-	if (rightEyeDesc.m_nResolveTextureId != 0)
-	{
-		glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId  );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, (const void *)(uintptr_t)(m_uiCompanionWindowIndexSize) );
-	}
-	glBindVertexArray( 0 );
-	glUseProgram( 0 );
+//	}
+//	// render right eye (second half of index array )
+//	if (rightEyeDesc.m_nResolveTextureId != 0)
+//	{
+//		glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId  );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+//		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+//		glDrawElements( GL_TRIANGLES, m_uiCompanionWindowIndexSize/2, GL_UNSIGNED_SHORT, (const void *)(uintptr_t)(m_uiCompanionWindowIndexSize) );
+//	}
+//	glBindVertexArray( 0 );
+//	glUseProgram( 0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -8303,14 +8310,17 @@ void CMainApplication::HelpFunc_createOctreetexture(int step)
 }
 void CMainApplication::StartTimer()
 {
-	LARGE_INTEGER frequencyCount;
-	QueryPerformanceFrequency(&frequencyCount);
+    LARGE_INTEGER frequencyCount;
+    QueryPerformanceFrequency(&frequencyCount);
 
-	countsPerSecond = double(frequencyCount.QuadPart);
+    countsPerSecond = double(frequencyCount.QuadPart);
 
 
-	QueryPerformanceCounter(&frequencyCount);
-	CounterStart = frequencyCount.QuadPart;
+    QueryPerformanceCounter(&frequencyCount);
+    CounterStart = frequencyCount.QuadPart;
+
+//    CounterStart=1;
+//    countsPerSecond=1;
 }
 
 double CMainApplication::GetTime()

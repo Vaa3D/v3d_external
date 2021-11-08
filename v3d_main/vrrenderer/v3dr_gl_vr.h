@@ -2,13 +2,14 @@
 
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
-#include <GL/glew.h>
+#include "mainwindow.h"
+
 #include <SDL.h>
 
 #include "../basic_c_fun/v3d_interface.h"
 
 
-#include <openvr.h>
+#include <openvr.hpp>
 #include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
@@ -19,7 +20,6 @@
 
 //#include <gltext.hpp>//include freetype and gltest library
 
-#include "mainwindow.h"
 
 struct Agent {
 	QString name;
@@ -322,11 +322,11 @@ private:
 	static int m_curMarkerColorType;
 
 private: // SDL bookkeeping
-	SDL_Window *m_pCompanionWindow;
-	uint32_t m_nCompanionWindowWidth;
-	uint32_t m_nCompanionWindowHeight;
+    //SDL_Window *m_pCompanionWindow;
+//	uint32_t m_nCompanionWindowWidth;
+//	uint32_t m_nCompanionWindowHeight;
 
-	SDL_GLContext m_pContext;
+    //SDL_GLContext m_pContext;
 
 private: // OpenGL bookkeeping
 	int m_iTrackedControllerCount;

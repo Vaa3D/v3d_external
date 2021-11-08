@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "VRFinger.h"
 #include "../neuron_tracing/fastmarching_linker.h"
 
