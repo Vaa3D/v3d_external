@@ -48,7 +48,7 @@ win32 {
      message("WARNING: hdf5: no support for 32 bit windows")
    ## 64bit
      INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5-win64
-     LIBS += -L$$V3DMAINPATH/common_lib/winlib64 -lhdf5 -lszip -lzlib
+     LIBS += -L$$V3DMAINPATH/common_lib/mingw64 -lhdf5 -lszip -lzlib
 }
 
 macx {

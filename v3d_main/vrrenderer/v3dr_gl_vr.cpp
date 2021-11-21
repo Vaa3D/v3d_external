@@ -2143,7 +2143,7 @@ void CMainApplication::SetupCurrentUserInformation(string name, int typeNumber)
 	}
 }
 
-void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
+  void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
 {
 
 	for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
@@ -5678,7 +5678,7 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 void CMainApplication::RenderControllerAxes() //note: note render, actually setup VAO and VBO for axes
 {
 	// don't draw controllers if somebody else has input focus
-    if( m_pHMD->IsInputAvailable() )
+    if( !m_pHMD->IsInputAvailable() )
 		return;
 
 	std::vector<float> vertdataarray;
@@ -6434,7 +6434,8 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 	}
 	//=================== draw the controller axis lines ======================
-    bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputAvailable();
+    bool bIsInputCapturedByAnotherProcess = !m_pHMD->IsInputAvailable();
+//        qDebug()<<"bIsInputCapturedByAnotherProcess="<<bIsInputCapturedByAnotherProcess;
 	if( !bIsInputCapturedByAnotherProcess&&m_modeTouchPad_R == tr_clipplane)
 	{
 		glUseProgram( m_unControllerTransformProgramID );
@@ -6445,7 +6446,8 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glBindVertexArray( 0 );
 		glLineWidth(iLineWid);
 	}
-	//=================== draw the controller shooting ray ======================
+    //=================== draw the controller shooting ray ======================
+
 	if( !bIsInputCapturedByAnotherProcess )
 	{
 		glUseProgram( m_unControllerRayProgramID );
@@ -7045,12 +7047,6 @@ void CMainApplication::SetupRenderModels()//question: purpose? for the 16 VR dev
 	}
 
 }
-
-
-
-
-
-
 void CMainApplication::RefineSketchCurve(int direction, NeuronTree &oldNTree, NeuronTree &newNTree)
 {
 	unsigned char* data1d = 0;
