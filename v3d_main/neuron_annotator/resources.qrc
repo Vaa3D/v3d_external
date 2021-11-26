@@ -1,0 +1,31 @@
+<RCC>
+    <qresource prefix="/neuron_annotator">
+        <file>resources/beaker.png</file>
+        <file>resources/brain.png</file>
+        <file>resources/brick_grey.png</file>
+        <file>resources/brick.png</file>
+        <file>resources/bricks.png</file>
+        <file>resources/bullet_error.png</file>
+        <file>resources/folder_brick.png</file>
+        <file>resources/folder_image.png</file>
+        <file>resources/folder_open_page_white.png</file>
+        <file>resources/folder_open_page.png</file>
+        <file>resources/folder_open.png</file>
+        <file>resources/folder_page.png</file>
+        <file>resources/folder.png</file>
+        <file>resources/fruit_fly_small.png</file>
+        <file>resources/image.png</file>
+        <file>resources/images.png</file>
+        <file>resources/layers.png</file>
+        <file>resources/page_copy.png</file>
+        <file>resources/page_go.png</file>
+        <file>resources/page_white_code.png</file>
+        <file>resources/page_white_edit.png</file>
+        <file>resources/page_white_stack.png</file>
+        <file>resources/page_white_text.png</file>
+        <file>resources/page_white.png</file>
+        <file>resources/page.png</file>
+        <file>resources/tex_fragment_cmb.txt</file>
+        <file>resources/color_vertex_cmb.txt</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SingleCut</class>
+ <widget class="QWidget" name="SingleCut">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>608</width>
+    <height>46</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QPushButton" name="orientButton">
+     <property name="text">
+      <string>Orient</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="axisBox">
+     <item>
+      <property name="text">
+       <string>Free</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>+X</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>-X</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>+Y</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>-Y</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>+Z</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>-Z</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="nameField">
+     <property name="text">
+      <string>Top</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="edgeButton">
+     <property name="text">
+      <string>Set Edge</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="cutButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Cut</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="cutDistanceLineEdit">
+     <property name="text">
+      <string>?</string>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>&amp;mu;m</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
