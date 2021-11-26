@@ -249,24 +249,30 @@ MainWindow::MainWindow()
     v3d_Lite_info();
 #endif
     //090811 RZC
+    //qDebug()<<"jazz---------------debug---------------1";
     pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
+    //到这里都没有问题
+
+
 #ifdef __v3d_custom_toolbar__
     // Aug-08-2011 Hang
     this->addCustomToolbar();
+    //qDebug()<<"jazz---------------debug---------------2";
 #endif
     // Dec-20-2010 YuY
     //connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
     //connect(&sub_thread, SIGNAL(allTransactionsDone()), this, SLOT(allTransactionsDone()), Qt::DirectConnection);
     connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
     cl_plugin = false; // init
+    //qDebug()<<"jazz---------------debug---------------3";
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
 
 #define __AUTOLAUNCH_OPEN_NEURON_GAME___
     /// RZC 20170620: disable auto launch
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
-
-    const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
-
+//qDebug()<<"jazz---------------debug---------------4";
+    //const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
+//qDebug()<<"jazz---------------debug---------------5";
 
 }
 
@@ -2625,14 +2631,17 @@ void MainWindow::createMenus()
 
     //basic processing
     basicProcMenu = menuBar()->addMenu(tr("Image/Data"));
+    basicProcMenu->addAction(saveAct);
     connect(basicProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(basicProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     //Visualize menu
     visualizeProcMenu = menuBar()->addMenu(tr("Visualize"));
+    visualizeProcMenu->addAction(saveAct);
     connect(visualizeProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(visualizeProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     //image processing
     advancedProcMenu = menuBar()->addMenu(tr("Advanced"));
+    advancedProcMenu->addAction(saveAct);
     connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     //pipeline menu
@@ -2642,6 +2651,7 @@ void MainWindow::createMenus()
     //plugin menu
 
     pluginProcMenu = menuBar()->addMenu(tr("Plug-In"));
+    pluginProcMenu->addAction(saveAct);
 //    //20130904, PHC
 //    pluginProcMenu = new Vaa3DPluginMenu(tr("Plug-In"));
 //    pluginProcMenu->setPluginLoader(pluginLoader);

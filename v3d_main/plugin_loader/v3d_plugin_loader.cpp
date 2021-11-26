@@ -214,7 +214,7 @@ QList<QDir> V3d_PluginLoader::getPluginsDirList()
     if (testPluginsDir.dirName().toLower() == "debug" || testPluginsDir.dirName().toLower() == "release")
         testPluginsDir.cdUp();
 
-	qDebug() << testPluginsDir.absolutePath();
+    qDebug() << testPluginsDir.absolutePath();
 #elif defined(Q_OS_MAC)
     // In a Mac app bundle, plugins directory could be either
     //  a - below the actual executable i.e. v3d.app/Contents/MacOS/plugins/

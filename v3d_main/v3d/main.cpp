@@ -139,11 +139,11 @@ int main(int argc, char **argv)
 			Q_INIT_RESOURCE(v3d);
 
             V3dApplication* app = V3dApplication::getInstance(argc, argv);
+
             if(!parser.i_v3d.hideV3D)
             {
                 app->activateMainWindow();
             }
-
             MainWindow* mainWin=app->getMainWindow();
 
 			if (!mainWin)
@@ -151,7 +151,6 @@ int main(int argc, char **argv)
 				v3d_msg("Unable to open the Vaa3D main window. Quit.");
 				return false;
 			}
-
             app->installEventFilter(mainWin);
 
             if (mainWin)
@@ -170,6 +169,7 @@ int main(int argc, char **argv)
                 }
             }
 
+
 			// plugin module
 			if(parser.i_v3d.pluginname)
 			{
@@ -178,6 +178,9 @@ int main(int argc, char **argv)
 				mainWin->setPluginMethod(parser.i_v3d.pluginmethod);
 				mainWin->setPluginFunc(parser.i_v3d.pluginfunc);
 			}
+
+
+
 
 			// multiple image/object handling module
 			if(parser.i_v3d.fileList.size()==0 || parser.i_v3d.hideV3D)
@@ -232,6 +235,8 @@ int main(int argc, char **argv)
 					}
 				}
 			}
+
+
 
 
             // Check for software updates.

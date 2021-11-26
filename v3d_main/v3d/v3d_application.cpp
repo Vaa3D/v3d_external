@@ -12,9 +12,9 @@ V3dApplication::V3dApplication(int & argc, char ** argv)
     : QApplication(argc, argv)
 {
 
-	QSurfaceFormat format;
-  format.setDepthBufferSize(24);
-  QSurfaceFormat::setDefaultFormat(format);
+        QSurfaceFormat format;
+      format.setDepthBufferSize(24);
+      QSurfaceFormat::setDefaultFormat(format);
 
   
 	if (!V3dApplication::mainWindow) //force checking. by Hanchuan Peng, 20110705

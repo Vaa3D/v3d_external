@@ -39,7 +39,7 @@
 #include "imageio_mylib.h"
 
 extern "C" {
-#include "../common_lib/src_packages/mylib_tiff/image.h"
+#include "../common_lib_new/src_packages/mylib_tiff/image.h"
 };
 
 void freeMylibArray(Array * indata)
