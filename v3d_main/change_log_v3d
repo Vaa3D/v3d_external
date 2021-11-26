@@ -1,0 +1,98 @@
+For the latest log, please send the V3D website: http://penglab.janelia.org/proj/v3d
+
+v2.133
+
+Change log (June 26, 2009): add a new default option to set the number of shift bits in 16(32) bit -> 8bit conversion; enable activating any 3d viewer from the main menu; allow disable the image and point cloud atlases menu. 
+
+v2.130
+
+Change log (June 22, 2009): produce the stable version of the powerful 1 point to N point neuron tracing function.  
+
+v2.033
+
+Change log (May 4, 2009): A number of enhancements and bug fixes. Enable user preferences of automatic flip image for different coordinate systems when opening an image, automatic open 3D viewer, set default marker size and change displayed size, change looking-glass size, fix bug of refreshing display events, enable 3D line drawing and intensity profiling of line for all color channels, update the layout of 3D viewer control panel, enable display marker label in 3D viewer, enable surface objects stretch together with 3D rendered volume image when Z-thickness changes, enable neuron names and comments annotation saved in SWC file, enable neuron comparison and can compute distance/similarity scores between neurons, enables display neuron structure/morphological features, enable display individual neuron node information, enable display surface mesh area/size information, save surface mesh display status in V3DS file for faster reuse, enable image cropping for both of region of interest and region of non-interest, fast fill/flood non-interest image region with certain values, add a new cell segmentation and counting program, add new 3D image registration methods, enable 3D neuron interactive reconstruction, enable reading some simple electron microscopy MRC files, fix bugs in marker location display, etc.
+
+    * Mac
+
+          o Mac Pro (Maci) with Leopard OS (Mac OS 10.5) (contact me if you need a version for Tiger Mac OS 10.4, PowerPC G4/G5, etc.)
+
+    * Windows
+
+          o Windows XP and Vista
+    * Linux
+          o Linux Redhat and Fedora 64-bit (QT library files not included, contact me if you need them)
+
+Test data
+
+    * 3D image of an adult fruit fly brain - 3D tif format (need to be unzipped first)
+    * 3D image stack of late embryonic fruit fly nervous system - 3D tif format
+    * 3D straightened C. elegans - 3D raw format (Hanchuan's raw, can be converted/saved-as to 3D tif stack)
+    * 3D point cloud representaing segmented nuclei of the above C. elegans stack
+    * 3D reconstructed neuron 1 - swc format
+    * 3D reconstructed neuron 2 - swc format
+    * 3D Human brain (MR) merged from ITK example - 3D tif stack
+
+Media
+
+    * Various 3D rendering modes movie (35M)
+    * 3D neuron display and comparison movie (3.5M)
+    * 3D fruit fly brain atlas movie (11M)
+    * 3D cell segmentation movie (3.7M)
+
+How to Use
+
+V3D is designed to have a very simple interface, and intuitive to use. Only the following two buttons are displayed when you launch V3D (yet there is a main-window menu anyway). Most functions are obvious, - but there will be a user-manual and tutorial soon. Feel free to ask if you have questions.
+
+    * File open: most cases just drag and drop to the main window or the 3D viewer. Or click the respective menu buttons.
+    * Help: click the "information" (yellow i-button) at the left of the main window) to get a documented list of short-keys, mouse usage, etc.
+
+Previous Releases (files removed, only update-logs are kept)
+
+v1.999
+
+Change log (Feb 15, 2009): Enable landmark defining in any zoom-in/out tri-view; enhance the z-thickness in 3D viewer as double spinbox and up-to 10x change.
+
+v1.998
+
+Change log (Feb 13, 2009): Add big image panning-around, color inversion, voxel intensity rescaling functions in main window. Also refine frontal plane cut for both MIP, alpha blending and cross-sectional views in 3D viewer. Turn the 3D image registration, segmentation, neuron tracing modules as customary modules. Bug fix of the image flipping.
+
+v1.986
+
+Change log (Dec 22, 2008): Redesign the main window menu. Add regional statistics in landmark dialog which can be used for 3D measurements. Add volume image colormap. Fix some small bugs. Release a preliminary 64-bit Redhat/Fedora version.
+
+v1.983
+
+Change log (Dec 15, 2008): Many updates. Add atlas viewer and landmark manager in main GUI. Add 3D cell segmentation as a standard module. Add exporting function to transfer cell/nuclei segmentation results to VANO/WANO software. Linux versions (Redhat and Ubuntu) are released internally.
+
+v1.972
+
+Change log (Nov 15, 2008): Enable flexible color-picker for surface and other objects (neurons, point clouds); enable zoom-in and zoom-out modes for the tri-view in main window; enable drag-and-drop for Windows PCs; enable viewing and color changing for multiple neurons.
+
+v1.962
+
+Change log (Nov 11, 2008): A lot of changes! Bug fixes, adding cutting planes to surface and objects, adding compression mode for volume rendering and Ctrl-C switches, clock-type rotation buttons, 3D rotation state machine updates, drag-and-drop into the 3D viewer, etc.
+
+v1.950
+
+Change log (Oct 8, 2008): Make the 3D image registration module a default for general release; significant optimization on the memory use for 3D rendering; change the Help text to html. Note that from this release V3D makes two different versions for Mac Intel CPU based Tiger (OS 10.4) system, one with multisampling supporting from the video card, another without multisampling support from the video card (e.g. NVIDIA GeForce 7300GT). The one w/o multisampling will should run well except that the 3D viwer may not draw lines and objects smoothly enough (i.e. with sawtooth); on the other hand machines without an apporpriate video card may crash or hang when the multisampling-supporting version is used for 3D rendering.
+
+v1.949
+
+Change log: Enable the direct opening apo, swc, v3ds, and obj file formats in 3D viewer; get around a Graphics card hardware bug related to multisampling in certain Maci/Tiger machine.
+
+v1.947
+
+Change log: add creating surface from any RGB channel of the currently viewed volume data.
+
+v1.946
+
+Change log: add the recent-file history, image permutation and reshape, image flipping, grayscale2color color channel splitting, disable 16-bit TIFF auto-bit-shifting in reading, add channel-display switch in 3D viewer, better layout of some 3D viewer controls, and fix the potential memory allocation crashes in image analysis.
+
+v1.945
+
+Change log: enhance the handling of memory allocation exception in creating the 3D viewer.
+
+v1.943
+
+Change log: porting to windows system.
+

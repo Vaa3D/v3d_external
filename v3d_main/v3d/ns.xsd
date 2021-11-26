@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <schema targetNamespace="urn:v3dwebserver"
+  xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
+  xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:ns="urn:v3dwebserver"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="unqualified"
+  attributeFormDefault="unqualified">
+  <import namespace="http://www.w3.org/2003/05/soap-encoding" schemaLocation="http://www.w3.org/2003/05/soap-encoding"/>
+  <complexType name="LOAD-MSG">
+   <sequence>
+     <element name="image-path" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="x" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="y" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="z" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="c" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="t" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+     <element name="intensity" type="xsd:float" minOccurs="0" maxOccurs="1"/>
+     <element name="dt" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+   </sequence>
+  </complexType>
+ </schema>
+

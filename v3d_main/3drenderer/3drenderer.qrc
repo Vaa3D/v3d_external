@@ -1,0 +1,23 @@
+<RCC>
+  <qresource prefix="/">
+	   <file>shader/lighting.txt</file>
+     <file>shader/color_vertex.txt</file>
+     <file>shader/vertex_normal.txt</file>
+     <file>shader/color_fragment.txt</file>
+     <file>shader/obj_fragment.txt</file>
+     <file>shader/tex_fragment.txt</file>
+     <file>icons/click1.png</file>
+     <file>icons/click2.png</file>
+     <file>icons/click3.png</file>
+     <file>icons/stroke1.png</file>
+     <file>icons/stroke2.png</file>
+     <file>icons/stroke3.png</file>
+     <file>icons/strokeN.png</file>
+     <file>icons/start.png</file>
+     <file>icons/trace.png</file>
+     <file>icons/neuronwbg.png</file>
+     <file>icons/neuronwobg.png</file>
+     <file>icons/neuronwref.png</file>
+     <file>icons/neuronwbgref.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+        <file>pic/Lockon.png</file>
+        <file>pic/Lockoff.png</file>
+        <file>pic/copy.png</file>
+        <file>pic/cut.png</file>
+        <file>pic/new.png</file>
+        <file>pic/open.png</file>
+        <file>pic/web.png</file>
+        <file>pic/paste.png</file>
+        <file>pic/save.png</file>
+        <file>pic/import.png</file>
+        <file>pic/atlasView.png</file>
+        <file>pic/help.png</file>
+        <file>pic/default_xy_pic.jpg</file>
+        <file>pic/default_yz_pic.jpg</file>
+        <file>pic/default_zx_pic.jpg</file>
+        <file>pic/v3dIcon128.png</file>
+        <file>pic/rotate_icon.png</file>
+        <file>pic/customize.png</file>
+        <file>pic/arrow_left.png</file>
+        <file>pic/arrow_right.png</file>
+        <file>pic/arrow_up.png</file>
+        <file>pic/arrow_down.png</file>
+        <file alias="button_add.png">pic/button_add.png</file>
+    </qresource>
+</RCC>

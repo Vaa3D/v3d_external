@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CutPlannerDialog</class>
+ <widget class="QDialog" name="CutPlannerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>618</width>
+    <height>418</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>microCT Trim Planner</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Voxel size:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="micrometersBox">
+        <property name="suffix">
+         <string>µm</string>
+        </property>
+        <property name="minimum">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.050000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.700000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>468</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="labelBrainCompartmentsButton">
+        <property name="text">
+         <string>Label Neuropil Compartments</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="basePlaneWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="topCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="frontCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="rightCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="rearCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SingleCut" name="leftCutWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>46</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>498</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="savePlanButton">
+        <property name="text">
+         <string>Save File...</string>
+        </property>
+        <property name="autoDefault">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SingleCut</class>
+   <extends>QWidget</extends>
+   <header>../neuron_annotator/microCT/SingleCut.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

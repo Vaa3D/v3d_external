@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/mozak">
+        <file>icons/invert.png</file>
+        <file>icons/connect.png</file>
+        <file>icons/delete-segments.png</file>
+        <file>icons/extend.png</file>
+        <file>icons/join.png</file>
+        <file>icons/polyline.png</file>
+        <file>icons/polyline-autoz.png</file>
+        <file>icons/retype.png</file>
+        <file>icons/split.png</file>
+        <file>icons/overviewMonitor.png</file>
+      <file>icons/z-lock.png</file>
+      <file>icons/subtree.png</file>
+      
+    </qresource>
+</RCC>
