@@ -49,8 +49,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
-#include "../terafly/src/control/CPlugin.h"
-#include "../terafly/src/presentation/PMain.h"
+#include "../new_terafly/src/control/CPlugin.h"
+#include "../new_terafly/src/presentation/PMain.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
 #include "renderer.h"

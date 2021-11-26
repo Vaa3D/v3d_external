@@ -19,10 +19,10 @@
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 
-#include "../terafly/src/control/CSettings.h"
-#include "../terafly/src/control/CImport.h"
-#include "../terafly/src/control/CViewer.h"
-#include "../terafly/src/presentation/PMain.h"
+#include "../new_terafly/src/control/CSettings.h"
+#include "../new_terafly/src/control/CImport.h"
+#include "../new_terafly/src/control/CViewer.h"
+#include "../new_terafly/src/presentation/PMain.h"
 
 #define SIM_DIM1 765	//X
 #define SIM_DIM2 567	//Y

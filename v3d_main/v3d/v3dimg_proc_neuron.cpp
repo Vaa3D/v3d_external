@@ -48,7 +48,7 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
-#include "../terafly/src/control/CPlugin.h"
+#include "../new_terafly/src/control/CPlugin.h"
 //#ifdef __ALLOW_VR_FUNCS__
 //#include "../mozak/MozakUI.h"
 //#endif

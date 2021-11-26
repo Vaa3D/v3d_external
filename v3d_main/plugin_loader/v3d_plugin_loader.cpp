@@ -47,7 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include "../v3d/v3d_core.h"
 #include "v3d_plugin_loader.h"
 #include "pluginDialog.h"
-#include "../terafly/src/control/CPlugin.h"
+#include "../new_terafly/src/control/CPlugin.h"
 #include <QtGlobal>
 #include <QMessageBox>
 #include <QScrollArea>

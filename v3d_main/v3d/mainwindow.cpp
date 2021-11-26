@@ -65,7 +65,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #endif
 
 #ifdef _ALLOW_TERAFLY_MENU_
-#include "../terafly/src/control/CPlugin.h"
+#include "../new_terafly/src/control/CPlugin.h"
 #endif
 
 //#ifdef __ALLOW_VR_FUNCS__

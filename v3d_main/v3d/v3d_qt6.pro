@@ -1,5 +1,5 @@
 #-----------From v3d.pro-------------------------
-include(../terafly/terafly.pro)
+include(../new_terafly/terafly.pro)
 
 QT += core gui widgets opengl openglwidgets network xml svg
 TEMPLATE = app
@@ -409,7 +409,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../io/io_bioformats.h \
     ../io/asc_to_swc.h \
     ../io/v3d_nrrd.h \
-    ../terafly/src/presentation/theader.h \
+    ../new_terafly/src/presentation/theader.h \
     ../basic_c_fun/INeuronAssembler.h \
     ../basic_c_fun/IPMain4NeuronAssembler.h \
     ./old_arthurstyle.h \

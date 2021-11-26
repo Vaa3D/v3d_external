@@ -33,7 +33,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_glwidget.h"
 #include "freeglut_geometry_r.c"
 
-#include "../terafly/src/presentation/PMain.h"
+#include "../new_terafly/src/presentation/PMain.h"
 
 #include "../io/asc_to_swc.h"
 //#include "../io/sswc_to_swc.h"

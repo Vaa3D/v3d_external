@@ -18,7 +18,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/v3d_message.h"
 #include "../plugin_loader/v3d_plugin_loader.h"
 #include "../v3d/mainwindow.h"
-#include "../terafly/src/control/CPlugin.h"
+#include "../new_terafly/src/control/CPlugin.h"
 //#include "../3drenderer/v3dr_mainwindow.h"
 //#include "../v3d/v3d_core.h"
 #ifdef __WIN32 
