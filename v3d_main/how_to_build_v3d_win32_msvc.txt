@@ -1,0 +1,93 @@
+******** How to build V3D (32bit) on Windows 7 (64bit) using MSVC Express (32bit) using command line tool: *************
+(last updated 10/29/2015 by Colin)
+
+(-1) Ensure you have checked out V3D source code, installed QT (e.g. QT 4.6.2 from googlecode site: the correct project should be "qt-msvc-installer", which has a web site http://code.google.com/p/qt-msvc-installer/), and installed MSVC on your machine!
+
+(0) VS 2008: launch the "Visual Studio 2008 Command Prompt".
+    VS 2010: launch the "Visual Studio Command Prompt (2010)".
+
+(1) Check out V3D src
+
+(2) Enter v3d_main\v3d folder, run "qmake vaa3d_msvc.pro"
+
+(3) Enter v3d_main\common_lib\src_package folder, unzip tiff.3.8.2.1.tar.gz, and extract the four files:
+        tiff.h
+        tiffio.h
+        tiffvers.h
+        tiffconf.h.vc (and rename it to tiffconf.h)
+    (note A: the actual 32bit tif library has been pre-complied and put in the v3d_main\common_lib\winlib folder, so no need to worry about how to build libtiff)
+    (note B: the actual 64bit tif library should be in the folder v3d_main\common_lib\winlib64)
+
+(4) Enter v3d_main\common_lib\src_package folder, unzip the boost_1_46_0.tar.gz and then move its sub-folder "boost" to "v3d_main\common_lib\include\boost".
+
+(5) Enter v3d_main\common_lib\winlib folder.
+    VS 2008: rename "libnewmat.vs2008.lib" to "libnewmat.lib".
+    VS 2010: rename "libnewmat.vs2010.release.lib" to "libnewmat.lib".
+
+(6) Enter v3d_main\v3d folder and run "nmake /f Makefile.Release"
+
+(7) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\vaa3d_msvc.exe".
+
+
+Additional Note 1: If you have built V3D using similar ways before and already have "libtiff" and "boost" header files, you can skip steps (3) and (4).
+
+Additional Note 2: If you want to build 64bit V3D using MSVC, you will need a 64bit MSVC compiler, plus using a similar command line window for the 64bit MSVC as 
+                   explained in Step 0.
+                   (note 10/29/2015: 64-bit builds appear not to work, at least under VS 2010, because vaa3d takes a dependency on a 32-bit library in the Qt demos.)
+
+Additional Note 3: So far the V3D plugins have not been built yet. They can be built in similar ways.
+
+************How to build V3D (32bit and 64bit) on Windows 7 (64bit) Using MS Visual Studio 2008***************
+(1) Check out V3D src
+
+(2) Open "Visual Studio 2008 Command Prompt" (for 32bit building) window or "Visual Studio 2008 x64 Win64 Command Prompt" (for 64bit building) window
+	from "MS Visual Studio 2008 -> Visual Studio Tools" menu item in Windows Start menu
+
+(3) Enter "v3d_main\v3d" folder
+
+(4) Run "qmake -tp vc v3d_msvc.pro". This command creates a MS Visual Studio 2008 project file "v3d_msvc.vcproj" in "v3d_main\v3d" folder
+
+(5) Double click "v3d_msvc.vcproj" in "v3d_main\v3d" folder and open it in MS Visual Studio 2008
+
+(6) Choose building in "Release" mode in MS Visual Studio 2008
+
+(7) Choose building in "Win32" (for 32bit building) or "x64" (for 64bit building) mode in v3d_msvc Property Pages (by right-click v3d_msvc project icon 
+	in the left collumn in workspace in MS Visual Studio 2008) or just on the toolbar
+
+(8) Choose menu "Build->Build Solution F7" to build the solution. A popup dialog will appear to ask to save solution file for this project. 
+	Just click "OK" in this dialog
+
+(9) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\v3d_msvc.exe".
+
+The building method works for both 32bit and 64bit buildings.
+
+******** How to build 32-bit debug builds for Visual Studio 2010 ********
+
+By following the above steps under Visual Studio 2010, you'll wind up with a broken debug build when the compile process hits mismatched values of
+_ITERATOR_DEBUG_LEVEL between different libraries in the project.  There are two ways to fix this: switch the core project to debug level 0, or
+switch the other libraries to debug level 2.  The former seems to cause a lot of broken debugger behavior and a crash at startup, so do the
+latter:
+
+(1) rebuild the Qt demo_shared library for debugging:
+    (a) open a VS command prompt in [your Qt path]\demos\shared.
+    (b) run "qmake shared.pro".
+    (c) run "nmake /f Makefile.Debug".
+
+(2) Enter v3d_main\common_lib\winlib folder.  Rename "libnewmat.vs2010.debug.lib" to "libnewmat.lib".
+
+(3) For console builds:
+    (a) Enter v3d_main\v3d and run "qmake vaa3d_msvc.pro" as usual.
+    (b) Open v3d_main\v3d\Makefile.Debug, and change references to "[your Qt path]\demos\shared\release" to "[your Qt path]\demos\shared\debug" 
+        in LFLAGS and LIBS.
+    (c) Run "nmake /f Makefile.Debug"
+
+(4) For Visual Studio builds:
+    (a) Enter v3d_main\v3d and run "qmake -tp vc vaa3d_msvc.pro".
+    (b) Open Visual Studio and load vaa3d_msvc.msproj.  Change it to the "Debug" release configuration.
+    (c) Open the project properties and make the following changes:
+        (i) In Configuration Properties -> Linker -> General, change references to "[your Qt path]\demos\shared\release" in Additional Library Directories to 
+            "[your Qt path]\demos\shared\debug".
+        (ii) In Configuration Properties -> Linker -> Input, change references to "[your Qt path]\demos\shared\release\demo_shared.lib" in Additional 
+            Dependencies to "[your Qt path]\demos\shared\debug\demo_shared.lib".
+
+There should be some way to automate steps 3 and 4, but I haven't looked into it yet.  -- Colin, 11/4/2015

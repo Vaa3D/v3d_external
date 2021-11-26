@@ -1,0 +1,7 @@
+(1) How to build boost as both 32 and 64 bit on Mac:
+
+./configure --with-libraries=all CFLAGS="-arch i386 -arch x86_64" CXXFLAGS="-arch i386 -arch x86_64"
+make -j8
+sudo make install
+
+
