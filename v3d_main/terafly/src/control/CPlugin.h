@@ -36,8 +36,9 @@
 #if defined(USE_Qt5)
 #include <QWidget>
 #else
-#include <QtGui>
+//#include <QtGui>
 #endif
+//#include <QWidget>
 #include <limits>
 #include <sstream>
 #include <algorithm>
@@ -301,7 +302,7 @@ namespace terafly
         }
     }
 
-    inline std::vector<std::string> parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename) throw (RuntimeException)
+    inline std::vector<std::string> parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename) 
     {
         std::vector<std::string> tokens;
         split(line, delim, tokens);
@@ -311,7 +312,7 @@ namespace terafly
         return tokens;
     }
 
-    inline void parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename, std::vector<std::string> &tokens) throw (RuntimeException)
+    inline void parse(const std::string & line, const std::string & delim, int nTokensExpected, const std::string & filename, std::vector<std::string> &tokens) 
     {;
         tokens.clear();
         split(line, delim, tokens);
@@ -435,7 +436,7 @@ namespace terafly
 
     // partition a discrete range into subranges which differ by 1 at most
     template <typename T>
-    inline std::vector<T> partition(T range, T desired_part_size) throw (RuntimeException)
+    inline std::vector<T> partition(T range, T desired_part_size) 
     {
         if(range <= 0)
             throw RuntimeException(strprintf("in partition(): range is <= 0 (%s)", num2str<T>(range).c_str()));

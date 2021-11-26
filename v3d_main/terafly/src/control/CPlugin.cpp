@@ -91,7 +91,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
         // launch PConverter's GUI
         PConverter::instance(&callback, 0);
         PConverter::instance()->show();
-        PConverter::instance()->move(QApplication::desktop()->screen()->rect().center() - PConverter::instance()->rect().center());
+       //注释 PConverter::instance()->move(QApplication::desktop()->screen()->rect().center() - PConverter::instance()->rect().center());
         PConverter::instance()->raise();
         PConverter::instance()->activateWindow();
     }
@@ -129,14 +129,16 @@ void TeraFly::doaction(const QString &action_name)
     {
         if(CViewer::getCurrent())
         {
+            qDebug()<<"-------------------------------0";
             CViewer::getCurrent()->undoStack.beginMacro("vaa3d action");
             CViewer::getCurrent()->undoStack.push(new QUndoVaa3DNeuron(CViewer::getCurrent()));
             CViewer::getCurrent()->undoStack.endMacro();
             PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
     }
-    else
+    else{
         QMessageBox::information(0, "Information", tf::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());
+}
 }
 
 // returns true if version >= min_required_version, where version format is version.major.minor

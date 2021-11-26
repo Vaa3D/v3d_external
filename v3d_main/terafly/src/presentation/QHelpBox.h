@@ -23,7 +23,7 @@ class terafly::QHelpBox : public QWidget
         void setText(std::string text);
        // void setFixedHeight(int h){helpBox->setFixedHeight(h); backgroundPanel->setFixedHeight(h);}
 
-        void setIconSize(int w, int h){helpIcon->setPixmap(helpIcon->pixmap()->scaled(w, h, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));}
+        void setIconSize(int w, int h){helpIcon->setPixmap(helpIcon->pixmap().scaled(w, h, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));}
 
 
     signals:

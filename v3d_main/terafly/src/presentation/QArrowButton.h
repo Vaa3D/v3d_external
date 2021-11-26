@@ -40,7 +40,7 @@ class terafly::QArrowButton : public QPushButton
             mouseOver = false;
             QPushButton::leaveEvent(e);
         }
-        void enterEvent(QEvent * e)
+        void enterEvent(QEnterEvent * e)
         {
             mouseOver = true;
             QPushButton::enterEvent(e);

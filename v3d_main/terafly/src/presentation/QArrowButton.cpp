@@ -3,7 +3,7 @@
 #include <QPainter>
 #endif
 #include "QArrowButton.h"
-
+#include <QPainter>
 using namespace terafly;
 
 QArrowButton::QArrowButton(QWidget *parent, QColor arrowColor, int arrowSize, int arrowWidth, int arrowMargin, int arrowOrientation, bool _mousePressedBlocking) : QPushButton(parent)

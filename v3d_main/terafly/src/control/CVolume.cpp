@@ -57,7 +57,7 @@ CVolume::~CVolume()
 }
 
 // load data using the currently set VOI
-tf::uint8* CVolume::loadData() throw (tf::RuntimeException)
+tf::uint8* CVolume::loadData() 
 {
     try
     {

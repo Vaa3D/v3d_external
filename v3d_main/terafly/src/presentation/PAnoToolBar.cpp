@@ -274,51 +274,52 @@ void PAnoToolBar::buttonMarkerDeleteChecked(bool checked)
 
 void PAnoToolBar::buttonMarkerRoiDeleteChecked(bool checked)
 {
-     /**/tf::debug(tf::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV3, strprintf("checked = %s", checked ? "true" : "false").c_str(), __itm__current__function__);
 
-    CViewer* expl = CViewer::getCurrent();
+   CViewer* expl = CViewer::getCurrent();
 
-    if(checked)
-    {
+   if(checked)
+   {
 //        QMessageBox::information(this, "Warning", "Not yet implemented. But stay tuned!");
 //        buttonMarkerRoiDelete->setChecked(false);
-        // uncheck other buttons but the current one
-        if(buttonMarkerCreate2->isChecked())
-            buttonMarkerCreate2->setChecked(false);
-        if(buttonMarkerCreate->isChecked())
-            buttonMarkerCreate->setChecked(false);
-        if(buttonMarkerDelete->isChecked())
-            buttonMarkerDelete->setChecked(false);
+       // uncheck other buttons but the current one
+       if(buttonMarkerCreate2->isChecked())
+           buttonMarkerCreate2->setChecked(false);
+       if(buttonMarkerCreate->isChecked())
+           buttonMarkerCreate->setChecked(false);
+       if(buttonMarkerDelete->isChecked())
+           buttonMarkerDelete->setChecked(false);
 
-        // change cursor
-        QPixmap cur_img(":/icons/cursor_marker_delete_roi.png");
-        cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        setCursor(QCursor(cur_img, 0,0));
-        CViewer::setCursor(QCursor(cur_img, 0, 0), true);
+       // change cursor
+       QPixmap cur_img(":/icons/cursor_marker_delete_roi.png");
+       cur_img = cur_img.scaled(32,32,Qt::KeepAspectRatio, Qt::SmoothTransformation);
+       setCursor(QCursor(cur_img, 0,0));
+       CViewer::setCursor(QCursor(cur_img, 0, 0), true);
 
-        // switch to Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
-        if(expl)
-        {
-            //expl->view3DWidget->getRenderer()->selectMode = Renderer::smCurveCreate1;
-            expl->view3DWidget->getRenderer()->selectMode = Renderer::smSelectMultiMarkers;
-            static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_addthiscurve = false;
-            //static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_imaging = false;
-            //static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = true;
-        }
-    }
-    else
-    {
-        // set default cursor
-        setCursor(Qt::ArrowCursor);
-        CViewer::setCursor(Qt::ArrowCursor, true);
+       // switch to Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
+       if(expl)
+       {
+           //expl->view3DWidget->getRenderer()->selectMode = Renderer::smCurveCreate1;
+           expl->view3DWidget->getRenderer()->selectMode = Renderer::smSelectMultiMarkers;
+           static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_addthiscurve = false;
 
-        // end Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
-        if(expl)
-        {
-            expl->view3DWidget->getRenderer()->selectMode = Renderer::smObject;
-            static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = false;
-        }
-    }
+//           static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_imaging = false;
+//           static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = true;
+       }
+   }
+   else
+   {
+       // set default cursor
+       setCursor(Qt::ArrowCursor);
+       CViewer::setCursor(Qt::ArrowCursor, true);
+
+       // end Vaa3D's mode "Zoom-in HighRezImage: 1-right stroke ROI"
+       if(expl)
+       {
+           expl->view3DWidget->getRenderer()->selectMode = Renderer::smObject;
+           static_cast<Renderer_gl1*>(expl->view3DWidget->getRenderer())->b_grabhighrez = false;
+       }
+   }
 }
 
 

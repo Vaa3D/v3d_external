@@ -1,6 +1,6 @@
 #include "fileserver.h"
 #include <QMessageBox>
-
+#include <QRegExp>
 FileServer::FileServer(QObject *parent):QTcpServer (parent)
 {
     qDebug()<<"receive_file.h";

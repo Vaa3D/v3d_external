@@ -52,7 +52,7 @@ PAbout::PAbout(QWidget *parent) : QDialog(parent)
     connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
     QGridLayout* layout = new QGridLayout(this);
-    layout->setMargin(20);
+    //注释layout->setMargin(20);
     layout->setSpacing(20);
     layout->addWidget(logo, 0, 0, 1, 1);
     layout->addWidget(desc, 0, 1, 1, 1);

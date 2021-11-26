@@ -10,7 +10,7 @@
 #include "../control/CPlugin.h"
 #include "QPrefixSuffixLineEdit.h"
 #include "VirtualVolume.h"
-
+#include <QDialogButtonBox>
 namespace terafly
 {
     class PDialogVirtualPyramid;

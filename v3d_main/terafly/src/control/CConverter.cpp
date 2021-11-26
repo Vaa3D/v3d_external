@@ -36,7 +36,8 @@
 #include "BDVVolume.h"
 #include "VolumeConverter.h"
 #include "iomanager.config.h"
-
+#include <QCheckBox>
+#include <QLineEdit>
 using namespace terafly;
 using namespace iim;
 
@@ -64,7 +65,7 @@ CConverter::~CConverter()
     /**/tf::debug(tf::LEV1, "object successfully DESTROYED", __itm__current__function__);
 }
 
-void CConverter::setMembers(PConverter* pConverter) throw (RuntimeException)
+void CConverter::setMembers(PConverter* pConverter) 
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 

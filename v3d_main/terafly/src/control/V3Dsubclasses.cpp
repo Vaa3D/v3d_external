@@ -100,10 +100,11 @@ void myV3dR_GLWidget::setZoom_NAconnectorSize(float zr)
 }
 #endif
 
+//修改
 void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
 {
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, mouse_x = %d, mouse_y = %d",
-                                           data_title.toStdString().c_str(), event->pos().x(), event->pos().y()).c_str(), __itm__current__function__);
+                                           data_title.toStdString().c_str(), event->angleDelta().x(), event->angleDelta().y()).c_str(), __itm__current__function__);
 
     //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 	//-1 : scrolldown zoomin
@@ -116,12 +117,13 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
 
     this->setFocus(); // accept KeyPressEvent, by RZC 081028
 
-    float d = (event->delta())/100;  // ~480
+    QPoint numDegress = event->angleDelta()/100;
+    //float d = (event->delta())/100;  // ~480
     #define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
     #define MOUSE_ZROT(dz)    (int(dz*8* MOUSE_SENSITIVE));
 
-    int zoomStep = MOUSE_ZOOM(d);
-    int zRotStep = MOUSE_ZROT(d);
+    int zoomStep = MOUSE_ZOOM(numDegress.y());
+    int zRotStep = MOUSE_ZROT(numDegress.y());
 
     if (QApplication::keyboardModifiers() == Qt::ShiftModifier) // shift+mouse control view space translation, 081104
     {
@@ -133,7 +135,8 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
     }
     else // default
     {
-        (this->renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
+        //修改
+        (this->renderer->hitWheel(event->angleDelta().x(), event->angleDelta().y())); //by PHC, 130424. record the wheel location when zoom-in or out
 
 #ifdef _NEURON_ASSEMBLER_
 		if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("erase"))
