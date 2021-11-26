@@ -1,0 +1,146 @@
+#!/bin/bash
+#@echo off
+#echo -----------------------------------------------------------------
+#echo This is a shell program to build the v3d program for redhat
+#echo Based on Mac version by Hanchuan Peng
+#echo 2008-12-05, by Hanchuan Peng
+#echo 2010-08-12, by Hanchuan Peng
+#echo 2010-08018, by Hanchuan Peng
+#echo 2011-0203, updated by Hanchuan Peng
+#echo 2014-0930, add bigtiff support.
+#echo 2021-01-21, add mkdir ../../bin
+#echo -----------------------------------------------------------------
+#echo on
+
+#prepare the boost library 
+
+if [ ! -d common_lib/include/boost ]; then
+  cd common_lib/src_packages
+  tar zvxf boost_1_57_0.tar.gz
+  mv boost_1_57_0/boost ../include/.
+  cd ../../
+fi
+
+#prepare the tiff library
+
+if [ ! -f common_lib/lib/libv3dtiff.a ]; then
+  cd common_lib/src_packages
+#  tar zxvf tiff-3.8.2.1.tar.gz
+#  tar zxvf tiff-4.0.0beta6.tar.gz
+  tar zxvf tiff-4.0.2.tar.gz
+  cd ../
+  tifpath=`pwd`
+  cd build
+#  ../src_packages/tiff-3.8.2.1/configure --prefix=$tifpath
+#  ../src_packages/tiff-4.0.0beta6/configure --prefix=$tifpath
+  ../src_packages/tiff-4.0.2/configure --prefix=$tifpath
+  make clean
+  make -j4
+  make install
+  cd ../lib
+  ln -s libtiff.so libv3dtiff.so
+  ln -s libtiff.a libv3dtiff.a
+  cd ../../
+fi
+
+#prepare MYLIB library
+
+if [ ! -f common_lib/src_packages/mylib_tiff/libmylib.a ]; then
+  cd common_lib/src_packages/mylib_tiff
+  make -f mylib_linux.makefile clean
+  make -f mylib_linux.makefile 
+  cd ../../../
+fi
+
+if [ ! -f common_lib/lib/libv3dfftw3f.a ]; then
+  cd common_lib/src_packages
+  tar zxvf fftw-3.1.2.tar.gz
+  cd ../
+  fftwpath=`pwd`
+  cd build
+  ../src_packages/fftw-3.1.2/configure --prefix=$fftwpath --enable-float --enable-threads --enable-shared
+  make clean
+  make -j4
+  make install
+  cd ../lib
+  ln -s libfftw3f.so libv3dfftw3f.so
+  ln -s libfftw3f.a libv3dfftw3f.a
+  ln -s libfftw3f_threads.so libv3dfftw3f_threads.so
+  ln -s libfftw3f_threads.a libv3dfftw3f_threads.a
+  cd ../../
+fi
+
+ARGS=$*
+QARGS="CONFIG+=$1"
+echo make $ARGS
+echo ==========================================================
+
+#compile newmat library
+
+cd jba/c++ 
+make -f jba.makefile $ARGS 
+cd ../../
+
+# Compile 2 of MK's libraries - v3d_imgManagerMK and NeuronStructNavigator (optional)
+# These libraries are needed if wish to use fragment tracing functionalities ------- MK, Mar, 2019
+#cd ../../vaa3d_tools/hackathon/MK/v3d_imgManagerMK
+#qmake v3d_imgManagerMK.pro
+#make -j4
+#cd ../NeuronStructNavigator
+#qmake NeuronStructNavigator.pro
+#make -j4
+#cd ../../../../v3d_external/v3d_main
+##################################################################################################
+
+cd v3d
+echo qmake vaa3d.pro \"$QARGS\"
+echo =========================================================
+qmake vaa3d.pro $QARGS
+touch v3d_version_info.cpp
+make $ARGS
+
+if [ ! -d ../../bin ]; then
+    mkdir ../../bin 
+fi
+
+cp vaa3d ../../bin/.   #copy to the system's v3d folder
+cd ../
+
+echo `pwd`
+
+if [ -d ../released_plugins_more ]; then
+  cd ../released_plugins_more
+  rm -fr v3d
+  bash build_plugindemo.sh $ARGS
+  mkdir -p ../bin/plugins
+  # cp -r v3d/plugins/* ../bin/plugins/.
+else
+  echo "fail to find ../released_plugins_more"
+fi
+
+if [ -d ../released_plugins ]; then
+  cd ../released_plugins
+  rm -fr v3d
+  bash build_plugindemo.sh $ARGS
+  mkdir -p ../bin/plugins
+  # cp -r v3d/plugins/* ../bin/plugins/.
+else
+  echo "fail to find ../released_plugins"
+fi
+
+cd ../v3d_main
+
+#now try to move the 3rd party jar file(s) to bin folder
+
+cd ..
+for jarfile in `find bin/plugins -name \*.jar`;
+do
+    echo "Find file [$jarfile]"
+    mv $jarfile bin/.
+done;
+
+cd bin
+echo "Now run Vaa3D..."
+export LD_LIBRARY_PATH=../v3d_main/common_lib/lib
+#./vaa3d
+

@@ -1,0 +1,23 @@
+
+//#include "lighting.txt"
+
+varying vec3 vertex;
+varying vec3 normal;
+void main()
+{
+	//vec4 tColor = gl_SecondaryColor;
+	//vec4 tColor = normalize(gl_FragCoord) * 2.0;
+
+	vec3 N = normalize(normal);
+	vec4 oColor = gl_Color;
+
+//	oColor = toon(gl_FrontFacing, 0, vertex, N);
+
+	oColor.a = outline(gl_FrontFacing, 0, vertex, N).a;
+	if (oColor.a < 0.8)
+		oColor.a = 0.0;
+
+	gl_FragData[0] = oColor;
+	//gl_FragData[0] = vec4(gl_Color.rgb, oColor.a);
+	//gl_FragData[1] = vec4(0,1,0,1);
+}

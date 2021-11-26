@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog_v3d_preference</class>
+ <widget class="QDialog" name="Dialog_v3d_preference">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>575</width>
+    <height>416</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Preferences</string>
+  </property>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>20</y>
+     <width>531</width>
+     <height>371</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout">
+    <item>
+     <widget class="QTabWidget" name="V3D_MainWindows">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="V3D_setting_mainwindow">
+       <attribute name="title">
+        <string>Main TriView Window</string>
+       </attribute>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>12</x>
+          <y>30</y>
+          <width>501</width>
+          <height>231</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QCheckBox" name="checkBox_yaxis_up">
+           <property name="text">
+            <string>Y axis direction (from bottom to top)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_autoConvert2_8bit">
+           <property name="text">
+            <string>Automatic conversion 16(32)bit to 8bit when open an image</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string># bits to shift for 16(32)bit-&gt;8bit conversion 
+(-1) for manual input</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_defaultRightShiftBits">
+             <property name="minimum">
+              <number>-1</number>
+             </property>
+             <property name="maximum">
+              <number>32</number>
+             </property>
+             <property name="value">
+              <number>-1</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_autoRescale16bitDisplay">
+           <property name="text">
+            <string>Automatic rescale 16bit data in display</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Looking glass size  (radius, # pixels)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_lookGlassSize">
+             <property name="minimum">
+              <number>5</number>
+             </property>
+             <property name="value">
+              <number>7</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Default marker size (radius, # pixels)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_markerSize">
+             <property name="value">
+              <number>5</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_libTiff_Mylib">
+           <property name="text">
+            <string>Use Libtiff (ON) (for &lt;2G file) or MYLib (OFF) (for &gt;2G file) for TIFF/LSM file</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_blendColor">
+           <property name="text">
+            <string>Blend multi-channel's color</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="V3D_setting_3dviewer">
+       <attribute name="title">
+        <string>3D Viewer</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>150</y>
+          <width>471</width>
+          <height>131</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Automatic video-card mode</string>
+        </property>
+        <widget class="QCheckBox" name="checkBox_autoVideoCardCompress">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>341</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>compression mode</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_autoVideoCard3DTex">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>451</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>3D texture mode (Not preferred for large volume)</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_autoVideoCardNPTTex">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>451</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>non-power-of-two size texture mode</string>
+         </property>
+        </widget>
+        <widget class="QWidget" name="layoutWidget_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>404</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Stream texture mode (detail in Alt-V in 3D Viewer)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_autoVideoCardStreamMode">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>10</y>
+          <width>359</width>
+          <height>142</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QCheckBox" name="checkBox_scrollupZoomin">
+           <property name="text">
+            <string>Mouse wheel scroll-up/down for zoom-in/out</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_autoOpenImg3DViewer">
+           <property name="text">
+            <string>Automatic launch 3D viewer when open an image</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_autoDispXYZAxes">
+           <property name="text">
+            <string>Automatic display XYZ axes of the 3D scene</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_autoDispBoundingBox">
+           <property name="text">
+            <string>Automatic display bounding box of scene</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Default marker display zoom factor </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_markerAmplifyFactor">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="singleStep">
+              <number>5</number>
+             </property>
+             <property name="value">
+              <number>25</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_autoSWCLineMode">
+           <property name="text">
+            <string>Default display SWC file in LINE mode (skeleton only)</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="V3D_setting_imganalysis">
+       <attribute name="title">
+        <string>Image Analysis</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>10</y>
+          <width>471</width>
+          <height>114</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>3D image registration (disabled as of now; will be avaiable as a plugin)</string>
+        </property>
+        <layout class="QGridLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Landmark matching method</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboBox_reg_markermatch_method">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>MATCH_MI</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>MATCH_MULTIPLE_MI_INT_CORR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>MATCH_INTENSITY</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>MATCH_CORRCOEF</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>MATCH_IMOMENT</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>MATCH_MEANOFCIRCLES</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Displacement filed 
+generating method</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBox_warpingfield_method">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>TPS</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Hier-B-Spline</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>TPS-B-Spline-interpolation</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>TPS-linear-interpolation</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>130</y>
+          <width>471</width>
+          <height>131</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>3D curve</string>
+        </property>
+        <widget class="QWidget" name="layoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>431</width>
+           <height>87</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBox_3dcurve_inertia">
+            <property name="text">
+             <string>3D curve-node fitting using inertia-rule (close to the last node)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBox_3dcurve_autoconnecttips">
+            <property name="text">
+             <string>auto-connect start/end tips to existing neuron/curve nodes</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="checkBox_3dcurve_autodeform">
+            <property name="text">
+             <string>auto-deform based on img content</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="checkBox_3dcurve_autowidth">
+            <property name="text">
+             <string>auto-estimate width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBox_3dcurve_width_from_xyonly">
+            <property name="text">
+             <string>estimate curve width based on XY plane only (but not XYZ)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Plugins</string>
+       </attribute>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>487</width>
+          <height>122</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>Default channel id for plugin image analysis (-1 for all channels)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_iChannel_for_plugin"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_b_plugin_dispResInNewWindow">
+           <property name="text">
+            <string>Display plugin results in a new window</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_b_plugin_dispParameterDialog">
+           <property name="text">
+            <string>Ask for plugin parameters every time</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_b_plugin_outputImgRescale">
+           <property name="text">
+            <string>Rescale plugin output image intensity to [0, 255]</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_b_plugin_outputImgConvert2UINT8">
+           <property name="text">
+            <string>Convert plugin output as UINT8 (if turn off, then will be 32bit float)</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout">
+      <item>
+       <widget class="QPushButton" name="pushButton_cancel">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_ok">
+        <property name="text">
+         <string>OK</string>
+        </property>
+        <property name="default">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

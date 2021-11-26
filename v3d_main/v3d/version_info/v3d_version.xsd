@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:element name="v3d_version">
+    <xs:element name="latest_stable_version">
+        <xs:attribute name="major" type="integer" use="required"/>
+        <xs:attribute name="minor" type="integer" use="required"/>
+    </xs:element>
+</xs:element>
+
+</xs:schema>

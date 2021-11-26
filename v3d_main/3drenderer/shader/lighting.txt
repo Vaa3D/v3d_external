@@ -1,0 +1,133 @@
+
+#define back_scale 0.6
+#define distance 10000.0
+
+vec4 scene_color(bool front)
+{
+	if (front)
+		return gl_FrontLightModelProduct.sceneColor;
+	else
+		return gl_BackLightModelProduct.sceneColor;
+}
+
+//	// current no hardware support of multi-lightSource
+//	// only hardware support of index 0 (and it must be a const !!!)
+
+vec4 lighting(bool front, int n, vec3 pos, vec3 N)
+{
+	if (! front) N = -N;
+
+	vec4 oColor = vec4(0.0, 0.0, 0.0, 1.0);
+//#define j n
+#define j 0
+	//for (int j=0; j<n; j++)
+	{
+		vec4 lightPos = gl_LightSource[j].position;
+		vec3 eyePos   = vec3(0.0, 0.0, distance);
+		vec3 L, E, H;
+		if (lightPos.w == 0.0)
+			L = normalize(lightPos.xyz);
+		else
+			L = normalize(lightPos.xyz - pos);
+		E = normalize(eyePos - pos); // we are in Eye Coordinates, so EyePos is (0,0,0)
+		H = normalize(L + E);
+
+		if (front)
+		{
+				//calculate Diffuse Term:
+				vec4 Idiff = gl_FrontLightProduct[j].diffuse * max(dot(N,L), 0.0);
+				// calculate Specular Term:
+				vec4 Ispec = gl_FrontLightProduct[j].specular * pow(max(dot(N,H), 0.0), gl_FrontMaterial.shininess);
+				//calculate Ambient Term:
+				vec4 Iamb = gl_FrontLightProduct[j].ambient;
+				// write Total Color:
+				oColor += Idiff + Ispec + Iamb;
+		}
+		else
+		{
+			oColor = gl_BackLightModelProduct.sceneColor;
+				//calculate Diffuse Term:
+				vec4 Idiff = gl_BackLightProduct[j].diffuse * max(dot(N,L), 0.0) *back_scale;
+				// calculate Specular Term:
+				//vec4 Ispec = gl_BackLightProduct[j].specular * pow(max(dot(N,H), 0.0), gl_BackMaterial.shininess);
+				//calculate Ambient Term:
+				//vec4 Iamb = gl_BackLightProduct[j].ambient;
+				// write Total Color:
+				oColor += Idiff;// + Ispec + Iamb;
+		}
+	}
+
+	return oColor;
+}
+
+vec4 toon(bool front, int n, vec3 pos, vec3 N)
+{
+	if (! front) N = -N;
+
+	// Material Color:
+	vec4 color0 = gl_Color;
+	// Silhouette Color:
+	vec4 color1 = vec4(0.0, 0.0, 0.0, 1.0);
+	// Specular Color:
+	vec4 color2 = vec4(1.0, 1.0, 1.0, 1.0);
+	#define shininess 20.0
+
+	// Lighting
+	#define big  10000000.0
+	vec3 lightPos = vec3(0.0, big, big);
+	vec3 eyePos   = vec3(0.0, 0.0, distance);
+	vec3 L, E, H;
+	L = normalize(lightPos - pos);
+	E = normalize(eyePos - pos);
+	H = normalize(L + E);
+
+	vec4 oColor;
+	// Simple Silhouette
+	float sil = max(dot(N, E), 0.0);
+	if (sil < 0.3)
+		oColor = color1;
+	else
+	{
+		oColor = color0;
+		// Specular part
+		if (front)
+		{
+			float spec = pow(max(dot(N, H), 0.0), shininess);
+			if (spec < 0.2)
+				oColor *= 0.8;
+			else
+				oColor = color2;
+			// Diffuse part
+			float diffuse = max(dot(N, L), 0.0);
+			if (diffuse < 0.5)
+				oColor *= 0.8;
+		}
+		else
+		{
+			// Diffuse part
+			float diffuse = max(dot(N, L), 0.0);
+			if (diffuse < 0.5)
+				oColor *= 0.8 *back_scale;
+		}
+	}
+
+	return oColor;
+}
+
+vec4 outline(bool front, int n, vec3 pos, vec3 N)
+{
+	if (! front) N = -N;
+
+	// Lighting
+	vec3 eyePos   = vec3(0.0, 0.0, distance);
+	vec3 E = normalize(eyePos - pos);
+
+	vec4 oColor = gl_Color;
+
+	// Simple Silhouette
+	float sil = 1.0 - abs(dot(N, E));
+	oColor.a = sil;
+
+	return oColor;
+}
+

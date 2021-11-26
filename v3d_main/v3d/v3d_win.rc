@@ -1,0 +1,5 @@
+IDI_ICON1 ICON DISCARDABLE pic/v3dIcon.ico
+app	ICON	pic/v3dIcon.ico
+ICONS1	ICON	pic/v3dIcon.ico
+IDR_MAINFRAME ICON DISCARDABLE pic/v3dIcon.ico
+

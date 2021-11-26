@@ -1,0 +1,83 @@
+diff -ruN x265-2.7/build/linux/multilib.sh src/build/linux/multilib.sh
+--- x265-2.7/build/linux/multilib.sh	2018-02-21 03:55:56.000000000 -0500
++++ src/build/linux/multilib.sh	2018-08-29 16:16:48.000000000 -0400
+@@ -3,39 +3,28 @@
+ mkdir -p 8bit 10bit 12bit
+ 
+ cd 12bit
+-cmake ../../../source -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DMAIN12=ON
+-make ${MAKEFLAGS}
++cmake ../../../source -DHIGH_BIT_DEPTH=ON -DNASM_EXECUTABLE:FILEPATH="$1" -DENABLE_SHARED=ON -DENABLE_CLI=OFF -DMAIN12=ON -DCMAKE_INSTALL_PREFIX=../../../../install
++make 
++make install
+ 
+ cd ../10bit
+-cmake ../../../source -DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_SHARED=OFF -DENABLE_CLI=OFF
+-make ${MAKEFLAGS}
++cmake ../../../source -DHIGH_BIT_DEPTH=ON -DNASM_EXECUTABLE:FILEPATH="$1" -DENABLE_SHARED=ON -DENABLE_CLI=OFF -DCMAKE_INSTALL_PREFIX=../../../../install
++make 
++make install
+ 
+ cd ../8bit
+-ln -sf ../10bit/libx265.a libx265_main10.a
+-ln -sf ../12bit/libx265.a libx265_main12.a
+-cmake ../../../source -DEXTRA_LIB="x265_main10.a;x265_main12.a" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON
+-make ${MAKEFLAGS}
++cmake ../../../source -DNASM_EXECUTABLE:FILEPATH="$1" -DENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=../../../../install
++make 
++make install
++
++cd ../../../../install/lib
++/bin/rm -f libx265.a
++case "$OSTYPE" in
++  solaris*) echo "SOLARIS" ;;
++  darwin*)  /bin/ln -s libx265_main.dylib libx265.dylib ;; 
++  linux*)   /bin/ln -s libx265_main.so libx265.so ;;
++  bsd*)     echo "BSD" ;;
++  msys*)    echo "WINDOWS" ;;
++  *)        echo "unknown: $OSTYPE" ;;
++esac
+ 
+-# rename the 8bit library, then combine all three into libx265.a
+-mv libx265.a libx265_main.a
+-
+-uname=`uname`
+-if [ "$uname" = "Linux" ]
+-then
+-
+-# On Linux, we use GNU ar to combine the static libraries together
+-ar -M <<EOF
+-CREATE libx265.a
+-ADDLIB libx265_main.a
+-ADDLIB libx265_main10.a
+-ADDLIB libx265_main12.a
+-SAVE
+-END
+-EOF
+-
+-else
+-
+-# Mac/BSD libtool
+-libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a 2>/dev/null
+-
+-fi
+diff -ruN x265-2.7/source/CMakeLists.txt src/source/CMakeLists.txt
+--- x265-2.7/source/CMakeLists.txt	2018-02-21 03:55:56.000000000 -0500
++++ src/source/CMakeLists.txt	2018-08-29 11:21:04.000000000 -0400
+@@ -601,7 +601,15 @@
+     if(MSVC)
+         set_target_properties(x265-shared PROPERTIES OUTPUT_NAME libx265)
+     else()
+-        set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265)
++        if(HIGH_BIT_DEPTH)
++            if(MAIN12)
++                set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265_main12)
++            else()
++                set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265_main10)
++            endif()
++        else(HIGH_BIT_DEPTH)
++                set_target_properties(x265-shared PROPERTIES OUTPUT_NAME x265_main)
++        endif(HIGH_BIT_DEPTH)
+     endif()
+     if(UNIX)
+         set_target_properties(x265-shared PROPERTIES VERSION ${X265_BUILD})

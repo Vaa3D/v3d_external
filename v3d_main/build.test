@@ -1,0 +1,73 @@
+#!/bin/bash
+shopt -s expand_aliases;
+
+#build_v3d: this is a shell program to build the v3d program for Mac
+# 2008-08-22 by Hanchuan Peng
+# 080927 update by RZC
+# 090630 update by YY
+# examples: 
+#    sh build.macx
+#    sh build.macx debug
+#    sh build.macx release
+#    sh build.macx clean
+#    sh build.macx -B
+#    sh build.macx -B -m
+
+LOCAL_PATH=/usr/local
+# LOCAL_PATH=$PWD/common_lib
+# VPATH="VPATH=$LOCAL_PATH/include:$LOCAL_PATH/lib"
+VPATH="CPATH=$LOCAL_PATH/include LIBRARY_PATH=$LOCAL_PATH/lib"
+ARGS="$* $VPATH"
+QARGS="CONFIG+=$1"
+
+if [ $# -ge 1 ]; then
+   if [ $1 == "release" ]; then
+      QARGS="CONFIG+="    # for link with debug verison jba, RZC 080929
+      ARGS+=" ARCH_x86_64= "    # macro option for 32-bit/64-bit compilation on Mac, Leopard. by YY, 090629
+   fi
+   if [ $1 == "debug" -o $1 == "release" ]; then
+      ARGS="all $* $VPATH"     # mac platform qmake not has debug/release traget, RZC 080929
+      ARGS+=" ARCH_x86_64= "    
+   fi
+   if [ $1 == "-B" ]; then
+      QARGS=    # for Qt 4.1.4 on Maci, Tiger. by PHC, 081003
+      ARGS+=" ARCH_x86_64= "   
+   fi
+fi
+if [ $# -ge 2 ]; then   
+   if [ $2 == "-m" ]; then
+   	  echo "Configure make for MACX -arch x86_64 (need 64-bit enabled Qt, version 4.5.0 above)" #090702 RZC
+      ARGS+=" ARCH_x86_64=-archx86_64 " 
+#      QARGS="CONFIG+=ARCH64"
+#      QARGS=\""DEFINES+=__MAC_x86_64__" "LIBS+=-arch x86_64"\" #090630 RZC
+      QARGS="DEFINES+=__MAC_x86_64__" #090702 RZC
+   fi
+fi
+
+echo make $ARGS
+echo =========================================================
+
+cd jba/c++ 
+make $ARGS
+cd ../../
+
+cd lobeseg
+make $ARGS
+cd ../
+
+cd cellseg
+make $ARGS
+cd ../
+
+cd neurolabi
+sh ./update_library
+cd ../
+
+cd v3d
+echo qmake v3d.pro \"$QARGS\"
+echo =========================================================
+qmake v3d.pro $QARGS
+make $ARGS
+cd ../
+
+
