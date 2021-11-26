@@ -43,7 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "color_xyz.h"
 #include "v3d_message.h"
 
-#include <QtGui> // this is for QList, QString etc types
+//#include <QtGui> // this is for QList, QString etc types
 #include <QFileDialog>
 
 // .ano linker files

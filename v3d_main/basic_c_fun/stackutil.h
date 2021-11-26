@@ -69,7 +69,7 @@ extern "C" {
 typedef char BIT8_UNIT;
 typedef short int BIT16_UNIT;
 typedef int BIT32_UNIT;
-typedef V3DLONG BIT64_UNIT;
+//typedef V3DLONG BIT64_UNIT;
 
 int loadMRC2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype); //simple MRC reading
 int saveStack2MRC(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype); //simple MRC writing

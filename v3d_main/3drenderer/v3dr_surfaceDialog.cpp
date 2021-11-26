@@ -43,7 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef test_main_cpp
 #include "../v3d/surfaceobj_annotation_dialog.h"
 #endif
-
+#include <QVariant>
 ///////////////////////////////////////////////////////////
 #define UPDATE_VIEW(w)   {if(w) w->update();}
 #define ACTIVATE(w)	     {if(w) w->activateWindow();}
@@ -452,7 +452,7 @@ void V3dr_surfaceDialog::createMenuOfDisplayMode()
     connect(Act, SIGNAL(triggered()), this, SLOT(setSWCDisplayUsingTube()));
     menuDisplayMode.addAction(Act);
 
-	/*mesh_menu = new QMenu(tr("Change mesh density of neuron surface"), this);
+    mesh_menu = new QMenu(tr("Change mesh density of neuron surface"), this);
 	menuDisplayMode.addMenu(mesh_menu);
 	meshDefault = new QAction(tr("Default (36)"), this);
 	connect(meshDefault, SIGNAL(triggered()), this, SLOT(setMeshDensityDefault()));
@@ -465,23 +465,23 @@ void V3dr_surfaceDialog::createMenuOfDisplayMode()
 	mesh_menu->addAction(mesh18);
 	mesh9 = new QAction(tr("9"), this);
 	connect(mesh9, SIGNAL(triggered()), this, SLOT(setMeshDensity9()));
-	mesh_menu->addAction(mesh9);*/
+    mesh_menu->addAction(mesh9);
 }
 
-/*void V3dr_surfaceDialog::setMeshDensity(int newMeshDensity)
-{
-	//cout << newMeshDensity << endl;
-	Renderer_gl1* r = renderer;
-	r->cleanObj();
-	this->meshDensity = newMeshDensity;
-	iDrawExternalParameter* idep = (iDrawExternalParameter*) r->_idep;
-	//qDebug() << idep->swc_file_list;
-	QString swcFileName = idep->swc_file_list[0];
+//void V3dr_surfaceDialog::setMeshDensity(int newMeshDensity)
+//{
+//    //cout << newMeshDensity << endl;
+//    Renderer_gl1* r = renderer;
+//    r->cleanObj();
+//    this->meshDensity = newMeshDensity;
+//    iDrawExternalParameter* idep = (iDrawExternalParameter*) r->_idep;
+//    //qDebug() << idep->swc_file_list;
+//    QString swcFileName = idep->swc_file_list[0];
 	
-	r->loadObj_meshChange(newMeshDensity);
-	r->loadObjectFilename(swcFileName);
-	return;
-}*/
+//    r->loadObj_meshChange(newMeshDensity);
+//    r->loadObjectFilename(swcFileName);
+//    return;
+//}
 
 void V3dr_surfaceDialog::doMenuOfDisplayMode()
 {
@@ -521,7 +521,9 @@ void V3dr_surfaceDialog::setSWCDisplayMode(int v) //NOT sure if this will influe
         if (curItem->isSelected()) // skip un-selected
         {
             r->listNeuronTree[i].linemode = v;
-            curItem->setData(0, qVariantFromValue(vs));
+            //curItem->setData(0, qVariantFromValue(vs));
+            //自己改的
+            curItem->setData(0, QVariant::fromValue(vs));
         }
     }
 
@@ -691,7 +693,8 @@ void V3dr_surfaceDialog::doubleClickHandler(int i, int j)
 
 		QColor qcolor = QCOLORV(curItem->data(0));
 		if (! v3dr_getColorDialog( &qcolor))  return;
-		curItem->setData(0, qVariantFromValue(qcolor));
+        //curItem->setData(0, qVariantFromValue(qcolor));
+        curItem->setData(0, QVariant::fromValue(qcolor));
 
 		//show();
 	}
@@ -764,9 +767,9 @@ void V3dr_surfaceDialog::selectedColor(int map)
 	QColor qcolor0(255,255,255,255);
 	if (map==0)
 	{
-		//qcolor0 = QColorDialog::getColor(QColor());
+        //qcolor0 = QColorDialog::getColor(QColor());
 		//if (! qcolor0.isValid()) return;           // this is no use for clicking Cancel by user, Qt's bug !!!
-		if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
+        if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
 	}
 
 	PROGRESS_DIALOG("Updating color    ", this);
@@ -802,8 +805,9 @@ void V3dr_surfaceDialog::selectedColor(int map)
 			qcolor = QColor(0,0,0,1);
 		}
 
-		curItem->setData(0, qVariantFromValue(qcolor));
-		//UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
+        //curItem->setData(0, qVariantFromValue(qcolor));
+        curItem->setData(0, QVariant::fromValue(qcolor));
+        UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
 	}
 
 	end_batch();

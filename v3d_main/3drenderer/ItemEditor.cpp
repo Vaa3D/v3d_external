@@ -70,7 +70,7 @@ QColor ColorEditor::color()
 	//QColor c = QColorDialog::getColor(qcolor, this);
 	//QColor c = QColor::fromRgba( QColorDialog::getRgba(qcolor.rgba(), 0, this) );
 	//if (c.isValid())  qcolor = c;
-	v3dr_getColorDialog( &qcolor, this); //090424 RZC
+    v3dr_getColorDialog( &qcolor, this); //090424 RZC
 
 	return (qcolor);
 }
@@ -80,9 +80,9 @@ void ColorEditor::setColor(QColor c)
 	qcolor = c;
 }
 
-//void ColorEditor::mousePressEvent(QMouseEvent* event)
-//{
-//	qDebug("ColorEditor::mousePressEvent");
-//	if (event->button()==Qt::LeftButton)
-//		color();
-//}
+void ColorEditor::mousePressEvent(QMouseEvent* event)
+{
+    qDebug("ColorEditor::mousePressEvent");
+    if (event->button()==Qt::LeftButton)
+        color();
+}

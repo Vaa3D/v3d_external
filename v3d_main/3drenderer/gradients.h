@@ -73,7 +73,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #ifndef GRADIENTS_H
 #define GRADIENTS_H
-
+#include <QWidget>
 #include <version_control.h>
 #if defined(USE_Qt5)
 #include <QtWidgets>
@@ -82,7 +82,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 //#include <hoverpoints.h> //by PHC 2020/1/31
 #include "v3d_hoverpoints.h"
-
+#include <QRadioButton>
 class ShadeWidget : public QWidget
 {
     Q_OBJECT;
@@ -107,9 +107,9 @@ public:
     QRgb colorX(qreal x); //to interpolate color from stops of curve
 
 public slots:
-	void changeColors(const QPolygonF &pts) { emit colorsChanged(m_shade_type, pts); } //m_hoverPoints --> this
+    void changeColors(const QPolygonF &pts) { emit colorsChanged(m_shade_type, pts); } //m_hoverPoints --> this
 signals:
-	void colorsChanged(int type, const QPolygonF &); // this --> parent(GradientEditor)
+    void colorsChanged(int type, const QPolygonF &); // this --> parent(GradientEditor)
 
 protected:
     virtual void paintEvent(QPaintEvent *e);
@@ -140,17 +140,17 @@ public:
 
     QRgb colorF(qreal f) //0<=f<=1
     {
-    	int r,g,b,a;    	r=g=b=a=0;
-    	if (m_red_shade)	r = qRed(m_red_shade->colorF(f));
-    	if (m_green_shade)	g = qGreen(m_green_shade->colorF(f));
-    	if (m_blue_shade)	b = qBlue(m_blue_shade->colorF(f));
-    	if (m_alpha_shade)	a = qAlpha(m_alpha_shade->colorF(f));
-    	return qRgba(r, g, b, a);
+        int r,g,b,a;    	r=g=b=a=0;
+        if (m_red_shade)	r = qRed(m_red_shade->colorF(f));
+        if (m_green_shade)	g = qGreen(m_green_shade->colorF(f));
+        if (m_blue_shade)	b = qBlue(m_blue_shade->colorF(f));
+        if (m_alpha_shade)	a = qAlpha(m_alpha_shade->colorF(f));
+        return qRgba(r, g, b, a);
     }
 
 public slots:
     void pointsUpdated(int type, const QPolygonF &);
-	QGradientStops updateAlphaStops(); //081220, Separated from pointsUpdated
+    QGradientStops updateAlphaStops(); //081220, Separated from pointsUpdated
 
 signals:
     void gradientStopsChanged(const QGradientStops&); //trigger external slot to output colormap

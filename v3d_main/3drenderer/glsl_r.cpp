@@ -424,7 +424,7 @@ if (ProgramObject == 0) return;
 if (!_bEnabled) return;
 
     if (is_linked)
-    {
+    {        
         glUseProgram(ProgramObject);
         CHECK_GL_ERROR();
     }

@@ -411,7 +411,7 @@ void V3dr_colormapDialog::loadColormapFile(const QString& filename)
         int ich, jch;
         qreal x, y;
 
-        QStringList qsl = QString(buf).split(" ", QString::SkipEmptyParts); // 090528 RZC: add QString::SkipEmptyParts
+        QStringList qsl = QString(buf).split(" ", Qt::SkipEmptyParts); // 090528 RZC: add QString::SkipEmptyParts
         if (qsl.size()==0)   continue;
 
         for (int i=0; i<qsl.size(); i++)

@@ -56,33 +56,37 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define HALF_MARGINS(layout) {int l,t,r,b;  layout->getContentsMargins(&l, &t, &r, &b);   layout->setContentsMargins(l/2, t/2, r/2, b/2);}
 
 //---------------------------------------------------
-
+#include <QTabBar>
+#include <QMouseEvent>
+#include <QTabWidget>
+#include <QDial>
+#include <QToolTip>
 class AutoTabBar : public QTabBar
 {
 public:
-	AutoTabBar(QWidget * parent = 0) : QTabBar (parent)
-	{
-		setMouseTracking(true);
-	}
+    AutoTabBar(QWidget * parent = 0) : QTabBar (parent)
+    {
+        setMouseTracking(true);
+    }
 
 protected:
-	virtual void mouseMoveEvent(QMouseEvent *e)
-	{
-		int i = tabAt(e->pos());
-		if (i>=0)  setCurrentIndex(i);
-		//qDebug() << e << i;
-	}
+    virtual void mouseMoveEvent(QMouseEvent *e)
+    {
+        int i = tabAt(e->pos());
+        if (i>=0)  setCurrentIndex(i);
+        //qDebug() << e << i;
+    }
 };
 
 
 class AutoTabWidget : public QTabWidget
 {
 public:
-	AutoTabWidget(QWidget * parent = 0) : QTabWidget (parent)
-	{
-		QTabBar* tabbar = new AutoTabBar(parent);
-		setTabBar(tabbar);
-	}
+    AutoTabWidget(QWidget * parent = 0) : QTabWidget (parent)
+    {
+        QTabBar* tabbar = new AutoTabBar(parent);
+        setTabBar(tabbar);
+    }
 };
 
 
@@ -91,12 +95,12 @@ public:
 class HighlightDial : public QDial
 {
 public:
-	HighlightDial(QWidget * parent = 0) : QDial (parent)
-	{
-		QPalette pe = this->palette();
-		pe.setBrush(QPalette::Button, pe.highlight());
-		setPalette(pe);
-	}
+    HighlightDial(QWidget * parent = 0) : QDial (parent)
+    {
+        QPalette pe = this->palette();
+        pe.setBrush(QPalette::Button, pe.highlight());
+        setPalette(pe);
+    }
 };
 
 
@@ -105,71 +109,71 @@ typedef QString (* FUNC_altTip) (QWidget* parent, int v, int minv, int maxv, int
 
 class SliderTipFilter : public QObject
 {
-	//Q_OBJECT
+    //Q_OBJECT
 public:
-	SliderTipFilter(QObject* parent, QString prefix="", QString surffix="", int offset=0, FUNC_altTip func_alt_tip=0)
-		: QObject (parent)
-	{
-		w = (QWidget*)parent;
-		this->prefix = prefix;
-		this->surffix = surffix;
-		this->offset = offset;
-		this->func_alt_tip = func_alt_tip;
-	}
+    SliderTipFilter(QObject* parent, QString prefix="", QString surffix="", int offset=0, FUNC_altTip func_alt_tip=0)
+        : QObject (parent)
+    {
+        w = (QWidget*)parent;
+        this->prefix = prefix;
+        this->surffix = surffix;
+        this->offset = offset;
+        this->func_alt_tip = func_alt_tip;
+    }
 protected:
-	QWidget* w;
-	QString prefix, surffix;
-	int offset;
-	FUNC_altTip func_alt_tip;
+    QWidget* w;
+    QString prefix, surffix;
+    int offset;
+    FUNC_altTip func_alt_tip;
 
     bool eventFilter(QObject *obj, QEvent *e)
-	{
-		QAbstractSlider* slider = (QAbstractSlider*)obj;
-		if (slider)	{
-			slider->setAttribute(Qt::WA_Hover); // this control the QEvent::ToolTip and QEvent::HoverMove
-			slider->setFocusPolicy(Qt::WheelFocus); // accept KeyPressEvent when mouse wheel move
-		}
+    {
+        QAbstractSlider* slider = (QAbstractSlider*)obj;
+        if (slider)	{
+            slider->setAttribute(Qt::WA_Hover); // this control the QEvent::ToolTip and QEvent::HoverMove
+            slider->setFocusPolicy(Qt::WheelFocus); // accept KeyPressEvent when mouse wheel move
+        }
 
-		bool event_tip = false;
-		QPoint pos(0,0);
-		switch (e->type())
-		{
-		case QEvent::ToolTip: // must turned on by setAttribute(Qt::WA_Hover) under Mac 64bit
+        bool event_tip = false;
+        QPoint pos(0,0);
+        switch (e->type())
+        {
+        case QEvent::ToolTip: // must turned on by setAttribute(Qt::WA_Hover) under Mac 64bit
 //			qDebug("QEvent::ToolTip in SliderTipFilter");
-			pos = ((QHelpEvent*)e)->pos(); //globalPos();
-			event_tip = true;
-			break;
+            pos = ((QHelpEvent*)e)->pos(); //globalPos();
+            event_tip = true;
+            break;
 //		case QEvent::HoverMove:
 //			qDebug("QEvent::HoverMove in SliderTipFilter");
 //			pos = ((QHoverEvent*)e)->pos();
 //			event_tip = true;
 //			break;
-		case QEvent::MouseMove: // for mouse dragging
+        case QEvent::MouseMove: // for mouse dragging
 //			qDebug("QEvent::MouseMove in SliderTipFilter");
-			pos = ((QMouseEvent*)e)->pos();
-			event_tip = true;
-			break;
-		case QEVENT_KEY_PRESS: //QEvent::KeyPress: // for arrow key dragging
+            pos = ((QMouseEvent*)e)->pos();
+            event_tip = true;
+            break;
+        case QEVENT_KEY_PRESS: //QEvent::KeyPress: // for arrow key dragging
 //			qDebug("QEvent::KeyPress in SliderTipFilter");
-			if (slider)   pos = slider->mapFromGlobal(slider->cursor().pos());
-			event_tip = true;
-			break;
-		}
-		if (event_tip && slider)
-		{
-			QPoint gpos = slider->mapToGlobal(pos);
-			QString tip = QString(prefix + "%1(%2~%3)" + surffix)
-							.arg(slider->value()+offset).arg(slider->minimum()+offset).arg(slider->maximum()+offset);
-			if (func_alt_tip)
-			{
-				QString alt_tip = func_alt_tip(w, slider->value(), slider->minimum(), slider->maximum(), offset);
-				tip += alt_tip;
-			}
-			QToolTip::showText(gpos, (tip), slider);
-		}
+            if (slider)   pos = slider->mapFromGlobal(slider->cursor().pos());
+            event_tip = true;
+            break;
+        }
+        if (event_tip && slider)
+        {
+            QPoint gpos = slider->mapToGlobal(pos);
+            QString tip = QString(prefix + "%1(%2~%3)" + surffix)
+                            .arg(slider->value()+offset).arg(slider->minimum()+offset).arg(slider->maximum()+offset);
+            if (func_alt_tip)
+            {
+                QString alt_tip = func_alt_tip(w, slider->value(), slider->minimum(), slider->maximum(), offset);
+                tip += alt_tip;
+            }
+            QToolTip::showText(gpos, (tip), slider);
+        }
 
-		return QObject::eventFilter(obj, e);
-	}
+        return QObject::eventFilter(obj, e);
+    }
 };
 
 //---------------------------------------------------
@@ -177,91 +181,91 @@ protected:
 class SharedToolDialog: public QWidget //QDialog
 {
 public:
-	SharedToolDialog(QWidget* w, QWidget* parent=0)
-		: QWidget(parent)
-	//	: QDialog(parent)
-	{
-		setWindowFlags( Qt::Dialog
-				//| Qt::WindowStaysOnTopHint
-				//| Qt::Tool
-				);
-		setAttribute(Qt::WA_MacAlwaysShowToolWindow); //for convenient screen shot on mac with Qt::Tool
+    SharedToolDialog(QWidget* w, QWidget* parent=0)
+        : QWidget(parent)
+    //	: QDialog(parent)
+    {
+        setWindowFlags( Qt::Dialog
+                //| Qt::WindowStaysOnTopHint
+                //| Qt::Tool
+                );
+        setAttribute(Qt::WA_MacAlwaysShowToolWindow); //for convenient screen shot on mac with Qt::Tool
 
-		oldpos = (pos());
-		widget = 0;
-		reflist.clear();
-		ref = 0;
-		IncRef(w);///////////
-	}
+        oldpos = (pos());
+        widget = 0;
+        reflist.clear();
+        ref = 0;
+        IncRef(w);///////////
+    }
 
 protected:
-	QPoint oldpos;
-	QWidget * widget;
-	QList<QWidget*> reflist;
-	int ref;
+    QPoint oldpos;
+    QWidget * widget;
+    QList<QWidget*> reflist;
+    int ref;
 
-	virtual void closeEvent(QCloseEvent* e)
-	{
-		hide();
-		e->ignore(); // just hide
-	}
-	virtual void moveEvent(QMoveEvent* e)
-	{
-		oldpos = (e->pos());
-	}
-	virtual void showEvent(QShowEvent* e)
-	{
-		move(oldpos);
-		if(widget) widget->activateWindow();;
-	}
-	virtual void mousePressEvent(QMouseEvent* e )
-	{
-		if (widget) widget->show();
-	}
+    virtual void closeEvent(QCloseEvent* e)
+    {
+        hide();
+        e->ignore(); // just hide
+    }
+    virtual void moveEvent(QMoveEvent* e)
+    {
+        oldpos = (e->pos());
+    }
+    virtual void showEvent(QShowEvent* e)
+    {
+        move(oldpos);
+        if(widget) widget->activateWindow();;
+    }
+    virtual void mousePressEvent(QMouseEvent* e )
+    {
+        if (widget) widget->show();
+    }
 
 public slots:
-	virtual int IncRef(QWidget* w)
-	{
-		if (w  && ! reflist.contains(w))
-		{
-			widget = w;
-			reflist.append(w); ref = reflist.size(); //++ref;
-		}
-		return ref;
-	}
-	virtual int DecRef(QWidget* w)
-	{
-		if (w  && reflist.contains(w))
-		{
-			reflist.removeOne(w); ref = reflist.size(); //--ref;
-			if (ref<1)
-			{
-				hide();
-				widget = 0;
-				deleteLater();
-			}
-			else if (w == widget) //110713 link will lost
-			{
-				hide();
-				widget = 0;
-			}
-		}
-		return ref;
-	}
-	QWidget* bestLinkable(QWidget* w) //110713 candidate
-	{
-		if (reflist.contains(w))
-			return w;
+    virtual int IncRef(QWidget* w)
+    {
+        if (w  && ! reflist.contains(w))
+        {
+            widget = w;
+            reflist.append(w); ref = reflist.size(); //++ref;
+        }
+        return ref;
+    }
+    virtual int DecRef(QWidget* w)
+    {
+        if (w  && reflist.contains(w))
+        {
+            reflist.removeOne(w); ref = reflist.size(); //--ref;
+            if (ref<1)
+            {
+                hide();
+                widget = 0;
+                deleteLater();
+            }
+            else if (w == widget) //110713 link will lost
+            {
+                hide();
+                widget = 0;
+            }
+        }
+        return ref;
+    }
+    QWidget* bestLinkable(QWidget* w) //110713 candidate
+    {
+        if (reflist.contains(w))
+            return w;
 //		else if (reflist.size()) //110722
 //			return reflist.last();
-		else
-			return 0;
-	}
+        else
+            return 0;
+    }
 
-	virtual void linkTo(QWidget* w) //link to new view
-	{
-		IncRef(w);//DecRef(w);//just update ref widget
-	}
+    virtual void linkTo(QWidget* w) //link to new view
+    {
+        IncRef(w);//DecRef(w);//just update ref widget
+    }
 
 //	virtual void accept() { done(1); } // this only hide dialog
 //	virtual void reject() { done(0); } // this only hide dialog
