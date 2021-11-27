@@ -1,6 +1,5 @@
 #ignore binary files
 **/*.o
-**/ui_*.*
 **/moc_*.*
 **/qrc_*.*
 **/Makefile
