@@ -638,6 +638,7 @@ void MainWindow::dropEvent(QDropEvent *event)
     #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
                 if (urlList.at(i).path().startsWith("/.file/id="))
                     url = getPathFromYosemiteFileReferenceURL(urlList.at(i));
+
     #endif
     #endif
 
@@ -653,9 +654,12 @@ void MainWindow::dropEvent(QDropEvent *event)
     #ifdef Q_OS_LINUX
         fileName.replace("%20"," ");//fixed the space path issue on Linux machine by Zhi Zhou May 14 2015
     #endif
-
-        //
         fileName.remove(0,8);
+
+    #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        fileName = "/" + fileName;
+    #endif
+
         if (!QFile::exists(fileName))
         {
             v3d_msg(QString("The file [%1] specified does not exist").arg(fileName));

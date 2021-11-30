@@ -1,0 +1,63 @@
+/*
+  Teem: Tools to process and visualize scientific data and images             .
+  Copyright (C) 2012  University of Chicago
+  Copyright (C) 2011  James Bigler
+  Copyright (C) 2008, 2007, 2006, 2005  Gordon Kindlmann
+  Copyright (C) 2004, 2003, 2002, 2001, 2000, 1999, 1998  University of Utah
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public License
+  (LGPL) as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+  The terms of redistributing and/or modifying this software also
+  include exceptions to the LGPL that facilitate static linking.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this library; if not, write to Free Software Foundation, Inc.,
+  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+#define TESTING_DATA_PATH "${TESTING_DATA_PATH}"
+
+#include <stdlib.h>
+#include <string.h>
+#include <teem/air.h>
+
+/*
+** testDataPathPrefix allocates and returns a string which is
+** the given "base" prefixed with the path to the test datasets,
+** including the "/" between the path and "base".  Caller is
+** responsible for freeing.
+**
+** Thanks to James Bigler for writing the first version of this.
+*/
+static char*
+testDataPathPrefix(const char* base) {
+  size_t pathLen, baseLen;
+  char* result;
+  /* You could add an environment variable override here */
+  /* if (getenv(TESTING_DATA_PATH)) */
+
+  /* concatenate the strings together */
+  pathLen = strlen(TESTING_DATA_PATH);
+  baseLen = strlen(base);
+  /* Allocate enough for the two parts of the string, plus one for the /
+   * and one for the null terminator */
+  result = AIR_CALLOC(pathLen + baseLen + 2, char);
+  if (result) {
+    /*
+      strcat(result, TESTING_DATA_PATH);
+      strcat(result, "/");
+      strcat(result, base);
+    */
+    airStrcpy(result, pathLen + 1, TESTING_DATA_PATH);
+    result[pathLen] = '/';
+    airStrcpy(result+pathLen+1, baseLen + 1, base);
+  }
+  return result;
+}

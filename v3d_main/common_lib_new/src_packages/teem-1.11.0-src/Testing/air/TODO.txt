@@ -1,0 +1,26 @@
+
+Testing airEnums:
+construct different kinds of enums, okay and broken, and use functions
+on them, including airEnumUnknown
+
+mop.c: airMopSub, airMopMem, airMopUnMem (though never used?)
+ ?? airMopPrint, airMopDebug,
+
+finish miscAir.c tests
+
+array.c: airArrays (though used in biff, which is tested)
+
+? threadAir.c: airThreads
+
+754.c: airFPPartsToVal_f, airFPPartsToVal_d, airFPValToParts_d,
+       airFPGen_f, airFPGen_d, airFPClass_f, airFPClass_d, airIsInf_f,
+       airExists, airFPFprintf_f, airFPFprintf_d
+
+parseAir.c: (though used as part of nrrdRead)
+
+string.c: (though used as part of nrrdRead)
+
+math.c: not even sure how to test most of this
+
+? dio.c
+

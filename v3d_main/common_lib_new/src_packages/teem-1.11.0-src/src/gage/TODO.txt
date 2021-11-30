@@ -1,0 +1,36 @@
+should really work on gage tests before more re-architecting
+
+for third derivatives:
+ * have to update gageScl3PFilter_t and change arguments to not
+   itemize filter weights or derivative answers, involving
+   sclfilter.c, scl3pfilterbody.c,
+ * add gageSclJerk  (full third derivative)
+ * considering third-deriv-abort directory:
+   NO: it does make sense to talk about second derivatives with a
+   2-support kernel: the small kernel still has second derivatives,
+   even if its constant zero.  With tent, for example, the mixed
+   partials will still be non-zero
+
+recovering the pre-ISBI12-optim work
+ * ctx.c: removal of gageIv3Fill
+ * iv3Gage.c: new home for new gageIv3Fill, which includes some
+   type-specific shortcuts
+ * stack.c: use of new stackIv3FillBody.c
+ * filter.c: some nrrdKernelHermiteFlag-specific smarts (line 386)
+ * gage.h: gageContext->hermiteNonZeroPvlIndex (line 649)
+
+figure out how to handle derivative renormalizating (for scale) at scale=0
+
+add flags for explicitly specifying gmax, hmax, vrange
+
+6pack filtering, adapt vector stuff
+
+change type of iv3Fill to take (int xi,int yi,int zi) instead of void
+*here; one step towards supporting bricking.
+
+test: two pervolumes with different sized volumes
+test: NRWS doing its job
+
+retest comparison of upsampling by probing and by unu resample
+
+make the curvature direction code (scl.c) more robust
