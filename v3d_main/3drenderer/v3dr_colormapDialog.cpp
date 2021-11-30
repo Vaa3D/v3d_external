@@ -183,7 +183,7 @@ void V3dr_colormapDialog::createFirst()
 
     for(int i=0; i<N_CHANNEL; i++)
     {
-    	connect(m_editor[i], SIGNAL(gradientStopsChanged(const QGradientStops &)), this, SLOT(updateColormap()));
+        connect(m_editor[i], SIGNAL(gradientStopsChanged(QGradientStops)), this, SLOT(updateColormap()));
     }
 
 
@@ -416,21 +416,26 @@ void V3dr_colormapDialog::loadColormapFile(const QString& filename)
 
         for (int i=0; i<qsl.size(); i++)
         {
-        	qsl[i].truncate(99);
-        	if (i==0) ich = qsl[i].toInt();
-        	if (i==1) jch = qsl[i].toInt();
-        	if (i==2) x = qsl[i].toFloat();
-        	if (i==3) y = qsl[i].toFloat();
+            qsl[i].truncate(99);
+            if (i==0) ich = qsl[i].toInt();
+            if (i==1) jch = qsl[i].toInt();
+            if (i==2) x = qsl[i].toFloat();
+            if (i==3) y = qsl[i].toFloat();
         }
         //qDebug("%s  ///  %d %d (%g %g)", buf,  ich, jch, x, y);
-        {
-        	ich = qBound(0, ich, N_CHANNEL);
-        	jch = qBound(0, jch, 3);
-        	x = qBound(0.0, x, 1.0);
-        	y = qBound(0.0, y, 1.0);
 
-        	curve[ich][jch] << QPointF(x, y);
-        }
+        ich = qBound(0, ich, N_CHANNEL);
+        jch = qBound(0, jch, 3);
+        x = qBound(0.0, x, 1.0);
+        y = qBound(0.0, y, 1.0);
+
+        curve[ich][jch] << QPointF(x, y);
+//        for(int i = 0; i < ich; i++) {
+//            for(int j = 0; j < jch; j++) {
+//                qDebug()<<"I need to kone curve[][] = " << ich << ", " << jch;
+//            }
+//        }DLC Debug
+
     }
     qDebug("---------------------read %d lines", count);
 

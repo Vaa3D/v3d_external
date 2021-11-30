@@ -40,7 +40,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "basic_4dimage.h"
 
 //extern "C" {
-//#include "../common_lib_new/src_packages/mylib_tiff/image.h"
+//#include "../common_lib/src_packages/mylib_tiff/image.h"
 //};
 
 //#ifdef _ALLOW_WORKMODE_MENU_

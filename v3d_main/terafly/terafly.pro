@@ -42,30 +42,30 @@ V3DMAINPATH =  ..
 QT_PATH = $$dirname(QMAKE_QMAKE)/..
 
 #HDF5 headers and precompiled library and dependencies (libz and libszip)
-INCLUDEPATH += $$V3DMAINPATH/common_lib_new/include/hdf5
+INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 
 win32 {
      message("WARNING: hdf5: no support for 32 bit windows")
    ## 64bit
-     INCLUDEPATH += $$V3DMAINPATH/common_lib_new/include/hdf5-win64
-     LIBS += -L$$V3DMAINPATH/common_lib_new/mingw64 -lhdf5 -lszip -lzlib
+     INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5-win64
+     LIBS += -L$$V3DMAINPATH/common_lib/mingw64 -lhdf5 -lszip -lzlib
 }
 
 macx {
-INCLUDEPATH += $$V3DMAINPATH/common_lib_new/include/hdf5
-LIBS += -L$$V3DMAINPATH/common_lib_new/lib_mac64 -lhdf5 -lszip -lz
+INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
+LIBS += -L$$V3DMAINPATH/common_lib/lib_mac64 -lhdf5 -lszip -lz
 }
 
 unix {
-    INCLUDEPATH += $$V3DMAINPATH/common_lib_new/include/hdf5
+    INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 
-    LIBS += -L$$V3DMAINPATH/common_lib_new/lib_ubuntu -lhdf5 -lszip -lz -ldl
+    LIBS += -L$$V3DMAINPATH/common_lib/lib_ubuntu -lhdf5 -lszip -lz -ldl
 }
 #Vaa3D headers and sources needed by the plugin
 INCLUDEPATH+= $$QT_PATH/demos/shared
 INCLUDEPATH += $$V3DMAINPATH/basic_c_fun
 INCLUDEPATH += $$V3DMAINPATH/3drenderer
-INCLUDEPATH += $$V3DMAINPATH/common_lib_new/include
+INCLUDEPATH += $$V3DMAINPATH/common_lib/include
 INCLUDEPATH += $$V3DMAINPATH/basic_c_fun/customary_structs
 INCLUDEPATH += $$V3DMAINPATH
 INCLUDEPATH += $$V3DMAINPATH/v3d
