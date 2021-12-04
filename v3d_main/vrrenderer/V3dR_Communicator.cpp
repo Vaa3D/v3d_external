@@ -26,106 +26,70 @@ void V3dR_Communicator::onReadyRead()
 {    
     if(!datatype.isFile)
     {
-        if(datatype.datasize==0)
+        if(socket->canReadLine())
         {
-            if(socket->bytesAvailable()>=1024||socket->canReadLine())
+            QString msg=socket->readLine();
+            if(!msg.endsWith('\n'))
             {
-                QString msg=socket->readLine(1024);
-                int ret=processHeader(msg);
-                if(!ret) onReadyRead();
-                else
+                socket->disconnectFromHost();
+                this->deleteLater();
+            }else
+            {
+                msg=msg.trimmed();
+                QRegExp reg("FILENAMESIZE:(.*)");
+                if(reg.indexIn(msg)!=-1)
                 {
-                    resetDataType();
+                    datatype.isFile=true;
+                    auto fileNameAndSize=reg.cap(1).split("*;*");
+                    if(fileNameAndSize.size()!=2)
+                    {
+                        socket->disconnectFromHost();
+                        this->deleteLater();
+                    }
+                    datatype.filename=fileNameAndSize[0];
+                    datatype.filesize=fileNameAndSize[1].toLongLong();
+                }else{
+                    QStringList list;
+                    list.push_back("00"+msg);
+                    processReaded(list);
                 }
-            }
-        }else
-        {
-            int cnt=socket->bytesAvailable();
-            if(cnt>=datatype.datasize)
-            {
-                QString msg=socket->readLine(datatype.datasize+1);
-                resetDataType();
-                emit msgtoprocess(msg);
                 onReadyRead();
             }
         }
-    }else if(socket->bytesAvailable())
-    {
-        int ret = 0;
-        auto bytes=socket->read(datatype.datasize);
-        if(datatype.f->write(bytes)==bytes.size())
+    }
+    else{
+        if(socket->bytesAvailable()>=datatype.filesize)
         {
-            datatype.datasize-=bytes.size();
-            if(datatype.datasize==0)
+            if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").exists())
+                QDir(QCoreApplication::applicationDirPath()).mkdir("loaddata");
+            QString filePath=QCoreApplication::applicationDirPath()+"/loaddata/"+datatype.filename;
+            QFile file(filePath);
+            file.open(QIODevice::WriteOnly);
+            int length=file.write(socket->read(datatype.filesize));
+            if(length!=datatype.filesize)
             {
-                QString filename=datatype.f->fileName();
-                datatype.f->close();
-                resetDataType();
-//                processFile(filename);
-                ret=0;
-            }else if(datatype.datasize<0)
-            {
-                resetDataType();
-                ret = 6;
+                qDebug()<<"Error:read file";
             }
-        }else{
+            file.flush();
+            file.close();
+            QStringList list;
+            list.push_back("11"+filePath);
             resetDataType();
-            ret = 5;
+            processReaded(list);
+            onReadyRead();
         }
-        if(!ret) onReadyRead();
     }
 }
 
-char V3dR_Communicator::processHeader(const QString rmsg)
+void V3dR_Communicator::sendMsg(QString msg)
 {
-    int ret = 0;
-    if(rmsg.endsWith('\n'))
-    {
-        QString msg=rmsg.trimmed();
-        if(msg.startsWith("DataTypeWithSize:"))
-        {
-            msg=msg.right(msg.size()-QString("DataTypeWithSize:").size());
-            QStringList paras=msg.split(";;",QString::SkipEmptyParts);
-            if(paras.size()==2&&paras[0]=="0")
-            {
-                datatype.datasize=paras[1].toInt();
-            }else if(paras.size()==3&&paras[0]=="1")
-            {
-                datatype.isFile=true;
-                datatype.filename=paras[1];
-                datatype.datasize=paras[2].toInt();
-                if(!QDir(QCoreApplication::applicationDirPath()+"/tmp").exists())
-                    QDir(QCoreApplication::applicationDirPath()).mkdir("tmp");
-                QString filePath=QCoreApplication::applicationDirPath()+"/tmp/"+datatype.filename;
-                datatype.f=new QFile(filePath);
-                if(!datatype.f->open(QIODevice::WriteOnly))
-                    ret=4;
-            }else
-            {
-                ret=3;
-            }
-        }else
-        {
-            ret = 2;
-        }
-    }else
-    {
-        ret = 1;
-    }
-    return ret;
-}
-
-void V3dR_Communicator::sendMsg(QString str)
-{
-    if(socket->state()==QAbstractSocket::ConnectedState)
-    {
-        const QString data=str+"\n";
-        int datalength=data.size();
-        QString header=QString("DataTypeWithSize:%1 %2\n").arg(0).arg(datalength);
-        socket->write(header.toStdString().c_str(),header.size());
-        socket->write(data.toStdString().c_str(),data.size());
-        socket->flush();
-    }
+    QString data=msg+"\n";
+    int length=socket->write(data.toStdString().c_str(),data.size());
+    if(data.size()!=length)
+        qDebug()<<"Error:send "+data;
+    else
+        qDebug()<<data.toStdString().c_str();
+    socket->flush();
 }
 
 void V3dR_Communicator::processReaded(QStringList list)
@@ -154,19 +118,15 @@ void V3dR_Communicator::processReaded(QStringList list)
 void V3dR_Communicator::resetDataType()
 {
     datatype.isFile=false;
-    datatype.datasize=0;
+    datatype.filesize=0;
     datatype.filename.clear();
-    if(datatype.f)
-    {
-        delete datatype.f;
-        datatype.f=nullptr;
-    }
 }
 
 void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
 //    QRegExp usersRex("^/users:(.*)$");
     QRegExp hmdposRex("^/hmdpos:(.*)$");
     QRegExp msgreg("^/(.*)_(.*):(.*)$");
+
 
     line=line.trimmed();
     if(msgreg.indexIn(line)!=-1)
@@ -475,7 +435,6 @@ void V3dR_Communicator::UpdateRedoDeque()
 void V3dR_Communicator::onConnected() {
     qDebug()<<"Message onConnected";
     sendMsg(QString("/login:" +userName));
-    sendMsg("/GetBBSwc:");
 }
 
 QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)

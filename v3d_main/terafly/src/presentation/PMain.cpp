@@ -3967,20 +3967,6 @@ void PMain::setLockMagnification(bool locked)
 
 /*----------------collaborate mdoe-------------------*/
 #ifdef __ALLOW_VR_FUNCS__
-
-void PMain::onMessageConnect()
-{
-    int maxresindex = terafly::CImport::instance()->getResolutions()-1;
-    IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
-    this->Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
-    this->teraflyVRView->setDisabled(false);
-    this->collaborationVRView->setEnabled(true);
-    this->collautotrace->setEnabled(false);
-    QMessageBox::information(0,tr("Message "),
-                     tr("Load Annotation Sucess!"),
-                     QMessageBox::Ok);
-}
-
 void PMain::login()
 {
     QSettings settings("HHMI", "Vaa3D");
@@ -4019,56 +4005,6 @@ void PMain::login()
         }else
             settings.setValue("vr_userName", userName);
     }
-    QString port = QInputDialog::getText(0, "Meaasge Port",
-            "Please enter the Message port:", QLineEdit::Normal,
-            serverNameDefault, &ok1);;
-    if(ok1)
-    {
-        port.toUInt(&ok1);
-        if(ok1)
-        {
-
-            Communicator = new V3dR_Communicator;
-
-            connect(this->Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)));
-            terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
-            cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
-            this->Communicator->userName=userName;
-
-            connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(connected()),
-                    this,SLOT(onMessageConnect()));
-            connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
-                    cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
-
-            connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
-                    cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
-
-            connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
-                    cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
-
-            connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
-                    cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
-
-            connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
-                    cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
-
-            connect(this->Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
-            this->Communicator->socket->connectToHost(serverName,port.toUInt());
-
-            connect(this->Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
-
-            if(!this->Communicator->socket->waitForConnected())
-            {
-                QMessageBox::information(0,tr("Message "),
-                                 tr("connect failed"),
-                                 QMessageBox::Ok);
-                return;
-            }
-        }
-    }
-
-    return;
-
     if(managesocket)
     {
         managesocket->deleteLater();
