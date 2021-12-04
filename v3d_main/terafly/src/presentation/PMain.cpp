@@ -4089,7 +4089,7 @@ void PMain::download()
 {
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
-        managesocket->sendMsg(QString("CurrentFiles"),"down;data");
+        managesocket->sendMsg(QString("down;data:CurrentFiles"));
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));
         return;
@@ -4110,7 +4110,7 @@ void PMain::load()
     {
         qDebug()<<"load";
         managesocket->pmain=this;
-        managesocket->sendMsg(QString("CurrentFiles"),"load;data");
+        managesocket->sendMsg(QString("load;data:CurrentFiles"));
 
     }else {
         QMessageBox::information(this, tr("Error"),tr("you have been logout."));

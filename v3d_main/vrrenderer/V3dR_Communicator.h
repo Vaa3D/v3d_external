@@ -18,10 +18,12 @@
 class V3dR_Communicator : public QObject
 {
     Q_OBJECT
-    struct DataType{
-        bool isFile=false;//false msg,true file
-        qint64 filesize=0;
-        QString filename;
+    struct DataInfo
+    {
+        qint32 dataSize;    /*!<该数据块的长度，初始值为0*/
+        qint32 stringOrFilenameSize;/*!<command的长度或者文件名的长度*/
+        qint32 filedataSize;/*!<文件的长度，当传输的不是文件是command时为0*/
+        qint32 dataReadedSize;/*!<已经读取的数据的长度，当数据块被完全读取是等于dataSize*/
     };
 public:
     explicit V3dR_Communicator(QObject *partent=nullptr);
@@ -147,7 +149,7 @@ private:
      * @brief resetDataInfo
      * 重置接收的数据结构
      */
-    void resetDataType();
+    void resetDataInfo();
     /**
      * @brief processReaded
      * @param list
@@ -178,6 +180,8 @@ public:
 
     XYZ CreatorMarkerPos;
     int CreatorMarkerRes;
+
+
 //    XYZ AutoTraceNode;
 //    int flag_x,flag_y,flag_z;
 
@@ -187,7 +191,7 @@ public:
     std::deque<QString> redoDeque;
 private:
 
-    DataType datatype;
+    DataInfo dataInfo;
     bool isLoad=true;
 
     const int dequeszie=10;
