@@ -297,16 +297,16 @@ SOURCES += \
     CommandManager.cpp
 #    myopenglwidget.cpp
 
-#FORMS += \
-#    ../neuron_annotator/gui/NaMainWindow.ui \
-#    ../neuron_annotator/gui/GammaWidget.ui \
-#    ../neuron_annotator/gui/AngleWidget.ui \
-#    ../neuron_annotator/gui/AnnotationWidget.ui \
-#    ../neuron_annotator/gui/DynamicRangeTool.ui \
-#    ../neuron_annotator/gui/PreferencesNa.ui \
-#    ../neuron_annotator/gui/ZoomWidget.ui \
-#    ../neuron_annotator/microCT/micro_ct.ui \
-#    ../neuron_annotator/microCT/single_cut.ui
+FORMS += \
+    ../neuron_annotator/gui/NaMainWindow.ui \
+    ../neuron_annotator/gui/GammaWidget.ui \
+    ../neuron_annotator/gui/AngleWidget.ui \
+    ../neuron_annotator/gui/AnnotationWidget.ui \
+    ../neuron_annotator/gui/DynamicRangeTool.ui \
+    ../neuron_annotator/gui/PreferencesNa.ui \
+    ../neuron_annotator/gui/ZoomWidget.ui \
+    ../neuron_annotator/microCT/micro_ct.ui \
+    ../neuron_annotator/microCT/single_cut.ui
 
 
 # Input

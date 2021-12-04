@@ -265,7 +265,7 @@ MainWindow::MainWindow()
     /// RZC 20170620: disable auto launch
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 
-    const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
+//    const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
 
 
 }
