@@ -4021,7 +4021,7 @@ void PMain::login()
     }
     QString port = QInputDialog::getText(0, "Meaasge Port",
             "Please enter the Message port:", QLineEdit::Normal,
-            "", &ok1);;
+            serverNameDefault, &ok1);;
     if(ok1)
     {
         port.toUInt(&ok1);
@@ -4234,7 +4234,7 @@ void PMain::ColLoadANO(QString ANOfile)
 {
     qDebug()<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
-    QString loaddir=QCoreApplication::applicationDirPath()+"/tmp";
+    QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
     QStringList anoList=QDir(loaddir).entryList(QDir::Files);
     qDebug()<<anoList;
     if(!anoList.contains(ANOfile))
@@ -4242,7 +4242,7 @@ void PMain::ColLoadANO(QString ANOfile)
         qDebug()<<"cannot find load data "<<ANOfile;
         return;
     }
-    QString ANOpath=QCoreApplication::applicationDirPath()+"/tmp/"+ANOfile;
+    QString ANOpath=QCoreApplication::applicationDirPath()+"/loaddata/"+ANOfile;
 
     annotationsPathLRU = ANOpath.toStdString();
     CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
@@ -4269,31 +4269,31 @@ void PMain::ColLoadANO(QString ANOfile)
     updateOverview();
     //删除加载的文件
     {
-//        QRegExp anoExp("(.*).ano");
-//        QString tmp;
-//        if(anoExp.indexIn(ANOpath)!=-1)
-//        {
-//            tmp=anoExp.cap(1);
-//        }
+        //        QRegExp anoExp("(.*).ano");
+        //        QString tmp;
+        //        if(anoExp.indexIn(ANOpath)!=-1)
+        //        {
+        //            tmp=anoExp.cap(1);
+        //        }
 
-//        delete load .ANO
-//        QFile *f = new QFile(tmp+".ano");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
+        //        delete load .ANO
+        //        QFile *f = new QFile(tmp+".ano");
+        //        if(f->exists())
+        //            f->remove();
+        //        delete f;
+        //        f=0;
 
-//        f = new QFile(tmp+".ano.eswc");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
+        //        f = new QFile(tmp+".ano.eswc");
+        //        if(f->exists())
+        //            f->remove();
+        //        delete f;
+        //        f=0;
 
-//        f = new QFile(tmp+".ano.apo");
-//        if(f->exists())
-//            f->remove();
-//        delete f;
-//        f=0;
+        //        f = new QFile(tmp+".ano.apo");
+        //        if(f->exists())
+        //            f->remove();
+        //        delete f;
+        //        f=0;
     }
     V3dR_GLWidget::noTerafly=false;
 

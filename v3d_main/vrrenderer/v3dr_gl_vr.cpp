@@ -6788,18 +6788,13 @@ QString  CMainApplication::getHMDPOSstr()
 QStringList CMainApplication::NT2QString(NeuronTree nt)
 {
     QStringList messageBuff;
-    int cnt=nt.listNeuron.size();
-    for(int i=0;(i<cnt)&&(i<120);i++)
+
+    for(int i=0;(i<nt.listNeuron.size())&&(i<120);i++)
 	{
-        auto S_i=nt.listNeuron[i];
-        XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_i.x,S_i.y,S_i.z,CollaborationMaxResolution);
-        messageBuff.push_back(QString("%1 %2 %3 %4").arg(S_i.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
-        if(i!=cnt-1)
-        {
-            auto S_ip=nt.listNeuron[i+1];
-            XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords((S_i.x+S_ip.x)*0.5,(S_i.y+S_ip.y)*0.5,(S_i.z+S_ip.z)*0.5,CollaborationMaxResolution);
-            messageBuff.push_back(QString("%1 %2 %3 %4").arg(S_i.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
-        }
+        auto S_temp=nt.listNeuron[i];
+
+		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
+        messageBuff.push_back(QString("%1 %2 %3 %4").arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
 	}
     return messageBuff;
 }
