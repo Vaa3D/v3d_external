@@ -1138,7 +1138,10 @@ void CViewer::receiveData(
                 if (PMain::getInstance()->resumeVR)
                 {
                     PMain::getInstance()->resumeVR = false;
-                    QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+                    if(PMain::getInstance()->Communicator)
+                        QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
+                    else
+                        QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
                 }
             }
         }
@@ -2020,7 +2023,7 @@ void CViewer::createMarker2At(int x, int y)
 void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */) 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
-
+    QList <ImageMarker> imageMarkers1 = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
     // select marker (if any) at the clicked location
     view3DWidget->getRenderer()->selectObj(x,y, false);
 
@@ -2038,6 +2041,13 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                    vaa3dMarkers[j].z == imageMarkers[i].z &&
                    !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this))
                     vaa3dMarkers_tbd.push_back(j);
+            if(view3DWidget->TeraflyCommunicator!=nullptr
+				&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+            {
+                view3DWidget->SetupCollaborateInfo();
+                view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(imageMarkers[i].x,
+                               imageMarkers[i].y,imageMarkers[i].z,"TeraFly");
+            }
         }
     }
 
@@ -2053,6 +2063,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
             undoStack.endMacro();
             PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
+
 
         vaa3dMarkers.removeAt(vaa3dMarkers_tbd[i]);
     }
@@ -2191,6 +2202,7 @@ void CViewer::loadAnnotations()
     V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
+
     view3DWidget->getRenderer()->endSelectMode();
 
     //end curve editing mode
@@ -2505,6 +2517,9 @@ void CViewer::restoreViewerFrom(CViewer* source)
         if (PMain::getInstance()->resumeVR)
         {
             PMain::getInstance()->resumeVR = false;
+            if(PMain::getInstance()->Communicator)
+                QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
+            else
             QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
         }
 

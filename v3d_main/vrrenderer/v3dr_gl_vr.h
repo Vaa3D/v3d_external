@@ -1,4 +1,4 @@
-//last touch by Hanchuan Peng, 20170615.
+﻿//last touch by Hanchuan Peng, 20170615.
 
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
@@ -21,25 +21,19 @@
 //#include <gltext.hpp>//include freetype and gltest library
 
 
-struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
-};
-
-
 enum ModelControlR
 {
 	m_drawMode = 0,
 	m_deleteMode,
-	m_dragMode,
+    m_retypeMode,
 	m_markMode,
     m_delmarkMode,
 	m_splitMode,
 	m_insertnodeMode,
+	m_reducenodeMode,
 	m_clipplaneMode,
-	m_ConnectMode
+	m_ConnectMode, 
+	_MovetoCreator
 	//m_slabplaneMode
 };
 enum ModeControlSettings
@@ -52,13 +46,14 @@ enum ModeControlSettings
 	_UndoRedo,
 	_ColorChange,
 	_Surface,
-	_VirtualFinger,	
+	_VirtualFinger,
 	_Freeze,
 	_LineWidth,
 	_AutoRotate,
 	_ResetImage,
 	_RGBImage,
-	_MovetoCreator,
+
+	_MovetoMarker,
 	_StretchImage
 };
 enum ModeTouchPadR
@@ -162,26 +157,37 @@ public:
 class CMainApplication
 {
 public:
-	CMainApplication(int argc = 0, char *argv[] = 0);
+    CMainApplication(int argc = 0, char *argv[] = 0,XYZ glomarkerPOS=0);
 	virtual ~CMainApplication();
 
 	bool BInit();
 	bool BInitGL();
 	bool BInitCompositor();
 
-	void UpdateNTList(QString &msg, int type);//add the receieved message/NT to sketchedNTList
-    QString NT2QString(); // prepare the message to be sent from currentNT.
-	XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
+        void UpdateNTList(QVector<XYZ> coords, int type);//add the receieved message/NT to sketchedNTList
+        QStringList NT2QString(NeuronTree); // prepare the message to be sent from currentNT.
+        QStringList UndoNT2QString();//never use,should be removed
+        XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);
 	//bool FlashStuff(FlashType type,XYZ coords);
 	void ClearCurrentNT();//clear the currently drawn stroke, and all the flags
 	bool HandleOneIteration();//used in collaboration mode 
 	QString getHMDPOSstr();//get current HMD position, and prepare the message to be sent to server
 	void SetupCurrentUserInformation(string name, int typeNumber);
-	void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
+	//void SetupAgentModels(vector<Agent> &curAgents);//generate spheres models to illustrate the locations of other users and get Collaboration creator Pos
 	void RefineSketchCurve(int direction, NeuronTree &oldNT, NeuronTree &newNT);//use Virtual Finger to improve curve
 	QString FindNearestSegment(glm::vec3 dPOS);
+        QString FindNearestSegmentForDel(glm::vec3 dPOS);
+        QString FindNearestMarker(glm::vec3 dPOS);
+	XYZ GetSegtobedelete_Node(QString name);
 	bool DeleteSegment(QString segName);
+
+	void SetDeleteSegmentColor(QString segName);
+        void SetDeleteMarkerColor(QString markerName);
+
+        bool DeleteSegment(QVector<XYZ> coords,float dist);
+        int findseg(QVector<XYZ> coords,float dist);
+        bool retypeSegment(QVector<XYZ> coords,float dist,int type);
 	NeuronSWC FindNearestNode(NeuronTree NT,glm::vec3 dPOS);
 	void MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTree> * NTlist);//merge NTlist to single neurontree
 	bool isAnyNodeOutBBox(NeuronSWC S_temp);
@@ -200,6 +206,7 @@ public:
 	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
 	void SetupControllerTexture();//update texture coordinates according to controller's new location
 	void SetupControllerRay();
+	void SetupImageAxes();
 	void AddrayVertex(float fl0, float fl1, float fl2, float fl3, float fl4,float fl5, std::vector<float> &vertdata);
 	void SetupMorphologyLine(int drawMode);
 	void SetupMorphologyLine(NeuronTree neuron_Tree,GLuint& LineModeVAO, GLuint& LineModeVBO, GLuint& LineModeIndex,unsigned int& Vertcount,int drawMode);
@@ -210,8 +217,8 @@ public:
 	void SetupMarkerandSurface(double x,double y,double z,int type =3);
 	void SetupMarkerandSurface(double x,double y,double z,int colorR,int colorG,int colorB);
 
-	bool RemoveMarkerandSurface(double x,double y,double z,int type=3);
-
+        bool RemoveMarkerandSurface(double x,double y,double z/*,int type=3,bool asg=0*/);
+        bool RemoveMarkerandSurface2(double x,double y,double z,int type=3,bool asg=0);
 	void RenderControllerAxes();//draw XYZ axes on the base point of the controllers 
 
 	bool SetupStereoRenderTargets();
@@ -244,6 +251,12 @@ public:
 	void SetupRenderModelForTrackedDevice( vr::TrackedDeviceIndex_t unTrackedDeviceIndex );
 	CGLRenderModel *FindOrLoadRenderModel( const char *pchRenderModelName );
 
+	float GetGlobalScale();
+
+        void TriggerHapticPluse()
+        {
+             m_pHMD->TriggerHapticPulse(m_iControllerIDLeft,0,30000);
+        }
 public:
 
 	MainWindow *mainwindow;
@@ -256,22 +269,31 @@ public:
 	bool READY_TO_SEND;
 	bool isOnline;
 	static ModelControlR  m_modeGrip_R;
-	QString delName;
-	QString markerPOS;
-	QString delmarkerPOS;
-	QString delcurvePOS;
+	static ModeControlSettings m_modeGrip_L;
+
+    QString delSegName;
+    NeuronTree segtobedeleted;
+    QString delMarkerName;
+	QString markerPosTobeDeleted;
+
+    QVector<NeuronTree> segaftersplit;
+
 	QString dragnodePOS;
 	bool _call_assemble_plugin;
 	bool _startdragnode;
 	int postVRFunctionCallMode;
 	XYZ teraflyPOS;
 	XYZ CmainVRVolumeStartPoint;
+    XYZ CmainVRVolumeEndPoint;
 	int CmainResIndex;
 	XYZ CollaborationCreatorPos;
+    XYZ CollaborationCreatorGLOPos;
 	XYZ CollaborationMaxResolution;
 	XYZ CollaborationCurrentRes;
 	XYZ CollaborationTargetMarkerRes;
 	XYZ collaborationTargetdelcurveRes;
+	XYZ SegNode_tobedeleted;//second node of seg , same to terafly collaboration delete seg
+
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -284,8 +306,14 @@ private:
 	bool m_bShowMorphologySurface;
 	bool m_bControllerModelON;
 	bool m_bShowMorphologyMarker;
-
+	QString line_tobedeleted;
+    QString marker_tobedeleted;
+    int color_origin_seg;
+    int type_origin_marker;
+    RGB8 color_origin_marker;
+    const int colorForTobeDelete = 19;
 	int  sketchNum; // a unique ID for neuron strokes, useful in deleting neurons
+    int markerNum;
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
@@ -318,7 +346,7 @@ private:
 	bool bIsRedoEnable;
 	vector<NTL> vUndoList;
 	vector<NTL> vRedoList;
-
+public:
 	static int m_curMarkerColorType;
 
 private: // SDL bookkeeping
@@ -341,7 +369,7 @@ private: // OpenGL bookkeeping
 	int m_modeControlGrip_R;
 	//control other functions in left controller
 	static int m_modeControlGrip_L;
-	static ModeControlSettings m_modeGrip_L;
+
 	static ModeTouchPadR m_modeTouchPad_R;
 	static SecondeMenu m_secondMenu;
 	static RGBImageChannel m_rgbChannel;
@@ -444,8 +472,11 @@ private: // OpenGL bookkeeping
 
 	GLuint m_glControllerVertBuffer;
 	GLuint m_unControllerVAO;//note: axes for controller
+	GLuint m_unImageAxesVAO;
+	GLuint m_unImageAxesVBO;
 	unsigned int m_uiControllerVertcount;
 	unsigned int m_uiControllerRayVertcount;//note: used to draw controller ray
+	unsigned int m_uiImageAxesVertcount;
 	Matrix4 m_mat4HMDPose;//note: m_rmat4DevicePose[hmd].invert()
 	Matrix4 m_mat4eyePosLeft;
 	Matrix4 m_mat4eyePosRight;
@@ -495,10 +526,11 @@ private: // OpenGL bookkeeping
 	GLuint m_unControllerTransformProgramID;
 	GLuint m_unRenderModelProgramID;
 	GLuint m_unControllerRayProgramID;
-
+	GLuint m_unImageAxesProgramID;
 	GLint m_nControllerMatrixLocation;
 	GLint m_nRenderModelMatrixLocation;
 	GLint m_nControllerRayMatrixLocation;
+	GLint m_nImageAxesMatrixLocation;
 	struct FramebufferDesc
 	{
 		GLuint m_nDepthBufferId;
@@ -592,10 +624,23 @@ private:
 	
 	bool showshootingray;
 	QString collaboration_creator_name;
-	int collaboration_creator_res;
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();
+
+public:
+        float get_mglobalScal()const;
+
+public:
+        NeuronTree UndoNT;
+        bool undo=false;
+        bool redo=false;
+
+private:
+        unsigned int framecnt=0;
+        const int numofframe=7;
+//signals:
+//        void undo();
 };
 
 //Help Function

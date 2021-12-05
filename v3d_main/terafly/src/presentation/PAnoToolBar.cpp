@@ -378,14 +378,21 @@ void PAnoToolBar::buttonUndoClicked()
 {
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
-    CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->undoStack.canUndo())
-    {
-        expl->undoStack.undo();
-        if(!expl->undoStack.canUndo())
-            buttonUndo->setEnabled(false);
-        buttonRedo->setEnabled(true);
-    }
+	qDebug() << "-----------------terafly undo --------------";
+        CViewer* expl = CViewer::getCurrent();
+        if(expl->getGLWidget()->TeraflyCommunicator)
+        {
+            expl->getGLWidget()->TeraflyCommunicator->UpdateUndoDeque();
+        }else
+        {
+            if(expl && expl->undoStack.canUndo())
+            {
+                expl->undoStack.undo();
+                if(!expl->undoStack.canUndo())
+                    buttonUndo->setEnabled(false);
+                buttonRedo->setEnabled(true);
+            }
+        }
 }
 
 void PAnoToolBar::buttonRedoClicked()
@@ -393,12 +400,20 @@ void PAnoToolBar::buttonRedoClicked()
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->undoStack.canRedo())
+    if(expl->getGLWidget()->TeraflyCommunicator)
     {
-        expl->undoStack.redo();
-        if(!expl->undoStack.canRedo())
-            buttonRedo->setEnabled(false);
-        buttonUndo->setEnabled(true);
+        qDebug()<<"redo 1";
+        expl->getGLWidget()->TeraflyCommunicator->UpdateRedoDeque();
+        qDebug()<<"redo 2";
+    }else
+    {
+        if(expl && expl->undoStack.canRedo())
+        {
+            expl->undoStack.redo();
+            if(!expl->undoStack.canRedo())
+                buttonRedo->setEnabled(false);
+            buttonUndo->setEnabled(true);
+        }
     }
 }
 

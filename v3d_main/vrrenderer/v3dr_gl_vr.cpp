@@ -377,7 +377,7 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
     {168, 255, 128},  //	16
     {255, 168, 128},  //	17
     {168, 128, 255}, //	18
-    {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+    {159, 96, 156}, //19 //totally black. PHC, 2012-02-15
     //the following (20-275) is used for matlab heat map. 120209 by WYN
     {0,0,131}, //20
     {0,0,135},
@@ -679,42 +679,41 @@ void dprintf( const char *fmt, ... )
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMainApplication::CMainApplication( int argc, char *argv[] )
-//	: m_pCompanionWindow(NULL)
-//	, m_pContext(NULL)
-//	, m_nCompanionWindowWidth(3200)//( 1600 )//(640)//
-//	, m_nCompanionWindowHeight(1600)//(800)//( 320 )//
-    :morphologyShader ( NULL )
-	, raycastingShader ( NULL )
-	, clipPatchShader (NULL)
-	, backfaceShader ( NULL )
-	, m_unCompanionWindowProgramID( 0 )
-	, m_unControllerTransformProgramID( 0 )
-	, m_unRenderModelProgramID( 0 )
-	, m_unControllerRayProgramID( 0 )
-	, m_pHMD( NULL )
-	, m_pRenderModels( NULL )
-	, m_pChaperone( NULL )
-	, m_bDebugOpenGL( false )
-	, m_bVerbose( false )
-	, m_bPerf( false )
-	, m_bVblank( false )
-	, m_bGlFinishHack( true )
-	, m_glControllerVertBuffer( 0 )
-	, m_unControllerVAO( 0 )
-	, m_unMorphologyLineModeVAO( 0 )
+CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
+	: morphologyShader(NULL)
+	, raycastingShader(NULL)
+	, clipPatchShader(NULL)
+	, backfaceShader(NULL)
+	, m_unCompanionWindowProgramID(0)
+	, m_unControllerTransformProgramID(0)
+	, m_unImageAxesProgramID(0)
+	, m_unRenderModelProgramID(0)
+	, m_unControllerRayProgramID(0)
+	, m_pHMD(NULL)
+	, m_pRenderModels(NULL)
+	, m_pChaperone(NULL)
+	, m_bDebugOpenGL(false)
+	, m_bVerbose(false)
+	, m_bPerf(false)
+	, m_bVblank(false)
+	, m_bGlFinishHack(true)
+	, m_glControllerVertBuffer(0)
+	, m_unControllerVAO(0)
+	, m_unImageAxesVAO(0)
+	, m_unMorphologyLineModeVAO(0)
 	, m_uiMorphologyLineModeVertcount(0)
-	, m_unSketchMorphologyLineModeVAO( 0 )
+	, m_unSketchMorphologyLineModeVAO(0)
 	, m_uiSketchMorphologyLineModeVertcount(0)
-	, m_VolumeImageVAO (0)
-	, m_clipPatchVAO (0)
-	, m_nControllerMatrixLocation( -1 )
-	, m_nControllerRayMatrixLocation( -1 )
-	, m_nRenderModelMatrixLocation( -1 )
-	, m_iTrackedControllerCount( 0 )
-	, m_iTrackedControllerCount_Last( -1 )
-	, m_iValidPoseCount( 0 )
-	, m_iValidPoseCount_Last( -1 )
+	, m_VolumeImageVAO(0)
+	, m_clipPatchVAO(0)
+	, m_nControllerMatrixLocation(-1)
+	, m_nControllerRayMatrixLocation(-1)
+	, m_nImageAxesMatrixLocation(-1)
+	, m_nRenderModelMatrixLocation(-1)
+	, m_iTrackedControllerCount(0)
+	, m_iTrackedControllerCount_Last(-1)
+	, m_iValidPoseCount(0)
+	, m_iValidPoseCount_Last(-1)
 	, m_strPoseClasses("")
 	, m_bShowMorphologyLine(true)
 	, m_bShowMorphologySurface(false)
@@ -722,33 +721,37 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, m_bControllerModelON(true)
 	, m_modeControlTouchPad_R(0)
 	, m_modeControlGrip_R(0)
-	, m_contrastMode (true)//right touch_pad only control contrast
-	, m_rotateMode (false)
-	, m_zoomMode (false)
-	, m_autoRotateON (false)
-	, m_TouchFirst (true)
-	, m_fTouchOldX( 0 )
-	, m_fTouchOldY( 0 )
+	, m_contrastMode(true)//right touch_pad only control contrast
+	, m_rotateMode(false)
+	, m_zoomMode(false)
+	, m_autoRotateON(false)
+	, m_TouchFirst(true)
+	, m_fTouchOldX(0)
+	, m_fTouchOldY(0)
 	, m_pickUpState(false)
-	, pick_point_index_A (-1)
-	, pick_point_index_B (-1)
-	, m_ControllerTexVAO( 0 )
-	, m_iControllerRayVAO( 0 )
-	, m_nCtrTexMatrixLocation( -1 )
-	, m_unCtrTexProgramID( 0 )
-	, m_bHasImage4D( false)
+	, pick_point_index_A(-1)
+	, pick_point_index_B(-1)
+	, m_ControllerTexVAO(0)
+	, m_iControllerRayVAO(0)
+	, m_nCtrTexMatrixLocation(-1)
+	, m_unCtrTexProgramID(0)
+	, m_bHasImage4D(false)
 	, mainwindow(NULL)
 	, img4d(NULL)
 	, READY_TO_SEND(false)
-	, sketchNum(0)
-	, bIsUndoEnable (false)
-	, bIsRedoEnable (false)
+    , sketchNum(0),markerNum(0)
+	, bIsUndoEnable(false)
+	, bIsRedoEnable(false)
 	, _call_assemble_plugin(false)
 	, _startdragnode(false)
-	, postVRFunctionCallMode (0)
-	, curveDrawingTestStatus (-1)
+	, postVRFunctionCallMode(0)
+	, curveDrawingTestStatus(-1)
 	, showshootingray(false)
 	, replacetexture(false)
+	, CollaborationTargetMarkerRes(1, 1, 1)
+    , line_tobedeleted(-1),marker_tobedeleted(-1)
+    , undo(false)
+    ,CollaborationCreatorGLOPos(glomarkerPOS.x,glomarkerPOS.y,glomarkerPOS.z)
 	//, font_VR (NULL)
 
 {
@@ -947,8 +950,10 @@ bool CMainApplication::BInit()
 
 	// m_modeGrip_R = global_padm_modeGrip_R;
 	// m_modeGrip_L = global_padm_modeGrip_L;
-	delName = "";
+    delSegName = "";
+    delMarkerName = "";
 	dragnodePOS="";
+	line_tobedeleted = "";
 	loadedNTCenter = glm::vec3(0);
 	vertexcount = swccount = 0;
 	pick_node = 0;
@@ -988,9 +993,13 @@ bool CMainApplication::BInit()
 	u_clipnormal = glm::vec3(0,-1.0,0);
 	u_clippoint = glm::vec3(0.0,0.0,2.0);
 	teraflyPOS = 0;
-	CollaborationCreatorPos = 0;
-//	SDL_StartTextInput();
-//	SDL_ShowCursor( SDL_DISABLE );
+    if(CollaborationCreatorGLOPos.x!=0&&CollaborationCreatorGLOPos.y!=0&&CollaborationCreatorGLOPos.z!=0)
+        CollaborationCreatorPos = ConvertGlobaltoLocalCoords(CollaborationCreatorGLOPos.x,CollaborationCreatorGLOPos.y,CollaborationCreatorGLOPos.z);
+    else
+        CollaborationCreatorPos=XYZ(0);
+    qDebug()<<"CollaborationCreatorPos:"<<CollaborationCreatorPos.x<<" "<<CollaborationCreatorPos.y<<" "<<CollaborationCreatorPos.z;
+	SDL_StartTextInput();
+	SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
 	currentNT.hashNeuron.clear();
 
@@ -1175,8 +1184,22 @@ void CMainApplication::Shutdown()
 		img4d->tracedNeuron.name = "vaa3d_traced_neuron";
 		img4d->tracedNeuron.file = "vaa3d_traced_neuron";
 		img4d->proj_trace_history_append();
-		// img4d->update_3drenderer_neuron_view();
+		img4d->update_3drenderer_neuron_view();
 
+	}
+	if (m_bHasImage4D && (sketchedNTList.size() == 0))
+	{
+		NeuronTree SS;
+		SS.name = "vaa3d_traced_neuron";
+		SS.file = "vaa3d_traced_neuron";
+		SS.color = XYZW(0, 0, 0, 0);
+		loadedNTList->clear();
+		img4d->tracedNeuron_old = img4d->tracedNeuron;
+		img4d->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(SS);
+		img4d->tracedNeuron.name = "vaa3d_traced_neuron";
+		img4d->tracedNeuron.file = "vaa3d_traced_neuron";
+		img4d->proj_trace_history_append();
+		img4d->update_3drenderer_neuron_view();
 	}
 	//if(drawnMarkerList.size()>0)//In all cases ,we should copy markerlist into img4d,liqi 2018_12_9
 		if (m_bHasImage4D)
@@ -1213,141 +1236,152 @@ void CMainApplication::Shutdown()
 //		glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE );
 //		glDebugMessageCallback(nullptr, nullptr);
 
-//		if (morphologyShader != NULL)
-//		{
-//			delete morphologyShader;
-//			morphologyShader =NULL;
-//		}
-//		if (raycastingShader != NULL)
-//		{
-//			delete raycastingShader;
-//			raycastingShader =NULL;
-//		}
-//		if (backfaceShader != NULL)
-//		{
-//			delete backfaceShader;
-//			backfaceShader =NULL;
-//		}
-//		if (clipPatchShader != NULL)
-//		{
-//			delete clipPatchShader;
-//			clipPatchShader =NULL;
-//		}
-//		if ( m_unControllerTransformProgramID )
-//		{
-//			glDeleteProgram( m_unControllerTransformProgramID );
-//		}
-//		if ( m_unRenderModelProgramID )
-//		{
-//			glDeleteProgram( m_unRenderModelProgramID );
-//		}
-//		if ( m_unCompanionWindowProgramID )
-//		{
-//			glDeleteProgram( m_unCompanionWindowProgramID );
-//		}
-//		if ( m_unControllerRayProgramID )
-//		{
-//			glDeleteProgram( m_unControllerRayProgramID );
-//		}
+		if (morphologyShader != NULL)
+		{
+			delete morphologyShader;
+			morphologyShader =NULL;
+		}
+		if (raycastingShader != NULL)
+		{
+			delete raycastingShader;
+			raycastingShader =NULL;
+		}
+		if (backfaceShader != NULL)
+		{
+			delete backfaceShader;
+			backfaceShader =NULL;
+		}
+		if (clipPatchShader != NULL)
+		{
+			delete clipPatchShader;
+			clipPatchShader =NULL;
+		}
+		if ( m_unControllerTransformProgramID )
+		{
+			glDeleteProgram( m_unControllerTransformProgramID );
+		}
+		if ( m_unRenderModelProgramID )
+		{
+			glDeleteProgram( m_unRenderModelProgramID );
+		}
+		if ( m_unCompanionWindowProgramID )
+		{
+			glDeleteProgram( m_unCompanionWindowProgramID );
+		}
+		if ( m_unControllerRayProgramID )
+		{
+			glDeleteProgram( m_unControllerRayProgramID );
+		}
+		if (m_unImageAxesProgramID)
+		{
+			glDeleteProgram(m_unImageAxesProgramID);
+		}
+		glDeleteRenderbuffers( 1, &leftEyeDesc.m_nDepthBufferId );
+		glDeleteTextures( 1, &leftEyeDesc.m_nRenderTextureId );
+		glDeleteFramebuffers( 1, &leftEyeDesc.m_nRenderFramebufferId );
+		glDeleteTextures( 1, &leftEyeDesc.m_nResolveTextureId );
+		glDeleteFramebuffers( 1, &leftEyeDesc.m_nResolveFramebufferId );
 
-//		glDeleteRenderbuffers( 1, &leftEyeDesc.m_nDepthBufferId );
-//		glDeleteTextures( 1, &leftEyeDesc.m_nRenderTextureId );
-//		glDeleteFramebuffers( 1, &leftEyeDesc.m_nRenderFramebufferId );
-//		glDeleteTextures( 1, &leftEyeDesc.m_nResolveTextureId );
-//		glDeleteFramebuffers( 1, &leftEyeDesc.m_nResolveFramebufferId );
+		glDeleteRenderbuffers( 1, &rightEyeDesc.m_nDepthBufferId );
+		glDeleteTextures( 1, &rightEyeDesc.m_nRenderTextureId );
+		glDeleteFramebuffers( 1, &rightEyeDesc.m_nRenderFramebufferId );
+		glDeleteTextures( 1, &rightEyeDesc.m_nResolveTextureId );
+		glDeleteFramebuffers( 1, &rightEyeDesc.m_nResolveFramebufferId );
 
-//		glDeleteRenderbuffers( 1, &rightEyeDesc.m_nDepthBufferId );
-//		glDeleteTextures( 1, &rightEyeDesc.m_nRenderTextureId );
-//		glDeleteFramebuffers( 1, &rightEyeDesc.m_nRenderFramebufferId );
-//		glDeleteTextures( 1, &rightEyeDesc.m_nResolveTextureId );
-//		glDeleteFramebuffers( 1, &rightEyeDesc.m_nResolveFramebufferId );
+		glDeleteFramebuffers( 1, &g_frameBufferBackface );
+		glDeleteTextures( 1, &g_tffTexObj );
+		glDeleteTextures( 1, &g_bfTexObj );
+		glDeleteTextures( 1, &g_volTexObj );
 
-//		glDeleteFramebuffers( 1, &g_frameBufferBackface );
-//		glDeleteTextures( 1, &g_tffTexObj );
-//		glDeleteTextures( 1, &g_bfTexObj );
-//		glDeleteTextures( 1, &g_volTexObj );
+		if(m_ControllerTexVAO!=0)
+		{
+			glDeleteVertexArrays(1, &m_ControllerTexVAO);
+			glDeleteBuffers(1, &m_ControllerTexVBO);
+		}
 
-//		if(m_ControllerTexVAO!=0)
-//		{
-//			glDeleteVertexArrays(1, &m_ControllerTexVAO);
-//			glDeleteBuffers(1, &m_ControllerTexVBO);
-//		}
+		if(m_iTexture!=0)
+			glDeleteTextures(1, &m_iTexture );
 
-//		if(m_iTexture!=0)
-//			glDeleteTextures(1, &m_iTexture );
-
-//		if ( m_unCtrTexProgramID )
-//		{
-//			glDeleteProgram( m_unCtrTexProgramID );
-//		}
+		if ( m_unCtrTexProgramID )
+		{
+			glDeleteProgram( m_unCtrTexProgramID );
+		}
 
 		
-//		if (iSketchNTLMorphologyVAO.size()>0)
-//		{
-//			for(int i=0;i<iSketchNTLMorphologyVAO.size();i++)
-//			{
-//				glDeleteVertexArrays( 1, &iSketchNTLMorphologyVAO.at(i) );
-//				glDeleteBuffers(1, &iSketchNTLMorphologyVertBuffer.at(i));
-//				glDeleteBuffers(1, &iSketchNTLMorphologyIndexBuffer.at(i));
-//			}
-//			iSketchNTLMorphologyVAO.clear();
-//			iSketchNTLMorphologyVertBuffer.clear();
-//			iSketchNTLMorphologyIndexBuffer.clear();
-//			iSketchNTLMorphologyVertcount.clear();
-//		}
+		if (iSketchNTLMorphologyVAO.size()>0)
+		{
+			for(int i=0;i<iSketchNTLMorphologyVAO.size();i++)
+			{
+				glDeleteVertexArrays( 1, &iSketchNTLMorphologyVAO.at(i) );
+				glDeleteBuffers(1, &iSketchNTLMorphologyVertBuffer.at(i));
+				glDeleteBuffers(1, &iSketchNTLMorphologyIndexBuffer.at(i));
+			}
+			iSketchNTLMorphologyVAO.clear();
+			iSketchNTLMorphologyVertBuffer.clear();
+			iSketchNTLMorphologyIndexBuffer.clear();
+			iSketchNTLMorphologyVertcount.clear();
+		}
 
-//		//for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
-//		//{
-//		//	delete (*i);
-//		//}
-//		qDebug()<<"Start to delete sphere....";
-//		int j;
-//		j=0;
-//		for(auto i = loaded_spheres.begin();i!=loaded_spheres.end();i++)
-//		{
-//				delete (*i);
-//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-//				j++;
-//		}
-//		j=0;
-//		for(auto i = loaded_cylinders.begin();i!=loaded_cylinders.end();i++)
-//		{
-//				delete (*i);
-//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-//				j++;
-//		}
-//		j=0;
-//		for(auto i = sketch_spheres.begin();i!=sketch_spheres.end();i++)
-//		{
-//				delete (*i);
-//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-//				j++;
-//		}
-//		j=0;
-//		for(auto i = sketch_cylinders.begin();i!=sketch_cylinders.end();i++)
-//		{
-//				delete (*i);
-//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-//				j++;
-//		}
-//		j=0;
-//		for(auto i = Agents_spheres.begin();i!=Agents_spheres.end();i++)
-//		{
-//				delete (*i);
-//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-//				j++;
-//		}
-//		j=0;
-//		for(auto i = Markers_spheres.begin();i!=Markers_spheres.end();i++)
-//		{
-//				delete (*i);
-//				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
-//				j++;
-//		}
+		//for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
+		//{
+		//	delete (*i);
+		//}
+		qDebug()<<"Start to delete sphere....";
+		int j;
+		j=0;
+		for(auto i = loaded_spheres.begin();i!=loaded_spheres.end();i++) 
+		{
+				delete (*i);
+				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+				j++;
+		}
 
-//		if(ctrSphere)
-//			delete ctrSphere;
-
+        j=0;
+		for(auto i = loaded_cylinders.begin();i!=loaded_cylinders.end();i++) 
+		{
+				delete (*i);
+				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+				j++;
+		}
+//            qDebug()<<"delete 2";
+        j=0;
+		for(auto i = sketch_spheres.begin();i!=sketch_spheres.end();i++) 
+		{
+				delete (*i);
+				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+				j++;
+		}
+//        qDebug()<<"delete 3";
+        j=0;
+		for(auto i = sketch_cylinders.begin();i!=sketch_cylinders.end();i++)
+		{
+				delete (*i);
+				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+				j++;
+		}
+//        qDebug()<<"delete 4";
+        j=0;
+		for(auto i = Agents_spheres.begin();i!=Agents_spheres.end();i++)
+		{
+				delete (*i);
+				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+				j++;
+		}
+//        qDebug()<<"delete 5";
+        j=0;
+		for(auto i = Markers_spheres.begin();i!=Markers_spheres.end();i++) 
+		{
+				delete (*i);
+				if(j%500==0) qDebug()<<"now delete 500 *"<<j;
+				j++;
+		}
+//qDebug()<<"delete 6";
+		if(ctrSphere)
+        {
+            delete ctrSphere;
+            ctrSphere=nullptr;
+        }
+//qDebug()<<"delete 7";
 			
 //		//for (int i=0;i<loaded_spheres.size();i++) delete loaded_spheres[i];
 //		//for (int i=0;i<loaded_cylinders.size();i++) delete loaded_cylinders[i];
@@ -1374,66 +1408,73 @@ void CMainApplication::Shutdown()
 //		Markers_spheresPos.clear();
 //		Markers_spheresColor.clear();
 
-//		sketchedNTList.clear();
-//		drawnMarkerList.clear();
-//		markerVisibility.clear();
+		sketchedNTList.clear();
+		drawnMarkerList.clear();
+		markerVisibility.clear();
+//qDebug()<<"delete 8";
+		if(pick_node)  pick_node = 0;
+		if( m_unMorphologyLineModeVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_unMorphologyLineModeVAO );
+			glDeleteBuffers(1, &m_glMorphologyLineModeVertBuffer);
+			glDeleteBuffers(1, &m_glMorphologyLineModeIndexBuffer);
+		}
+//qDebug()<<"delete 9";
+		if( m_unSketchMorphologyLineModeVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_unSketchMorphologyLineModeVAO );
+			glDeleteBuffers(1, &m_glSketchMorphologyLineModeVertBuffer);
+			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
+		}
+//qDebug()<<"delete 10";
+		if( m_VolumeImageVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
+			//glDeleteBuffers(1, &m_imageVBO);
+		}
+//qDebug()<<"delete 11";
+		if( m_clipPatchVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_clipPatchVAO );
+			//glDeleteBuffers(1, &m_imageVBO);
+		}
+//qDebug()<<"delete 12";
+		if( m_unCompanionWindowVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_unCompanionWindowVAO );
+			glDeleteBuffers(1, &m_glCompanionWindowIDVertBuffer);
+			glDeleteBuffers(1, &m_glCompanionWindowIDIndexBuffer);
+		}
+//        qDebug()<<"delete 13";
+		if( m_unControllerVAO != 0 )
+		{
+			glDeleteVertexArrays( 1, &m_unControllerVAO );
+			glDeleteBuffers(1, &m_glControllerVertBuffer);
+		} 
+	}
 
-//		if(pick_node)  pick_node = 0;
-//		if( m_unMorphologyLineModeVAO != 0 )
-//		{
-//			glDeleteVertexArrays( 1, &m_unMorphologyLineModeVAO );
-//			glDeleteBuffers(1, &m_glMorphologyLineModeVertBuffer);
-//			glDeleteBuffers(1, &m_glMorphologyLineModeIndexBuffer);
-//		}
-		
-//		if( m_unSketchMorphologyLineModeVAO != 0 )
-//		{
-//			glDeleteVertexArrays( 1, &m_unSketchMorphologyLineModeVAO );
-//			glDeleteBuffers(1, &m_glSketchMorphologyLineModeVertBuffer);
-//			glDeleteBuffers(1, &m_glSketchMorphologyLineModeIndexBuffer);
-//		}
+//qDebug()<<"delete 14";
+	if( m_pCompanionWindow )
+	{
+	//	if(font_VR->self)
+	//	{
+	//		delete font_VR->self;
+	//		qDebug()<<"delete self ";
+	//		font_VR->self = 0;
+	//	}
+	//	delete font_VR;
+	//	qDebug()<<"delete font ";
+	//	font_VR = NULL;
+	//	qDebug()<<"deleted font of VR";
+		SDL_DestroyWindow(m_pCompanionWindow);
 
-//		if( m_VolumeImageVAO != 0 )
-//		{
-//			glDeleteVertexArrays( 1, &m_VolumeImageVAO );
-//			//glDeleteBuffers(1, &m_imageVBO);
-//		}
 
-//		if( m_clipPatchVAO != 0 )
-//		{
-//			glDeleteVertexArrays( 1, &m_clipPatchVAO );
-//			//glDeleteBuffers(1, &m_imageVBO);
-//		}
+		m_pCompanionWindow = NULL;
+	}
 
-//		if( m_unCompanionWindowVAO != 0 )
-//		{
-//			glDeleteVertexArrays( 1, &m_unCompanionWindowVAO );
-//			glDeleteBuffers(1, &m_glCompanionWindowIDVertBuffer);
-//			glDeleteBuffers(1, &m_glCompanionWindowIDIndexBuffer);
-//		}
-//		if( m_unControllerVAO != 0 )
-//		{
-//			glDeleteVertexArrays( 1, &m_unControllerVAO );
-//			glDeleteBuffers(1, &m_glControllerVertBuffer);
-//		}
-//	}
-
-//	if( m_pCompanionWindow )
-//	{
-//	//	if(font_VR->self)
-//	//	{
-//	//		delete font_VR->self;
-//	//		qDebug()<<"delete self ";
-//	//		font_VR->self = 0;
-//	//	}
-//	//	delete font_VR;
-//	//	qDebug()<<"delete font ";
-//	//	font_VR = NULL;
-//	//	qDebug()<<"deleted font of VR";
-//		SDL_DestroyWindow(m_pCompanionWindow);
-//		m_pCompanionWindow = NULL;
-//	}
-//	SDL_Quit();
+//qDebug()<<"delete 15";
+    SDL_Quit();
+    qDebug()<<"shut down sucess!";
 }
 
 //-----------------------------------------------------------------------------
@@ -1467,6 +1508,7 @@ bool CMainApplication::HandleInput()
 //		}
 //	}//*/
 
+
 	m_iControllerIDLeft = m_pHMD->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_LeftHand);	
 	m_iControllerIDRight = m_pHMD->GetTrackedDeviceIndexForControllerRole(vr::TrackedControllerRole_RightHand);
 
@@ -1475,12 +1517,9 @@ bool CMainApplication::HandleInput()
 	vr::VREvent_t event;
 	while( m_pHMD->PollNextEvent( &event, sizeof( event ) ) )
 	{
+
 		ProcessVREvent( event );
-		// if(_call_assemble_plugin)
-		// {
-		// 	qDebug()<<"run here";
-		// 	return true;
-		// }
+
 		if(postVRFunctionCallMode!=0)
 		{
 			qDebug()<<"there is a post-VR function call "<<postVRFunctionCallMode;
@@ -1493,14 +1532,16 @@ bool CMainApplication::HandleInput()
 		}
 	}
 
-
 	// Process SteamVR RIGHT controller state 
 	//including draw lines
+
+
 	{
 		vr::VRControllerState_t state;		
 		//if( (unDevice==m_iControllerIDRight)&&(m_pHMD->GetControllerState( unDevice, &state, sizeof(state) ) ))
 		if( m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state) ) )
 		{
+            //按下trigger的事件
 			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)&&(!showshootingray))
 			{
 				if(m_modeGrip_R==m_drawMode)
@@ -1592,83 +1633,24 @@ bool CMainApplication::HandleInput()
 					}	
 					vertexcount++;
 				}
-				else if(m_modeGrip_R==m_dragMode) 
+                else if(m_modeGrip_R==m_retypeMode)
 				{
-					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
-					glm::mat4 mat = glm::mat4();
-					for (size_t i = 0; i < 4; i++)
-					{
-						for (size_t j = 0; j < 4; j++)
-						{
-							mat[i][j] = *(mat_M.get() + i * 4 + j);
-						}
-					}
-					mat=glm::inverse(m_globalMatrix) * mat;
-					glm::vec4 ctrlRightPos = mat * glm::vec4( 0, 0, 0, 1 );
-					//qDebug("ctrlRightPos = %.2f,%.2f,%.2f\n",ctrlRightPos.x,ctrlRightPos.y,ctrlRightPos.z);
-					if(!_startdragnode)
-					{
-						if (isOnline == false)
-						{
-							bIsUndoEnable = true;
-							if (vUndoList.size() == MAX_UNDO_COUNT)
-							{
-								vUndoList.erase(vUndoList.begin());
-							}
-							vUndoList.push_back(sketchedNTList);
-							if (vRedoList.size() > 0)
-								vRedoList.clear();
-							bIsRedoEnable = false;
-							vRedoList.clear();
-						}
-					}
-					_startdragnode = true;
-					if(m_pickUpState == false)
-					{
-						float dist = 0;
-						float minvalue = 10.f;
-						for(int i=0;i<sketchedNTList.size();i++)
-						{
-							NeuronTree nt = sketchedNTList.at(i);
-							for(int j=0;j<nt.listNeuron.size();j++)
-							{
-								NeuronSWC SS0;
-								SS0 = nt.listNeuron.at(j);
-								dist = glm::sqrt((ctrlRightPos.x-SS0.x)*(ctrlRightPos.x-SS0.x)+(ctrlRightPos.y-SS0.y)*(ctrlRightPos.y-SS0.y)+(ctrlRightPos.z-SS0.z)*(ctrlRightPos.z-SS0.z));
-								//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
-								if(dist > (dist_thres/m_globalScale*5))
-									continue;
-								minvalue = glm::min(minvalue,dist);
-								if(minvalue==dist)
-								{
-									pick_node = &sketchedNTList[i].listNeuron[j];
-									pick_point_index_A = i;
-									pick_point_index_B = j;
-								}
-							}
 
-						}
-						if(pick_point_index_B!=-1){
-							m_pickUpState = true;
-							qDebug("pick up %d, %d point.",pick_point_index_A,pick_point_index_B);}
-					}
-					else if(pick_point_index_B!=-1)//when pick up a node
-					{
-						dragnodePOS="";
-						dragnodePOS = QString("%1 %2").arg(pick_point_index_A).arg(pick_point_index_B);
-						dragnodePOS += QString(" %1 %2 %3").arg(ctrlRightPos.x).arg(ctrlRightPos.y).arg(ctrlRightPos.z);
+                    const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+                    glm::mat4 mat = glm::mat4();
+                    for (size_t i = 0; i < 4; i++)
+                    {
+                        for (size_t j = 0; j < 4; j++)
+                        {
+                            mat[i][j] = *(mat_M.get() + i * 4 + j);
+                        }
+                    }
+                    mat = glm::inverse(m_globalMatrix) * mat;
+                    glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
 
-						pick_node->x = ctrlRightPos.x;
-						pick_node->y = ctrlRightPos.y;
-						pick_node->z = ctrlRightPos.z;
+                    QString tmpdeletename = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
 
-						SetupSingleMorphologyLine(pick_point_index_A,1);
-
-						if(isOnline)
-							pick_node->type = 0;
-							// sketchedNT_merged.listNeuron[pick_point].type = 0;
-						qDebug()<<"finish update nearest node location";
-					}
+                    SetDeleteSegmentColor(tmpdeletename);
 				}
 				else if(m_modeGrip_R==m_ConnectMode)
 				{
@@ -1707,86 +1689,73 @@ bool CMainApplication::HandleInput()
 						}
 						currentNT.listNeuron.append(SL0);
 						currentNT.hashNeuron.insert(SL0.n, currentNT.listNeuron.size()-1);//store NeuronSWC SL0 into currentNT
-						// if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawing
-						// {
-						// 	// for each 10 nodes/points, call virtual finger once aiming to see the line's mid-result
-						// 	if((currentNT.listNeuron.size()>0)&&(currentNT.listNeuron.size()%10==0))
-						// 	{	
-						// 		qDebug()<<"size%10==0 goto charge isAnyNodeOutBBox";
-						// 		tempNT.listNeuron.clear();
-						// 		tempNT.hashNeuron.clear();
-						// 		for(int i=0;i<currentNT.listNeuron.size();i++)
-						// 		{
-						// 			NeuronSWC S_node = currentNT.listNeuron.at(i);//swcBB
-						// 			if(!isAnyNodeOutBBox(S_node))
-						// 			{
-						// 				S_node.n=tempNT.listNeuron.size();
-						// 				if(S_node.pn!=-1)
-						// 					S_node.pn = tempNT.listNeuron.last().n;
-						// 				tempNT.listNeuron.append(S_node);
-						// 				tempNT.hashNeuron.insert(S_node.n, tempNT.listNeuron.size()-1);
-						// 			}
-						// 			else if(i==0)
-						// 			{
-						// 				vertexcount=swccount=0;
-						// 				break;
-						// 			}
-										
-						// 		}
-						// 		qDebug()<<"charge isAnyNodeOutBBox done  goto virtual finger";
-						// 		// improve curve shape
-						// 		NeuronTree InputNT;
-						// 		InputNT = tempNT;
-						// 		int iter_number=1;
-						// 		//for(int i=0;i<iter_number;i++)  // liqi  Find matching line segments more than once, resulting in inaccurate results
-						// 		//{
-						// 		//	NeuronTree OutputNT;
-						// 		//	RefineSketchCurve(i%3,InputNT, OutputNT); //ver. 2b
-						// 		//	//convergent = CompareDist(InputNT, OutputNT);
-						// 		//	InputNT.listNeuron.clear();
-						// 		//	InputNT.hashNeuron.clear();
-						// 		//	InputNT = OutputNT;
-						// 		//}
-						// 		currentNT.listNeuron.clear();
-						// 		currentNT.hashNeuron.clear();
-						// 		currentNT = InputNT;
-						// 		tempNT.listNeuron.clear();
-						// 		tempNT.hashNeuron.clear();	
-						// 		qDebug()<<"virtual finger done  goto next frame";
-						// 	}
-						// }
+                        // if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawin
 					}	
 					vertexcount++;
 				}
-				//else if(m_modeGrip_R==m_slabplaneMode)
-				//{
-				//	glm::mat4 model;
-				//	model = glm::scale(glm::mat4(), glm::vec3(img4d->getXDim(), img4d->getYDim(), img4d->getZDim()));
-				//	model = m_globalMatrix * model;
-				//	const Matrix4 &mat_M = m_rmat4DevicePose[m_iControllerIDRight]; // mat means current controller pos
-				//	glm::mat4 mat = glm::mat4();
-				//	for (size_t i = 0; i < 4; i++)
-				//	{
-				//		for (size_t j = 0; j < 4; j++)
-				//		{
-				//			mat[i][j] = *(mat_M.get() + i * 4 + j);
-				//		}
-				//	}
+				else if (m_modeGrip_R == m_deleteMode)
+				{
+					const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+					glm::mat4 mat = glm::mat4();
+					for (size_t i = 0; i < 4; i++)
+					{
+						for (size_t j = 0; j < 4; j++)
+						{
+							mat[i][j] = *(mat_M.get() + i * 4 + j);
+						}
+					}
+					mat = glm::inverse(m_globalMatrix) * mat;
+					glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
 
-				//	mat = glm::inverse(model) * mat;
-				//	glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);
-				//	mat = glm::inverse(mat);
-				//	mat = glm::transpose(mat);
-				//	glm::vec4 clipnormal = mat * glm::vec4(0.0, 1.0, 0.0, 1);
-				//	u_clipnormal = glm::vec3(clipnormal.x, clipnormal.y, clipnormal.z);
-				//	u_clippoint = glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z);
-				//}
+					QString tmpdeletename = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+//					if (tmpdeletename == "") cout << "seg name is nul" << endl;
+
+                        SetDeleteSegmentColor(tmpdeletename);
+				}
+                else if(m_modeGrip_R == m_markMode)
+                {
+                    if(!framecnt)
+                    {
+                        const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+                        glm::mat4 mat = glm::mat4();
+                        for (size_t i = 0; i < 4; i++)
+                        {
+                            for (size_t j = 0; j < 4; j++)
+                            {
+                                mat[i][j] = *(mat_M.get() + i * 4 + j);
+                            }
+                        }
+                        mat=glm::inverse(m_globalMatrix) * mat;
+                        glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );
+                        QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+                        qDebug()<<"tmpdeletename:"<<tmpdeletename;
+                        SetDeleteMarkerColor(tmpdeletename);
+                    }
+                }else if(m_modeGrip_R == m_splitMode)
+                {
+                    const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+                    glm::mat4 mat = glm::mat4();
+                    for (size_t i = 0; i < 4; i++)
+                    {
+                        for (size_t j = 0; j < 4; j++)
+                        {
+                            mat[i][j] = *(mat_M.get() + i * 4 + j);
+                        }
+                    }
+                    mat = glm::inverse(m_globalMatrix) * mat;
+                    glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
+
+                    QString tmpdeletename = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+//					if (tmpdeletename == "") cout << "seg name is nul" << endl;
+
+                    SetDeleteSegmentColor(tmpdeletename);
+                }
 			}
 
 			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
 			{
 				m_pickUpState = false;
-				pick_point_index_A = -1;
+                pick_point_index_A = -1;
 				pick_point_index_B = -1;
 			}//whenever the touchpad is unpressed, reset m_pickUpState and pick_point
 
@@ -1866,19 +1835,7 @@ bool CMainApplication::HandleInput()
 					u_clipnormal = glm::vec3(clipnormal.x, clipnormal.y, clipnormal.z);
 					u_clippoint = glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z);
 				}
-				// else if(0&&m_rotateMode==true)//into ratate mode
-				// {
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-				// 	m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/100,glm::vec3(1,0,0));
-				// 	m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/100,glm::vec3(0,1,0));
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-				// }
-				// else if(0&&m_zoomMode==true)//into zoom mode
-				// {
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-				// 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1,1,1+m_fTouchPosY/15));
-				// 	m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-				// }
+
 			}
 		}
 	}//
@@ -1908,163 +1865,7 @@ bool CMainApplication::HandleInput()
 		}
 
 	}
-	//qDebug()<<"run here 1.02";
-	// Process SteamVR LEFT controller state
-	//inlcuding translate,rotate and zoom with touchpad; pull a specific point to another POS with trigger
-	//{
-	//	vr::VRControllerState_t state;
 
-	//		if( m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state) ) )
-	//		{
-	//		//	//whenever touchpad is unpressed, set bool flag  m_TouchFirst = true;
-	//		//	if(!(state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
-	//		//	{
-	//		//		m_TouchFirst=true;
-	//		//	}//
-	//		//	//whenever touchpad is pressed, get detX&detY,return to one function according to the mode
-	//		//	if((state.ulButtonTouched & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad))&&
-	//		//		!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad)))
-	//		//	{
-	//		//		float m_fTouchPosY;
-	//		//		float m_fTouchPosX;
-	//		//		if(m_TouchFirst==true)
-	//		//		{//for every first touch,store the axis(x&y) on touchpad as old(means the initial ) POS 
-	//		//			m_TouchFirst=false;
-	//		//			m_fTouchOldY = state.rAxis[0].y;
-	//		//			m_fTouchOldX = state.rAxis[0].x;
-	//		//			//qDebug("1m_TouchFirst= %d,m_fTouchOldX= %f,m_fTouchOldY= %f.\n",m_TouchFirst,m_fTouchOldX,m_fTouchOldY);
-	//		//		}
-	//		//		m_fTouchPosY = state.rAxis[0].y;
-	//		//		m_fTouchPosX = state.rAxis[0].x;
-	//		//		//qDebug("2m_TouchFirst= %d,m_fTouchPosXR= %f,m_fTouchPosYR= %f.\n",m_TouchFirst,m_fTouchPosXR,m_fTouchPosYR);
-	//		//		detX = m_fTouchPosX - m_fTouchOldX;
-	//		//		detY = m_fTouchPosY - m_fTouchOldY;
-	//		//		if((detX<0.3f)&&(detX>-0.3f))detX=0;
-	//		//		if((detY<0.3f)&&(detY>-0.3f))detY=0;
-	//		//		/*if(detY>1.7||detY<-1.7)
-	//		//		{
-	//		//			bRet = true;
-	//		//			return bRet;
-	//		//		}//*/
-	//		//		if(m_translationMode==true)//into translate mode
-	//		//		{
-	//		//			const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];
-	//		//			Vector4 direction(0,0,0,1);
-
-	//		//			Vector4 start_Y = mat_M * Vector4( 0, 0, 0, 1 );
-	//		//			Vector4 end_Y = mat_M * Vector4( 0, 0, -1.0f, 1 );
-	//		//			Vector4 direction_Y = end_Y - start_Y;
-
-	//		//			Vector4 start_X = mat_M * Vector4( 0, 0, 0, 1 );
-	//		//			Vector4 end_X = mat_M * Vector4( 1.0f, 0, 0, 1 );
-	//		//			Vector4 direction_X = end_X - start_X;
-
-	//		//			if(fabs(m_fTouchPosX) > fabs(m_fTouchPosY)) //move across axis
-	//		//			{
-	//		//				if(m_fTouchPosX<0) direction = direction_X * -1;
-	//		//				else direction = direction_X;
-	//		//			} else //move along axis
-	//		//			{
-	//		//				if(m_fTouchPosY<0) direction = direction_Y * -1;
-	//		//				else direction = direction_Y;
-	//		//			}
-	//		//			direction = direction.normalize() * 0.01;
-
-	//		//			glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(direction.x,direction.y,direction.z));
-	//		//			//glm::mat4 temp_mat = glm::translate(glm::mat4(),glm::vec3(detX/300,0,detY/300));
-	//		//			m_globalMatrix = temp_mat * m_globalMatrix;
-	//		//		}
-	//		//		else if(m_rotateMode==true)//into ratate mode
-	//		//		{
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-	//		//			m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosX/300,glm::vec3(1,0,0));
-	//		//			m_globalMatrix = glm::rotate(m_globalMatrix,m_fTouchPosY/300,glm::vec3(0,1,0));
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-	//		//		}
-	//		//		else if(m_zoomMode==true)//into zoom mode
-	//		//		{
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,loadedNTCenter);
-	//		//			m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1+m_fTouchPosY/300,1+m_fTouchPosY/300,1+m_fTouchPosY/300));
-	//		//			m_globalMatrix = glm::translate(m_globalMatrix,-loadedNTCenter);
-	//		//		}
-	//		//	}
-
-	//			//pick up the nearest node and pull it to new locations
-	//			//note: this part of code only serves as a demonstration, and does not handle complicated cases well.
-	//			//also, can only pull drawn neurons, not loaded ones.
-	//			if(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger))
-	//			{
-	//				qDebug()<<"start to find nearest node";
-	//				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
-	//				glm::mat4 mat = glm::mat4();
-	//				for (size_t i = 0; i < 4; i++)
-	//				{
-	//					for (size_t j = 0; j < 4; j++)
-	//					{
-	//						mat[i][j] = *(mat_M.get() + i * 4 + j);
-	//					}
-	//				}
-	//				mat=glm::inverse(m_globalMatrix) * mat;
-	//				glm::vec4 ctrlLeftPos = mat * glm::vec4( 0, 0, 0, 1 );
-	//				//qDebug("ctrlLeftPos = %.2f,%.2f,%.2f\n",ctrlLeftPos.x,ctrlLeftPos.y,ctrlLeftPos.z);
-	//				if(m_pickUpState == false)
-	//				{
-	//					float dist = 0;
-	//					float minvalue = 10.f;
-	//					for(int i = 0; i<sketchedNT_merged.listNeuron.size();i++)
-	//					{
-	//						NeuronSWC SS0;
-	//						SS0 = sketchedNT_merged.listNeuron.at(i);
-	//						dist = glm::sqrt((ctrlLeftPos.x-SS0.x)*(ctrlLeftPos.x-SS0.x)+(ctrlLeftPos.y-SS0.y)*(ctrlLeftPos.y-SS0.y)+(ctrlLeftPos.z-SS0.z)*(ctrlLeftPos.z-SS0.z));
-	//						//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
-	//						if(dist > (dist_thres/m_globalScale*5))
-	//							continue;
-	//						minvalue = glm::min(minvalue,dist);
-	//						if(minvalue==dist)
-	//							pick_point = i;
-
-	//					}
-	//					if(pick_point!=-1){
-	//						m_pickUpState = true;
-	//						qDebug("pick up %d point.",pick_point);}
-	//				}
-	//				else if(pick_point!=-1)
-	//				{
-	//					m_pickUpState = true;
-	//					NeuronSWC SS1;
-	//					SS1 = sketchedNT_merged.listNeuron.at(pick_point);
-	//					SS1.x = ctrlLeftPos.x;
-	//					SS1.y = ctrlLeftPos.y;
-	//					SS1.z = ctrlLeftPos.z;
-	//					sketchedNT_merged.listNeuron[pick_point] = SS1;
-	//					qDebug()<<"finish update nearest node location";
-	//					//sketch_spheresPos[pick_point] = glm::vec3(SS1.x,SS1.y,SS1.z);
-	//					//if(SS1.pn!=-1)
-	//					//{
-	//					//	NeuronSWC SS2 = sketchedNT_merged.listNeuron.at(SS1.pn-1);//SS2 is the parent of SS1
-	//					//	//change cylinder state
-	//					//	float dist = glm::sqrt((SS2.x-SS1.x)*(SS2.x-SS1.x)+(SS2.y-SS1.y)*(SS2.y-SS1.y)+(SS2.z-SS1.z)*(SS2.z-SS1.z));
-	//					//	delete sketch_cylinders[pick_point];
-	//					//	sketch_cylinders[pick_point]= new Cylinder(SS1.r,SS2.r,dist);
-	//					//}
-	//					//if(SS1.n!=sketchedNT_merged.listNeuron.size())
-	//					//{
-	//					//	NeuronSWC SS0 = sketchedNT_merged.listNeuron.at(SS1.n);//SS0 is the child of SS1
-	//					//	float dist = glm::sqrt((SS0.x-SS1.x)*(SS0.x-SS1.x)+(SS0.y-SS1.y)*(SS0.y-SS1.y)+(SS0.z-SS1.z)*(SS0.z-SS1.z));
-	//					//	delete sketch_cylinders[pick_point+1];
-	//					//	sketch_cylinders[pick_point+1]= new Cylinder(SS0.r,SS1.r,dist);
-	//					//}
-	//				}
-	//			}
-
-
-	//			if(!(state.ulButtonPressed & vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger)))
-	//			{
-	//				m_pickUpState = false;
-	//				pick_point = -1;
- //               }//whenever the touchpad is unpressed, reset m_pickUpState and pick_point
-	//		}
-	//}
 	return bRet;
 }
 
@@ -2088,10 +1889,13 @@ void CMainApplication::RunMainLoop()
 bool CMainApplication::HandleOneIteration()
 {
 	bool bQuit = false;
+    //qdebug()<<"huanglei debug 8";
 	bQuit = HandleInput();
+    //qdebug()<<"huanglei debug 9";
 	RenderFrame();
-	if(bQuit==true) Shutdown();
-	
+    //qdebug()<<"huanglei debug 10";
+//	if(bQuit==true) Shutdown();
+        //qdebug()<<"huanglei debug 11";
 	return bQuit;
 
 }
@@ -2143,58 +1947,59 @@ void CMainApplication::SetupCurrentUserInformation(string name, int typeNumber)
 	}
 }
 
-  void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
-{
-
-	for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
-	Agents_spheres.clear();//clear old spheres
-	Agents_spheresPos.clear();//clear old spheres pos
-	Agents_spheresColor.clear();//clear old spheres color
-
-	if(curAgents.size()<2) return;//size<2 means there is no other users,no need to generate sphere
-
-	for(int i=0;i<curAgents.size();i++)//generate new spheres as other users
-	{
-		if(curAgents.at(i).isItSelf==true) continue;//come to itself, skip
-		Agents_spheres.push_back(new Sphere((0.05f / m_globalScale),5,5));
-
-		int type =curAgents.at(i).colorType;//the color of sphere's surface should be the same as Agent's colortype
-		glm::vec3 agentclr=glm::vec3();
-		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
-		Agents_spheresColor.push_back(agentclr);
-
-		glm::mat4 mat_HMD = glm::mat4();
-		for (int k = 0; k < 4; k++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				mat_HMD[k][j]=curAgents.at(i).position[k*4+j];
-				//qDebug()<<"mat_HMD"<<k<<j<<mat_HMD[k][j]<<" ";
-			}
-		}
-		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
-		XYZ convertPOS = ConvertGlobaltoLocalCoords(posss.x,posss.y,posss.z);
-		//qDebug()<<" get agent POS "<<convertPOS.x<<" "<<convertPOS.y<<" "<<convertPOS.z;
-		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
-		//agentsPos  means user's position in world, posss[3] will always be 1.
-		//later may need orientation information
-		if(curAgents[i].name == collaboration_creator_name)
-		{
-			//qDebug()<<collaboration_creator_name<<"converted pos";
-			CollaborationCreatorPos = convertPOS;
-		}
-		Agents_spheresPos.push_back(agentsPos);
-	}
-
-}
+//void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
+//{
+//
+//	for (int i=0;i<Agents_spheres.size();i++) delete Agents_spheres[i];
+//	Agents_spheres.clear();//clear old spheres
+//	Agents_spheresPos.clear();//clear old spheres pos
+//	Agents_spheresColor.clear();//clear old spheres color
+//
+//	if(curAgents.size()<2) return;//size<2 means there is no other users,no need to generate sphere
+//
+//	for(int i=0;i<curAgents.size();i++)//generate new spheres as other users
+//	{
+//		if(curAgents.at(i).isItSelf==true) continue;//come to itself, skip
+//		Agents_spheres.push_back(new Sphere((0.05f / m_globalScale),5,5));
+//
+//		int type =curAgents.at(i).colorType;//the color of sphere's surface should be the same as Agent's colortype
+//		glm::vec3 agentclr=glm::vec3();
+//		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+//		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+//		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+//		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+//		Agents_spheresColor.push_back(agentclr);
+//
+//		glm::mat4 mat_HMD = glm::mat4();
+//		for (int k = 0; k < 4; k++)
+//		{
+//			for (int j = 0; j < 4; j++)
+//			{
+//				mat_HMD[k][j]=curAgents.at(i).position[k*4+j];
+//				//qDebug()<<"mat_HMD"<<k<<j<<mat_HMD[k][j]<<" ";
+//			}
+//		}
+//		glm::vec4 posss = mat_HMD * glm::vec4( 0, 0, 0, 1 );
+//		XYZ convertPOS = ConvertGlobaltoLocalCoords(posss.x,posss.y,posss.z);
+//		//qDebug()<<" get agent POS "<<convertPOS.x<<" "<<convertPOS.y<<" "<<convertPOS.z;
+//		glm::vec3 agentsPos=glm::vec3(convertPOS.x,convertPOS.y,convertPOS.z);
+//		//agentsPos  means user's position in world, posss[3] will always be 1.
+//		//later may need orientation information
+//		if(curAgents[i].name == collaboration_creator_name)
+//		{
+//			//qDebug()<<collaboration_creator_name<<"converted pos";
+//			CollaborationCreatorPos = convertPOS;
+//		}
+//		Agents_spheresPos.push_back(agentsPos);
+//	}
+//
+//}
 
 void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type)
 {
 	ImageMarker mk(x,y,z);
-	mk.type = type;
+    mk.type = type;
+//    mk.type = 3;
 	mk.radius = 0.02f / m_globalScale;
 
 	glm::vec3 agentclr=glm::vec3();
@@ -2205,6 +2010,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type
 	mk.color.r = agentclr[0];
 	mk.color.g = agentclr[1];
 	mk.color.b = agentclr[2];
+    mk.name=QString("Marker_%1").arg(markerNum++);
 	drawnMarkerList.push_back(mk);
 	markerVisibility.push_back(1);
 
@@ -2225,6 +2031,7 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 	mk.color.r = colorR;
 	mk.color.g = colorG;
 	mk.color.b = colorB;
+    mk.name=QString("Marker_%1").arg(markerNum++);
 	drawnMarkerList.push_back(mk);
 	markerVisibility.push_back(1);
 
@@ -2236,71 +2043,120 @@ void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int colo
 	for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
 	Markers_spheresColor.push_back(agentclr);
 
-
+	
 }
 
-bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z,int type)
+bool CMainApplication::RemoveMarkerandSurface(double x,double y,double z/*,int type,bool asg*/)
 {
-	// bool deletedmarker=false;
-	//remove the marker in list 
-		for(int i=0;i<drawnMarkerList.size();i++)
-		{
-			ImageMarker markertemp = drawnMarkerList.at(i);
-			float dist;
-			if(isOnline == false )
-				dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
-			else 
-			{
-				XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
-				XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
-				dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
-			}
-			//cal the dist between pos & current node'position, then compare with the threshold
-			if(dist < (dist_thres/m_globalScale*5))
-			{
-				drawnMarkerList.removeAt(i);
-				markerVisibility.erase(markerVisibility.begin()+i);
-				qDebug()<<"remove marker at "<<i;
-				if(Markers_spheres[i]) delete Markers_spheres[i];
-				Markers_spheres.erase(Markers_spheres.begin()+i);
-				Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
-				Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
-				// deletedmarker = true;
-				return true;
-			}
-		}
+//    for(int i=0;i<drawnMarkerList.size();i++)
+//    {
+//        qDebug()<<i<<' '<<drawnMarkerList.at(i).x<<" "<<drawnMarkerList.at(i).y<<" "<<drawnMarkerList.at(i).z;
+//    }
+    float dist=1;
+    int j=-1;
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        ImageMarker markertemp = drawnMarkerList.at(i);
 
+        if(isOnline == false )
+        {
+            dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+        }
+        else
+        {
+            XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+            XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+            float dist0 = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+            if(dist0<dist){
+                dist=dist0;j=i;
+            }
+        }
+    }
+    if(j!=-1)
+    {
+        drawnMarkerList.removeAt(j);
+        markerVisibility.erase(markerVisibility.begin()+j);
+        qDebug()<<"remove marker at "<<j;
+        if(Markers_spheres[j]) delete Markers_spheres[j];
+        Markers_spheres.erase(Markers_spheres.begin()+j);
+        Markers_spheresPos.erase(Markers_spheresPos.begin()+j);
+        Markers_spheresColor.erase(Markers_spheresColor.begin()+j);
+        return true;
+    }
 	return false;
-	//if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
-	//{
-	//	//empty all Markers_spheres,Markers_spheresPos,Markers_spheresColor
-	//	for (int i=0;i<Markers_spheres.size();i++) delete Markers_spheres[i];
-	//	Markers_spheres.clear();
-	//	Markers_spheresPos.clear();
-	//	Markers_spheresColor.clear();
+}
+bool CMainApplication::RemoveMarkerandSurface2(double x,double y,double z,int type,bool asg)
+{
 
-	//	//reset Markers_spheres,Markers_spheresPos,Markers_spheresColor
-	//	for(int i=0;i<drawnMarkerList.size();i++)
-	//	{
-	//		ImageMarker mk = drawnMarkerList.at(i);
-	//		Markers_spheres.push_back(new Sphere(mk.radius,10,10));
-	//		Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
+        for(int i=0;i<drawnMarkerList.size();i++)
+        {
+            ImageMarker markertemp = drawnMarkerList.at(i);
+            float dist=10000;
+            if(isOnline == false )
+            {
+                dist = glm::sqrt((markertemp.x- x)*(markertemp.x- x)+(markertemp.y- y)*(markertemp.y- y)+(markertemp.z- z)*(markertemp.z- z));
+            }
+            else
+            {
+                if(!asg)
+                {
+                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+                    dist = glm::sqrt((TaegetMarkx.x- TargetResx.x)*(TaegetMarkx.x- TargetResx.x)+(TaegetMarkx.y- TargetResx.y)*(TaegetMarkx.y- TargetResx.y)+(TaegetMarkx.z- TargetResx.z)*(TaegetMarkx.z- TargetResx.z));
+                }else
+                {
+//                    XYZ TargetResx = ConvertLocaltoGlobalCoords(x,y,z,CollaborationTargetMarkerRes);
+                    XYZ TaegetMarkx = ConvertLocaltoGlobalCoords(markertemp.x,markertemp.y,markertemp.z,CollaborationTargetMarkerRes);
+                    dist = glm::sqrt((TaegetMarkx.x- x)*(TaegetMarkx.x- x)+(TaegetMarkx.y- y)*(TaegetMarkx.y- y)+(TaegetMarkx.z- z)*(TaegetMarkx.z- z));
+                }
+            }
+            //cal the dist between pos & current node'position, then compare with the threshold
+            if(dist < /*(dist_thres/m_globalScale*5)*/8.0)
+            {
+                drawnMarkerList.removeAt(i);
+                markerVisibility.erase(markerVisibility.begin()+i);
+                qDebug()<<"remove marker at "<<i;
+                if(Markers_spheres[i]) delete Markers_spheres[i];
+                Markers_spheres.erase(Markers_spheres.begin()+i);
+                Markers_spheresPos.erase(Markers_spheresPos.begin()+i);
+                Markers_spheresColor.erase(Markers_spheresColor.begin()+i);
+                // deletedmarker = true;
+                return true;
+            }
+        }
 
-	//		glm::vec3 agentclr=glm::vec3();
-	//		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-	//		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-	//		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-	//		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
-	//		Markers_spheresColor.push_back(agentclr);
-	//	}
-	//}
-	//else
-	//{
-	//	//cannot find marker, do nothing
-	//	qDebug()<<"Cannot find any marker nearby.Please retry.";
-	//}
+    return false;
+    //if(deletedmarker == true)//if deleted a marker in drawnMarkerList, then
+    //{
+    //	//empty all Markers_spheres,Markers_spheresPos,Markers_spheresColor
+    //	for (int i=0;i<Markers_spheres.size();i++) delete Markers_spheres[i];
+    //	Markers_spheres.clear();
+    //	Markers_spheresPos.clear();
+    //	Markers_spheresColor.clear();
+
+    //	//reset Markers_spheres,Markers_spheresPos,Markers_spheresColor
+    //	for(int i=0;i<drawnMarkerList.size();i++)
+    //	{
+    //		ImageMarker mk = drawnMarkerList.at(i);
+    //		Markers_spheres.push_back(new Sphere(mk.radius,10,10));
+    //		Markers_spheresPos.push_back(glm::vec3(mk.x,mk.y,mk.z));
+
+    //		glm::vec3 agentclr=glm::vec3();
+    //		agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+    //		agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+    //		agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+    //		for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+    //		Markers_spheresColor.push_back(agentclr);
+    //	}
+    //}
+    //else
+    //{
+    //	//cannot find marker, do nothing
+    //	qDebug()<<"Cannot find any marker nearby.Please retry.";
+    //}
 
 }
+
 //-----------------------------------------------------------------------------
 // Purpose: Processes a single VR event
 //-----------------------------------------------------------------------------
@@ -2454,17 +2310,37 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _UndoRedo:
 			{
-				qDebug()<<"Undo/Redo Operation. Lines Only.";
-				if(temp_x>0)
-				{
-					 RedoLastSketchedNT();
-					 SetupAllMorphologyLine();
-				}
-				else
-				{
-					 UndoLastSketchedNT();
-					 SetupAllMorphologyLine();
-				}
+//				qDebug()<<"Undo/Redo Operation. Lines Only.";
+
+                if(temp_x>0)
+                {
+                    if(!isOnline)
+                    {
+                        RedoLastSketchedNT();
+                        SetupAllMorphologyLine();
+                    }else
+                    {
+                        redo=true;
+                        READY_TO_SEND=true;
+
+                    }
+                }
+                else
+                {
+                    if(!isOnline)
+                    {
+                         UndoLastSketchedNT();
+                         SetupAllMorphologyLine();
+                    }
+                    else
+                    {
+                        undo=true;
+                        READY_TO_SEND=true;
+
+                    }
+                }
+
+
 				break;
 			}
 		case _LineWidth: //line width
@@ -2619,18 +2495,20 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				break;
 			}
-		case _MovetoCreator:
+		
+		case _MovetoMarker:
+        {
+            qDebug() << "get creator pos";
+			if (CollaborationCreatorPos.x != 0 && CollaborationCreatorPos.y != 0 && CollaborationCreatorPos.z != 0)
 			{
-				if(isOnline == true)
-				{
-					if(CollaborationCreatorPos.x!=0&&CollaborationCreatorPos.y!=0&&CollaborationCreatorPos.z!=0)
-					{
-						qDebug()<<"get creator pos";						
-						teraflyPOS = XYZ(CollaborationCreatorPos.x,CollaborationCreatorPos.y,CollaborationCreatorPos.z);//liqi
-						postVRFunctionCallMode = 9;
-					}
-				}
+//				qDebug() << "get creator pos";
+				teraflyPOS = XYZ(CollaborationCreatorPos.x, CollaborationCreatorPos.y, CollaborationCreatorPos.z);//liqi
+//                qDebug()<<"---------------------------\n"
+//                       <<teraflyPOS.x<<" "<<teraflyPOS.y<<teraflyPOS.z<<"\n---------------";
+				postVRFunctionCallMode = 9;
+				break;
 			}
+		}
 		case _RGBImage: //line width
 			{
 				if(temp_x>0)
@@ -2705,183 +2583,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             m_oldCtrlMatrix = mat;
 			m_oldGlobalMatrix = m_globalMatrix;
 	}
-//    if((event.trackedDeviceIndex==m_iControllerIDLeft)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger))
-//    {
-//
-//            const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
-//            glm::mat4 mat = glm::mat4();
-//            for (size_t i = 0; i < 4; i++)
-//            {
-//                for (size_t j = 0; j < 4; j++)
-//                {
-//                    mat[i][j] = *(mat_M.get() + i * 4 + j);
-//                }
-//            }
-//            mat=glm::inverse(m_globalMatrix) * mat;
-//
-//			glm::vec4 start = mat * glm::vec4( 0, 0, -0.02f, 1 );
-//            //Vector4 start = mat_M * Vector4( 0, 0, -0.02f, 1 );
-//
-//
-//            NeuronSWC SL0;
-//            NeuronSWC SL1;
-//            SL0.x = start.x ;SL0.y = start.y ;SL0.z = start.z ;SL0.r = default_radius;SL0.type = 200; SL0.n = swccount+1;SL0.pn = -1;
-//
-////            float dist = 0;
-////            if(swccount>=2)
-////            {
-////                double point_x = sketchNT.listNeuron.at(swccount-2).x;
-////                double point_y = sketchNT.listNeuron.at(swccount-2).y;
-////                double point_z = sketchNT.listNeuron.at(swccount-2).z;
-////                dist = glm::sqrt((point_x-start.x)*(point_x-start.x)+(point_y-start.y)*(point_y-start.y)+(point_z-start.z)*(point_z-start.z));
-////            }
-//
-//            if(bool_ray)
-//            {
-//                ray_ratio = 1;
-//                double updated_z = -0.29*ray_ratio;
-//				glm::vec4 end = mat * glm::vec4( 0, 0, updated_z, 1 );
-//                //Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
-//                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+2;SL1.pn = swccount+1;
-//                sketchNT.listNeuron.append(SL0);
-//                sketchNT.hashNeuron.insert(SL0.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL0 into sketchNT
-//                sketchNT.listNeuron.append(SL1);
-//                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
-//                swccount +=2;
-//                bool_ray = false;
-//            }else
-//            {
-//                ray_ratio++;
-//                double updated_z = -0.29*ray_ratio;
-//				glm::vec4 end = mat * glm::vec4( 0, 0, updated_z, 1 );
-//                //Vector4 end = mat_M * Vector4( 0, 0, updated_z, 1 );
-//                SL1.x = end.x ;SL1.y = end.y ;SL1.z = end.z ;SL1.r = default_radius;SL1.type = 200; SL1.n = swccount+1;SL1.pn = swccount;
-//                sketchNT.listNeuron.append(SL1);
-//                sketchNT.hashNeuron.insert(SL1.n, sketchNT.listNeuron.size()-1);//store NeuronSWC SL1 into sketchNT
-//                swccount++;
-//            }
-//
-//    }
-
-
-
-	//////////////////////////////////////////RIGHT
-	//if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)&&(event.eventType==vr::VREvent_ButtonUnpress))
-	//{	
-	//	vr::VRControllerState_t state;	
-	//	m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
-	//	float temp_x  = state.rAxis[0].x;
-	//	float temp_y  = state.rAxis[0].y;
-
-	//	if(fabs(temp_x) > fabs(temp_y))
-	//	{
-	//		if((loadedNT.listNeuron.size()>0)&&(sketchNT.listNeuron.size()>0)) //both original_vr_neuron and areaofinterest must be non-empty.
-	//		{
-	//			//call feature search function, and update display
-
-	//			//save current neurons
-	//			QString outfilename1 = QCoreApplication::applicationDirPath()+"/original_vr_neuron.swc";
-	//			writeSWC_file(outfilename1, loadedNT);
-	//			qDebug("Successfully write original_vr_neuron");
-
-	//			QString outfilename2 = QCoreApplication::applicationDirPath()+"/areaofinterest.swc";
-	//			writeSWC_file(outfilename2, sketchNT);
-	//			qDebug("Successfully write areaofinterest");
-
-	//			//calculate
-	//			if(temp_x<0) 
-	//			{
-	//				qDebug("Search bjut");
-	//				if(!neuron_subpattern_search(1,mainwindow))
-	//				{
-	//					qDebug("Search failed!");
-	//					return;	
-	//				}
-	//			}
-	//			else 
-	//			{
-	//				qDebug("Search shu");
-	//				if(!neuron_subpattern_search(2,mainwindow))
-	//				{
-	//					qDebug("Search failed!");
-	//					return;	
-	//				}
-	//			}
-
-	//			//load again
-	//			QString filename = QCoreApplication::applicationDirPath()+"/updated_vr_neuron.swc";
-	//			NeuronTree nt_tmp = readSWC_file(filename);
-	//			qDebug("Successfully read tagged SWC file");
-
-	//			for (int i=0; i<loadedNT.listNeuron.size(); i++)
-	//				loadedNT.listNeuron[i].type = nt_tmp.listNeuron[i].type;
-
-	//			SetupMorphologyLine(0);
-	//		}
-	//		else
-	//		{
-	//			qDebug("Area of interest is empty!");
-	//		}
-	//	} 
-	//	else 
-	//	{
-	//		if(temp_y<0) 
-	//		{
-	//			qDebug("none");
-	//		}
-	//		else 
-	//		{
-	//			qDebug("freeze");
-	//			m_bFrozen = !m_bFrozen;
-	//		}
-	//	}
-	//}
 
     if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)/*&&(!showshootingray)*/)
-	{		//use touchpad press to change the processing mode for touchpad, only contrast now
-		// m_modeControlTouchPad_R++;
-		// m_modeControlTouchPad_R%=4;
-
-		// switch(m_modeControlTouchPad_R)
-		// {
-		// case 0:
-		// 	m_contrastMode=m_rotateMode=m_zoomMode = false;
-		// 	break;
-		// case 1:
-		// 	m_contrastMode = true;
-		// 	m_rotateMode=m_zoomMode = false;
-		// 	break;
-		// case 2:
-		// 	m_rotateMode = true;
-		// 	m_contrastMode=m_zoomMode = false;
-		// 	break;
-		// case 3:
-		// 	m_zoomMode = true;
-		// 	m_contrastMode=m_rotateMode = false;
-		// 	break;
-		// default:
-		// 	break;
-		// }	
-		//qDebug("m_modeControlTouchPad_R=%d,m_contrastMode=%d,m_rotateMode=%d,m_zoomMode=%d",m_modeControlTouchPad_R,m_contrastMode,m_rotateMode,m_zoomMode);
-		vr::VRControllerState_t state;	
+    {
+        vr::VRControllerState_t state;
 		m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
 		float temp_x  = state.rAxis[0].x;
-		// case m_slabplaneMode:
-		// {
-		// 	if(temp_x>0)
-		// 	{
-		// 		fSlabwidth += 0.1;
-		// 		if (fSlabwidth > 0.5)
-		// 			fSlabwidth = 0.5;
-		// 	}
-		// 	if(temp_x<0)
-		// 	{
-		// 		fSlabwidth -= 0.1;
-		// 		if (fSlabwidth < 0.05)
-		// 			fSlabwidth = 0.05;
-		// 	}
-		// 	break;
-		// }
+
 
 	}
 		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))	//detect trigger when menu show
@@ -2889,9 +2597,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				glm::vec2 ShootingPadUV = calculateshootingPadUV();
 				if(showshootingPad)
 				MenuFunctionChoose(ShootingPadUV);
-				else if(m_secondMenu!=_nothing&&(isOnline == false))
+				else if(m_secondMenu!=_nothing)
 				{
-					//todo liqi
+
 					ColorMenuChoose(ShootingPadUV);
 				}
 				//qDebug()<<showshootingPad;
@@ -2900,12 +2608,11 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
 	{	
-
+        //松开trigger
 		qDebug()<<"current mode is "<<m_modeGrip_R;
 		switch(m_modeGrip_R)
 		{
 		case m_drawMode:
-			//if(m_modeGrip_R==m_drawMode)
 			{
 				if(img4d&&m_bVirtualFingerON) //if an image exist, call virtual finger functions for curve drawing
 				{	
@@ -3089,12 +2796,32 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						currentNT.hashNeuron.clear();		
 					}
 					swccount=0;
-				}
-				break;
-			}
+                }else{
+                    READY_TO_SEND=true;
+                    qDebug()<<CmainVRVolumeEndPoint.x<<" "<<CmainVRVolumeEndPoint.y<<" "<<CmainVRVolumeEndPoint.z;
+                    for(int i=0;i<currentNT.listNeuron.size();i++)
+                    {
+                        auto S_temp=currentNT.listNeuron[i];
+                        if(
+                            (S_temp.x<0 || S_temp.x>=CmainVRVolumeEndPoint.x)
+                          ||(S_temp.y<0 || S_temp.y>=CmainVRVolumeEndPoint.y)
+                          ||(S_temp.z<0 || S_temp.z>=CmainVRVolumeEndPoint.z)
+                                )
+                        {
+                            //震动、清空、禁止发送
+                            qDebug()<<"outside:"<<S_temp.x<<" "<<S_temp.y<<" "<<S_temp.z;
+                            ClearCurrentNT();
+                            READY_TO_SEND=false;
+                           m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,3000000);
+                        }
+                    }
+                }
+            };
+            break;
 		case m_deleteMode:
 			//else if(m_modeGrip_R==m_deleteMode)
-			{
+            {
+            qDebug()<<"in delete mode";
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -3106,14 +2833,42 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-				delName = "";
-				delcurvePOS  ="";
-				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                for (int i = 0; i < sketchedNTList.size(); i++)
+                {
+                    QString NTname = "";
+                    NTname = sketchedNTList.at(i).name;
+                    if (line_tobedeleted == NTname)
+                    {
+                        for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                        {
+                            sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                        }
+                        line_tobedeleted = "";
+                        SetupSingleMorphologyLine(i, 1);
+                    }
+                }
+
+                delSegName = "";
+                delSegName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+				//SegNode_tobedeleted = GetSegtobedelete_Node(delName);
 				if(isOnline==false)	
 				{
+					for (int i = 0; i < sketchedNTList.size(); i++)
+					{
+						QString NTname = "";
+						NTname = sketchedNTList.at(i).name;
+						if (line_tobedeleted == NTname)
+						{
+							for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+							{
+                                sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+							}
+							line_tobedeleted = "";
+							SetupSingleMorphologyLine(i, 1);
+						}
+					}
 					NTL temp_NTL = sketchedNTList;
-					bool delerror = DeleteSegment(delName);
+                    bool delerror = DeleteSegment(delSegName);
 					if(delerror==true)
 					{
 						bIsUndoEnable = true;
@@ -3130,9 +2885,12 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 					else
 						qDebug()<<"Cannot Find the Segment ";
-				}
-				break;
-			}
+                }else
+                {
+                    READY_TO_SEND=true;
+                }
+
+            };break;
 		case m_ConnectMode:
 		{
 			//do timestamp when create new segments
@@ -3161,7 +2919,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			NeuronTree connectTree;
 			for(V3DLONG  i = 0;i<sketchedNTList.size();i++)
 			{
-				cout<<"sketchedNTList"<<"   "<<i<<endl;
 				NeuronTree* p_tree = (NeuronTree*)(&(sketchedNTList.at(i)));
 				QList<NeuronSWC>* p_listneuron = &(p_tree->listNeuron);
 
@@ -3244,10 +3001,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}							
 				else
 				{
-					cout<<"come into else "<<endl;
 					bool repeat = false;
 					if(std::find(segInfo.begin(),segInfo.end(),i)!=segInfo.end())repeat = true;
-					cout<<"step 1"<<endl;
 					if(repeat ==false&&matchdistance<=tolerance)
 					{
 						segInfo.push_back(i);
@@ -3257,7 +3012,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						//SL0.n = 2;
 						connectTree.listNeuron.append(SL0);
 						connectTree.hashNeuron.insert(SL0.n,connectTree.listNeuron.size()-1);
-						cout<<"segInfo.size == 2 now"<<endl;
 					}
 				}//for each sketchlist
 
@@ -3271,30 +3025,22 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				int index1 = connectTree.listNeuron.at(0).n;
 				int index2 = connectTree.listNeuron.at(1).n;
-				cout<<"index1 is "<<index1<<endl;
-				cout<<"index2 is "<<index2<<endl;
 				
 				NeuronTree * p_connectNT1 = &sketchedNTList[segInfo[0]];
 				NeuronTree * p_connectNT2 = &sketchedNTList[segInfo[1]];
-				cout<<"p_connectNT1.list size is "<<p_connectNT1->listNeuron.size();
-				cout<<"p_connectNT2.list size is "<<p_connectNT2->listNeuron.size();
 				if((index1==1&&index2==p_connectNT2->listNeuron.size())//head to tail
 					||(index1==p_connectNT1->listNeuron.size()&&index2==1)//tail to head 
 					||(index1==1&&index2==1)//head to head
 					||(index1==p_connectNT1->listNeuron.size()&&index2 ==p_connectNT2->listNeuron.size()))//tail to tail
 				{
-					cout<<"connect head to tail !!! come into here"<<endl;
 					for(int j = 0;j<2;j++)
 					{
-						cout<<"pos 1 "<<j<<endl;
 						int index = connectTree.listNeuron.at(j).n;
 						NeuronTree * connectedNT = &sketchedNTList[segInfo[j]];
 						if((index==1&&j==0)||(index==connectedNT->listNeuron.size()&&j==1))
 						{
-							cout<<"pos 3 "<<j<<endl;
 							for(int i = connectedNT->listNeuron.size()-1;i>=0;i--)//add first segment to connectNT
 							{
-								cout<<"pos 4 "<<i<<endl;
 								NeuronSWC SL0  = connectedNT->listNeuron.at(i);
 								SL0.n = curNT.listNeuron.size()+1;
 								if(i==connectedNT->listNeuron.size()-1&&j==0)
@@ -3309,7 +3055,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						}	
 						else if((index==connectedNT->listNeuron.size()&&j==0)||(index==1&&j==1))
 						{
-							cout<<"pos 2 "<<j<<endl;
 							for(int i = 0;i<connectedNT->listNeuron.size();i++)//add first segment to connectNT
 							{
 
@@ -3363,7 +3108,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				else if(index1==1||index1==p_connectNT1->listNeuron.size()
 						||index2==1||index2==p_connectNT2->listNeuron.size())
 				{
-					cout<<"come into connect branch to begin/end"<<endl;
 					/*
 					|	|
 					|	|
@@ -3377,7 +3121,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					
 					if(index2==1||index2==p_connectNT2->listNeuron.size())
 					{
-						cout<<"tranverse index1 and index2"<<endl;
 						NeuronTree* p_tempNT = p_connectNT2;
 						p_connectNT2 = p_connectNT1;
 						p_connectNT1 = p_tempNT;
@@ -3386,7 +3129,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						index1 = tempindex;
 					}
 					NeuronTree result_NT1,result_NT2,result_NT3;
-					cout<<"begin to add result NT1"<<endl;
 					for(int i=0;i<index2;i++)
 					{
 						NeuronSWC SL0  = p_connectNT2->listNeuron.at(i);
@@ -3400,7 +3142,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						result_NT1.listNeuron.append(SL0);
 						result_NT1.hashNeuron.insert(SL0.n,result_NT1.listNeuron.size()-1);
 					}
-					cout<<"begin to add result NT2"<<endl;
 					for(int i=index2-1;i<p_connectNT2->listNeuron.size();i++)
 					{
 						NeuronSWC SL0  = p_connectNT2->listNeuron.at(i);
@@ -3420,10 +3161,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					SL0.pn = -1;
 					result_NT3.listNeuron.append(SL0);
 					result_NT3.hashNeuron.insert(SL0.n,result_NT3.listNeuron.size()-1);
-					cout<<"begin to add result NT3"<<endl;
 					if(index1 == 1)
 					{
-						cout<<"connect to NT3begin"<<endl;
 						for(int i=0;i<p_connectNT1->listNeuron.size();i++)
 						{
 							NeuronSWC SL0  = p_connectNT1->listNeuron.at(i);
@@ -3447,7 +3186,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 					if(isOnline==false)
 					{
-						cout<<"add result NT 1 2 3 to sketchlist"<<endl;
 						if(currentNT.listNeuron.size()>0)
 						{
 							bIsUndoEnable = true;
@@ -3515,37 +3253,63 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			break;
 		}
 
-		
-		// case m_markMode:
-		// 	{
-		// 		const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
-		// 		glm::mat4 mat = glm::mat4();
-		// 		for (size_t i = 0; i < 4; i++)
-		// 		{
-		// 			for (size_t j = 0; j < 4; j++)
-		// 			{
-		// 				mat[i][j] = *(mat_M.get() + i * 4 + j);
-		// 			}
-		// 		}
-		// 		mat=glm::inverse(m_globalMatrix) * mat;
-		// 		glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-		// 		markerPOS="";
-		// 		markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-		// 		if(isOnline==false)	
-		// 		{
-		// 			ClearUndoRedoVectors();
-		// 			SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
-		// 		}
-
-		// 		break;
-		// 	}
-		case m_dragMode:
+        case m_retypeMode:
 			{
-				_startdragnode = false;
-				//ClearUndoRedoVectors();
-			}
-			
-			break;
+//				_startdragnode = false;
+//				//ClearUndoRedoVectors();
+
+            qDebug()<<"in retype mode";
+                const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+                glm::mat4 mat = glm::mat4();
+                for (size_t i = 0; i < 4; i++)
+                {
+                    for (size_t j = 0; j < 4; j++)
+                    {
+                        mat[i][j] = *(mat_M.get() + i * 4 + j);
+                    }
+                }
+                mat=glm::inverse(m_globalMatrix) * mat;
+                glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
+                delSegName = "";
+//				delcurvePOS  ="";
+//				delcurvePOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+                delSegName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                //SegNode_tobedeleted = GetSegtobedelete_Node(delName);
+                if(isOnline==false)
+                {
+                    for (int i = 0; i < sketchedNTList.size(); i++)
+                    {
+                        QString NTname = "";
+                        NTname = sketchedNTList.at(i).name;
+                        if (line_tobedeleted == NTname)
+                        {
+                            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                            {
+                                sketchedNTList[i].listNeuron[j].type =m_curMarkerColorType ;
+                            }
+                            line_tobedeleted = "";
+                            SetupSingleMorphologyLine(i, 1);
+                        }
+                    }
+                }else
+                {
+                    for (int i = 0; i < sketchedNTList.size(); i++)
+                    {
+                        QString NTname = "";
+                        NTname = sketchedNTList.at(i).name;
+                        if (line_tobedeleted == NTname)
+                        {
+                            for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                            {
+                                sketchedNTList[i].listNeuron[j].type =color_origin_seg ;
+                            }
+                            line_tobedeleted = "";
+                            SetupSingleMorphologyLine(i, 1);
+                        }
+                    }
+                    READY_TO_SEND=true;
+                }
+            }			break;
 		case m_markMode://when there is a maker ,delete it ,otherwise add a marker
 			{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
@@ -3559,22 +3323,171 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
-				/*delmarkerPOS="";
+                QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+                SetDeleteMarkerColor(tmpdeletename);
+                /*delmarkerPOS="";
 				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
-				markerPOS="";
-				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
-				bool IsmarkerValid = false;
+                markerPosTobeDeleted="";
+//				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+
 				if(isOnline==false)	
 				{
+                    bool IsmarkerValid = false;
 					ClearUndoRedoVectors();
 					IsmarkerValid = RemoveMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z);
 					if(!IsmarkerValid)
 					{
 						SetupMarkerandSurface(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z,m_curMarkerColorType);
 					}
+                }else
+                {
+                    READY_TO_SEND=true;
+                    qDebug()<<"ONLINE";
+                    double dist=2;
+                    int index=-1;
+                    for(int i=0;i<drawnMarkerList.size();i++)
+                    {
+                        ImageMarker markertemp = drawnMarkerList.at(i);
+                        double dist0 = glm::sqrt((markertemp.x- m_v4DevicePose.x)*(markertemp.x- m_v4DevicePose.x)+(markertemp.y- m_v4DevicePose.y)*(markertemp.y- m_v4DevicePose.y)
+                                         +(markertemp.z- m_v4DevicePose.z)*(markertemp.z- m_v4DevicePose.z));
+                        if(dist0<dist)
+                        {
+                            index=i;dist=dist0;
+                        }
+                    }
+                    if(index>=0)
+                    {markerPosTobeDeleted=QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);}
+                    else
+                    {
+                        bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
+                        ||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
+                        ||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
+                        if(IsOutofBounds!=true) markerPosTobeDeleted = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
+                        else
+                        {
+                            qDebug()<<"add marker out ";
+                            m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,3000000);
+                            READY_TO_SEND=false;
+                        }
+                    }
+                }
+            };break;
+		case m_reducenodeMode:
+		{
+			if (isOnline == false)
+			{
+				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+				glm::mat4 mat = glm::mat4();
+				for (size_t i = 0; i < 4; i++)
+				{
+					for (size_t j = 0; j < 4; j++)
+					{
+						mat[i][j] = *(mat_M.get() + i * 4 + j);
+					}
 				}
-				break;
+				mat = glm::inverse(m_globalMatrix) * mat;
+				glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space		
+                delSegName = "";
+                delSegName = FindNearestSegment(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
+				NeuronTree nearestNT;
+				NeuronSWC nearestNode;
+                if (delSegName == "") break; //segment not found
+				int reduceNT_index = -1;
+				int reducenode_index = -1;
+				float minvalue = 999;
+
+				for (int i = 0; i < sketchedNTList.size(); i++)//get target NT,nearest node
+				{
+					QString NTname = "";
+					NTname = sketchedNTList.at(i).name;
+                    if (NTname == delSegName)
+					{
+						nearestNT = sketchedNTList[i];
+						if (nearestNT.listNeuron.size() <= 2) return;						for (int j = 0; j<nearestNT.listNeuron.size(); j++)
+						{
+							NeuronSWC SS0;
+							SS0 = nearestNT.listNeuron.at(j);
+							float dist = glm::sqrt((m_v4DevicePose.x - SS0.x)*(m_v4DevicePose.x - SS0.x) + (m_v4DevicePose.y - SS0.y)*(m_v4DevicePose.y - SS0.y) + (m_v4DevicePose.z - SS0.z)*(m_v4DevicePose.z - SS0.z));
+							//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
+							if (dist >(dist_thres / m_globalScale * 5))
+								continue;
+							minvalue = glm::min(minvalue, dist);
+							if (minvalue == dist)
+							{
+								nearestNode = sketchedNTList[i].listNeuron[j+1];//modify nearest node's child pos
+								reduceNT_index = i;
+								reducenode_index = j+1;
+							}
+						}
+						break;
+					}
+				}
+				if (reducenode_index != -1 && (reducenode_index < nearestNT.listNeuron.size() - 1))
+				{
+					if (isOnline == false)
+					{
+						NTL temp_NTL = sketchedNTList;
+                        bool delerror = DeleteSegment(delSegName);
+						if (delerror == true)
+						{
+							bIsUndoEnable = true;
+							if (vUndoList.size() == MAX_UNDO_COUNT)
+							{
+								vUndoList.erase(vUndoList.begin());
+							}
+							vUndoList.push_back(temp_NTL);
+							if (vRedoList.size() > 0)
+								vRedoList.clear();
+							bIsRedoEnable = false;
+							vRedoList.clear();
+							qDebug() << "Segment Deleted.";
+						}
+						else
+							qDebug() << "Cannot Find the Segment ";
+					}
+					NeuronTree NewNT;
+					for (int i = 0,k=0; i < nearestNT.listNeuron.size(); ++i)
+					{
+						if (i != reducenode_index)
+						{
+							NeuronSWC curSWC = nearestNT.listNeuron.at(i);
+							NeuronSWC SS0;
+							SS0.n = k + 1;
+							SS0.pn = k;
+							SS0.type = curSWC.type;
+							SS0.color = curSWC.color;
+							SS0.timestamp = curSWC.timestamp;
+							SS0.creatmode = curSWC.creatmode;
+							SS0.x = curSWC.x;
+							SS0.y = curSWC.y;
+							SS0.z = curSWC.z;
+							if (i == 0) SS0.pn = -1;
+							NewNT.listNeuron.append(SS0);
+							NewNT.hashNeuron.insert(SS0.n, NewNT.listNeuron.size() - 1);
+							++k;
+
+						}
+					}
+					cout << "new nt " << endl;
+					for (int i = 0; i < NewNT.listNeuron.size(); ++i)
+					{
+						cout << "n"<<NewNT.listNeuron.at(i).n;
+						cout << "pn" << NewNT.listNeuron.at(i).pn;
+					}
+					qDebug() << "insert node finished!";
+					//add the  new NT to NTList
+					NewNT.name = "sketch_" + QString("%1").arg(sketchNum++);
+					qDebug() << NewNT.name;
+					sketchedNTList.push_back(NewNT);
+					int lIndex = sketchedNTList.size() - 1;
+					qDebug() << "index = " << lIndex;
+					SetupSingleMorphologyLine(lIndex, 0);
+					break;
+				}
+
 			}
+			break;
+		}
 		case m_insertnodeMode:
 			{
 				if(isOnline == false)
@@ -3590,17 +3503,17 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
-				delName = "";
-				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                delSegName = "";
+                delSegName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
-				if (delName == "") break; //segment not found
+                if (delSegName == "") break; //segment not found
 
 				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
 				{
 					QString NTname="";
 					NTname = sketchedNTList.at(i).name;
-					if(NTname==delName)
+                    if(NTname==delSegName)
 					{
 						nearestNT=sketchedNTList.at(i);
 						nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
@@ -3628,7 +3541,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				if(isOnline==false)	
 				{
 					NTL temp_NTL = sketchedNTList;
-					bool delerror = DeleteSegment(delName);
+                    bool delerror = DeleteSegment(delSegName);
 					if(delerror==true)
 					{
 						bIsUndoEnable = true;
@@ -3794,8 +3707,6 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		case m_splitMode:
 			{	
 
-				if(isOnline == false)
-				{
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
 				glm::mat4 mat = glm::mat4();
 				for (size_t i = 0; i < 4; i++)
@@ -3806,52 +3717,48 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 				}
 				mat=glm::inverse(m_globalMatrix) * mat;
-				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space		
-				delName = "";
-				delName = FindNearestSegment(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+                glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
+                                //restore segment color
+                for (int i = 0; i < sketchedNTList.size(); i++)
+                {
+                    QString NTname = "";
+                    NTname = sketchedNTList.at(i).name;
+                    if (line_tobedeleted == NTname)
+                    {
+                        for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                        {
+                            sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                        }
+                        line_tobedeleted = "";
+                        SetupSingleMorphologyLine(i, 1);
+                    }
+                }
+
+                delSegName = "";
+                delSegName = FindNearestSegmentForDel(glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
+
 				NeuronTree nearestNT;
 				NeuronSWC nearestNode;
-				if (delName == "") break; //segment not found	
-
+                if (delSegName == "") break; //segment not found
 				for(int i=0;i<sketchedNTList.size();i++)//get split NT,nearest node
 				{
 					QString NTname="";
 					NTname = sketchedNTList.at(i).name;
-					if(NTname==delName)
+                    if(NTname==delSegName)
 					{
 						nearestNT=sketchedNTList.at(i);
 						nearestNode = FindNearestNode(sketchedNTList.at(i),glm::vec3(m_v4DevicePose.x,m_v4DevicePose.y,m_v4DevicePose.z));
 						break;
 					}
 				}
+
 				//special situation for splitnode in head or end
 				if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2))
 				{
 					qDebug()<<"split node in hear/end or neuron is too short";
 					break;
 				}
-				//delete NT first
-				if(isOnline==false)	
-				{
-					NTL temp_NTL = sketchedNTList;
-					bool delerror = DeleteSegment(delName);
-					if(delerror==true)
-					{
-						bIsUndoEnable = true;
-						if(vUndoList.size()==MAX_UNDO_COUNT)
-						{
-							vUndoList.erase(vUndoList.begin());
-						}
-						vUndoList.push_back(temp_NTL);
-						if (vRedoList.size()> 0)
-							vRedoList.clear();
-						bIsRedoEnable = false;
-						vRedoList.clear();					
-						qDebug()<<"Segment Deleted.";
-					}
-					else
-						qDebug()<<"Cannot Find the Segment ";
-				}
+
 				//add two NT
 				NeuronTree splitNT1,splitNT2;
 				glm::vec3 directionsplit;
@@ -3940,67 +3847,112 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 
 				//add the two new NTs to NTList
-				splitNT1.name = "sketch_"+QString("%1").arg(sketchNum++);
-				qDebug()<<splitNT1.name;
-				sketchedNTList.push_back(splitNT1);
-				int lIndex = sketchedNTList.size() - 1;
-				qDebug()<<"index = "<<lIndex;
-				SetupSingleMorphologyLine(lIndex,0);
-				splitNT2.name = "sketch_"+QString("%1").arg(sketchNum++);
-				qDebug()<<splitNT2.name;
-				sketchedNTList.push_back(splitNT2);
-				lIndex = sketchedNTList.size() - 1;
-				qDebug()<<"index = "<<lIndex;
-				SetupSingleMorphologyLine(lIndex,0);
+                if(isOnline==false)
+                {
+                    NTL temp_NTL = sketchedNTList;
+                    bool delerror = DeleteSegment(delSegName);
+                    if(delerror==true)
+                    {
+                        bIsUndoEnable = true;
+                        if(vUndoList.size()==MAX_UNDO_COUNT)
+                        {
+                            vUndoList.erase(vUndoList.begin());
+                        }
+                        vUndoList.push_back(temp_NTL);
+                        if (vRedoList.size()> 0)
+                            vRedoList.clear();
+                        bIsRedoEnable = false;
+                        vRedoList.clear();
+                        qDebug()<<"Segment Deleted.";
+                    }
+                    else
+                        qDebug()<<"Cannot Find the Segment ";
+
+                    splitNT1.name = "sketch_"+QString("%1").arg(sketchNum++);
+                    qDebug()<<splitNT1.name;
+                    sketchedNTList.push_back(splitNT1);
+                    int lIndex = sketchedNTList.size() - 1;
+                    qDebug()<<"index = "<<lIndex;
+                    SetupSingleMorphologyLine(lIndex,0);
+                    splitNT2.name = "sketch_"+QString("%1").arg(sketchNum++);
+                    qDebug()<<splitNT2.name;
+                    sketchedNTList.push_back(splitNT2);
+                    lIndex = sketchedNTList.size() - 1;
+                    qDebug()<<"index = "<<lIndex;
+                    SetupSingleMorphologyLine(lIndex,0);
+                }else
+                {
+                    segaftersplit.push_back(splitNT1);
+                    segaftersplit.push_back(splitNT2);
+                    READY_TO_SEND=true;
+                }
 
 				break;
+
 			}
+		case _MovetoCreator:
+		{
+			const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDRight];// mat means current controller pos
+			glm::mat4 mat = glm::mat4();
+			for (size_t i = 0; i < 4; i++)
+			{
+				for (size_t j = 0; j < 4; j++)
+				{
+					mat[i][j] = *(mat_M.get() + i * 4 + j);
+				}
 			}
-		
+			mat = glm::inverse(m_globalMatrix) * mat;
+			glm::vec4 m_v4DevicePose = mat * glm::vec4(0, 0, 0, 1);//change the world space(with the globalMatrix) to the initial world space
+			/*delmarkerPOS="";
+			delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
+            markerPosTobeDeleted = "";
+            markerPosTobeDeleted = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+			bool IsmarkerValid = false;
+			break;
+		}
 		default :
 			break;
 		}
 
 		//every time the trigger(right) is unpressd ,set the vertexcount to zero preparing for the next line
 		vertexcount=0;
-		READY_TO_SEND=true;
-		qDebug()<<"READY_TO_SEND=true;";
+//		READY_TO_SEND=true; //be move to each case huanglei
+//		qDebug()<<"READY_TO_SEND=true;";
 	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_Grip)&&(event.eventType==vr::VREvent_ButtonUnpress))
 	{	//use grip button(right) to change mode draw/delelte/drag/drawmarker/deletemarker
 
-		// m_modeControlGrip_R++;
-		// m_modeControlGrip_R%=6;
-		// switch(m_modeControlGrip_R)
-		// {
-		// case 0:
-		// 	m_modeGrip_R = m_drawMode;
-		// 	break;
-		// case 1:
-		// 	m_modeGrip_R = m_deleteMode;
-		// 	break;
-		// case 2:
-		// 	m_modeGrip_R = m_dragMode;
-		// 	break;
-		// case 3:
-		// 	m_modeGrip_R = m_markMode;
-		// 	break;
-		// case 4:
-		// 	m_modeGrip_R = m_delmarkMode;
-		// 	break;
-		// case 5:
-		// 	m_modeGrip_R = m_splitMode;
-		// 	break;
-		// default:
-		// 	break;
-		// }	
+        m_modeControlGrip_R++;
+                 m_modeControlGrip_R%=2;
+                 switch(m_modeControlGrip_R)
+                 {
+                 case 0:
+                    m_modeGrip_R = m_drawMode;
+                    break;
+                 case 1:
+                    m_modeGrip_R = m_deleteMode;
+                    break;
+                 /*case 2:
+                    m_modeGrip_R = m_dragMode;
+                    break;
+                 case 3:
+                    m_modeGrip_R = m_markMode;
+                    break;
+                 case 4:
+                    m_modeGrip_R = m_delmarkMode;
+                    break;
+                 case 5:
+                    m_modeGrip_R = m_splitMode;
+                    break;*/
+                 default:
+                    break;
+                     }
 		// qDebug("m_modeGrip_R=%d",m_modeGrip_R);
 		//grip right button is used to control linewidth for now
-		iLineWid+=2;
-		if(iLineWid>9){iLineWid = 1;}
+//		iLineWid+=2;
+//		if(iLineWid>9){iLineWid = 1;}
+    }
 
-				
-	}
 	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_ApplicationMenu)&&(event.eventType==vr::VREvent_ButtonPress))
 	{
 				//this func can 1.call top menu
@@ -4115,9 +4067,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		// }
 
 				
-
+//qDebug() << "huanglei debug 4";
 	
-	//////////////////
+
 }
 bool CMainApplication::isAnyNodeOutBBox(NeuronSWC S_temp)
 {
@@ -4166,6 +4118,7 @@ void CMainApplication::RenderFrame()
 		RenderControllerAxes();
 		SetupControllerTexture();
 		SetupControllerRay();
+		SetupImageAxes();
 		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
 		//FlashStuff(m_flashtype,FlashCoords);
 		//for all (synchronized) sketched strokes
@@ -4393,6 +4346,37 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 		dprintf( "Unable to find matrix uniform in render model shader\n" );
 		return false;
 	}
+	//for image axes
+	m_unImageAxesProgramID = CompileGLShader(
+		"ImageAxes",//note: for Imageaxes
+
+		// vertex shader
+		"#version 410\n"
+		"uniform mat4 matrix;\n"
+		"layout(location = 0) in vec4 position;\n"
+		"layout(location = 1) in vec3 v3ColorIn;\n"
+		"out vec4 v4Color;\n"
+		"void main()\n"
+		"{\n"
+		"	v4Color.xyz = v3ColorIn; v4Color.a = 1.0;\n"
+		"	gl_Position = matrix * position;\n"
+		"}\n",
+
+		// fragment shader
+		"#version 410\n"
+		"in vec4 v4Color;\n"
+		"out vec4 outputColor;\n"
+		"void main()\n"
+		"{\n"
+		"   outputColor = v4Color;\n"
+		"}\n"
+		);
+	m_nImageAxesMatrixLocation = glGetUniformLocation(m_unImageAxesProgramID, "matrix");
+	if (m_nImageAxesMatrixLocation == -1)
+	{
+		dprintf("Unable to find matrix uniform in ImageAxes shader\n");
+		return false;
+	}
 
 	m_unCompanionWindowProgramID = CompileGLShader(
 		"CompanionWindow",
@@ -4453,7 +4437,8 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 	return m_unControllerTransformProgramID != 0
 		&& m_unRenderModelProgramID != 0
 		&& m_unCompanionWindowProgramID != 0
-		&& m_unControllerRayProgramID!= 0;
+		&& m_unControllerRayProgramID!= 0
+		&& m_unImageAxesProgramID!= 0;
 }
 bool CMainApplication::SetupTexturemaps()
 {
@@ -4531,10 +4516,10 @@ void CMainApplication::SetupControllerTexture()
 
 	//left controller
 	{
-		Vector4 point_A(-0.023f,-0.009f,0.065f,1);//grip no.1 dispaly "Mode Switch"
-		Vector4 point_B(-0.023f,-0.009f,0.105f,1);
-		Vector4 point_C(-0.02f,-0.025f,0.065f,1);
-		Vector4 point_D(-0.02f,-0.025f,0.105f,1);
+        Vector4 point_A(-0.023f,-2,0.065f,1);//grip no.1 dispaly "Mode Switch"
+        Vector4 point_B(-0.023f,-2,0.105f,1);
+        Vector4 point_C(-0.02f,-2,0.065f,1);
+        Vector4 point_D(-0.02f,-2,0.105f,1);
 		point_A = mat_L * point_A;
 		point_B = mat_L * point_B;
 		point_C = mat_L * point_C;
@@ -4562,10 +4547,10 @@ void CMainApplication::SetupControllerTexture()
 		// AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
 		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
 
-		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad dispaly "ON/OFF"
-		Vector4 point_F(0.02f,0.01f,0.03f,1);
-		Vector4 point_G(-0.02f,0.01f,0.07f,1);
-		Vector4 point_H(0.02f,0.01f,0.07f,1);
+        Vector4 point_E(-0.02f,0.008f,0.03f,1);// for the touchpad dispaly "ON/OFF"
+        Vector4 point_F(0.02f,0.008f,0.03f,1);
+        Vector4 point_G(-0.02f,0.005f,0.07f,1);
+        Vector4 point_H(0.02f,0.005f,0.07f,1);
 		point_E = mat_L * point_E;
 		point_F = mat_L * point_F;
 		point_G = mat_L * point_G;
@@ -4623,7 +4608,7 @@ void CMainApplication::SetupControllerTexture()
 			}
 		case _ColorChange:// display "ok"
 		case _ResetImage://display"ok
-		case _MovetoCreator:
+		case _MovetoMarker:
 		case _TeraShift:
 			{//_TeraShift
 				AddVertex(point_E.x,point_E.y,point_E.z,0.17f,0.5f,vcVerts);
@@ -4713,10 +4698,10 @@ void CMainApplication::SetupControllerTexture()
 			break;
 		}
 
-		Vector4 point_I(-0.01f,0.01f,0.01f,1);//for the menu button dispaly "QUIT"
-		Vector4 point_J(0.01f,0.01f,0.01f,1);
-		Vector4 point_K(-0.01f,0.01f,0.03f,1);
-		Vector4 point_L(0.01f,0.01f,0.03f,1);//*/
+        Vector4 point_I(-0.01f,0.008f,0.01f,1);//for the menu button dispaly "QUIT"
+        Vector4 point_J(0.01f,0.008f,0.01f,1);
+        Vector4 point_K(-0.01f,0.008f,0.03f,1);
+        Vector4 point_L(0.01f,0.008f,0.03f,1);//*/
 		point_I = mat_L * point_I;
 		point_J = mat_L * point_J;
 		point_K = mat_L * point_K;
@@ -4729,10 +4714,10 @@ void CMainApplication::SetupControllerTexture()
 		AddVertex(point_J.x,point_J.y,point_J.z,0.17f,0,vcVerts);
 
 
-		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current mode dispaly "Surface/line  Virtual finger  search ....."
-		Vector4 point_N(0.02f,0.005f,0.1f,1);
-		Vector4 point_O(-0.02f,0.002f,0.14f,1);
-		Vector4 point_P(0.02f,0.002f,0.14f,1);//*/
+        Vector4 point_M(-0.02f,0.002f,0.1f,1);//for the current mode dispaly "Surface/line  Virtual finger  search ....."
+        Vector4 point_N(0.02f,0.002f,0.1f,1);
+        Vector4 point_O(-0.02f,0.0005f,0.14f,1);
+        Vector4 point_P(0.02f,0.0005f,0.14f,1);//*/
 		point_M = mat_L * point_M;
 		point_N = mat_L * point_N;
 		point_O = mat_L * point_O;
@@ -4783,8 +4768,6 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.25f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.25f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.125f,vcVerts);
-
-
 				
 				break;
 			}
@@ -4806,7 +4789,7 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.5f,vcVerts);
 				AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.5f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.375f,vcVerts);
-
+				
 			break;
 		}
 		case _AutoRotate:
@@ -4869,15 +4852,16 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.25,0.625f,vcVerts);
 				break;
 			}
-		case _MovetoCreator:
-			{
-				AddVertex(point_M.x,point_M.y,point_M.z,0.335,0.635f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.335,0.75f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.42,0.75f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.42,0.635f,vcVerts);
-			}
+		
+		case _MovetoMarker:
+		{
+			AddVertex(point_M.x, point_M.y, point_M.z, 0.335, 0.76f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.76f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.875f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.875f, vcVerts);
+			AddVertex(point_P.x, point_P.y, point_P.z, 0.42, 0.875f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.76f, vcVerts);
+		}
 		case _UndoRedo:
 		default:
 			break;
@@ -4918,10 +4902,10 @@ void CMainApplication::SetupControllerTexture()
 		// AddVertex(point_D2.x,point_D2.y,point_D2.z,0,0.375f,vcVerts);
 		// AddVertex(point_B2.x,point_B2.y,point_B2.z,0,0.25f,vcVerts);//*/
 
-		Vector4 point_E(-0.02f,0.01f,0.03f,1);// for the touchpad switch & display "translate /rotate /scale /nothing
-		Vector4 point_F(0.02f,0.01f,0.03f,1);
-		Vector4 point_G(-0.02f,0.01f,0.07f,1);
-		Vector4 point_H(0.02f,0.01f,0.07f,1);
+        Vector4 point_E(-0.02f,0.008f,0.03f,1);// for the touchpad switch & display "translate /rotate /scale /nothing
+        Vector4 point_F(0.02f,0.008f,0.03f,1);
+        Vector4 point_G(-0.02f,0.005f,0.07f,1);
+        Vector4 point_H(0.02f,0.005f,0.07f,1);
 		point_E = mat_R * point_E;
 		point_F = mat_R * point_F;
 		point_G = mat_R * point_G;
@@ -4993,10 +4977,10 @@ void CMainApplication::SetupControllerTexture()
 		// }
 
 
-		Vector4 point_I(-0.01f,0.01f,0.01f,1);//for the menu button dispaly "SAVE"
-		Vector4 point_J(0.01f,0.01f,0.01f,1);
-		Vector4 point_K(-0.01f,0.01f,0.03f,1);
-		Vector4 point_L(0.01f,0.01f,0.03f,1);//*/
+        Vector4 point_I(-0.01f,0.008f,0.01f,1);//for the menu button dispaly "SAVE"
+        Vector4 point_J(0.01f,0.008f,0.01f,1);
+        Vector4 point_K(-0.01f,0.008f,0.03f,1);
+        Vector4 point_L(0.01f,0.008f,0.03f,1);//*/
 		point_I = mat_R * point_I;
 		point_J = mat_R * point_J;
 		point_K = mat_R * point_K;
@@ -5054,11 +5038,10 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(colormenu_point_rightbottom.x,colormenu_point_rightbottom.y,colormenu_point_rightbottom.z,0.7174,0.6458f,vcVerts);
 				AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174,0.5487f,vcVerts);
 		}
-
-		Vector4 point_M(-0.02f,0.005f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
-		Vector4 point_N(0.02f,0.005f,0.1f,1);
-		Vector4 point_O(-0.02f,0.002f,0.13f,1);
-		Vector4 point_P(0.02f,0.002f,0.13f,1);//*/
+        Vector4 point_M(-0.02f,0.002f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
+        Vector4 point_N(0.02f,0.002f,0.1f,1);
+        Vector4 point_O(-0.02f,0.0005f,0.13f,1);
+        Vector4 point_P(0.02f,0.0005f,0.13f,1);//*/
 		point_M = mat_R * point_M;
 		point_N = mat_R * point_N;
 		point_O = mat_R * point_O;
@@ -5097,7 +5080,7 @@ void CMainApplication::SetupControllerTexture()
 		// 		AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.25f,vcVerts);
 		// 		break;
 		// 	}
-		case m_dragMode:
+        case m_retypeMode:
 			{//pull node
 				AddVertex(point_M.x,point_M.y,point_M.z,0.42,0.25f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.25f,vcVerts);
@@ -5135,7 +5118,24 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_P.x,point_P.y,point_P.z,0.335,0.75f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.335,0.625f,vcVerts);
 			}
-
+		case m_reducenodeMode:
+		{//split line mode
+			AddVertex(point_M.x, point_M.y, point_M.z, 0.25, 0.75f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.335, 0.75f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.25, 0.875f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.25, 0.875f, vcVerts);
+			AddVertex(point_P.x, point_P.y, point_P.z, 0.335, 0.875f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.335, 0.75f, vcVerts);
+		}
+		case _MovetoCreator:
+		{
+			AddVertex(point_M.x, point_M.y, point_M.z, 0.335, 0.635f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.635f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.75f, vcVerts);
+			AddVertex(point_O.x, point_O.y, point_O.z, 0.335, 0.75f, vcVerts);
+			AddVertex(point_P.x, point_P.y, point_P.z, 0.42, 0.75f, vcVerts);
+			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.635f, vcVerts);
+		}
 		default:
 			break;
 		}
@@ -5197,7 +5197,7 @@ void CMainApplication::SetupControllerRay()
 {	
 	if ( !m_pHMD )
 		return;
-
+	
 	std::vector<float> vcVerts;
 	const Matrix4 & mat_R = m_rmat4DevicePose[m_iControllerIDRight];
 	const Matrix4 & mat_L = m_rmat4DevicePose[m_iControllerIDLeft];
@@ -5255,7 +5255,74 @@ void CMainApplication::SetupControllerRay()
 	{
 		glBufferData(GL_ARRAY_BUFFER,  sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STREAM_DRAW );
 	}	
+//    qDebug()<<"hkjdhjashkj";
 }
+
+void CMainApplication::SetupImageAxes()
+{
+	if (!m_pHMD)
+		return;
+
+	Matrix4 globalMatrix_M = Matrix4();
+	for (size_t i = 0; i < 4; i++)
+	{
+		for (size_t j = 0; j < 4; j++)
+		{
+			globalMatrix_M[i * 4 + j] = m_globalMatrix[i][j];
+		}
+	}
+	if (!m_bHasImage4D)
+		return;
+	std::vector<float> vcVerts;
+	std::vector<float> vertdataarray;
+
+	Vector4 start = globalMatrix_M * Vector4(0, 0, 0, 1);
+	Vector4 endX = globalMatrix_M * Vector4(img4d->getXDim(), 0, 0, 1);
+	Vector4 endY = globalMatrix_M * Vector4(0, img4d->getYDim(), 0, 1);
+	Vector4 endZ = globalMatrix_M * Vector4(0, 0, img4d->getZDim(), 1);
+	Vector3 colorX(1.0f, 0.0f, 0.0f);
+	Vector3 colorY(0.0f, 1.0f, 0.0f);
+	Vector3 colorZ(0.0f, 0.0f, 1.0f);
+	m_uiImageAxesVertcount = 0;
+
+
+	{
+		AddrayVertex(start.x, start.y, start.z, colorX.x, colorX.y, colorX.z, vertdataarray);
+		AddrayVertex(endX.x, endX.y, endX.z, colorX.x, colorX.y, colorX.z, vertdataarray);
+		m_uiImageAxesVertcount += 2;
+		AddrayVertex(start.x, start.y, start.z, colorY.x, colorY.y, colorY.z, vertdataarray);
+		AddrayVertex(endY.x, endY.y, endY.z, colorY.x, colorY.y, colorY.z, vertdataarray);
+		m_uiImageAxesVertcount += 2;
+		AddrayVertex(start.x, start.y, start.z, colorZ.x, colorZ.y, colorZ.z, vertdataarray);
+		AddrayVertex(endZ.x, endZ.y, endZ.z, colorZ.x, colorZ.y, colorZ.z, vertdataarray);
+		m_uiImageAxesVertcount += 2;
+	}
+
+	if (m_unImageAxesVAO == 0)
+	{
+		glGenVertexArrays(1, &m_unImageAxesVAO);
+
+		glGenBuffers(1, &m_unImageAxesVBO);
+
+		glBindVertexArray(m_unImageAxesVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_unImageAxesVBO);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void *)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void *)(3 * sizeof(float)));
+		glBindVertexArray(0);
+		qDebug() << "set up image axes VAO ";
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, m_unImageAxesVBO);
+
+	if (vertdataarray.size() > 0)
+	{
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STREAM_DRAW);
+	}
+}
+
 //void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
 //{
 //	NeuronSWC S0,S1;
@@ -5504,7 +5571,7 @@ void CMainApplication::SetupMorphologyLine( int drawMode)//pass 3 parameters: &n
 
 //-----------------------------------------------------------------------------
 void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
-											GLuint& LineModeVAO, 
+                                            GLuint& LineModeVAO,
 											GLuint& LineModeVBO, 
 											GLuint& LineModeIndex,
 											unsigned int& Vertcount,
@@ -5644,7 +5711,8 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 	if(LineModeVAO ==0)
 	{
 		//setup vao and vbo stuff
-		glGenVertexArrays(1, &LineModeVAO);
+        glGenVertexArrays(1, &LineModeVAO);
+        qDebug()<<LineModeVAO;
 		glGenBuffers(1, &LineModeVBO);
 		glGenBuffers(1, &LineModeIndex);
 
@@ -6234,6 +6302,30 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			sphr->Render();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
+//		for (int i = 0; i < sketchedNTList.size(); ++i)
+//		{
+//			NeuronTree curNT = sketchedNTList[i];
+//			for (int j = 0; j < curNT.listNeuron.size(); ++j)
+//			{
+//				glm::mat4 model;
+//				NeuronSWC SS0 = curNT.listNeuron.at(j);
+//				Sphere* sphr = new Sphere(0.005f / m_globalScale, 5, 5);
+//				glm::vec3 sPos = glm::vec3(SS0.x, SS0.y, SS0.z);
+//				glm::vec3 scolor = glm::vec3(0, 0, 1);
+//				model = glm::translate(glm::mat4(), sPos);
+
+//				model = m_globalMatrix * model;
+
+//				morphologyShader->setMat4("model", model);
+//				morphologyShader->setVec3("objectColor", scolor);
+//				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//				sphr->Render();
+//				morphologyShader->setVec3("objectColor", surfcolor);
+//				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//				sphr->Render();
+//				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//			}
+//		}
 	}
 	//=================== draw morphology in tube mode ======================
 	if (m_bShowMorphologySurface)
@@ -6446,8 +6538,18 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glBindVertexArray( 0 );
 		glLineWidth(iLineWid);
 	}
-    //=================== draw the controller shooting ray ======================
-
+	//=================== draw the image axis lines ======================
+	if (!bIsInputCapturedByAnotherProcess)
+	{
+		glUseProgram(m_unImageAxesProgramID);
+		glUniformMatrix4fv(m_nImageAxesMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(nEye).get());
+		glBindVertexArray(m_unImageAxesVAO);
+		glLineWidth(3);
+		glDrawArrays(GL_LINES, 0, m_uiImageAxesVertcount);
+		glBindVertexArray(0);
+		glLineWidth(iLineWid);
+	}
+	//=================== draw the controller shooting ray ======================
 	if( !bIsInputCapturedByAnotherProcess )
 	{
 		glUseProgram( m_unControllerRayProgramID );
@@ -6696,95 +6798,71 @@ QString  CMainApplication::getHMDPOSstr()
 
 
 
-QString CMainApplication::NT2QString()
+QStringList CMainApplication::NT2QString(NeuronTree nt)
 {
-	//char messageBuff[8000]="";
-	//for(int i=0;(i<sketchNT.listNeuron.size())&&(i<120);i++)
-	//{
-	//	char packetbuff[300];
-	//	NeuronSWC S_temp;
-	//	S_temp=sketchNT.listNeuron.at(i);
-	//	sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,S_temp.x,S_temp.y,S_temp.z,S_temp.r,S_temp.pn);
-	//	std::strcat(messageBuff,packetbuff);
-	//}
-	//string str_temp=messageBuff;
-	//QString str=QString::fromStdString(str_temp);
-	////QString str="hello world";
-	//return str;
-	string messageBuff="";
-	for(int i=0;(i<currentNT.listNeuron.size())&&(i<120);i++)
-	{
-		char packetbuff[300];
-		NeuronSWC S_temp;
-		S_temp=currentNT.listNeuron.at(i);
-		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
-		sprintf(packetbuff,"%ld %d %5.3f %5.3f %5.3f %5.3f %ld ",S_temp.n,S_temp.type,tempconvertedxyz.x,tempconvertedxyz.y,tempconvertedxyz.z,S_temp.r,S_temp.pn);
-		messageBuff +=packetbuff;
-	}
+    QStringList messageBuff;
 
-	QString str=QString::fromStdString(messageBuff);
-	return str;
+    for(int i=0;(i<nt.listNeuron.size())&&(i<120);i++)
+	{
+        auto S_temp=nt.listNeuron[i];
+
+		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
+        messageBuff.push_back(QString("%1 %2 %3 %4").arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
+	}
+    return messageBuff;
 }
 
-void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
+QStringList CMainApplication::UndoNT2QString()
+{
+
+    QString messageBuff;messageBuff.clear();
+    if(UndoNT.listNeuron.size()>=2)
+    {
+        for(int i=0;(i<UndoNT.listNeuron.size())&&(i<120);i++)
+        {
+            QString packetbuff;
+            packetbuff.clear();
+            NeuronSWC S_temp;
+            S_temp=UndoNT.listNeuron.at(i);
+            XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
+            packetbuff=QString("%1 %2 %3 %4 %5 %6 %7_").arg(S_temp.n).arg(S_temp.type).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z).arg(S_temp.r).arg(S_temp.parent);
+            messageBuff +=packetbuff;
+        }
+    }
+        QStringList resQSL;
+        resQSL.push_back(QString("TeraVR"));
+        resQSL.push_back(messageBuff);
+        return resQSL;
+
+}
+
+void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to be changed to AddtoNTList( , )
 {	
-    QStringList qsl = QString(msg).trimmed().split(" ",Qt::SkipEmptyParts);
-	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
-	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
-	NeuronSWC S_temp;
 	NeuronTree newTempNT;
 	newTempNT.listNeuron.clear();
 	newTempNT.hashNeuron.clear();
-	//each segment has a unique ID storing as its name
-	newTempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
-	for(int i=0;i<str_size;i++)
+    for(int i=0;i<coords.size();i++)
 	{
-		qsl[i].truncate(99);
-		//qDebug()<<qsl[i];
-		int iy = i%7;
-		if (iy==0)
-		{
-			S_temp.n = qsl[i].toInt();
-		}
-		else if (iy==1)
-		{
-			S_temp.type = type;
-		}
-		else if (iy==2)
-		{
-			S_temp.x = qsl[i].toFloat();
-
-		}
-		else if (iy==3)
-		{
-			S_temp.y = qsl[i].toFloat();
-
-		}
-		else if (iy==4)
-		{
-			S_temp.z = qsl[i].toFloat();
-
-		}
-		else if (iy==5)
-		{
-			S_temp.r = qsl[i].toFloat();
-
-		}
-		else if (iy==6)
-		{
-			S_temp.pn = qsl[i].toInt();
-			//converted received NT XYZ coords
-			XYZ tempxyz = ConvertGlobaltoLocalCoords(S_temp.x,S_temp.y,S_temp.z);
-			S_temp.x = tempxyz.x;
-			S_temp.y = tempxyz.y;
-			S_temp.z = tempxyz.z;
-			newTempNT.listNeuron.append(S_temp);
-			newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
-		}
-	}//*/
+        NeuronSWC S_temp;
+        S_temp.n=i+1;
+        S_temp.x=coords[i].x;
+        S_temp.y=coords[i].y;
+        S_temp.z=coords[i].z;
+        S_temp.type=type;
+        S_temp.r=1;
+        if(i==0)
+            S_temp.pn=-1;
+        else
+            S_temp.pn=i;
+        newTempNT.listNeuron.append(S_temp);
+        newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
+    }
+    newTempNT.name="sketch_"+QString("%1").arg(sketchNum++);
+    qDebug()<<"befor push  sketch "<<sketchedNTList.size();
 	sketchedNTList.push_back(newTempNT);
-	qDebug()<<"receieved nt name is "<<newTempNT.name;
-	SetupSingleMorphologyLine(sketchedNTList.size()-1,0);
+    qDebug()<<"pushback seg";
+    SetupSingleMorphologyLine(sketchedNTList.size()-1,0);
+    qDebug()<<"refresh";
 }
 void CMainApplication::ClearCurrentNT()
 {
@@ -6804,29 +6882,33 @@ void CMainApplication::ClearCurrentNT()
 QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 {
 	QString ntnametofind="";
-	//qDebug()<<sketchedNTList.size();
 	if(sketchedNTList.size()<1) return ntnametofind;
 
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
 		NeuronTree nt=sketchedNTList.at(i);
+        for(int j=0;j<nt.listNeuron.size();j++)
+        {
+            NeuronSWC SS0=nt.listNeuron.at(j);
+        }
+
 		for(int j=0;j<nt.listNeuron.size();j++)
 		{
 			NeuronSWC SS0;
 			SS0 = nt.listNeuron.at(j);
 			float dist;
 			if(isOnline == false)
-			dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+                dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
 			else 
 			{
-				XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x,dPOS.y,dPOS.z,collaborationTargetdelcurveRes);
-				XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,collaborationTargetdelcurveRes);
+                XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x, dPOS.y, dPOS.z, CollaborationMaxResolution);
+                XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,CollaborationMaxResolution);
 				dist = glm::sqrt((TargetresdPOS.x-TargetresSS0POS.x)*(TargetresdPOS.x-TargetresSS0POS.x)+(TargetresdPOS.y-TargetresSS0POS.y)*(TargetresdPOS.y-TargetresSS0POS.y)+(TargetresdPOS.z-TargetresSS0POS.z)*(TargetresdPOS.z-TargetresSS0POS.z));
 			}
 			//cal the dist between pos & current node'position, then compare with the threshold
 			if(dist < (dist_thres/m_globalScale*5))
 			{
-				//once dist between pos & node < threshold, return the segment/neurontree' name that current node belong to 
+
 				ntnametofind = nt.name;
 				return ntnametofind;
 			}
@@ -6835,6 +6917,116 @@ QString CMainApplication::FindNearestSegment(glm::vec3 dPOS)
 	//if cannot find any matches, return ""
 	return ntnametofind;
 }
+
+QString CMainApplication::FindNearestMarker(glm::vec3 dPOS)
+{
+    double dist=4.0;
+    int index=-1;
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {   
+        ImageMarker markertemp = drawnMarkerList.at(i);
+
+        double dx=markertemp.x- dPOS.x;
+        dx*=dx;
+        if(dx>dist)
+        {
+            continue;
+        }
+
+        double dy=markertemp.y- dPOS.y;
+        dy*=dy;
+        if(dy>dist)
+        {
+            continue;
+        }
+
+        double dz=markertemp.z- dPOS.z;
+        dz*=dz;
+        if(dz>dist)
+        {
+            continue;
+        }
+
+        double dist0 = dx+dy+dz;
+        if(dist0<dist)
+        {
+            index=i;dist=dist0;
+        }
+    }
+    if(index>=0)
+    {
+        return drawnMarkerList[index].name;
+//        return QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);
+    }
+    else
+        return "";
+}
+
+QString CMainApplication::FindNearestSegmentForDel(glm::vec3 dPOS)
+{
+    QString ntnametofind="";
+    if(sketchedNTList.size()<1) return ntnametofind;
+
+    for(int i=0;i<sketchedNTList.size();i++)
+    {
+        NeuronTree nt=sketchedNTList.at(i);
+        for(int j=0;j<nt.listNeuron.size();j++)
+        {
+            NeuronSWC SS0=nt.listNeuron.at(j);
+        }
+
+        for(int j=0;j<nt.listNeuron.size();j++)
+        {
+            NeuronSWC SS0;
+            SS0 = nt.listNeuron.at(j);
+            float dist;
+            if(isOnline == false)
+                dist = glm::sqrt((dPOS.x-SS0.x)*(dPOS.x-SS0.x)+(dPOS.y-SS0.y)*(dPOS.y-SS0.y)+(dPOS.z-SS0.z)*(dPOS.z-SS0.z));
+            else
+            {
+                XYZ TargetresdPOS = ConvertLocaltoGlobalCoords(dPOS.x, dPOS.y, dPOS.z, CollaborationMaxResolution);
+                XYZ TargetresSS0POS = ConvertLocaltoGlobalCoords(SS0.x,SS0.y,SS0.z,CollaborationMaxResolution);
+                dist = glm::sqrt((TargetresdPOS.x-TargetresSS0POS.x)*(TargetresdPOS.x-TargetresSS0POS.x)+(TargetresdPOS.y-TargetresSS0POS.y)*(TargetresdPOS.y-TargetresSS0POS.y)+(TargetresdPOS.z-TargetresSS0POS.z)*(TargetresdPOS.z-TargetresSS0POS.z));
+            }
+            //cal the dist between pos & current node'position, then compare with the threshold
+            if(dist < (dist_thres/m_globalScale*5))
+            {
+
+                ntnametofind = nt.name;
+                SegNode_tobedeleted.x = nt.listNeuron.at(0).x;
+                SegNode_tobedeleted.y = nt.listNeuron.at(0).y;
+                SegNode_tobedeleted.z = nt.listNeuron.at(0).z;
+                segtobedeleted=nt;
+                qDebug()<<"SegNode_tobedeleted="<<SegNode_tobedeleted.x<<" "<<SegNode_tobedeleted.y<<" "<<SegNode_tobedeleted.z;
+                return ntnametofind;
+            }
+        }
+    }
+    //if cannot find any matches, return ""
+    return ntnametofind;
+}
+
+
+
+XYZ CMainApplication::GetSegtobedelete_Node(QString name)
+{
+	XYZ Node_tobedeleted(0,0,0);
+	if (name == "") return Node_tobedeleted;
+	for (int i = 0; i < sketchedNTList.size(); i++)
+	{
+		cout << i << endl;
+		NeuronTree nt = sketchedNTList.at(i);
+		if (name == nt.name)
+		{
+			Node_tobedeleted.x = nt.listNeuron.at(1).x;
+			Node_tobedeleted.y = nt.listNeuron.at(1).y;
+			Node_tobedeleted.z = nt.listNeuron.at(1).z;
+			return Node_tobedeleted; 
+		}
+	}
+	return Node_tobedeleted;
+}
+
 NeuronSWC CMainApplication::FindNearestNode(NeuronTree NT,glm::vec3 dPOS)//lq
 {		
 	NeuronSWC SS0;
@@ -6866,8 +7058,6 @@ void CMainApplication::UpdateDragNodeinNTList(int ntnum,int swcnum,float nodex,f
 
 bool CMainApplication::DeleteSegment(QString segName)
 {
-	//delete the segment that match with segName
-	cout<<"segname is "<<endl;
 	if(segName=="") return false;//segName="" will do nothing
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
@@ -6875,7 +7065,7 @@ bool CMainApplication::DeleteSegment(QString segName)
 		NTname = sketchedNTList.at(i).name;
 		if(segName==NTname)
 		{
-			cout<<"find delete seg!@!!@"<<endl;
+			//cout<<"find delete seg!@!!@"<<endl;
 			//delete the segment in NTList,then return
 			sketchedNTList.removeAt(i);
 			SetupSingleMorphologyLine(i,2);
@@ -6884,6 +7074,225 @@ bool CMainApplication::DeleteSegment(QString segName)
 	}
 	//if cannot find any matches,return false
 	return false;
+}
+bool CMainApplication::retypeSegment(QVector<XYZ> coords,float dist,int type)
+{
+
+    int index=findseg(coords,dist);
+    if(index>=0)
+    {
+        qDebug()<<"find index = "<<index;
+        for(int i=0;i<sketchedNTList[index].listNeuron.size();i++)
+        {
+            sketchedNTList[index].listNeuron[i].type=type;
+        }
+        qDebug()<<"paint GL";
+        SetupSingleMorphologyLine(index, 1);
+        return true;
+    }else
+    {
+        qDebug()<<"not find to retype";
+        return false;
+    }
+
+//    bool res=0;
+//    qDebug()<<"in retype seg VR";
+//    for(int i=0;i<sketchedNTList.size();i++)
+//    {
+//        NeuronTree nt0=sketchedNTList.at(i);
+//        NeuronSWC ss=nt0.listNeuron.at(nt0.listNeuron.size()-2);
+
+//        NeuronSWC ss0=nt0.listNeuron.at(1);
+
+//        if(sqrt(pow(ss0.x-x,2)+pow(ss0.y-y,2)+pow(ss0.z-z,2))<=0.01||sqrt(pow(ss.x-x,2)+pow(ss.y-y,2)+pow(ss.z-z,2))<=0.01)
+//        {
+//            qDebug()<<"VR FIND seg"<<i;
+//            sketchedNTList.removeAt(i);
+//            SetupSingleMorphologyLine(i, 2);
+//            res=1;
+//            NeuronTree newTempNT;
+//            newTempNT.listNeuron.clear();
+//            newTempNT.hashNeuron.clear();
+//            newTempNT.name=nt0.name;
+//            for(int k=0;k<nt0.listNeuron.size();k++)
+//            {
+//                NeuronSWC S_temp;
+//                S_temp.n=nt0.listNeuron.at(k).n;
+//                S_temp.type=type;
+//                S_temp.x=nt0.listNeuron.at(k).x;
+//                S_temp.y=nt0.listNeuron.at(k).y;
+//                S_temp.z=nt0.listNeuron.at(k).z;
+//                S_temp.r=nt0.listNeuron.at(k).r;
+
+//                    S_temp.pn=nt0.listNeuron.at(k).pn;
+//                S_temp.level=nt0.listNeuron.at(k).level;
+//                S_temp.creatmode=nt0.listNeuron.at(k).creatmode;
+//                S_temp.timestamp=nt0.listNeuron.at(k).timestamp;
+//                S_temp.tfresindex=nt0.listNeuron.at(k).tfresindex;
+//                newTempNT.listNeuron.append(S_temp);
+//                newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
+//            }
+//            sketchedNTList.push_front(newTempNT);break;
+//        }
+//    }
+//    return res;
+}
+
+int CMainApplication::findseg(QVector<XYZ> coords,float dist)
+{
+    int index=-1;
+    for(int i=0;i<sketchedNTList.size();i++)
+    {
+        NeuronTree nt=sketchedNTList.at(i);
+        if(nt.listNeuron.size()!=coords.size()) continue;
+        float sum=0;
+        for(int j=0;j<nt.listNeuron.size();j++)
+        {
+            sum+=sqrt(pow(nt.listNeuron[j].x-coords[j].x,2)
+                      +pow(nt.listNeuron[j].y-coords[j].y,2)
+                      +pow(nt.listNeuron[j].z-coords[j].z,2));
+        }
+        if(sum/nt.listNeuron.size()<dist)
+        {
+            index=i;dist=sum/nt.listNeuron.size();
+        }
+
+       reverse(coords.begin(),coords.end());
+       sum=0;
+       for(int j=0;j<nt.listNeuron.size();j++)
+       {
+           sum+=sqrt(pow(nt.listNeuron[j].x-coords[j].x,2)
+                     +pow(nt.listNeuron[j].y-coords[j].y,2)
+                     +pow(nt.listNeuron[j].z-coords[j].z,2));
+       }
+       if(sum/nt.listNeuron.size()<dist)
+       {
+           index=i;dist=sum/nt.listNeuron.size();
+       }
+    }
+    return  index;
+}
+bool CMainApplication::DeleteSegment(QVector<XYZ> coords,float dist)
+{
+    int index=findseg(coords,dist);
+    qDebug()<<"index = "<<index;
+    if(index>=0)
+    {
+
+        sketchedNTList.removeAt(index);
+        SetupSingleMorphologyLine(index, 2);
+        return true;
+    }else
+    {
+        return false;
+    }
+}
+/**
+ * @brief CMainApplication::SetDeleteSegmentColor
+ * @param segName
+ * 1. find NT that name = segname ,and set color to candidate color
+ * 2. restore the previous candidate NT's color to origin
+ */
+void CMainApplication::SetDeleteSegmentColor(QString segName)
+{
+    //segName:current frame selected segment Name
+    //line_tobedeleted:last frame selected segment name
+	if (segName == "")
+		cout << "seg name is null" << endl;
+    qDebug() << "line_tobedeleted="<<line_tobedeleted<<",segName= "+segName;
+    if(segName == line_tobedeleted) return;
+
+    //restore last frame selected segment color
+    if(line_tobedeleted!="")
+    {
+        for (int i = 0; i < sketchedNTList.size(); i++)
+        {
+            QString NTname = sketchedNTList.at(i).name;
+            if (line_tobedeleted == NTname)
+            {
+                cout<<NTname.toStdString() << "set color origin" << color_origin_seg<< endl;
+                for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                {
+                    sketchedNTList[i].listNeuron[j].type = color_origin_seg;
+                }
+                SetupSingleMorphologyLine(i, 1);
+                break;
+            }
+        }
+    }
+    //set current frame selected segment color
+    if(segName!="")
+    {
+        for (int i = 0; i < sketchedNTList.size(); i++)
+        {
+            QString NTname = sketchedNTList.at(i).name;
+            if (segName == NTname)
+            {
+                //delete the segment in NTList,then return
+                color_origin_seg = sketchedNTList[i].listNeuron[0].type;
+                cout<<NTname.toStdString() << "set color new " << colorForTobeDelete<<",origin = "<<color_origin_seg<< endl;
+                for (int j = 0; j < sketchedNTList[i].listNeuron.size(); j++)
+                {
+                    sketchedNTList[i].listNeuron[j].type = colorForTobeDelete;//set color that seg to be deleted
+                }
+                SetupSingleMorphologyLine(i, 1);
+                break;
+            }
+        }
+    }
+    line_tobedeleted = segName;
+}
+
+void CMainApplication::SetDeleteMarkerColor(QString markerName)
+{
+    if(markerName == "")
+        cout << "marker name is null" << endl;
+
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        QString markername=drawnMarkerList.at(i).name;
+        if (marker_tobedeleted == markername && markerName!=marker_tobedeleted)
+        {
+            qDebug()<<"resume";
+            int colorR=color_origin_marker.r;
+            int colorG=color_origin_marker.g;
+            int colorB=color_origin_marker.b;
+            drawnMarkerList[i].type=type_origin_marker;
+            drawnMarkerList[i].color.r=colorR;
+            drawnMarkerList[i].color.g=colorG;
+            drawnMarkerList[i].color.b=colorB;
+
+            glm::vec3 agentclr=glm::vec3(colorR,colorG,colorB);
+            for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+            Markers_spheresColor[i]=agentclr;
+        }
+
+    }
+
+    for(int i=0;i<drawnMarkerList.size();i++)
+    {
+        QString markername=drawnMarkerList.at(i).name;
+        if(markerName==markername && markerName!=marker_tobedeleted)
+        {
+            qDebug()<<"setnew";
+            color_origin_marker.r=drawnMarkerList[i].color.r;
+            color_origin_marker.g=drawnMarkerList[i].color.g;
+            color_origin_marker.b=drawnMarkerList[i].color.b;
+            drawnMarkerList[i].type=colorForTobeDelete;
+            int colorR=neuron_type_color[colorForTobeDelete][0];
+            int colorG=neuron_type_color[colorForTobeDelete][1];
+            int colorB=neuron_type_color[colorForTobeDelete][2];
+
+            drawnMarkerList[i].color.r=colorR;
+            drawnMarkerList[i].color.g=colorG;
+            drawnMarkerList[i].color.b=colorB;
+
+            glm::vec3 agentclr=glm::vec3(colorR,colorG,colorB);
+            for(int i=0;i<3;i++) agentclr[i] /= 255.0;//range should be in [0,1]
+            Markers_spheresColor[i]=agentclr;
+        }
+    }
+    marker_tobedeleted=markerName;
 }
 
 void CMainApplication::UndoLastSketchedNT()
@@ -7815,11 +8224,18 @@ void CMainApplication::SetupSingleMorphologyLine(int ntIndex, int processMode)
 	if (processMode == 0)
 	// add a new VAO&VBO for new segment in sketchedNTList
 	{
+//        qDebug()<<"add vao";
 		iSketchNTLMorphologyVAO.push_back(0);
 		iSketchNTLMorphologyVertBuffer.push_back(0);
 		iSketchNTLMorphologyIndexBuffer.push_back(0);	
 		iSketchNTLMorphologyVertcount.push_back(0);
-		SetupMorphologyLine(sketchedNTList.at(ntIndex),iSketchNTLMorphologyVAO.at(ntIndex),iSketchNTLMorphologyVertBuffer.at(ntIndex),iSketchNTLMorphologyIndexBuffer.at(ntIndex),iSketchNTLMorphologyVertcount.at(ntIndex),2);
+        qDebug()<<"----2-----";
+        SetupMorphologyLine(sketchedNTList.at(ntIndex),
+                            iSketchNTLMorphologyVAO.at(ntIndex),
+                            iSketchNTLMorphologyVertBuffer.at(ntIndex),
+                            iSketchNTLMorphologyIndexBuffer.at(ntIndex),
+                            iSketchNTLMorphologyVertcount.at(ntIndex),2);
+        qDebug()<<"----3-----";
 	}
 	else if (processMode == 1)
 	// changed a node's pos in dragmode ,then reset the VAO&VBO at ntIndex 
@@ -7862,9 +8278,11 @@ void CMainApplication::SetupAllMorphologyLine()
 		iSketchNTLMorphologyVertcount.clear();
 	}
 
+    qDebug()<<"set up single";
 	// for each segment in sketchedNTL ,add its VAO&VBO
 	for(int i=0;i<sketchedNTList.size();i++)
 	{
+
 		SetupSingleMorphologyLine(i,0);
 	}
 	qDebug()<<"Set up all NTs' VAO&VBO done";
@@ -8104,7 +8522,6 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
 			m_modeGrip_R = m_insertnodeMode;
-			//m_modeGrip_R = m_markMode;
 		}
 		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
 		{
@@ -8113,7 +8530,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{
-			m_modeGrip_R = m_dragMode;
+            m_modeGrip_R = m_retypeMode;
 		}
 		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
 		{
@@ -8121,12 +8538,20 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		}
 		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <=0.8))
 		{
-			m_modeGrip_L = _MovetoCreator;
+			m_modeGrip_R = _MovetoCreator;
 		}
-		//else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
-		//{
-		//	m_modeGrip_R = m_clipplaneMode;
-		//}
+		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
+		{
+			m_modeGrip_L = _Contrast;
+		}
+		else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
+		{
+			m_modeGrip_R = m_reducenodeMode;
+		}
+		else if ((panelpos_x >= 0.626) && (panelpos_x <= 0.806) && (panelpos_y >= 0.8) && (panelpos_y <= 1))
+		{
+			m_modeGrip_L = _MovetoMarker;
+		}
 		//else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
 		//{
 		//	m_modeGrip_R = m_slabplaneMode;
@@ -8147,6 +8572,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes)//localtogolbal
 {
+
 	x+= (CmainVRVolumeStartPoint.x-1);
 	y+= (CmainVRVolumeStartPoint.y-1);
 	z+= (CmainVRVolumeStartPoint.z-1);
@@ -8163,7 +8589,8 @@ XYZ CMainApplication::ConvertGlobaltoLocalCoords(float x,float y,float z)
 	x-= (CmainVRVolumeStartPoint.x-1);
 	y-= (CmainVRVolumeStartPoint.y-1);
 	z-= (CmainVRVolumeStartPoint.z-1);
-
+  //  qDebug()<<"3:"<<(CmainVRVolumeStartPoint.x-1)<<CmainVRVolumeStartPoint.y-1<<CmainVRVolumeStartPoint.z-1;
+  //  qDebug()<<"4:"<<(CollaborationMaxResolution.x/CollaborationCurrentRes.x)<<CollaborationMaxResolution.y/CollaborationCurrentRes.y<<CollaborationMaxResolution.z/CollaborationCurrentRes.z;
 	return XYZ(x,y,z);
 }
 //bool CMainApplication::FlashStuff(FlashType type,XYZ coords)
@@ -8348,4 +8775,9 @@ void CMainApplication::bindTexturePara()
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+}
+
+float CMainApplication::get_mglobalScal() const
+{
+    return m_globalScale;
 }

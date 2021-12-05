@@ -1,4 +1,4 @@
-#ifndef VR_MainWindow_H
+﻿#ifndef VR_MainWindow_H
 #define VR_MainWindow_H
 
 #include <QWidget>
@@ -13,7 +13,9 @@
 #include "../basic_c_fun/v3d_interface.h"
 struct VRoutInfo
 {
-	std::vector<XYZ> deletedcurvespos;
+    std::vector<QString> deletedcurvespos;
+    std::vector<QString> deletemarkerspos;
+    std::vector<QString> retypeMsgs;
 };
 class CMainApplication;
 class My4DImage;
@@ -21,41 +23,46 @@ class MainWindow;
 class VR_MainWindow : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit VR_MainWindow();
     ~VR_MainWindow();
-	void onReadySend(QString &send_MSG);
-	bool SendLoginRequest(bool resume = false);
-	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
-	XYZ VRVolumeStartPoint;
-	XYZ VRVolumeEndPoint;
-	XYZ VRVolumeCurrentRes;
-	XYZ VRvolumeMaxRes;
-	int ResIndex;
-	VRoutInfo VROutinfo;
+	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator*TeraflyCommunicator, XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
+    void RunVRMainloop(XYZ* zoomPOS = 0);
+    void GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution);
+    QString ConvertToMaxGlobal(QString coords);
+    XYZ ConvertMaxGlobal2LocalBlock(float x,float y,float z);
+    XYZ ConvertBlock2GloabelInRES(XYZ local);
+    void SendVRconfigInfo();
 public slots:
-	void RunVRMainloop(XYZ* zoomPOS = 0);
-	void SendHMDPosition();
-private slots:
-
-    void onReadyRead();
-    void onConnected();
-    void onDisconnected();
-public:
-	CMainApplication *pMainApplication;
+    void TVProcess(QString);
+//    /**
+//     * @brief onReadySendSeg
+//     * 从队列中发出画线命令
+//     */
+//    void onReadySendSeg();
 signals:
 	void VRSocketDisconnect();
-private:
-	
-    QTcpSocket* socket;
-	QString userName;
-	QString vr_Port;
-	bool CURRENT_DATA_IS_SENT;
+//	void sendPoolHead();
 public:
-	void GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution);
-	QString ConvertsendCoords(QString coords);
-	XYZ ConvertreceiveCoords(float x,float y,float z);
+    CMainApplication *pMainApplication;
+    XYZ VRVolumeStartPoint;
+    XYZ VRVolumeEndPoint;
+    XYZ VRVolumeCurrentRes;
+    XYZ VRvolumeMaxRes;
+    int ResIndex;
+//    VRoutInfo VROutinfo;
+private:
+	V3dR_Communicator* VR_Communicator;
+    QString userName;
+    bool CURRENT_DATA_IS_SENT;
+    vector<QString> CollaborationSendPool;
+//    QTcpSocket* socket;
+//	QString vr_Port;
+
+private:
+
+
+
 };
 
 // bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);

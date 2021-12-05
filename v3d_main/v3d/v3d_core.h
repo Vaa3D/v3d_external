@@ -349,6 +349,13 @@ public:
     //timer //20120702
     QElapsedTimer triviewTimer;  //added on 20120702.
     bool b_triviewTimerON;
+//collaboration 20191028 liqi
+	bool b_addnewSWC;
+	int cur_chno;
+	double cur_createmode;
+	V_NeuronSWC colla_cur_seg;
+	vector<XYZ> ExtractDeletingNode();
+        vector<XYZ> ExtractDeletingNode(vector<V_NeuronSWC> &);
 
     bool compute_rgn_stat(LocationSimple & pt, int channo);
     void loadLandmarkFromFile();

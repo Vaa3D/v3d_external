@@ -46,10 +46,6 @@
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
 #ifdef __ALLOW_VR_FUNCS__
-#include "fileserver.h"
-
-
-
 /*----------------collaborate mdoe-------------------*/
 class ManageSocket;
 class V3dR_Communicator;
@@ -219,6 +215,7 @@ class terafly::PMain : public QWidget
 #ifdef __ALLOW_VR_FUNCS__
 		QPushButton* teraflyVRView;
 		QPushButton* collaborationVRView;
+                QPushButton* collautotrace;
 #endif
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
@@ -597,27 +594,34 @@ class terafly::PMain : public QWidget
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 #ifdef __ALLOW_VR_FUNCS__
-/*----------------collaborate mdoe-------------------*/
-//public:
-//        ManageSocket * managesocket;
-//protected:
-//        QMenu* collaborateMenu;
-//        QAction* loginAction;
-//        QAction* logoutAction;
-//        QAction* importAction;
-//        QAction* downAction;
-//        QAction* loadAction;
-//public slots:
-//        void login();
-//        void logout();
-//        void import();
-//        void download();
-//        void load();
-//        void deleteManageSocket();
-//public slots:
-//        void ColLoadANO(QString ANOfile);
-        //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
-/*---------------------------------------------------*/
+public:
+        ManageSocket * managesocket;
+		V3dR_Communicator * Communicator;
+protected:
+        QMenu* collaborateMenu;
+        QAction* loginAction;
+        QAction* importAction;
+        QAction* downAction;
+        QAction* loadAction;
+        QAction* logoutAction;
+        QListWidget *userView;
+public slots:
+        void login();
+        void import();
+        void download();
+        void load();
+        void logout();
+        void deleteManageSocket();
+        void ColLoadANO(QString ANOfile);
+        void onManageConnected();
+        void onMessageDisConnect();
+        void updateuserview(QString userlist);
+//        void startAutoTrace();//自动算法
+signals:
+       // void signal_communicator_read_res(QString ,XYZ*);//读取自动算法的结果
+//        void startASK(QString,int);
+private:
+        QString currentPath;//for auto trace
 #endif
 };
 

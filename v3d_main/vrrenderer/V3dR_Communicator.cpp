@@ -1,453 +1,492 @@
-#include "V3dR_Communicator.h"
-
+﻿#include "V3dR_Communicator.h"
+#include "../terafly/src/control/CPlugin.h"
+#include "../terafly/src/presentation/PMain.h"
 #include <QRegExp>
-//#include <QMessageBox>
 #include <QtGui>
 #include <QListWidgetItem>
 #include <iostream>
 #include <sstream>
-#include <QInputDialog>
 
-struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
-
-};
-static std::vector<Agent> Agents;
-V3dR_Communicator::V3dR_Communicator(bool *client_flag, QList<NeuronTree>* ntlist) :
-	QWidget()
+V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 {
-	clienton = client_flag;
-	NTList_3Dview = ntlist;
-	NTNumReceieved=0;
+	CreatorMarkerPos = 0;
+	CreatorMarkerRes = 0;
 	userName="";
-	QRegExp regex("^[a-zA-Z]\\w+");
-	socket = new QTcpSocket(this);
-    connect(socket, SIGNAL(connected()), this, SLOT(onConnected()));
-    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-	CURRENT_DATA_IS_SENT=false;
-}
 
-V3dR_Communicator::~V3dR_Communicator() {
+    socket = new QTcpSocket(this);
+    resetDataInfo();
+    connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
+    connect(this->socket,SIGNAL(connected()),this,SLOT(onConnected()));
+//    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
+    connect(socket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
 
 }
 
-bool V3dR_Communicator::SendLoginRequest() {
-
-    QSettings settings("HHMI", "Vaa3D");
-    QString serverNameDefault = "";
-	if(!settings.value("vr_serverName").toString().isEmpty())
-		serverNameDefault = settings.value("vr_serverName").toString();
-	bool ok1;
-	QString serverName = QInputDialog::getText(0, "Server Address",
-		"Please enter the server address:", QLineEdit::Normal,
-		serverNameDefault, &ok1);
-
-	if(ok1 && !serverName.isEmpty())
-	{
-		settings.setValue("vr_serverName", serverName);
-		QString PortDefault = "";
-		if(!settings.value("vr_PORT").toString().isEmpty())
-			PortDefault = settings.value("vr_PORT").toString();
-		bool ok2;
-		vr_Port = QInputDialog::getText(0, "Port",
-			"Please enter server port:", QLineEdit::Normal,
-			PortDefault, &ok2);
-
-		if(!ok2 || vr_Port.isEmpty())
-		{
-			qDebug()<<"WRONG!EMPTY! ";
-			return SendLoginRequest();
-		}
-		else
-		{
-			settings.setValue("vr_PORT", vr_Port);
-			QString userNameDefault = "";
-			if(!settings.value("vr_userName").toString().isEmpty())
-				userNameDefault = settings.value("vr_userName").toString();
-			bool ok3;
-			userName = QInputDialog::getText(0, "Lgoin Name",
-				"Please enter your login name:", QLineEdit::Normal,
-				userNameDefault, &ok3);
-
-			if(!ok3 || userName.isEmpty())
-			{
-				qDebug()<<"WRONG!EMPTY! ";
-				return SendLoginRequest();
-			}else
-				settings.setValue("vr_userName", userName);
-		}
-
-		Agent agent00={
-			//with local information
-			userName,
-			true,//means this struct point to itself,no need to render
-			21,
-			0
-		};
-		Agents.push_back(agent00);
-
-	}
-    else
+void V3dR_Communicator::onReadyRead()
+{
+    qDebug()<<"on read";
+    QDataStream in(socket);
+    if(dataInfo.dataSize==0)
     {
-        qDebug()<<"WRONG!EMPTY! ";
-        return SendLoginRequest();
+        if(socket->bytesAvailable()>=sizeof (qint32))
+        {
+            in>>dataInfo.dataSize;
+            dataInfo.dataReadedSize+=sizeof (qint32);
+        }
+        else return;
     }
 
-    socket->connectToHost(serverName, vr_Port.toUInt());
-	if(!socket->waitForConnected(15000))
-	{
-		if(socket->state()==QAbstractSocket::UnconnectedState)
-		{
-			qDebug()<<"Cannot connect with Server. Unknown error.";
-			return 0;
-		}	
-	}
-	qDebug()<<"User:  "<<userName<<".  Connected with server: "<<serverName<<" :"<<vr_Port;
-	return 1;
+    if(dataInfo.stringOrFilenameSize==0&&dataInfo.filedataSize==0)
+    {
+        if(socket->bytesAvailable()>=2*sizeof (qint32))
+        {
+            in>>dataInfo.stringOrFilenameSize>>dataInfo.filedataSize;
+            dataInfo.dataReadedSize+=(2*sizeof (qint32));
+        }else
+            return;
+    }
+    QStringList list;
+    if(socket->bytesAvailable()>=dataInfo.stringOrFilenameSize+dataInfo.filedataSize)
+    {
+        QString messageOrFileName=QString::fromUtf8(socket->read(dataInfo.stringOrFilenameSize),dataInfo.stringOrFilenameSize);
+//        qDebug()<<"messageOrFileName= "<<messageOrFileName;
+        if(dataInfo.filedataSize)
+        {
+            if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").exists())
+            {
+                QDir(QCoreApplication::applicationDirPath()).mkdir("loaddata");
+            }
+            QString filePath=QCoreApplication::applicationDirPath()+"/loaddata/"+messageOrFileName;
+            QFile file(filePath);
+            file.open(QIODevice::WriteOnly);
+            file.write(socket->read(dataInfo.filedataSize));file.flush();
+            file.close();
+            list.push_back("11"+filePath);
+        }else
+        {
+            list.push_back("00"+messageOrFileName);
+        }
+        dataInfo.dataReadedSize+=(dataInfo.stringOrFilenameSize+dataInfo.filedataSize);
+        dataInfo.stringOrFilenameSize=0;
+        dataInfo.filedataSize=0;
+        if(dataInfo.dataReadedSize==dataInfo.dataSize)
+            resetDataInfo();
+        processReaded(list);
+    }else
+        return;
+	onReadyRead();
 }
 
-void V3dR_Communicator::onReadySend(QString &send_MSG) {
-
-    if (!send_MSG.isEmpty()) {
-		if((send_MSG!="exit")&&(send_MSG!="quit"))
-		{
-			socket->write(QString("/say:" + send_MSG + "\n").toUtf8());
-		}
-		else
-		{
-			socket->write(QString("/say: GoodBye~\n").toUtf8());
-			socket->disconnectFromHost();
-			return;
-		}
-	}
-	else
-	{
-		qDebug()<<"The message is empty!";
-		//on_pbSend_clicked();
-	}
+void V3dR_Communicator::sendMsg(QString msg)
+{
+    qint32 stringSize=msg.toUtf8().size();
+    qint32 totalsize=3*sizeof (qint32)+stringSize;
+    QByteArray block;
+    QDataStream dts(&block,QIODevice::WriteOnly);
+    dts<<qint32(totalsize)<<qint32(stringSize)<<qint32(0);
+    block+=msg.toUtf8();
+    socket->write(block);
+    socket->flush();
+    qDebug()<<"send to server:"<<msg;
 }
 
-void V3dR_Communicator::onReadyRead() {
-    QRegExp usersRex("^/users:(.*)$");
-    QRegExp systemRex("^/system:(.*)$");
-	//QRegExp hmdposRex("^/hmdpos:(.*)$");
-	QRegExp colorRex("^/color:(.*)$");
-	//QRegExp deleteRex("^/del:(.*)$");
-	QRegExp markerRex("^/marker:(.*)$");
-    QRegExp messageRex("^(.*):(.*)$");
-	
+void V3dR_Communicator::processReaded(QStringList list)
+{
+    QStringList filepaths;
+    for(auto msg:list)
+    {
+//        qDebug()<<msg;
+        if(msg.startsWith("00"))
+        {
+            QRegExp usersRex("^/users:(.*)$");
+            QString tmp=msg.remove(0,2);
+            if(usersRex.indexIn(tmp) != -1)
+            {
+                emit updateuserview(usersRex.cap(1));
+            }else
+                emit msgtoprocess(tmp);
+        }else if(msg.startsWith("11")&&msg.contains("swc"))
+        {
+            msg=msg.remove(0,2);
+            emit load(msg.section("/",-1).section(".",0,1));
+        }
+    }
+}
 
-    while (socket->canReadLine()) {
-        QString line = QString::fromUtf8(socket->readLine()).trimmed();
+void V3dR_Communicator::resetDataInfo()
+{
+     dataInfo.dataSize=0;dataInfo.stringOrFilenameSize=0;
+     dataInfo.dataReadedSize=0;dataInfo.filedataSize=0;
+}
 
-        if (usersRex.indexIn(line) != -1) {
-            QStringList users = usersRex.cap(1).split(",");
-			//qDebug()<<"Current users are:";
-            foreach (QString user, users) {
-				//qDebug()<<user;
-				if(user==userName) continue;// skip itself
-				//traverse the user list. Create new item for Agents[] if there is a new agent.
-				bool findSameAgent=false;
-				for(int i=0;i<Agents.size();i++)
-				{
-					if(user==Agents.at(i).name)
-					{
-						findSameAgent=true;
-						break;
-					}
-				}
-				if(findSameAgent==false)
-				{
-					Agent agent00={
-						user,
-						false,
-						21,
-						0
-					};
-					Agents.push_back(agent00);
-				}
+void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
+//    QRegExp usersRex("^/users:(.*)$");
+    QRegExp hmdposRex("^/hmdpos:(.*)$");
+    QRegExp msgreg("/(.*)_(.*):(.*)");
+
+
+    line=line.trimmed();
+    if(msgreg.indexIn(line)!=-1)
+    {
+        QString operationtype=msgreg.cap(1).trimmed();
+        bool isNorm=msgreg.cap(2).trimmed()=="norm";
+        QString operatorMsg=msgreg.cap(3).trimmed();
+
+        if(operationtype == "drawline" )
+        {
+            QString msg=operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit addSeg(listwithheader.join(";"));
+            }
+        }else if(operationtype == "delline")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            qDebug() << "+============delseg process begin========";
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit delSeg(listwithheader.join(";"));
+            }
+        }else if(operationtype == "addmarker")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                emit addMarker(listwithheader[1]);
+            }
+        }else if(operationtype == "delmarker")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            if (user == userName && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                emit delMarker(listwithheader[1]);
+            }
+        }else if(operationtype == "retypeline")
+        {
+            QString msg =operatorMsg;
+            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            if(listwithheader.size()<=1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+
+            QString user=listwithheader[0].split(" ").at(0).trimmed();
+            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            int type=listwithheader[0].split(" ").at(2).trimmed().toInt();
+            if (user == userName && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit retypeSeg(listwithheader.join(";"),type);
             }
         }
-        else if (systemRex.indexIn(line) != -1) {
-            //QString msg = systemRex.cap(1);
-			//qDebug()<<"System's Broadcast:"<<msg;
-			QStringList sysMSGs = systemRex.cap(1).split(" ");
-			if(sysMSGs.size()<2) return;
-			//Update Agents[] on user login/logout
-			QString user=sysMSGs.at(0);
-			QString Action=sysMSGs.at(1);
+    }
+}
 
-			if((user!=userName)&&(Action=="joined"))
-			{
-				qDebug()<<"user: "<< user<<"joined";
-			    //the message is user ... joined
-				Agent agent00={
-					user,
-					false,
-					21,//colortypr
-					0 //POS
-				};
-				Agents.push_back(agent00);
-			}
-			else if((user!=userName)&&(Action=="left"))
-			{
-				qDebug()<<"user: "<< user<<"left";
-				//the message is user ... left
-				for(int i=0;i<Agents.size();i++)
-				{
-					if(user == Agents.at(i).name)
-					{
-						//qDebug()<<"before erase "<<Agents.size();
-						Agents.erase(Agents.begin()+i);
-						i--;
-						//qDebug()<<"before erase "<<Agents.size();
-					}
-				}
-			}
-
+void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
+{
+    if(clienttype=="TeraFly")
+    {
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result+=V_NeuronSWCToSendMSG(seg);
+        sendMsg(QString("/drawline_norm:"+result.join(";")));
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
         }
-		//else if(hmdposRex.indexIn(line) != -1) {
-		//	//qDebug()<<"run hmd";
-		//	//QString POSofHMD = hmdposRex.cap(1);
-		//	QStringList hmdMSGs = hmdposRex.cap(1).split(" ");
-		//	if(hmdMSGs.size()<17) return;
+        undoDeque.push_back(QString("/delline_undo:"+result.join(";")));
+        redoDeque.clear();
+    }
+}
 
-		//	QString user=hmdMSGs.at(0);
-		//	if(user == userName) return;//the msg is the position of the current user,do nothing 
-		//	for(int i=0;i<Agents.size();i++)
-		//	{		
-		//		if(user == Agents.at(i).name)// the msg is the position of user[i],update POS
-		//		{
-		//			for(int j=0;j<16;j++)
-		//			{
-		//				Agents.at(i).position[j]=hmdMSGs.at(j+1).toFloat();
-		//				//qDebug("Agents.at(i).position[15]=%f",Agents.at(i).position[i]);
-		//				//qDebug()<<"Agent["<<i<<"] "<<" user: "<<Agents.at(i).name<<"HMD Position ="<<Agents.at(i).position[15];				
-		//			}
-		//			break;
-		//		}
-		//	}
-		//}
-		else if(colorRex.indexIn(line) != -1) {
-			//qDebug()<<"run color";
-			//QString colorFromServer = colorRex.cap(1);
-			//qDebug()<<"the color receieved is :"<<colorFromServer;
-			QStringList clrMSGs = colorRex.cap(1).split(" ");
-			
-			if(clrMSGs.size()<2) return;
-			QString user=clrMSGs.at(0);
-			QString clrtype=clrMSGs.at(1);
-			for(int i=0;i<Agents.size();i++)
-			{
-				if(Agents.at(i).name!=user) continue;
-					//update agent color
-				Agents.at(i).colorType=clrtype.toInt();
-				qDebug()<<"user:"<<user<<" receievedColorTYPE="<<Agents.at(i).colorType;
-			}
-		}
-   //     else if (deleteRex.indexIn(line) != -1) {
-			//QStringList delMSGs = deleteRex.cap(1).split(" ");
-			//if(delMSGs.size()<2) 
-			//{
-			//		qDebug()<<"size < 2";
-			//		return;
-			//}
-   //         QString user = delMSGs.at(0);
-   //         QString delID = delMSGs.at(1);
-			//qDebug()<<"user, "<<user<<" delete: "<<delID;
-			//if(user==userName)
-			//{
-			//	pMainApplication->READY_TO_SEND=false;
-			//	CURRENT_DATA_IS_SENT=false;
-			//	pMainApplication->ClearSketchNT();
-			//}
-			//bool delerror = pMainApplication->DeleteSegment(delID);
-			//if(delerror==true)
-			//	qDebug()<<"Segment Deleted.";
-			//else
-			//	qDebug()<<"Cannot Find the Segment ";
-			//pMainApplication->MergeNTList2remoteNT();
-   //     }
-        else if (markerRex.indexIn(line) != -1) {
-			QStringList markerMSGs = markerRex.cap(1).split(" ");
-			if(markerMSGs.size()<4) 
-			{
-					qDebug()<<"size < 4";
-					return;
-			}
-            QString user = markerMSGs.at(0);
-            float mx = markerMSGs.at(1).toFloat();
-			float my = markerMSGs.at(2).toFloat();
-			float mz = markerMSGs.at(3).toFloat();
-			qDebug()<<"user, "<<user<<" marker: "<<mx<<" "<<my<<" "<<mz;
-			int colortype=3;
-			for(int i=0;i<Agents.size();i++)
-			{
-				if(user == Agents.at(i).name)
-				{
-					colortype=Agents.at(i).colorType;
-					break;
-				}
-			}
+void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
+{
+    if(clienttype=="TeraFly")
+    {
+
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5")
+        .arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result+=V_NeuronSWCToSendMSG(seg);
+        sendMsg(QString("/delline_norm:"+result.join(";")));
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
         }
-        else if (messageRex.indexIn(line) != -1) {
-            QString user = messageRex.cap(1);
-            QString message = messageRex.cap(2);
-			//qDebug()<<"user, "<<user<<" said: "<<message;
-			int colortype;
-			for(int i=0;i<Agents.size();i++)
-			{
-				if(user == Agents.at(i).name)
-				{
-					colortype=Agents.at(i).colorType;
-					break;
-				}
-			}
-			qDebug()<<"receieved message :"<<message<<"  from user: "<<user<<"  type :"<<colortype;
-			//trans message to neurontree with colortype
-			//pMainApplication->UpdateNTList(message,colortype);
-			qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
-			Update3DViewNTList(message,colortype);
-			qDebug()<<"loadedNTList.size()"<<NTList_3Dview->size();
-		}
+        undoDeque.push_back(QString("/drawline_undo:"+result.join(";")));
+        redoDeque.clear();
+
+    }
+}
+
+void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QString clienttype)
+{
+    if(clienttype=="TeraFly")
+    {
+
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+
+        XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
+        result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+        sendMsg(QString("/addmarker_norm:"+result.join(";")));
+
+    }
+}
+void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clienttype)
+{
+    if(clienttype=="TeraFly")
+    {
+
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
+        result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+        sendMsg(QString("/delmarker_norm:"+result.join(";")));
+
+    }
+}
+
+void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clienttype)
+{
+    if(clienttype=="TeraFly")
+    {
+
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(userName).arg(clienttype).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result+=V_NeuronSWCToSendMSG(seg);
+        sendMsg(QString("/retypeline_norm:"+result.join(";")));
+    }
+}
+
+void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
+{
+    this->sendMsg("/drawline_norm:"+TVaddSegMSG);
+    while(undoDeque.size()>=dequeszie)
+    {
+        undoDeque.pop_front();
+    }
+    undoDeque.push_back(QString("/delline_undo:"+TVaddSegMSG));
+    redoDeque.clear();
+}
+
+void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
+{
+    this->sendMsg("/delline_norm:"+TVdelSegMSG);
+    while(undoDeque.size()>=dequeszie)
+    {
+        undoDeque.pop_front();
+    }
+    undoDeque.push_back(QString("/drawline_undo:"+TVdelSegMSG));
+    redoDeque.clear();
+}
+
+void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
+{
+    this->sendMsg("/addmarker_norm:"+TVaddMarkerMSG);
+
+}
+
+void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
+{
+    this->sendMsg("/delmarker_norm:"+TVdelMarkerMSG);
+
+}
+
+void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
+{
+    this->sendMsg("/retypeline_norm:"+TVretypeSegMSG);
+}
+void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype)
+{
+    UpdateDelSegMsg(seg,clienttype);
+    V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
+    for(auto newseg:new_slist.seg)
+    {
+        UpdateAddSegMsg(newseg,clienttype);
+    }
+}
+
+void V3dR_Communicator::UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QString addMsg2)
+{
+    UpdateDelSegMsg(deleteMsg);
+    UpdateAddSegMsg(addMsg1);
+    UpdateAddSegMsg(addMsg2);
+}
+
+void V3dR_Communicator::UpdateUndoDeque()
+{
+    if(undoDeque.size()!=0)
+    {
+        QString msg=undoDeque.back();
+        QRegExp reg("/(.*)_(.*):(.*)");
+        if(reg.indexIn(msg)!=-1)
+        {
+            sendMsg(msg);
+            undoDeque.pop_back();
+
+            QString operationType=reg.cap(1);
+            QString operatorMsg=reg.cap(3);
+            if("drawline"==operationType)
+                operationType="/delline";
+            else if("delline"==operationType)
+                operationType="/drawline";
+//            else if("addmarker"==operationType)
+//                operationType="/delmarker";
+//            else if("delmarker"==operationType)
+//                operationType="/addmarker";
+            while(redoDeque.size()>=dequeszie)
+            {
+                redoDeque.pop_front();
+            }
+            redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
+        }
+    }else
+    {
+        QMessageBox::information(0,tr("Warning "),
+                         tr("Action can not be implemented"),
+                         QMessageBox::Ok);
+    }
+}
+
+void V3dR_Communicator::UpdateRedoDeque()
+{
+    if(redoDeque.size()!=0)
+    {
+        QString msg=redoDeque.back();
+        QRegExp reg("/(.*)_(.*):(.*)");
+        if(reg.indexIn(msg)!=-1)
+        {
+            sendMsg(msg);
+            redoDeque.pop_back();
+
+            QString operationType=reg.cap(1);
+            QString operatorMsg=reg.cap(3);
+            if("drawline"==operationType)
+                operationType="/delline";
+            else if("delline"==operationType)
+                operationType="/drawline";
+//            else if("addmarker"==operationType)
+//                operationType="/delmarker";
+//            else if("delmarker"==operationType)
+//                operationType="/addmarker";
+            while(undoDeque.size()>=dequeszie)
+            {
+                undoDeque.pop_front();
+            }
+            undoDeque.push_back(QString(operationType+"_undo:"+operatorMsg));
+        }
+    }else
+    {
+        QMessageBox::information(0,tr("Warning "),
+                         tr("Action can not be implemented"),
+                         QMessageBox::Ok);
     }
 }
 
 void V3dR_Communicator::onConnected() {
-
-    socket->write(QString("/login:" +userName + "\n").toUtf8());
-
+    qDebug()<<"Message onConnected";
+    sendMsg(QString("/login:" +userName));
 }
 
-void V3dR_Communicator::onDisconnected() {
-    qDebug("Now disconnect with the server."); 
-	*clienton = false;
-	//Agents.clear();
-	this->close();
-
+QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
+{
+    QStringList result;
+    for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
+    {
+        V_NeuronSWC_unit curSWCunit = seg.row[i];
+        XYZ GlobalCroods = ConvertLocalBlocktoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+        result.push_back(QString("%1 %2 %3 %4").arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
+//        if(i==seg.row.size()-1)
+//            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
+    }
+    return result;
 }
 
-
-void V3dR_Communicator::Update3DViewNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
-{	
-    QStringList qsl = QString(msg).trimmed().split(" ",Qt::SkipEmptyParts);
-	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
-	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
-	NeuronSWC S_temp;
-	NeuronTree tempNT;
-	tempNT.listNeuron.clear();
-	tempNT.hashNeuron.clear();
-	//each segment has a unique ID storing as its name
-	tempNT.name  = "sketch_"+ QString("%1").arg(NTNumReceieved++);
-	for(int i=0;i<str_size;i++)
-	{
-		qsl[i].truncate(99);
-		//qDebug()<<qsl[i];
-		int iy = i%7;
-		if (iy==0)
-		{
-			S_temp.n = qsl[i].toInt();
-		}
-		else if (iy==1)
-		{
-			S_temp.type = type;
-		}
-		else if (iy==2)
-		{
-			S_temp.x = qsl[i].toFloat();
-
-		}
-		else if (iy==3)
-		{
-			S_temp.y = qsl[i].toFloat();
-
-		}
-		else if (iy==4)
-		{
-			S_temp.z = qsl[i].toFloat();
-
-		}
-		else if (iy==5)
-		{
-			S_temp.r = qsl[i].toFloat();
-
-		}
-		else if (iy==6)
-		{
-			S_temp.pn = qsl[i].toInt();
-
-			tempNT.listNeuron.append(S_temp);
-			tempNT.hashNeuron.insert(S_temp.n, tempNT.listNeuron.size()-1);
-		}
-	}//*/
-	//RGBA8 tmp= {(unsigned int)type};
-	//tempNT.color = tmp;
-	tempNT.color.i=type;
-	NTList_3Dview->push_back(tempNT);
-	qDebug()<<"receieved nt name is "<<tempNT.name;
-	//updateremoteNT
-}
-
-
-//void V3dR_Communicator::SendHMDPosition()
-//{
-//	if(!pMainApplication) return;
-//	//get hmd position
-//	QString PositionStr=pMainApplication->getHMDPOSstr();
-//
-//	//send hmd position
-//	socket->write(QString("/hmdpos:" + PositionStr + "\n").toUtf8());
-//
-//	QTimer::singleShot(2000, this, SLOT(SendHMDPosition()));
-//}
-//void V3dR_Communicator::RunVRMainloop()
-//{
-//
-//	//handle one rendering loop, and handle user interaction
-//	bool bQuit;//=HandleOneIteration();
-//
-//	if(bQuit==true)
-//	{
-//		qDebug()<<"Now quit VR";
-//		socket->disconnectFromHost();
-//		Agents.clear();
-//		return;
-//	}
-//
-//	//send local data to server
-//	if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
-//	{
-//		if(pMainApplication->m_modeGrip_R==m_drawMode)
-//			onReadySend(pMainApplication->NT2QString());
-//		else if(pMainApplication->m_modeGrip_R==m_deleteMode)
-//		{
-//			qDebug()<<"delname = "<<pMainApplication->delName;
-//			if(pMainApplication->delName!="")
-//				socket->write(QString("/del:" + pMainApplication->delName + "\n").toUtf8());
-//			else
-//			{
-//				pMainApplication->READY_TO_SEND=false;
-//				CURRENT_DATA_IS_SENT=false;
-//				pMainApplication->ClearSketchNT();
-//			}
-//		}
-//		else if(pMainApplication->m_modeGrip_R==m_markMode)
-//		{
-//			qDebug()<<"marker position = "<<pMainApplication->markerPOS;
-//			socket->write(QString("/marker:" + pMainApplication->markerPOS + "\n").toUtf8());
-//		}
-//		if(pMainApplication->READY_TO_SEND==true)
-//			CURRENT_DATA_IS_SENT=true;
-//	}
-//
-//
-//	QTimer::singleShot(20, this, SLOT(RunVRMainloop()));
+//void V3dR_Communicator::onDisconnected() {
+//    QMessageBox::information(0,tr("Message socket Connection is out!"),
+//                     tr("Data has been safely stored!\nif it is not you disconnect.\nPlease restart vaa3d"),
+//                     QMessageBox::Ok);
+//    deleteLater();
 //}
 
-//
+XYZ V3dR_Communicator::ConvertGlobaltoLocalBlockCroods(double x,double y,double z)
+{
+    auto node=ConvertMaxRes2CurrResCoords(x,y,z);
+    node.x-=(ImageStartPoint.x-1);
+    node.y-=(ImageStartPoint.y-1);
+    node.z-=(ImageStartPoint.z-1);
+    qDebug()<<"ConvertGlobaltoLocalBlockCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
+    return node;
+}
 
+XYZ V3dR_Communicator::ConvertLocalBlocktoGlobalCroods(double x,double y,double z)
+{
+    x+=(ImageStartPoint.x-1);
+    y+=(ImageStartPoint.y-1);
+    z+=(ImageStartPoint.z-1);
+    XYZ node=ConvertCurrRes2MaxResCoords(x,y,z);
+//    qDebug()<<"ConvertLocalBlocktoGlobalCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
+    return node;
+}
 
+XYZ V3dR_Communicator::ConvertMaxRes2CurrResCoords(double x,double y,double z)
+{
+    x/=(ImageMaxRes.x/ImageCurRes.x);
+    y/=(ImageMaxRes.y/ImageCurRes.y);
+    z/=(ImageMaxRes.z/ImageCurRes.z);
+    return XYZ(x,y,z);
+}
+
+XYZ V3dR_Communicator::ConvertCurrRes2MaxResCoords(double x,double y,double z)
+{
+    x*=(ImageMaxRes.x/ImageCurRes.x);
+    y*=(ImageMaxRes.y/ImageCurRes.y);
+    z*=(ImageMaxRes.z/ImageCurRes.z);
+    return XYZ(x,y,z);
+}

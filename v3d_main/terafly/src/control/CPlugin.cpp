@@ -272,8 +272,9 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
     return markers;
 }
 
-bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resolution)
+bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collaborate,int resolution)
 {
+//    CViewer::mutex.lock();//add by huanglei for multiply UI
     try
     {
         // set default parameter
@@ -283,6 +284,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resoluti
         // check preconditions
         if(resolution != CImport::instance()->getResolutions() - 1)
             throw tf::RuntimeException(tf::strprintf("Accessing curve/marker structures at lower resolutions (res index = %d) not yet implemented", resolution));
+
         if(CViewer::getCurrent() == 0)
             throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
 
@@ -290,15 +292,18 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resoluti
         interval_t x_range(0, std::numeric_limits<int>::max());
         interval_t y_range(0, std::numeric_limits<int>::max());
         interval_t z_range(0, std::numeric_limits<int>::max());
+
         CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, landmark_list);
 
+
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
     }
     catch (tf::RuntimeException & e)
     {
         v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
+//    CViewer::mutex.unlock();
 }
 
 // get path of the image volume at the given resolution (default: highest resolution)

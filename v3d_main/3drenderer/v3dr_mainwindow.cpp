@@ -524,22 +524,19 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 		return;
 	}
 
-//#if defined(USE_Qt5)
-//	QImage image1 = glWidget->grabFramebuffer();
-//#else
-//	QImage image1 = glWidget->grabFrameBuffer();
-//#endif
+
+	QImage image1 = glWidget->grabFrameBuffer();
 
         const char* format = SAVE_IMG_FORMAT;
 	QString curfile = QString("%1/a%2.%3").arg(outputDir).arg(i).arg(format);
-//	if (image1.save(curfile, format, 100)) //uncompressed
-//	{
-//		printf("Successful to save frame %d: [%s]\n", i, curfile.toUtf8().data());
-//	}
-//	else
-//	{
-//		printf("Failed to save frame %d: [%s]\n", i, curfile.toUtf8().data());
-//	}
+	if (image1.save(curfile, format, 100)) //uncompressed
+	{
+		printf("Successful to save frame %d: [%s]\n", i, curfile.toUtf8().data());
+	}
+	else
+	{
+		printf("Failed to save frame %d: [%s]\n", i, curfile.toUtf8().data());
+	}
 }
 
 void V3dR_MainWindow::saveMovie()
@@ -739,13 +736,25 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 	{
 		if (glWidget)	glWidget->makeCurrent(); //090715
 
-		if (lastActive != this) //need updateTool
-		{
+        if (!this->isHidden()&&lastActive != this) //need updateTool
+        {
+            if(lastActive)
+            {
+                qDebug()<<"this->getDataTitle()="<<this->getDataTitle();
+                qDebug()<<"lastActive->getDataTitle()="<<dynamic_cast<V3dR_MainWindow*>(lastActive)->getDataTitle();
+                lastActive->hide();
+            }
 			lastActive = this;
-			qDebug() << QString("V3dR_MainWindow::changeEvent, ActivationChange-> %1").arg(title_prefix+" [" + data_title + "]");
-
+			this->hide();
 			if (glWidget)  glWidget->updateTool();
 		}
+		// if (lastActive != this) //need updateTool
+		// {
+		// 	lastActive = this;
+		// 	qDebug() << QString("V3dR_MainWindow::changeEvent, ActivationChange-> %1").arg(title_prefix+" [" + data_title + "]");
+
+		// 	if (glWidget)  glWidget->updateTool();
+		// }
 		//090713 RZC: the state synchronization is hard
 		//if (glWidget)  glWidget->updateLandmark(); // call glWidget->updateTool()
 	}

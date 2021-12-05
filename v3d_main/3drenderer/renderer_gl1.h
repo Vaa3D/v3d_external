@@ -347,7 +347,7 @@ public:
     void refineMarkerCenter();
     void refineMarkerLocal(int marker_id);
 
-    void addMarker(XYZ &loc);
+    void addMarker(XYZ &loc,bool fromserver=0);
     void addMarkerUnique(XYZ &loc);
     void addSpecialMarker(XYZ &loc); //add special marker, by XZ, 20190720
     void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120
@@ -560,6 +560,7 @@ public:
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
+     bool deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,float mindist);
      // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
 
      void selectMultiMarkersByStroke();
@@ -691,7 +692,7 @@ public:
 
     // in renderer_obj.cpp
     void addCurveSWC(vector<XYZ> &loc_list, int chno=0, double creatmode=0); //if no chno is specified, then assume to be the first channel //LMG 26/10/2018 if no creatmode specified set to 0
-
+    void addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode,int type);
     //for local view
     bool produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type=0);
     void ablate3DLocationSeries(vector <XYZ> & loc_vec); //added by PHC, 120506
@@ -874,7 +875,7 @@ public:
 
     void setLocalGrid(QList<ImageMarker> inputGridList,QList<long> inputGridNumber, float gridside);
     QList<ImageMarker> getLocalGrid();
-
+    void retypeMultiNeuronsbyshortcut();
 
     int highlightedNode; //Added by ZMS 20151203 highlight initial node we are going to extend.
     int selectedStartNode; // TDP 20160203 for selecting start node for joining two nodes

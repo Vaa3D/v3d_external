@@ -3296,9 +3296,67 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
+        if (w->TeraflyCommunicator
+    &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+	{
+        vector<V_NeuronSWC> vector_VSWC;
+        curImg->ExtractDeletingNode(vector_VSWC);
+
+		w->SetupCollaborateInfo();
+        for(auto seg:vector_VSWC)
+            w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
+//        w->getRenderer()->endSelectMode();
+//        CViewer::getCurrent()->loadAnnotations(false);
+    }
     curImg->tracedNeuron.deleteMultiSeg();
     //curImg->proj_trace_history_append();          // no need to update the history
     curImg->update_3drenderer_neuron_view(w, this);
+}
+
+bool Renderer_gl1::deleteMultiNeuronsByStrokeCommit(vector <XYZ> local_list,float mindist)//not use by huanglei,huanglei please test
+{
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) {/*editinput = 3;*/curImg = v3dr_getImage4d(_idep);}
+
+    auto blocksegs=curImg->tracedNeuron.seg;
+    int index=-1;
+    for(int i=0;i<blocksegs.size();i++)
+    {
+        if(local_list.size()!=blocksegs[i].row.size()) continue;
+        auto seg=blocksegs[i].row;
+        float sum=0;
+        for(int j=0;j<local_list.size();j++)
+        {
+            sum+=sqrt(pow(local_list[j].x-seg[j].x,2)+pow(local_list[j].y-seg[j].y,2)
+                      +pow(local_list[j].z-seg[j].z,2));
+        }
+        if(sum/local_list.size()<mindist)
+        {
+            mindist=sum/local_list.size();
+            index=i;
+        }
+        reverse(local_list.begin(),local_list.end());
+        sum=0;
+        for(int j=0;j<local_list.size();j++)
+        {
+            sum+=sqrt(pow(local_list[j].x-seg[j].x,2)+pow(local_list[j].y-seg[j].y,2)
+                      +pow(local_list[j].z-seg[j].z,2));
+        }
+        if(sum/local_list.size()<mindist)
+        {
+            mindist=sum/local_list.size();
+            index=i;
+        }
+    }
+    if(index>=0)
+    {
+        curImg->tracedNeuron.seg.erase(curImg->tracedNeuron.seg.begin()+index);
+        return true;
+    }else
+    {
+        return false;
+    }
 }
 
 // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
@@ -6515,6 +6573,349 @@ void Renderer_gl1::cutNeuronsByStroke()
 	return;
 }
 // --------------------- END of [neuron cutting tool, by MK 2017 June] -----------------------
+void Renderer_gl1::retypeMultiNeuronsbyshortcut()
+{
+	int node_type = 0;
+	int node_level = 0;
+
+	bool ok;
+	bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+	bool node_mode = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier);
+
+	if (neuronColorMode == 0)
+	{
+		if (useCurrentTraceTypeForRetyping)
+		{
+			node_type = currentTraceType;
+		}
+		else
+		{
+			//#ifdef USE_Qt5
+			//        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+			//                                  QObject::tr("SWC type: "
+			//                                            "\n 0 -- undefined (white)"
+			//                                            "\n 1 -- soma (black)"
+			//                                            "\n 2 -- axon (red)"
+			//                                            "\n 3 -- dendrite (blue)"
+			//                                            "\n 4 -- apical dendrite (purple)"
+			//                                            "\n else -- custom \n"),
+			//                                          node_type, 0, 100, 1, &ok);
+			////=======
+#if defined(USE_Qt5)
+			node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+				QObject::tr("SWC type: "
+				"\n 0 -- undefined (white)"
+				"\n 1 -- soma (black)"
+				"\n 2 -- axon (red)"
+				"\n 3 -- dendrite (blue)"
+				"\n 4 -- apical dendrite (purple)"
+				"\n else -- custom \n"),
+				currentTraceType, 0, 100, 1, &ok);
+#else
+			node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+				QObject::tr("SWC type: "
+				"\n 0 -- undefined (white)"
+				"\n 1 -- soma (black)"
+				"\n 2 -- axon (red)"
+				"\n 3 -- dendrite (blue)"
+				"\n 4 -- apical dendrite (purple)"
+				"\n else -- custom \n"),
+				currentTraceType, 0, 100, 1, &ok);
+#endif
+		}
+
+		if (!ok) return;
+		currentTraceType = node_type;
+        const int neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
+                {255, 255, 255},  // white,   0-undefined
+                {20,  20,  20 },  // black,   1-soma
+                {200, 20,  0  },  // red,     2-axon
+                {0,   20,  200},  // blue,    3-dendrite
+                {200, 0,   200},  // purple,  4-apical dendrite
+                //the following is Hanchuan's extended color. 090331
+                {0,   200, 200},  // cyan,    5
+                {220, 200, 0  },  // yellow,  6
+                {0,   200, 20 },  // green,   7
+                {188, 94,  37 },  // coffee,  8
+                {180, 200, 120},  // asparagus,	9
+                {250, 100, 120},  // salmon,	10
+                {120, 200, 200},  // ice,		11
+                {100, 120, 200},  // orchid,	12
+            //the following is Hanchuan's further extended color. 111003
+            {255, 128, 168},  //	13
+            {128, 255, 168},  //	14
+            {128, 168, 255},  //	15
+            {168, 255, 128},  //	16
+            {255, 168, 128},  //	17
+            {168, 128, 255}, //	18
+            {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+            //the following (20-275) is used for matlab heat map. 120209 by WYN
+            {0,0,131}, //20
+            {0,0,135},
+            {0,0,139},
+            {0,0,143},
+            {0,0,147},
+            {0,0,151},
+            {0,0,155},
+            {0,0,159},
+            {0,0,163},
+            {0,0,167},
+            {0,0,171},
+            {0,0,175},
+            {0,0,179},
+            {0,0,183},
+            {0,0,187},
+            {0,0,191},
+            {0,0,195},
+            {0,0,199},
+            {0,0,203},
+            {0,0,207},
+            {0,0,211},
+            {0,0,215},
+            {0,0,219},
+            {0,0,223},
+            {0,0,227},
+            {0,0,231},
+            {0,0,235},
+            {0,0,239},
+            {0,0,243},
+            {0,0,247},
+            {0,0,251},
+            {0,0,255},
+            {0,3,255},
+            {0,7,255},
+            {0,11,255},
+            {0,15,255},
+            {0,19,255},
+            {0,23,255},
+            {0,27,255},
+            {0,31,255},
+            {0,35,255},
+            {0,39,255},
+            {0,43,255},
+            {0,47,255},
+            {0,51,255},
+            {0,55,255},
+            {0,59,255},
+            {0,63,255},
+            {0,67,255},
+            {0,71,255},
+            {0,75,255},
+            {0,79,255},
+            {0,83,255},
+            {0,87,255},
+            {0,91,255},
+            {0,95,255},
+            {0,99,255},
+            {0,103,255},
+            {0,107,255},
+            {0,111,255},
+            {0,115,255},
+            {0,119,255},
+            {0,123,255},
+            {0,127,255},
+            {0,131,255},
+            {0,135,255},
+            {0,139,255},
+            {0,143,255},
+            {0,147,255},
+            {0,151,255},
+            {0,155,255},
+            {0,159,255},
+            {0,163,255},
+            {0,167,255},
+            {0,171,255},
+            {0,175,255},
+            {0,179,255},
+            {0,183,255},
+            {0,187,255},
+            {0,191,255},
+            {0,195,255},
+            {0,199,255},
+            {0,203,255},
+            {0,207,255},
+            {0,211,255},
+            {0,215,255},
+            {0,219,255},
+            {0,223,255},
+            {0,227,255},
+            {0,231,255},
+            {0,235,255},
+            {0,239,255},
+            {0,243,255},
+            {0,247,255},
+            {0,251,255},
+            {0,255,255},
+            {3,255,251},
+            {7,255,247},
+            {11,255,243},
+            {15,255,239},
+            {19,255,235},
+            {23,255,231},
+            {27,255,227},
+            {31,255,223},
+            {35,255,219},
+            {39,255,215},
+            {43,255,211},
+            {47,255,207},
+            {51,255,203},
+            {55,255,199},
+            {59,255,195},
+            {63,255,191},
+            {67,255,187},
+            {71,255,183},
+            {75,255,179},
+            {79,255,175},
+            {83,255,171},
+            {87,255,167},
+            {91,255,163},
+            {95,255,159},
+            {99,255,155},
+            {103,255,151},
+            {107,255,147},
+            {111,255,143},
+            {115,255,139},
+            {119,255,135},
+            {123,255,131},
+            {127,255,127},
+            {131,255,123},
+            {135,255,119},
+            {139,255,115},
+            {143,255,111},
+            {147,255,107},
+            {151,255,103},
+            {155,255,99},
+            {159,255,95},
+            {163,255,91},
+            {167,255,87},
+            {171,255,83},
+            {175,255,79},
+            {179,255,75},
+            {183,255,71},
+            {187,255,67},
+            {191,255,63},
+            {195,255,59},
+            {199,255,55},
+            {203,255,51},
+            {207,255,47},
+            {211,255,43},
+            {215,255,39},
+            {219,255,35},
+            {223,255,31},
+            {227,255,27},
+            {231,255,23},
+            {235,255,19},
+            {239,255,15},
+            {243,255,11},
+            {247,255,7},
+            {251,255,3},
+            {255,255,0},
+            {255,251,0},
+            {255,247,0},
+            {255,243,0},
+            {255,239,0},
+            {255,235,0},
+            {255,231,0},
+            {255,227,0},
+            {255,223,0},
+            {255,219,0},
+            {255,215,0},
+            {255,211,0},
+            {255,207,0},
+            {255,203,0},
+            {255,199,0},
+            {255,195,0},
+            {255,191,0},
+            {255,187,0},
+            {255,183,0},
+            {255,179,0},
+            {255,175,0},
+            {255,171,0},
+            {255,167,0},
+            {255,163,0},
+            {255,159,0},
+            {255,155,0},
+            {255,151,0},
+            {255,147,0},
+            {255,143,0},
+            {255,139,0},
+            {255,135,0},
+            {255,131,0},
+            {255,127,0},
+            {255,123,0},
+            {255,119,0},
+            {255,115,0},
+            {255,111,0},
+            {255,107,0},
+            {255,103,0},
+            {255,99,0},
+            {255,95,0},
+            {255,91,0},
+            {255,87,0},
+            {255,83,0},
+            {255,79,0},
+            {255,75,0},
+            {255,71,0},
+            {255,67,0},
+            {255,63,0},
+            {255,59,0},
+            {255,55,0},
+            {255,51,0},
+            {255,47,0},
+            {255,43,0},
+            {255,39,0},
+            {255,35,0},
+            {255,31,0},
+            {255,27,0},
+            {255,23,0},
+            {255,19,0},
+            {255,15,0},
+            {255,11,0},
+            {255,7,0},
+            {255,3,0},
+            {255,0,0},
+            {251,0,0},
+            {247,0,0},
+            {243,0,0},
+            {239,0,0},
+            {235,0,0},
+            {231,0,0},
+            {227,0,0},
+            {223,0,0},
+            {219,0,0},
+            {215,0,0},
+            {211,0,0},
+            {207,0,0},
+            {203,0,0},
+            {199,0,0},
+            {195,0,0},
+            {191,0,0},
+            {187,0,0},
+            {183,0,0},
+            {179,0,0},
+            {175,0,0},
+            {171,0,0},
+            {167,0,0},
+            {163,0,0},
+            {159,0,0},
+            {155,0,0},
+            {151,0,0},
+            {147,0,0},
+            {143,0,0},
+            {139,0,0},
+            {135,0,0},
+            {131,0,0},
+            {127,0,0} //275
+                };
+        currentMarkerColor.r=neuron_type_color[node_type][0];
+        currentMarkerColor.g=neuron_type_color[node_type][1];
+        currentMarkerColor.b=neuron_type_color[node_type][2];
+		return;
+	}
+	else
+		return;
+}
+
 
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {
@@ -6569,6 +6970,35 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 
         if(!ok) return;
         currentTraceType = node_type;
+                const int neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
+                {255, 255, 255},  // white,   0-undefined
+                {20,  20,  20 },  // black,   1-soma
+                {200, 20,  0  },  // red,     2-axon
+                {0,   20,  200},  // blue,    3-dendrite
+                {200, 0,   200},  // purple,  4-apical dendrite
+                //the following is Hanchuan's extended color. 090331
+                {0,   200, 200},  // cyan,    5
+                {220, 200, 0  },  // yellow,  6
+                {0,   200, 20 },  // green,   7
+                {188, 94,  37 },  // coffee,  8
+                {180, 200, 120},  // asparagus,	9
+                {250, 100, 120},  // salmon,	10
+                {120, 200, 200},  // ice,		11
+                {100, 120, 200},  // orchid,	12
+            //the following is Hanchuan's further extended color. 111003
+            {255, 128, 168},  //	13
+            {128, 255, 168},  //	14
+            {128, 168, 255},  //	15
+            {168, 255, 128},  //	16
+            {255, 168, 128},  //	17
+            {168, 128, 255}, //	18
+            {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+            //the following (20-275) is used for matlab heat map. 120209 by WYN
+            {0,0,131}, //20
+                };
+        currentMarkerColor.r=neuron_type_color[node_type][0];
+        currentMarkerColor.g=neuron_type_color[node_type][1];
+        currentMarkerColor.b=neuron_type_color[node_type][2];
     }else if(neuronColorMode == 5)
     {
         int inputlevel = QInputDialog::getInt(0, QObject::tr("Change node confidence level in segment"),
@@ -6605,7 +7035,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
         if (p_tree
-                && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+               //  && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
         {
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
             if (!p_listneuron)
@@ -6618,7 +7048,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                 iy = p_listneuron->at(i).y;
                 iz = p_listneuron->at(i).z;
                 allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
-
+               QList<V3DLONG> idlist;
                 if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
                     py = viewport[3]-py; //the Y axis is reversed
@@ -6630,6 +7060,10 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 							if (neuronColorMode == 0)
 							{
 								change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                                                                        if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
+                                {
+                                    idlist.push_back(p_listneuron->at(i).seg_id);
+                                }
 							}
 							else
                                 change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
@@ -6637,6 +7071,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     }
                     else
                     {
+                         bool changedTyp=false;
                         for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
                         {
                             QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
@@ -6644,6 +7079,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                             {
                                 if(neuronColorMode==0)
                                 {
+
                                     if(node_mode)
                                     {
                                         GLdouble spx, spy, spz;
@@ -6671,7 +7107,12 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                         row[best_id].type = node_type;
                                     }
                                     else
-                                        change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+                                        {
+                                                                                     if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
+                                        {
+                                            idlist.push_back(p_listneuron->at(i).seg_id);
+                                        }
+                                        }
                                 }
                                 else
                                 {
@@ -6684,9 +7125,22 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     }
                 }
             }
+                        if(w->TeraflyCommunicator)
+            {
+                for(int cnt=0;cnt<idlist.size();cnt++)
+                    if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
+                    {
+                        if(w->TeraflyCommunicator
+                        &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                        {
+                            w->SetupCollaborateInfo();
+                            w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
+                        }
+                    }
+            }
             curImg->update_3drenderer_neuron_view(w, this);
             QHash<QString, int>  soma_cnt;
-;           curImg->proj_trace_history_append();
+            curImg->proj_trace_history_append();
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
                 if(p_listneuron->at(i).type == 1)
@@ -6758,14 +7212,21 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                         {
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
-
+                            if(w->TeraflyCommunicator
+                                &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                                {
+                                    w->SetupCollaborateInfo();
+                                    w->TeraflyCommunicator->UpdateSplitSegMsg(
+                                        curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id),
+                                                p_listneuron->at(i).nodeinseg_id,
+                                                "TeraFly");
+                                }
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
 							curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);
                             break;   // found intersection with neuron segment: no more need to continue on this inner loop
                             //}
-//>>>>>>> master
                         }
                     }
 

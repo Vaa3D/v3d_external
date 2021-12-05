@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -48,7 +48,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
-#include "../terafly/src/control/CImport.h"
+//#include <QMessageBox>
+//#include "../terafly/src/control/CImport.h"
 #include "v3d_application.h"
 
 #endif //test_main_cpp
@@ -2426,13 +2427,28 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             }
             else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
             {
+//                qDebug()<<"000000000-0000005";
                 solveCurveViews();
+//                qDebug()<<"000000000-0000006";
             }
 
             // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
             else if (selectMode == smDeleteMultiNeurons)
             {
+//                qDebug()<<"000000000-0000007";
                 deleteMultiNeuronsByStroke();
+				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+				My4DImage* curImg = 0;
+				if (w) curImg = v3dr_getImage4d(_idep);
+				
+                if (w->TeraflyCommunicator)
+                {
+//                    vector<V_NeuronSWC> vector_VSWC;
+//                    vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode(vector_VSWC);
+//                    w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
+//                    w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
+                    w->getRenderer()->endSelectMode();                }
+//                qDebug()<<"000000000-0000008";
             }
             else if (selectMode == smRetypeMultiNeurons)
             {
@@ -3131,6 +3147,7 @@ int Renderer_gl1::hitPen(int x, int y)
             if (selectMode != smMarkerCreate1) // make 1-click continue selected mode
             {
                 endSelectMode();
+
             }
         }
         return 1;
@@ -4155,33 +4172,35 @@ double Renderer_gl1::solveMarkerCenter()
 {
     QElapsedTimer t;
     t.start();
-    if (listMarkerPos.size()<1)  return t.elapsed();
-    const MarkerPos & pos = listMarkerPos.at(0);
-    XYZ loc = getCenterOfMarkerPos(pos);
-    vector <XYZ> loc_vec;
-    if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
-        dataViewProcBox.clamp(loc); //100722 RZC
-    if (b_addthismarker) //100822, PHC, 120506
-    {
-        addMarker(loc);
-        if (b_ablation)
-        {
-            loc_vec.push_back(loc);
-            ablate3DLocationSeries(loc_vec);
-        }
-        if (b_imaging || b_grabhighrez)
-        {
-            loc_vec.push_back(loc);
-            produceZoomViewOf3DRoi(loc_vec);
-        }
-    }
-    else //then zoom-in, 100822, PHC
-    {
-        b_addthismarker = true; //in this case, always reset to default to add a marker instead of just  zoom
-        endSelectMode();
-        loc_vec.push_back(loc);
-        if (b_ablation)
-            ablate3DLocationSeries(loc_vec);
+	if (listMarkerPos.size()<1)  return t.elapsed();
+	const MarkerPos & pos = listMarkerPos.at(0);
+	XYZ loc = getCenterOfMarkerPos(pos);
+	vector <XYZ> loc_vec;
+
+	if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
+		dataViewProcBox.clamp(loc); //100722 RZC
+	if (b_addthismarker) //100822, PHC, 120506
+	{
+		addMarker(loc);
+
+//		if (b_ablation)
+//		{
+//			loc_vec.push_back(loc);
+//			ablate3DLocationSeries(loc_vec);
+//		}
+//		if (b_imaging || b_grabhighrez)
+//		{
+//			loc_vec.push_back(loc);
+//			produceZoomViewOf3DRoi(loc_vec);
+//		}
+	}
+	else //then zoom-in, 100822, PHC
+	{
+		b_addthismarker = true; //in this case, always reset to default to add a marker instead of just  zoom
+		endSelectMode();
+		loc_vec.push_back(loc);
+		if (b_ablation)
+			ablate3DLocationSeries(loc_vec);
         produceZoomViewOf3DRoi(loc_vec,
                                1  //one means from non-wheel event
                                );
@@ -4304,7 +4323,7 @@ void Renderer_gl1::refineMarkerLocal(int marker_id)
     //added by PHC, 090120. update the marker location in both views
     updateMarkerLocation(marker_id, loc);
 }
-void Renderer_gl1::addMarker(XYZ &loc)
+void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 {
     XYZ pt(loc.x+1, loc.y+1, loc.z+1); // marker position is 1-based
 #ifndef test_main_cpp
@@ -4324,28 +4343,76 @@ void Renderer_gl1::addMarker(XYZ &loc)
                 break;
             }
         }
+        const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
+                {255, 255, 255},  // white,   0-undefined
+                {20,  20,  20 },  // black,   1-soma
+                {200, 20,  0  },  // red,     2-axon
+                {0,   20,  200},  // blue,    3-dendrite
+                {200, 0,   200},  // purple,  4-apical dendrite
+                //the following is Hanchuan's extended color. 090331
+                {0,   200, 200},  // cyan,    5
+                {220, 200, 0  },  // yellow,  6
+                {0,   200, 20 },  // green,   7
+                {188, 94,  37 },  // coffee,  8
+                {180, 200, 120},  // asparagus,	9
+                {250, 100, 120},  // salmon,	10
+                {120, 200, 200},  // ice,		11
+                {100, 120, 200},  // orchid,	12
+            //the following is Hanchuan's further extended color. 111003
+            {255, 128, 168},  //	13
+            {128, 255, 168},  //	14
+            {128, 168, 255},  //	15
+            {168, 255, 128},  //	16
+            {255, 168, 128},  //	17
+            {168, 128, 255}, //	18
+            {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+            //the following (20-275) is used for matlab heat map. 120209 by WYN
+            {0,0,131}, //20
+
+                };
         if (markerindex>=0/*listLoc.size()>0*/)
         {
             S.inputProperty = listLoc.at(markerindex).inputProperty;
             S.comments = listLoc.at(markerindex).comments;
             S.category = listLoc.at(markerindex).category;
-            S.color = listLoc.at(markerindex).color;
-            currentMarkerColor = listLoc.at(markerindex).color;;
+//            S.color = currentMarkerColor;
+
+            S.color.r=neuron_type_color[int(currentTraceType)][0];
+            S.color.g=neuron_type_color[int(currentTraceType)][1];
+            S.color.b=neuron_type_color[int(currentTraceType)][2];
+//            currentMarkerColor = listLoc.at(markerindex).color;;
         }
         else
         {
             S.inputProperty = pxLocaUseful;
             //S.color = random_rgba8(255);
-            S.color = currentMarkerColor;
+//            S.color = currentMarkerColor;
+            S.color.r=neuron_type_color[int(currentTraceType)][0];
+            S.color.g=neuron_type_color[int(currentTraceType)][1];
+            S.color.b=neuron_type_color[int(currentTraceType)][2];
         }
+
+
         S.x = pt.x;
-        S.y = pt.y;
-        S.z = pt.z;
-        if (V3Dmainwindow)
-            S.radius = V3Dmainwindow->global_setting.default_marker_radius;
-        S.on = true;
-        listLoc.append(S);
-        updateLandmark();
+		S.y = pt.y;
+		S.z = pt.z;
+		if (V3Dmainwindow)
+			S.radius = V3Dmainwindow->global_setting.default_marker_radius;
+		S.on = true;
+        qDebug()<<"Marker:"<<S.x<<","<<S.y<<","<<S.z<<","<<S.color.r<<","<<S.color.g<<","<<S.color.b;
+		listLoc.append(S);
+
+        if(!fromserver&&w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+        {
+            w->SetupCollaborateInfo();
+            w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,int(currentTraceType),"TeraFly");
+//			w->TeraflyCommunicator->UpdateSendPoolNode2(S.x, S.y, S.z, (int)S.color.r, (int)S.color.g, (int)S.color.b);//Update by FJ 2020/6/14
+        }/*else
+        {
+            QMessageBox::information(0,tr("Message "),
+                             tr("Connection Lost!Data has been saved!"),
+                             QMessageBox::Ok);*/
+//		updateLandmark();
     }
 #else
     ImageMarker S;
