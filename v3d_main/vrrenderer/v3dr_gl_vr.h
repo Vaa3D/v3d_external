@@ -165,7 +165,7 @@ public:
 	bool BInitCompositor();
 
         void UpdateNTList(QVector<XYZ> coords, int type);//add the receieved message/NT to sketchedNTList
-        QStringList NT2QString(NeuronTree); // prepare the message to be sent from currentNT.
+        QStringList NT2QString(NeuronTree nt,bool isCollaboate=0); // prepare the message to be sent from currentNT.
         QStringList UndoNT2QString();//never use,should be removed
         XYZ ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes);
 	XYZ ConvertGlobaltoLocalCoords(float x,float y,float z);

@@ -359,7 +359,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             if(pMainApplication->m_modeGrip_R==m_drawMode)
             {
                 qDebug()<<"TeraVR add seg";
-                QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT);
+                QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT,1);
                 if(waitsend.size())
                 {
                     waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
