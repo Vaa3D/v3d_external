@@ -23,8 +23,8 @@
 bin/*
 bin_msvc/*
 bin_old/*
-v3d_main/v3d/release/*
-v3d_main/v3d/debug/*
+#v3d_main/v3d/release/*
+#v3d_main/v3d/debug/*
 .project
 .cproject
 .settings
@@ -47,3 +47,5 @@ v3d_main/v3d/vaa3d
 build_linux-*/
 build_macosx-*/
 build_windows-*/
+
+doc/*

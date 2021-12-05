@@ -71,7 +71,7 @@ void VectorResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, fl
 
 void VectorResamplinger(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int start_i, int end_i, float epsilon)
 {
-     // Recursive Ramer¨CDouglas¨CPeucker algorithm
+     // Recursive Ramerï¿½CDouglasï¿½CPeucker algorithm
      loc_vec_resampled.clear();
      XYZ & loc_start = loc_vec.at(start_i);
      XYZ & loc_final = loc_vec.at(end_i);

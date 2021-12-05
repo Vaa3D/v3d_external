@@ -2068,7 +2068,6 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
             PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
 
-
         vaa3dMarkers.removeAt(vaa3dMarkers_tbd[i]);
     }
 
@@ -2205,10 +2204,12 @@ void CViewer::loadAnnotations(bool collaborate)
 
     V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
-    if (!collaborate)
+    if (!collaborate){
     view3DWidget->enableMarkerLabel(false);
 
     view3DWidget->getRenderer()->endSelectMode();
+    }
+
 
     //end curve editing mode
     QList<NeuronTree>* listNeuronTree = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->getHandleNeuronTrees();

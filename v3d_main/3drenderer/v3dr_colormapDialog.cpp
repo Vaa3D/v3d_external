@@ -183,7 +183,7 @@ void V3dr_colormapDialog::createFirst()
 
     for(int i=0; i<N_CHANNEL; i++)
     {
-    	connect(m_editor[i], SIGNAL(gradientStopsChanged(const QGradientStops &)), this, SLOT(updateColormap()));
+        connect(m_editor[i], SIGNAL(gradientStopsChanged(QGradientStops)), this, SLOT(updateColormap()));
     }
 
 

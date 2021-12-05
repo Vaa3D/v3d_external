@@ -650,6 +650,9 @@ void MainWindow::dropEvent(QDropEvent *event)
 
         //
         fileName.remove(0,8);
+        #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        fileName = "/" + fileName;
+        #endif
         if (!QFile::exists(fileName))
         {
             v3d_msg(QString("The file [%1] specified does not exist").arg(fileName));
@@ -2625,14 +2628,17 @@ void MainWindow::createMenus()
 
     //basic processing
     basicProcMenu = menuBar()->addMenu(tr("Image/Data"));
+    basicProcMenu->addAction(saveAct);
     connect(basicProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(basicProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     //Visualize menu
     visualizeProcMenu = menuBar()->addMenu(tr("Visualize"));
+    visualizeProcMenu->addAction(saveAct);
     connect(visualizeProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(visualizeProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     //image processing
     advancedProcMenu = menuBar()->addMenu(tr("Advanced"));
+    advancedProcMenu->addAction(saveAct);
     connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     //pipeline menu
@@ -2642,6 +2648,7 @@ void MainWindow::createMenus()
     //plugin menu
 
     pluginProcMenu = menuBar()->addMenu(tr("Plug-In"));
+    pluginProcMenu->addAction(saveAct);
 //    //20130904, PHC
 //    pluginProcMenu = new Vaa3DPluginMenu(tr("Plug-In"));
 //    pluginProcMenu->setPluginLoader(pluginLoader);

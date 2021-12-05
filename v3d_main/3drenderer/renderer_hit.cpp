@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
 //#include <QMessageBox>
-//#include "../terafly/src/control/CImport.h"
+#include "../terafly/src/control/CImport.h"
 #include "v3d_application.h"
 
 #endif //test_main_cpp

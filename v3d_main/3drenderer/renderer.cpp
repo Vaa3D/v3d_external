@@ -1580,6 +1580,9 @@ RGB8 getRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3
         for (V3DLONG ci=0; ci<3 && ci<dim4; ci++)
         {
             tmp.c[ci] = (data + ci*(dim3*dim2*dim1)) [(z)*dim2*dim1 + (y)*dim1 + (x)];
+            if(tmp.g != 0) {
+                qDebug()<<"ASSERT!!!";
+            }
         }
     }
     return tmp;
