@@ -3297,8 +3297,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
     #ifdef __ALLOW_VR_FUNCS__
-        if (w->TeraflyCommunicator
-    &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+        if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
 	{
         vector<V_NeuronSWC> vector_VSWC;
         curImg->ExtractDeletingNode(vector_VSWC);
@@ -6603,8 +6602,8 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 			//                                            "\n else -- custom \n"),
 			//                                          node_type, 0, 100, 1, &ok);
 			////=======
-#if defined(USE_Qt5)
-			node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+
+            node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
 				QObject::tr("SWC type: "
 				"\n 0 -- undefined (white)"
 				"\n 1 -- soma (black)"
@@ -6613,17 +6612,6 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 				"\n 4 -- apical dendrite (purple)"
 				"\n else -- custom \n"),
 				currentTraceType, 0, 100, 1, &ok);
-#else
-			node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
-				QObject::tr("SWC type: "
-				"\n 0 -- undefined (white)"
-				"\n 1 -- soma (black)"
-				"\n 2 -- axon (red)"
-				"\n 3 -- dendrite (blue)"
-				"\n 4 -- apical dendrite (purple)"
-				"\n else -- custom \n"),
-				currentTraceType, 0, 100, 1, &ok);
-#endif
 		}
 
 		if (!ok) return;
@@ -6931,33 +6919,8 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     if(neuronColorMode==0)
     {
         if (useCurrentTraceTypeForRetyping)
-        {
             node_type = currentTraceType;
-        }
         else
-        {
-            //#ifdef USE_Qt5
-            //        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-            //                                  QObject::tr("SWC type: "
-            //                                            "\n 0 -- undefined (white)"
-            //                                            "\n 1 -- soma (black)"
-            //                                            "\n 2 -- axon (red)"
-            //                                            "\n 3 -- dendrite (blue)"
-            //                                            "\n 4 -- apical dendrite (purple)"
-            //                                            "\n else -- custom \n"),
-            //                                          node_type, 0, 100, 1, &ok);
-            ////=======
-#if defined(USE_Qt5)
-            node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-                                             QObject::tr("SWC type: "
-                                                         "\n 0 -- undefined (white)"
-                                                         "\n 1 -- soma (black)"
-                                                         "\n 2 -- axon (red)"
-                                                         "\n 3 -- dendrite (blue)"
-                                                         "\n 4 -- apical dendrite (purple)"
-                                                         "\n else -- custom \n"),
-                                             currentTraceType, 0, 100, 1, &ok);
-#else
             node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
                                                  QObject::tr("SWC type: "
                                                              "\n 0 -- undefined (white)"
@@ -6966,10 +6929,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                                              "\n 3 -- dendrite (blue)"
                                                              "\n 4 -- apical dendrite (purple)"
                                                              "\n else -- custom \n"),
-                                                 currentTraceType, 0, 100, 1, &ok);
-#endif
-        }
-
+                                             currentTraceType,0,100,1,&ok);
         if(!ok) return;
         currentTraceType = node_type;
                 const int neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
@@ -7043,6 +7003,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             if (!p_listneuron)
                 continue;
             bool allUnitsOutsideZCut = false;
+            QList<V3DLONG> idlist;
             for (V3DLONG i=0;i<p_listneuron->size();i++)
             {
                 GLdouble px, py, pz, ix, iy, iz;
@@ -7050,7 +7011,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                 iy = p_listneuron->at(i).y;
                 iz = p_listneuron->at(i).z;
                 allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
-               QList<V3DLONG> idlist;
+
                 if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
                 {
                     py = viewport[3]-py; //the Y axis is reversed
@@ -7110,10 +7071,10 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                     }
                                     else
                                         {
-                                                                                     if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
-                                        {
-                                            idlist.push_back(p_listneuron->at(i).seg_id);
-                                        }
+                                         if(idlist.indexOf(p_listneuron->at(i).seg_id)==-1)
+                                            {
+                                                idlist.push_back(p_listneuron->at(i).seg_id);
+                                            }
                                         }
                                 }
                                 else
@@ -7126,9 +7087,10 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         }
                     }
                 }
+
             }
-            #ifdef __ALLOW_VR_FUNCS__
-                        if(w->TeraflyCommunicator)
+#ifdef __ALLOW_VR_FUNCS__
+            if(w->TeraflyCommunicator)
             {
                 for(int cnt=0;cnt<idlist.size();cnt++)
                     if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
@@ -7142,6 +7104,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     }
             }
 #endif
+
             curImg->update_3drenderer_neuron_view(w, this);
             QHash<QString, int>  soma_cnt;
             curImg->proj_trace_history_append();
@@ -7217,8 +7180,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
                 #ifdef __ALLOW_VR_FUNCS__
-                            if(w->TeraflyCommunicator
-                                &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                            if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                                 {
                                     w->SetupCollaborateInfo();
                                     w->TeraflyCommunicator->UpdateSplitSegMsg(

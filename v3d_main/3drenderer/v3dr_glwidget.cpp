@@ -2136,83 +2136,7 @@ void V3dR_GLWidget::process3Dwindow(bool show)
     }
 
 }
-//VR注释
-void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
-{
-    Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-    QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-    cout<<"vr listNeuronTrees.size()"<<listNeuronTrees->size();
-    My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
-    this->getMainWindow()->hide();
-    //process3Dwindow(false);
-    QMessageBox::StandardButton reply;
-    if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
-        reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-    else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
-        reply = QMessageBox::Yes;
-    else
-        reply = QMessageBox::No;
-    if (reply == QMessageBox::Yes)
-    {
-        if(VRClientON==false)
-        {
-            VRClientON = true;
-            if(myvrwin)
-                delete myvrwin;
-            myvrwin = 0;
-            myvrwin = new VR_MainWindow();
-            myvrwin->setWindowTitle("VR MainWindow");
-            //bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
 
-            if(!TeraflyCommunicator)  // there is error with linking ,linkerror = 0
-            {qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); VRClientON = false;return;}
-            connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
-            QString VRinfo = this->getDataTitle();
-            qDebug()<<"VR get data_title = "<<VRinfo;
-            resumeCollaborationVR = false;//reset resumeCollaborationVR
-            myvrwin->ResIndex = Resindex;
-            int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
-
-            qDebug()<<"result is "<<_call_that_func;
-            qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-#ifdef __ALLOW_VR_FUNCS_
-            UpdateVRcollaInfo();
-#endif
-            updateWithTriView();
-
-            if (_call_that_func > 0)
-            {
-                resumeCollaborationVR = true;
-                emit(signalCallTerafly(_call_that_func));
-            }
-            else if(_call_that_func == -1)
-            {
-                call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-            }
-        }
-        else
-        {
-            v3d_msg("The ** client is running.Failed to start VR client.");
-            this->getMainWindow()->show();
-        }
-    }
-    else
-    {
-        // bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
-        qDebug()<<"result is "<<_call_that_func;
-        qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-        updateWithTriView();
-        if (_call_that_func > 0)
-        {
-            emit(signalCallTerafly(_call_that_func));
-        }
-        else if(_call_that_func == -1)
-        {
-            call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-        }
-
-}
 //called by clicking collaborate button in 3D View or shift/zoom in VR
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
@@ -4700,7 +4624,7 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 {
-    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
+    QStringList markerXYZ=markerPOS.split(" ",Qt::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
     LocationSimple marker;
@@ -4731,7 +4655,7 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 }
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
 {
-    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
+    QStringList markerXYZ=markerPOS.split(" ",Qt::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
     LocationSimple marker/*=markers.at(0)*/;
@@ -4775,12 +4699,12 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
 
 void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 {
-//    QStringList delSegGlobalList=segInfo.split(";",QString::SkipEmptyParts);
+//    QStringList delSegGlobalList=segInfo.split(";",Qt::SkipEmptyParts);
 //    vector <XYZ> local_list;
 //    SetupCollaborateInfo();
 //    for(int i=0;i<delSegGlobalList.size();i++)
 //    {
-//        QStringList nodeXYZ=delSegGlobalList.at(i).split(" ",QString::SkipEmptyParts);
+//        QStringList nodeXYZ=delSegGlobalList.at(i).split(" ",Qt::SkipEmptyParts);
 //        auto localXYZ=ConvertreceiveCoords(nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat(),nodeXYZ.at(3).toFloat());
 //        local_list.push_back(localXYZ);
 //    }
@@ -4800,7 +4724,7 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 //    for(int i=0;i<cnt;i++)
 //    {
 //        NeuronSWC S;
-//        QStringList nodeList=list[i].split(" ",QString::SkipEmptyParts);
+//        QStringList nodeList=list[i].split(" ",Qt::SkipEmptyParts);
 //        S.n=i+1;
 //        S.type=nodeList[0].toUInt();
 //        S.x=nodeList[1].toFloat();
@@ -4817,7 +4741,7 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
 {
     if(segInfo.isEmpty()) return;
-    QStringList delSegGlobalList=segInfo.split(";",QString::SkipEmptyParts);
+    QStringList delSegGlobalList=segInfo.split(";",Qt::SkipEmptyParts);
     QVector<XYZ> coords;
     for(int i=0;i<delSegGlobalList.size();i++)
     {
@@ -4847,7 +4771,7 @@ void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
 void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 {
 //    qDebug()<<"in collaAddseg"<<segInfo;
-//    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
+//    QStringList qsl=segInfo.split(";",Qt::SkipEmptyParts);
 //    SetupCollaborateInfo();
 //    vector<XYZ> loc_coords;
 //    int type;
@@ -4955,12 +4879,12 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
         NeuronTree newTempNT;
         newTempNT.listNeuron.clear();
         newTempNT.hashNeuron.clear();
-        QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
+        QStringList qsl=segInfo.split(";",Qt::SkipEmptyParts);
 //        qDebug()<<segInfo;
         for (int i = 0; i<qsl.size(); i++)
         {
             NeuronSWC S;
-            QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
+            QStringList nodelist=qsl[i].split(" ",Qt::SkipEmptyParts);
 //            qDebug()<<i<<":"<<nodelist;
             if(nodelist.size()<4) return;
             S.n=i+1;

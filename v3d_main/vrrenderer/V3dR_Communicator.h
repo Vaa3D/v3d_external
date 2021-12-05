@@ -1,11 +1,9 @@
 ﻿#ifndef V3DR_COMMUNICATOR_H
 #define V3DR_COMMUNICATOR_H
 
-#include <QObject>
-#include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
-#include <QMessageBox>
+
 //#include"../3drenderer/v3dr_common.h"
 //#include <QRegExpValidator>
 //#ifdef _WIN32

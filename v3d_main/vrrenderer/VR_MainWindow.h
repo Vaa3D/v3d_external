@@ -9,7 +9,7 @@
 //#ifdef _WIN32
 //    #include <windows.h>
 //#endif
-
+#include "V3dR_Communicator.h"
 #include "../basic_c_fun/v3d_interface.h"
 struct VRoutInfo
 {
@@ -24,7 +24,7 @@ class VR_MainWindow : public QWidget
 {
     Q_OBJECT
 public:
-    explicit VR_MainWindow();
+    explicit VR_MainWindow(V3dR_Communicator *TeraflyCommunicator);
     ~VR_MainWindow();
 	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator*TeraflyCommunicator, XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
     void RunVRMainloop(XYZ* zoomPOS = 0);

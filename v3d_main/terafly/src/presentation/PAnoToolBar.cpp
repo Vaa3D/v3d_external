@@ -384,16 +384,23 @@ void PAnoToolBar::buttonUndoClicked()
         if(expl->getGLWidget()->TeraflyCommunicator)
         {
             expl->getGLWidget()->TeraflyCommunicator->UpdateUndoDeque();
-        }else
+        }else             if(expl && expl->undoStack.canUndo())
         {
+            expl->undoStack.undo();
+            if(!expl->undoStack.canUndo())
+                buttonUndo->setEnabled(false);
+            buttonRedo->setEnabled(true);
+        }
+#else
+        if(expl && expl->undoStack.canUndo())
+        {
+            expl->undoStack.undo();
+            if(!expl->undoStack.canUndo())
+                buttonUndo->setEnabled(false);
+            buttonRedo->setEnabled(true);
+        }
 #endif
-            if(expl && expl->undoStack.canUndo())
-            {
-                expl->undoStack.undo();
-                if(!expl->undoStack.canUndo())
-                    buttonUndo->setEnabled(false);
-                buttonRedo->setEnabled(true);
-            }
+
 }
 
 void PAnoToolBar::buttonRedoClicked()
@@ -407,16 +414,22 @@ void PAnoToolBar::buttonRedoClicked()
         qDebug()<<"redo 1";
         expl->getGLWidget()->TeraflyCommunicator->UpdateRedoDeque();
         qDebug()<<"redo 2";
-    }else
+    }else if(expl && expl->undoStack.canRedo())
     {
-        #endif
-        if(expl && expl->undoStack.canRedo())
-        {
-            expl->undoStack.redo();
-            if(!expl->undoStack.canRedo())
-                buttonRedo->setEnabled(false);
-            buttonUndo->setEnabled(true);
-        }
+        expl->undoStack.redo();
+        if(!expl->undoStack.canRedo())
+            buttonRedo->setEnabled(false);
+        buttonUndo->setEnabled(true);
+    }
+    #else
+    if(expl && expl->undoStack.canRedo())
+    {
+        expl->undoStack.redo();
+        if(!expl->undoStack.canRedo())
+            buttonRedo->setEnabled(false);
+        buttonUndo->setEnabled(true);
+    }
+    #endif
 
 }
 

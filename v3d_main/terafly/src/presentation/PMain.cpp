@@ -61,7 +61,7 @@
 #include <QFile>
 #ifdef __ALLOW_VR_FUNCS__
 #include "../vrrenderer/V3dR_Communicator.h"
-#include "../../../../vrrenderer/managesocket.h"
+#include "../vrrenderer/managesocket.h"
 #endif
 
 
@@ -4044,7 +4044,7 @@ void PMain::import()
         QString swcfile_path;
         {
             QString dirpath=QFileInfo(anofile_path).absolutePath();
-            QString filename=QFileInfo(anofile_path).baseName().split('.',QString::SkipEmptyParts).first().trimmed();
+            QString filename=QFileInfo(anofile_path).baseName().split('.',Qt::SkipEmptyParts).first().trimmed();
             {
                 if(QFile(dirpath+"/"+filename+".apo").exists())
                     apofile_path=dirpath+"/"+filename+".apo";

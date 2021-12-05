@@ -317,6 +317,7 @@ private:
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
+public:
 	NeuronTree currentNT;// currently drawn stroke of neuron
 	
 	NeuronTree tempNT;//used somewhere, can be change to a local variable

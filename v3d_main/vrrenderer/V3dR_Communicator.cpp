@@ -1,12 +1,11 @@
 ﻿#include "V3dR_Communicator.h"
 #include "../terafly/src/control/CPlugin.h"
-#include "../terafly/src/presentation/PMain.h"
+//#include "../terafly/src/presentation/PMain.h"
 #include <QRegExp>
-#include <QtGui>
 #include <QListWidgetItem>
 #include <iostream>
 #include <sstream>
-
+#include <QMessageBox>
 V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 {
 	CreatorMarkerPos = 0;
@@ -135,7 +134,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         if(operationtype == "drawline" )
         {
             QString msg=operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(';',Qt::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -153,7 +152,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }else if(operationtype == "delline")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(';',Qt::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -172,7 +171,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }else if(operationtype == "addmarker")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(';',Qt::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -189,7 +188,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }else if(operationtype == "delmarker")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(';',Qt::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -206,7 +205,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }else if(operationtype == "retypeline")
         {
             QString msg =operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(';',Qt::SkipEmptyParts);
             if(listwithheader.size()<=1)
             {
                 qDebug()<<"msg only contains header:"<<msg;

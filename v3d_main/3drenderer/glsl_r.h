@@ -67,12 +67,6 @@ Make sure to check extension "GL_EXT_geometry_shader4" before using Geometry sha
 #ifndef A_GLSL_H
 #define A_GLSL_H
 
-
-#if (defined(_WIN32) || defined(_WIN64))
-#include <windows.h>
-typedef char GLchar;
-#endif
-
 #ifdef MACOS_SYSTEM
 #include <gl.h>
 #else

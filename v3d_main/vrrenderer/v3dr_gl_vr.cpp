@@ -749,7 +749,7 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
 	, showshootingray(false)
 	, replacetexture(false)
 	, CollaborationTargetMarkerRes(1, 1, 1)
-    , line_tobedeleted(-1),marker_tobedeleted(-1)
+    , line_tobedeleted(""),marker_tobedeleted("")
     , undo(false)
     ,CollaborationCreatorGLOPos(glomarkerPOS.x,glomarkerPOS.y,glomarkerPOS.z)
 	//, font_VR (NULL)
@@ -1135,14 +1135,6 @@ bool CMainApplication::BInitCompositor()//note: VRCompositor is responsible for 
 //-----------------------------------------------------------------------------
 void CMainApplication::Shutdown()
 {
-	// float trans_x = 0.6 ;
-	// float trans_y = 1.5 ;
-	// float trans_z = 0.4 ;
-	
-	//remeber last Grip choice
-	// global_padm_modeGrip_L = m_modeGrip_L;
-	// global_padm_modeGrip_R = m_modeGrip_R;
-	//reverse the normalization (so that the next VR session can normalize correctly)
 	m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(loadedNTCenter.x,loadedNTCenter.y,loadedNTCenter.z) ); 
 	m_globalMatrix = glm::scale(m_globalMatrix,glm::vec3(1.0f/m_globalScale,1.0f/m_globalScale,1.0f/m_globalScale));
 	//m_globalMatrix = glm::translate(m_globalMatrix,glm::vec3(-trans_x,-trans_y,-trans_z) ); //fine tune
@@ -1305,9 +1297,7 @@ void CMainApplication::Shutdown()
 		if ( m_unCtrTexProgramID )
 		{
 			glDeleteProgram( m_unCtrTexProgramID );
-		}
-
-		
+		}	
 		if (iSketchNTLMorphologyVAO.size()>0)
 		{
 			for(int i=0;i<iSketchNTLMorphologyVAO.size();i++)
@@ -1321,12 +1311,6 @@ void CMainApplication::Shutdown()
 			iSketchNTLMorphologyIndexBuffer.clear();
 			iSketchNTLMorphologyVertcount.clear();
 		}
-
-		//for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
-		//{
-		//	delete (*i);
-		//}
-		qDebug()<<"Start to delete sphere....";
 		int j;
 		j=0;
 		for(auto i = loaded_spheres.begin();i!=loaded_spheres.end();i++) 
@@ -1450,32 +1434,11 @@ void CMainApplication::Shutdown()
 		{
 			glDeleteVertexArrays( 1, &m_unControllerVAO );
 			glDeleteBuffers(1, &m_glControllerVertBuffer);
-		} 
-	}
-
-//qDebug()<<"delete 14";
-	if( m_pCompanionWindow )
-	{
-	//	if(font_VR->self)
-	//	{
-	//		delete font_VR->self;
-	//		qDebug()<<"delete self ";
-	//		font_VR->self = 0;
-	//	}
-	//	delete font_VR;
-	//	qDebug()<<"delete font ";
-	//	font_VR = NULL;
-	//	qDebug()<<"deleted font of VR";
-		SDL_DestroyWindow(m_pCompanionWindow);
-
-
-		m_pCompanionWindow = NULL;
-	}
-
-//qDebug()<<"delete 15";
-    SDL_Quit();
-    qDebug()<<"shut down sucess!";
+        }
 }
+
+
+
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -3972,7 +3935,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		//	QDateTime mytime = QDateTime::currentDateTime();
 		//	QString imageName = "FILE";
 		//	if (img4d) imageName = img4d->getFileName();
-		//	QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+        //	QStringList qsl = imageName.trimmed().split("/",Qt::SkipEmptyParts);
 		//	QString name = qsl.back();
 		//	QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
 		//	//shift the neuron nodes to get global coordinates
@@ -3989,7 +3952,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		//	QDateTime mytime = QDateTime::currentDateTime();
 		//	QString imageName = "FILE";
 		//	if (img4d) imageName = img4d->getFileName();
-		//	QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+        //	QStringList qsl = imageName.trimmed().split("/",Qt::SkipEmptyParts);
 		//	QString name = qsl.back();
 		//	QString filename = QCoreApplication::applicationDirPath()+"/annotations_VR_" + name + "_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".marker";
 
@@ -4038,7 +4001,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
         //             QDateTime mytime = QDateTime::currentDateTime();
         //             QString imageName = "FILE";
         //             if (img4d) imageName = img4d->getFileName();
-        //             QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+        //             QStringList qsl = imageName.trimmed().split("/",Qt::SkipEmptyParts);
         //             QString name = qsl.back();
         //             QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt";
         //             //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".txt"; //QCoreApplication::applicationDirPath()+
@@ -4053,7 +4016,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
         //             QDateTime mytime = QDateTime::currentDateTime();
         //             QString imageName = "FILE";
         //             if (img4d) imageName = img4d->getFileName();
-        //             QStringList qsl = imageName.trimmed().split("/",QString::SkipEmptyParts);
+        //             QStringList qsl = imageName.trimmed().split("/",Qt::SkipEmptyParts);
         //             QString name = qsl.back();
         //             QString filename = imageName + "_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc";
         //             //QString filename = "["+ name +  "]_VR_" + mytime.toString("yyyy_MM_dd_hh_mm") + ".swc"; //QCoreApplication::applicationDirPath()+
