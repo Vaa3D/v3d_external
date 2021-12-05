@@ -70,7 +70,7 @@ bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoi
 #ifdef __ALLOW_VR_FUNCS__
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-bool V3dR_GLWidget::resumeCollaborationVR=false;
+
 #endif
 #include <QWheelEvent>
 //PROGRESS_DIALOG("", 0)
@@ -4574,10 +4574,11 @@ void V3dR_GLWidget::cancelSelect()
 {
     if (renderer) renderer->endSelectMode();
 }
-#ifdef __ALLOW_VR_FUNCS_
+#ifdef __ALLOW_VR_FUNCS__
 //QStringList V3dR_GLWidget::global_delMSG ;
 bool V3dR_GLWidget::noTerafly=true;
 V3dR_Communicator* V3dR_GLWidget::TeraflyCommunicator=nullptr;
+bool V3dR_GLWidget::resumeCollaborationVR=false;
 void V3dR_GLWidget::UpdateVRcollaInfo()
 {
 //    qDebug()<<"UpdateVRcollaInfo";

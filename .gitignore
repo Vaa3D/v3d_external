@@ -48,4 +48,4 @@ build_linux-*/
 build_macosx-*/
 build_windows-*/
 
-doc/*
+doc*

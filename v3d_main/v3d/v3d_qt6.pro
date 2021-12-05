@@ -530,7 +530,6 @@ SOURCES += \
     ../vrrenderer/VRFinger.cpp \
     ../vrrenderer/V3dR_Communicator.cpp \
     ../vrrenderer/VR_MainWindow.cpp
-        ../vrrenderer/managesocket.cpp
 }
 
 unix:!macx{
@@ -548,8 +547,6 @@ HEADERS += \
     ../vrrenderer/VRFinger.h \
     ../vrrenderer/V3dR_Communicator.h \
     ../vrrenderer/VR_MainWindow.h
-        ../vrrenderer/managesocket.h \
-
 SOURCES += \
     ../vrrenderer/v3dr_gl_vr.cpp \
     ../vrrenderer/Cylinder.cpp \

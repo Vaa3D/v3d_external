@@ -35,6 +35,9 @@ public:
      * 建立该对象的信号和槽连接     *
      */
     ManageSocket(QObject *partent=nullptr);
+    virtual ~ManageSocket(){
+
+    }
 
     /**
      * @brief sendMsg 发送消息

@@ -355,7 +355,7 @@ public:
 	double cur_createmode;
 	V_NeuronSWC colla_cur_seg;
 	vector<XYZ> ExtractDeletingNode();
-        vector<XYZ> ExtractDeletingNode(vector<V_NeuronSWC> &);
+    vector<XYZ> ExtractDeletingNode(vector<V_NeuronSWC> &);
 
     bool compute_rgn_stat(LocationSimple & pt, int channo);
     void loadLandmarkFromFile();

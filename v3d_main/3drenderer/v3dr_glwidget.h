@@ -54,10 +54,6 @@ class V3dr_surfaceDialog;
 #ifdef __ALLOW_VR_FUNCS__
 #include "../vrrenderer/VR_MainWindow.h"
 #include "../vrrenderer/V3dR_Communicator.h"
-class VR_MainWindow;
-class Renderer;
-class V3dR_MainWindow;
-class V3dR_Communicator;
 #endif
 //class SurfaceObjGeometryDialog;
 

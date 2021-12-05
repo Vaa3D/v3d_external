@@ -3296,14 +3296,16 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
+
     #ifdef __ALLOW_VR_FUNCS__
         if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
 	{
         vector<V_NeuronSWC> vector_VSWC;
-        curImg->ExtractDeletingNode(vector_VSWC);
+
+//        curImg->ExtractDeletingNode(vector_VSWC);
 
 		w->SetupCollaborateInfo();
-        for(auto seg:vector_VSWC)
+        for(auto &seg:vector_VSWC)
             w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);

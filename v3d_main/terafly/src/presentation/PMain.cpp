@@ -61,7 +61,6 @@
 #include <QFile>
 #ifdef __ALLOW_VR_FUNCS__
 #include "../vrrenderer/V3dR_Communicator.h"
-#include "../vrrenderer/managesocket.h"
 #endif
 
 
@@ -266,7 +265,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
         importAction->setEnabled(false);
         downAction->setEnabled(false);
         loadAction->setEnabled(false);
-        managesocket=nullptr;
 		Communicator=nullptr;
         userView=nullptr;
 #endif
@@ -4012,266 +4010,44 @@ void PMain::login()
         }else
             settings.setValue("vr_userName", userName);
     }
-    if(managesocket)
-    {
-        managesocket->deleteLater();
-        managesocket=nullptr;
-    }
-    managesocket=new ManageSocket();
-    managesocket->ip=serverName;
-    managesocket->name=userName;
-    qDebug()<<"servername = "<<serverName<<" username "<<userName;
-    managesocket->connectToHost(serverName,23763);
-//    managesocket->connectToHost(serverName,26371);
-    qDebug()<<connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-    connect(managesocket,SIGNAL(connected()),this,SLOT(onManageConnected()));
-    if( !managesocket->waitForConnected())
-    {
-        QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
-        delete  managesocket;
-        managesocket=nullptr;
-        return;
-    }
+
 }
 
 void PMain::import()
 {
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        QString anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
-        if(anofile_path.isNull()) return;
-        QString apofile_path;
-        QString swcfile_path;
-        {
-            QString dirpath=QFileInfo(anofile_path).absolutePath();
-            QString filename=QFileInfo(anofile_path).baseName().split('.',Qt::SkipEmptyParts).first().trimmed();
-            {
-                if(QFile(dirpath+"/"+filename+".apo").exists())
-                    apofile_path=dirpath+"/"+filename+".apo";
-                else if(QFile(dirpath+"/"+filename+".ano.apo").exists())
-                    apofile_path=dirpath+"/"+filename+".ano.apo";
-            }
 
-            {
-                if(QFile(dirpath+"/"+filename+".swc").exists())
-                    swcfile_path=dirpath+"/"+filename+".swc";
-                if(QFile(dirpath+"/"+filename+".eswc").exists())
-                    swcfile_path=dirpath+"/"+filename+".eswc";
-                else if(QFile(dirpath+"/"+filename+".ano.swc").exists())
-                    swcfile_path=dirpath+"/"+filename+".ano.swc";
-                else if(QFile(dirpath+"/"+filename+".ano.eswc").exists())
-                    swcfile_path=dirpath+"/"+filename+".ano.eswc";
-            }
-
-            {
-                if(!QDir(QCoreApplication::applicationDirPath()+"/tmp").exists())
-                {
-                    QDir(QCoreApplication::applicationDirPath()).mkdir("tmp");
-                }
-                writeESWC_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc",readSWC_file(swcfile_path));
-                writeAPO_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo",readAPO_file(apofile_path));
-                swcfile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc";
-                apofile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo";
-            }
-        }
-        QStringList filepaths;
-        QStringList filenames;
-
-        filepaths.push_back(anofile_path);
-        filepaths.push_back(apofile_path);
-        filepaths.push_back(swcfile_path);
-        filenames.push_back(anofile_path.section('/',-1));
-        filenames.push_back(apofile_path.section('/',-1));
-        filenames.push_back(swcfile_path.section('/',-1));
-        qDebug()<<"send file paths "<<filepaths;
-        managesocket->sendFiles(filepaths,filenames);
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-
-}
-
-void PMain::download()
-{
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        managesocket->sendMsg(QString("down;data:CurrentFiles"));
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::load()
-{
-    CViewer *cur_win = CViewer::getCurrent();
-    if(!cur_win)
-    {
-        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
-        return;
-    }
-
-
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        qDebug()<<"load";
-        managesocket->pmain=this;
-        managesocket->sendMsg(QString("load;data:CurrentFiles"));
-
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
 }
 void PMain::logout()
 {
-    qDebug()<<"log out";
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-//        if(this->Communicator)
-//            this->Communicator->socket->disconnectFromHost();
-        managesocket->flag=true;
-        qDebug()<<"disconnected";
-        managesocket->disconnectFromHost();
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
+
 }
 
 void PMain::deleteManageSocket()
 {
-    qDebug()<<"Manage socket disconnected";
-    if(!managesocket->flag)
-    {
-        QMessageBox::information(this,tr("Manage"),
-                                 tr("User is offline!\nPlease re-connet to the server!"),
-                                 QMessageBox::Ok);
-    }
-    managesocket->pmain=nullptr;
-    managesocket->deleteLater();
-    managesocket=nullptr;
-    loginAction->setText("log in");
-    loginAction->setEnabled(true);
-    logoutAction->setEnabled(false);
-    downAction->setEnabled(false);
-    importAction->setEnabled(false);
-    loadAction->setEnabled(false);
-    collaborationVRView->setDisabled(true);
-    collautotrace->setDisabled(1);
-    teraflyVRView->setEnabled(true);
-    return;
+
+
 }
 void PMain::onManageConnected()
 {
-    QMessageBox::information(this, tr("Success"),tr("connect sucess"));
-    loginAction->setText(managesocket->ip);
-    loginAction->setEnabled(false);
-    logoutAction->setEnabled(true);
-    importAction->setEnabled(true);
-    downAction->setEnabled(true);
-    loadAction->setEnabled(true);
+
 }
 void PMain::ColLoadANO(QString ANOfile)
 {
-    qDebug()<<ANOfile;
-    CViewer *cur_win = CViewer::getCurrent();
-    QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
-    QStringList anoList=QDir(loaddir).entryList(QDir::Files);
-    qDebug()<<anoList;
-    if(!anoList.contains(ANOfile))
-    {
-        qDebug()<<"cannot find load data "<<ANOfile;
-        return;
-    }
-    QString ANOpath=QCoreApplication::applicationDirPath()+"/loaddata/"+ANOfile;
-
-    annotationsPathLRU = ANOpath.toStdString();
-    CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
-    NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
-
-    // save current cursor and set wait cursor
-    QCursor cursor = cur_win->view3DWidget->cursor();
-    if(PAnoToolBar::isInstantiated())
-        PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-    CViewer::setCursor(Qt::WaitCursor);
-
-    // load
-    cur_win->loadAnnotations();
-    saveAnnotationsAction->setEnabled(true);
-    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
-    virtualSpaceSizeMenu->setEnabled(false);
-    myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
-
-    // reset saved cursor
-    CViewer::setCursor(cursor);
-    if(PAnoToolBar::isInstantiated())
-        PAnoToolBar::instance()->setCursor(cursor);
-    annotationChanged = true;
-    updateOverview();
-    //删除加载的文件
-    {
-        //        QRegExp anoExp("(.*).ano");
-        //        QString tmp;
-        //        if(anoExp.indexIn(ANOpath)!=-1)
-        //        {
-        //            tmp=anoExp.cap(1);
-        //        }
-
-        //        delete load .ANO
-        //        QFile *f = new QFile(tmp+".ano");
-        //        if(f->exists())
-        //            f->remove();
-        //        delete f;
-        //        f=0;
-
-        //        f = new QFile(tmp+".ano.eswc");
-        //        if(f->exists())
-        //            f->remove();
-        //        delete f;
-        //        f=0;
-
-        //        f = new QFile(tmp+".ano.apo");
-        //        if(f->exists())
-        //            f->remove();
-        //        delete f;
-        //        f=0;
-    }
-    V3dR_GLWidget::noTerafly=false;
-
 }
 void PMain::updateuserview(QString userlist)
 {
-    if(userView==nullptr)
-    {
-        userView=new QListWidget;
-        tabs->addTab(userView,"Online Users");
-    }
 
-    userView->clear();
-    userView->addItems(userlist.split(";"));
-//    userView->show();
 }
 void PMain::onMessageDisConnect()
 {
-    this->Communicator->socket->deleteLater();
-    this->Communicator ->deleteLater();
-    this->Communicator = nullptr;
-    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
-    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
-    QMessageBox::information(0,tr("Message "),
-                     tr("Data unloaded.Further operations won't be synced!"),
-                     QMessageBox::Ok);
-    if(userView)
-    {
-        userView->deleteLater();
-        userView=nullptr;
-    }
-    if(managesocket!=0)
-        managesocket->disconnectFromHost();
+
 }
 
+void PMain::download()
+{}
+
+void PMain::load()
+{}
 //void PMain::startAutoTrace()
 //{
 //    const int blocksize=128;

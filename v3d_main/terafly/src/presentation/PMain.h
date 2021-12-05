@@ -47,14 +47,18 @@
 #include "PTabVolumeInfo.h"
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
-class ManageSocket;
 class V3dR_Communicator;
 /*---------------------------------------------------*/
 #endif
 class terafly::PMain : public QWidget
 {
     Q_OBJECT
-
+public:
+#ifdef __ALLOW_VR_FUNCS__
+        QPushButton* teraflyVRView;
+        QPushButton* collaborationVRView;
+                QPushButton* collautotrace;
+#endif
 	protected: //20170623 RZC: change from private for merging mozak
 	//private:
 
@@ -212,11 +216,7 @@ class terafly::PMain : public QWidget
         QSpinBox* Ddim_sbox;
         QSpinBox* Tdim_sbox;
         QComboBox* resolution_cbox;
-#ifdef __ALLOW_VR_FUNCS__
-		QPushButton* teraflyVRView;
-		QPushButton* collaborationVRView;
-                QPushButton* collautotrace;
-#endif
+
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
         QSlider* cacheSens;
@@ -595,7 +595,6 @@ class terafly::PMain : public QWidget
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 #ifdef __ALLOW_VR_FUNCS__
 public:
-        ManageSocket * managesocket;
 		V3dR_Communicator * Communicator;
 protected:
         QMenu* collaborateMenu;
