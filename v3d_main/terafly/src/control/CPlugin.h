@@ -902,11 +902,11 @@ class terafly::PluginInterface
 
         // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
         static NeuronTree getSWC(int resolution = infp<int>());
-        static bool setSWC(NeuronTree & nt, bool collaborate=false，int resolution = infp<int>());
+        static bool setSWC(NeuronTree & nt, bool collaborate=false,int resolution = infp<int>());
 
         // access the 3D landmark list defined for the whole image at the given resolution (default: highest resolution)
         static LandmarkList getLandmark(int resolution = infp<int>());
-        static bool setLandmark(LandmarkList & landmark_list, bool collaborate=false，int resolution = infp<int>());
+        static bool setLandmark(LandmarkList & landmark_list, bool collaborate=false,int resolution = infp<int>());
 
         // get path of the image volume at the given resolution (default: highest resolution)
         static std::string getPath(int resolution = infp<int>());
