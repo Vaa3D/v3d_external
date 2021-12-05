@@ -1835,7 +1835,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
 
-
+#ifdef __ALLOW_VR_FUNCS__
             if (!fromserver)
 			{
 
@@ -1856,6 +1856,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
                                      QMessageBox::Ok);
                 }*/
 			}	
+#endif
             curImg->update_3drenderer_neuron_view(w, this);
         }
     }

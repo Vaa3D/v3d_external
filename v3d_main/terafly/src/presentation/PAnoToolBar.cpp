@@ -380,11 +380,13 @@ void PAnoToolBar::buttonUndoClicked()
 
 	qDebug() << "-----------------terafly undo --------------";
         CViewer* expl = CViewer::getCurrent();
+#ifdef __ALLOW_VR_FUNCS__
         if(expl->getGLWidget()->TeraflyCommunicator)
         {
             expl->getGLWidget()->TeraflyCommunicator->UpdateUndoDeque();
         }else
         {
+#endif
             if(expl && expl->undoStack.canUndo())
             {
                 expl->undoStack.undo();
@@ -392,7 +394,6 @@ void PAnoToolBar::buttonUndoClicked()
                     buttonUndo->setEnabled(false);
                 buttonRedo->setEnabled(true);
             }
-        }
 }
 
 void PAnoToolBar::buttonRedoClicked()
@@ -400,6 +401,7 @@ void PAnoToolBar::buttonRedoClicked()
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 
     CViewer* expl = CViewer::getCurrent();
+    #ifdef __ALLOW_VR_FUNCS__
     if(expl->getGLWidget()->TeraflyCommunicator)
     {
         qDebug()<<"redo 1";
@@ -407,6 +409,7 @@ void PAnoToolBar::buttonRedoClicked()
         qDebug()<<"redo 2";
     }else
     {
+        #endif
         if(expl && expl->undoStack.canRedo())
         {
             expl->undoStack.redo();
@@ -414,7 +417,7 @@ void PAnoToolBar::buttonRedoClicked()
                 buttonRedo->setEnabled(false);
             buttonUndo->setEnabled(true);
         }
-    }
+
 }
 
 /**********************************************************************************

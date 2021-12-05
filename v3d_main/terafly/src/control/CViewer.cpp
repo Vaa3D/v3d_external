@@ -1138,9 +1138,11 @@ void CViewer::receiveData(
                 if (PMain::getInstance()->resumeVR)
                 {
                     PMain::getInstance()->resumeVR = false;
+#ifdef __ALLOW_VR_FUNCS
                     if(PMain::getInstance()->Communicator)
                         QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
                     else
+#endif
                         QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
                 }
             }
@@ -2041,6 +2043,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                    vaa3dMarkers[j].z == imageMarkers[i].z &&
                    !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this))
                     vaa3dMarkers_tbd.push_back(j);
+#ifdef __ALLOW_VR_FUNCS__
             if(view3DWidget->TeraflyCommunicator!=nullptr
 				&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
             {
@@ -2048,6 +2051,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                 view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(imageMarkers[i].x,
                                imageMarkers[i].y,imageMarkers[i].z,"TeraFly");
             }
+#endif
         }
     }
 
@@ -2133,7 +2137,7 @@ void CViewer::updateAnnotationSpace()
 
 }
 
-void CViewer::loadAnnotations() 
+void CViewer::loadAnnotations(bool collaborate)
 {
     myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
@@ -2201,6 +2205,7 @@ void CViewer::loadAnnotations()
 
     V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
+    if (!collaborate)
     view3DWidget->enableMarkerLabel(false);
 
     view3DWidget->getRenderer()->endSelectMode();
@@ -2517,9 +2522,11 @@ void CViewer::restoreViewerFrom(CViewer* source)
         if (PMain::getInstance()->resumeVR)
         {
             PMain::getInstance()->resumeVR = false;
+            #ifdef __ALLOW_VR_FUNCS__
             if(PMain::getInstance()->Communicator)
                 QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
             else
+#endif
             QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
         }
 

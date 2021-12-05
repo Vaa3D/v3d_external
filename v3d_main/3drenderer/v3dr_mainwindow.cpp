@@ -516,7 +516,7 @@ bool V3dR_GLWidget::screenShot(QString filename)
     return r;
 }
 
-void V3dR_MainWindow::saveFrameFunc(int i)
+void V3dR_MainWindow::saveFrameFunc(int i)//huanglei please test
 {
 	if (! glWidget)
 	{
@@ -525,18 +525,18 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 	}
 
 
-	QImage image1 = glWidget->grabFrameBuffer();
+//	QImage image1 = glWidget->grabFrameBuffer();
 
         const char* format = SAVE_IMG_FORMAT;
 	QString curfile = QString("%1/a%2.%3").arg(outputDir).arg(i).arg(format);
-	if (image1.save(curfile, format, 100)) //uncompressed
-	{
-		printf("Successful to save frame %d: [%s]\n", i, curfile.toUtf8().data());
-	}
-	else
-	{
-		printf("Failed to save frame %d: [%s]\n", i, curfile.toUtf8().data());
-	}
+//	if (image1.save(curfile, format, 100)) //uncompressed
+//	{
+//		printf("Successful to save frame %d: [%s]\n", i, curfile.toUtf8().data());
+//	}
+//	else
+//	{
+//		printf("Failed to save frame %d: [%s]\n", i, curfile.toUtf8().data());
+//	}
 }
 
 void V3dR_MainWindow::saveMovie()

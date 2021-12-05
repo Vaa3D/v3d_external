@@ -61,7 +61,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "basic_landmark.h"
 
 //#include <QGLFormat>
-
+#include <QRegExp>
 #include<QWidget>
 #include <QMessageBox>
 #include <QOpenGLFunctions_1_1>
@@ -146,10 +146,11 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
     this->show_progress_bar = true;
 
 	terafly::PMain* pMain = terafly::PMain::getInstance();
+    #ifdef __ALLOW_VR_FUNCS__
 	if (pMain)
 		this->TeraflyCommunicator = pMain->Communicator;
 	SetupCollaborateInfo();
-	
+#endif
 	///////////////////////////////////////////////////////////////
 	init_members();
 	///////////////////////////////////////////////////////////////
@@ -201,7 +202,7 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 //////////////////////////////////////////////////////
 void V3dR_GLWidget::deleteRenderer() {makeCurrent(); DELETE_AND_ZERO(renderer);} //090710 RZC: to delete renderer before ~V3dR_GLWidget()
 void V3dR_GLWidget::createRenderer() {makeCurrent(); deleteRenderer(); initializeGL();} //090710 RZC: to create renderer at any time
-
+#ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::SetupCollaborateInfo()
 {
     qDebug()<<data_title;
@@ -215,7 +216,7 @@ void V3dR_GLWidget::SetupCollaborateInfo()
 //    connect(TeraflyCommunicator,SIGNAL(CollAddMarker(XYZ)),this,SLOT(CallAddMarker(XYZ)));
 	cout << "connection success!!! liqi " << endl;
 }
-
+#endif
 //void V3dR_GLWidget::CallAddCurveSWC(vector<XYZ>loc_list, int chno, double createmode)
 //{
 //	cout << "call addcurveswc success" << endl;
@@ -4649,7 +4650,7 @@ void V3dR_GLWidget::cancelSelect()
 {
     if (renderer) renderer->endSelectMode();
 }
-//#ifdef __ALLOW_VR_FUNCS_
+#ifdef __ALLOW_VR_FUNCS_
 //QStringList V3dR_GLWidget::global_delMSG ;
 bool V3dR_GLWidget::noTerafly=true;
 V3dR_Communicator* V3dR_GLWidget::TeraflyCommunicator=nullptr;
@@ -4992,7 +4993,7 @@ XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> loca
     return TeraflyCommunicator->ConvertGlobaltoLocalBlockCroods(x,y,z);
 }
 
-//#endif
+#endif
 ///////////////////////////////////////////////////////////////////////////////////////////
 #define __end_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////

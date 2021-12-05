@@ -209,7 +209,7 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
     return nt;
 }
 
-bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
+bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate, int resolution)
 {
     try
     {
@@ -230,7 +230,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
         CAnnotations::getInstance()->addCurves(x_range, y_range, z_range, nt);
 
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
     }
     catch (tf::RuntimeException & e)
     {

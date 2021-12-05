@@ -52,6 +52,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include <QMessageBox>
 #include <QScrollArea>
 #include <QProgressBar>
+#include <QRegExp>
 void pumpEvents(int loops=100)
 {
 	for (int j=1; j<loops; j++) //try to empty all existing events
@@ -314,37 +315,38 @@ void V3d_PluginLoader::updated_recentPlugins()
                 }
             }
         }
+//huanglei please test
+//        QRegExp reg("%");
+//       for(int i = 0; i < recentpluginsList.size(); i++)//huanglei please test
+//       {
+//           QStringList plugininfo = recentpluginsList.at(i).split(reg);
+//           QAction *action = new QAction(plugininfo.at(0),this);
+//           connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+//           plugin_recent->addAction(action);
 
-        QRegExp reg("%");
-       for(int i = 0; i < recentpluginsList.size(); i++)//huanglei please test
-       {
-           QStringList plugininfo = recentpluginsList.at(i).split(reg);
-           QAction *action = new QAction(plugininfo.at(0),this);
-           connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-           plugin_recent->addAction(action);
-
-           QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
-           QAction *action_index = new QAction(plugininfo_index.at(0),this);
-           connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-           plugin_most->addAction(action_index);
-       }
+//           QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
+//           QAction *action_index = new QAction(plugininfo_index.at(0),this);
+//           connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+//           plugin_most->addAction(action_index);
+//       }
     }
 }
 
 void V3d_PluginLoader::runRecentPlugin()//huanglei please test
 {
-    QAction *action = qobject_cast<QAction *>(sender());
-    int i;
-    QRegExp reg("%");
-    QStringList plugininfo;
-    for(i = 0; i< recentpluginsList.size(); i++)
-    {
-       plugininfo = recentpluginsList.at(i).split(reg);
-       if(plugininfo.at(0) == action->text())
-           break;
-    }
-    QPluginLoader* loader = new QPluginLoader(plugininfo.at(1));
-    return runPlugin(loader,plugininfo.at(0));
+    //huanglei please test
+//    QAction *action = qobject_cast<QAction *>(sender());
+//    int i;
+//    QRegExp reg("%");
+//    QStringList plugininfo;
+//    for(i = 0; i< recentpluginsList.size(); i++)
+//    {
+//       plugininfo = recentpluginsList.at(i).split(reg);
+//       if(plugininfo.at(0) == action->text())
+//           break;
+//    }
+//    QPluginLoader* loader = new QPluginLoader(plugininfo.at(1));
+//    return runPlugin(loader,plugininfo.at(0));
 }
 
 void V3d_PluginLoader::clear_recentPlugins()

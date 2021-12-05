@@ -1,7 +1,7 @@
 #-----------From v3d.pro-------------------------
 include(../terafly/terafly.pro)
 
-QT += core gui widgets opengl openglwidgets network xml svg
+QT += core gui widgets opengl openglwidgets network xml svg core5compat
 TEMPLATE = app
 TARGET +=
 DEPENDPATH += . v3d

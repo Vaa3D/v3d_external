@@ -2440,14 +2440,16 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 				My4DImage* curImg = 0;
 				if (w) curImg = v3dr_getImage4d(_idep);
-				
+#ifdef __ALLOW_VR_FUNCS__
                 if (w->TeraflyCommunicator)
                 {
 //                    vector<V_NeuronSWC> vector_VSWC;
 //                    vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode(vector_VSWC);
 //                    w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
 //                    w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
-                    w->getRenderer()->endSelectMode();                }
+                    w->getRenderer()->endSelectMode();
+                }
+#endif
 //                qDebug()<<"000000000-0000008";
             }
             else if (selectMode == smRetypeMultiNeurons)
@@ -4401,7 +4403,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 		S.on = true;
         qDebug()<<"Marker:"<<S.x<<","<<S.y<<","<<S.z<<","<<S.color.r<<","<<S.color.g<<","<<S.color.b;
 		listLoc.append(S);
-
+#ifdef __ALLOW_VR_FUNCS__
         if(!fromserver&&w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
         {
             w->SetupCollaborateInfo();
@@ -4413,6 +4415,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
                              tr("Connection Lost!Data has been saved!"),
                              QMessageBox::Ok);*/
 //		updateLandmark();
+#endif
     }
 #else
     ImageMarker S;

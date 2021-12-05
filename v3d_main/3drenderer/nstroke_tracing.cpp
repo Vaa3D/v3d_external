@@ -3296,6 +3296,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
+    #ifdef __ALLOW_VR_FUNCS__
         if (w->TeraflyCommunicator
     &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
 	{
@@ -3308,6 +3309,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
     }
+#endif
     curImg->tracedNeuron.deleteMultiSeg();
     //curImg->proj_trace_history_append();          // no need to update the history
     curImg->update_3drenderer_neuron_view(w, this);
@@ -7034,7 +7036,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     for(V3DLONG j=0; j<listNeuronTree.size(); j++)
     {
         NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-        if (p_tree
+        if (p_tree)
                //  && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
         {
             QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
@@ -7125,6 +7127,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     }
                 }
             }
+            #ifdef __ALLOW_VR_FUNCS__
                         if(w->TeraflyCommunicator)
             {
                 for(int cnt=0;cnt<idlist.size();cnt++)
@@ -7138,6 +7141,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         }
                     }
             }
+#endif
             curImg->update_3drenderer_neuron_view(w, this);
             QHash<QString, int>  soma_cnt;
             curImg->proj_trace_history_append();
@@ -7212,6 +7216,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                         {
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
                            // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+                #ifdef __ALLOW_VR_FUNCS__
                             if(w->TeraflyCommunicator
                                 &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                                 {
@@ -7221,6 +7226,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                                                 p_listneuron->at(i).nodeinseg_id,
                                                 "TeraFly");
                                 }
+        #endif
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
 							curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));

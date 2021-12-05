@@ -315,7 +315,7 @@ class terafly::CViewer : public QWidget
         * Annotations are stored/loaded to/from the <CAnnotations> object
         ***********************************************************************************/
         void storeAnnotations() ;
-        void loadAnnotations() ;
+        void loadAnnotations(bool collaborate=false) ;
         void clearAnnotations() ;
         void deleteSelectedMarkers() ;
         void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) ;
