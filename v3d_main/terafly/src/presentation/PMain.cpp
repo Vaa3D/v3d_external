@@ -4014,8 +4014,8 @@ void PMain::login()
     managesocket->ip=serverName;
     managesocket->name=userName;
     qDebug()<<"servername = "<<serverName<<" username "<<userName;
-    managesocket->connectToHost(serverName,23763);
-//    managesocket->connectToHost(serverName,26371);
+//    managesocket->connectToHost(serverName,23763);
+    managesocket->connectToHost(serverName,26371);
     qDebug()<<connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
     connect(managesocket,SIGNAL(connected()),this,SLOT(onManageConnected()));
     if( !managesocket->waitForConnected())
