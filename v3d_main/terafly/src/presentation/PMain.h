@@ -593,35 +593,21 @@ public:
         * Carries progress bar informations (progress percentage and remaining minutes).
         **********************************************************************************/
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
-#ifdef __ALLOW_VR_FUNCS__
 public:
-		V3dR_Communicator * Communicator;
-protected:
-        QMenu* collaborateMenu;
-        QAction* loginAction;
-        QAction* importAction;
-        QAction* downAction;
-        QAction* loadAction;
-        QAction* logoutAction;
-        QListWidget *userView;
+#ifdef __ENABLE__NEUVERSE__
+    QMenu *neuverseMenu;
+    QAction *importAction;
+    QAction *dataAction;
+    QAction *optionAction;
+
 public slots:
-        void login();
-        void import();
-        void download();
-        void load();
-        void logout();
-        void deleteManageSocket();
-        void ColLoadANO(QString ANOfile);
-        void onManageConnected();
-        void onMessageDisConnect();
-        void updateuserview(QString userlist);
-//        void startAutoTrace();//自动算法
-signals:
-       // void signal_communicator_read_res(QString ,XYZ*);//读取自动算法的结果
-//        void startASK(QString,int);
-private:
-        QString currentPath;//for auto trace
+    void SlotImport();
+    void SlotData();
+    void SlotNeuverseOptions();
 #endif
+
+
+
 };
 
 #endif // PMAIN_GUI_H

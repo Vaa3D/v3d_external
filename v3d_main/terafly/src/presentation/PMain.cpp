@@ -59,6 +59,7 @@
 #include <QRegExp>
 #include <QMessageBox>
 #include <QFile>
+
 #ifdef __ALLOW_VR_FUNCS__
 #include "../vrrenderer/V3dR_Communicator.h"
 #endif
@@ -241,35 +242,22 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
-#ifdef __ALLOW_VR_FUNCS__
-        collaborateMenu=menuBar->addMenu("Collaborate");
-        loginAction=new QAction("Login",this);
-        logoutAction=new QAction("Logout",this);
-        importAction=new QAction("Import annotation to cloud",this);
-        downAction=new QAction("Download annotation from cloud",this);
-        loadAction= new QAction("Load annotation and collaborate",this);
 
-        collaborateMenu->addAction(loginAction);
-        collaborateMenu->addAction(importAction);
-        collaborateMenu->addAction(downAction);
-        collaborateMenu->addAction(loadAction);
-        collaborateMenu->addAction(logoutAction);
-
-        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
-        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
-        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
-        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
-        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
-
-        logoutAction->setEnabled(false);
-        importAction->setEnabled(false);
-        downAction->setEnabled(false);
-        loadAction->setEnabled(false);
-		Communicator=nullptr;
-        userView=nullptr;
-#endif
     /*---------------------------------------------------*/
+    #ifdef __ENABLE__NEUVERSE__
+        neuverseMenu=menuBar->addMenu("Neuverse");
+        importAction=new QAction("Import",neuverseMenu);
+        dataAction=new QAction("DataList",neuverseMenu);
+        optionAction=new QAction("Option",neuverseMenu);
 
+        neuverseMenu->addAction(importAction);
+        neuverseMenu->addAction(dataAction);
+        neuverseMenu->addAction(optionAction);
+
+        connect(importAction,&QAction::triggered,this,&PMain::SlotImport);
+        connect(dataAction,&QAction::triggered,this,&PMain::SlotData);
+        connect(optionAction,&QAction::triggered,this,&PMain::SlotNeuverseOptions);
+    #endif
     /* ------------------------- "Options" menu -------------------------- */
     optionsMenu = menuBar->addMenu("Options");
     /* ------------------------- "Options" menu: Import ------------------ */
@@ -1206,6 +1194,17 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
 
 //reset everything
 void PMain::reset()
@@ -3969,210 +3968,23 @@ int PMain::getCViewerID()
 }
 #endif
 
-#ifdef __ALLOW_VR_FUNCS__
+#ifdef __ENABLE__NEUVERSE__
+
+void PMain::SlotImport()
+{
+    qDebug()<<"1\n";
+}
+void PMain::SlotData()
+{
+std::cout<<"2\n";
+}
+void PMain::SlotNeuverseOptions()
+{
+std::cout<<"3\n";
+}
+#endif
+
+
 /*----------------collaborate mdoe-------------------*/
 
-void PMain::login()
-{
-    QSettings settings("HHMI", "Vaa3D");
-    QString serverNameDefault = "";
-    if(!settings.value("vr_serverName").toString().isEmpty())
-        serverNameDefault = settings.value("vr_serverName").toString();
-
-    bool ok1;
-    QString serverName;
-    QString userName;
-    serverName = QInputDialog::getText(0, "Server Address",
-            "Please enter the server address:", QLineEdit::Normal,
-            serverNameDefault, &ok1);
-
-    if(!ok1||serverName.isEmpty())
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        return ;
-    }else
-    {
-        settings.setValue("vr_serverName", serverName);
-
-        QString userNameDefault = "";
-        if(!settings.value("vr_userName").toString().isEmpty())
-            userNameDefault = settings.value("vr_userName").toString();
-        bool ok3;
-         userName = QInputDialog::getText(0, "Lgoin Name",
-            "Please enter your login name:", QLineEdit::Normal,
-            userNameDefault, &ok3);
-
-        if(!ok3 || userName.isEmpty())
-        {
-            qDebug()<<"WRONG!EMPTY! ";
-            //return SendLoginRequest();
-            return ;
-        }else
-            settings.setValue("vr_userName", userName);
-    }
-
-}
-
-void PMain::import()
-{
-
-}
-void PMain::logout()
-{
-
-}
-
-void PMain::deleteManageSocket()
-{
-
-
-}
-void PMain::onManageConnected()
-{
-
-}
-void PMain::ColLoadANO(QString ANOfile)
-{
-}
-void PMain::updateuserview(QString userlist)
-{
-
-}
-void PMain::onMessageDisConnect()
-{
-
-}
-
-void PMain::download()
-{}
-
-void PMain::load()
-{}
-//void PMain::startAutoTrace()
-//{
-//    const int blocksize=128;
-//    CViewer *cur_win = CViewer::getCurrent();
-//    if(cur_win->getGLWidget()->TeraflyCommunicator)
-//    {
-//        if(cur_win->getGLWidget()->TeraflyCommunicator->socket->state()!=QAbstractSocket::ConnectedState)
-//        {
-//            QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-//            return;
-//        }
-//
-////        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
-//        XYZ center;//Global
-//
-//        center.x=int(tempNode.x);
-////        center.y=tempNode.y;
-////        center.x=tempNode.x+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_x);
-//        center.y=int(tempNode.y+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_y));
-////        center.z=tempNode.z+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_z);
-//        center.z=int(tempNode.z);
-//
-//        CellAPO centerAPO;
-//        centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
-//        QList <CellAPO> List_APO_Write;
-//        List_APO_Write.push_back(centerAPO);
-//        writeAPO_file("V3APO.apo",List_APO_Write);//get .apo to get .v3draw
-//
-//        QList <ImageMarker> tmp1;
-//        ImageMarker startPoint;//Local
-//
-//        startPoint.x=blocksize/2+1;
-////        startPoint.y=blocksize/2;
-////        startPoint.x=tempNode.x-center.x+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_x*2;
-//        startPoint.y=tempNode.y-center.y+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_y*2;
-////        startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
-//         startPoint.z=blocksize/2+1.5;
-//
-//        qDebug()<<"global start point:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
-//        qDebug()<<"flag:"<<cur_win->getGLWidget()->TeraflyCommunicator->flag_x<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_y<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
-//        qDebug()<<"global center point:"<<center.x<<" "<<center.y<<" "<<center.z;
-//        qDebug()<<"local start point:"<<startPoint.x<<" "<<startPoint.y<<" "<<startPoint.z;
-//
-//
-//        tmp1.push_back(startPoint);
-//        writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
-//        XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
-//                        tempNode,
-//                        startPoint
-//                        };
-//
-//        QRegExp pathEXP("(.*)RES(.*)");
-//        QString path;
-//        if(pathEXP.indexIn(currentPath)!=-1)
-//        {
-//            path=pathEXP.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
-//        }
-//
-//        qDebug()<<"path:"<<path;
-//
-//        QDir dir("./");
-//        if(!dir.cd("testV3draw"))
-//        {
-//            dir.mkdir("testV3draw");
-//        }
-//        dir=QDir("testV3draw");
-//        {
-//            QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
-//            for(int i=0;i<file_list.size();i++)
-//            {
-//                    QFile *f=new QFile(file_list[i].filePath());
-//                    if(f->exists()) f->remove();
-//                    delete  f;
-//            }
-//        }
-//        QProcess p;       
-//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
-//                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
-//                  <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
-//        QString rawFileName=QString("%1.000_%2.000_%3.000.v3draw").arg(center.x).arg(center.y).arg(center.z);
-//
-//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_thresholding/Simple_Adaptive_Thresholding/ada_threshold.dll"
-//                            <<"/f"<<"adath"<<"/i"<<"./testV3draw/"+rawFileName<<"/o"<<QString("./testV3draw/thres_"+rawFileName));
-////        cout<<"e.g. v3d -x threshold -f adath -i input.raw -o output.raw -p 5 3"<<endl;
-//
-//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
-//                  <<"/f"<<"app2"<<"/i"<< QString("./testV3draw/thres_"+rawFileName) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
-//
-//         QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
-//         QRegExp APP2Exp("(.*)_app2.swc");
-//         for(int i=0;i<file_list.size();i++)
-//         {
-////             qDebug()<<file_list.at(i).fileName();
-//             if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1&&file_list.at(i).fileName().contains(QString("thres_"+rawFileName)))
-//             {
-//                 emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
-//                 break;
-//             }
-//         }
-//        QRegExp v3drawExp("(.*).v3draw");
-//        if(v3drawExp.indexIn(file_list.at(0).fileName())!=-1)
-//        {
-//            qDebug()<<file_list.at(0).absolutePath();
-//            QString v3drawpath=file_list.at(0).absolutePath()+"/"+file_list.at(0).fileName();
-//            qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
-//                      <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
-//            //delete v3draw
-////            QFile *f=new QFile(v3drawpath);
-////            if(f->exists()) f->remove();
-////            delete  f;
-
-//             file_list=dir.entryInfoList(QDir::Files);
-//             QRegExp APP2Exp("(.*)_app2.swc");
-//             for(int i=0;i<file_list.size();i++)
-//             {
-//                 if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1)
-//                 {
-//                     emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
-//                     break;
-//                 }
-
-//             }
-//        }
-//    }
-
-//}
-#endif
 

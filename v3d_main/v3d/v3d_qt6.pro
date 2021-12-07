@@ -22,7 +22,7 @@ INCLUDEPATH = $$unique(INCLUDEPATH)
 #------------From v3d_essential.pro------------------
 
 DEFINES *= TEEM_STATIC
-
+DEFINES += __ENABLE__NEUVERSE__
 macx{
     DEFINES += MACOS_SYSTEM
 
