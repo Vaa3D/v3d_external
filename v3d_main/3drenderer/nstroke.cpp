@@ -1327,7 +1327,7 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
         }
     }
 	if (w)
-	retypeMultiNeuronsbyshortcut();
+        retypeMultiNeuronsbyshortcut();
 }
 
 void Renderer_gl1::callStrokeDeleteMultiNeurons()
