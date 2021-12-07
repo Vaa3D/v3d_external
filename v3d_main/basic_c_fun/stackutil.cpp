@@ -128,7 +128,7 @@ extern "C" {
 //#ifdef _ALLOW_WORKMODE_MENU_
 //#include "../neuron_annotator/utility/ImageLoaderBasic.h"
 //#endif
-
+#include "neuron_annotator/utility/ImageLoaderBasic.h"
 
 #define b_VERBOSE_PRINT 1
 #define ZZBIG 320000 //previous I define it as 1500, so that to limit the size of an image is at most 1.5G //change 2010-05-21 // hang 2011-08-25 6000->10000
@@ -4079,11 +4079,11 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
         // || strcasecmp(curFileSuffix, "mp4")==0) ) //to add mp4 later
     {
         //v3d_msg("prepare for pbd file saving", 0);
-//        ImageLoaderBasic imageLoader;
-//        if (imageLoader.saveStack2RawPBD(filename, curtype, (unsigned char *)data1d, sz)) {
-//            printf("Error happens in v3dpbd file saving. Stop. \n");
-//            return false;
-//        }
+        ImageLoaderBasic imageLoader;
+        if (imageLoader.saveStack2RawPBD(filename, curtype, (unsigned char *)data1d, sz)) {
+            printf("Error happens in v3dpbd file saving. Stop. \n");
+            return false;
+        }
     }
 #endif
     else //then assume it is Hanchuan's RAW format

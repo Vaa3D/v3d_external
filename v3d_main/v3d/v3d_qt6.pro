@@ -273,7 +273,7 @@ SOURCES += \
 #    ../neuron_annotator/utility/Icons.cpp \
 #    ../neuron_annotator/utility/DataThread.cpp \
 #    ../neuron_annotator/utility/ConsoleObserver.cpp \
-#    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
+    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
 #    ../neuron_annotator/utility/ImageLoader.cpp \
 #    ../neuron_annotator/utility/url_tools.cpp \
 #    ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
