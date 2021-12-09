@@ -74,21 +74,21 @@ V3dApplication* V3dApplication::theApp = 0;
 
 int main(int argc, char **argv)
 {
-//    char *infile=argv[1];
-//    char *outfile=argv[2];
-//    int xc,yc,zc,len;
-//    xc=atoi(argv[3]);
-//    yc=atoi(argv[4]);
-//    zc=atoi(argv[5]);
-//    len=atoi(argv[6]);
-
-    char *infile="/Users/huanglei/Desktop/dataserver/image/18454/RES\(26298x35000x11041\)";
-    char *outfile="/Users/huanglei/Desktop/2.v3dpbd";
+    char *infile=argv[1];
+    char *outfile=argv[2];
     int xc,yc,zc,len;
-    xc=14530;
-    yc=10693;
-    zc=3124;
-    len=128;
+    xc=atoi(argv[3]);
+    yc=atoi(argv[4]);
+    zc=atoi(argv[5]);
+    len=atoi(argv[6]);
+
+//    char *infile="/Users/huanglei/Desktop/dataserver/image/18454/RES\(26298x35000x11041\)";
+//    char *outfile="/Users/huanglei/Desktop/2.v3dpbd";
+//    int xc,yc,zc,len;
+//    xc=14530;
+//    yc=10693;
+//    zc=3124;
+//    len=128;
 
     std::cout<<infile<<"\n"
             <<outfile<<"\n"
