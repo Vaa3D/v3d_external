@@ -183,9 +183,9 @@ char *loadTiff3D2Metadata ( char * filename, unsigned int &sz0, unsigned int  &s
 	//TIFFClose(input);
 
     // 2015-01-30. Alessandro. @ADDED performance (time) measurement in all most time-consuming methods.
-    #ifdef _VAA3D_TERAFLY_PLUGIN_MODE
-    TERAFLY_TIME_STOP(TiffLoadMetadata, tf::IO, tf::strprintf("successfully loaded metadata from file \"%s\"", filename))
-    #endif
+//    #ifdef _VAA3D_TERAFLY_PLUGIN_MODE
+//    TERAFLY_TIME_STOP(TiffLoadMetadata, tf::IO, tf::strprintf("successfully loaded metadata from file \"%s\"", filename))
+//    #endif
 
 	return ((char *) 0);
 }

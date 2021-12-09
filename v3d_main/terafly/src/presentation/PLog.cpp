@@ -14,7 +14,7 @@ PLog* PLog::uniqueInstance = 0;
 
 PLog::PLog(QWidget *parent) : QDialog(parent)
 {
-    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+//    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     setWindowTitle("TeraFly's log");
 
