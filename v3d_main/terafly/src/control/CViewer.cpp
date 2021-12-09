@@ -2524,11 +2524,14 @@ void CViewer::restoreViewerFrom(CViewer* source)
         {
             PMain::getInstance()->resumeVR = false;
             #ifdef __ALLOW_VR_FUNCS__
+            #ifdef __ENABLE__NEUVERSE__
             if(PMain::getInstance()->Communicator)
                 QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
             else
-#endif
+            #endif
+
             QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+            #endif
         }
 
         // in situ translation at the same resolution

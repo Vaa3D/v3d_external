@@ -2042,12 +2042,11 @@ void MainWindow::updateWindowMenu()
         QAction *action  = windowMenu->addAction(text);
         action->setCheckable(true);
         action ->setChecked(child == activeMdiChild());
-#if defined(USE_Qt5)
+
         connect(action, &QAction::triggered, [=]() { workspace->setActiveSubWindow( child ); });
-#else
-        connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
-        windowMapper->setMapping(action, child);
-#endif
+//        connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
+        //windowMapper->setMapping(action, child);
+
     }
     //now add the 3D viewer list
     if (list_3Dview_win.size()>0)

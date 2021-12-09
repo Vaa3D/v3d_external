@@ -49,3 +49,4 @@ build_macosx-*/
 build_windows-*/
 
 doc*
+v3d_main/V3d_Build/*

@@ -599,7 +599,7 @@ public:
     QAction *importAction;
     QAction *dataAction;
     QAction *optionAction;
-
+    V3dR_Communicator * Communicator = nullptr;
 public slots:
     void SlotImport();
     void SlotData();
