@@ -56,7 +56,7 @@ INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 LIBS += -L$$V3DMAINPATH/common_lib/lib_mac64 -lhdf5 -lszip -lz
 }
 
-unix {
+unix:!macx {
     INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 
     LIBS += -L$$V3DMAINPATH/common_lib/lib_ubuntu -lhdf5 -lszip -lz -ldl

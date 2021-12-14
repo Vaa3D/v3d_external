@@ -32,6 +32,9 @@ CMakeFiles/*
 #ignore MacOS system files
 .DS_Store
 
+#ignore lib files or header files in common_lib
+v3d_main/common_lib/*
+
 #ignore symlink folder
 released_plugins_more
 
