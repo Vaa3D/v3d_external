@@ -231,7 +231,9 @@ MainWindow::MainWindow()
 
     workspace = new QMdiArea;
     setCentralWidget(workspace);
-    connect(workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)),  this, SLOT(updateMenus()));
+    connect(workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)),  this, SLOT(updateMenus()));
+    windowMapper = new QSignalMapper(this);
+    connect(windowMapper, SIGNAL(mapped(QWidget*)),  workspace, SLOT(setActiveWindow(QWidget*)));
 
     createActions();
     createMenus();
@@ -2049,12 +2051,11 @@ void MainWindow::updateWindowMenu()
         QAction *action  = windowMenu->addAction(text);
         action->setCheckable(true);
         action ->setChecked(child == activeMdiChild());
-#if defined(USE_Qt5)
-        connect(action, &QAction::triggered, [=]() { workspace->setActiveSubWindow( child ); });
-#else
-        connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
+
+//        connect(action, &QAction::triggered, [=]() { workspace->setActiveSubWindow( child ); });
+       connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
         windowMapper->setMapping(action, child);
-#endif
+
     }
     //now add the 3D viewer list
     if (list_3Dview_win.size()>0)
@@ -2357,59 +2358,51 @@ void MainWindow::createActions()
     closeAct = new QAction(tr("Cl&ose"), this);
     closeAct->setShortcut(tr("Ctrl+F4"));
     closeAct->setStatusTip(tr("Close the active window"));
-#if defined(USE_Qt5)
+    // Windows:close DLC
     connect(closeAct, SIGNAL(triggered()),
             workspace, SLOT(closeActiveSubWindow()));
-#else
     //connect(closeAct, SIGNAL(triggered()),workspace, SLOT(closeActiveWindow()));
-#endif
+
+    // Windows:close all DLC
     closeAllAct = new QAction(tr("Close &All"), this);
     closeAllAct->setStatusTip(tr("Close all the windows"));
-
-
-//    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
+    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
     //connect(closeAllAct, SIGNAL(triggered()), this, SLOT(handleCoordinatedCloseEvent_real()));
 
-
+    // Windows:tile DLC
     tileAct = new QAction(tr("&Tile"), this);
     tileAct->setStatusTip(tr("Tile the windows"));
-#if defined(USE_Qt5)
     connect(tileAct, SIGNAL(triggered()), workspace, SLOT(tileSubWindows()));
-#else
     //connect(tileAct, SIGNAL(triggered()), workspace, SLOT(tile()));
-#endif
+
+    //Windows:cascade DLC
     cascadeAct = new QAction(tr("&Cascade"), this);
     cascadeAct->setStatusTip(tr("Cascade the windows"));
-#if defined(USE_Qt5)
     connect(cascadeAct, SIGNAL(triggered()), workspace, SLOT(cascadeSubWindows()));
-#else
     //connect(cascadeAct, SIGNAL(triggered()), workspace, SLOT(cascade()));
-#endif
+
+    //Windows:arrange icons DLC
     arrangeAct = new QAction(tr("Arrange &icons"), this);
     arrangeAct->setStatusTip(tr("Arrange the icons"));
-#if defined(USE_Qt5)
-#else
-    //connect(arrangeAct, SIGNAL(triggered()), workspace, SLOT(arrangeIcons()));
-#endif
+    connect(arrangeAct, SIGNAL(triggered()), workspace, SLOT(arrangeIcons()));
+
+    //Windows:next icons DLC
     nextAct = new QAction(tr("Ne&xt"), this);
     nextAct->setShortcut(tr("Ctrl+F6"));
     nextAct->setStatusTip(tr("Move the focus to the next window"));
-#if defined(USE_Qt5)
     connect(nextAct, SIGNAL(triggered()),
             workspace, SLOT(activateNextSubWindow()));
-#else
     //connect(nextAct, SIGNAL(triggered()),workspace, SLOT(activateNextWindow()));
-#endif
+
+    //Windows:previous icons DLC
     previousAct = new QAction(tr("Pre&vious"), this);
     previousAct->setShortcut(tr("Ctrl+Shift+F6"));
     previousAct->setStatusTip(tr("Move the focus to the previous "
                                  "window"));
-#if defined(USE_Qt5)
     connect(previousAct, SIGNAL(triggered()),
             workspace, SLOT(activatePreviousSubWindow()));
-#else
     //connect(previousAct, SIGNAL(triggered()),workspace, SLOT(activatePreviousWindow()));
-#endif
+
     separator_ImgWindows_Act = new QAction(this);
     separator_ImgWindows_Act->setSeparator(true);
     checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);
