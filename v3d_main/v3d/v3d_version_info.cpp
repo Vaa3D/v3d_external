@@ -56,7 +56,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 namespace v3d {
     // Set current version here.
 
-    VersionInfo thisVersionOfV3D("6.004");
+    VersionInfo thisVersionOfV3D("6.005");
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
