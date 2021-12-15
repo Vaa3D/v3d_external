@@ -2669,6 +2669,7 @@ void MainWindow::createMenus()
 
     //others
     windowMenu = menuBar()->addMenu(tr("&Window"));
+    windowMenu->addAction(saveAct);
     connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
     menuBar()->addSeparator();
 #ifdef _ALLOW_WORKMODE_MENU_

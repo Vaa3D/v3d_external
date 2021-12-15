@@ -2380,7 +2380,7 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
         pos.MV[i] = markerViewMatrix[i];
     }
     listMarkerPos.append(pos);
-    //qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
+    qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
 }
 int Renderer_gl1::movePen(int x, int y, bool b_move)
 {
@@ -4114,7 +4114,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
     else
         chno = checkCurChannel();
     ////////////////////////////////////////////////////////////////////////
-    //qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
+    qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
     ////////////////////////////////////////////////////////////////////////
     //100730 RZC, in View space, keep for dot(clip, pos)>=0
     double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
@@ -4607,6 +4607,7 @@ double Renderer_gl1::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos
 
 XYZ Renderer_gl1::getLocationOfListMarkerPos()
 {
+    qDebug("getLocationOfListMarkerPos ERROR: listMarkerPos.size()<2-------------");
     int N = listMarkerPos.size();
     if (N<2)
         qDebug("getLocationOfListMarkerPos ERROR: listMarkerPos.size()<2");
@@ -4650,6 +4651,9 @@ XYZ Renderer_gl1::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
     double t = (P1.x*plane[0] + P1.y*plane[1] + P1.z*plane[2] + plane[3])
         /((P1.x-P2.x)*plane[0] + (P1.y-P2.y)*plane[1] + (P1.z-P2.z)*plane[2]);
     XYZ loc = P1 + t*(P2-P1);
+    qDebug()<<"-----------------------------getPointOnPlane";
+    cout<<loc.x<<" " << loc.y<<"  "<< loc.z;
+
     return loc;
 }
 
@@ -4664,7 +4668,7 @@ XYZ Renderer_gl1::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
     if (dist_L2(loc,P2) > dist_L2(P,P2) && dataViewProcBox.isInner(loc, 0.5)) \
     P = loc; \
     }
-    //qDebug("  P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
+    qDebug("  ---------------P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
     if (bXSlice)
     {
         plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);

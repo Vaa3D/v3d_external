@@ -180,9 +180,6 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 
     ///////////////////////////////////////////////////////////////
     makeCurrent(); //090729: this make sure created GL context
-    //  2008-11-22 RZC, 090628 RZC
-    //choice renderer according to OpenGl version, MUST put in initializeGL
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     //setFocusPolicy(Qt::WheelFocus); // accept KeyPressEvent when mouse wheel move, by RZC 080831

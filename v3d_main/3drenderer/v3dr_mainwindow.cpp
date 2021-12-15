@@ -667,7 +667,13 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
         qDebug() <<tr("  drop Text data: ")+(mimeData->text().trimmed());
         QString url = mimeData->text().trimmed();
 
-        url.remove(0,8); // remove the first 'file://' of the name string, 090125
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+           url.remove(0,7); // remove the first '/' of "/C:/...", 081102
+#endif
+#ifdef WIN32
+           url.remove(0,8);
+#endif
+         // remove the first 'file://' of the name string, 090125
         url.replace("%20"," ");//fixed the space path issue in 3D viewer on Linux machine by Zhi Zhou May 15 2015
 
         qDebug("the file to open=[%s]",qPrintable(url));
@@ -684,6 +690,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
 #ifdef WIN32
             url.remove(0,1); // remove the first '/' of "/C:/...", 081102
 #endif
+
 
 #ifdef Q_OS_MAC
             //Added by Zhi on 2018-03-01
