@@ -472,7 +472,7 @@ vector<V_NeuronSWC> get_neuron_segments(const NeuronTree *p)
 
 void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const vector<V_NeuronSWC> & segment_list)
 {
-	QMap <V_NeuronSWC_coord, V_NeuronSWC_unit> map;
+    QMultiMap <V_NeuronSWC_coord, V_NeuronSWC_unit> map;
 	map.clear();
 
 	for (V3DLONG i=0; i<segment_list.size(); i++)
@@ -483,6 +483,7 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const vector<V_N
 			V_NeuronSWC_unit node = seg.row.at(j);
 			V_NeuronSWC_coord key = node;
             //map.insertMulti(key, node);
+            map.insert(key, node);
 		}
 	}
 

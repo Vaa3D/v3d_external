@@ -45,6 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include <string>
 #include <cmath>
 #include <QPainter>
+
 #ifdef MACOS_SYSTEM
 #include <gl.h>
 #else
@@ -1580,6 +1581,9 @@ RGB8 getRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3
         for (V3DLONG ci=0; ci<3 && ci<dim4; ci++)
         {
             tmp.c[ci] = (data + ci*(dim3*dim2*dim1)) [(z)*dim2*dim1 + (y)*dim1 + (x)];
+            if(tmp.g != 0) {
+                qDebug()<<"ASSERT!!!";
+            }
         }
     }
     return tmp;
@@ -1594,6 +1598,7 @@ void setRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3
         for (V3DLONG ci=0; ci<3 && ci<dim4; ci++)
         {
             (data + ci*(dim3*dim2*dim1)) [(z)*dim2*dim1 + (y)*dim1 + (x)] = tmp.c[ci];
+
         }
     }
 }

@@ -5,7 +5,7 @@ QT += core gui widgets opengl openglwidgets network xml svg
 TEMPLATE = app
 TARGET +=
 DEPENDPATH += . v3d
-INCLUDEPATH += . ../common_lib_new/include #./basic_c_funss
+INCLUDEPATH += . ../common_lib/include #./basic_c_funss
 
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
@@ -26,7 +26,7 @@ DEFINES *= TEEM_STATIC
 macx{
     DEFINES += MACOS_SYSTEM
 
-    LIBS += -L../common_lib_new/lib_mac64 -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lhdf5 -lszip
+    LIBS += -L../common_lib/lib_mac64 -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lhdf5 -lszip
     LIBS += -framework CoreServices
 
     #dragdropfix
@@ -37,19 +37,21 @@ macx{
 }
 
 win32{
+    CONFIG += console
     DEFINES += WINDOWS_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
-    LIBS += -lwsock32
-    LIBS += -L../common_lib_new/mingw64  -lhdf5 -lszip -lzlib  -lteem  -lz -lv3dtiff -lv3dnewmat -lOpengl32  -lglu32
+#    LIBS += -lwsock32
+    LIBS += -L../common_lib/mingw64  -lhdf5 -lszip -lzlib  -lteem  -lz -lv3dtiff -lv3dnewmat -lOpengl32  -lglu32 -lwsock32
 #    -lmylib #for nrrd support #for nrrd support
 
 }
 
 unix:!macx {
+    CONFIG += console
     DEFINES += LINUX_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
     LIBS =  -lGLU -lglut
-    LIBS += -L../common_lib_new/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip
+    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip
 
 }
 
@@ -356,9 +358,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/line_box_intersection_check.h \
     ../neuron_tracing/heap.h \
     ../neuron_tracing/fastmarching_linker.h \
-	../imaging/v3d_imaging.h \
+        ../imaging/v3d_imaging.h \
     ../neuron_toolbox/vaa3d_neurontoolbox.h \
-	../multithreadimageIO/v3d_multithreadimageIO.h \
+        ../multithreadimageIO/v3d_multithreadimageIO.h \
     v3d_global_preference_dialog.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
@@ -457,7 +459,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/barFigureDialog.cpp \
         ../imaging/v3d_imaging.cpp \
     ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
-	../multithreadimageIO/v3d_multithreadimageIO.cpp \
+        ../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
     v3d_application.cpp \
     main.cpp \
@@ -499,15 +501,15 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
-unix:INCLUDEPATH += ../common_lib_new/include/glew/  #by RZC 2020-2-15
+unix:INCLUDEPATH += ../common_lib/include/glew/  #by RZC 2020-2-15
 
 
 #VR SUPPORT
 win32 {
-INCLUDEPATH += ..\common_lib_new\include\SDL/ #for VR, by PHC 20170615
-INCLUDEPATH += ..\common_lib_new\include\glew/  #for VR, by PHC 20170615
-INCLUDEPATH += ..\common_lib_new\include\openvr/   #for VR, by PHC 20170615
-    LIBS += -L../common_lib_new/mingw64  -lSDL2 -lopenvr_api -lglew32
+INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
+    LIBS += -L../common_lib/mingw64  -lSDL2 -lopenvr_api -lglew32
 
 HEADERS += \
     ../vrrenderer/v3dr_gl_vr.h \
@@ -533,10 +535,10 @@ SOURCES += \
 }
 
 unix:!macx{
-INCLUDEPATH += ..\common_lib_new\include\SDL/ #for VR, by PHC 20170615
-INCLUDEPATH += ..\common_lib_new\include\glew/  #for VR, by PHC 20170615
-INCLUDEPATH += ..\common_lib_new\include\openvr/   #for VR, by PHC 20170615
-    LIBS += -L../common_lib_new/lib_ubuntu  -lSDL2 -lopenvr_api -lGLEW -ldl
+INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
+INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
+    LIBS += -L../common_lib/lib_ubuntu  -lSDL2 -lopenvr_api -lGLEW -ldl
 HEADERS += \
     ../vrrenderer/v3dr_gl_vr.h \
     ../vrrenderer/Cylinder.h \
@@ -587,7 +589,7 @@ FORMS += landmark_property.ui \
 #MINGW_DIR = /mingw # platform: win32-msys-mingw
 #win32 { # platform: win32-command-mingw
 #	MINGW_DIR = c:/mingw
-#	LOCAL_DIR = ../common_lib_new/      # c:/msys/local
+#	LOCAL_DIR = ../common_lib/      # c:/msys/local
 #	CONFIG = $$unique(CONFIG)
 #	CONFIG -= debug # for Qt-win32 which only has release install(no debug)
 #    CONFIG += console
