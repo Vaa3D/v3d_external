@@ -37,6 +37,7 @@ macx{
 }
 
 win32{
+    CONFIG += console
     DEFINES += WINDOWS_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
 #    LIBS += -lwsock32
@@ -46,6 +47,7 @@ win32{
 }
 
 unix:!macx {
+    CONFIG += console
     DEFINES += LINUX_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
     LIBS =  -lGLU -lglut
