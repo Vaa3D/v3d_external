@@ -74,6 +74,7 @@ V3dApplication* V3dApplication::theApp = 0;
 
 int main(int argc, char **argv)
 {
+    if(argc<7) return -1;
     char *infile=argv[1];
     char *outfile=argv[2];
     int xc,yc,zc,len;
