@@ -1815,7 +1815,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
         //// Vaa3d || Terafly
         else
         {
-           if(!fromserver&&w->TeraflyCommunicator)currentTraceType=3;
+           if(!fromserver&&w->TeraflyCommunicator) currentTraceType=Renderer::mycolor;
             if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
                 creatmode = 1;
             if(selectMode == smCurveCreate_MarkerCreate1_fm)

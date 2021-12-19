@@ -87,7 +87,6 @@ public:
 	Renderer_gl1(void* widget);
 	virtual ~Renderer_gl1();
 	virtual const int class_version() {return 1;}
-
 public:
 // link to Data
 	virtual void setupData(void* data);

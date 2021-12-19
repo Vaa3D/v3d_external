@@ -4105,7 +4105,7 @@ void PMain::load()
         return;
     }
 
-
+    cur_win->view3DWidget->renderer->mycolor=managesocket->name.toInt();
     if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
     {
         qDebug()<<"load";
@@ -4170,6 +4170,7 @@ void PMain::ColLoadANO(QString ANOfile)
 {
     qDebug()<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
+
     QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
     QStringList anoList=QDir(loaddir).entryList(QDir::Files);
     qDebug()<<anoList;

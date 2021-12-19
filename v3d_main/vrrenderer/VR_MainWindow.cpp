@@ -359,7 +359,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             if(pMainApplication->m_modeGrip_R==m_drawMode)
             {
                 qDebug()<<"TeraVR add seg";
-                QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT,1);
+                QStringList waitsend=pMainApplication->NT2QString(pMainApplication->currentNT,VR_Communicator->userName.toInt());
                 if(waitsend.size())
                 {
                     waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
@@ -443,7 +443,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
                 {
                     QStringList result;
-                    result.push_back(QString("%1 TeraVR %2 %3 %4 %5").arg(VR_Communicator->userName).arg(pMainApplication->m_curMarkerColorType).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    result.push_back(QString("%1 TeraVR %2 %3 %4 %5").arg(VR_Communicator->userName).arg(2).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
                         result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
@@ -484,17 +484,16 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                         .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                     }
-                    qDebug()<<"result = "<<result;
+
                     QStringList waitsends;
                     for(auto nt:pMainApplication->segaftersplit)
                     {
-                        QStringList waitsend=pMainApplication->NT2QString(nt);
+                        //增加的线必须是用户色
+                        QStringList waitsend=pMainApplication->NT2QString(nt,VR_Communicator->userName.toInt());
                         waitsend.push_front(QString("%1 TeraVR %2 %3 %4").arg(userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                         waitsends.push_back(waitsend.join(";"));
                     }
                     pMainApplication->segaftersplit.clear();
-                    qDebug()<<"waitsends = "<<waitsends;
-
 
                     if(VR_Communicator&&
                         VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)

@@ -6785,10 +6785,10 @@ QString  CMainApplication::getHMDPOSstr()
 
 
 
-QStringList CMainApplication::NT2QString(NeuronTree nt,bool isCollaborate)
+QStringList CMainApplication::NT2QString(NeuronTree nt,int color)
 {
     QStringList messageBuff;
-    if (!isCollaborate){
+    if (color<0){
         for(int i=0;(i<nt.listNeuron.size())&&(i<120);i++)
         {
             auto S_temp=nt.listNeuron[i];
@@ -6802,7 +6802,7 @@ QStringList CMainApplication::NT2QString(NeuronTree nt,bool isCollaborate)
             auto S_temp=nt.listNeuron[i];
 
             XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
-            messageBuff.push_back(QString("%1 %2 %3 %4").arg(3).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
+            messageBuff.push_back(QString("%1 %2 %3 %4").arg(color).arg(tempconvertedxyz.x).arg(tempconvertedxyz.y).arg(tempconvertedxyz.z));
         }
     }
     return messageBuff;
