@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     auto sz = new V3DLONG [5];
     if (!sz)
     {
-        return -1;
+        return -5;
     }
     sz[0] = terafly::PluginInterface::getXDim(infile);
     sz[1] = terafly::PluginInterface::getYDim(infile);
