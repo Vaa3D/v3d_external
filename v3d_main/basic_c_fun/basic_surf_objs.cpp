@@ -268,12 +268,12 @@ bool writeMarker_file(const QString & filename, const QList <ImageMarker> & list
 	{
 		//then save
 		p_pt = (ImageMarker *)(&(listMarker.at(i)));
-		fprintf(fp, "%5.3f, %5.3f, %5.3f, %d, %d, %s, %s, %d,%d,%d\n",
+        fprintf(fp, "%5.3f, %5.3f, %5.3f, %5.3f, %d, %s, %s, %d,%d,%d\n",
 				// 090617 RZC: marker file is 1-based
 				p_pt->x,
 				p_pt->y,
 				p_pt->z,
-				int(p_pt->radius), p_pt->shape,
+                p_pt->radius, p_pt->shape,
 				qPrintable(p_pt->name), qPrintable(p_pt->comment),
 				p_pt->color.r,p_pt->color.g,p_pt->color.b);
 	}
@@ -300,7 +300,7 @@ NeuronTree readSWC_file(const QString& filename)
 
 	int count = 0;
     QList <NeuronSWC> listNeuron;
-	QHash <int, int>  hashNeuron;
+    QHash <int, int>  hashNeuron;
 	listNeuron.clear();
 	hashNeuron.clear();
 	QString name = "";
