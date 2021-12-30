@@ -9,6 +9,7 @@ INCLUDEPATH += . ../common_lib/include #./basic_c_funss
 
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x000000
 
 CONFIG +=  warn_off thread
 

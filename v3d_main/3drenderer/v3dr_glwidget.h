@@ -527,9 +527,9 @@ signals:
 public slots:
     void subtreeHighlightModeMonitor();
 
-public:
-    // for qt6 update, new function
-    void renderText(double x, double y, double z, const QString & str, const QFont & font = QFont(), int listBase = 2000);
+//public:
+//    // for qt6 update, new function
+//    void renderText(double x, double y, double z, const QString & str, const QFont & font = QFont(), int listBase = 2000);
 
 
 public:

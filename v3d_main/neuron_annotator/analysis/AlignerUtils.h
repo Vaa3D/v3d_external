@@ -7,7 +7,7 @@
 #include "../../v3d/v3d_core.h"
 #include "../../v3d/histogramsimple.h"
 
-using namespace std;
+//using namespace std;
 
 class AlignerUtils
 {

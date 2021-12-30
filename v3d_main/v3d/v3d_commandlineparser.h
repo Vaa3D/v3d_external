@@ -48,7 +48,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "CommandManager.h"
 #endif
 
-using namespace std;
+//using namespace std;
+using std::vector;
 
 //#include <boost/program_options.hpp>
 #ifdef WIN32

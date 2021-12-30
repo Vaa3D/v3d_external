@@ -39,6 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "../v3d/template_matching_cellseg_dialog.h"
 
+
 bool template_matching_seg(Vol3DSimple <unsigned char> *img3d, Vol3DSimple <unsigned short int> *outimg3d, const para_template_matching_cellseg & mypara);
 
 Vol3DSimple<double> * genGaussianKernal3D(V3DLONG szx, V3DLONG szy, V3DLONG szz, double sigmax, double sigmay, double sigmaz);

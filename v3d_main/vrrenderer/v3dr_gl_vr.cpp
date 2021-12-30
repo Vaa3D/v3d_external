@@ -1,4 +1,6 @@
-﻿#include <windows.h>
+﻿#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <GL/glew.h>
 #include "./v3dr_gl_vr.h"
 #include "VRFinger.h"

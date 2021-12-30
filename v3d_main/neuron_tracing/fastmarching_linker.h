@@ -13,7 +13,7 @@
 //#include <time.h>
 #include "heap.h"
 #include <QInputDialog>
-using namespace std;
+//using namespace std;
 
 #define INF 3.4e+38             // float INF
 

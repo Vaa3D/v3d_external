@@ -95,7 +95,7 @@ void Renderer::drawString(float x, float y, float z, const char* text, int shado
             // QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(f.weight()+200);
             QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(QFont::Thin);
 
-           //((QOpenGLWidget_proxy*)widget)->renderText(x,y,z, QString(text), f); qt6
+           //((V3dR_GLWidget*)widget)->renderText(x,y,z, QString(text), f); qt6
 
 
         glPopAttrib();
@@ -103,8 +103,8 @@ void Renderer::drawString(float x, float y, float z, const char* text, int shado
     }
 
     QFont f1;  f1.setPointSize((fontsize>0)?fontsize:30); //f1.setWeight(99);
-//    if (fontsize>0) // qt6 still unsolve
-//        ((V3dR_GLWidget *)widget)->renderText(x,y,z, QString(text));
+    if (fontsize>0) // qt6 still unsolve
+        //((V3dR_GLWidget *)widget)->renderText(x,y,z, QString(text));
 
     if (shadow)
     {
