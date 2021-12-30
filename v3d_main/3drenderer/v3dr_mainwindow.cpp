@@ -248,7 +248,7 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
 
 void V3dR_MainWindow::setDataTitle(QString newdt)
 {
-	data_title=newdt; setWindowTitle(title_prefix+" [" + data_title + "]");
+    data_title=newdt; setWindowTitle(title_prefix+" [" + data_title + "]");
 	if (glWidget) glWidget->setDataTitle(newdt);
 }
 
