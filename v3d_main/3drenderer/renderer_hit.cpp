@@ -4727,7 +4727,6 @@ XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarke
     Matrix M(4,4);		M << pos.MV;  M = M.t();
     Matrix PM = P * M;
 
-    //cout << "P M PM \n" << P << endl << M << endl << PM << endl;
     ColumnVector pX  = PM * X;
 
     pX = pX / pX(4);
@@ -4750,7 +4749,6 @@ void Renderer_gl1::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, 
     Matrix M(4,4);		M << pos.MV;  M = M.t();
     Matrix PM = P * M;
 
-    cout << "P M PM \n" << P << endl << M << endl << PM << endl;
 
     double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
     double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
@@ -4910,14 +4908,13 @@ XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
         float *p_value			//if p_value!=0, output value at center
         )
 {
-    qDebug()<<"进入了getCenterOfLineProfile  ";
+
     if (renderMode==rmCrossSection)
     {
         return getPointOnSections(P1,P2, clipplane); //clip plane also is the F-plane
     }
     XYZ loc = (P1+P2)*0.5;
 
-    qDebug("Renderer_gl1::getCenterOfLineProfile loc的值(%g , %g)",loc.x,loc.y);
 
 
 

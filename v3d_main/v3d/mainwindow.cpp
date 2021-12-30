@@ -250,16 +250,13 @@ MainWindow::MainWindow()
 #if COMPILE_TARGET_LEVEL == 0
     v3d_Lite_info();
 #endif
-    //090811 RZC
-    //qDebug()<<"jazz---------------debug---------------1";
+    //090811 RZC    
     pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
-    //到这里都没有问题
 
 
 #ifdef __v3d_custom_toolbar__
     // Aug-08-2011 Hang
     this->addCustomToolbar();
-    //qDebug()<<"jazz---------------debug---------------2";
 #endif
     // Dec-20-2010 YuY
     //connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
@@ -272,9 +269,9 @@ MainWindow::MainWindow()
 #define __AUTOLAUNCH_OPEN_NEURON_GAME___
     /// RZC 20170620: disable auto launch
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
-//qDebug()<<"jazz---------------debug---------------4";
+
     //const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
-//qDebug()<<"jazz---------------debug---------------5";
+
 
 }
 

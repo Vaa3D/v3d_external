@@ -2015,6 +2015,7 @@ void Renderer_gl1::setEditMode()
     }
 }
 
+
 #endif
 void Renderer_gl1::toggleLineType()
 {

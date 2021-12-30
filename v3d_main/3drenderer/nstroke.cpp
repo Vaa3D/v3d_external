@@ -2756,4 +2756,3 @@ void Renderer_gl1::smoothLagrange(vector <XYZ> inPoints, vector <XYZ> & outPoint
 	 delete [] multipliers;
 }
 
-

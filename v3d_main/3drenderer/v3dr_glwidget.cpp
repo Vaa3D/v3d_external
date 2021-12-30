@@ -960,6 +960,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 setBright();
             }else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Drawing BBox");
                 callStrokeCurveDrawingBBoxes();//For serial BBoxes curve drawing shortcut, by ZZ,02212018
             }
             break;
@@ -1022,9 +1023,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleShader();
             }else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Drawing Global");
                 callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
             }else
             {
+                emit changeEditinput("GD Tracing");
                 callGDTracing();
             }
             break;
@@ -1279,6 +1282,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_D:
             if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Deleting");
                 callStrokeDeleteMultiNeurons(); //For multiple segments deleting shortcut, by ZZ,02212018
             }
             else
@@ -1370,7 +1374,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleTexCompression();
             }else if (IS_ALT_MODIFIER)
             {
-
+                emit changeEditinput("Connecting");
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else if (IS_SHIFT_MODIFIER)
