@@ -1480,8 +1480,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             ///// marker operation //////////////////////////////////////////////////////
         case Qt::Key_Escape:
             {
-        emit changeEditinput("You have cancelled selection");
-        cancelSelect();
+                cancelSelect();
 
 #ifdef _NEURON_ASSEMBLER_
                 Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
