@@ -2539,6 +2539,11 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
     MarkerPos pos;
     pos.x = x;
     pos.y = y;
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+    pos.x = x * 2;
+    pos.y = y * 2;
+#endif
+
     pos.drawn = false;
     for (int i=0; i<4; i++){
         pos.view[i] = viewport[i];
@@ -4340,10 +4345,10 @@ double Renderer_gl1::solveMarkerCenter()
     QElapsedTimer t;
     t.start();
     if (listMarkerPos.size()<1)  return t.elapsed();
-    //const MarkerPos & pos = listMarkerPos.at(0);
-    MarkerPos pos = listMarkerPos.at(0);
-    pos.x = 360.00;
-    pos.y = 380.00;
+    const MarkerPos & pos = listMarkerPos.at(0);
+//    MarkerPos pos = listMarkerPos.at(0);
+//    pos.x = 360.00;
+//    pos.y = 380.00;
     qDebug("第一步传进去的 pos (%g, %g)", pos.x,pos.y);
 
     XYZ loc = getCenterOfMarkerPos(pos);
