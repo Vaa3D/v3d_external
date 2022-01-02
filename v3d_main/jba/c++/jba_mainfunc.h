@@ -12,6 +12,8 @@
 #include <vector>
 //using namespace std;
 using std::string;
+using std::vector;
+
 string gen_file_name(string basename, int layer, string otherinfo);
 
 typedef unsigned char UINT8_JBA;

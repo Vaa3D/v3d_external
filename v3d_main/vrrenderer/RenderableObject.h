@@ -7,7 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 //using namespace std;
-using std:: vector;
+using std::vector;
+
 class RenderableObject
 {
 public:

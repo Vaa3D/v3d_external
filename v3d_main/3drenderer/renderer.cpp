@@ -95,7 +95,7 @@ void Renderer::drawString(float x, float y, float z, const char* text, int shado
             // QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(f.weight()+200);
             QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(QFont::Thin);
 
-           //((QOpenGLWidget_proxy*)widget)->renderText(x,y,z, QString(text), f); qt6
+           //((V3dR_GLWidget*)widget)->renderText(x,y,z, QString(text), f); qt6
 
 
         glPopAttrib();
@@ -103,13 +103,14 @@ void Renderer::drawString(float x, float y, float z, const char* text, int shado
     }
 
     QFont f1;  f1.setPointSize((fontsize>0)?fontsize:30); //f1.setWeight(99);
-//    if (fontsize>0) // qt6 still unsolve
-//        ((V3dR_GLWidget *)widget)->renderText(x,y,z, QString(text));
+    if (fontsize>0) // qt6 still unsolve
+        //((V3dR_GLWidget *)widget)->renderText(x,y,z, QString(text));
 
     if (shadow)
     {
         glPopAttrib();
     }
+
 }
 
 bool Renderer::beStill()
@@ -687,8 +688,8 @@ void Renderer::drawEditInfo()
 
         }
 
-        sprintf(str, "%s", editdisplay.c_str());
 
+        sprintf(str, "%s", editdisplay.c_str());
         drawString(A0.x + td, A0.y, A0.z, str, 0, 18); // same renderText problem above, 20210825
 //        drawString(A0.x + td, A0.y + td, A0.z, "bigneuron.org", 0, fontsize);
         //glColor3f(1, 0, 0);		drawString(A1.x + td, A0.y, A0.z, "X");

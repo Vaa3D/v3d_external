@@ -646,6 +646,37 @@ void V3dR_MainWindow::hideDisplayControls()
     }
 }
 
+// =====================================================================
+// Purpose: update editline(QLabel), DLC ADD
+// =====================================================================
+void V3dR_MainWindow::doUpdateLabel()
+{
+    int curEditInput = this->glWidget->renderer->editinput;
+
+    switch (curEditInput)
+    {
+    case 1:  editdisplay = "Drawing BBox";break;
+    case 2:
+        if(glWidget->renderer->neuronColorMode==0)
+            editdisplay = "Retyping";
+        else if (glWidget->renderer->neuronColorMode==5)
+            editdisplay = "Confidence Level";
+        break;
+    case 3:  editdisplay = "Deleting";break;
+    case 4:  editdisplay = "Splitting";break;
+    case 5:  editdisplay = "Drawing Global";break;
+    case 6:  editdisplay = "Connecting";break;
+    case 7:  editdisplay = "Defining Polyline";break;
+    case 8:  editdisplay = "GD Tracing";break;
+    case 9:  editdisplay = "Connecting (Loop Safe)"; break;
+    case 10: editdisplay = "Highlight Subtree"; break;
+    case 11: editdisplay = "Highlight Connected Segments"; break;
+    case 12: editdisplay = "Fragment Tracing"; break;
+    case 13: editdisplay = "Brain Atlas"; break;
+    }
+    this->editLine->setText(editdisplay);
+}
+
 void V3dR_MainWindow::connectSignal()
 {
 	qDebug("V3dR_MainWindow::connectSignal with V3dR_GLWidget");
@@ -988,8 +1019,7 @@ void V3dR_MainWindow::connectSignal()
 
 	//if (BrainAtlas) connect(BrainAtlas, SIGNAL(clicked()), glWidget, SLOT(callUpBrainAtlas()));
     if(editLine) {
-        connect(glWidget, SIGNAL(changeEditinput(QString)), editLine, SLOT(setText(QString))); // DLC.20211230
-        //        connect(this, SIGNAL(), editLine, SLOT(setText(QString &)));
+        connect(glWidget, SIGNAL(changeEditinput(QString)), editLine, SLOT(setText(QString))); // DLC.2021123
     }
 
 	connect(glWidget, SIGNAL(signalVolumeCutRange()), this, SLOT(initVolumeCutRange())); // 081122
