@@ -201,9 +201,6 @@ public:
     QLabel *editLine; //for display editinfo, DLC
     QString editdisplay;
 
-    QLabel *editLine; //for display editinfo, DLC
-    QString editdisplay;
-
 	QDoubleSpinBox *zthicknessBox; //by PHC, 090215
 	QComboBox *comboBox_channel;
     QAbstractSlider *thicknessSlider, *transparentSlider;
