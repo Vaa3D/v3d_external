@@ -4,7 +4,7 @@
 #include <sstream>
 using namespace std;
 
-bool lookFor(const char * string, ifstream* in) { // MK, 11/30/2016. The input argument is const char* and cannot be coverted to char*. Needs to add keyword const before char*.
+bool lookFor(const char * string, std::ifstream* in) { // MK, 11/30/2016. The input argument is const char* and cannot be coverted to char*. Needs to add keyword const before char*.
     char c[500];
     *in >> c;
     while((!in->eof() || !in->fail()) && strncmp(c,string,strlen(string))!=0){
@@ -48,7 +48,7 @@ void asc_to_swc::add(NeuronTree &nt, int id, int type, double x, double y, doubl
     nt.listNeuron.push_back(tmpswc);
 }
 
-int asc_to_swc::NeurolAdd(NeuronTree &nt, ifstream * in, int id, int type) {
+int asc_to_swc::NeurolAdd(NeuronTree &nt, std::ifstream * in, int id, int type) {
 
     int biforc[1000];
     biforc[0] = -1;
@@ -150,7 +150,7 @@ int asc_to_swc::NeurolAdd(NeuronTree &nt, ifstream * in, int id, int type) {
 
         }
         //adding second parameter here or eclipse is showing it as invalid argument error.
-        in->seekg(pos,ios::beg);
+        in->seekg(pos,std::ios::beg);
 
         //if a number follow get the segment cooordinates
         if ((in->peek() >= '0' && in->peek() <= '9') || in->peek() == '-') {
@@ -178,7 +178,7 @@ int asc_to_swc::NeurolAdd(NeuronTree &nt, ifstream * in, int id, int type) {
     return id;
 }
 
-double * asc_to_swc::getValues(ifstream * in, double * ret) {
+double * asc_to_swc::getValues(std::ifstream * in, double * ret) {
     char c = 'y';
     double xSum = 0, ySum = 0, zSum = 0, rSum = 0, xSq = 0, ySq = 0, zSq = 0,
             x, y, z, r;
@@ -249,7 +249,7 @@ double * asc_to_swc::getValues(ifstream * in, double * ret) {
 }
 
 void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
-    ifstream * in = new ifstream(name, ios::in | ios::binary);
+    std::ifstream * in = new std::ifstream(name, std::ios::in | std::ios::binary);
 
     int cellBody_cnt = 0;
     char buffer [33];
@@ -264,7 +264,7 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
     //modified the code such that all cellbody tags are searched at once sri 07/22/2010
     if (in->fail())
         in->clear();
-    in->seekg(0, ios::beg);
+    in->seekg(0, std::ios::beg);
     int id = 1; int pid = -1;
     while (!in->fail()) {
         if (lookFor("(CellBody)", in)) {
@@ -281,7 +281,7 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
     }
     if (in->fail())
         in->clear();
-    in->seekg(0, ios::beg);
+    in->seekg(0, std::ios::beg);
 
     ret[0]=ret[1]=ret[2]=ret[3]=ret[4]=-999999999;
 
@@ -302,7 +302,7 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
 
     }
 
-    stringstream ss;
+    std::stringstream ss;
     ss << cellBody_cnt;
 
 //    if(cellBody_cnt > 1){
@@ -322,7 +322,7 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
 
     if (in->fail())
         in->clear();
-    in->seekg(0, ios::beg);
+    in->seekg(0, std::ios::beg);
     //int id = 1;
     int dendctr = 0;
     while (in->peek() != -1) {
@@ -333,7 +333,7 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
 
     if (in->fail())
         in->clear();
-    in->seekg(0, ios::beg);
+    in->seekg(0, std::ios::beg);
     int axonctr = 0;
     while (!in->eof()) {
         axonctr++;
@@ -347,7 +347,7 @@ void asc_to_swc::OpenNeuroL(NeuronTree &nt, char* name) {
 
     if (in->fail())
         in->clear();
-    in->seekg(0, ios::beg);
+    in->seekg(0, std::ios::beg);
     int apictr = 0;
     while (in->peek() != -1) {
         apictr++;

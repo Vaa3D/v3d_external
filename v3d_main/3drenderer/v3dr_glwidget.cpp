@@ -180,9 +180,6 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 
     ///////////////////////////////////////////////////////////////
     makeCurrent(); //090729: this make sure created GL context
-    //  2008-11-22 RZC, 090628 RZC
-    //choice renderer according to OpenGl version, MUST put in initializeGL
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     //setFocusPolicy(Qt::WheelFocus); // accept KeyPressEvent when mouse wheel move, by RZC 080831
@@ -1373,7 +1370,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleTexCompression();
             }else if (IS_ALT_MODIFIER)
             {
-
+                emit changeEditinput("Connecting");
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else if (IS_SHIFT_MODIFIER)
@@ -2394,143 +2391,7 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
-#define __VR_FUNCS_b__
-/*//<<<<<<< HEAD
-//=======
-#ifdef __ALLOW_VR_FUNCS__
-void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
-{
-    Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-    QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
 
-    My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
-
-    this->getMainWindow()->hide();
-    QMessageBox::StandardButton reply;
-    if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
-        reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-    else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
-        reply = QMessageBox::Yes;
-    else
-        reply = QMessageBox::No;
-    if (reply == QMessageBox::Yes)
-    {
-        if(VRClientON==false)
-        {
-            VRClientON = true;
-            if(myvrwin)
-                delete myvrwin;
-            myvrwin = 0;
-            myvrwin = new VR_MainWindow();
-            myvrwin->setWindowTitle("VR MainWindow");
-            bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
-            VRClientON = linkerror;
-            if(!linkerror)  // there is error with linking ,linkerror = 0
-            {qDebug()<<"can't connect to server .unknown wrong ";return;}
-            connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
-            QString VRinfo = this->getDataTitle();
-            qDebug()<<"VR get data_title = "<<VRinfo;
-            resumeCollaborationVR = false;//reset resumeCollaborationVR
-            myvrwin->ResIndex = Resindex;
-            int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
-            qDebug()<<"result is "<<_call_that_func;
-            qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-            qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<CollaborationCreatorPos.x<<CollaborationCreatorPos.y<<CollaborationCreatorPos.z;
-            if (_call_that_func > 0)
-            {
-                resumeCollaborationVR = true;
-                emit(signalCallTerafly(_call_that_func));
-            }
-            else if(_call_that_func == -1)
-            {
-                call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-            }
-        }
-        else
-        {
-            v3d_msg("The ** client is running.Failed to start VR client.");
-            this->getMainWindow()->show();
-        }
-    }
-    else
-    {
-        // bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
-        qDebug()<<"result is "<<_call_that_func;
-        qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-        updateWithTriView();
-        if (_call_that_func > 0)
-        {
-            emit(signalCallTerafly(_call_that_func));
-        }
-        else if(_call_that_func == -1)
-        {
-            call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-        }
-
-        //this->getMainWindow()->show();
-        // if(_Call_ZZ_Plugin)
-        // {
-        // 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-        // 	emit(signalCallTerafly());
-        // }
-    }
-}
-void V3dR_GLWidget::doclientView(bool check_flag)
-{
-
-    if(check_flag)
-    {
-        qDebug()<<"run true.";
-        if(VRClientON==false)
-        {
-            v3d_msg("Now start Collaboration.");
-            VRClientON = true;
-            Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-            QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-            if(myclient)
-                delete myclient;
-            myclient = 0;
-            myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
-            bool linkerror = myclient->SendLoginRequest();
-            if(!linkerror)
-            {
-                v3d_msg("Error!Cannot link to server!");
-                myclient = 0;
-                VRClientON = false;
-            }
-            else
-                v3d_msg("Successed linking to server! ");
-        }
-        else
-        {
-            v3d_msg("The VR client is running.Failed to start ** client.");
-        }
-    }
-    else
-    {
-        qDebug()<<"run false.";
-        if(myclient)
-        {
-            qDebug()<<"run disc.";
-            delete myclient;
-            myclient = 0;
-        }
-        VRClientON=false;
-    }
-}
-
-void V3dR_GLWidget::OnVRSocketDisConnected()
-{
-    qDebug()<<"V3dR_GLWidget::OnVRSocketDisConnected()";
-    VRClientON=false;
-}
-
-
-
-#endif
-//>>>>>>> e4f5898908f8eaf6199ffedab4924649e0925911
-*/
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {
@@ -3998,96 +3859,6 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
     }
 }
 
-//--------------------------------------------------------------------------------
-// Qt6 update function:reimplenment QGLWidget::renderText(), added by DLC 20210824
-//--------------------------------------------------------------------------------
-void V3dR_GLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font, int listBase)
-{
-    if (str.isEmpty() || !isValid())
-        return;
-
-    int width = this->width();
-    int height = this->height();
-
-    GLint view[4];
-
-
-    QPaintEngine *engine = paintEngine();
-    // this changes what paintEngine() returns
-    engine = paintEngine();
-    QPainter *p;
-    bool reuse_painter = false;
-    bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);
-    bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
-
-    if (engine->isActive()) {
-        reuse_painter = true;
-        p = engine->painter();
-        //qt_save_gl_state();
-        glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        glMatrixMode(GL_TEXTURE);
-        glPushMatrix();
-        glLoadIdentity();
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-
-        glShadeModel(GL_FLAT);
-        glDisable(GL_CULL_FACE);
-        glDisable(GL_LIGHTING);
-        glDisable(GL_STENCIL_TEST);
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        // done
-
-        glDisable(GL_DEPTH_TEST);
-        glViewport(0, 0, width, height);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, width, height, 0, 0, 1);
-        glMatrixMode(GL_MODELVIEW);
-
-        glLoadIdentity();
-    }
-
-    QRect viewport(view[0], view[1], view[2], view[3]);
-    if (!use_scissor_testing && viewport != rect()) {
-        glScissor(view[0], view[1], view[2], view[3]);
-        glEnable(GL_SCISSOR_TEST);
-    } else if (use_scissor_testing) {
-        glEnable(GL_SCISSOR_TEST);
-    }
-
-    //draw_text(p,x,y,str,font);
-    GLfloat color[4];
-    glGetFloatv(GL_CURRENT_COLOR, &color[0]);
-
-    QColor col;
-    col.setRgbF(color[0], color[1], color[2],color[3]);
-    QPen old_pen = p->pen();
-    QFont old_font = p->font();
-
-    p->setPen(col);
-    p->setFont(font);
-    p->drawText(x, y, str);
-
-    p->setPen(old_pen);
-    p->setFont(old_font);
-
-    // restore_gl_state();
-    glMatrixMode(GL_TEXTURE);
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glPopAttrib();
-    glPopClientAttrib();
-
-}
 
 
 void V3dR_GLWidget::callDefine3DPolyline()

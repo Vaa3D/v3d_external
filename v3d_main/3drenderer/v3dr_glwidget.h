@@ -517,19 +517,21 @@ signals:
     void changeConfCut(int s);
 
     void changeOrthoView(bool b);
-        void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
-        void neuronShownAll(const QList<int> overlayList);
-        void neuronClearAll();
-        void neuronIndexChanged(int index);
-        void neuronClearAllSelections();
-        void signalCallTerafly(int nDirect);
+    void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
+    void neuronShownAll(const QList<int> overlayList);
+    void neuronClearAll();
+    void neuronIndexChanged(int index);
+    void neuronClearAllSelections();
+    void signalCallTerafly(int nDirect);
+
+    void changeEditinput(QString);
 
 public slots:
     void subtreeHighlightModeMonitor();
 
-public:
-    // for qt6 update, new function
-    void renderText(double x, double y, double z, const QString & str, const QFont & font = QFont(), int listBase = 2000);
+//public:
+//    // for qt6 update, new function
+//    void renderText(double x, double y, double z, const QString & str, const QFont & font = QFont(), int listBase = 2000);
 
 
 public:

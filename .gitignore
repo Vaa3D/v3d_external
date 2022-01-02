@@ -48,4 +48,4 @@ build_linux-*/
 build_macosx-*/
 build_windows-*/
 
-v3d_main/v3d_Qt6_build/
+v3d_main/v3d_build/
