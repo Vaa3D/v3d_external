@@ -7,7 +7,7 @@
 
 #include "IPMain4NeuronAssembler.h"
 
-using namespace std;
+//using namespace std;
 
 class INeuronAssembler
 {

@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "template_matching_seg.h"
 #include "../basic_c_fun/volimg_proc.h"
 #include "../basic_c_fun/basic_landmark.h"
-
+using namespace std;
 
 bool template_matching_seg(Vol3DSimple <unsigned char> *img3d, Vol3DSimple <unsigned short int> *outimg3d, const para_template_matching_cellseg & mypara)
 {

@@ -2,7 +2,7 @@
 #include <iostream>
 #include "../basic_c_fun/basic_surf_objs.h"
 #include <sstream>
-
+using namespace std;
 
 bool lookFor(const char * string, ifstream* in) { // MK, 11/30/2016. The input argument is const char* and cannot be coverted to char*. Needs to add keyword const before char*.
     char c[500];

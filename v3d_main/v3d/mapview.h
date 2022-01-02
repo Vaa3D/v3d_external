@@ -3,8 +3,8 @@
 
 #include <string>
 #include "../basic_c_fun/stackutil.h"
-using namespace std;
-
+//using namespace std;
+using std::string;
 struct ImageMapView
 {
 	V3DLONG L, M, N;                   // the block number in X, Y, Z dimension
