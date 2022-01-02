@@ -960,7 +960,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 setBright();
             }else if (IS_ALT_MODIFIER)
             {
-                emit changeEditinput("Drawing BBox");
                 callStrokeCurveDrawingBBoxes();//For serial BBoxes curve drawing shortcut, by ZZ,02212018
             }
             break;
@@ -1023,11 +1022,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleShader();
             }else if (IS_ALT_MODIFIER)
             {
-                emit changeEditinput("Drawing Global");
                 callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
             }else
             {
-                emit changeEditinput("GD Tracing");
                 callGDTracing();
             }
             break;
@@ -1282,7 +1279,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_D:
             if (IS_ALT_MODIFIER)
             {
-                emit changeEditinput("Deleting");
                 callStrokeDeleteMultiNeurons(); //For multiple segments deleting shortcut, by ZZ,02212018
             }
             else
@@ -1480,8 +1476,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             ///// marker operation //////////////////////////////////////////////////////
         case Qt::Key_Escape:
             {
-        emit changeEditinput("You have cancelled selection");
-        cancelSelect();
+                cancelSelect();
 
 #ifdef _NEURON_ASSEMBLER_
                 Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());

@@ -44,7 +44,7 @@
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
 
-//using namespace std;
+using namespace std;
 
 class terafly::CImport : public QThread
 {

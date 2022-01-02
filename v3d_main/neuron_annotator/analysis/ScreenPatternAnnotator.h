@@ -9,7 +9,7 @@
 #include "SleepThread.h"
 #include "AnalysisTools.h"
 
-//using namespace std;
+using namespace std;
 
 
 class SortableStringDouble

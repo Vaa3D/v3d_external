@@ -6,7 +6,7 @@
 #include <QDir>
 #include "../../v3d/v3d_core.h"
 
-//using namespace std;
+using namespace std;
 
 class StitchedFileUtility
 {

@@ -11,9 +11,6 @@
 //#endif
 
 #include "../basic_c_fun/v3d_interface.h"
-//#include "VRthread.h"
-
-class CMainApplication;
 struct VRoutInfo
 {
 	std::vector<XYZ> deletedcurvespos;
@@ -63,6 +60,5 @@ public:
 
 // bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);
 int startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain, XYZ* zoomPOS = 0);
-
 
 #endif // VR_MainWindow_H

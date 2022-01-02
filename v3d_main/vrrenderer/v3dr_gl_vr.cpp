@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string>
 #include <cstdlib>
-
+#include <QThread>
 
 #include "shader_m.h"
 #include "Sphere.h"
@@ -56,8 +56,6 @@ typedef vector<Point*> Tree;
 #ifndef MAX
 #define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
 #endif
-
-
 int checkForOpenGLError(const char* file, int line)
 {
     // return 1 if an OpenGL error occured, 0 otherwise.
@@ -752,7 +750,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
 	, showshootingray(false)
-    , replacetexture(false),QWidget()
+	, replacetexture(false)
 	//, font_VR (NULL)
 
 {
@@ -784,9 +782,6 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	}
 	// other initialization tasks are done in BInit
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
-//    leftpixmap=new QImage(m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB32);
-//    rightpixmap=new QImage(m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB32);
-    //this->show();
 };
 
 
@@ -1440,24 +1435,7 @@ void CMainApplication::Shutdown()
 //		SDL_DestroyWindow(m_pCompanionWindow);
 //		m_pCompanionWindow = NULL;
 //	}
-    //	SDL_Quit();
-}
-
-void CMainApplication::DrawLayout()
-{
-    this->setFixedSize(1920,1080);
-    leftlabel=new QLabel(this);
-    leftlabel->setGeometry(0,0,1920/2,1080/2);
-    leftlabel->setFixedSize(1920/2,1080);
-    rightlabel=new QLabel(this);
-    rightlabel->setGeometry(1920/2,0,1920/2,1080/2);
-    rightlabel->setFixedSize(1920/2,1080);
-    layout=new QHBoxLayout();
-    leftlabel->setText("left eye");
-    rightlabel->setText("right eye");
-    layout->addWidget(leftlabel);
-    layout->addWidget(rightlabel);
-    this->setLayout(layout);
+//	SDL_Quit();
 }
 
 //-----------------------------------------------------------------------------
@@ -2097,22 +2075,15 @@ bool CMainApplication::HandleInput()
 //-----------------------------------------------------------------------------
 void CMainApplication::RunMainLoop()
 {
-//    this->m_vrwidget->getsize(m_nRenderWidth,m_nRenderHeight);
-    leftdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
-    rightdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
 	bool bQuit = false;
-    this->show();
-    while ( !bQuit )
-    {
-//        static int count=0;
-//        qDebug()<<count++;
+
+	while ( !bQuit )
+	{
         QCoreApplication::processEvents();
 		bQuit = HandleInput();
-        if (bQuit) break;
-        RenderFrame();
-
-    }
-
+		if (bQuit) break;
+		RenderFrame();
+	}
 //	SDL_StopTextInput();
 }
 // using in VR_MainWindow.cpp
@@ -2172,7 +2143,6 @@ void CMainApplication::SetupCurrentUserInformation(string name, int typeNumber)
 		current_agent_color = "other color";
 		break;
 	}
-
 }
 
   void CMainApplication::SetupAgentModels(vector<Agent> &curAgents)
@@ -4188,7 +4158,6 @@ void CMainApplication::MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTre
 //-----------------------------------------------------------------------------
 void CMainApplication::RenderFrame()
 {
-
 	// for now as fast as possible 
 	if ( m_pHMD )
 	{
@@ -4213,42 +4182,12 @@ void CMainApplication::RenderFrame()
 			m_globalMatrix = glm::translate(m_globalMatrix,-autoRotationCenter);
 		}
 
-        RenderStereoTargets();
+		RenderStereoTargets();
 //        RenderCompanionWindow(); DLC
-
 		vr::Texture_t leftEyeTexture = {(void*)(uintptr_t)leftEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture );
 		vr::Texture_t rightEyeTexture = {(void*)(uintptr_t)rightEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture );
-//        qDebug()<<leftEyeDesc.m_nResolveTextureId<<','<<leftEyeDesc.m_nResolveFramebufferId;
-
-        glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, leftdata);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        //qDebug()<<leftdata[100];
-        QImage* leftQImage = new QImage(leftdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
-        //qDebug()<<leftpixmap->loadFromData((const uchar *)leftdata,m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
-        //qDebug()<<myQImage;
-        leftQImage->mirror();
-        *leftQImage=leftQImage->scaled(1920/2,1080);
-        leftmp=leftmp.fromImage(*leftQImage);
-        //this->setPixmap(leftmp);
-        this->leftlabel->setPixmap(leftmp);
-        delete leftQImage;
-
-        glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, rightdata);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        QImage* rightQImage = new QImage(rightdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
-        rightQImage->mirror();
-        *rightQImage=rightQImage->scaled(1920/2,1080);
-        rightmp=rightmp.fromImage(*rightQImage);
-        this->rightlabel->setPixmap(rightmp);
-        delete rightQImage;
-
-//        m_vrwidget->getdatatexture(leftdata,rightdata);
-//        this->m_vrwidget->draw();
-//        this->m_vrwidget->show();
 	}
 
 	if ( m_bVblank && m_bGlFinishHack )
@@ -6090,16 +6029,12 @@ void CMainApplication::RenderStereoTargets()
 		fps = frameCount;
 		frameCount = 0;
 		StartTimer();
-        //cout<<fps<<endl;
+		//cout<<fps<<endl;
 		//used for fps tess liqi
 	}	
 	
 	frameTime = GetFrameTime();
-
  	RenderScene( vr::Eye_Left );
-
-
-
  	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 	glDisable( GL_MULTISAMPLE );
 	 	
@@ -6113,15 +6048,11 @@ void CMainApplication::RenderStereoTargets()
  	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0 );	
 
-
-    glEnable( GL_MULTISAMPLE );
+	glEnable( GL_MULTISAMPLE );
 	// Right Eye
 	glBindFramebuffer( GL_FRAMEBUFFER, rightEyeDesc.m_nRenderFramebufferId );
  	glViewport(0, 0, m_nRenderWidth, m_nRenderHeight );
  	RenderScene( vr::Eye_Right );
-
-
-
  	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
  	
 	glDisable( GL_MULTISAMPLE );
@@ -6129,19 +6060,18 @@ void CMainApplication::RenderStereoTargets()
  	glBindFramebuffer(GL_READ_FRAMEBUFFER, rightEyeDesc.m_nRenderFramebufferId );
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rightEyeDesc.m_nResolveFramebufferId );
 	
-    glBlitFramebuffer( 0, 0, m_nRenderWidth, m_nRenderHeight, 0, 0, m_nRenderWidth, m_nRenderHeight,
+    glBlitFramebuffer( 0, 0, m_nRenderWidth, m_nRenderHeight, 0, 0, m_nRenderWidth, m_nRenderHeight, 
 		GL_COLOR_BUFFER_BIT,
  		GL_LINEAR  );
  	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0 );
-
 }
 
 
 //-----------------------------------------------------------------------------
 // Purpose: Renders a scene with respect to nEye.
 //-----------------------------------------------------------------------------
-void CMainApplication::  RenderScene( vr::Hmd_Eye nEye )
+void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 {
 	glm::vec3 surfcolor(0.95f,0.95f,0.95f);
 	glm::vec3 wireframecolor(0.545f, 0.361f, 0.855f);
@@ -6169,10 +6099,9 @@ void CMainApplication::  RenderScene( vr::Hmd_Eye nEye )
 
 	//	glDisable(GL_BLEND);
 	//}
-    //qDebug()<<"prepared.";
+
 ///*
 	//=================== draw volume image ======================
-
     if (m_bHasImage4D)
     {
         // render to texture
@@ -6184,13 +6113,10 @@ void CMainApplication::  RenderScene( vr::Hmd_Eye nEye )
         RenderImage4D(backfaceShader,nEye,GL_BACK);
         glUseProgram(0);
         ///*
-        ///
         // bind to previous framebuffer again
-        //qDebug()<<"second step.";
         if (nEye == vr::Eye_Left)
         {
             glBindFramebuffer( GL_FRAMEBUFFER, leftEyeDesc.m_nRenderFramebufferId );
-            //qDebug()<<leftEyeDesc.m_nRenderFramebufferId;
         }
         else if (nEye == vr::Eye_Right)
         {

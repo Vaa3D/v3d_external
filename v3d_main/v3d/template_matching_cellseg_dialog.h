@@ -41,7 +41,7 @@ template_matching_cellseg_dialog.h
 
 #include <string>
 #include <vector>
-//using namespace std;
+using namespace std;
 
 #include <QDialog>
 #include <QFileDialog>

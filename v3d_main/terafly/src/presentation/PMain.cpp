@@ -2855,7 +2855,7 @@ void PMain::doTeraflyVRView()
         CViewer *cur_win = CViewer::getCurrent();
         if(cur_win&&cur_win->view3DWidget)
         {
-            //this->showMinimized();
+            this->hide();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
             if(cur_win->view3DWidget->resumeCollaborationVR)
@@ -2867,7 +2867,8 @@ void PMain::doTeraflyVRView()
 			else
 				cur_win->view3DWidget->doimageVRView(false);
             //cur_win->storeAnnotations();
-            //this->show();
+            this->show();		
+
         }
     }
     catch(...)

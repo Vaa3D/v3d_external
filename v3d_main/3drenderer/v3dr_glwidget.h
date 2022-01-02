@@ -524,7 +524,7 @@ signals:
     void neuronClearAllSelections();
     void signalCallTerafly(int nDirect);
 
-    void changeEditinput(QString s); //DLC,20211230
+    void changeEditinput(QString);
 
 public slots:
     void subtreeHighlightModeMonitor();

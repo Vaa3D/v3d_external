@@ -43,7 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 
 #include <vector>
-//using namespace std;
+using namespace std;
 
 #if defined(NAN_EQUALS_ZERO)
 #define IsNonZero(d) ((d)!=0.0 || mxIsNaN(d))

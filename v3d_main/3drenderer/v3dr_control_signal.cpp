@@ -37,7 +37,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * last update: 090618: by Hanchuan Peng, add global option to default video card compress, axes display and bounding box display states
  */
 
-//这个文件注释了很多东西
 #include "v3dr_mainwindow.h"
 
 #include <QComboBox>
@@ -49,7 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 
 
-#include "v3dr_glwidget.h"//需要包含这个头文件
+#include "v3dr_glwidget.h"
 
 QString xCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 {
@@ -552,9 +551,6 @@ void V3dR_MainWindow::createControlWidgets()
 	controlLayout->addWidget(rotVRView);
 
 #endif
-    // show edit info ,dlc
-    editLine = new QLabel("Here will Show Edit Information", controlGroup);
-    controlLayout->addWidget(editLine);
 
     controlLayout->addStretch(0);
     controlLayout->setSpacing(0);
@@ -1018,9 +1014,11 @@ void V3dR_MainWindow::connectSignal()
 	if (resOfOriginalImage) connect(resOfOriginalImage, SIGNAL(clicked()), glWidget, SLOT(setVoxSize()));
 
 	//if (BrainAtlas) connect(BrainAtlas, SIGNAL(clicked()), glWidget, SLOT(callUpBrainAtlas()));
+
     if(editLine) {
         connect(glWidget, SIGNAL(changeEditinput(QString)), editLine, SLOT(setText(QString))); // DLC.2021123
     }
+
 
 	connect(glWidget, SIGNAL(signalVolumeCutRange()), this, SLOT(initVolumeCutRange())); // 081122
 	connect(glWidget, SIGNAL(signalInitControlValue()), this, SLOT(initControlValue())); // 081122

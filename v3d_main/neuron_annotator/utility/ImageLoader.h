@@ -8,7 +8,7 @@
 #include <QtCore>
 #include <QDir>
 
-//using namespace std;
+using namespace std;
 
 class ImageLoader : public QObject, public QRunnable, ImageLoaderBasic
 {

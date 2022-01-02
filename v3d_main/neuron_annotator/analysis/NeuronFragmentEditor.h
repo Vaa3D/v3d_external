@@ -7,7 +7,7 @@
 #include "../../v3d/v3d_core.h"
 #include "MaskChan.h"
 
-//using namespace std;
+using namespace std;
 
 class NeuronFragmentEditor
 {

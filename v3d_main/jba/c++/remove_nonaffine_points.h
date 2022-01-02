@@ -7,8 +7,8 @@
 
 #include <stdio.h>
 #include <vector>
-//using namespace std;
-using std::vector;
+using namespace std;
+
 #define WANT_STREAM
 #include "newmatap.h"
 #include "newmatio.h"
