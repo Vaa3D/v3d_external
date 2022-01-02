@@ -4,7 +4,8 @@
 #define __V3DR_GL_VR_H__
 #include "mainwindow.h"
 
-#include <SDL.h>
+#include <QPixmap>
+#include <QImage>
 
 #include "../basic_c_fun/v3d_interface.h"
 
@@ -17,9 +18,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <QObject>
+#include <QOpenGLWidget>
 //#include <gltext.hpp>//include freetype and gltest library
-
+//#include "VRwidget.h"
 
 struct Agent {
 	QString name;
@@ -96,6 +98,7 @@ class My4DImage;
 class MainWindow;
 class CGLRenderModel
 {
+
 public:
 	CGLRenderModel( const std::string & sRenderModelName );
 	~CGLRenderModel();
@@ -159,10 +162,11 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-class CMainApplication
+class CMainApplication:public QWidget
 {
+    Q_OBJECT
 public:
-	CMainApplication(int argc = 0, char *argv[] = 0);
+    CMainApplication(int argc = 0, char *argv[] = 0);
 	virtual ~CMainApplication();
 
 	bool BInit();
@@ -191,6 +195,7 @@ public:
 
 	void Shutdown();
 
+    void DrawLayout();
 	void RunMainLoop();
 	bool HandleInput();//handle controller and keyboard input
 	void ProcessVREvent( const vr::VREvent_t & event );
@@ -246,7 +251,14 @@ public:
 
 public:
 
-	MainWindow *mainwindow;
+//    VRwidget* m_vrwidget;
+    unsigned char* leftdata;
+    unsigned char* rightdata;
+    QLabel *leftlabel;
+    QLabel *rightlabel;
+    QHBoxLayout *layout;
+
+    MainWindow *mainwindow;
 	My4DImage *img4d;
 	static My4DImage *img4d_replace;
 	bool replacetexture;
@@ -272,6 +284,8 @@ public:
 	XYZ CollaborationCurrentRes;
 	XYZ CollaborationTargetMarkerRes;
 	XYZ collaborationTargetdelcurveRes;
+//signals:
+//    void toshow();
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -596,6 +610,11 @@ private:
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();
+public :
+//    QImage *leftpixmap;
+//    QImage *rightpixmap;
+    QPixmap leftmp;
+    QPixmap rightmp;
 };
 
 //Help Function

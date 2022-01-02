@@ -552,6 +552,9 @@ void V3dR_MainWindow::createControlWidgets()
 	controlLayout->addWidget(rotVRView);
 
 #endif
+    // show edit info ,dlc
+    editLine = new QLabel("Here will Show Edit Information", controlGroup);
+    controlLayout->addWidget(editLine);
 
     controlLayout->addStretch(0);
     controlLayout->setSpacing(0);
@@ -984,7 +987,10 @@ void V3dR_MainWindow::connectSignal()
 	if (resOfOriginalImage) connect(resOfOriginalImage, SIGNAL(clicked()), glWidget, SLOT(setVoxSize()));
 
 	//if (BrainAtlas) connect(BrainAtlas, SIGNAL(clicked()), glWidget, SLOT(callUpBrainAtlas()));
-
+    if(editLine) {
+        connect(glWidget, SIGNAL(changeEditinput(QString)), editLine, SLOT(setText(QString))); // DLC.20211230
+        //        connect(this, SIGNAL(), editLine, SLOT(setText(QString &)));
+    }
 
 	connect(glWidget, SIGNAL(signalVolumeCutRange()), this, SLOT(initVolumeCutRange())); // 081122
 	connect(glWidget, SIGNAL(signalInitControlValue()), this, SLOT(initControlValue())); // 081122

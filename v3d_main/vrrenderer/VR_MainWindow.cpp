@@ -8,6 +8,9 @@
 #include <sstream>
 #include <math.h>
 #include <QInputDialog>
+#include <QThread>
+
+using namespace std;
 std::vector<Agent> Agents;
 VR_MainWindow::VR_MainWindow() :
 	QWidget()
@@ -699,10 +702,16 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 //-----------------------------------------------------------------------------
 // Purpose: for standalone VR.
 //-----------------------------------------------------------------------------
-int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS)
+//void showwidget(){
+//    QCoreApplication::processEvents();
+//    QOpenGLWidget *newwidget=new QOpenGLWidget;
+//    newwidget->show();
+//    Sleep(10000);
+//}
+int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS )
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
-	CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
+    CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
@@ -756,7 +765,13 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	}
 	pMainApplication->SetupCurrentUserInformation("local user", 13);
 
-	pMainApplication->RunMainLoop();
+    //pMainApplication->m_vrwidget=new VRwidget();
+    //pMainApplication->m_vrwidget->show();
+//  QOpenGLWidget* newbr=new QOpenGLWidget;
+//  newbr->show();
+    pMainApplication->DrawLayout();
+
+    pMainApplication->RunMainLoop();
 
 	pMainApplication->Shutdown();
     qDebug()<<"shut down VR";

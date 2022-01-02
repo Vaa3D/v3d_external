@@ -7,7 +7,7 @@
 
 #include "v3d_core.h"
 
-using namespace std;
+//using namespace std;
 
 class IPMain4NeuronAssembler
 {

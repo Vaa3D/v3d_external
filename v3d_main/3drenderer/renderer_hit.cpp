@@ -2368,6 +2368,10 @@ void Renderer_gl1::endSelectMode()
 }
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+    pos.x = x * 2;
+    pos.y = y * 2;
+#endif
     MarkerPos pos;
     pos.x = x;
     pos.y = y;
