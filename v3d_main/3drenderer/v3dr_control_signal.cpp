@@ -551,6 +551,9 @@ void V3dR_MainWindow::createControlWidgets()
 	controlLayout->addWidget(rotVRView);
 
 #endif
+    // show edit info ,dlc
+    editLine = new QLabel("Here will Show Edit Information", controlGroup);
+    controlLayout->addWidget(editLine);
 
     controlLayout->addStretch(0);
     controlLayout->setSpacing(0);
