@@ -64,6 +64,7 @@ message(DEFINES=$$DEFINES)
 #next is input file
 # Resources such as icons
 RESOURCES += ../neuron_annotator/resources.qrc
+ #   res.qrc
 RESOURCES += v3d.qrc ../3drenderer/3drenderer.qrc
 # Input
 HEADERS += \
@@ -623,3 +624,5 @@ FORMS += landmark_property.ui \
 #}
 
 #win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
+
+DISTFILES +=

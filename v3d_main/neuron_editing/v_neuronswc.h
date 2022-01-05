@@ -42,8 +42,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <vector>
 #include <string>
 #include <map>
-using namespace std;
-
+//using namespace std;
+using std::vector;
+using std::map;
+using std::string;
 struct V_NeuronSWC_coord    //for sort
 {
 	union {

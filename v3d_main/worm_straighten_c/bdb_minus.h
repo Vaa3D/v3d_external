@@ -52,7 +52,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <string>
 
 //using namespace std;
-using std::string;
 using std::list;
 using std::vector;
 string gen_file_name(string basename, int layer, string otherinfo);

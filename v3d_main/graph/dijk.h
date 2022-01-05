@@ -41,6 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "graph.h"
 #include "graph_basic.h"
 
+using std::vector;
 //global variables
 const double _very_large_double = 1e+308;
 

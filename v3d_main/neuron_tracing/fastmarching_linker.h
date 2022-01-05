@@ -14,7 +14,13 @@
 #include "heap.h"
 #include <QInputDialog>
 //using namespace std;
-
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::vector;
+using std::map;
+using std::set;
+using std::pair;
 #define INF 3.4e+38             // float INF
 
 #ifndef MAX_INT

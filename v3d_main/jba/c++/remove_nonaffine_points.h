@@ -9,7 +9,6 @@
 #include <vector>
 //using namespace std;
 using std::vector;
-
 #define WANT_STREAM
 #include "newmatap.h"
 #include "newmatio.h"

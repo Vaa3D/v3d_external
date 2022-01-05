@@ -960,7 +960,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 setBright();
             }else if (IS_ALT_MODIFIER)
             {
-                emit changeEditinput("Drawing BBox");
                 callStrokeCurveDrawingBBoxes();//For serial BBoxes curve drawing shortcut, by ZZ,02212018
             }
             break;
@@ -1023,11 +1022,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleShader();
             }else if (IS_ALT_MODIFIER)
             {
-                emit changeEditinput("Drawing Global");
                 callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
             }else
             {
-                emit changeEditinput("GD Tracing");
                 callGDTracing();
             }
             break;
@@ -1282,7 +1279,6 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_D:
             if (IS_ALT_MODIFIER)
             {
-                emit changeEditinput("Deleting");
                 callStrokeDeleteMultiNeurons(); //For multiple segments deleting shortcut, by ZZ,02212018
             }
             else
@@ -1480,8 +1476,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             ///// marker operation //////////////////////////////////////////////////////
         case Qt::Key_Escape:
             {
-        emit changeEditinput("You have cancelled selection");
-        cancelSelect();
+                cancelSelect();
 
 #ifdef _NEURON_ASSEMBLER_
                 Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
@@ -2396,143 +2391,7 @@ void V3dR_GLWidget::viewRotation(int xRotStep, int yRotStep, int zRotStep)
     modelRotation(xRotStep, yRotStep, zRotStep);
 }
 
-#define __VR_FUNCS_b__
-/*//<<<<<<< HEAD
-//=======
-#ifdef __ALLOW_VR_FUNCS__
-void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
-{
-    Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-    QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
 
-    My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
-
-    this->getMainWindow()->hide();
-    QMessageBox::StandardButton reply;
-    if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
-        reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-    else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
-        reply = QMessageBox::Yes;
-    else
-        reply = QMessageBox::No;
-    if (reply == QMessageBox::Yes)
-    {
-        if(VRClientON==false)
-        {
-            VRClientON = true;
-            if(myvrwin)
-                delete myvrwin;
-            myvrwin = 0;
-            myvrwin = new VR_MainWindow();
-            myvrwin->setWindowTitle("VR MainWindow");
-            bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
-            VRClientON = linkerror;
-            if(!linkerror)  // there is error with linking ,linkerror = 0
-            {qDebug()<<"can't connect to server .unknown wrong ";return;}
-            connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
-            QString VRinfo = this->getDataTitle();
-            qDebug()<<"VR get data_title = "<<VRinfo;
-            resumeCollaborationVR = false;//reset resumeCollaborationVR
-            myvrwin->ResIndex = Resindex;
-            int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),linkerror,VRinfo,&teraflyZoomInPOS,&CollaborationCreatorPos);
-            qDebug()<<"result is "<<_call_that_func;
-            qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-            qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<CollaborationCreatorPos.x<<CollaborationCreatorPos.y<<CollaborationCreatorPos.z;
-            if (_call_that_func > 0)
-            {
-                resumeCollaborationVR = true;
-                emit(signalCallTerafly(_call_that_func));
-            }
-            else if(_call_that_func == -1)
-            {
-                call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-            }
-        }
-        else
-        {
-            v3d_msg("The ** client is running.Failed to start VR client.");
-            this->getMainWindow()->show();
-        }
-    }
-    else
-    {
-        // bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
-        qDebug()<<"result is "<<_call_that_func;
-        qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-        updateWithTriView();
-        if (_call_that_func > 0)
-        {
-            emit(signalCallTerafly(_call_that_func));
-        }
-        else if(_call_that_func == -1)
-        {
-            call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-        }
-
-        //this->getMainWindow()->show();
-        // if(_Call_ZZ_Plugin)
-        // {
-        // 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-        // 	emit(signalCallTerafly());
-        // }
-    }
-}
-void V3dR_GLWidget::doclientView(bool check_flag)
-{
-
-    if(check_flag)
-    {
-        qDebug()<<"run true.";
-        if(VRClientON==false)
-        {
-            v3d_msg("Now start Collaboration.");
-            VRClientON = true;
-            Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
-            QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
-            if(myclient)
-                delete myclient;
-            myclient = 0;
-            myclient =new V3dR_Communicator(&this->VRClientON, listNeuronTrees);
-            bool linkerror = myclient->SendLoginRequest();
-            if(!linkerror)
-            {
-                v3d_msg("Error!Cannot link to server!");
-                myclient = 0;
-                VRClientON = false;
-            }
-            else
-                v3d_msg("Successed linking to server! ");
-        }
-        else
-        {
-            v3d_msg("The VR client is running.Failed to start ** client.");
-        }
-    }
-    else
-    {
-        qDebug()<<"run false.";
-        if(myclient)
-        {
-            qDebug()<<"run disc.";
-            delete myclient;
-            myclient = 0;
-        }
-        VRClientON=false;
-    }
-}
-
-void V3dR_GLWidget::OnVRSocketDisConnected()
-{
-    qDebug()<<"V3dR_GLWidget::OnVRSocketDisConnected()";
-    VRClientON=false;
-}
-
-
-
-#endif
-//>>>>>>> e4f5898908f8eaf6199ffedab4924649e0925911
-*/
 
 void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 {

@@ -48,4 +48,5 @@ build_linux-*/
 build_macosx-*/
 build_windows-*/
 
-v3d_main/v3d_Qt6_build/
+v3d_main/v3d_build/
+v3d_main/build-v3d_qt6-Desktop_Qt_6_1_1_MinGW_64_bit-Release

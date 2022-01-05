@@ -50,7 +50,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //using namespace std;
 using std::vector;
-
 //#include <boost/program_options.hpp>
 #ifdef WIN32
 #define OPTION_CHAR '/'
