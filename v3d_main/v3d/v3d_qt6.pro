@@ -52,7 +52,7 @@ unix:!macx {
     DEFINES += LINUX_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
     LIBS =  -lGLU -lglut
-    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip
+    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip -lhdf5
 
 }
 
@@ -277,7 +277,7 @@ SOURCES += \
 #    ../neuron_annotator/utility/Icons.cpp \
 #    ../neuron_annotator/utility/DataThread.cpp \
 #    ../neuron_annotator/utility/ConsoleObserver.cpp \
-#    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
+    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
 #    ../neuron_annotator/utility/ImageLoader.cpp \
 #    ../neuron_annotator/utility/url_tools.cpp \
 #    ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
