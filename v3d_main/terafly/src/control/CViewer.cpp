@@ -414,7 +414,8 @@ void CViewer::show()
 }
 
 CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
-                                 int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID /* = -1 */): QWidget()
+                                 int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1,
+                                int _nchannels, CViewer *_prev, int _slidingViewerBlockID ): QWidget()
 {
     /**/tf::debug(tf::LEV1, strprintf("_resIndex = %d, _V0 = %d, _V1 = %d, _H0 = %d, _H1 = %d, _D0 = %d, _D1 = %d, _T0 = %d, _T1 = %d, _nchannels = %d",
                                         _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels).c_str(), __itm__current__function__);
@@ -1391,7 +1392,8 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 
             // create new window
             this->next = new CViewer(V3D_env, resolution, lowresData,
-                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(),
+                                            cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
             // update CVolume with the request of the actual missing VOI along t and the current selected frame
