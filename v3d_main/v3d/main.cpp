@@ -97,6 +97,7 @@ int main(int argc, char **argv)
     auto sz = new V3DLONG [5];
     if (!sz)
     {
+        std::cout<<"can not allocate raw";
         return -5;
     }
     sz[0] = terafly::PluginInterface::getXDim(infile);
@@ -114,18 +115,22 @@ int main(int argc, char **argv)
     V3DLONG z1 = zc+len/2;
 
     if(x0<0 || x1>=sz[0] || y0<0 || y1>=sz[1] || z0<0 || z1>=sz[2]){
-        qDebug()<<"the cordinate is out of size";
+        std::cout<<"the cordinate is out of size";
         return -2;
     }
     unsigned char * cropped_image=terafly::PluginInterface::getSubVolume(infile,x0,x1,y0,y1,z0,z1);
 
     if(cropped_image==NULL){
+        std::cout<<"not enough raw for image";
         return -3;
     }
 
     Image4DSimple * outimg = new Image4DSimple;
-    if (!outimg)
+    if (!outimg){
+        std::cout<<"not enough raw for outimg";
         return -4;;
+    }
+
     outimg->setData(cropped_image, in_sz[0], in_sz[1], in_sz[2], in_sz[3], V3D_UINT8);
     outimg->saveImage(outfile);
     return 0;
