@@ -31,13 +31,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 
 #include "GLee2glew.h" ////2020-2-10
 
-
+#include <QAction>
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"
 #include <fstream>
 #include <sstream>
-
+#include <QElapsedTimer>
 #ifndef test_main_cpp
 #include "../v3d/v3d_compile_constraints.h"
 #include "../v3d/landmark_property_dialog.h"
@@ -48,7 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
-//#include "../terafly/src/control/CImport.h"
+#include "../terafly/src/control/CImport.h"
 #include "v3d_application.h"
 
 #endif //test_main_cpp
@@ -204,6 +204,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     // right click popup menu
     QList<QAction*> listAct;
     QAction *act=0, *actShowFullPath=0,
+            *app2Convenient = 0,
+            *app2Terafly=0,
+            *app2MultiTerafly = 0,
+            *app2TeraflyWithPara=0,
+            *app2MultiTeraflyWithPara=0,
             *actProperty=0, *actVolColormap=0, *actObjectManager=0, *actOff=0, *actColor=0, *actEditNameComment=0,
             *actSaveSurfaceObj=0,
             *actLockSceneEditObjGeometry=0, *actAddtoMarkerPool=0, *actClearMarkerPool=0,//ZJL
@@ -219,12 +224,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
           *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0, *actCurveRefine_fm=0,*actCurveEditRefine_fm=0,
           *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveFrom1Marker_fm=0, *actCurveTiltedBB_fm=0, *actCurveTiltedBB_fm_sbbox=0,
           *actCurveCreateTest=0,// ZJL 110905
-            *app2Convenient = 0,
-                        *app2Terafly=0,
-                        *app2MultiTerafly = 0,
-                        *app2TeraflyWithPara=0,
-                        *app2MultiTeraflyWithPara=0,
-            *actRetrace=0,
             *actClearedAllGeneratedObjects=0, //PHC 120522
             *actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
             *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -250,11 +249,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             *actDispSurfVertexInfo=0,
             *actComputeSurfArea=0, *actComputeSurfVolume=0,
             *actZoomin_currentviewport=0, //PHC, 130701
-
+            *actRetrace=0,
             *actNeuronConnect = 0, *actPointCloudConnect = 0, *actMarkerConnect = 0, *actNeuronCut = 0, // MK, 2017 April
             *simpleConnect = 0, *simpleConnect_loopSafe = 0, // MK, 2018, April
-            *actMarkerAltRotationCenter=0, //RZC, 20180703
-            *actImageEnhancement = 0 //LJ, 20211227
+            *actMarkerAltRotationCenter=0 //RZC, 20180703
             ;
      // used to control whether menu item is added in VOLUME popup menu ZJL
      //bool bHasSegID = false;
@@ -299,10 +297,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             actMarkerCreate3->setIconVisibleInMenu(true);
             }
             //listAct.append(act = new QAction("", w)); act->setSeparator(true);
-
-            listAct.append(act = new QAction("", w)); act->setSeparator(true);
-            listAct.append(actImageEnhancement = new QAction("ImageEnhancement",w));
-
 #ifdef _ALLOW_AUTOMARKER_MENU_
             listAct.append(actMarkerAutoSeed = new QAction("AutoMarker", w));
 #endif
@@ -439,19 +433,21 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         listAct.append(act = new QAction("", w)); act->setSeparator(true);
                         listAct.append(actGDCurveline = new QAction("GD-curveline detection", w));
                     }
+
                     pluginsDir1 = pluginsDir;
-                                       if (pluginsDir1.cd("plugins/Retrace")==true)
-                                       {
-                                           listAct.append(act = new QAction("", w)); act->setSeparator(true);
-                                           listAct.append(actRetrace = new QAction("Retreace", w));
-                                           listAct.append(app2Convenient = new QAction("app2Convenient", w));
+                    if (pluginsDir1.cd("plugins/Retrace")==true)
+                    {
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                        listAct.append(actRetrace = new QAction("Retreace", w));
+                        listAct.append(app2Convenient = new QAction("app2Convenient", w));
 
-                                           listAct.append(app2Terafly = new QAction("app2Terafly", w));
-                                           listAct.append(app2MultiTerafly = new QAction("app2MultiTerafly", w));
-                                           listAct.append(app2TeraflyWithPara = new QAction("app2TeraflyWithPara", w));
-                                           listAct.append(app2MultiTeraflyWithPara = new QAction("app2MultiTeraflyWithPara", w));
+                        listAct.append(app2Terafly = new QAction("app2Terafly", w));
+                        listAct.append(app2MultiTerafly = new QAction("app2MultiTerafly", w));
+                        listAct.append(app2TeraflyWithPara = new QAction("app2TeraflyWithPara", w));
+                        listAct.append(app2MultiTeraflyWithPara = new QAction("app2MultiTeraflyWithPara", w));
 
-                                       }
+                    }
+
 
                 }
 
@@ -900,7 +896,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #if defined(USE_Qt5)
         if (w) w->update(); //for highlight object
 #else
-        if (w) w->updateGL(); //for highlight object
+        if (w) w->update(); //for highlight object
 #endif
         //###############################################################
         // do menu
@@ -929,6 +925,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     }
     else if (act == actShowFullPath)
     {
+        //注释了
         v3d_msg(QString("The full path=[").append(w->data_title).append("]"));
     }
     else if (act == actVolColormap)
@@ -961,6 +958,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     }
     else if (act == actColor)
     {
+        qDebug()<<"20211021===========1";
         update = 1;
         switch (names[1])
         {
@@ -979,10 +977,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #ifndef test_main_cpp
         {
             My4DImage* image4d = v3dr_getImage4d(_idep);
+            qDebug()<<"20211021===========2";
             if (image4d)
             {
+                qDebug()<<"20211021===========3";
                 if (names[2]-1>=0 && names[2]-1<listMarker.size())
                 {
+                    qDebug()<<"20211021===========4";
                     RGBA8 cc = listMarker.at(names[2]-1).color;
                     LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
                     s->color = cc;
@@ -1435,7 +1436,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #if defined(USE_Qt5)
                 chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
 #else
-                chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
+                chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(curImg->getCDim()), 1, &ok1);
 #endif
             if (ok1)
             {
@@ -1471,6 +1472,153 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
         }
     }
+
+    else if (act == actRetrace)
+       {
+   //        QTableWidget *tableWidget = new QTableWidget(1,1);
+   //        QPushButton *button = new QPushButton("ok");
+   //        tableWidget->setCellWidget(1,1,button);
+   //        combobox = new QComboBox();
+   //        combobox->resize(200,200);
+   //        combobox->setWindowTitle("Retrace");
+   //        QStringList strList;
+   //        strList<<"Retrace"<<"app2Convenient"<<"app2Terafly"<<"app2MultiTerafly"<<"app2TeraflyWithPara"<<"app2MultiTeraflyWithPara";
+   //        combobox->addItems(strList);
+
+
+
+   //        tableWidget->setCellWidget(0,0,combobox);
+   //        connect(button,SIGNAL(clicked(bool)),this,SLOT(pressBtn()));
+
+   //        QString name = combobox->currentText();
+   //        qDebug()<<name;
+
+
+
+           if (w && curImg)
+           {
+               v3d_msg("Enter the neuron tracing module APP2.", 0);
+               v3d_imaging_paras myimagingp;
+               myimagingp.OPS = "Retrace";
+               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+               //set the hiddenSelectWidget for the V3D mainwindow
+               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+               {
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+               }
+               else
+               {
+                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+               }
+           }
+       }
+
+
+
+       else if (act == app2Convenient)
+       {
+           if (w && curImg)
+           {
+               v3d_msg("app2Convenient", 0);
+               v3d_imaging_paras myimagingp;
+               myimagingp.OPS = "app2Convenient";
+               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+               //set the hiddenSelectWidget for the V3D mainwindow
+               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+               {
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+               }
+               else
+               {
+                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+               }
+           }
+       }
+
+       else if (act == app2MultiTerafly)
+       {
+           if (w && curImg)
+           {
+               v3d_msg("app2MultiTerafly", 0);
+               v3d_imaging_paras myimagingp;
+               myimagingp.OPS = "app2MultiTerafly";
+               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+               //set the hiddenSelectWidget for the V3D mainwindow
+               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+               {
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+               }
+               else
+               {
+                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+               }
+           }
+       }
+
+       else if (act == app2MultiTeraflyWithPara)
+       {
+           if (w && curImg)
+           {
+               v3d_msg("app2MultiTeraflyWithPara", 0);
+               v3d_imaging_paras myimagingp;
+               myimagingp.OPS = "app2MultiTeraflyWithPara";
+               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+               //set the hiddenSelectWidget for the V3D mainwindow
+               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+               {
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+               }
+               else
+               {
+                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+               }
+           }
+       }
+
+       else if (act == app2Terafly)
+       {
+           if (w && curImg)
+           {
+               v3d_msg("app2Terafly", 0);
+               v3d_imaging_paras myimagingp;
+               myimagingp.OPS = "app2Terafly";
+               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+               //set the hiddenSelectWidget for the V3D mainwindow
+               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+               {
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+               }
+               else
+               {
+                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+               }
+           }
+       }
+       else if (act == app2TeraflyWithPara)
+       {
+           if (w && curImg)
+           {
+               v3d_msg("app2TeraflyWithPara", 0);
+               v3d_imaging_paras myimagingp;
+               myimagingp.OPS = "app2TeraflyWithPara";
+               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+               //set the hiddenSelectWidget for the V3D mainwindow
+               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+               {
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+               }
+               else
+               {
+                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+               }
+           }
+       }
 
 #define __vaa3d_gd_curveline_tracing__ // dummy, just for easy locating //by PHC 20170529
     else if (act == actGDCurveline)
@@ -1603,164 +1751,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
         }
     }
-
-
-    else if (act == actRetrace)
-         {
-     //        QTableWidget *tableWidget = new QTableWidget(1,1);
-     //        QPushButton *button = new QPushButton("ok");
-     //        tableWidget->setCellWidget(1,1,button);
-     //        combobox = new QComboBox();
-     //        combobox->resize(200,200);
-     //        combobox->setWindowTitle("Retrace");
-     //        QStringList strList;
-     //        strList<<"Retrace"<<"app2Convenient"<<"app2Terafly"<<"app2MultiTerafly"<<"app2TeraflyWithPara"<<"app2MultiTeraflyWithPara";
-     //        combobox->addItems(strList);
-
-
-
-     //        tableWidget->setCellWidget(0,0,combobox);
-     //        connect(button,SIGNAL(clicked(bool)),this,SLOT(pressBtn()));
-
-     //        QString name = combobox->currentText();
-     //        qDebug()<<name;
-
-
-
-             if (w && curImg)
-             {
-                 v3d_msg("Enter the neuron tracing module APP2.", 0);
-                 v3d_imaging_paras myimagingp;
-                 myimagingp.OPS = "Retrace";
-                 myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
-                 //set the hiddenSelectWidget for the V3D mainwindow
-                 if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-                 {
-                     v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-                 }
-                 else
-                 {
-                     v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-                 }
-             }
-         }
-
-
-
-         else if (act == app2Convenient)
-         {
-             if (w && curImg)
-             {
-                 v3d_msg("app2Convenient", 0);
-                 v3d_imaging_paras myimagingp;
-                 myimagingp.OPS = "app2Convenient";
-                 myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
-                 //set the hiddenSelectWidget for the V3D mainwindow
-                 if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-                 {
-                     v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-                 }
-                 else
-                 {
-                     v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-                 }
-             }
-         }
-
-         else if (act == app2MultiTerafly)
-         {
-             if (w && curImg)
-             {
-                 v3d_msg("app2MultiTerafly", 0);
-                 v3d_imaging_paras myimagingp;
-                 myimagingp.OPS = "app2MultiTerafly";
-                 myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
-                 //set the hiddenSelectWidget for the V3D mainwindow
-                 if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-                 {
-                     v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-                 }
-                 else
-                 {
-                     v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-                 }
-             }
-         }
-
-         else if (act == app2MultiTeraflyWithPara)
-         {
-             if (w && curImg)
-             {
-                 v3d_msg("app2MultiTeraflyWithPara", 0);
-                 v3d_imaging_paras myimagingp;
-                 myimagingp.OPS = "app2MultiTeraflyWithPara";
-                 myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
-                 //set the hiddenSelectWidget for the V3D mainwindow
-                 if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-                 {
-                     v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-                 }
-                 else
-                 {
-                     v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-                 }
-             }
-         }
-
-         else if (act == app2Terafly)
-         {
-             if (w && curImg)
-             {
-                 v3d_msg("app2Terafly", 0);
-                 v3d_imaging_paras myimagingp;
-                 myimagingp.OPS = "app2Terafly";
-                 myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
-                 //set the hiddenSelectWidget for the V3D mainwindow
-                 if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-                 {
-                     v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-                 }
-                 else
-                 {
-                     v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-                 }
-             }
-         }
-         else if (act == app2TeraflyWithPara)
-         {
-             if (w && curImg)
-             {
-                 v3d_msg("app2TeraflyWithPara", 0);
-                 v3d_imaging_paras myimagingp;
-                 myimagingp.OPS = "app2TeraflyWithPara";
-                 myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
-                 //set the hiddenSelectWidget for the V3D mainwindow
-                 if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-                 {
-                     v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-                 }
-                 else
-                 {
-                     v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-                 }
-             }
-         }
-
-
-
-
-
-
-
-
-
-
     else if (act == actMarkerTraceFromOnePosToOtherMarkers)
     {
         if (w && curImg)
@@ -2086,7 +2076,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
     {
         if (NEURON_CONDITION)
         {
-               selectMode = smDeleteMultiNeurons;
+            selectMode = smDeleteMultiNeurons;
                b_addthiscurve = false;
                if (w) { editinput = 3; oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
         }
@@ -2462,28 +2452,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
         if (a>0)
             QMessageBox::information(0, "Surface Volume", QString("The surface volume is: %1").arg(a));
     }
-
-    else if (act==actImageEnhancement)
-    {
-        if (w && curImg)
-        {
-            v3d_msg("Now try to use the GD curveline detection feature.", 0);
-            v3d_imaging_paras myimagingp;
-            myimagingp.OPS = "image enhancement";
-            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
-            //set the hiddenSelectWidget for the V3D mainwindow
-            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-            {
-                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-            }
-            else
-            {
-                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-            }
-        }
-    }
-
     return update;
 }
 #define __interaction__
@@ -2571,16 +2539,24 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
     MarkerPos pos;
     pos.x = x;
     pos.y = y;
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+    pos.x = x * 2;
+    pos.y = y * 2;
+#endif
+
     pos.drawn = false;
-    for (int i=0; i<4; i++)
+    for (int i=0; i<4; i++){
         pos.view[i] = viewport[i];
+        qDebug("--------pos.view[%d]--------%d", i,pos.view[i]);
+    }
     for (int i=0; i<16; i++)
     {
         pos.P[i]  = projectionMatrix[i];
         pos.MV[i] = markerViewMatrix[i];
+        qDebug("--------pos.P[%d]----%e      pos.MV[%d]--%e", i,pos.P[i],i,pos.MV[i]);
     }
     listMarkerPos.append(pos);
-    //qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
+    qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
 }
 int Renderer_gl1::movePen(int x, int y, bool b_move)
 {
@@ -3270,11 +3246,8 @@ int Renderer_gl1::hitWheel(int x, int y)
 
 int Renderer_gl1::hitPen(int x, int y)
 {
-    qDebug("  Renderer_gl1::hitPen");
-    //	//100731 RZC
-    //	if (renderMode==rmCrossSection)
-    //		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
-    // define a curve //091023
+    //qDebug("  Renderer_gl1::hitPen");
+
     if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smDeleteMultiNeurons || selectMode == smSelectMultiMarkers || selectMode == smRetypeMultiNeurons ||
             // for curve refinement, 110831 ZJL
             selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
@@ -3322,11 +3295,17 @@ int Renderer_gl1::hitPen(int x, int y)
         int N = (selectMode == smMarkerCreate1)? 1 : (selectMode == smMarkerCreate2)? 2 : 3;
         if (listMarkerPos.size() >= N)
         {
-            //qDebug("\t %i clicks to solve Marker", listMarkerPos.size());
+
             if (selectMode == smMarkerCreate1)
-                total_etime += solveMarkerCenter(); //////////
+            {
+                qDebug("--------------------------------------------solveMarkerCenter");
+                total_etime += solveMarkerCenter();//走这里
+            }
             else
+            {
+                qDebug("---------------------------------------------solveMarkerViews");
                 solveMarkerViews(); //////////
+            }
             listMarkerPos.clear();
             if (selectMode != smMarkerCreate1) // make 1-click continue selected mode
             {
@@ -3850,7 +3829,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
     int N = loc_vec_input.size();
     if (b_use_seriespointclick)
     {
-        loc_vec = loc_vec_input;
+        loc_vec = loc_vec_input;//一个个的取出loc_vec_input中的XYZ类型的变量
     }
     else //then use the moving mouse location, otherwise using the preset loc_vec_input (which is set by the 3d-curve-by-point-click function)
     {
@@ -3969,7 +3948,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
     {
         addCurveSWC(loc_vec, chno, 8); //LMG 26/10/2018 solveCurveCenter mode 8
         // used to convert loc_vec to NeuronTree and save SWC in testing
-        vecToNeuronTree(testNeuronTree, loc_vec);
+       // vecToNeuronTree(testNeuronTree, loc_vec);
         //added by PHC, 120506
         if (b_ablation)
             ablate3DLocationSeries(loc_vec);
@@ -4307,31 +4286,39 @@ void Renderer_gl1::solveCurveFromMarkers()
 #define __creat_marker___
 XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
 {
+    qDebug("进入了Renderer_gl1::getCenterOfMarkerPos----------------");
     ////////////////////////////////////////////////////////////////////////
     int chno;
     if (defaultChanno>=0 && defaultChanno<dim4)
         chno = defaultChanno; //130424, by PHC
     else
         chno = checkCurChannel();
-    ////////////////////////////////////////////////////////////////////////
-    //qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
-    ////////////////////////////////////////////////////////////////////////
-    //100730 RZC, in View space, keep for dot(clip, pos)>=0
+
     double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
     clipplane[3] = viewClip;
+
     ViewPlaneToModel(pos.MV, clipplane);
+
+    qDebug("ViewPlaneToModel之后 pos的值  (%g, %g)", pos.x,pos.y);
     //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
     ////////////////////////////////////////////////////////////////////////
     XYZ loc0, loc1;
+    qDebug("_MarkerPos_to_NearFarPoint之前	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+
+    qDebug("_MarkerPos_to_NearFarPoint之前 pos的值  (%g, %g)", pos.x,pos.y);
     _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-    //qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+    qDebug("_MarkerPos_to_NearFarPoint之后 pos的值  (%g, %g)", pos.x,pos.y);
+    qDebug("_MarkerPos_to_NearFarPoint之后	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
     XYZ loc;
     if (chno>=0 && chno<dim4)
     {
+
         loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+
     }
     else //find max value location in all channels
     {
+        //走的是这
         float maxval, curval;
         for (int ichno=0; ichno<dim4; ichno++)
         {
@@ -4349,6 +4336,8 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos, int defaultChanno)
             }
         }
     }
+
+    qDebug("走出了Renderer_gl1::getCenterOfMarkerPos----------------");
     return loc;
 }
 double Renderer_gl1::solveMarkerCenter()
@@ -4357,7 +4346,19 @@ double Renderer_gl1::solveMarkerCenter()
     t.start();
     if (listMarkerPos.size()<1)  return t.elapsed();
     const MarkerPos & pos = listMarkerPos.at(0);
+//    MarkerPos pos = listMarkerPos.at(0);
+//    pos.x = 360.00;
+//    pos.y = 380.00;
+    qDebug("第一步传进去的 pos (%g, %g)", pos.x,pos.y);
+
     XYZ loc = getCenterOfMarkerPos(pos);
+
+
+
+    //这就是最终转化的3d坐标了
+
+    qDebug("getCenterOfMarkerPos之后 loc的值 这算是最后转化的3d坐标了 (%g, %g, %g)", loc.x,loc.y,loc.z);
+
     vector <XYZ> loc_vec;
     if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
         dataViewProcBox.clamp(loc); //100722 RZC
@@ -4731,7 +4732,6 @@ XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarke
     Matrix M(4,4);		M << pos.MV;  M = M.t();
     Matrix PM = P * M;
 
-    //cout << "P M PM \n" << P << endl << M << endl << PM << endl;
     ColumnVector pX  = PM * X;
 
     pX = pX / pX(4);
@@ -4753,7 +4753,8 @@ void Renderer_gl1::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, 
     Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
     Matrix M(4,4);		M << pos.MV;  M = M.t();
     Matrix PM = P * M;
-    //cout << "P M PM \n" << P << endl << M << endl << PM << endl;
+
+
     double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
     double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
     //double z = 0,1;                              // the clip space depth from 0 to 1
@@ -4912,11 +4913,17 @@ XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
         float *p_value			//if p_value!=0, output value at center
         )
 {
+
     if (renderMode==rmCrossSection)
     {
         return getPointOnSections(P1,P2, clipplane); //clip plane also is the F-plane
     }
     XYZ loc = (P1+P2)*0.5;
+
+
+
+
+
 #ifndef test_main_cpp
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     My4DImage* curImg = v3dr_getImage4d(_idep);
@@ -5598,7 +5605,8 @@ void Renderer_gl1::addToListOfChildSegs(V3DLONG segID){
 
     // use the segment parent hash calculated in setColorAncestryInfo...
 
-    if (segmentParentDict.isEmpty()) setColorAncestryInfo();
+    if (segmentParentDict.isEmpty())
+        setColorAncestryInfo();
 
     QList<V3DLONG> lookingList;
     QList<V3DLONG> nextList;
