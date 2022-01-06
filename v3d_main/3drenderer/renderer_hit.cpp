@@ -2539,11 +2539,6 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
     MarkerPos pos;
     pos.x = x;
     pos.y = y;
-#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
-    pos.x = x * 2;
-    pos.y = y * 2;
-#endif
-
     pos.drawn = false;
     for (int i=0; i<4; i++){
         pos.view[i] = viewport[i];
@@ -2573,6 +2568,10 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         selectMode == smConnectNeurons || selectMode == smConnectPointCloud || selectMode == smConnectMarker || selectMode == smCutNeurons || selectMode == smSimpleConnect || selectMode == smSimpleConnectLoopSafe ||
         selectMode == smShowSubtree)
     {
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        x = 2 * x;
+        y = 2 * y;
+#endif
         _appendMarkerPos(x,y);
         if (b_move)
         {
@@ -2659,6 +2658,10 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             selectMode == smCurveEditExtendOneNode || selectMode == smCurveEditExtendTwoNode ||
             selectMode == smCurveCreate_MarkerCreate1_fm || selectMode == smCurveCreate_MarkerCreate1) //by ZMS 20151203
     {
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        x = 2 * x;
+        y = 2 * y;
+#endif
         _appendMarkerPos(x,y);
         if (b_move)
         {

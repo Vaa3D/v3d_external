@@ -545,6 +545,9 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 
         tipBuf[0] = '\0';
         if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
+//        #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+//            if (renderer->selectObj(2*pos.x(), 2*pos.y(), false, tipBuf))
+//        #endif
             {} //a switch to turn on/off hover tip, because processHit always return 0 for tipBuf!=0
         {
             QToolTip::showText(gpos, QString(tipBuf), this);
@@ -657,7 +660,7 @@ void V3dR_GLWidget::stillPaint()
 void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 {
     //091025: use QMouseEvent::button()== not buttonS()&
-    //qDebug("V3dR_GLWidget::mousePressEvent  button = %d", event->button());
+    qDebug("V3dR_GLWidget::mousePressEvent  button = %d", event->button());
 
     mouse_held = 1;
 
@@ -675,9 +678,15 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 
     if (event->button()==Qt::RightButton && renderer) //right-click
     {
-        if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu (selectObj) or marker definition (hitPen)
+        int x = event->x();
+        int y = event->y();
+        #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        x = 2 * x;
+        y = 2 * y;
+        #endif
+        if (renderer->hitPoint(x,y))  //pop-up menu (selectObj) or marker definition (hitPen)
         {
-            updateTool();
+           updateTool();
         }
         POST_updateGL(); //display result after menu
     }

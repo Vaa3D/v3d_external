@@ -2115,7 +2115,7 @@ void Renderer_gl1::blendTrack()
 
 //neuron annotator
 #define ___follows_should_be_moved_to_separate___
-#ifndef test_main_cpp
+
 
 // mouse left click to select neuron
 XYZ Renderer_gl1::selectPosition(int x, int y)
@@ -2124,6 +2124,7 @@ XYZ Renderer_gl1::selectPosition(int x, int y)
         MarkerPos pos;
         pos.x = x;
         pos.y = y;
+
         for (int i=0; i<4; i++)
                 pos.view[i] = viewport[i];
         for (int i=0; i<16; i++)
@@ -2307,7 +2308,7 @@ XYZ Renderer_gl1::selectPosition(int x, int y)
 // neuron annotator mouse right click pop menu
 int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 {
-    /*
+
     makeCurrent(); // make sure in correct OpenGL context
 
     if (b_selecting)  return 0;  // prevent re-enter
@@ -2662,7 +2663,7 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
     delete[] hitNames;
 
     return 0;
-    */
+
 }
 
 QList <LabelSurf> Renderer_gl1::getListLabelSurf()
@@ -2675,4 +2676,4 @@ void Renderer_gl1::setListLabelSurf(QList <LabelSurf> listLabelSurfinput)
     listLabelSurf = listLabelSurfinput;
 }
 
-#endif //test_main_cpp
+
