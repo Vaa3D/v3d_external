@@ -1688,9 +1688,10 @@ void PMain::loadAnnotations()
 				myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
 
                 // reset saved cursor
-                CViewer::setCursor(cursor);
-                if(PAnoToolBar::isInstantiated())
-                    PAnoToolBar::instance()->setCursor(cursor);
+				CViewer::setCursor(cursor);
+				if (PAnoToolBar::isInstantiated())
+					//PAnoToolBar::instance()->setCursor(cursor);
+					PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
                 #ifdef Q_OS_MAC
                 if(tabs->count() < 4)
@@ -1779,7 +1780,8 @@ void PMain::saveAnnotations()
             // reset saved cursor
             CViewer::setCursor(cursor);
             if(PAnoToolBar::isInstantiated())
-                PAnoToolBar::instance()->setCursor(cursor);
+				//PAnoToolBar::instance()->setCursor(cursor);
+				PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
             // disable save button
             saveAnnotationsAction->setEnabled(false);
@@ -1898,7 +1900,8 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
                 // reset saved cursor
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
-                    PAnoToolBar::instance()->setCursor(cursor);
+					//PAnoToolBar::instance()->setCursor(cursor);
+					PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
                 // disable save button
                 saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
@@ -2047,7 +2050,8 @@ void PMain::autosaveAnnotations()
             // reset saved cursor
             CViewer::setCursor(cursor);
             if(PAnoToolBar::isInstantiated())
-                PAnoToolBar::instance()->setCursor(cursor);
+				//PAnoToolBar::instance()->setCursor(cursor);
+				PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
         }
     }
     catch(RuntimeException &ex)
@@ -2154,7 +2158,8 @@ void PMain::saveAnnotationsAs()
                 // reset saved cursor
                 CViewer::setCursor(cursor);
                 if(PAnoToolBar::isInstantiated())
-                    PAnoToolBar::instance()->setCursor(cursor);
+					//PAnoToolBar::instance()->setCursor(cursor);
+					PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
                 //
                 CSettings::instance()->setRecentlyUsedPath(path.toStdString());
@@ -3944,6 +3949,13 @@ void PMain::setLockMagnification(bool locked)
 
 }
 
+#ifdef _NEURON_ASSEMBLER_
+int PMain::getCViewerID()
+{
+	return CViewer::getCurrent()->ID;
+}
+#endif
+
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 void PMain::login()
@@ -4164,7 +4176,8 @@ void PMain::ColLoadANO(QString ANOfile)
         // reset saved cursor
         CViewer::setCursor(cursor);
         if(PAnoToolBar::isInstantiated())
-            PAnoToolBar::instance()->setCursor(cursor);
+			//PAnoToolBar::instance()->setCursor(cursor);
+			PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
         annotationChanged = true;
         updateOverview();
         qDebug()<<"ok";

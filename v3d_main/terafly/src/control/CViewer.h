@@ -35,9 +35,7 @@
 #ifndef CEXPLORERWINDOW_H
 #define CEXPLORERWINDOW_H
 
-
-#include "renderer_gl2.h"
-
+#include "v3dr_common.h"
 
 #include "CPlugin.h"
 #include "v3dr_mainwindow.h"
@@ -49,7 +47,7 @@
 class terafly::CViewer : public QWidget, public INeuronAssembler
 {
     Q_OBJECT
-	Q_INTERFACES(INeuronAssembler)
+	Q_INTERFACES(INeuronAssembler) // INeuronAssembler is NOT a Q_OBJECT, hence Q_INTERFACES macro is needed.
 
 #else
 class terafly::CViewer : public QWidget
@@ -200,8 +198,11 @@ class terafly::CViewer : public QWidget
 		virtual bool teraflyImgInstance();
 
 		virtual void sendCastNAUI2PMain(IPMain4NeuronAssembler* NAportal);
+		//virtual void forceCViewerPortalUpdate();
 		virtual bool checkFragTraceStatus();
 		virtual void changeFragTraceStatus(bool newStatus);
+		virtual int getViewerID() { return this->ID; }
+		virtual void printOutCViewerAddress() { cout << " => Current CViewer address: " << CViewer::getCurrent() << endl; }
 
 		virtual string getCviewerWinTitle() { return CViewer::getCurrent()->title; }
 		virtual void printoutWinTitle() { cout << CViewer::getCurrent()->title << endl; }
@@ -220,12 +221,19 @@ class terafly::CViewer : public QWidget
 		virtual void pushMarkersfromTester(const set<vector<float>>& markerCoords, RGBA8 color);
 
 		string editingMode;
-		int eraserSize;
+		int mouseX, mouseY;
+		int eraserSize, connectorSize;
+		map<int, vector<NeuronSWC>> seg2includedNodeMap;
 		set<int> deletedSegsIDs;
+		virtual vector<V_NeuronSWC>* getDisplayingSegs();
+		virtual void updateDisplayingSegs();
 		virtual void editingModeInit() { CViewer::getCurrent()->editingMode = "none"; }
 		virtual void setEraserSize(int newEraserSize) { CViewer::getCurrent()->eraserSize = newEraserSize; }
 		virtual int getEraserSize() { return CViewer::getCurrent()->eraserSize; }
+		virtual void setConnectorSize(int newConnectorSize) { CViewer::getCurrent()->connectorSize = newConnectorSize; }
+		virtual int getConnectorSize() { return CViewer::getCurrent()->connectorSize; }
 		virtual void segEditing_setCursor(string action);		
+		virtual int getNearestSegEndClusterCentroid(const boost::container::flat_map<int, vector<float>>& segEndClusterCentroidMap);
 		virtual void convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[]);
 		virtual void convertWindowCoord2likelyLocalCoord(const int mouseX, const int mouseY, float putativeCoord[]);
 

@@ -73,9 +73,12 @@ QT_END_NAMESPACE
 #include "basic_triview.h"
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
+
+#ifdef _NEURON_ASSEMBLER_
 #include "INeuronAssembler.h"
 #include "IPMain4NeuronAssembler.h"
 #include <set>
+#endif
 
 struct V3DPluginArgItem
 {
@@ -254,12 +257,15 @@ public:
 #ifdef _NEURON_ASSEMBLER_
 	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Jan, 2020
 	INeuronAssembler* castCViewer;
+
 	QPluginLoader* FragTracerQPluginPtr;
 	virtual int getSurfaceType(V3dR_MainWindow* w) = 0;	
 	virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w) = 0;
 	virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w) = 0;
 	virtual QList<CellAPO> send3DviewerApoList(V3dR_MainWindow* w) = 0;
 	virtual void refreshSelectedMarkers(V3dR_MainWindow* w) = 0;
+
+	virtual void setBrainAtlasStatus(bool isRunning, V3dR_MainWindow* w) = 0;
 #endif
 
 #ifdef __ALLOW_VR_FUNCS__

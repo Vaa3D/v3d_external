@@ -30,12 +30,12 @@
 #define PMAIN_GUI_H
 
 
-#include "../control/CVolume.h"
+#include "renderer_gl2.h"
 
 #include <QtGui>
 #include <v3d_interface.h>
 #include "../control/CPlugin.h"
-//#include "../control/CVolume.h"
+#include "../control/CVolume.h"
 #include "../control/CViewer.h"
 #include "PDialogImport.h"
 #include "v3dr_glwidget.h"
@@ -378,6 +378,7 @@ class terafly::PMain : public QWidget
 		V3d_PluginLoader* FragTracerPluginLoaderPtr;
 		IPMain4NeuronAssembler* NeuronAssemblerPortal;
 		bool xLockStatus, yLockStatus, zLockStatus;
+		int getCViewerID();
 		/*************************************************************/
 #endif
 

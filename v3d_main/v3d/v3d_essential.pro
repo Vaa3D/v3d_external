@@ -321,6 +321,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/renderer_labelfield.cpp \
     ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/glsl_r.cpp \
+    ../3drenderer/GLee2glew.c \
     ../3drenderer/renderer_hit.cpp \
     ../3drenderer/nstroke.cpp \
     ../3drenderer/nstroke_tracing.cpp \

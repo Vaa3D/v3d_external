@@ -6,7 +6,7 @@ set DEF_QT5=
 
 @echo off
 if %QT_VER%==4 (
-    echo %Qt 4
+    echo Qt 4
 ::set QT_BIN=C:\Qt\vs2010x64-qt-4.7.4\bin
 set QT_BIN=C:\Qt\vs2013x64-qt-4.8.6\bin
 )

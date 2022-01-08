@@ -2,7 +2,7 @@
 #define V3DR_COMMUNICATOR_H
 
 #include <QWidget>
-#include <QtGui>
+//#include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
 //#include"../3drenderer/v3dr_common.h"

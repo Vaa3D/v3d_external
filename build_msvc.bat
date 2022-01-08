@@ -7,11 +7,12 @@
 :: echo %#
 :: if %# gtr 1 (
   if "%1" == "clean" (
-    echo clean moc_* ui_* qrc_* *.o
-    del .\v3d\moc_*
-    del .\v3d\ui_*
-    del .\v3d\qrc_*
-    del .\v3d\*.o
+    echo clean moc_* ui_* qrc_* *.obj
+    del v3d_main\v3d\moc_*
+    del v3d_main\v3d\ui_*
+    del v3d_main\v3d\qrc_*
+    del v3d_main\v3d\*.obj
+    goto end
   )
 :: )
 @echo on
@@ -56,3 +57,4 @@ dir vaa3d_msvc.exe
 :: vaa3d_msvc.exe
 
 cd ..\
+:end

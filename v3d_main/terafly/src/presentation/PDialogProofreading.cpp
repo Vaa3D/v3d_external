@@ -1,3 +1,6 @@
+
+#include "renderer_gl1.h"
+
 #include "PDialogProofreading.h"
 #include "PMain.h"
 #include "../control/CVolume.h"

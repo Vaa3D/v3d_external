@@ -108,6 +108,10 @@ class mozak::Mozak3DView : protected teramanager::CViewer
 		QList<CViewInfo*> lowerResViews;
 		bool loadingNextImg;
 		bool overviewActive;
+
+        bool mHotKeysEnabled;                //Ctrl : toggles hotkeys on/off for Mozak. Default: true
+        bool mHotKeysAfterMozakEnabled;      //Ctrl : toggles hotkeys on/off for units 'after' Mozak. Default: true
+
         QAction* buttonUndo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
         QAction* buttonRedo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands
         //QToolButton* buttonUndo; // use ours instead of PAnoToolBar since they are bound to the Ctrl+Z/Y commands

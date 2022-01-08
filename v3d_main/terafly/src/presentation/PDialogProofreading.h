@@ -1,6 +1,7 @@
 #ifndef PDIALOGPROOFREADING_H
 #define PDIALOGPROOFREADING_H
 
+#include "v3dr_common.h"
 
 #include <vector>
 #include <QWidget>

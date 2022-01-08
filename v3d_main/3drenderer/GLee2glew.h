@@ -31,7 +31,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 /*
  *  GLee2glew.h
  *
- *  Created by RuanZongcai on 2020-2-7.
+ *  Created by Ruan Zongcai on 2020-2-7.
  * 
  *  Translate GLee to GLEW because glee had stopped updating for a long time.
  */
@@ -56,7 +56,35 @@ In the Qt part just call into the framework written OpenGL code through regular 
 Since the actual OpenGL code makes no references to Qt, then it doesn't have to include Qt headers, avoiding problems.
 ************************************************************************************************************/
 
-#define GLEW_STATIC ////STATIC link by including glew.c
+
+//@2020-5-10 RZC: for crash using glew & Qt4 at linux
+//@2020-10-31 RZC: fixed crash by USING (glewExperimental=true) BEFORE glewInit() AT LINUX
+
+#if 0// ! defined( USE_Qt5 )
+//
+//#include <QtGui> ////for error: #error qdatastream.h must be included before any header file that defines Status
+//#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+//#include <glew/GL/glew.h>////STATIC link by including GLee_r.c into GLee2glew.c
+////#undef GL_ARB_vertex_buffer_object
+////#include "GLee_r.h"
+//#include <GL/glu.h> ////for error: gluErrorString was not declared in this scope
+//
+//#if ! (defined(_WIN32) || defined(_WIN64))// old EXT only for WINDOWS
+//#define glBlendEquationEXT	glBlendEquation
+//#define glBlendColorEXT		glBlendColor
+//#define glTexImage3DEXT		glTexImage3D
+//#define glTexSubImage3DEXT	glTexSubImage3D
+////#define glGenBuffersARB		glGenBuffers
+////#define glBindBufferARB		glBindBuffer
+////#define glDeleteBuffersARB	glDeleteBuffers
+////#define glMapBufferARB		glMapBuffer
+////#define glUnmapBufferARB		glUnmapBuffer
+////#define glBufferDataARB		glBufferData
+//#endif
+//
+#else
+
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
 #include <glew/GL/glew.h>
 
 
@@ -67,7 +95,8 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 #define GLEE_VERSION_1_2    GLEW_VERSION_1_2
  
 //#define GLeeInit() (glewInit())
-#define GLeeInit  glewInit
+//// MUST USING (glewExperimental=true) BEFORE glewInit() AT LINUX
+#define GLeeInit()  ((glewExperimental=true) && (glewInit()==GLEW_OK))
 
 #define GLEE_EXT_blend_minmax               GLEW_EXT_blend_minmax
 #define GLEE_EXT_blend_subtract             GLEW_EXT_blend_subtract
@@ -94,5 +123,5 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 #define GLEE_EXT_gpu_shader4                GLEW_EXT_gpu_shader4
 
 
-
+#endif //USE_Qt5
 #endif //GLEE2GLEW_H_

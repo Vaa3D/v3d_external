@@ -84,6 +84,20 @@ void myV3dR_GLWidget::setZoom_NAeraserSize(float zr)
 		CViewer::getCurrent()->segEditing_setCursor("erase");
 	}
 }
+
+void myV3dR_GLWidget::setZoom_NAconnectorSize(float zr)
+{
+	if (zr < this->_zoom && CViewer::getCurrent()->connectorSize < 1)
+	{
+		++CViewer::getCurrent()->connectorSize;
+		CViewer::getCurrent()->segEditing_setCursor("connect");
+	}
+	else if (zr > this->_zoom && CViewer::getCurrent()->connectorSize > -1)
+	{
+		--CViewer::getCurrent()->connectorSize;
+		CViewer::getCurrent()->segEditing_setCursor("connect");
+	}
+}
 #endif
 
 void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
@@ -122,8 +136,10 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
         (this->renderer->hitWheel(event->x(), event->y())); //by PHC, 130424. record the wheel location when zoom-in or out
 
 #ifdef _NEURON_ASSEMBLER_
-		if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("erase")) 
+		if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("erase"))
 			setZoom_NAeraserSize((zoomin_sign * zoomStep) + this->_zoom);
+		else if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("connect"))
+			setZoom_NAconnectorSize((zoomin_sign * zoomStep) + this->_zoom);
 		else setZoomO((zoomin_sign * zoomStep) + this->_zoom); //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
 #else
 		setZoomO((zoomin_sign * zoomStep) + this->_zoom); //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin

@@ -10,7 +10,7 @@
 
 cd v3d_main
 
-sh ./build.wsl $*
+sh ./build_qt5.wsl $*
 
 cd ../
 

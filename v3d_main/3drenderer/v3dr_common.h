@@ -56,14 +56,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ?�Automatic reconstruct
 //#endif
 //#include "GLee_r.h" //must before any other OpengGL header file// minor modified glee.h for win32 compatible, by RZC 2008-09-12
 //#include "GLee2glew.h" //// change place to head of every *.cpp using GL extensions
+#include "GLee2glew.h"  //@ADD 2020-2-14 RZC
 
 // #include <QtOpenGL>
 // #include <QtTest>
-#if defined(USE_Qt5)
+#if defined( USE_Qt5 )
   #include <QtWidgets>
   #include <QProgressDialog>
 #else
-  #include "GLee2glew.h"  //@ADD 2020-2-14 RZC
   #include <QtGui>
 #endif
 

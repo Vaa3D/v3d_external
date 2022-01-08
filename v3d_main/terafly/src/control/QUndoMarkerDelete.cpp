@@ -1,3 +1,6 @@
+
+#include "renderer_gl1.h"
+
 #include "QUndoMarkerDelete.h"
 #include "../control/CViewer.h"
 #include "v3dr_glwidget.h"

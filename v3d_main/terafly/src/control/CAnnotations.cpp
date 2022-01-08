@@ -1,3 +1,5 @@
+#include "renderer_gl1.h"
+//#include "renderer.h"
 #include <algorithm>
 #include <vector>
 #include <list>
@@ -14,8 +16,8 @@
 #include "COperation.h"
 #include "CImageUtils.h"
 #include "../presentation/PLog.h"
-#include "renderer_gl1.h"
-#include "renderer.h"
+//#include "renderer_gl1.h"
+//#include "renderer.h"
 #include "../../../../3drenderer/v3dr_surfaceDialog.h"
 
 double SOMA_X = -1.1;
@@ -1416,7 +1418,12 @@ QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
             cur_id++;
         }
         else{
-            LUT.insertMulti(neurons.at(i).n, LUT.value(neurons.at(j).n));
+            if(neurons.at(i).parent<0||neurons.at(j).parent<0)
+                LUT.insertMulti(neurons.at(i).n, LUT.value(neurons.at(j).n));
+            else{
+                LUT.insertMulti(neurons.at(i).n, cur_id);
+                cur_id++;
+            }
         }
 
     }

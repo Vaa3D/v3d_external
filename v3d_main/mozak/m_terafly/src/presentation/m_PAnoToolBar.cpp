@@ -1,3 +1,6 @@
+
+#include "renderer_gl1.h"
+
 #include "m_PAnoToolBar.h"
 #include "m_PMain.h"
 #include "m_CViewer.h"

@@ -35,6 +35,8 @@
 * 2014-11-17. Alessandro. @ADDED 'anoV0', ..., 'anoD1' VOI annotation (global) coordinates as object members in order to fix "duplicated annotations" bug
 */
 
+#include "renderer_gl1.h"
+//#include "renderer.h"
 #include "CViewer.h"
 #include "v3dr_mainwindow.h"
 #include "CVolume.h"
@@ -45,8 +47,8 @@
 #include "../presentation/PLog.h"
 #include "../presentation/PAnoToolBar.h"
 #include "../presentation/PDialogProofreading.h"
-#include "renderer.h"
-#include "renderer_gl1.h"
+//#include "renderer.h"
+//#include "renderer_gl1.h"
 #include "v3dr_colormapDialog.h"
 #include "V3Dsubclasses.h"
 #include "QUndoMarkerCreate.h"
@@ -674,26 +676,101 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 					myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
 					if (thisRenderer->listNeuronTree.size() == 0) return false;
 
-					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.at(0));
-					// The distance is not always computed correctly, sometimes even far off. But the identified nearest node to the mouse click is usually correct. 
+					switch (this->eraserSize)
+					{
+					case -2:
+						thisRenderer->radius = 11;
+						break;
+					case -1:
+						thisRenderer->radius = 15;
+						break;
+					case 0:
+						thisRenderer->radius = 20;
+						break;
+					case 1:
+						thisRenderer->radius = 25;
+						break;
+					case 2:
+						thisRenderer->radius = 30;
+						break;
+					case 3:
+						thisRenderer->radius = 35;
+						break;
+					default:
+						break;
+					}
+
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.last());
 					double dist;
-					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);  
-					
-					cout << " === mouse coord: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
-					cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << " " << treePtr->listNeuron.at(index).z << endl;
-					cout << " === segment ID: " << treePtr->listNeuron.at(index).seg_id << endl;
-					//cout << " === distance: " << dist << endl; 
+					thisRenderer->indices.clear();
+					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+					this->seg2includedNodeMap.clear();
+					for (auto& nodeIndex : thisRenderer->indices)
+					{
+						if (treePtr->listNeuron.at(nodeIndex).x < PDialogProofreading::instance()->sbXlb || treePtr->listNeuron.at(nodeIndex).x > PDialogProofreading::instance()->sbXhb ||
+							treePtr->listNeuron.at(nodeIndex).y < PDialogProofreading::instance()->sbYlb || treePtr->listNeuron.at(nodeIndex).y > PDialogProofreading::instance()->sbYhb ||
+							treePtr->listNeuron.at(nodeIndex).z < PDialogProofreading::instance()->sbZlb || treePtr->listNeuron.at(nodeIndex).z > PDialogProofreading::instance()->sbZhb) continue;
 
-					float coords[3];
-					coords[0] = treePtr->listNeuron.at(index).x;
-					coords[1] = treePtr->listNeuron.at(index).y;
-					coords[2] = treePtr->listNeuron.at(index).z;
+						if (this->seg2includedNodeMap.find(treePtr->listNeuron.at(nodeIndex).seg_id) != this->seg2includedNodeMap.end())
+							this->seg2includedNodeMap[treePtr->listNeuron.at(nodeIndex).seg_id].push_back(treePtr->listNeuron.at(nodeIndex));
+						else
+						{
+							vector<NeuronSWC> newNeuronSWCs = { NeuronSWC(treePtr->listNeuron.at(nodeIndex)) };
+							this->seg2includedNodeMap.insert({ treePtr->listNeuron.at(nodeIndex).seg_id, newNeuronSWCs });
+						}
+					}
+
 					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
-					
-					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, coords, mouseEvt->x(), mouseEvt->y());
-
+					cout << " -- CViewer: " << curImg->tracedNeuron.seg.size() << " segments." << endl;
+					PMain::getInstance()->NeuronAssemblerPortal->eraserSegProcess(curImg->tracedNeuron, this->seg2includedNodeMap);
 					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
 					curImg->proj_trace_history_append();
+				}
+				else if (PMain::getInstance()->fragTracePluginInstance && !CViewer::getCurrent()->editingMode.compare("connect"))
+				{
+					myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+					if (thisRenderer->listNeuronTree.size() == 0) return false;					
+					
+					switch (this->connectorSize)
+					{
+					case -1:
+						thisRenderer->radius = 13;
+						break;
+					case 0:
+						thisRenderer->radius = 20;
+						break;
+					case 1:
+						thisRenderer->radius = 30;
+						break;
+					default:
+						break;
+					}
+
+					NeuronTree* treePtr = (NeuronTree*)&(thisRenderer->listNeuronTree.last());
+					double dist;
+					thisRenderer->indices.clear();
+					V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);			
+					this->seg2includedNodeMap.clear();
+					for (auto& nodeIndex : thisRenderer->indices)
+					{
+						if (treePtr->listNeuron.at(nodeIndex).x < PDialogProofreading::instance()->sbXlb || treePtr->listNeuron.at(nodeIndex).x > PDialogProofreading::instance()->sbXhb ||
+							treePtr->listNeuron.at(nodeIndex).y < PDialogProofreading::instance()->sbYlb || treePtr->listNeuron.at(nodeIndex).y > PDialogProofreading::instance()->sbYhb ||
+							treePtr->listNeuron.at(nodeIndex).z < PDialogProofreading::instance()->sbZlb || treePtr->listNeuron.at(nodeIndex).z > PDialogProofreading::instance()->sbZhb) continue;
+
+						if (this->seg2includedNodeMap.find(treePtr->listNeuron.at(nodeIndex).seg_id) != this->seg2includedNodeMap.end())
+							this->seg2includedNodeMap[treePtr->listNeuron.at(nodeIndex).seg_id].push_back(treePtr->listNeuron.at(nodeIndex));
+						else
+						{
+							vector<NeuronSWC> newNeuronSWCs = { NeuronSWC(treePtr->listNeuron.at(nodeIndex)) };
+							this->seg2includedNodeMap.insert({ treePtr->listNeuron.at(nodeIndex).seg_id, newNeuronSWCs });
+						}
+					}
+
+					My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+					PMain::getInstance()->NeuronAssemblerPortal->connectSegProcess(curImg->tracedNeuron, this->seg2includedNodeMap);
+					 
+					curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
+					curImg->proj_trace_history_append();				
 				}
 				else if (PMain::getInstance()->fragTracePluginInstance && PMain::getInstance()->NeuronAssemblerPortal->markerMonitorStatus())
 				{
@@ -792,6 +869,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 				NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
 				double dist;
 				V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+				cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
 				cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
 				cout << " === distance: " << dist << endl;
 				// --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1333,6 +1411,21 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             if(resolution == volResIndex)
                 this->close();
 
+#ifdef _NEURON_ASSEMBLER_
+			// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
+			if (PMain::getInstance()->fragTracePluginInstance)
+			{
+				cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
+				//system("pause");
+
+				// Since I make
+				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(next);
+				
+				PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+				PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
+			}
+#endif
+
 // unlock updateGraphicsInProgress mutex
 /**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
 /**/ updateGraphicsInProgress.unlock();
@@ -1365,6 +1458,18 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             // if new viewer has the same resolution, this window has to be closed
             if(resolution == volResIndex)
                 this->close();
+
+#ifdef _NEURON_ASSEMBLER_
+			// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
+			if (PMain::getInstance()->fragTracePluginInstance)
+			{
+				cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
+				//system("pause");
+				PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(next);
+				PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+				PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
+			}
+#endif
         }
     }
     catch(RuntimeException &ex)
@@ -1384,16 +1489,6 @@ void CViewer::close()
         prev->newViewerTimer = newViewerTimer;
         prev->next = next;
         next->prev = prev;
-
-#ifdef _NEURON_ASSEMBLER_
-		// There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
-		if (PMain::getInstance()->fragTracePluginInstance)
-		{
-			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
-			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
-		}
-#endif
-
     }
     else
     {
@@ -2259,10 +2354,13 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 #ifdef _NEURON_ASSEMBLER_
 		if (PMain::getInstance()->fragTracePluginInstance)
 		{
+			cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
+			//system("pause");
 			// If Neuron Assembler is instantiated at higher resolution, the following block is needed as it updates Neuron Assembler's CViewerPortal when going back to lower resolution. 
 			//                                                                                                   -- MK, Jan, 2020
-			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(this);
+			PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(CViewer::current);
 			PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+			PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
 		}
 #endif
 
@@ -3266,6 +3364,13 @@ void CViewer::sendCastNAUI2PMain(IPMain4NeuronAssembler* NAportal)
 	pMain.NeuronAssemblerPortal = NAportal;
 }
 
+/*void CViewer::forceCViewerPortalUpdate()
+{
+	PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<terafly::CViewer*>(next);
+	PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
+	PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
+}*/
+
 bool CViewer::checkFragTraceStatus()
 {
 	Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(CViewer::getCurrent()->getGLWidget()->getRenderer());
@@ -3356,21 +3461,83 @@ void CViewer::pushMarkersfromTester(const set<vector<float>>& markerCoords, RGBA
 	}
 }
 
+vector<V_NeuronSWC>* CViewer::getDisplayingSegs()
+{
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+	return &curImg->tracedNeuron.seg;
+}
+
+void CViewer::updateDisplayingSegs()
+{
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+	My4DImage* curImg = v3dr_getImage4d(thisRenderer->_idep);
+	curImg->update_3drenderer_neuron_view(view3DWidget, thisRenderer);
+}
+
 void CViewer::segEditing_setCursor(string action)
 {
 	if (!action.compare("erase"))
 	{
+		myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+		thisRenderer->editinput = 97;
+
 		CViewer::current->editingMode = "erase";
 		QString eraserSizeQ = QString::number(CViewer::current->eraserSize);
+#ifdef _NEURON_ASSEMBLER_DEBUG_
+		QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
+#else
 		QString cursorPath = ".\\resources\\segment_editing\\eraseCursor_noThinLine" + eraserSizeQ + ".png";
+#endif
 		QCursor eraseCursorPic = QCursor(QPixmap(cursorPath));
 		CViewer::current->view3DWidget->setCursor(eraseCursorPic);
+	}
+	else if (!action.compare("connect"))
+	{
+		myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+		thisRenderer->editinput = 97;
+
+		CViewer::current->editingMode = "connect";
+		QString connectorSizeQ = QString::number(CViewer::current->connectorSize);
+#ifdef _NEURON_ASSEMBLER_DEBUG_
+		QString cursorPath = "D:\\Vaa3D_2013_Qt486\\v3d_external\\bin\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
+#else
+		QString cursorPath = ".\\resources\\segment_editing\\connectCursor_" + connectorSizeQ + ".png";
+#endif
+		QCursor connectCursorPic = QCursor(QPixmap(cursorPath));
+		CViewer::current->view3DWidget->setCursor(connectCursorPic);
 	}
 	else if (!action.compare("restore"))
 	{
 		CViewer::current->editingMode = "none";
 		CViewer::current->view3DWidget->setCursor(Qt::ArrowCursor);
 	}
+}
+
+int CViewer::getNearestSegEndClusterCentroid(const boost::container::flat_map<int, vector<float>>& segEndClusterCentroidMap)
+{
+	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+
+	double dist = 1000000;
+	int outputSegClusterID;
+	GLdouble px, py, pz, clusterX, clusterY, clusterZ;
+	for (auto& cluster : segEndClusterCentroidMap)
+	{
+		clusterX = cluster.second.at(0);
+		clusterY = cluster.second.at(1);
+		clusterZ = cluster.second.at(2);
+
+		GLint res = gluProject(clusterX, clusterY, clusterZ, thisRenderer->markerViewMatrix, thisRenderer->projectionMatrix, thisRenderer->viewport, &px, &py, &pz);
+		py = thisRenderer->viewport[3] - py; // Y axis is reversed.
+		double currDist = sqrt((px - mouseX) * (px - mouseX) + (py - mouseY) * (py - mouseY));
+		if (currDist < dist)
+		{
+			dist = currDist;
+			outputSegClusterID = cluster.first;
+		}
+	}
+
+	return outputSegClusterID;
 }
 
 void CViewer::convertLocalCoord2windowCoord(const float localCoord[], float windowCoord[])
