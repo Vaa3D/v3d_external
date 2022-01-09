@@ -711,11 +711,11 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS )
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
+    qDebug()<<"csz debug start vr initialize.";
     CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
-
 	if(ntlist != NULL)
 	{
 		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
@@ -765,13 +765,10 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	}
 	pMainApplication->SetupCurrentUserInformation("local user", 13);
 
-    //pMainApplication->m_vrwidget=new VRwidget();
-    //pMainApplication->m_vrwidget->show();
-//  QOpenGLWidget* newbr=new QOpenGLWidget;
-//  newbr->show();
-    pMainApplication->DrawLayout();
-
+    //pMainApplication->DrawLayout();
+    qDebug()<<"csz debug a new vr is created.";
     pMainApplication->RunMainLoop();
+
 
 	pMainApplication->Shutdown();
     qDebug()<<"shut down VR";
@@ -781,6 +778,7 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	zoomPOS->y = pMainApplication->teraflyPOS.y;
 	zoomPOS->z = pMainApplication->teraflyPOS.z;
 	delete pMainApplication;
+
 	pMainApplication = NULL;
 
 	// return _call_that_plugin;

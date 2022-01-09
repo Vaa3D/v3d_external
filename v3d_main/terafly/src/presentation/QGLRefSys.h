@@ -8,10 +8,9 @@
 
 #include "../control/CPlugin.h"
 
+
+
 typedef unsigned char byte;
-
-
-
 class terafly::QGLRefSys : public QOpenGLWidget
 {
     Q_OBJECT

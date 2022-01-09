@@ -607,6 +607,7 @@ tf::VirtualPyramid::loadVOI(
         // if required, replace empty voxels (0s) with the chosen visualization method for empty image regions
         if(_unexploredFillingMethod == tf::VirtualPyramid::SALT_AND_PEPPER)
         {
+            //qDebug()<<"csz debug salt and pepper";
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
                 if(!data[i] && ((double)rand() / RAND_MAX) < _unexploredSaltAndPepperPerc)
@@ -614,6 +615,7 @@ tf::VirtualPyramid::loadVOI(
         }
         if(_unexploredFillingMethod == tf::VirtualPyramid::SOLID)
         {
+            //qDebug()<<"csz debug solid";
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
                 if(!data[i])
@@ -1023,6 +1025,7 @@ iim::uint8* tf::VirtualPyramidLayer::loadSubvolume_to_UINT8(
 
     try
     {
+        //qDebug()<<"csz debug current level is "<<_level;
         return _parent->loadVOI(xyz<size_t>(H0,V0,D0), xyz<size_t>(H1,V1,D1), _level).data;
     }
     catch(iom::exception e)

@@ -9,7 +9,6 @@ INCLUDEPATH += . ../common_lib/include #./basic_c_funss
 
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x000000
 
 CONFIG +=  warn_off thread
 
@@ -52,7 +51,7 @@ unix:!macx {
     DEFINES += LINUX_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
     LIBS =  -lGLU -lglut
-    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip -lhdf5
+    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip
 
 }
 
@@ -171,6 +170,7 @@ HEADERS += \
     ../neuron_annotator/analysis/AnalysisTools.h \
     ../neuron_annotator/analysis/MaskChan.h \
     ../neuron_annotator/analysis/DilationErosion.h \
+    ../vrrenderer/VRwidget.h \
     ../webservice/gsoap2/stdsoap2.h \
     ../webservice/console/envH.h \
     ../webservice/console/envStub.h \
@@ -277,7 +277,7 @@ SOURCES += \
 #    ../neuron_annotator/utility/Icons.cpp \
 #    ../neuron_annotator/utility/DataThread.cpp \
 #    ../neuron_annotator/utility/ConsoleObserver.cpp \
-    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
+#    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
 #    ../neuron_annotator/utility/ImageLoader.cpp \
 #    ../neuron_annotator/utility/url_tools.cpp \
 #    ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
@@ -289,6 +289,7 @@ SOURCES += \
 #    ../neuron_annotator/analysis/AnalysisTools.cpp \
 #    ../neuron_annotator/analysis/MaskChan.cpp \
 #    ../neuron_annotator/analysis/DilationErosion.cpp \
+    ../vrrenderer/VRwidget.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \
     ../webservice/console/cdsC.cpp \

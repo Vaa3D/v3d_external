@@ -139,13 +139,7 @@ public:
     virtual int hitPoint(int x, int y)					//called by mouse press event
         {
             if (selectMode==smObject)	return selectObj(x,y, true); //pop-up menu
-            else
-            {
-//                #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
-//                    return hitPen(2*x,2*y);
-//                #endif
-                return hitPen(x,y);
-            }//marker definition
+            else						return hitPen(x,y);			 //marker definition
         }
     virtual int selectObj(int x, int y, bool b_menu, char* pTip=0);			//MUST makeCurrent for concurrent contexts, 090715
                 // do glSelectBuffer                    //called by hitPoint, tool tip event

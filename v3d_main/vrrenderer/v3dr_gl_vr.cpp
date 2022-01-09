@@ -1,6 +1,4 @@
-﻿#ifdef _WIN32
-#include <windows.h>
-#endif
+﻿#include <windows.h>
 #include <GL/glew.h>
 #include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
@@ -752,7 +750,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 	, postVRFunctionCallMode (0)
 	, curveDrawingTestStatus (-1)
 	, showshootingray(false)
-    , replacetexture(false),QWidget()
+    , replacetexture(false)//,QWidget()
 	//, font_VR (NULL)
 
 {
@@ -787,6 +785,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 //    leftpixmap=new QImage(m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB32);
 //    rightpixmap=new QImage(m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB32);
     //this->show();
+    //this->setWindowTitle("Vaa3d VRviewer");
 };
 
 
@@ -797,7 +796,8 @@ CMainApplication::~CMainApplication()
 {
 	// work is done in Shutdown
 	dprintf( "Shutdown" );
-	this->mainwindow->show();
+    this->mainwindow->show();
+    qDebug()<<this->mainwindow;
 }
 
 
@@ -1443,22 +1443,22 @@ void CMainApplication::Shutdown()
     //	SDL_Quit();
 }
 
-void CMainApplication::DrawLayout()
-{
-    this->setFixedSize(1920,1080);
-    leftlabel=new QLabel(this);
-    leftlabel->setGeometry(0,0,1920/2,1080/2);
-    leftlabel->setFixedSize(1920/2,1080);
-    rightlabel=new QLabel(this);
-    rightlabel->setGeometry(1920/2,0,1920/2,1080/2);
-    rightlabel->setFixedSize(1920/2,1080);
-    layout=new QHBoxLayout();
-    leftlabel->setText("left eye");
-    rightlabel->setText("right eye");
-    layout->addWidget(leftlabel);
-    layout->addWidget(rightlabel);
-    this->setLayout(layout);
-}
+//void CMainApplication::DrawLayout()
+//{
+//    this->setFixedSize(1920,1080);
+//    leftlabel=new QLabel(this);
+//    leftlabel->setGeometry(0,0,1920/2,1080/2);
+//    leftlabel->setFixedSize(1920/2,1080);
+//    rightlabel=new QLabel(this);
+//    rightlabel->setGeometry(1920/2,0,1920/2,1080/2);
+//    rightlabel->setFixedSize(1920/2,1080);
+//    layout=new QHBoxLayout();
+//    leftlabel->setText("left eye");
+//    rightlabel->setText("right eye");
+//    layout->addWidget(leftlabel);
+//    layout->addWidget(rightlabel);
+//    this->setLayout(layout);
+//}
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -2098,16 +2098,15 @@ bool CMainApplication::HandleInput()
 void CMainApplication::RunMainLoop()
 {
 //    this->m_vrwidget->getsize(m_nRenderWidth,m_nRenderHeight);
-    leftdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
-    rightdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
+//    leftdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
+//    rightdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
 	bool bQuit = false;
-    this->show();
+    //this->show();
     while ( !bQuit )
     {
-//        static int count=0;
-//        qDebug()<<count++;
         QCoreApplication::processEvents();
 		bQuit = HandleInput();
+        //if (bQuit||isvrclosed) break;
         if (bQuit) break;
         RenderFrame();
 
@@ -2551,6 +2550,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 			}
 		case _TeraShift:
 			{
+                qDebug()<<"csz debug shiftbutton is clicked.";
 				const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
 					glm::mat4 mat = glm::mat4();
 					for (size_t i = 0; i < 4; i++)
@@ -2596,11 +2596,12 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					}
 					else
 						qDebug() << "oh no! Something wrong!Please check!";
-					cout<<"postVRFunctionCallMode"<<postVRFunctionCallMode<<endl;
+                    cout<<"terashift postVRFunctionCallMode"<<postVRFunctionCallMode<<endl;
 					break;
 			}
 		case _TeraZoom:
 			{
+                qDebug()<<"csz debug zoombutton is clicked.";
 				if(temp_x>0)
 				{
 					// zoom in
@@ -2623,9 +2624,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 						qDebug()<<"Out of the bounding box.Ignored!";
 					else
 						postVRFunctionCallMode = 7;
+                    qDebug()<<"csz debug zoominbutton is clicked.";
 				}
 				else // zoom out
-					postVRFunctionCallMode = 8;	
+                {
+                    postVRFunctionCallMode = 8;
+                    qDebug()<<"csz debug zoomoutbutton is clicked.";
+                }
 				break;
 			}
 		case _ColorChange:
@@ -4220,35 +4225,32 @@ void CMainApplication::RenderFrame()
 		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture );
 		vr::Texture_t rightEyeTexture = {(void*)(uintptr_t)rightEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture );
-//        qDebug()<<leftEyeDesc.m_nResolveTextureId<<','<<leftEyeDesc.m_nResolveFramebufferId;
 
-        glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, leftdata);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        //qDebug()<<leftdata[100];
-        QImage* leftQImage = new QImage(leftdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
-        //qDebug()<<leftpixmap->loadFromData((const uchar *)leftdata,m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
-        //qDebug()<<myQImage;
-        leftQImage->mirror();
-        *leftQImage=leftQImage->scaled(1920/2,1080);
-        leftmp=leftmp.fromImage(*leftQImage);
-        //this->setPixmap(leftmp);
-        this->leftlabel->setPixmap(leftmp);
-        delete leftQImage;
 
-        glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, rightdata);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        QImage* rightQImage = new QImage(rightdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
-        rightQImage->mirror();
-        *rightQImage=rightQImage->scaled(1920/2,1080);
-        rightmp=rightmp.fromImage(*rightQImage);
-        this->rightlabel->setPixmap(rightmp);
-        delete rightQImage;
+//        glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId);
+//        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, leftdata);
+//        glBindTexture(GL_TEXTURE_2D, 0);
+//        //qDebug()<<leftdata[100];
+//        QImage* leftQImage = new QImage(leftdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
+//        //qDebug()<<leftpixmap->loadFromData((const uchar *)leftdata,m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
+//        //qDebug()<<myQImage;
+//        leftQImage->mirror();
+//        *leftQImage=leftQImage->scaled(1920/2,1080);
+//        leftmp=leftmp.fromImage(*leftQImage);
+//        //this->setPixmap(leftmp);
+//        this->leftlabel->setPixmap(leftmp);
+//        delete leftQImage;
 
-//        m_vrwidget->getdatatexture(leftdata,rightdata);
-//        this->m_vrwidget->draw();
-//        this->m_vrwidget->show();
+//        glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId);
+//        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, rightdata);
+//        glBindTexture(GL_TEXTURE_2D, 0);
+//        QImage* rightQImage = new QImage(rightdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
+//        rightQImage->mirror();
+//        *rightQImage=rightQImage->scaled(1920/2,1080);
+//        rightmp=rightmp.fromImage(*rightQImage);
+//        this->rightlabel->setPixmap(rightmp);
+//        delete rightQImage;
+
 	}
 
 	if ( m_bVblank && m_bGlFinishHack )
@@ -7076,8 +7078,16 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 		vr::VRRenderModels()->FreeRenderModel( pModel );
 		vr::VRRenderModels()->FreeTexture( pTexture );
 	}
-	return pRenderModel;
+    return pRenderModel;
 }
+
+//#include<QCloseEvent>
+//void CMainApplication::closeEvent(QCloseEvent *event)
+//{
+//    qDebug()<<"Close the VR through VRviewer!";
+//    isvrclosed=true;
+//    event->accept();0
+//}
 
 
 //-----------------------------------------------------------------------------

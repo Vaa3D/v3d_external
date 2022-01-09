@@ -277,13 +277,14 @@ public:
     QVector<int> getLineProfile(XYZ p1, XYZ p2, int chno=0);
     void setDeleteKey(int key);
 
+#ifndef test_main_cpp
 
         XYZ selectPosition(int x, int y); 	// neuron selector
         int hitMenu(int x, int y, bool b_glwidget); // neuron annotator right click popup menu
 
         QList <LabelSurf> getListLabelSurf();
         void setListLabelSurf(QList <LabelSurf> listLabelSurfinput);
-
+#endif
 
 
 // define Marker/Curve  ///////////////////////////////////////////////

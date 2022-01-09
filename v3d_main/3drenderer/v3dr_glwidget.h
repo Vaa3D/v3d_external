@@ -177,7 +177,7 @@ public:
     // No progress bar --> faster update (maybe due to processEvents() used to handle progress bar events).
     // Be sure to set to 'true' by default when you subclass (or, simplier, just call the base-constructor).
     bool show_progress_bar;
-
+    MainWindow *v3d_mainwindow;
 
 
     int currentPluginState;                              // May 29, 2012 by Hang
@@ -517,21 +517,19 @@ signals:
     void changeConfCut(int s);
 
     void changeOrthoView(bool b);
-    void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
-    void neuronShownAll(const QList<int> overlayList);
-    void neuronClearAll();
-    void neuronIndexChanged(int index);
-    void neuronClearAllSelections();
-    void signalCallTerafly(int nDirect);
-
-    void changeEditinput(QString);
+        void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
+        void neuronShownAll(const QList<int> overlayList);
+        void neuronClearAll();
+        void neuronIndexChanged(int index);
+        void neuronClearAllSelections();
+        void signalCallTerafly(int nDirect);
 
 public slots:
     void subtreeHighlightModeMonitor();
 
-//public:
-//    // for qt6 update, new function
-//    void renderText(double x, double y, double z, const QString & str, const QFont & font = QFont(), int listBase = 2000);
+public:
+    // for qt6 update, new function
+    void renderText(double x, double y, double z, const QString & str, const QFont & font = QFont(), int listBase = 2000);
 
 
 public:
@@ -578,7 +576,7 @@ public:
 
     void init_members()
     {
-        qDebug()<<"jazz debug init_members in v3dr_glwidgets.h";
+        //qDebug()<<"jazz debug init_members in v3dr_glwidgets.h";
         _still = _stillpaint_need = _stillpaint_pending = false;
        connect(&still_timer, SIGNAL(timeout()), this, SLOT(stillPaint())); //only connect once
         still_timer.start(still_timer_interval);

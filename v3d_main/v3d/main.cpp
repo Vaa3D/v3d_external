@@ -121,8 +121,6 @@ int main(int argc, char **argv)
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Floor);
 #endif
 
-
-
 #ifdef COMPILE_TO_COMMANDLINE
 
 	CLP parser;
@@ -374,15 +372,6 @@ int main(int argc, char **argv)
 	}
 
 #endif
-
-
-
-
-
-
-
-
-
 
 }
 

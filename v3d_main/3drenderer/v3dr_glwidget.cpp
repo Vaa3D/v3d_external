@@ -346,7 +346,7 @@ void V3dR_GLWidget::initializeGL()
     QSurfaceFormat format;
     format.setVersion(2, 0);
     format.setStencilBufferSize(8);
-    format.setDepthBufferSize(24);    
+    format.setDepthBufferSize(24);
     format.setProfile(QSurfaceFormat::CompatibilityProfile);
     setFormat(format);
 
@@ -1379,7 +1379,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleTexCompression();
             }else if (IS_ALT_MODIFIER)
             {
-                emit changeEditinput("Connecting");
+                //注释emit changeEditinput("Connecting");
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else if (IS_SHIFT_MODIFIER)

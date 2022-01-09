@@ -218,6 +218,7 @@ MainWindow::MainWindow()
     procCellSeg_Gaussian_fit_1_spot_N_Gauss = 0;
     procCellSeg_Gaussian_partition = 0;
     procCellSeg_manualCorrect = 0;
+    qDebug()<<this;
 #ifdef _ALLOW_WORKMODE_MENU_
     // Mode
     procModeDefault = 0;
@@ -250,28 +251,31 @@ MainWindow::MainWindow()
 #if COMPILE_TARGET_LEVEL == 0
     v3d_Lite_info();
 #endif
-    //090811 RZC    
+    //090811 RZC
+    ////qDebug()<<"jazz---------------debug---------------1";
     pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
+    //到这里都没有问题
 
 
 #ifdef __v3d_custom_toolbar__
     // Aug-08-2011 Hang
     this->addCustomToolbar();
+    ////qDebug()<<"jazz---------------debug---------------2";
 #endif
     // Dec-20-2010 YuY
     //connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
     //connect(&sub_thread, SIGNAL(allTransactionsDone()), this, SLOT(allTransactionsDone()), Qt::DirectConnection);
     connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
     cl_plugin = false; // init
-    //qDebug()<<"jazz---------------debug---------------3";
+    ////qDebug()<<"jazz---------------debug---------------3";
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
 
 #define __AUTOLAUNCH_OPEN_NEURON_GAME___
     /// RZC 20170620: disable auto launch
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
-
+////qDebug()<<"jazz---------------debug---------------4";
     //const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
-
+////qDebug()<<"jazz---------------debug---------------5";
 
 }
 
@@ -496,6 +500,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
         }
     }
 }
+
 void MainWindow::setBooleanCLplugin(bool cl_plugininput)
 {
     cl_plugin = cl_plugininput;
@@ -2659,7 +2664,6 @@ void MainWindow::createMenus()
 
     //others
     windowMenu = menuBar()->addMenu(tr("&Window"));
-    windowMenu->addAction(saveAct);
     connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
     menuBar()->addSeparator();
 #ifdef _ALLOW_WORKMODE_MENU_
@@ -2728,6 +2732,9 @@ XFormWidget *MainWindow::createMdiChild()
     //																	//080814: important fix to assure the destructor function will be called.
     XFormWidget *child = new XFormWidget((QWidget *)0);
 
+    //child->v3d_mainwindow=this;     //csz20210106
+    //qDebug()<<child->v3d_mainwindow;
+
     workspace->addSubWindow(child);  //child is wrapped in his parentWidget()
 
     //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help to update the workspace->windowList()
@@ -2739,6 +2746,7 @@ XFormWidget *MainWindow::createMdiChild()
     //workspace->setActiveWindow(child);
     //to enable coomunication of child windows
     child->setMainControlWindow(this);
+    //qDebug()<<child->v3d_mainwindow;
     child->adjustSize();
     QSize tmpsz = child->size();
     QSize oldszhint = child->sizeHint();

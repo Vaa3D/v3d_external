@@ -162,9 +162,9 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-class CMainApplication:public QWidget
+class CMainApplication//:public QWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     CMainApplication(int argc = 0, char *argv[] = 0);
 	virtual ~CMainApplication();
@@ -195,7 +195,7 @@ public:
 
 	void Shutdown();
 
-    void DrawLayout();
+    //void DrawLayout();
 	void RunMainLoop();
 	bool HandleInput();//handle controller and keyboard input
 	void ProcessVREvent( const vr::VREvent_t & event );
@@ -251,12 +251,16 @@ public:
 
 public:
 
-//    VRwidget* m_vrwidget;
-    unsigned char* leftdata;
-    unsigned char* rightdata;
-    QLabel *leftlabel;
-    QLabel *rightlabel;
-    QHBoxLayout *layout;
+//    QWidget* m_vrwidget;
+//    unsigned char* leftdata;
+//    unsigned char* rightdata;
+//    QLabel *leftlabel;
+//    QLabel *rightlabel;
+//    QHBoxLayout *layout;
+//    QPixmap leftmp;
+//    QPixmap rightmp;
+//    bool isvrclosed=false;
+//    void closeEvent(QCloseEvent *event);
 
     MainWindow *mainwindow;
 	My4DImage *img4d;
@@ -284,8 +288,7 @@ public:
 	XYZ CollaborationCurrentRes;
 	XYZ CollaborationTargetMarkerRes;
 	XYZ collaborationTargetdelcurveRes;
-//signals:
-//    void toshow();
+
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -610,11 +613,9 @@ private:
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();
-public :
-//    QImage *leftpixmap;
-//    QImage *rightpixmap;
-    QPixmap leftmp;
-    QPixmap rightmp;
+//public :
+//    QPixmap leftmp;
+//    QPixmap rightmp;
 };
 
 //Help Function
