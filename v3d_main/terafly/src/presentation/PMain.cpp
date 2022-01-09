@@ -598,20 +598,20 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     gradientBar->installEventFilter(this);
     Vdim_sbox = new QSpinBox();
     Vdim_sbox->setAlignment(Qt::AlignCenter);
-    Vdim_sbox->setMaximum(2048);
+    Vdim_sbox->setMaximum(1000);
     Vdim_sbox->setValue(CSettings::instance()->getVOIdimV());
     Vdim_sbox->setSuffix("(y)");
     Vdim_sbox->setFont(tinyFont);
     Vdim_sbox->installEventFilter(this);
     Hdim_sbox = new QSpinBox();
     Hdim_sbox->setAlignment(Qt::AlignCenter);
-    Hdim_sbox->setMaximum(2048);
+    Hdim_sbox->setMaximum(1000);
     Hdim_sbox->setValue(CSettings::instance()->getVOIdimH());
     Hdim_sbox->setSuffix("(x)");
     Hdim_sbox->installEventFilter(this);
     Ddim_sbox = new QSpinBox();
     Ddim_sbox->setAlignment(Qt::AlignCenter);
-    Ddim_sbox->setMaximum(2048);
+    Ddim_sbox->setMaximum(1000);
     Ddim_sbox->setValue(CSettings::instance()->getVOIdimD());
     Ddim_sbox->setSuffix("(z)");
     Ddim_sbox->installEventFilter(this);
@@ -2860,12 +2860,18 @@ void PMain::doTeraflyVRView()
 
             if(cur_win->view3DWidget->resumeCollaborationVR)
 			{
+              qDebug()<<"csz debug resumeCollaborationVR is true.";
 				int maxresindex = CImport::instance()->getResolutions()-1;
 				VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
 				cur_win->view3DWidget->collaborationMaxResolution = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
-				cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;cur_win->view3DWidget->doimageVRView(true);}
+                cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
+                cur_win->view3DWidget->doimageVRView(true);
+            }
 			else
-				cur_win->view3DWidget->doimageVRView(false);
+            {
+                cur_win->view3DWidget->doimageVRView(false);
+                qDebug()<<"csz debug resumeCollaborationVR is false.";
+            }
             //cur_win->storeAnnotations();
             //this->show();
         }
@@ -3535,8 +3541,9 @@ void PMain::annotationsChanged()
 
     // update mini-map, realtime update is slow
     annotationChanged = true;
+    //qDebug()<<"jazz debug------------------------------------------2";
     updateOverview();
-
+    //qDebug()<<"jazz debug------------------------------------------2";
     //
     #ifdef Q_OS_MAC
     if(tabs->count() < 4)

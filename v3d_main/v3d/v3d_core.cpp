@@ -2996,6 +2996,8 @@ void XFormWidget::initialize()
     mypara_3Dview.b_still_open = false;
     mypara_3Dview.image4d = 0;
 
+    //mypara_3Dview.window3D->v3d_mainwindow=this->v3d_mainwindow;
+
     Ctype = colorUnknown;
     Ctype_glass = colorUnknown; //110804 RZC
 
@@ -4809,6 +4811,8 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
     if (!b_local && mypara_3Dview.b_still_open)
     {
         mypara_3Dview.window3D->raise_and_activate(); // activateWindow();
+//        mypara_3Dview.window3D->v3d_mainwindow=this->v3d_mainwindow;
+//        qDebug()<<"csz debug "<<mypara_3Dview.window3D->v3d_mainwindow;
         return;
     }
     if (b_local && mypara_3Dlocalview.b_still_open)
@@ -4947,11 +4951,19 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
             {
                 my3dwin = new V3dR_MainWindow(&mypara_3Dlocalview); //090628 RZC
                 mypara_3Dlocalview.window3D = my3dwin;
+
+//                mypara_3Dlocalview.window3D->v3d_mainwindow=this->v3d_mainwindow;
+//                qDebug()<<"csz debug "<<mypara_3Dlocalview.window3D->v3d_mainwindow;
+
             }
             else
             {
                 my3dwin = new V3dR_MainWindow(&mypara_3Dview); //iDrawMainWindow-->V3dR_MainWindow, by RZC 20080921
                 mypara_3Dview.window3D = my3dwin;
+
+//                mypara_3Dview.window3D->v3d_mainwindow=this->v3d_mainwindow;
+//                qDebug()<<"csz debug "<<mypara_3Dview.window3D->v3d_mainwindow;
+
             }
             my3dwin->setParent(0);
 

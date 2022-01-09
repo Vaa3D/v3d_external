@@ -173,7 +173,7 @@ public:
 
 
 	//for communication of windows
-	void setMainControlWindow(MainWindow * p) {p_mainWindow = p;}
+    void setMainControlWindow(MainWindow * p) {p_mainWindow = p;/*v3d_mainwindow=p;*/}
 	virtual MainWindow * getMainControlWindow() {return p_mainWindow;}
 
 	void forceToChangeFocus(int x, int y, int z); //081210
@@ -198,6 +198,8 @@ public:
 	iDrawExternalParameter mypara_3Dview;
 	iDrawExternalParameter mypara_3Dlocalview;
 	V3D_atlas_viewerDialog *atlasViewerDlg;
+
+    //MainWindow *v3d_mainwindow;
 
 	V3DLONG bbx0, bbx1, bby0, bby1, bbz0, bbz1; //by PHC. 100821. the current regional bbox. for curve based zoomin
 	void setLocal3DViewerBBox(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1)

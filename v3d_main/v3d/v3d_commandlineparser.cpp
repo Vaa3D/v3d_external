@@ -37,7 +37,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <fstream>
 #include <iostream>
 #include <sstream>
-using namespace std;
 
 using namespace std;
 // command line interface class

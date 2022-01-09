@@ -119,11 +119,10 @@ public slots:
 //    void setZRotStep(int t);
 //    void setNSteps(int t);
 
-public slots:
-    void doUpdateLabel();
 
 public:
-	iDrawExternalParameter null_idep; //090918: for editing swc
+    //MainWindow *v3d_mainwindow;
+    iDrawExternalParameter null_idep; //090918: for editing swc
 	iDrawExternalParameter* _idep;
 	QString title_prefix;
 	QString data_title;
@@ -198,8 +197,6 @@ public:
 	QRadioButton *dispType_maxip, *dispType_minip, *dispType_alpha, *dispType_cs3d;
 	QLabel *thicknessSlider_Label, *transparentSlider_Label; //for disable, by RZC 080822
     QLabel *contrastSlider_Label; //by ZZ 03072018
-    QLabel *editLine; //for display editinfo, DLC
-    QString editdisplay;
 
 	QDoubleSpinBox *zthicknessBox; //by PHC, 090215
 	QComboBox *comboBox_channel;
@@ -258,7 +255,7 @@ public:
 
 	void init_members() // more clear putting them here, by RZC 080828
 	{
-        qDebug()<<"jazzbrain debug init_members in v3dr_mainwindow.h";
+        //qDebug()<<"jazzbrain debug init_members in v3dr_mainwindow.h";
 		default_animate_para();
 	    sAnimate = 0;
 		bAnimating = false;
