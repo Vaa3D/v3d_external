@@ -809,7 +809,7 @@ void V3dr_surfaceDialog::selectedColor(int map)
 
         //curItem->setData(0, qVariantFromValue(qcolor));
         curItem->setData(0, QVariant::fromValue(qcolor));
-        last_color = qcolor
+        last_color = qcolor;
         UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
 	}
 
