@@ -764,9 +764,11 @@ void V3dr_surfaceDialog::selectedColor(int map)
 	QTableWidget* t = currentTableWidget();
 	if (! t) return;
 
-	QColor qcolor0(255,255,255,255);
+    static QColor last_color(255,255,255,255);//last_color added for remember the color last used by zll 2021.12.19
+    QColor qcolor0 = last_color;
 	if (map==0)
 	{
+        qcolor0=last_color;
         //qcolor0 = QColorDialog::getColor(QColor());
 		//if (! qcolor0.isValid()) return;           // this is no use for clicking Cancel by user, Qt's bug !!!
         if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
@@ -807,6 +809,7 @@ void V3dr_surfaceDialog::selectedColor(int map)
 
         //curItem->setData(0, qVariantFromValue(qcolor));
         curItem->setData(0, QVariant::fromValue(qcolor));
+        last_color = qcolor
         UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
 	}
 
