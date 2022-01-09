@@ -268,12 +268,13 @@ bool writeMarker_file(const QString & filename, const QList <ImageMarker> & list
 	{
 		//then save
 		p_pt = (ImageMarker *)(&(listMarker.at(i)));
-		fprintf(fp, "%5.3f, %5.3f, %5.3f, %d, %d, %s, %s, %d,%d,%d\n",
+        fprintf(fp, "%5.3f, %5.3f, %5.3f, %5.3f, %d, %s, %s, %d,%d,%d\n",
 				// 090617 RZC: marker file is 1-based
 				p_pt->x,
 				p_pt->y,
 				p_pt->z,
-				int(p_pt->radius), p_pt->shape,
+//				int(p_pt->radius), p_pt->shape,
+                p_pt->radius, p_pt->shape,
 				qPrintable(p_pt->name), qPrintable(p_pt->comment),
 				p_pt->color.r,p_pt->color.g,p_pt->color.b);
 	}
@@ -300,7 +301,7 @@ NeuronTree readSWC_file(const QString& filename)
 
 	int count = 0;
     QList <NeuronSWC> listNeuron;
-	QHash <int, int>  hashNeuron;
+    QHash <int, int>  hashNeuron;
 	listNeuron.clear();
 	hashNeuron.clear();
 	QString name = "";
@@ -342,11 +343,16 @@ NeuronTree readSWC_file(const QString& filename)
 			else if (i==5) S.r = qsl[i].toFloat();
         	else if (i==6) S.pn = qsl[i].toInt();
             //the ESWC extension, by PHC, 20120217
-        	else if (i==7) S.seg_id = qsl[i].toInt();
-        	else if (i==8) S.level = qsl[i].toInt();
-            else if (i==9) S.creatmode = qsl[i].toInt();
-            else if (i==10) S.timestamp = qsl[i].toInt();
-             else if (i==11) S.tfresindex = qsl[i].toInt();
+//        	else if (i==7) S.seg_id = qsl[i].toInt();
+//        	else if (i==8) S.level = qsl[i].toInt();
+//            else if (i==9) S.creatmode = qsl[i].toInt();
+//            else if (i==10) S.timestamp = qsl[i].toInt();
+//            else if (i==11) S.tfresindex = qsl[i].toInt();
+            else if (i==7) S.seg_id = qsl[i].toLong();
+            else if (i==8) S.level = qsl[i].toLong();
+            else if (i==9) S.creatmode = qsl[i].toLong();
+            else if (i==10) S.timestamp = qsl[i].toDouble();
+            else if (i==11) S.tfresindex = qsl[i].toDouble();
 	//change ESWC format to adapt to flexible feature number, by WYN, 20150602
         	else 
 		S.fea_val.append(qsl[i].toFloat());
@@ -459,13 +465,13 @@ bool writeESWC_file(const QString& filename, const NeuronTree& nt)
 	fprintf(fp, "#name %s\n", qPrintable(nt.name.trimmed()));
 	fprintf(fp, "#comment %s\n", qPrintable(nt.comment.trimmed()));
     
-    fprintf(fp, "##n,type,x,y,z,radius,parent,seg_id,level,mode,timestamp,feature_value\n");
+    fprintf(fp, "##n,type,x,y,z,radius,parent,seg_id,level,mode,timestamp,teraflyindex,feature_value\n");
 	NeuronSWC * p_pt=0;
 	for (int i=0;i<nt.listNeuron.size(); i++)
 	{
 		p_pt = (NeuronSWC *)(&(nt.listNeuron.at(i)));
-        fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld %ld %ld %d %.0f",
-                p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn, p_pt->seg_id, p_pt->level, p_pt->creatmode, p_pt->timestamp);
+        fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld %ld %ld %d %.0f %.0f",
+                p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn, p_pt->seg_id, p_pt->level, p_pt->creatmode, p_pt->timestamp,p_pt->tfresindex);
 		for (int j=0;j<p_pt->fea_val.size();j++)
             fprintf(fp, " %.5f", p_pt->fea_val.at(j));
 		fprintf(fp, "\n");

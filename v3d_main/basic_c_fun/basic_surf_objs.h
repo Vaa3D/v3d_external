@@ -167,7 +167,7 @@ struct LabelSurf : public BasicSurfObj
 struct NeuronTree : public BasicSurfObj
 {
 	QList <NeuronSWC> listNeuron;
-	QHash <int, int>  hashNeuron;
+    QHash <int, int>  hashNeuron;
 	QString file;
 	bool editable;
     int linemode; //local control if a neuron will displayed as line or tube mode(s). by PHC 20130926
