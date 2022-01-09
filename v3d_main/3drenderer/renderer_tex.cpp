@@ -2369,7 +2369,7 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 #if defined(USE_Qt5)
         if (w) w->update(); //for highlight object
 #else
-        if (w) w->updateGL(); //for highlight object
+        if (w) w->update(); //for highlight object
 #endif
 
         QMenu menu;
@@ -2573,7 +2573,7 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 #if defined(USE_Qt5)
             if (w) w->update(); //for highlight object
 #else
-            if (w) w->updateGL(); //for highlight object
+            if (w) w->update(); //for highlight object
 #endif
 
             QMenu menu;
