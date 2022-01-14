@@ -969,6 +969,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 setBright();
             }else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+B: Drawing BBox");
                 callStrokeCurveDrawingBBoxes();//For serial BBoxes curve drawing shortcut, by ZZ,02212018
             }
             break;
@@ -1031,9 +1032,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleShader();
             }else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+G: Drawing Global");
                 callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
             }else
             {
+                emit changeEditinput("Alt+G: GDTraing");
                 callGDTracing();
             }
             break;
@@ -1211,6 +1214,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+E");
                 toggleEditMode();
             }
             else if (IS_SHIFT_MODIFIER)
@@ -1266,6 +1270,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleTex2D3D();
             }else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+T");
                 callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018
             }
             else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
@@ -1288,6 +1293,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_D:
             if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+D: Deleting");
                 callStrokeDeleteMultiNeurons(); //For multiple segments deleting shortcut, by ZZ,02212018
             }
             else
@@ -1313,6 +1319,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_S:
             if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+S");
                 callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
             }
 #ifdef _NEURON_ASSEMBLER_
@@ -1379,7 +1386,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 toggleTexCompression();
             }else if (IS_ALT_MODIFIER)
             {
-                //注释emit changeEditinput("Connecting");
+                emit changeEditinput("Alt+C: Connecting");
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else if (IS_SHIFT_MODIFIER)
@@ -1435,10 +1442,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+V");
                 changeVolShadingOption();
             }
             else if (IS_CTRL_MODIFIER)
             {
+                emit changeEditinput("Ctl+T");
                 updateImageData();
             }
             else
@@ -1456,10 +1465,12 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             else if (IS_CTRL_MODIFIER)
             {
+                emit changeEditinput("Ctl+P");
                 togglePolygonMode();
             }
             else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+P");
                 changeObjShadingOption();
             }
             break;
@@ -1485,6 +1496,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             ///// marker operation //////////////////////////////////////////////////////
         case Qt::Key_Escape:
             {
+                emit changeEditinput("Esc: cancelled selection");
                 cancelSelect();
 
 #ifdef _NEURON_ASSEMBLER_

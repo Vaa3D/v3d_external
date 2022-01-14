@@ -197,6 +197,8 @@ public:
 	QRadioButton *dispType_maxip, *dispType_minip, *dispType_alpha, *dispType_cs3d;
 	QLabel *thicknessSlider_Label, *transparentSlider_Label; //for disable, by RZC 080822
     QLabel *contrastSlider_Label; //by ZZ 03072018
+    QLabel *editLine; //for display editinfo, DLC
+    QString editdisplay;
 
 	QDoubleSpinBox *zthicknessBox; //by PHC, 090215
 	QComboBox *comboBox_channel;
