@@ -1772,9 +1772,11 @@ void MainWindow::save()
     if (activeMdiChild())
         if (activeMdiChild()->saveData())
     {
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
             setCurrentFile(activeMdiChild()->userFriendlyCurrentFile());
             statusBar()->showMessage(tr("File saved [%1]").arg(activeMdiChild()->userFriendlyCurrentFile()), 2000);
-    }
+#endif
+        }
 }
 void MainWindow::saveAs()
 {
