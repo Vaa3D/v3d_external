@@ -51,7 +51,7 @@ unix:!macx {
     DEFINES += LINUX_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
     LIBS =  -lGLU -lglut
-    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip
+    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip -lhdf5
 
 }
 
