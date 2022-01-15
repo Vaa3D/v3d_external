@@ -438,7 +438,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     if (pluginsDir1.cd("plugins/Retrace")==true)
                     {
                         listAct.append(act = new QAction("", w)); act->setSeparator(true);
-                        listAct.append(actRetrace = new QAction("Retreace", w));
+                        listAct.append(actRetrace = new QAction("Retrace", w));
                         listAct.append(app2Convenient = new QAction("app2Convenient", w));
 
                         listAct.append(app2Terafly = new QAction("app2Terafly", w));

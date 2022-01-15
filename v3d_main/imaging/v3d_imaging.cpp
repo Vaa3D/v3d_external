@@ -97,7 +97,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
             }
         }
 
-        else if (p.OPS == "Retrace" || p.OPS == "*app2Convenient" || p.OPS == "app2Terafly" || p.OPS == "app2MultiTerafly" || p.OPS == "app2TeraflyWithPara" || p.OPS == "app2MultiTeraflyWithPara") //ZZ, 02012018
+        else if (p.OPS == "Retrace" || p.OPS == "app2Convenient" || p.OPS == "app2Terafly" || p.OPS == "app2MultiTerafly" || p.OPS == "app2TeraflyWithPara" || p.OPS == "app2MultiTeraflyWithPara") //ZZ, 02012018
         {
             if (pluginsDir.cd("plugins/Retrace")==false)
             {
