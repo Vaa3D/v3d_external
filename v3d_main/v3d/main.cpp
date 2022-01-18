@@ -105,6 +105,8 @@ int main(int argc, char **argv)
     sz[2] = terafly::PluginInterface::getZDim(infile);
     sz[3] = terafly::PluginInterface::getCDim(infile);
     sz[4] = terafly::PluginInterface::getTDim(infile);
+    std::cout<<sz[0]<<","<<sz[1]<<","<<sz[2]<<","<<sz[3]<<","<<sz[4]<<std::endl;
+
     V3DLONG in_sz[4]={len,len,len,sz[3]};
 
     V3DLONG x0 = xc-len/2;
@@ -113,7 +115,7 @@ int main(int argc, char **argv)
     V3DLONG y1 = yc+len/2;
     V3DLONG z0 = zc-len/2;
     V3DLONG z1 = zc+len/2;
-
+    std::cout<<x0<<","<<x1<<","<<y0<<","<<y1<<","<<z0<<","<<z1<<std::endl;
     if(x0<0 || x1>=sz[0] || y0<0 || y1>=sz[1] || z0<0 || z1>=sz[2]){
         std::cout<<"the cordinate is out of size";
         return -2;
