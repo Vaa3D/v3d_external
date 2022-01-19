@@ -3252,11 +3252,11 @@ void CViewer::setImageData(const unsigned char *data, V3DPluginCallback2 *call)
                                            50,  50,  50,
                                            50,  50,  50,
                                            1, CViewer::current, -1);
+
+
         setActive(true);
-        //CViewer::getCurrent() = newCViewer;
-        CViewer::getCurrent()->setImage(100,100,100);
-        PMain::getInstance()->resetGUI();
-         //this->imgData = temp;
+        newCViewer->show();
+
 }
 
 

@@ -179,7 +179,7 @@ bool PluginInterface::updateTerafly()
     V3dR_GLWidget*temp = CViewer::getCurrent()->getGLWidget();
 
     temp->update();
-    temp->show();
+   // temp->show();
     qDebug()<<"update过----------------------jazz";
 
     return true;
@@ -189,7 +189,6 @@ void PluginInterface::putDataToCViewer(const unsigned char *data,V3DPluginCallba
 {
     CViewer::getCurrent()->setImageData(data,call);
     updateTerafly();
-
 }
 
 NeuronTree tf::PluginInterface::getSWC(int resolution)
