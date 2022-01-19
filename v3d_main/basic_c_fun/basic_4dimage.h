@@ -89,6 +89,8 @@ protected:
 private:
 
 public:
+    //ljs,dlc,csz
+    //unsigned char *getData1dToTerafly();
 	Image4DSimple()
 	{
 		data1d = 0;
@@ -123,7 +125,7 @@ public:
 	}
 
 	//main interface to the data
-	unsigned char * getRawData() {return data1d;}
+        unsigned char * getRawData() {return data1d;}
         const unsigned char * getRawData() const {return data1d;} // const version 25-Apr 2011 CMB
         V3DLONG getXDim() const {return sz0;}
         V3DLONG getYDim() const {return sz1;}

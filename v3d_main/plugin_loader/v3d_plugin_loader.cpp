@@ -362,6 +362,11 @@ void V3d_PluginLoader::clear_recentPlugins()
 
 }
 
+void V3d_PluginLoader::putDataToCViewer(const unsigned char* data,V3DPluginCallback2* call)
+{
+    tf::PluginInterface::putDataToCViewer(data,call);
+}
+
 void V3d_PluginLoader::searchPluginDirs(QMenu* menu, const QDir& pluginsDir)
 {
 	if (! menu)  return;
@@ -1736,6 +1741,17 @@ QString V3d_PluginLoader::versionTeraFly()
 {
    return QString(terafly::PluginInterface::version().c_str());
 }
+
+
+bool V3d_PluginLoader::updateTerafly(){
+    //需要获取CViewer里面的v3d_glwidget并且update()
+    return terafly::PluginInterface::updateTerafly();
+}
+
+
+
+
+
 
 bool V3d_PluginLoader::getDimTeraFly(const std::string & path, V3DLONG * & sz)
 {

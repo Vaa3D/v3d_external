@@ -134,6 +134,8 @@ class terafly::CViewer : public QWidget
 
 
     public:
+        //ljs,dlc,csz
+        void setImageData(const unsigned char*data,V3DPluginCallback2 *);
 
         //CONSTRUCTOR, DECONSTRUCTOR
         CViewer(V3DPluginCallback2* _V3D_env, int _resIndex, tf::uint8* _imgData, int _volV0, int _volV1,

@@ -38,6 +38,7 @@
 #include "renderer_gl1.h"
 //#include "renderer.h"
 #include "CViewer.h"
+#include "string.h"
 #include "v3dr_mainwindow.h"
 #include "CVolume.h"
 #include "CAnnotations.h"
@@ -3240,6 +3241,27 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
     dst->getGLWidget()->getRenderer()->lineWidth = src->getGLWidget()->getRenderer()->lineWidth;
 }
 
+void CViewer::setImageData(const unsigned char *data, V3DPluginCallback2 *call)
+{
+    //将data复制给imgdata
+         unsigned char*temp = new unsigned char [1000];
+         for(int i = 0;i < 1000;i++)
+             temp[i] = 100;
+        CViewer::getCurrent()->imgData = temp;
+        CViewer *newCViewer = new CViewer(call, 2 , temp,  50,  50,
+                                           50,  50,  50,
+                                           50,  50,  50,
+                                           1, CViewer::current, -1);
+        setActive(true);
+        //CViewer::getCurrent() = newCViewer;
+        CViewer::getCurrent()->setImage(100,100,100);
+        PMain::getInstance()->resetGUI();
+         //this->imgData = temp;
+}
+
+
+
+
 /**********************************************************************************
 * Change to "waiting" state (i.e., when image data are to be loaded or are loading)
 ***********************************************************************************/
@@ -3323,7 +3345,7 @@ void CViewer::refresh()
     //this->setWaitingForData(true);
 }
 
-const Image4DSimple* CViewer::getImage() 
+const Image4DSimple* CViewer::getImage()
 {
     if(imgData == 0)
         throw tf::RuntimeException("Image not yet allocated");
@@ -3341,6 +3363,14 @@ const Image4DSimple* CViewer::getImage()
     image->setTimePackType(TIME_PACK_C);
     return image;
 }
+
+
+
+
+
+
+
+
 
 void CViewer::setImage(int x, int y, int z) 
 {

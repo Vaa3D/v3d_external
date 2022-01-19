@@ -1501,7 +1501,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                v3d_imaging_paras myimagingp;
                myimagingp.OPS = "Retrace";
                myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-
                //set the hiddenSelectWidget for the V3D mainwindow
                if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
                {

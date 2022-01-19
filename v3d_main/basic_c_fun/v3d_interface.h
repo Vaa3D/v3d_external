@@ -243,6 +243,7 @@ public:
     virtual const Image4DSimple * getImageTeraFly() = 0;
     virtual QString versionTeraFly() = 0;
 
+
     virtual bool getDimTeraFly(const std::string & path, V3DLONG * & sz) = 0;
     virtual unsigned char* getSubVolumeTeraFly(const std::string & path, size_t x0, size_t x1, size_t y0, size_t y1, size_t z0, size_t z1) = 0;
     virtual void releaseOpenedVolumesTeraFly() = 0;
@@ -253,6 +254,12 @@ public:
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex) = 0;
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex) = 0;
 	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
+
+    //ljs,dlc,csz 为了更新terafly当前的窗口显示
+    virtual bool updateTerafly() = 0;
+    virtual void putDataToCViewer(const unsigned char*,V3DPluginCallback2*) = 0;
+
+
 
 #ifdef _NEURON_ASSEMBLER_
 	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Jan, 2020

@@ -172,8 +172,26 @@ bool TeraFly::checkVersion(std::string version, std::string min_required_version
     }
 }
 
-
 // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
+//ljs,dlc,csz
+bool PluginInterface::updateTerafly()
+{
+    V3dR_GLWidget*temp = CViewer::getCurrent()->getGLWidget();
+
+    temp->update();
+    temp->show();
+    qDebug()<<"update过----------------------jazz";
+
+    return true;
+}
+
+void PluginInterface::putDataToCViewer(const unsigned char *data,V3DPluginCallback2* call)
+{
+    CViewer::getCurrent()->setImageData(data,call);
+    updateTerafly();
+
+}
+
 NeuronTree tf::PluginInterface::getSWC(int resolution)
 {
     NeuronTree nt;
