@@ -3244,18 +3244,25 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
 void CViewer::setImageData(const unsigned char *data, V3DPluginCallback2 *call)
 {
     //将data复制给imgdata
-         unsigned char*temp = new unsigned char [1000];
+         unsigned char*temp = CViewer::getCurrent()->getImageData();
+
          for(int i = 0;i < 1000;i++)
              temp[i] = 100;
-        CViewer::getCurrent()->imgData = temp;
-        CViewer *newCViewer = new CViewer(call, 2 , temp,  50,  50,
-                                           50,  50,  50,
-                                           50,  50,  50,
-                                           1, CViewer::current, -1);
+
+         CViewer::getCurrent()->setImageData1(temp);
+//        CViewer::getCurrent()->refresh();
+//        CViewer *newCViewer = new CViewer(call, 2 , CViewer::getCurrent()->getImageData(),  50,  50,
+//                                           50,  50,  50,
+//                                           50,  50,  50,
+//                                           1, CViewer::current, -1);
 
 
-        setActive(true);
-        newCViewer->show();
+//        setActive(true);
+//        CViewer::getCurrent()->update();
+         CViewer::getCurrent()->window3D->raise();
+         CViewer::getCurrent()->window3D->activateWindow();
+         CViewer::getCurrent()->window3D->show();
+
 
 }
 

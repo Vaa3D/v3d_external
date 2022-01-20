@@ -75,8 +75,12 @@ public slots:
 
 protected:
     //ljs,dlc,csz
+    void pushImageToTeraWin(Image4DSimple*);
     void putDataToCViewer(const unsigned char*,V3DPluginCallback2*);
     bool updateTerafly();
+
+
+
 	bool runSingleImageInterface(QObject* plugin, const QString& command);
 	bool runPluginInterface(QObject* plugin, const QString& command);
 	bool runPluginInterface2(QObject* plugin, const QString& command);

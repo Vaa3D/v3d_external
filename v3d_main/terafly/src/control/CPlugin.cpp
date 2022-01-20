@@ -174,13 +174,22 @@ bool TeraFly::checkVersion(std::string version, std::string min_required_version
 
 // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
 //ljs,dlc,csz
+void PluginInterface::pushImageToTeraWin(Image4DSimple *data)
+{
+    //获取terafly的glwidget 将data赋值给这个
+    V3dR_GLWidget* terafly_w = CViewer::getCurrent()->getGLWidget();
+     terafly_w->getiDrawExternalParameter()->image4d = static_cast<My4DImage*>(data);
+     qDebug()<<"update过----------------------jazz---------0";
+    terafly_w->update();
+     qDebug()<<"update过----------------------jazz---------1";
+     CViewer::getCurrent()->update();
+     qDebug()<<"update过----------------------jazz---------2";
+}
+
 bool PluginInterface::updateTerafly()
 {
-    V3dR_GLWidget*temp = CViewer::getCurrent()->getGLWidget();
 
-    temp->update();
-   // temp->show();
-    qDebug()<<"update过----------------------jazz";
+
 
     return true;
 }
