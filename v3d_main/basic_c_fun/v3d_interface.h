@@ -258,7 +258,7 @@ public:
     //ljs,dlc,csz 为了更新terafly当前的窗口显示
     virtual bool updateTerafly() = 0;
     virtual void putDataToCViewer(const unsigned char*,V3DPluginCallback2*) = 0;
-    virtual void pushImageToTeraWin(Image4DSimple*) = 0;
+    virtual void pushImageToTeraWin(v3dhandle) = 0;
 
 
 

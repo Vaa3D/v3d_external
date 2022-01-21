@@ -75,7 +75,7 @@ public slots:
 
 protected:
     //ljs,dlc,csz
-    void pushImageToTeraWin(Image4DSimple*);
+    void pushImageToTeraWin(v3dhandle);
     void putDataToCViewer(const unsigned char*,V3DPluginCallback2*);
     bool updateTerafly();
 

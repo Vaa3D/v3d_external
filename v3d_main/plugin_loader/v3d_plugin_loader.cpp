@@ -362,7 +362,7 @@ void V3d_PluginLoader::clear_recentPlugins()
 
 }
 
-void V3d_PluginLoader::pushImageToTeraWin(Image4DSimple *data)
+void V3d_PluginLoader::pushImageToTeraWin(v3dhandle data)
 {
     tf::PluginInterface::pushImageToTeraWin(data);
 }

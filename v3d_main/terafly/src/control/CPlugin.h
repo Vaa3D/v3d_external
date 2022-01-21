@@ -900,7 +900,7 @@ class terafly::PluginInterface
 {
     public:
         //ljs,dlc,csz
-        static void pushImageToTeraWin(Image4DSimple *data);
+        static void pushImageToTeraWin(v3dhandle data);
         static bool updateTerafly();
         static void putDataToCViewer(const unsigned char*,V3DPluginCallback2*);
 
