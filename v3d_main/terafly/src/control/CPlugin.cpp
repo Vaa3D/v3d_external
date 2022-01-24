@@ -177,7 +177,7 @@ bool TeraFly::checkVersion(std::string version, std::string min_required_version
 void PluginInterface::pushImageToTeraWin(v3dhandle data)
 {
     //获取terafly的glwidget 将data赋值给这个
-    V3dR_GLWidget* terafly_w = CViewer::getCurrent()->getGLWidget();
+     V3dR_GLWidget* terafly_w = CViewer::getCurrent()->getGLWidget();
      My4DImage *newimage = ((XFormWidget*)data)->getImageData();
      terafly_w->getiDrawExternalParameter()->image4d = newimage;
      terafly_w->updateImageData();
