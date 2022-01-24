@@ -51,3 +51,4 @@ build_windows-*/
 v3d_main/v3d_build/
 v3d_main/build-*
 
+released_plugin_more/*
