@@ -106,6 +106,9 @@ protected:
 public:
 	QStringList getPluginNameList(); //by YuY 20110429
 
+    // ljs,csz,dlc 20220120
+    virtual void pushImageToTeraWin(v3dhandle data);
+
 //V3DPluginCallback
 public:
 	virtual bool callPluginFunc(const QString &plugin_name,

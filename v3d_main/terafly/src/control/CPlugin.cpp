@@ -542,6 +542,15 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     }
 }
 
+void PluginInterface::pushImageToTeraWin(v3dhandle data)
+{
+    // get XFormWidget after one plugin operation, press this widget to Terafly CViewer
+    V3dR_GLWidget* terafly_w = CViewer::getCurrent()->getGLWidget();
+    My4DImage *newimage = ((XFormWidget*)data)->getImageData();
+    terafly_w->getiDrawExternalParameter()->image4d = newimage;
+    terafly_w->updateImageData();
+}
+
 
 /* ======================================================================================================
  * This method is called by [v3dr_glwidget] when [Alt + F] is hit, 

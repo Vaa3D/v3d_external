@@ -1160,7 +1160,12 @@ bool V3d_PluginLoader::setGlobalSetting( V3D_GlobalSetting & gs )
 
 QStringList V3d_PluginLoader::getPluginNameList()
 {
-	return pluginFilenameList;
+    return pluginFilenameList;
+}
+
+void V3d_PluginLoader::pushImageToTeraWin(v3dhandle data)
+{
+    tf::PluginInterface::pushImageToTeraWin(data);
 }
 
 

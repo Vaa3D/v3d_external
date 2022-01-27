@@ -254,6 +254,9 @@ public:
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex) = 0;
 	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
 
+    // ljs,csz,dlc
+    virtual void pushImageToTeraWin(v3dhandle data) = 0;
+
 #ifdef _NEURON_ASSEMBLER_
 	// This is the Neuron Assembler interface, to which CViewer will be cast and then sent to Neuron Assembler plugin for direct communication -- MK, Jan, 2020
 	INeuronAssembler* castCViewer;
