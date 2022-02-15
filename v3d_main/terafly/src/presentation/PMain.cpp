@@ -3977,23 +3977,22 @@ void PMain::configApp()
     auto UserPasswd = QInputDialog::getText(0, "UserPasswd","Please enter the UserPasswd:", QLineEdit::Normal,"", &ok);
     if(ok&&!HostAddress.isEmpty())
         settings.setValue("UserPasswd", UserPasswd);
-    qDebug()<<HostAddress<<"\n"<<HostIP<<"\n"<<UserName<<"\n"<<UserPasswd;
 }
 
 void PMain::LoadFromServer()
 {
 
-    CViewer *cur_win = CViewer::getCurrent();
-    if(!cur_win)
-    {
-        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
-        return;
-    }
+//    CViewer *cur_win = CViewer::getCurrent();
+//    if(!cur_win)
+//    {
+//        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+//        return;
+//    }
     QSettings settings("HHMI", "Vaa3D");
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
     LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
-    qDebug()<<userinfo.name<<"\n"<<userinfo.passwd<<"\n"<<LoadManageWidget::HostAddress;
+
     if(!accessmanager)
         accessmanager=new QNetworkAccessManager(this);
     if(managewidget){
