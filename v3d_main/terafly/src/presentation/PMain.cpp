@@ -3961,7 +3961,6 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-
     bool ok;
     auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,"", &ok);
     if(ok&&!HostAddress.isEmpty())
