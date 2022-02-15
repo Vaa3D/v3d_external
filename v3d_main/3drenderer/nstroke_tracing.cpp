@@ -7188,7 +7188,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                         {
                             w->SetupCollaborateInfo();
-                            w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
+                            w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],3,"TeraFly");
                         }
                     }
             }
@@ -7272,8 +7272,12 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                                 &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                                 {
                                     w->SetupCollaborateInfo();
+                                    V_NeuronSWC seg=curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id);
+                                    for(auto &node:seg.row){
+                                        node.type=currentTraceType;
+                                    }
                                     w->TeraflyCommunicator->UpdateSplitSegMsg(
-                                        curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id),
+                                        seg,
                                                 p_listneuron->at(i).nodeinseg_id,
                                                 "TeraFly");
                                 }

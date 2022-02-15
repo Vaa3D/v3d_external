@@ -443,7 +443,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
                 {
                     QStringList result;
-                    result.push_back(QString("%1 TeraVR %2 %3 %4 %5").arg(VR_Communicator->userName).arg(pMainApplication->m_curMarkerColorType).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    result.push_back(QString("%1 TeraVR %2 %3 %4 %5").arg(VR_Communicator->userName).arg(3).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
                         result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
