@@ -42,7 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include <sstream>
 #include <string>
 #include <cmath>
-int Renderer::mycolor=3;
+
 Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
 
 using namespace std;

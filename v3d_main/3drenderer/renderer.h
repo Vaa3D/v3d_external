@@ -119,7 +119,6 @@ public:
 	void makeCurrent(); //ensure right-GL-context when resize-view, animate, mouse-drop, delete-object, select-object etc. across multiple views, 081105
         void drawString(float x, float y, float z, const char* text, int shadow=0, int fontsize=0);
 	bool beStill();
-    static int mycolor;
 
 public:
 // link to Data (volume & surface)

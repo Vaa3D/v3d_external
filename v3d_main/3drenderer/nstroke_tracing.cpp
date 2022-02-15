@@ -7232,13 +7232,6 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                                 &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                                 {
                                     w->SetupCollaborateInfo();
-                                    auto &seg=curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id);
-
-                                    //修改需要split的线的颜色为用户色
-                                    for(auto &row:seg.row){
-                                        row.type=Renderer::mycolor;
-                                    }
-
                                     w->TeraflyCommunicator->UpdateSplitSegMsg(
                                         curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id),
                                                 p_listneuron->at(i).nodeinseg_id,

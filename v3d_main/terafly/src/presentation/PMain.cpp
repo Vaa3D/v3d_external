@@ -4007,7 +4007,6 @@ void PMain::LoadFromServer()
     connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(startCollaborate(QString,QString)));
     managewidget->show();
 
-
 }
 
 void PMain::startCollaborate(QString ano,QString port)
@@ -4053,7 +4052,6 @@ void PMain::ColLoadANO(QString ANOfile)
 {
     qDebug()<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
-
     QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
     QStringList anoList=QDir(loaddir).entryList(QDir::Files);
     qDebug()<<anoList;
