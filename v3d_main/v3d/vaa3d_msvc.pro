@@ -113,7 +113,8 @@ win32 {
                                 -lSDL2main \
                                 -llibhdf5 \
                                 -llibszip \
-                                -llibzlib 
+                                -llibzlib \
+                                -lqjson
 
 
         DEFINES *= TEEM_STATIC

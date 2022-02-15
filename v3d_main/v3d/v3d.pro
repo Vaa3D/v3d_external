@@ -367,5 +367,5 @@ message(CONFIG=$$CONFIG)
 # aborted attempt to implement reentrant tiff image loading
 # SOURCES -= ../basic_c_fun/mg_image_lib.cpp
 # SOURCES += ../neuron_annotator/utility/mg_image_lib_reentrant.cpp
-
+#LIBS += -L$$V3DMAINPATH/common_lib/winlib64 -lqjson
 

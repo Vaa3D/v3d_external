@@ -35,7 +35,7 @@ QT_PATH = $$dirname(QMAKE_QMAKE)/..
 
 #HDF5 headers and precompiled library and dependencies (libz and libszip)
 INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
-
+#LIBS += -L$$V3DMAINPATH/common_lib/winlib64 -lqjson
 win32 {
      message("WARNING: hdf5: no support for 32 bit windows")
    ## 64bit
@@ -266,6 +266,8 @@ HEADERS += ../terafly/src/presentation/QPrefixSuffixLineEdit.h
 HEADERS += ../terafly/src/presentation/PAbout.h
 HEADERS += ../terafly/src/presentation/PLog.h
 HEADERS += ../terafly/src/presentation/PAnoToolBar.h
+HEADERS += ../terafly/src/presentation/loadmanagewidget.h
+
 HEADERS += ../terafly/src/control/QUndoMarkerCreate.h
 HEADERS += ../terafly/src/control/QUndoMarkerDelete.h
 HEADERS += ../terafly/src/control/QUndoMarkerDeleteROI.h
@@ -301,6 +303,9 @@ SOURCES += ../terafly/src/presentation/QGradientBar.cpp
 SOURCES += ../terafly/src/presentation/QHelpBox.cpp
 SOURCES += ../terafly/src/presentation/QGLRefSys.cpp
 SOURCES += ../terafly/src/presentation/QPrefixSuffixLineEdit.cpp
+SOURCES += ../terafly/src/presentation/loadmanagewidget.cpp
 SOURCES += ../terafly/src/control/QUndoMarkerCreate.cpp
 SOURCES += ../terafly/src/control/QUndoMarkerDelete.cpp
 SOURCES += ../terafly/src/control/QUndoMarkerDeleteROI.cpp
+
+QT += widgets

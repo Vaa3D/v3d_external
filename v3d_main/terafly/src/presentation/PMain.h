@@ -43,7 +43,7 @@
 #include "PDialogVirtualPyramid.h"
 #include "PTabVolumeInfo.h"
 #include "fileserver.h"
-
+#include "loadmanagewidget.h"
 
 /*----------------collaborate mdoe-------------------*/
 class ManageSocket;
@@ -591,34 +591,23 @@ class terafly::PMain : public QWidget
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 public:
-        ManageSocket * managesocket;
 		V3dR_Communicator * Communicator;
-protected:
-        QMenu* collaborateMenu;
-        QAction* loginAction;
-        QAction* importAction;
-        QAction* downAction;
-        QAction* loadAction;
-        QAction* logoutAction;
+        QMenu* collaborateMenu,*userMenu;
+        QAction *loadAction,*userInfoAction;
         QListWidget *userView;
+        static UserInfo userinfo;
+        static LoadManageWidget *managewidget;
+        static QNetworkAccessManager *accessmanager;
 public slots:
-        void login();
-        void import();
-        void download();
-        void load();
-        void logout();
-        void deleteManageSocket();
+        void LoadFromServer();
         void ColLoadANO(QString ANOfile);
-        void onManageConnected();
         void onMessageDisConnect();
         void updateuserview(QString userlist);
 //        void startAutoTrace();//自动算法
 signals:
-       // void signal_communicator_read_res(QString ,XYZ*);//读取自动算法的结果
-//        void startASK(QString,int);
+
 private:
         QString currentPath;//for auto trace
-        //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
         #endif
 };

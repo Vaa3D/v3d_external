@@ -90,6 +90,10 @@ string PMain::HTproofreading = "Start a stoppable/resumable block-by-block scan 
 string PMain::HTquickscan = "<i>QuickScan</i>: a scrollable maximum-intensity-projection-based preview to roughly check hundreds of blocks per minute and load only the nonempty ones.";
 
 PMain* PMain::uniqueInstance = 0;
+
+LoadManageWidget* PMain::managewidget=0;
+QNetworkAccessManager* PMain::accessmanager=0;
+UserInfo PMain::userinfo;
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
 {
     printf("instance\n");
@@ -239,32 +243,17 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(exitAction);
 #ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
-        collaborateMenu=menuBar->addMenu("Collaborate");
-        loginAction=new QAction("Login",this);
-        logoutAction=new QAction("Logout",this);
-        importAction=new QAction("Import annotation to cloud",this);
-        downAction=new QAction("Download annotation from cloud",this);
-        loadAction= new QAction("Load annotation and collaborate",this);
+    collaborateMenu=menuBar->addMenu("Collaborate");
+    loadAction=new QAction("Load Ano From Server",collaborateMenu);
+    collaborateMenu->addAction(loadAction);
+    connect(loadAction,SIGNAL(triggered()),this,SLOT(LoadFromServer()));
 
-        collaborateMenu->addAction(loginAction);
-        collaborateMenu->addAction(importAction);
-        collaborateMenu->addAction(downAction);
-        collaborateMenu->addAction(loadAction);
-        collaborateMenu->addAction(logoutAction);
+    userMenu=collaborateMenu->addMenu("User");
+    userInfoAction=new QAction("Set User Info",userMenu);
+    userMenu->addAction(userInfoAction);
+    Communicator=nullptr;
+    userView=nullptr;
 
-        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
-        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
-        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
-        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
-        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
-
-        logoutAction->setEnabled(false);
-        importAction->setEnabled(false);
-        downAction->setEnabled(false);
-        loadAction->setEnabled(false);
-        managesocket=nullptr;
-		Communicator=nullptr;
-        userView=nullptr;
 #endif
     /*---------------------------------------------------*/
 
@@ -1584,7 +1573,7 @@ void PMain::openImage(std::string path /*= ""*/)
         CImport::instance()->setPath(path);
         CImport::instance()->updateMaxDims();
         CImport::instance()->start();
-       currentPath=QString::fromStdString(path);
+
     }
     catch(iim::IOException &ex)
     {
@@ -3967,204 +3956,33 @@ void PMain::setLockMagnification(bool locked)
 
 /*----------------collaborate mdoe-------------------*/
 #ifdef __ALLOW_VR_FUNCS__
-void PMain::login()
+void PMain::LoadFromServer()
 {
-    QSettings settings("HHMI", "Vaa3D");
-    QString serverNameDefault = "";
-    if(!settings.value("vr_serverName").toString().isEmpty())
-        serverNameDefault = settings.value("vr_serverName").toString();
 
-    bool ok1;
-    QString serverName;
-    QString userName;
-    serverName = QInputDialog::getText(0, "Server Address",
-            "Please enter the server address:", QLineEdit::Normal,
-            serverNameDefault, &ok1);
+//    CViewer *cur_win = CViewer::getCurrent();
+//    if(!cur_win)
+//    {
+//        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+//        return;
+//    }
 
-    if(!ok1||serverName.isEmpty())
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        return ;
-    }else
-    {
-        settings.setValue("vr_serverName", serverName);
-
-        QString userNameDefault = "";
-        if(!settings.value("vr_userName").toString().isEmpty())
-            userNameDefault = settings.value("vr_userName").toString();
-        bool ok3;
-         userName = QInputDialog::getText(0, "Lgoin Name",
-            "Please enter your login name:", QLineEdit::Normal,
-            userNameDefault, &ok3);
-
-        if(!ok3 || userName.isEmpty())
-        {
-            qDebug()<<"WRONG!EMPTY! ";
-            //return SendLoginRequest();
-            return ;
-        }else
-            settings.setValue("vr_userName", userName);
-    }
-    if(managesocket)
-    {
-        managesocket->deleteLater();
-        managesocket=nullptr;
-    }
-    managesocket=new ManageSocket();
-    managesocket->ip=serverName;
-    managesocket->name=userName;
-    qDebug()<<"servername = "<<serverName<<" username "<<userName;
-//    managesocket->connectToHost(serverName,23763);
-    managesocket->connectToHost(serverName,26371);
-    qDebug()<<connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-    connect(managesocket,SIGNAL(connected()),this,SLOT(onManageConnected()));
-    if( !managesocket->waitForConnected())
-    {
-        QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
-        delete  managesocket;
-        managesocket=nullptr;
-        return;
-    }
-}
-
-void PMain::import()
-{
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        QString anofile_path = QFileDialog::getOpenFileName(0,"标题",".","*.ano");
-        if(anofile_path.isNull()) return;
-        QString apofile_path;
-        QString swcfile_path;
-        {
-            QString dirpath=QFileInfo(anofile_path).absolutePath();
-            QString filename=QFileInfo(anofile_path).baseName().split('.',QString::SkipEmptyParts).first().trimmed();
-            {
-                if(QFile(dirpath+"/"+filename+".apo").exists())
-                    apofile_path=dirpath+"/"+filename+".apo";
-                else if(QFile(dirpath+"/"+filename+".ano.apo").exists())
-                    apofile_path=dirpath+"/"+filename+".ano.apo";
-            }
-
-            {
-                if(QFile(dirpath+"/"+filename+".swc").exists())
-                    swcfile_path=dirpath+"/"+filename+".swc";
-                if(QFile(dirpath+"/"+filename+".eswc").exists())
-                    swcfile_path=dirpath+"/"+filename+".eswc";
-                else if(QFile(dirpath+"/"+filename+".ano.swc").exists())
-                    swcfile_path=dirpath+"/"+filename+".ano.swc";
-                else if(QFile(dirpath+"/"+filename+".ano.eswc").exists())
-                    swcfile_path=dirpath+"/"+filename+".ano.eswc";
-            }
-
-            {
-                if(!QDir(QCoreApplication::applicationDirPath()+"/tmp").exists())
-                {
-                    QDir(QCoreApplication::applicationDirPath()).mkdir("tmp");
-                }
-                writeESWC_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc",readSWC_file(swcfile_path));
-                writeAPO_file(QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo",readAPO_file(apofile_path));
-                swcfile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.eswc";
-                apofile_path=QCoreApplication::applicationDirPath()+"/tmp/"+filename+".ano.apo";
-            }
-        }
-        QStringList filepaths;
-        QStringList filenames;
-
-        filepaths.push_back(anofile_path);
-        filepaths.push_back(apofile_path);
-        filepaths.push_back(swcfile_path);
-        filenames.push_back(anofile_path.section('/',-1));
-        filenames.push_back(apofile_path.section('/',-1));
-        filenames.push_back(swcfile_path.section('/',-1));
-        qDebug()<<"send file paths "<<filepaths;
-        managesocket->sendFiles(filepaths,filenames);
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
+    if(!accessmanager)
+        accessmanager=new QNetworkAccessManager(this);
+    if(managewidget){
+        delete managewidget;
+        managewidget=0;
     }
 
-}
-
-void PMain::download()
-{
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
+    //更新一下用户信息
     {
-        managesocket->sendMsg(QString("down;data:CurrentFiles"));
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::load()
-{
-    CViewer *cur_win = CViewer::getCurrent();
-    if(!cur_win)
-    {
-        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
-        return;
+        userinfo.name="xf";
+        userinfo.passwd="123456";
     }
 
-    cur_win->view3DWidget->renderer->mycolor=managesocket->name.toInt();
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        qDebug()<<"load";
-        managesocket->pmain=this;
-        managesocket->sendMsg(QString("load;data:CurrentFiles"));
+    managewidget=new LoadManageWidget(accessmanager,&userinfo);
+    managewidget->show();
 
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-void PMain::logout()
-{
-    qDebug()<<"log out";
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-//        if(this->Communicator)
-//            this->Communicator->socket->disconnectFromHost();
-        managesocket->flag=true;
-        qDebug()<<"disconnected";
-        managesocket->disconnectFromHost();
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
 
-void PMain::deleteManageSocket()
-{
-    qDebug()<<"Manage socket disconnected";
-    if(!managesocket->flag)
-    {
-        QMessageBox::information(this,tr("Manage"),
-                                 tr("User is offline!\nPlease re-connet to the server!"),
-                                 QMessageBox::Ok);
-    }
-    managesocket->pmain=nullptr;
-    managesocket->deleteLater();
-    managesocket=nullptr;
-    loginAction->setText("log in");
-    loginAction->setEnabled(true);
-    logoutAction->setEnabled(false);
-    downAction->setEnabled(false);
-    importAction->setEnabled(false);
-    loadAction->setEnabled(false);
-    collaborationVRView->setDisabled(true);
-    collautotrace->setDisabled(1);
-    teraflyVRView->setEnabled(true);
-    return;
-}
-void PMain::onManageConnected()
-{
-    QMessageBox::information(this, tr("Success"),tr("connect sucess"));
-    loginAction->setText(managesocket->ip);
-    loginAction->setEnabled(false);
-    logoutAction->setEnabled(true);
-    importAction->setEnabled(true);
-    downAction->setEnabled(true);
-    loadAction->setEnabled(true);
 }
 void PMain::ColLoadANO(QString ANOfile)
 {
@@ -4245,8 +4063,9 @@ void PMain::updateuserview(QString userlist)
 
     userView->clear();
     userView->addItems(userlist.split(";"));
-//    userView->show();
+
 }
+
 void PMain::onMessageDisConnect()
 {
     this->Communicator->socket->deleteLater();
@@ -4262,8 +4081,6 @@ void PMain::onMessageDisConnect()
         userView->deleteLater();
         userView=nullptr;
     }
-    if(managesocket!=0)
-        managesocket->disconnectFromHost();
 }
 
 //void PMain::startAutoTrace()
