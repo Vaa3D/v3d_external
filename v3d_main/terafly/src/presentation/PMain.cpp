@@ -248,9 +248,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborateMenu->addAction(loadAction);
     connect(loadAction,SIGNAL(triggered()),this,SLOT(LoadFromServer()));
 
-    userMenu=collaborateMenu->addMenu("User");
-    userInfoAction=new QAction("Set User Info",userMenu);
-    userMenu->addAction(userInfoAction);
+    userMenu=collaborateMenu->addMenu("Option");
+    configAction=new QAction("Config",userMenu);
+    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
+    userMenu->addAction(configAction);
     Communicator=nullptr;
     userView=nullptr;
 
@@ -3956,16 +3957,44 @@ void PMain::setLockMagnification(bool locked)
 
 /*----------------collaborate mdoe-------------------*/
 #ifdef __ALLOW_VR_FUNCS__
+
+void PMain::configApp()
+{
+    QSettings settings("HHMI", "Vaa3D");
+
+    bool ok;
+    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,"", &ok);
+    if(ok&&!HostAddress.isEmpty())
+        settings.setValue("HostAddress", HostAddress);
+
+    auto HostIP = QInputDialog::getText(0, "IP","Please enter the HostIP:", QLineEdit::Normal,"", &ok);
+    if(ok&&!HostAddress.isEmpty())
+        settings.setValue("HostIP", HostIP);
+
+    auto UserName = QInputDialog::getText(0, "UserName","Please enter the UserName:", QLineEdit::Normal,"", &ok);
+    if(ok&&!HostAddress.isEmpty())
+        settings.setValue("UserName", UserName);
+
+    auto UserPasswd = QInputDialog::getText(0, "UserPasswd","Please enter the UserPasswd:", QLineEdit::Normal,"", &ok);
+    if(ok&&!HostAddress.isEmpty())
+        settings.setValue("UserPasswd", UserPasswd);
+    qDebug()<<HostAddress<<"\n"<<HostIP<<"\n"<<UserName<<"\n"<<UserPasswd;
+}
+
 void PMain::LoadFromServer()
 {
 
-//    CViewer *cur_win = CViewer::getCurrent();
-//    if(!cur_win)
-//    {
-//        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
-//        return;
-//    }
-
+    CViewer *cur_win = CViewer::getCurrent();
+    if(!cur_win)
+    {
+        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+        return;
+    }
+    QSettings settings("HHMI", "Vaa3D");
+    userinfo.name=settings.value("UserName").toString();
+    userinfo.passwd=settings.value("UserPasswd").toString();
+    LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
+    qDebug()<<userinfo.name<<"\n"<<userinfo.passwd<<"\n"<<LoadManageWidget::HostAddress;
     if(!accessmanager)
         accessmanager=new QNetworkAccessManager(this);
     if(managewidget){
@@ -3974,15 +4003,51 @@ void PMain::LoadFromServer()
     }
 
     //更新一下用户信息
-    {
-        userinfo.name="xf";
-        userinfo.passwd="123456";
-    }
-
     managewidget=new LoadManageWidget(accessmanager,&userinfo);
+    connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(startCollaborate(QString,QString)));
     managewidget->show();
 
 
+}
+
+void PMain::startCollaborate(QString ano,QString port)
+{
+    Communicator = new V3dR_Communicator;
+    connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)));
+    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
+    Communicator->userName=userinfo.id;
+
+    connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(connected()),
+            this,SLOT(onMessageConnect()));
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
+            cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
+
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
+            cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
+
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
+            cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
+
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
+            cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
+
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
+            cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
+
+    connect(Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
+    connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
+    QSettings settings("HHMI", "Vaa3D");
+
+    Communicator->socket->connectToHost(settings.value("HostIP").toString(),port.toUInt());
+
+    if(!Communicator->socket->waitForConnected())
+    {
+        QMessageBox::information(0,tr("Message "),
+                         tr("connect failed"),
+                         QMessageBox::Ok);
+        return;
+    }
 }
 void PMain::ColLoadANO(QString ANOfile)
 {

@@ -593,16 +593,19 @@ class terafly::PMain : public QWidget
 public:
 		V3dR_Communicator * Communicator;
         QMenu* collaborateMenu,*userMenu;
-        QAction *loadAction,*userInfoAction;
+        QAction *loadAction,*configAction;
         QListWidget *userView;
         static UserInfo userinfo;
         static LoadManageWidget *managewidget;
         static QNetworkAccessManager *accessmanager;
 public slots:
+        void configApp();
         void LoadFromServer();
+        void startCollaborate(QString ano,QString port);
         void ColLoadANO(QString ANOfile);
         void onMessageDisConnect();
         void updateuserview(QString userlist);
+
 //        void startAutoTrace();//自动算法
 signals:
 

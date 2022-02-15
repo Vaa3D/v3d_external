@@ -11,7 +11,7 @@
 #include <qjson/parser.h>
 #include <qjson/qobjecthelper.h>
 
-const QString address="http://192.168.3.155:8000/dynamic";
+QString LoadManageWidget::HostAddress="http://192.168.3.155:8000/dynamic";
 LoadManageWidget::LoadManageWidget(QNetworkAccessManager *accessManager,UserInfo *user):accessManager(accessManager),userinfo(user)
 {
     getImageBtn=new QPushButton("GetImage",this);
@@ -58,7 +58,7 @@ LoadManageWidget::LoadManageWidget(QNetworkAccessManager *accessManager,UserInfo
 void LoadManageWidget::getImages()
 {
     QNetworkRequest request;
-    request.setUrl(QUrl(address+"/collaborate/getanoimage"));
+    request.setUrl(QUrl(HostAddress+"/collaborate/getanoimage"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QVariantMap userVerify;
     userVerify.insert("name",userinfo->name);
@@ -88,7 +88,7 @@ void LoadManageWidget::getNeurons()
     if(!imageWidget->currentItem()) return;
 
     QNetworkRequest request;
-    request.setUrl(QUrl(address+"/collaborate/getanoneuron"));
+    request.setUrl(QUrl(HostAddress+"/collaborate/getanoneuron"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
 
     QVariantMap userVerify;
@@ -131,7 +131,7 @@ void LoadManageWidget::getAnos()
 {
     if(!neuronWidget->currentItem()) return;
     QNetworkRequest request;
-    request.setUrl(QUrl(address+"/collaborate/getano"));
+    request.setUrl(QUrl(HostAddress+"/collaborate/getano"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QVariantMap userVerify;
     userVerify.insert("name",userinfo->name);
@@ -150,6 +150,7 @@ void LoadManageWidget::getAnos()
     anoWidget->clear();
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()==200)
     {
+        userinfo->id=reply->rawHeader("Set-Cookie").toInt();
         json=reply->readAll();
         QJson::Parser parser;
         auto neurons=parser.parse(json,&ok).toList();
@@ -166,9 +167,11 @@ void LoadManageWidget::getAnos()
 
 void LoadManageWidget::loadAno()
 {
+
+
     if(!anoWidget->currentItem()) return;
     QNetworkRequest request;
-    request.setUrl(QUrl(address+"/collaborate/inheritother"));
+    request.setUrl(QUrl(HostAddress+"/collaborate/inheritother"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
 
     QVariantMap userVerify;

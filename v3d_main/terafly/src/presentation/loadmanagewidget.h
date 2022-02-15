@@ -6,8 +6,10 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QNetworkAccessManager>
+
 struct UserInfo{
     QString name,passwd;
+    int id;
 };
 class LoadManageWidget:public QWidget
 {
@@ -18,6 +20,8 @@ public:
     QListWidget *imageWidget,*neuronWidget,*anoWidget;
     QNetworkAccessManager *accessManager;
     UserInfo *userinfo;
+
+    static QString HostAddress;
 public slots:
     void getImages();
     void getNeurons();
