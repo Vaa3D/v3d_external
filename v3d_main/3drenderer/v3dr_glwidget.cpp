@@ -1099,12 +1099,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				)
 		    {
 		    	toggleTex2D3D();
-            }/*else if (IS_ALT_MODIFIER)//define by huanglei
+            }else if (IS_ALT_MODIFIER)
             {
                 callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018
-            }*/
-            else if(WITH_ALT_MODIFIER){
-                callStrokeRetypeMultiNeurons();
             }
 			else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
 			{
