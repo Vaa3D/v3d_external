@@ -3982,12 +3982,12 @@ void PMain::configApp()
 void PMain::LoadFromServer()
 {
 
-//    CViewer *cur_win = CViewer::getCurrent();
-//    if(!cur_win)
-//    {
-//        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
-//        return;
-//    }
+    CViewer *cur_win = CViewer::getCurrent();
+    if(!cur_win)
+    {
+        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+        return;
+    }
     QSettings settings("HHMI", "Vaa3D");
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
@@ -4015,8 +4015,6 @@ void PMain::startCollaborate(QString ano,QString port)
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userName=userinfo.id;
 
-    connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(connected()),
-            this,SLOT(onMessageConnect()));
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
 
