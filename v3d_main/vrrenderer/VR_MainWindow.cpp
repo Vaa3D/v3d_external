@@ -59,10 +59,10 @@ void VR_MainWindow::TVProcess(QString line)
         QString operatorMsg=msgreg.cap(3).trimmed();
         if(operationtype == "drawline" )
         {
-            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+            QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
             if(listwithheader.size()<1) return;
 
-            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+            QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
 
             int type=-1;
             if(listwithheader.size()>1)
@@ -91,10 +91,10 @@ void VR_MainWindow::TVProcess(QString line)
             }
         }else if(operationtype == "delline")
         {
-            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+            QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
     //        qDebug()<<"list with header:"<<listwithheader;
             if(listwithheader.size()<1) return;
-             QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+             QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
 
             qDebug()<<"user="<<user;
             if(listwithheader.size()>1)
@@ -130,10 +130,10 @@ void VR_MainWindow::TVProcess(QString line)
         }else if(operationtype == "addmarker")
         {
             qDebug()<<"TeraVR add marker";
-            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+            QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
 
             if(listwithheader.size()<1) return;
-            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+            QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
 
             if(listwithheader.size()>1)
             {
@@ -154,10 +154,10 @@ void VR_MainWindow::TVProcess(QString line)
         }else if(operationtype == "delmarker")
         {
             qDebug()<<"TeraVR del marker";
-            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+            QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
 
             if(listwithheader.size()<1) return;
-            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+            QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
 
             if(listwithheader.size()>1)
             {
@@ -179,12 +179,12 @@ void VR_MainWindow::TVProcess(QString line)
             }
         }else if(operationtype == "retypeline")
         {
-            QStringList listwithheader=operatorMsg.split(";",QString::SkipEmptyParts);
+            QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
 
             if(listwithheader.size()<1) return;
             QStringList headers=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts);
             qDebug()<<headers;
-            QString user=headers[0].trimmed();
+            QString user=headers[1].trimmed();
             int type=headers[2].trimmed().toInt();
 
             if(listwithheader.size()>1)
