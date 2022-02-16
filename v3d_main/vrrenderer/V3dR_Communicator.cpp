@@ -229,7 +229,7 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
     if(clienttype=="TeraFly")
     {
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(0).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         sendMsg(QString("/drawline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
@@ -247,8 +247,7 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5")
-        .arg(userName).arg(0).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         sendMsg(QString("/delline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
@@ -267,7 +266,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(0).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
@@ -281,7 +280,7 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(0).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
         result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/delmarker_norm:"+result.join(",")));
@@ -295,7 +294,7 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(userName).arg(0).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         sendMsg(QString("/retypeline_norm:"+result.join(",")));
     }
