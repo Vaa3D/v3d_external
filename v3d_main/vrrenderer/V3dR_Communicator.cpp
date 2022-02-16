@@ -132,51 +132,51 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         if(operationtype == "drawline" )
         {
             QString msg=operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
             }
-            QString user=listwithheader[0].split(" ").at(0).trimmed();
-            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
                 listwithheader.removeAt(0);
-                emit addSeg(listwithheader.join(";"));
+                emit addSeg(listwithheader.join(","));
             }
         }else if(operationtype == "delline")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
             }
             qDebug() << "+============delseg process begin========";
-            QString user=listwithheader[0].split(" ").at(0).trimmed();
-            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
                 listwithheader.removeAt(0);
-                emit delSeg(listwithheader.join(";"));
+                emit delSeg(listwithheader.join(","));
             }
         }else if(operationtype == "addmarker")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
             }
-            QString user=listwithheader[0].split(" ").at(0).trimmed();
-            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
@@ -186,14 +186,14 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }else if(operationtype == "delmarker")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
             }
-            QString user=listwithheader[0].split(" ").at(0).trimmed();
-            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
@@ -203,22 +203,22 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         }else if(operationtype == "retypeline")
         {
             QString msg =operatorMsg;
-            QStringList listwithheader=msg.split(';',QString::SkipEmptyParts);
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             if(listwithheader.size()<=1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
             }
 
-            QString user=listwithheader[0].split(" ").at(0).trimmed();
-            bool isTeraFly=listwithheader[0].split(" ").at(1).trimmed()=="TeraFly";
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
             int type=listwithheader[0].split(" ").at(2).trimmed().toInt();
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
                 listwithheader.removeAt(0);
-                emit retypeSeg(listwithheader.join(";"),type);
+                emit retypeSeg(listwithheader.join(","),type);
             }
         }
     }
