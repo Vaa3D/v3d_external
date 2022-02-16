@@ -24,8 +24,6 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(this->socket,SIGNAL(connected()),this,SLOT(onConnected()));
 //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
-
-
 }
 
 void V3dR_Communicator::onReadyRead()
@@ -42,7 +40,7 @@ void V3dR_Communicator::onReadyRead()
                         socket->write({"Socket Receive ERROR!"});
                         std::cerr<<userName.toStdString()+" receive not match format\n";
                     }
-
+                    qDebug()<<msg;
                     auto ps=msg.right(msg.size()-QString("DataTypeWithSize:").size()).split(' ');
                     datatype.isFile=ps[0].toUInt();
                     datatype.datasize=ps[1].toUInt();
@@ -78,12 +76,12 @@ void V3dR_Communicator::onReadyRead()
                 QFile f(QCoreApplication::applicationDirPath()+"/loaddata/"+data);
                 socket->read(filedata,datatype.filesize);
                 if(f.open(QIODevice::WriteOnly)){
-                    f.write(filedata);
+                    f.write(filedata,datatype.filesize);
                 }
                 delete [] filedata;
                 delete [] data;
-                resetdatatype();
 
+                resetdatatype();
             }else{
                 break;
             }
@@ -93,6 +91,7 @@ void V3dR_Communicator::onReadyRead()
 
 void V3dR_Communicator::sendMsg(QString msg)
 {
+    qDebug()<<"send:"<<msg;
     const std::string data=msg.toStdString();
     const std::string header=QString("DataTypeWithSize:%1 %2\n").arg(0).arg(data.size()).toStdString();
     socket->write(header.c_str(),header.size());
@@ -105,10 +104,11 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     //1. 开始协作
     //2. 更新用户
     //3. 处理协作指令
-    QRegExp usersRex("^/users:(.*)$");
+
+    QRegExp usersRex("^/activeusers:(.*)$");
     for(auto &msg:list)
     {
-//        qDebug()<<msg;
+        qDebug()<<"OnRead:"<<msg;
         if(msg.startsWith("STARTCOLLABORATE:")){
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
         }else if(usersRex.indexIn(msg) != -1){
@@ -428,6 +428,7 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
     QStringList result;
     for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
     {
+        qDebug()<<i<<" "<<seg.row[i].x<<" "<<seg.row[i].y<<" "<<seg.row[i].z;
         V_NeuronSWC_unit curSWCunit = seg.row[i];
         XYZ GlobalCroods = ConvertLocalBlocktoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
         result.push_back(QString("%1 %2 %3 %4").arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
@@ -452,8 +453,9 @@ XYZ V3dR_Communicator::ConvertLocalBlocktoGlobalCroods(double x,double y,double 
     x+=(ImageStartPoint.x-1);
     y+=(ImageStartPoint.y-1);
     z+=(ImageStartPoint.z-1);
+
     XYZ node=ConvertCurrRes2MaxResCoords(x,y,z);
-//    qDebug()<<"ConvertLocalBlocktoGlobalCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
+    qDebug()<<"ConvertLocalBlocktoGlobalCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
     return node;
 }
 
@@ -467,6 +469,7 @@ XYZ V3dR_Communicator::ConvertMaxRes2CurrResCoords(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertCurrRes2MaxResCoords(double x,double y,double z)
 {
+    qDebug()<<ImageMaxRes.x/ImageCurRes.x;
     x*=(ImageMaxRes.x/ImageCurRes.x);
     y*=(ImageMaxRes.y/ImageCurRes.y);
     z*=(ImageMaxRes.z/ImageCurRes.z);

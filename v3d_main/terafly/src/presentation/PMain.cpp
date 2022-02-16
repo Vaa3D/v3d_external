@@ -3962,26 +3962,25 @@ void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
     bool ok;
-    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,"", &ok);
+    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,settings.value("HostAddress").toString(), &ok);
     if(ok&&!HostAddress.isEmpty())
         settings.setValue("HostAddress", HostAddress);
 
-    auto HostIP = QInputDialog::getText(0, "IP","Please enter the HostIP:", QLineEdit::Normal,"", &ok);
+    auto HostIP = QInputDialog::getText(0, "IP","Please enter the HostIP:", QLineEdit::Normal,settings.value("HostIP").toString(), &ok);
     if(ok&&!HostAddress.isEmpty())
         settings.setValue("HostIP", HostIP);
 
-    auto UserName = QInputDialog::getText(0, "UserName","Please enter the UserName:", QLineEdit::Normal,"", &ok);
+    auto UserName = QInputDialog::getText(0, "UserName","Please enter the UserName:", QLineEdit::Normal,settings.value("UserName").toString(), &ok);
     if(ok&&!HostAddress.isEmpty())
         settings.setValue("UserName", UserName);
 
-    auto UserPasswd = QInputDialog::getText(0, "UserPasswd","Please enter the UserPasswd:", QLineEdit::Normal,"", &ok);
+    auto UserPasswd = QInputDialog::getText(0, "UserPasswd","Please enter the UserPasswd:", QLineEdit::Normal,settings.value("UserPasswd").toString(), &ok);
     if(ok&&!HostAddress.isEmpty())
         settings.setValue("UserPasswd", UserPasswd);
 }
 
 void PMain::LoadFromServer()
 {
-
     CViewer *cur_win = CViewer::getCurrent();
     if(!cur_win)
     {
@@ -4009,11 +4008,22 @@ void PMain::LoadFromServer()
 
 void PMain::startCollaborate(QString ano,QString port)
 {
+    managewidget->hide();
     Communicator = new V3dR_Communicator;
+
+    qDebug()<<"tttt 1";
+    int maxresindex = terafly::CImport::instance()->getResolutions()-1;
+    IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
+    qDebug()<<vol->getDIM_H();
+    Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
+    teraflyVRView->setDisabled(false);
+    collaborationVRView->setEnabled(true);
+    collautotrace->setEnabled(false);
+
     connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)),Qt::DirectConnection);
     terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
-    Communicator->userName=userinfo.id;
+    Communicator->userName=QString::number(userinfo.id);
 
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
@@ -4036,11 +4046,13 @@ void PMain::startCollaborate(QString ano,QString port)
 
     Communicator->socket->connectToHost(settings.value("HostIP").toString(),port.toUInt());
 
-    if(!Communicator->socket->waitForConnected())
+    if(!Communicator->socket->waitForConnected(100000*20))
     {
         QMessageBox::information(0,tr("Message "),
                          tr("connect failed"),
                          QMessageBox::Ok);
+        Communicator->deleteLater();
+        Communicator=nullptr;
         return;
     }
 }
@@ -4058,11 +4070,10 @@ void PMain::ColLoadANO(QString ANOfile)
     }
     QString ANOpath=QCoreApplication::applicationDirPath()+"/loaddata/"+ANOfile;
 
-    annotationsPathLRU = ANOpath.toStdString();
-    CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
+    CAnnotations::getInstance()->load(ANOpath.toStdString().c_str());
     NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
-
     // save current cursor and set wait cursor
+
     QCursor cursor = cur_win->view3DWidget->cursor();
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
@@ -4073,6 +4084,7 @@ void PMain::ColLoadANO(QString ANOfile)
     saveAnnotationsAction->setEnabled(true);
     saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
     virtualSpaceSizeMenu->setEnabled(false);
+
     myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
 
     // reset saved cursor
@@ -4081,6 +4093,7 @@ void PMain::ColLoadANO(QString ANOfile)
         PAnoToolBar::instance()->setCursor(cursor);
     annotationChanged = true;
     updateOverview();
+
     //删除加载的文件
     {
         //        QRegExp anoExp("(.*).ano");

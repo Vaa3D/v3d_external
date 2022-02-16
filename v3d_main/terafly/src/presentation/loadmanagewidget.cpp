@@ -109,14 +109,13 @@ void LoadManageWidget::getNeurons()
     QEventLoop eventLoop;
     QObject::connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-     neuronWidget->clear();
+    neuronWidget->clear();
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()==200)
     {
         json=reply->readAll();
 
         QJson::Parser parser;
         auto neurons=parser.parse(json,&ok).toList();
-        qDebug()<<neurons;
         for(auto &neuron:neurons){
             auto item=neuron.toMap();
             neuronWidget->addItem(item["name"].toString());
@@ -151,6 +150,7 @@ void LoadManageWidget::getAnos()
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()==200)
     {
         userinfo->id=reply->rawHeader("Set-Cookie").toInt();
+        qDebug()<<"user info "<<reply->rawHeader("Set-Cookie")<<" "<<userinfo->id;
         json=reply->readAll();
         QJson::Parser parser;
         auto neurons=parser.parse(json,&ok).toList();
@@ -167,8 +167,6 @@ void LoadManageWidget::getAnos()
 
 void LoadManageWidget::loadAno()
 {
-
-
     if(!anoWidget->currentItem()) return;
     QNetworkRequest request;
     request.setUrl(QUrl(HostAddress+"/collaborate/inheritother"));

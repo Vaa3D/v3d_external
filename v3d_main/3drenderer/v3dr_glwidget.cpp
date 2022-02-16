@@ -221,7 +221,10 @@ void V3dR_GLWidget::SetupCollaborateInfo()
 	{
 		TeraflyCommunicator->ImageStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
 		TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
+        qDebug()<<TeraflyCommunicator->ImageStartPoint.x<<" "<<TeraflyCommunicator->ImageStartPoint.y<<" "<<TeraflyCommunicator->ImageStartPoint.z;
+        qDebug()<<TeraflyCommunicator->ImageCurRes.x<<" "<<TeraflyCommunicator->ImageCurRes.y<<" "<<TeraflyCommunicator->ImageCurRes.z;
 	}
+
 //	connect(TeraflyCommunicator, SIGNAL(CollaAddcurveSWC(vector<XYZ>, int, double)), this, SLOT(CollabolateSetSWC(vector<XYZ>, int, double)));
 //    connect(TeraflyCommunicator,SIGNAL(CollAddMarker(XYZ)),this,SLOT(CallAddMarker(XYZ)));
 	cout << "connection success!!! liqi " << endl;
