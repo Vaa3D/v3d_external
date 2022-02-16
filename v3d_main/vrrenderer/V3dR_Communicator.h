@@ -18,12 +18,11 @@
 class V3dR_Communicator : public QObject
 {
     Q_OBJECT
-    struct DataInfo
-    {
-        qint32 dataSize;    /*!<该数据块的长度，初始值为0*/
-        qint32 stringOrFilenameSize;/*!<command的长度或者文件名的长度*/
-        qint32 filedataSize;/*!<文件的长度，当传输的不是文件是command时为0*/
-        qint32 dataReadedSize;/*!<已经读取的数据的长度，当数据块被完全读取是等于dataSize*/
+    struct DataType{
+        bool isFile=false;//false msg,true file
+        qint64 datasize=0;
+        qint64 filesize=0;
+
     };
 public:
     explicit V3dR_Communicator(QObject *partent=nullptr);
@@ -93,13 +92,6 @@ public:
     XYZ ConvertLocalBlocktoGlobalCroods(double x,double y,double z);
     XYZ ConvertMaxRes2CurrResCoords(double x,double y,double z);
     XYZ ConvertCurrRes2MaxResCoords(double x,double y,double z);
-//    XYZ ConvertLocaltoGlobalCroods(double x,double y,double z,XYZ* para);
-    //end Coordinate transform
-
-//    void pushVSWCundoStack(vector<V_NeuronSWC> vector_VSWC);
-//    void pushUndoStack(QString,QString);
-    //    QString V_NeuronSWCToSendMSG(V_NeuronSWC seg,XYZ* para);转换读取的autotrace坐标到全局坐标
-    //	void MsgToV_NeuronSWC(QString msg);
 public slots:
     /**
      * @brief TFProcess
@@ -146,18 +138,13 @@ public:
     void emitRetypeSeg(QString segInfo,int type) {emit retypeSeg(segInfo,type);}
 private:
     /**
-     * @brief resetDataInfo
-     * 重置接收的数据结构
-     */
-    void resetDataInfo();
-    /**
      * @brief processReaded
      * @param list
      * 处理接受的消息或文件
      * 1. 文件要求加载，开始协作
      * 2. 消息：解析操作，同步操作
      */
-    void processReaded(QStringList list);
+    void preprocessmsgs(const QStringList list);
 
     QString XYZ2String(XYZ node,int type=-1)
     {
@@ -190,10 +177,8 @@ public:
     std::deque<QString> undoDeque;
     std::deque<QString> redoDeque;
 private:
-
-    DataInfo dataInfo;
-    bool isLoad=true;
-
+    DataType datatype;
+    void resetdatatype();
     const int dequeszie=10;
 
 

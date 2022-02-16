@@ -14,81 +14,80 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 	userName="";
 
     socket = new QTcpSocket(this);
-    resetDataInfo();
+    resetdatatype();
+    connect(socket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(this->socket,SIGNAL(connected()),this,SLOT(onConnected()));
 //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
-    connect(socket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
+
 
 }
 
 void V3dR_Communicator::onReadyRead()
 {
-    qDebug()<<"on read";
-    QDataStream in(socket);
-    if(dataInfo.dataSize==0)
-    {
-        if(socket->bytesAvailable()>=sizeof (qint32))
+    while(1){
+        if(!datatype.isFile)
         {
-            in>>dataInfo.dataSize;
-            dataInfo.dataReadedSize+=sizeof (qint32);
-        }
-        else return;
-    }
+            //不是准备接受文件数据
+            if(datatype.datasize==0){
+                //准备接收数据头
+                if(socket->canReadLine()){
+                    QString msg=socket->readLine(1024).trimmed();
+                    if(!msg.startsWith("DataTypeWithSize:")){
+                        socket->write({"Socket Receive ERROR!"});
+                        std::cerr<<userName.toStdString()+" receive not match format\n";
+                    }
 
-    if(dataInfo.stringOrFilenameSize==0&&dataInfo.filedataSize==0)
-    {
-        if(socket->bytesAvailable()>=2*sizeof (qint32))
-        {
-            in>>dataInfo.stringOrFilenameSize>>dataInfo.filedataSize;
-            dataInfo.dataReadedSize+=(2*sizeof (qint32));
-        }else
-            return;
-    }
-    QStringList list;
-    if(socket->bytesAvailable()>=dataInfo.stringOrFilenameSize+dataInfo.filedataSize)
-    {
-        QString messageOrFileName=QString::fromUtf8(socket->read(dataInfo.stringOrFilenameSize),dataInfo.stringOrFilenameSize);
-//        qDebug()<<"messageOrFileName= "<<messageOrFileName;
-        if(dataInfo.filedataSize)
-        {
-            if(!QDir(QCoreApplication::applicationDirPath()+"/loaddata").exists())
-            {
-                QDir(QCoreApplication::applicationDirPath()).mkdir("loaddata");
+                    auto ps=msg.right(msg.size()-QString("DataTypeWithSize:").size()).split(' ');
+                    datatype.isFile=ps[0].toUInt();
+                    datatype.datasize=ps[1].toUInt();
+                    if(datatype.isFile)
+                        datatype.filesize=ps[2].toUInt();
+                }else{
+                    break;
+                }
+            }else{
+                //已经接收了头，正在准备接收 消息数据
+                if(socket->bytesAvailable()>=datatype.datasize){
+                    char *data=new char[datatype.datasize+1];
+                    socket->read(data,datatype.datasize);
+                    data[datatype.datasize]='\0';
+//                    std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<(++receivedcnt)<<" receive from "<<username.toStdString()<<" :"<<data<<std::endl;
+                    //处理消息
+                    preprocessmsgs(QString(data).trimmed().split(';',QString::SkipEmptyParts));
+                    resetdatatype();
+                    delete [] data;
+                }else{
+                    break;
+                }
             }
-            QString filePath=QCoreApplication::applicationDirPath()+"/loaddata/"+messageOrFileName;
-            QFile file(filePath);
-            file.open(QIODevice::WriteOnly);
-            file.write(socket->read(dataInfo.filedataSize));file.flush();
-            file.close();
-            list.push_back("11"+filePath);
-        }else
-        {
-            list.push_back("00"+messageOrFileName);
+        }else{
+            //已经接收了头，数据
+            if(socket->bytesAvailable()>=datatype.datasize+datatype.filesize){
+                char *data=new char[datatype.datasize+1];
+                socket->read(data,datatype.datasize);
+                data[datatype.datasize]='\0';
+                // std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<(++receivedcnt)<<" receive from "<<username.toStdString()<<" :"<<data<<std::endl;
+                //只会接收刚开始协作时同步的文件，开始加载同步数据由服务器发出消息通知
+                char *filedata=new char[datatype.filesize];
+                QFile f(QCoreApplication::applicationDirPath()+"/loaddata/"+data);
+                socket->read(filedata,datatype.filesize);
+                if(f.open(QIODevice::WriteOnly)){
+                    f.write(filedata);
+                }
+                delete [] filedata;
+                delete [] data;
+                resetdatatype();
+
+            }else{
+                break;
+            }
         }
-        dataInfo.dataReadedSize+=(dataInfo.stringOrFilenameSize+dataInfo.filedataSize);
-        dataInfo.stringOrFilenameSize=0;
-        dataInfo.filedataSize=0;
-        if(dataInfo.dataReadedSize==dataInfo.dataSize)
-            resetDataInfo();
-        processReaded(list);
-    }else
-        return;
-	onReadyRead();
+    }
 }
 
 void V3dR_Communicator::sendMsg(QString msg)
 {
-//    qint32 stringSize=msg.toUtf8().size();
-//    qint32 totalsize=3*sizeof (qint32)+stringSize;
-//    QByteArray block;
-//    QDataStream dts(&block,QIODevice::WriteOnly);
-//    dts<<qint32(totalsize)<<qint32(stringSize)<<qint32(0);
-//    block+=msg.toUtf8();
-//    socket->write(block);
-//    socket->flush();
-//    qDebug()<<"send to server:"<<msg;
-
     const std::string data=msg.toStdString();
     const std::string header=QString("DataTypeWithSize:%1 %2\n").arg(0).arg(data.size()).toStdString();
     socket->write(header.c_str(),header.size());
@@ -96,40 +95,27 @@ void V3dR_Communicator::sendMsg(QString msg)
     socket->flush();
 }
 
-void V3dR_Communicator::processReaded(QStringList list)
+void V3dR_Communicator::preprocessmsgs(QStringList list)
 {
-    QStringList filepaths;
-    for(auto msg:list)
+    //1. 开始协作
+    //2. 更新用户
+    //3. 处理协作指令
+    QRegExp usersRex("^/users:(.*)$");
+    for(auto &msg:list)
     {
 //        qDebug()<<msg;
-        if(msg.startsWith("00"))
-        {
-            QRegExp usersRex("^/users:(.*)$");
-            QString tmp=msg.remove(0,2);
-            if(usersRex.indexIn(tmp) != -1)
-            {
-                emit updateuserview(usersRex.cap(1));
-            }else
-                emit msgtoprocess(tmp);
-        }else if(msg.startsWith("11")&&msg.contains("swc"))
-        {
-            msg=msg.remove(0,2);
-            emit load(msg.section("/",-1).section(".",0,1));
+        if(msg.startsWith("STARTCOLLABORATE")){
+            emit load(msg.right(msg.size()-QString("STARTCOLLABORATE").size()));
+        }else if(usersRex.indexIn(msg) != -1){
+            emit updateuserview(usersRex.cap(1));
+        }else{
+            emit msgtoprocess(msg);
         }
     }
 }
 
-void V3dR_Communicator::resetDataInfo()
-{
-     dataInfo.dataSize=0;dataInfo.stringOrFilenameSize=0;
-     dataInfo.dataReadedSize=0;dataInfo.filedataSize=0;
-}
-
 void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
-//    QRegExp usersRex("^/users:(.*)$");
-    QRegExp hmdposRex("^/hmdpos:(.*)$");
     QRegExp msgreg("/(.*)_(.*):(.*)");
-
 
     line=line.trimmed();
     if(msgreg.indexIn(line)!=-1)
@@ -382,10 +368,6 @@ void V3dR_Communicator::UpdateUndoDeque()
                 operationType="/delline";
             else if("delline"==operationType)
                 operationType="/drawline";
-//            else if("addmarker"==operationType)
-//                operationType="/delmarker";
-//            else if("delmarker"==operationType)
-//                operationType="/addmarker";
             while(redoDeque.size()>=dequeszie)
             {
                 redoDeque.pop_front();
@@ -417,10 +399,6 @@ void V3dR_Communicator::UpdateRedoDeque()
                 operationType="/delline";
             else if("delline"==operationType)
                 operationType="/drawline";
-//            else if("addmarker"==operationType)
-//                operationType="/delmarker";
-//            else if("delmarker"==operationType)
-//                operationType="/addmarker";
             while(undoDeque.size()>=dequeszie)
             {
                 undoDeque.pop_front();
@@ -437,7 +415,8 @@ void V3dR_Communicator::UpdateRedoDeque()
 
 void V3dR_Communicator::onConnected() {
     qDebug()<<"Message onConnected";
-    sendMsg(QString("/login:" +userName));
+    //发送用户ID和设备类型 0 桌面设备，可查看全脑，需要发送全脑图像
+    sendMsg(QString("/login:%1 %2").arg(userName).arg(0));
 }
 
 QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
@@ -453,13 +432,6 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
     }
     return result;
 }
-
-//void V3dR_Communicator::onDisconnected() {
-//    QMessageBox::information(0,tr("Message socket Connection is out!"),
-//                     tr("Data has been safely stored!\nif it is not you disconnect.\nPlease restart vaa3d"),
-//                     QMessageBox::Ok);
-//    deleteLater();
-//}
 
 XYZ V3dR_Communicator::ConvertGlobaltoLocalBlockCroods(double x,double y,double z)
 {
@@ -495,4 +467,11 @@ XYZ V3dR_Communicator::ConvertCurrRes2MaxResCoords(double x,double y,double z)
     y*=(ImageMaxRes.y/ImageCurRes.y);
     z*=(ImageMaxRes.z/ImageCurRes.z);
     return XYZ(x,y,z);
+}
+
+void V3dR_Communicator::resetdatatype()
+{
+    datatype.isFile=false;
+    datatype.datasize=0;
+    datatype.filesize=0;
 }

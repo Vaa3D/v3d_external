@@ -4010,7 +4010,7 @@ void PMain::LoadFromServer()
 void PMain::startCollaborate(QString ano,QString port)
 {
     Communicator = new V3dR_Communicator;
-    connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)));
+    connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)),Qt::DirectConnection);
     terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userName=userinfo.id;
