@@ -7,6 +7,11 @@
 #include <iostream>
 #include <sstream>
 
+//消息的拼接方式
+//每个指令之间使用‘;’
+//指令内部:指令头+数据体，使用','
+//每个点使用‘’
+
 V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 {
 	CreatorMarkerPos = 0;
@@ -104,8 +109,8 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     for(auto &msg:list)
     {
 //        qDebug()<<msg;
-        if(msg.startsWith("STARTCOLLABORATE")){
-            emit load(msg.right(msg.size()-QString("STARTCOLLABORATE").size()));
+        if(msg.startsWith("STARTCOLLABORATE:")){
+            emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
         }else if(usersRex.indexIn(msg) != -1){
             emit updateuserview(usersRex.cap(1));
         }else{
@@ -226,12 +231,12 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
-        sendMsg(QString("/drawline_norm:"+result.join(";")));
+        sendMsg(QString("/drawline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
         {
             undoDeque.pop_front();
         }
-        undoDeque.push_back(QString("/delline_undo:"+result.join(";")));
+        undoDeque.push_back(QString("/delline_undo:"+result.join(",")));
         redoDeque.clear();
     }
 }
@@ -245,12 +250,12 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
         result.push_back(QString("%1 %2 %3 %4 %5")
         .arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
-        sendMsg(QString("/delline_norm:"+result.join(";")));
+        sendMsg(QString("/delline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
         {
             undoDeque.pop_front();
         }
-        undoDeque.push_back(QString("/drawline_undo:"+result.join(";")));
+        undoDeque.push_back(QString("/drawline_undo:"+result.join(",")));
         redoDeque.clear();
 
     }
@@ -266,7 +271,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
-        sendMsg(QString("/addmarker_norm:"+result.join(";")));
+        sendMsg(QString("/addmarker_norm:"+result.join(",")));
 
     }
 }
@@ -279,7 +284,7 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
         result.push_back(QString("%1 %2 %3 %4 %5").arg(userName).arg(clienttype).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
         result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
-        sendMsg(QString("/delmarker_norm:"+result.join(";")));
+        sendMsg(QString("/delmarker_norm:"+result.join(",")));
 
     }
 }
@@ -292,7 +297,7 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(userName).arg(clienttype).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
-        sendMsg(QString("/retypeline_norm:"+result.join(";")));
+        sendMsg(QString("/retypeline_norm:"+result.join(",")));
     }
 }
 
