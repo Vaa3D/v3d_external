@@ -63,7 +63,7 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
             if(listwithheader.size()<1) return;
 
-            QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
 
             int type=-1;
             if(listwithheader.size()>1)
@@ -98,7 +98,7 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
     //        qDebug()<<"list with header:"<<listwithheader;
             if(listwithheader.size()<1) return;
-             QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+             QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
 
             qDebug()<<"user="<<user;
             if(listwithheader.size()>1)
@@ -139,7 +139,7 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
 
             if(listwithheader.size()<1) return;
-            QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
 
             if(listwithheader.size()>1)
             {
@@ -165,7 +165,7 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
 
             if(listwithheader.size()<1) return;
-            QString user=listwithheader[1].trimmed().split(' ',QString::SkipEmptyParts)[0].trimmed();
+            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
 
             if(listwithheader.size()>1)
             {
@@ -192,10 +192,8 @@ void VR_MainWindow::TVProcess(QString line)
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
 
             if(listwithheader.size()<1) return;
-            QStringList headers=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts);
-            qDebug()<<headers;
-            QString user=headers[1].trimmed();
-            int type=headers[2].trimmed().toInt();
+            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
+            int type=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[2].trimmed();
 
             if(listwithheader.size()>1)
             {
