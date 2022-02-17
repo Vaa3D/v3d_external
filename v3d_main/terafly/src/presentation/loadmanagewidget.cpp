@@ -63,9 +63,11 @@ void LoadManageWidget::getImages()
     QVariantMap userVerify;
     userVerify.insert("name",userinfo->name);
     userVerify.insert("passwd",userinfo->passwd);
+    QVariantMap param;
+    param.insert("user",userVerify);
     QJson::Serializer serializer;
     bool ok;
-    QByteArray json=serializer.serialize(userVerify,&ok);
+    QByteArray json=serializer.serialize(param,&ok);
 
     QNetworkReply* reply = accessManager->post(request, json);
     QEventLoop eventLoop;
