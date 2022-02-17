@@ -6616,43 +6616,22 @@ void Renderer_gl1::cutNeuronsByStroke()
 // --------------------- END of [neuron cutting tool, by MK 2017 June] -----------------------
 void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 {
+    qDebug()<<"retypeMultiNeuronsbyshortcut";
 	int node_type = 0;
 	int node_level = 0;
 
 	bool ok;
 	bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 	bool node_mode = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier);
-
+    qDebug()<<contour_mode;
 	if (neuronColorMode == 0)
 	{
 		if (useCurrentTraceTypeForRetyping)
 		{
 			node_type = currentTraceType;
 		}
-		else
+        else if(contour_mode)
 		{
-			//#ifdef USE_Qt5
-			//        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-			//                                  QObject::tr("SWC type: "
-			//                                            "\n 0 -- undefined (white)"
-			//                                            "\n 1 -- soma (black)"
-			//                                            "\n 2 -- axon (red)"
-			//                                            "\n 3 -- dendrite (blue)"
-			//                                            "\n 4 -- apical dendrite (purple)"
-			//                                            "\n else -- custom \n"),
-			//                                          node_type, 0, 100, 1, &ok);
-			////=======
-#if defined(USE_Qt5)
-			node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-				QObject::tr("SWC type: "
-				"\n 0 -- undefined (white)"
-				"\n 1 -- soma (black)"
-				"\n 2 -- axon (red)"
-				"\n 3 -- dendrite (blue)"
-				"\n 4 -- apical dendrite (purple)"
-				"\n else -- custom \n"),
-				currentTraceType, 0, 100, 1, &ok);
-#else
 			node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
 				QObject::tr("SWC type: "
 				"\n 0 -- undefined (white)"
@@ -6662,10 +6641,13 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 				"\n 4 -- apical dendrite (purple)"
 				"\n else -- custom \n"),
 				currentTraceType, 0, 100, 1, &ok);
-#endif
-		}
+            if (!ok) return;
+        }else{
+            qDebug()<<"heiheihiehi";
+            node_type=2;
+        }
 
-		if (!ok) return;
+
 		currentTraceType = node_type;
         const int neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
                 {255, 255, 255},  // white,   0-undefined
@@ -6690,263 +6672,6 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
             {255, 168, 128},  //	17
             {168, 128, 255}, //	18
             {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
-            //the following (20-275) is used for matlab heat map. 120209 by WYN
-            {0,0,131}, //20
-            {0,0,135},
-            {0,0,139},
-            {0,0,143},
-            {0,0,147},
-            {0,0,151},
-            {0,0,155},
-            {0,0,159},
-            {0,0,163},
-            {0,0,167},
-            {0,0,171},
-            {0,0,175},
-            {0,0,179},
-            {0,0,183},
-            {0,0,187},
-            {0,0,191},
-            {0,0,195},
-            {0,0,199},
-            {0,0,203},
-            {0,0,207},
-            {0,0,211},
-            {0,0,215},
-            {0,0,219},
-            {0,0,223},
-            {0,0,227},
-            {0,0,231},
-            {0,0,235},
-            {0,0,239},
-            {0,0,243},
-            {0,0,247},
-            {0,0,251},
-            {0,0,255},
-            {0,3,255},
-            {0,7,255},
-            {0,11,255},
-            {0,15,255},
-            {0,19,255},
-            {0,23,255},
-            {0,27,255},
-            {0,31,255},
-            {0,35,255},
-            {0,39,255},
-            {0,43,255},
-            {0,47,255},
-            {0,51,255},
-            {0,55,255},
-            {0,59,255},
-            {0,63,255},
-            {0,67,255},
-            {0,71,255},
-            {0,75,255},
-            {0,79,255},
-            {0,83,255},
-            {0,87,255},
-            {0,91,255},
-            {0,95,255},
-            {0,99,255},
-            {0,103,255},
-            {0,107,255},
-            {0,111,255},
-            {0,115,255},
-            {0,119,255},
-            {0,123,255},
-            {0,127,255},
-            {0,131,255},
-            {0,135,255},
-            {0,139,255},
-            {0,143,255},
-            {0,147,255},
-            {0,151,255},
-            {0,155,255},
-            {0,159,255},
-            {0,163,255},
-            {0,167,255},
-            {0,171,255},
-            {0,175,255},
-            {0,179,255},
-            {0,183,255},
-            {0,187,255},
-            {0,191,255},
-            {0,195,255},
-            {0,199,255},
-            {0,203,255},
-            {0,207,255},
-            {0,211,255},
-            {0,215,255},
-            {0,219,255},
-            {0,223,255},
-            {0,227,255},
-            {0,231,255},
-            {0,235,255},
-            {0,239,255},
-            {0,243,255},
-            {0,247,255},
-            {0,251,255},
-            {0,255,255},
-            {3,255,251},
-            {7,255,247},
-            {11,255,243},
-            {15,255,239},
-            {19,255,235},
-            {23,255,231},
-            {27,255,227},
-            {31,255,223},
-            {35,255,219},
-            {39,255,215},
-            {43,255,211},
-            {47,255,207},
-            {51,255,203},
-            {55,255,199},
-            {59,255,195},
-            {63,255,191},
-            {67,255,187},
-            {71,255,183},
-            {75,255,179},
-            {79,255,175},
-            {83,255,171},
-            {87,255,167},
-            {91,255,163},
-            {95,255,159},
-            {99,255,155},
-            {103,255,151},
-            {107,255,147},
-            {111,255,143},
-            {115,255,139},
-            {119,255,135},
-            {123,255,131},
-            {127,255,127},
-            {131,255,123},
-            {135,255,119},
-            {139,255,115},
-            {143,255,111},
-            {147,255,107},
-            {151,255,103},
-            {155,255,99},
-            {159,255,95},
-            {163,255,91},
-            {167,255,87},
-            {171,255,83},
-            {175,255,79},
-            {179,255,75},
-            {183,255,71},
-            {187,255,67},
-            {191,255,63},
-            {195,255,59},
-            {199,255,55},
-            {203,255,51},
-            {207,255,47},
-            {211,255,43},
-            {215,255,39},
-            {219,255,35},
-            {223,255,31},
-            {227,255,27},
-            {231,255,23},
-            {235,255,19},
-            {239,255,15},
-            {243,255,11},
-            {247,255,7},
-            {251,255,3},
-            {255,255,0},
-            {255,251,0},
-            {255,247,0},
-            {255,243,0},
-            {255,239,0},
-            {255,235,0},
-            {255,231,0},
-            {255,227,0},
-            {255,223,0},
-            {255,219,0},
-            {255,215,0},
-            {255,211,0},
-            {255,207,0},
-            {255,203,0},
-            {255,199,0},
-            {255,195,0},
-            {255,191,0},
-            {255,187,0},
-            {255,183,0},
-            {255,179,0},
-            {255,175,0},
-            {255,171,0},
-            {255,167,0},
-            {255,163,0},
-            {255,159,0},
-            {255,155,0},
-            {255,151,0},
-            {255,147,0},
-            {255,143,0},
-            {255,139,0},
-            {255,135,0},
-            {255,131,0},
-            {255,127,0},
-            {255,123,0},
-            {255,119,0},
-            {255,115,0},
-            {255,111,0},
-            {255,107,0},
-            {255,103,0},
-            {255,99,0},
-            {255,95,0},
-            {255,91,0},
-            {255,87,0},
-            {255,83,0},
-            {255,79,0},
-            {255,75,0},
-            {255,71,0},
-            {255,67,0},
-            {255,63,0},
-            {255,59,0},
-            {255,55,0},
-            {255,51,0},
-            {255,47,0},
-            {255,43,0},
-            {255,39,0},
-            {255,35,0},
-            {255,31,0},
-            {255,27,0},
-            {255,23,0},
-            {255,19,0},
-            {255,15,0},
-            {255,11,0},
-            {255,7,0},
-            {255,3,0},
-            {255,0,0},
-            {251,0,0},
-            {247,0,0},
-            {243,0,0},
-            {239,0,0},
-            {235,0,0},
-            {231,0,0},
-            {227,0,0},
-            {223,0,0},
-            {219,0,0},
-            {215,0,0},
-            {211,0,0},
-            {207,0,0},
-            {203,0,0},
-            {199,0,0},
-            {195,0,0},
-            {191,0,0},
-            {187,0,0},
-            {183,0,0},
-            {179,0,0},
-            {175,0,0},
-            {171,0,0},
-            {167,0,0},
-            {163,0,0},
-            {159,0,0},
-            {155,0,0},
-            {151,0,0},
-            {147,0,0},
-            {143,0,0},
-            {139,0,0},
-            {135,0,0},
-            {131,0,0},
-            {127,0,0} //275
                 };
         currentMarkerColor.r=neuron_type_color[node_type][0];
         currentMarkerColor.g=neuron_type_color[node_type][1];
@@ -6968,48 +6693,28 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 
     if(neuronColorMode==0)
     {
-        if (useCurrentTraceTypeForRetyping)
-        {
-            node_type = currentTraceType;
-        }
-        else
-        {
-            //#ifdef USE_Qt5
-            //        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-            //                                  QObject::tr("SWC type: "
-            //                                            "\n 0 -- undefined (white)"
-            //                                            "\n 1 -- soma (black)"
-            //                                            "\n 2 -- axon (red)"
-            //                                            "\n 3 -- dendrite (blue)"
-            //                                            "\n 4 -- apical dendrite (purple)"
-            //                                            "\n else -- custom \n"),
-            //                                          node_type, 0, 100, 1, &ok);
-            ////=======
-#if defined(USE_Qt5)
-            node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
-                                             QObject::tr("SWC type: "
-                                                         "\n 0 -- undefined (white)"
-                                                         "\n 1 -- soma (black)"
-                                                         "\n 2 -- axon (red)"
-                                                         "\n 3 -- dendrite (blue)"
-                                                         "\n 4 -- apical dendrite (purple)"
-                                                         "\n else -- custom \n"),
-                                             currentTraceType, 0, 100, 1, &ok);
-#else
-            node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
-                                                 QObject::tr("SWC type: "
-                                                             "\n 0 -- undefined (white)"
-                                                             "\n 1 -- soma (black)"
-                                                             "\n 2 -- axon (red)"
-                                                             "\n 3 -- dendrite (blue)"
-                                                             "\n 4 -- apical dendrite (purple)"
-                                                             "\n else(<21) -- custom \n"),
-                                                 currentTraceType, 0, 100, 1, &ok);
-#endif
-        }
+                node_type = currentTraceType;
+//        if (useCurrentTraceTypeForRetyping)
+//        {
+//            node_type = currentTraceType;
+//        }
+//        else
+//        {
 
-        if(!ok) return;
-        currentTraceType = node_type;
+//            node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+//                                                 QObject::tr("SWC type: "
+//                                                             "\n 0 -- undefined (white)"
+//                                                             "\n 1 -- soma (black)"
+//                                                             "\n 2 -- axon (red)"
+//                                                             "\n 3 -- dendrite (blue)"
+//                                                             "\n 4 -- apical dendrite (purple)"
+//                                                             "\n else(<21) -- custom \n"),
+//                                                 currentTraceType, 0, 100, 1, &ok);
+//        }
+
+//        if(!ok) return;
+//        currentTraceType = node_type;
+
         const int neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
                 {255, 255, 255},  // white,   0-undefined
                 {20,  20,  20 },  // black,   1-soma
@@ -7188,7 +6893,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                         &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                         {
                             w->SetupCollaborateInfo();
-                            w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],3,"TeraFly");
+                            w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
                         }
                     }
             }
@@ -7233,7 +6938,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
     QPolygon poly;
     for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
         poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
-
+    qDebug()<<"breakMultiNeuronsByStroke";
     // back-project the node curve points and mark segments to be deleted
     for(V3DLONG j=0; j<listNeuronTree.size(); j++)
     {
@@ -7264,25 +6969,22 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                         QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
 						float dist2d_squared = (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y());
                         if(dist2d_squared <= tolerance_squared && !allUnitsOutsideZCut)
-                       //     && curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken == false)
                         {
-                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].to_be_broken = true;
-                           // curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row[p_listneuron->at(i).nodeinseg_id].parent = -1;
+                            V_NeuronSWC seg=curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id);
+
                             if(w->TeraflyCommunicator
                                 &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-                                {
-                                    w->SetupCollaborateInfo();
-                                    V_NeuronSWC seg=curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id);
-                                    for(auto &node:seg.row){
-                                        node.type=currentTraceType;
-                                    }
-                                    w->TeraflyCommunicator->UpdateSplitSegMsg(
-                                        seg,
-                                                p_listneuron->at(i).nodeinseg_id,
-                                                "TeraFly");
-                                }
+                            {
+                                w->SetupCollaborateInfo();
+                                w->TeraflyCommunicator->UpdateSplitSegMsg(
+                                    seg,p_listneuron->at(i).nodeinseg_id,"TeraFly");
+                            }
+                            auto &tmp=curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id];
+                            for(auto &node:tmp.row){
+                                node.type=currentTraceType;
+                            }
                             curImg->tracedNeuron.split(p_listneuron->at(i).seg_id,p_listneuron->at(i).nodeinseg_id);
-
+                            qDebug()<<"split success "<<currentTraceType;
 							curImg->update_3drenderer_neuron_view(w, this);
                             p_tree = (NeuronTree *)(&(listNeuronTree.at(j)));
                             p_listneuron = &(p_tree->listNeuron);

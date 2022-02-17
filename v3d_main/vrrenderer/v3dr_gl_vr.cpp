@@ -69,7 +69,7 @@ int checkForOpenGLError(const char* file, int line)
 float CMainApplication::fContrast = 1;
 bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
-float CMainApplication::iLineWid = 1;
+float CMainApplication::iLineWid = 3;
 float CMainApplication::iscaleZ =1;
 float CMainApplication::fBrightness = 0.0;
 int CMainApplication::m_curMarkerColorType = 6;
@@ -6230,7 +6230,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 		// draw a sphere on right controller center
 		{
-			glLineWidth(1);
+            glLineWidth(1);
 			glm::mat4 model;
 			model = glm::translate(glm::mat4(), ctrSpherePos);
 

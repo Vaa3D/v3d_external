@@ -4207,7 +4207,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
                 break;
             }
         }
-        const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
+        const GLubyte neuron_type_color[ ][3] = {
                 {255, 255, 255},  // white,   0-undefined
                 {20,  20,  20 },  // black,   1-soma
                 {200, 20,  0  },  // red,     2-axon
@@ -4234,7 +4234,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
             {0,0,131}, //20
 
                 };
-        if (markerindex>=0/*listLoc.size()>0*/)
+        if (markerindex>=0)
         {
             S.inputProperty = listLoc.at(markerindex).inputProperty;
             S.comments = listLoc.at(markerindex).comments;
@@ -4270,30 +4270,10 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
         {
             w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,int(currentTraceType),"TeraFly");
-//			w->TeraflyCommunicator->UpdateSendPoolNode2(S.x, S.y, S.z, (int)S.color.r, (int)S.color.g, (int)S.color.b);//Update by FJ 2020/6/14
-        }/*else
-        {
-            QMessageBox::information(0,tr("Message "),
-                             tr("Connection Lost!Data has been saved!"),
-                             QMessageBox::Ok);*/
-//		updateLandmark();
+        }
     }
 #else
-    ImageMarker S;
-	memset(&S, 0, sizeof(S));
-	S.x = pt.x;
-	S.y = pt.y;
-    S.z = pt.z;
-    if (listMarker.size()>0)
-    {
-        S.color = listMarker.last().color;
-    }
-    else
-    {
-        S.color = random_rgba8(255);
-    }
-    S.on = true;
-    listMarker.append(S);
+
 #endif
 }
 

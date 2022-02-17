@@ -268,10 +268,8 @@ void ManageSocket::load(QListWidgetItem* item)
 
 void ManageSocket::onMessageConnect()
 {
-    qDebug()<<"tttt 1";
     int maxresindex = terafly::CImport::instance()->getResolutions()-1;
     IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
-    qDebug()<<vol->getDIM_H();
     pmain->Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
     pmain->teraflyVRView->setDisabled(false);
     pmain->collaborationVRView->setEnabled(true);

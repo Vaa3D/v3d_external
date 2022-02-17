@@ -292,7 +292,6 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
 {
     if(clienttype=="TeraFly")
     {
-
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -428,7 +427,6 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
     QStringList result;
     for(int i=0;i<seg.row.size();i++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
     {
-        qDebug()<<i<<" "<<seg.row[i].x<<" "<<seg.row[i].y<<" "<<seg.row[i].z;
         V_NeuronSWC_unit curSWCunit = seg.row[i];
         XYZ GlobalCroods = ConvertLocalBlocktoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
         result.push_back(QString("%1 %2 %3 %4").arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
@@ -444,7 +442,6 @@ XYZ V3dR_Communicator::ConvertGlobaltoLocalBlockCroods(double x,double y,double 
     node.x-=(ImageStartPoint.x-1);
     node.y-=(ImageStartPoint.y-1);
     node.z-=(ImageStartPoint.z-1);
-    qDebug()<<"ConvertGlobaltoLocalBlockCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
     return node;
 }
 
@@ -455,7 +452,6 @@ XYZ V3dR_Communicator::ConvertLocalBlocktoGlobalCroods(double x,double y,double 
     z+=(ImageStartPoint.z-1);
 
     XYZ node=ConvertCurrRes2MaxResCoords(x,y,z);
-    qDebug()<<"ConvertLocalBlocktoGlobalCroods x y z = "<<x<<" "<<y<<" "<<z<<" -> "+XYZ2String(node);
     return node;
 }
 
