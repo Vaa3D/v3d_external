@@ -131,7 +131,7 @@ void VR_MainWindow::TVProcess(QString line)
                 CURRENT_DATA_IS_SENT=false;
 
             }else{
-                qDebug()<<"user = "<<user<<" "<<userName；
+				qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
             }
         }else if(operationtype == "addmarker")
         {
@@ -157,7 +157,7 @@ void VR_MainWindow::TVProcess(QString line)
                 pMainApplication->READY_TO_SEND=false;
                 CURRENT_DATA_IS_SENT=false;
             }else{
-                qDebug()<<"user = "<<user<<" "<<userName；
+				qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
             }
         }else if(operationtype == "delmarker")
         {
@@ -185,7 +185,7 @@ void VR_MainWindow::TVProcess(QString line)
                 pMainApplication->READY_TO_SEND=false;
                 CURRENT_DATA_IS_SENT=false;
             }else{
-                qDebug()<<"user = "<<user<<" "<<userName；
+				qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
             }
         }else if(operationtype == "retypeline")
         {
@@ -225,7 +225,7 @@ void VR_MainWindow::TVProcess(QString line)
                   pMainApplication->READY_TO_SEND=false;
                   CURRENT_DATA_IS_SENT=false;
               }else{
-                  qDebug()<<"user = "<<user<<" "<<userName；
+				  qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
               }
         }
     }
