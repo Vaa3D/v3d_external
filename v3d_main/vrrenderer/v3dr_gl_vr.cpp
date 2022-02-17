@@ -2586,7 +2586,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		}
 
 
-	if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
+    if((event.trackedDeviceIndex==m_iControllerIDRight)
+            &&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)
+            &&(event.eventType==vr::VREvent_ButtonUnpress)&&(!showshootingray))	//detect trigger when menu don't show
 	{	
         //松开trigger
 		qDebug()<<"current mode is "<<m_modeGrip_R;
@@ -2778,7 +2780,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 					swccount=0;
                 }else{
                     READY_TO_SEND=true;
-                    qDebug()<<CmainVRVolumeEndPoint.x<<" "<<CmainVRVolumeEndPoint.y<<" "<<CmainVRVolumeEndPoint.z;
+                    qDebug()<<"draw line "<<READY_TO_SEND<<" "<<CmainVRVolumeEndPoint.x<<" "<<CmainVRVolumeEndPoint.y<<" "<<CmainVRVolumeEndPoint.z;
                     for(int i=0;i<currentNT.listNeuron.size();i++)
                     {
                         auto S_temp=currentNT.listNeuron[i];
@@ -2791,7 +2793,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                             //震动、清空、禁止发送
                             qDebug()<<"outside:"<<S_temp.x<<" "<<S_temp.y<<" "<<S_temp.z;
                             ClearCurrentNT();
-                            READY_TO_SEND=false;
+
+                            READY_TO_SEND=false;qDebug()<<"draw line outside stop."<<READY_TO_SEND;
                            m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,3000000);
                         }
                     }
@@ -2868,6 +2871,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                 }else
                 {
                     READY_TO_SEND=true;
+                    qDebug()<<"delete "<<READY_TO_SEND;
                 }
 
             };break;
@@ -3288,6 +3292,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         }
                     }
                     READY_TO_SEND=true;
+                    qDebug()<<"retype "<<READY_TO_SEND;
                 }
             }			break;
 		case m_markMode://when there is a maker ,delete it ,otherwise add a marker
@@ -3305,10 +3310,9 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				glm::vec4 m_v4DevicePose = mat * glm::vec4( 0, 0, 0, 1 );//change the world space(with the globalMatrix) to the initial world space
                 QString tmpdeletename=FindNearestMarker(glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z));
                 SetDeleteMarkerColor(tmpdeletename);
-                /*delmarkerPOS="";
-				delmarkerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);*/
+
                 markerPosTobeDeleted="";
-//				markerPOS = QString("%1 %2 %3").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z);
+
 
 				if(isOnline==false)	
 				{
@@ -3329,7 +3333,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                 }else
                 {
                     READY_TO_SEND=true;
-                    qDebug()<<"ONLINE";
+                    qDebug()<<"marker "<<READY_TO_SEND;
                     double dist=2;
                     int index=-1;
                     for(int i=0;i<drawnMarkerList.size();i++)
@@ -3352,7 +3356,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         if(IsOutofBounds!=true) markerPosTobeDeleted = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
                         else
                         {
-                            qDebug()<<"add marker out ";
+                            qDebug()<<"add marker out "<<READY_TO_SEND;
                             m_pHMD->TriggerHapticPulse(event.trackedDeviceIndex,0,3000000);
                             READY_TO_SEND=false;
                         }
@@ -3872,6 +3876,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                     segaftersplit.push_back(splitNT1);
                     segaftersplit.push_back(splitNT2);
                     READY_TO_SEND=true;
+                    qDebug()<<"split "<<READY_TO_SEND;
                 }
 
 				break;
