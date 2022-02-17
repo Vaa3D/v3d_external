@@ -4,7 +4,7 @@
 #include <QTcpSocket>
 #include <QListWidgetItem>
 #include "../terafly/src/presentation/PMain.h"
-
+//managesocket is not used ,should be remove
 /**
  * @brief The ManageSocket class
  * 继承自QObject
