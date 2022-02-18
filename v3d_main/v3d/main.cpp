@@ -74,52 +74,37 @@ V3dApplication* V3dApplication::theApp = 0;
 
 int main(int argc, char **argv)
 {
-    if(argc<7) return -1;
+    if(argc<9) return -1;
+
     char *infile=argv[1];
     char *outfile=argv[2];
-    int xc,yc,zc,len;
-    xc=atoi(argv[3]);
-    yc=atoi(argv[4]);
-    zc=atoi(argv[5]);
-    len=atoi(argv[6]);
+    V3DLONG x0 = atoi(argv[3]);
+    V3DLONG x1 = atoi(argv[4]);
+    V3DLONG y0 = atoi(argv[5]);
+    V3DLONG y1 = atoi(argv[6]);
+    V3DLONG z0 = atoi(argv[7]);
+    V3DLONG z1 = atoi(argv[8]);
+    std::cout<<x0<<","<<x1<<","<<y0<<","<<y1<<","<<z0<<","<<z1<<std::endl;
 
-//    char *infile="/Users/huanglei/Desktop/dataserver/image/18454/RES\(26298x35000x11041\)";
-//    char *outfile="/Users/huanglei/Desktop/2.v3dpbd";
-//    int xc,yc,zc,len;
-//    xc=14530;
-//    yc=10693;
-//    zc=3124;
-//    len=128;
-
-    std::cout<<infile<<"\n"
-            <<outfile<<"\n"
-           <<xc<<"\n"<<yc<<"\n"<<zc<<"\n"<<len<<"\n";
     auto sz = new V3DLONG [5];
     if (!sz)
     {
         std::cout<<"can not allocate raw";
         return -5;
     }
+
     sz[0] = terafly::PluginInterface::getXDim(infile);
     sz[1] = terafly::PluginInterface::getYDim(infile);
     sz[2] = terafly::PluginInterface::getZDim(infile);
     sz[3] = terafly::PluginInterface::getCDim(infile);
     sz[4] = terafly::PluginInterface::getTDim(infile);
     std::cout<<sz[0]<<","<<sz[1]<<","<<sz[2]<<","<<sz[3]<<","<<sz[4]<<std::endl;
-
-    V3DLONG in_sz[4]={len,len,len,sz[3]};
-
-    V3DLONG x0 = xc-len/2;
-    V3DLONG x1 = xc+len/2;
-    V3DLONG y0 = yc-len/2;
-    V3DLONG y1 = yc+len/2;
-    V3DLONG z0 = zc-len/2;
-    V3DLONG z1 = zc+len/2;
-    std::cout<<x0<<","<<x1<<","<<y0<<","<<y1<<","<<z0<<","<<z1<<std::endl;
     if(x0<0 || x1>=sz[0] || y0<0 || y1>=sz[1] || z0<0 || z1>=sz[2]){
         std::cout<<"the cordinate is out of size";
         return -2;
     }
+
+    V3DLONG in_sz[4]={x0-x1,y0-y1,z0-z1,sz[3]};
     unsigned char * cropped_image=terafly::PluginInterface::getSubVolume(infile,x0,x1,y0,y1,z0,z1);
 
     if(cropped_image==NULL){
