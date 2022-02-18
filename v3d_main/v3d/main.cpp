@@ -79,10 +79,10 @@ int main(int argc, char **argv)
     char *infile=argv[1];
     char *outfile=argv[2];
     V3DLONG x0 = atoi(argv[3]);
-    V3DLONG x1 = atoi(argv[4]);
-    V3DLONG y0 = atoi(argv[5]);
-    V3DLONG y1 = atoi(argv[6]);
-    V3DLONG z0 = atoi(argv[7]);
+    V3DLONG y0 = atoi(argv[4]);
+    V3DLONG z0 = atoi(argv[5]);
+    V3DLONG x1 = atoi(argv[6]);
+    V3DLONG y1 = atoi(argv[7]);
     V3DLONG z1 = atoi(argv[8]);
     std::cout<<x0<<","<<x1<<","<<y0<<","<<y1<<","<<z0<<","<<z1<<std::endl;
 
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
         return -2;
     }
 
-    V3DLONG in_sz[4]={x0-x1,y0-y1,z0-z1,sz[3]};
+    V3DLONG in_sz[4]={x1-x0,y1-y0,z1-z0,sz[3]};
     unsigned char * cropped_image=terafly::PluginInterface::getSubVolume(infile,x0,x1,y0,y1,z0,z1);
 
     if(cropped_image==NULL){
