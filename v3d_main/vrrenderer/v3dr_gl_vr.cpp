@@ -2104,7 +2104,7 @@ void CMainApplication::RunMainLoop()
     //this->show();
     while ( !bQuit )
     {
-        QCoreApplication::processEvents();
+        //QCoreApplication::processEvents();
 		bQuit = HandleInput();
         //if (bQuit||isvrclosed) break;
         if (bQuit) break;
