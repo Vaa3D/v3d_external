@@ -4,7 +4,9 @@
 
 
 //LMG for Windows UTC Timestamp 15/10/2018
+#ifdef Q_OS_WIN
 #define timegm _mkgmtime
+#endif
 
 bool smooth_sketch_curve(std::vector<MyMarker *> & mCoord, int winsize)
 {

@@ -9,8 +9,15 @@
 
 #include "../basic_c_fun/v3d_interface.h"
 
-
+#ifdef Q_OS_WIN
 #include <openvr.hpp>
+#endif
+#ifdef Q_OS_LINUX
+#include <common_lib/include/SDL/SDL.h>
+#include "../basic_c_fun/v3d_interface.h"
+#include <common_lib/include/openvr/openvr.h>
+#endif
+
 #include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
@@ -585,12 +592,17 @@ private:
 	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
-	__int64 CounterStart;
+#ifdef Q_OS_WIN
+    __int64 CounterStart;
+    __int64 frameTimeOld;
+#endif
+#ifdef Q_OS_LINUX
+    int64 CounterStart;
+    int64 frameTimeOld;
+#endif
 
 	int frameCount;
 	int fps;
-
-	__int64 frameTimeOld;
 	double frameTime;
 
 	void StartTimer();

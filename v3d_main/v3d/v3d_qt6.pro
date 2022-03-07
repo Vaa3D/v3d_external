@@ -51,7 +51,7 @@ unix:!macx {
     DEFINES += LINUX_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
     LIBS =  -lGLU -lglut
-    LIBS += -L../common_lib/lib_ubuntu   -lv3dtiff -lv3dnewmat -lmylib -lteem  -lbz2 -lz  -lszip -lhdf5
+    LIBS += -L../common_lib/lib_ubuntu  -lv3dtiff -lv3dnewmat -lmylib -lteem -lbz2 -lz -lszip
 
 }
 
@@ -538,10 +538,22 @@ SOURCES += \
 }
 
 unix:!macx{
-INCLUDEPATH += ..\common_lib\include\SDL/ #for VR, by PHC 20170615
-INCLUDEPATH += ..\common_lib\include\glew/  #for VR, by PHC 20170615
-INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
-    LIBS += -L../common_lib/lib_ubuntu  -lSDL2 -lopenvr_api -lGLEW -ldl
+INCLUDEPATH += ../common_lib/include/SDL/ #for VR, by PHC 20170615
+INCLUDEPATH += ../common_lib/include/glew/  #for VR, by PHC 20170615
+#INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
+LIBS += -L../common_lib/lib_ubuntu -lGLEW -ldl
+
+#QMAKE_RPATHDIR += ../common_lib/lib_ubuntu
+QMAKE_LFLAGS += -Wl,-rpath=../common_lib/lib_ubuntu
+LIBS += -L$$PWD/../common_lib/lib_ubuntu/ -lopenvr_api
+INCLUDEPATH += $$PWD/../common_lib/include/openvr
+DEPENDPATH += $$PWD/../common_lib/include/openvr
+
+LIBS += -L$$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5
+
+INCLUDEPATH += $$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/include
+DEPENDPATH += $$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/include
+
 HEADERS += \
     ../vrrenderer/v3dr_gl_vr.h \
     ../vrrenderer/Cylinder.h \
@@ -626,4 +638,3 @@ FORMS += landmark_property.ui \
 
 #win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
 
-DISTFILES +=
