@@ -210,6 +210,7 @@ QList<QDir> V3d_PluginLoader::getPluginsDirList()
 
     pluginsDirList.clear();
 	QDir testPluginsDir = QDir(qApp->applicationDirPath());
+    //qDebug()<<"------------------------------"<<testPluginsDir;
 #if defined(Q_OS_WIN)
     if (testPluginsDir.dirName().toLower() == "debug" || testPluginsDir.dirName().toLower() == "release")
         testPluginsDir.cdUp();
@@ -254,6 +255,7 @@ void V3d_PluginLoader::loadPlugins()
 	}
 
     QList<QDir> pluginsDirList = getPluginsDirList();
+    qDebug()<<"pluginsDirList---------"<<pluginsDirList;
 
     if (pluginsDirList.size() == 0)
     {

@@ -32,7 +32,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <stdio.h>
 #include <QtGui>
-
+#include <QRegExp>
 #include "v3d_core.h"
 #include "mainwindow.h"
 #include <QInputDialog>
@@ -265,7 +265,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 	// 090731 RZC: fixed numerically sorting file names list, for XFormWidget::importGeneralImgSeries
 	//-----------------------------------------------------------------------
 	QString fileNameStr, fileNameDigits;	//absolute file name is separated to 2 parts: strings and digits
-        //QRegExp r("(\\d+)");		//find digits
+    QRegExp r("(\\d+)");		//find digits
 	QMap<V3DLONG, QString> mapList;
 
 	mapList.clear();
@@ -281,11 +281,11 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 
 		V3DLONG pos = 0;
 		fileNameDigits = "";
-//        while ((pos = r.indexIn(fileFullNameStr, pos)) != -1)
-//		{
-//                    fileNameDigits = r.cap(1);
-//                    pos += r.matchedLength();
-//		}
+        while ((pos = r.indexIn(fileFullNameStr, pos)) != -1)
+        {
+                    fileNameDigits = r.cap(1);
+                    pos += r.matchedLength();
+        }
 
 		if (fileNameDigits.isEmpty()) continue;
 
