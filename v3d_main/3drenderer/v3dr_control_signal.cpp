@@ -1172,14 +1172,14 @@ void V3dR_MainWindow::initVolumeTimeRange()
 	if (! glWidget) return;
 
 	int t;
-    /*
+
 	t = MAX(0, glWidget->dataDim5()-1);
 
 	if (timeSlider) {
 		timeSlider->setMaximum(t);
 		timeSlider->setValue(0);
 	}
-    */
+
 }
 
 void V3dR_MainWindow::initVolumeCutRange()

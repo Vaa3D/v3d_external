@@ -1565,7 +1565,7 @@ void MainWindow::import_GeneralImageFile()
         if (existing) {
 
 
-           // workspace->setActiveSubWindow(existing);
+           workspace->setActiveSubWindow(existing);
 
             return;
         }
