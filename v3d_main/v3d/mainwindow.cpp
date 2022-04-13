@@ -67,6 +67,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #ifdef _ALLOW_TERAFLY_MENU_
 #include "../terafly/src/control/CPlugin.h"
 #endif
+#include <QElapsedTimer>
 
 //#ifdef __ALLOW_VR_FUNCS__
 //#include "../mozak/MozakUI.h";
@@ -242,7 +243,7 @@ MainWindow::MainWindow()
     createStatusBar();
     updateMenus();
     readSettings();
-    setWindowTitle(tr("Vaa3D"));
+    setWindowTitle(tr("Vaa3D-x"));
 #if defined(__V3DWSDEVELOP__)
     v3dws = new V3DWebService(9125); //20110309 YuY
     initWebService(v3dws);
@@ -584,6 +585,8 @@ void MainWindow::dragLeaveEvent(QDragLeaveEvent *event)
 }
 void MainWindow::dropEvent(QDropEvent *event)
 {
+    QElapsedTimer time;
+    time.start();
     QString fileName;
         qDebug("Vaa3D MainWindow::dropEvent");
         const QMimeData *mimeData = event->mimeData();
@@ -672,6 +675,9 @@ void MainWindow::dropEvent(QDropEvent *event)
         loadV3DFile(fileName, true, global_setting.b_autoOpenImg3DViewer); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
         setBackgroundRole(QPalette::Dark);
         event->acceptProposedAction();
+
+        qDebug()<<"-------加载时间ms";
+                qDebug()<<time.elapsed();
 }
 void MainWindow::newFile()
 {
@@ -1565,7 +1571,7 @@ void MainWindow::import_GeneralImageFile()
         if (existing) {
 
 
-           // workspace->setActiveSubWindow(existing);
+           workspace->setActiveSubWindow(existing);
 
             return;
         }

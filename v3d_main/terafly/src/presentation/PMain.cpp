@@ -2556,6 +2556,7 @@ void PMain::traslXnegClicked()
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
     {
+        qDebug() << expl->volH1-expl->volH0 << "detect parameter is";
         expl->newViewer((expl->volH1-expl->volH0)/2 - (expl->volH1-expl->volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
                       (expl->volV1-expl->volV0)/2,
                       (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
