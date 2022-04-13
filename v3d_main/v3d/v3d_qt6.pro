@@ -3,7 +3,7 @@ include(../terafly/terafly.pro)
 
 QT += core gui widgets opengl openglwidgets network xml svg
 TEMPLATE = app
-TARGET +=
+TARGET = Vaa3D-x
 DEPENDPATH += . v3d
 INCLUDEPATH += . ../common_lib/include #./basic_c_funss
 

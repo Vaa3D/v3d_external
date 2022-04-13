@@ -111,8 +111,8 @@ public slots:
     // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
     void hideDisplayControls();
     //注释
-  //  void about();
-    //for movie control
+//    void about();
+//    //for movie control
 
 //    void setXRotStep(int t);
 //    void setYRotStep(int t);

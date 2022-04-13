@@ -673,6 +673,9 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
         url.replace("%20"," ");//fixed the space path issue in 3D viewer on Linux machine by Zhi Zhou May 15 2015
 
         qDebug("the file to open=[%s]",qPrintable(url));
+#ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        url = "/" + url;
+#endif
         if (glWidget) glWidget->loadObjectFromFile(url);
     }
     else if (mimeData->hasUrls())
@@ -697,6 +700,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
                 process.waitForFinished(-1); // will wait forever until finished
                 url = process.readAllStandardOutput();
                 url = url.remove(url.length()-1,1);
+
             }
 #endif
             if (glWidget) glWidget->loadObjectFromFile(url);
