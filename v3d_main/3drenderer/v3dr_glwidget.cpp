@@ -764,7 +764,6 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 //滚轮事件注释
 void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 {
-    qDebug()<<"V3dR_GLWidget::wheelEvent ... ...";
 
     //20170804 RZC: add zoomin_sign in global_setting.b_scrollupZoomin
     //-1 : scrolldown zoomin
