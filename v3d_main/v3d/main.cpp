@@ -159,6 +159,7 @@ int main(int argc, char **argv)
 
                 if(!parser.i_v3d.hideV3D)
                 {
+                    mainWin->move(0,0);
                     mainWin->show();
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
