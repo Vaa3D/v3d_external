@@ -39,7 +39,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //这个文件注释了很多东西
 #include "v3dr_mainwindow.h"
-
+#include "renderer_gl2.h"
+#include "v3dr_glwidget.h"//需要包含这个头文件
 #include <QComboBox>
 #ifndef MIN
 #define MIN(a, b)  ( ((a)<(b))? (a) : (b) )
@@ -49,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 
 
-#include "v3dr_glwidget.h"//需要包含这个头文件
+
 
 QString xCut_altTip(QWidget* parent, int v, int minv, int maxv, int offset)
 {
@@ -1032,7 +1033,9 @@ void V3dR_MainWindow::initControlValue()
 	///////////////////////////////////////////////////////////
 	if (dispType_maxip) dispType_maxip->setChecked(true);
     if (transparentSlider) transparentSlider->setValue(0); //10. max=100
-    if (contrastSlider) contrastSlider->setValue(0);
+    if (contrastSlider) {
+        contrastSlider->setValue(-30);
+    }
 	//if (thicknessSlider) thicknessSlider->setValue(1);    //1, max=10
 	if (zthicknessBox)
 	{
@@ -1487,7 +1490,8 @@ QAbstractSlider *V3dR_MainWindow::createContrastSlider(Qt::Orientation hv)
     slider->setRange(-100, 100);
     slider->setSingleStep(1);
     slider->setPageStep(10);
-    //slider->setValue(0);
+    slider->setValue(-30);
+
     return slider;
 }
 

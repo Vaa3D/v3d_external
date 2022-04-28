@@ -197,6 +197,7 @@ public:
 // begin View3DControl interface
 //----------------------------------------------------------------------------------------
 public:
+    void setContrast1(int);
     // Expose marker size, Nov. 08, 2016 by Zhi Zhou
     virtual int getMarkerSize() const { return _markerSize; }
     // Expose surface cut getters, Dec.01,2013 by Zhi Zhou
