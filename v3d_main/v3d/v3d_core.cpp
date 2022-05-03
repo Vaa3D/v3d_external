@@ -4968,8 +4968,11 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
             my3dwin->setParent(0);
 
             // @ADDED by Alessandro on 2015-09-29. Postpone show() if required.
-            if(show)
+            if(show){
+
                 my3dwin->show();
+                my3dwin->getGLWidget()->setContrast1(-30);
+           }
         }
         catch (...)
         {
@@ -4983,6 +4986,10 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
         v3d_msg("The image data is invalid() in doImage3DView().\n", 0);
         return;
     }
+
+
+
+
 }
 
 void XFormWidget::popupImageProcessingDialog()

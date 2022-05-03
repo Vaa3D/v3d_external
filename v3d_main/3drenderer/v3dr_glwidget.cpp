@@ -1865,6 +1865,52 @@ void V3dR_GLWidget::setContrast(int t)
     }
 }
 
+void V3dR_GLWidget::setContrast1(int t){
+        Renderer_gl2* curr_renderer = (Renderer_gl2*)(getRenderer());
+
+        if (curr_renderer)
+        {
+            float exp_val = pow(10.0f, t/100.0f);
+            for(int j=0; j<255; j++)
+            {
+                // This is the value being manipulated
+                int val= (int)(pow(j/255.0f, exp_val) * 255.0f);
+
+                (curr_renderer->colormap[0][j]).r = (unsigned char)255;
+                (curr_renderer->colormap[0][j]).g = (unsigned char)0;
+                (curr_renderer->colormap[0][j]).b = (unsigned char)0;
+                (curr_renderer->colormap[0][j]).a = (unsigned char)val;
+
+                (curr_renderer->colormap[1][j]).r = (unsigned char)0;
+                (curr_renderer->colormap[1][j]).g = (unsigned char)255;
+                (curr_renderer->colormap[1][j]).b = (unsigned char)0;
+                (curr_renderer->colormap[1][j]).a = (unsigned char)val;
+
+                (curr_renderer->colormap[2][j]).r = (unsigned char)0;
+                (curr_renderer->colormap[2][j]).g = (unsigned char)0;
+                (curr_renderer->colormap[2][j]).b = (unsigned char)255;
+                (curr_renderer->colormap[2][j]).a = (unsigned char)val;
+
+                (curr_renderer->colormap[3][j]).r = (unsigned char)205;
+                (curr_renderer->colormap[3][j]).g = (unsigned char)205;
+                (curr_renderer->colormap[3][j]).b = (unsigned char)205;
+                (curr_renderer->colormap[3][j]).a = (unsigned char)205;
+            }
+            for (int ch=0; ch<3; ch++)
+            {
+                for (int j=0; j<4; j++) // RGBA
+                {
+                    curr_renderer->colormap_curve[ch][j].clear();
+                    int y;
+                    y = curr_renderer->colormap[ch][0].c[j];	set_colormap_curve(curr_renderer->colormap_curve[ch][j],  0.0,  y);
+                    y = curr_renderer->colormap[ch][255].c[j];	set_colormap_curve(curr_renderer->colormap_curve[ch][j],  1.0,  y);
+                }
+            }
+            POST_updateGL();
+        }
+    }
+
+
 void V3dR_GLWidget::setThickness(double t) //added by PHC, 090215
 {
     if (_thickness != t) {
