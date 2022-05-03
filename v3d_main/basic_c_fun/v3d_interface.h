@@ -80,6 +80,34 @@ QT_END_NAMESPACE
 #include <set>
 #endif
 
+struct DataFlow{
+    DataFlow(){
+        outputimg.clear();
+        outputswc.clear();
+        img_cnt=0;
+        swc_cnt=0;
+    }
+    void push_img(Image4DSimple *img){
+        outputimg.push_back(img);
+        img_cnt++;
+    }
+    void push_swc(NeuronTree *swc){
+        outputswc.push_back(swc);
+        swc_cnt++;
+    }
+    int getimg_cnt() const{
+        return img_cnt;
+    }
+    int getswc_cnt() const{
+        return swc_cnt;
+    }
+    std::vector<Image4DSimple *> outputimg;
+    std::vector<NeuronTree *> outputswc;
+    int img_cnt;
+    int swc_cnt;
+
+};
+
 struct V3DPluginArgItem
 {
 	QString type;	void * p;

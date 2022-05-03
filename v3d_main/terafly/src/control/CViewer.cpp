@@ -137,6 +137,7 @@ void CViewer::show()
         vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
         vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
         vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
+        vaa3d_controls_layout->addWidget(window3D->editLine);
         vaa3d_controls->setLayout(vaa3d_controls_layout);
         PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);

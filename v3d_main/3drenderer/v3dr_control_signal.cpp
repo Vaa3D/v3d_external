@@ -519,7 +519,10 @@ void V3dR_MainWindow::createControlWidgets()
     timeSlider->setSingleStep(1);
     timeSlider->setPageStep(10);
 
+    editLine = new QLabel("Here will Show Edit Information", controlGroup);
+
     QVBoxLayout *viewLayout = new QVBoxLayout(viewGroup);
+    //viewLayout->addWidget(editLine);
     viewLayout->addWidget(glWidgetArea);
     viewLayout->addWidget(timeSlider);
     viewLayout->setContentsMargins(0,0,0,0);
@@ -553,7 +556,7 @@ void V3dR_MainWindow::createControlWidgets()
 
 #endif
     // show edit info ,dlc
-    editLine = new QLabel("Here will Show Edit Information", controlGroup);
+
     controlLayout->addWidget(editLine);
 
     controlLayout->addStretch(0);
