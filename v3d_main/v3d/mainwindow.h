@@ -74,6 +74,8 @@ class QSignalMapper;
 class XFormWidget;
 class V3dR_MainWindow;
 class Vaa3DPluginMenu;
+class LoginDialog;
+class CSMainWindow;
 
 //class QList <V3dR_MainWindow *>;
 //struct LocationSimple; //080107
@@ -238,7 +240,8 @@ public slots:
         void func_procModeDefault();
         void func_procModeNeuronAnnotator();
 #endif
-
+    // connect to Server Menu slot, dlc added
+    void loginDialogShow();
 
 // Dec-20-2010 YuY
 signals:
@@ -323,6 +326,10 @@ private:
     QMenu *proc_pointcloud_atlas_menu;
     QMenu *proc_image_atlas_menu;
     QMenu *proc_automarker_menu;
+    // dlc added
+    QMenu *connectServer;
+    QAction *loginAct;
+
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QAction *newAct;
@@ -527,5 +534,11 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
     bool hideSWC(V3dR_MainWindow* window, int treeIndex);
     bool displaySWC(V3dR_MainWindow* window, int treeIndex);
     QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
+
+public: //20220504,DLC, login server dialog
+    LoginDialog *logindialog;
+    CSMainWindow *csmainwindow;
+public slots:
+
 };
 #endif

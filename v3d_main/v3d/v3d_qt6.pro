@@ -6,6 +6,7 @@ TEMPLATE = app
 TARGET = Vaa3D-x
 DEPENDPATH += . v3d
 INCLUDEPATH += . ../common_lib/include #./basic_c_funss
+INCLUDEPATH += ../serverconnection/
 
 DEFINES += __NAWEBSERVICE__
 DEFINES += _ALLOW_WORKMODE_MENU_
@@ -170,6 +171,11 @@ HEADERS += \
     ../neuron_annotator/analysis/AnalysisTools.h \
     ../neuron_annotator/analysis/MaskChan.h \
     ../neuron_annotator/analysis/DilationErosion.h \
+    ../serverconnection/csmainwindow.h \
+    ../serverconnection/logindialog.h \
+    ../serverconnection/net/httputils.h \
+    ../serverconnection/net/httputilsimage.h \
+    ../serverconnection/net/httputilsuser.h \
     ../vrrenderer/VRwidget.h \
     ../webservice/gsoap2/stdsoap2.h \
     ../webservice/console/envH.h \
@@ -289,6 +295,11 @@ SOURCES += \
 #    ../neuron_annotator/analysis/AnalysisTools.cpp \
 #    ../neuron_annotator/analysis/MaskChan.cpp \
 #    ../neuron_annotator/analysis/DilationErosion.cpp \
+    ../serverconnection/csmainwindow.cpp \
+    ../serverconnection/logindialog.cpp \
+    ../serverconnection/net/httputils.cpp \
+    ../serverconnection/net/httputilsimage.cpp \
+    ../serverconnection/net/httputilsuser.cpp \
     ../vrrenderer/VRwidget.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \
@@ -578,6 +589,8 @@ SOURCES += \
 }
 
 FORMS += landmark_property.ui \
+    ../serverconnection/csmainwindow.ui \
+    ../serverconnection/logindialog.ui \
     surface_obj_annotation.ui \
     surfaceobj_geometry_dialog.ui \
     dialog_curve_trace.ui \

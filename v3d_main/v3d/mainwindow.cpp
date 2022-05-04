@@ -69,6 +69,8 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #endif
 #include <QElapsedTimer>
 
+#include "serverconnection/logindialog.h"
+#include "serverconnection/csmainwindow.h"
 //#ifdef __ALLOW_VR_FUNCS__
 //#include "../mozak/MozakUI.h";
 //#endif
@@ -87,6 +89,10 @@ MainWindow::MainWindow()
     modeMenu = 0;
 #endif
     helpMenu = 0;
+    //dlc added
+    connectServer = new QMenu(this);
+    loginAct = new QAction(this);
+
     proc_export_menu = 0;
     proc_import_menu = 0;
     basicProcMenu = advancedProcMenu = pipelineProcMenu = visualizeProcMenu = pluginProcMenu= 0;
@@ -255,7 +261,6 @@ MainWindow::MainWindow()
     //090811 RZC
     ////qDebug()<<"jazz---------------debug---------------1";
     pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
-    //到这里都没有问题
 
 
 #ifdef __v3d_custom_toolbar__
@@ -2686,6 +2691,12 @@ void MainWindow::createMenus()
     helpMenu->addAction(generateVersionInfoAct);
     helpMenu->addAction( new v3d::OpenV3dWebPageAction(this) );
     //    helpMenu->addAction(aboutQtAct);
+
+    // Connect to Server
+    connectServer = menuBar()->addMenu(tr("CtoS"));
+    loginAct->setText(tr("Login"));
+    connectServer->addAction(loginAct);
+    connect(loginAct, SIGNAL(triggered()), this, SLOT(loginDialogShow()));
 }
 void MainWindow::createToolBars()
 {
@@ -2986,8 +2997,18 @@ void MainWindow::func_procModeDefault()
 void MainWindow::func_procModeNeuronAnnotator()
 {
 //    V3dApplication::deactivateMainWindow();
-//    V3dApplication::activateNaMainWindow();
+    //    V3dApplication::activateNaMainWindow();
 }
+
+// dlc added
+void MainWindow::loginDialogShow()
+{
+    logindialog = new LoginDialog(this);
+    csmainwindow = new CSMainWindow(this);
+    logindialog->show();
+    connect(logindialog, SIGNAL(showMain()), csmainwindow, SLOT(show()));
+}
+
 void MainWindow::setV3DDefaultModeCheck(bool checkState) {
 //    //procModeDefault->setChecked(checkState);
 }
