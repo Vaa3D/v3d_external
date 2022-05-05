@@ -5,7 +5,8 @@
 #include <QUrl>
 #include <QMessageBox>
 
-HttpUtils::HttpUtils()
+HttpUtils::HttpUtils(QWidget *parent)
+    : QObject(parent)
 {
     manager = new QNetworkAccessManager(this);
 }
@@ -28,18 +29,23 @@ void HttpUtils::asyncPostRequest(QUrl url, QJsonObject body)
 
 void HttpUtils::replyFinished(QNetworkReply *reply)
 {
-//    if(reply->error()) {
+//    if(reply->error() != QNetworkReply::NoError) {
 //        qDebug()<<reply->errorString();
-//        //QMessageBox::critical(this, "ERROR!", "Login failed");
+//        QMessageBox::critical(this, "ERROR!", "Login failed");
 //        reply->deleteLater();
 //        return;
 //    }
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+//    else {
+//        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-    qDebug() << "statusCode: "<< statusCode;
-    if(statusCode == 200) {
-        emit loginSuccess();
-    }
+//        qDebug() << "statusCode: "<< statusCode;
+//        if(statusCode == 200) {
+//            emit loginSuccess();
+//        }
 
-    reply->deleteLater();
+//    }
+
+//    reply->deleteLater();
+    Q_UNUSED(reply);
+    qDebug()<<"this is httputils reply slot";
 }

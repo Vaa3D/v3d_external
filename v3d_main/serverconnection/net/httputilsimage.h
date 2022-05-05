@@ -9,7 +9,7 @@
 class HttpUtilsImage: public HttpUtils
 {
 public:
-    HttpUtilsImage();
+    HttpUtilsImage(QWidget *parent = nullptr);
 
 //    void getBrainListWithHttp();
     void downloadImageWithHttp(QJsonObject userInfo, QJsonObject bBox);

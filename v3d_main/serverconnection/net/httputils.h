@@ -10,15 +10,15 @@ class HttpUtils: public QObject
 {
     Q_OBJECT
 public:
-    HttpUtils();
+    HttpUtils(QWidget *parent = nullptr);
 
-    void asyncPostRequest(QUrl url, QJsonObject body);
+    virtual void asyncPostRequest(QUrl url, QJsonObject body);
 
 signals:
-    void loginSuccess();
+//    void loginSuccess();
 
 public slots:
-    void replyFinished(QNetworkReply* reply);
+    virtual void replyFinished(QNetworkReply* reply);
 
 protected:
     const QString SERVER_IP  = "http://139.155.28.154:26000";

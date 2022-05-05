@@ -14,7 +14,9 @@ LoginDialog::LoginDialog(QWidget *parent)
     setMinimumSize(QSize(420, 180));
     setWindowTitle(tr("Log in"));
 //    manager = new QNetworkAccessManager(this);
-    connect(&uesrlogin, SIGNAL(loginSuccess()), this, SLOT(emitShowMain()));
+    userlogin = new HttpUtilsUser(this);
+    connect(userlogin, SIGNAL(loginSuccess()), this, SLOT(emitShowMain()));
+    connect(userlogin, SIGNAL(loginFailed()), this, SLOT(doLoginFailed()));
 }
 
 LoginDialog::~LoginDialog()
@@ -42,7 +44,7 @@ void LoginDialog::on_confirmButton_clicked()
     userInfo.insert("passwd", password);
 //    user.insert("user", userInfo);
 
-    uesrlogin.loginWithHttp(userInfo);
+    userlogin->loginWithHttp(userInfo);
 }
 
 void LoginDialog::emitShowMain()
@@ -51,23 +53,10 @@ void LoginDialog::emitShowMain()
     emit showMain();
 }
 
-//void LoginDialog::replyFinished(QNetworkReply *reply)
-//{
-//    if(reply->error()) {
-//        qDebug()<<reply->errorString();
-//        QMessageBox::critical(this, "ERROR!", "Login failed");
-//        reply->deleteLater();
-//        return;
-//    }
-//    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//    //        qDebug() << "statusCode: "<< statusCode;
-//    if(statusCode == 200) {
-//        this->hide();
-//        emit showMain();
-//    }
-
-//}
-
+void LoginDialog::doLoginFailed()
+{
+    QMessageBox::critical(this, "ERROR!", "Log in failed");
+}
 
 
 

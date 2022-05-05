@@ -33,11 +33,12 @@ private slots:
 
     void on_confirmButton_clicked();
     void emitShowMain();
+    void doLoginFailed();
 
 private:
     Ui::LoginDialog *ui;
 
-    HttpUtilsUser uesrlogin;
+    HttpUtilsUser *userlogin;
 
 };
 #endif // LOGINDIALOG_H

@@ -1,6 +1,7 @@
 #include "httputilsimage.h"
 
-HttpUtilsImage::HttpUtilsImage()
+HttpUtilsImage::HttpUtilsImage(QWidget *parent)
+    : HttpUtils(parent)
 {
 
 }
