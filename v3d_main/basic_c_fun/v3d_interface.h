@@ -84,6 +84,7 @@ struct DataFlow{
     DataFlow(){
         outputimg.clear();
         outputswc.clear();
+        dataname.clear();
         img_cnt=0;
         swc_cnt=0;
     }
@@ -105,6 +106,7 @@ struct DataFlow{
     std::vector<NeuronTree *> outputswc;
     int img_cnt;
     int swc_cnt;
+    QStringList dataname;
 
 };
 
