@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CSMainWindow</class>
+ <widget class="QWidget" name="CSMainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>223</width>
+    <height>270</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Module Selection</string>
+  </property>
+  <widget class="QPushButton" name="checkButton">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>20</y>
+     <width>171</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Check image/swc/markers</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
