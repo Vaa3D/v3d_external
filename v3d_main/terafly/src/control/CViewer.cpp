@@ -2210,7 +2210,7 @@ void CViewer::loadAnnotations()
 
 
     //update visible markers
-    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+    //PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
     PLog::instance()->appendOperation(new AnnotationOperation(QString("load annotations: push objects into view ").append(title.c_str()).toStdString(), tf::GPU, timer.elapsed()));
 }

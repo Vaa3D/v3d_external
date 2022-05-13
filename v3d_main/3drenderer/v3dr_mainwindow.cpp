@@ -129,18 +129,18 @@ V3dR_MainWindow::~V3dR_MainWindow()
 	{
 		qDebug() << "The iDrawExternalParameter is invalid or contains a NULL pointer to the list_3Dview_win. This should NEVER happen. Check your program.";
 	}
-	else //now add "this" pointer to the central record keeper
-	{
-		int i;
-		for (i=0;i<_idep->p_list_3Dview_win->size();i++)
-		{
-			if (_idep->p_list_3Dview_win->at(i)==this)
-			{
-				_idep->p_list_3Dview_win->removeAt(i);
-				break;
-			}
-		}
-	}
+//	else //now add "this" pointer to the central record keeper
+//	{
+//		int i;
+//		for (i=0;i<_idep->p_list_3Dview_win->size();i++)
+//		{
+//			if (_idep->p_list_3Dview_win->at(i)==this)
+//			{
+//				_idep->p_list_3Dview_win->removeAt(i);
+//				break;
+//			}
+//		}
+//	}
 
 	if (_idep)
 	{
