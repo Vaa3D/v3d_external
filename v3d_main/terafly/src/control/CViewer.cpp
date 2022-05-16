@@ -548,6 +548,16 @@ CViewer::~CViewer()
     // @update by Alessandro on 2014-07-21: this ALWAYS works on Windows. Still has to be tested on other platforms.
     POST_EVENT(window3D, QEvent::Close); // this OK
 
+
+    if(view3DWidget) {
+        delete view3DWidget;
+        view3DWidget=0;
+    }
+    if(window3D){
+        delete window3D;
+        window3D=0;
+    }
+
     //close 2D window
     triViewWidget->close();
 
