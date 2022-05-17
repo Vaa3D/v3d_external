@@ -251,6 +251,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
 
         // push content to viewer
         CViewer::getCurrent()->loadAnnotations();
+        return true;
     }
     catch (tf::RuntimeException & e)
     {

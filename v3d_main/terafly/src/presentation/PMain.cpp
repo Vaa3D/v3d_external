@@ -1105,6 +1105,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     QVBoxLayout* innerLayout = new QVBoxLayout();
     QVBoxLayout* bottomLayout = new QVBoxLayout();
     innerLayout->addWidget(toolBar, 0);
+    //innerLayout->addWidget(window3)
     innerLayout->addWidget(tabs, 0);
     innerLayout->addStretch(1);
     QHBoxLayout* helpBoxLayout = new QHBoxLayout();
