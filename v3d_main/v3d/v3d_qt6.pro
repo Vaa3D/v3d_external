@@ -173,10 +173,16 @@ HEADERS += \
     ../neuron_annotator/analysis/DilationErosion.h \
     ../serverconnection/checkmapwidget.h \
     ../serverconnection/csmainwindow.h \
+    ../serverconnection/infocache.h \
     ../serverconnection/logindialog.h \
+    ../serverconnection/model/coordinateconvert.h \
+    ../serverconnection/model/potentialsomainfo.h \
+    ../serverconnection/net/ctoscallback.h \
     ../serverconnection/net/httputils.h \
-    ../serverconnection/net/httputilsimage.h \
+    ../serverconnection/net/httputilsbrainlist.h \
+    ../serverconnection/net/httputilsgetlocation.h \
     ../serverconnection/net/httputilsuser.h \
+    ../serverconnection/net/networkutils.h \
     ../vrrenderer/VRwidget.h \
     ../webservice/gsoap2/stdsoap2.h \
     ../webservice/console/envH.h \
@@ -284,7 +290,7 @@ SOURCES += \
 #    ../neuron_annotator/utility/Icons.cpp \
 #    ../neuron_annotator/utility/DataThread.cpp \
 #    ../neuron_annotator/utility/ConsoleObserver.cpp \
-#    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
+    ../neuron_annotator/utility/ImageLoaderBasic.cpp \
 #    ../neuron_annotator/utility/ImageLoader.cpp \
 #    ../neuron_annotator/utility/url_tools.cpp \
 #    ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
@@ -298,10 +304,15 @@ SOURCES += \
 #    ../neuron_annotator/analysis/DilationErosion.cpp \
     ../serverconnection/checkmapwidget.cpp \
     ../serverconnection/csmainwindow.cpp \
+    ../serverconnection/infocache.cpp \
     ../serverconnection/logindialog.cpp \
+    ../serverconnection/model/coordinateconvert.cpp \
+    ../serverconnection/model/potentialsomainfo.cpp \
     ../serverconnection/net/httputils.cpp \
-    ../serverconnection/net/httputilsimage.cpp \
+    ../serverconnection/net/httputilsbrainlist.cpp \
+    ../serverconnection/net/httputilsgetlocation.cpp \
     ../serverconnection/net/httputilsuser.cpp \
+    ../serverconnection/net/networkutils.cpp \
     ../vrrenderer/VRwidget.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \

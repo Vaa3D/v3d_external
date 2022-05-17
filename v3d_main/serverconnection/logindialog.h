@@ -2,11 +2,8 @@
 #define LOGINDIALOG_H
 
 #include <QDialog>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 
-//#include "selectmodulewgt.h"
+#include "serverconnection/infocache.h"
 #include "net/httputilsuser.h"
 /**
  *@Server IP: string SERVER_IP = "http://139.155.28.154:26000"
@@ -24,21 +21,21 @@ public:
     LoginDialog(QWidget *parent = nullptr);
     ~LoginDialog();
 
-//    SelectModuleWgt moduleWidget;
+    void storeUserCache(QString username, QString password);
+
 signals:
     void showMain();
 
 
 private slots:
-
     void on_confirmButton_clicked();
     void emitShowMain();
     void doLoginFailed();
 
 private:
     Ui::LoginDialog *ui;
+    HttpUtilsUser *httpUtilsUser;
 
-    HttpUtilsUser *userlogin;
 
 };
 #endif // LOGINDIALOG_H

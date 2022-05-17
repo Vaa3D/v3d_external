@@ -8,11 +8,13 @@ class HttpUtilsUser: public HttpUtils
     Q_OBJECT
 public:
     HttpUtilsUser(QWidget *parent = nullptr);
+    ~HttpUtilsUser();
 
-    void loginWithHttp(QJsonObject userInfo);
+    void loginWithHttp(QJsonObject &userInfo);
+    virtual void asyncPostRequest(QString url, QJsonObject &body);
 
 public slots:
-   virtual void replyFinished(QNetworkReply* reply);
+   void loginReplyFinished(QNetworkReply* reply);
 
 signals:
     void loginSuccess();
@@ -20,6 +22,7 @@ signals:
 
 private:
     const QString URL_LOGIN = SERVER_IP + "/dynamic/user/login";
+
 };
 
 #endif // HTTPUTILSUSER_H

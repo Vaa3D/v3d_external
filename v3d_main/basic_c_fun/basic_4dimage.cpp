@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //};
 
 //#ifdef _ALLOW_WORKMODE_MENU_
-//#include "../neuron_annotator/utility/ImageLoaderBasic.h"
+#include "../neuron_annotator/utility/ImageLoaderBasic.h"
 //#endif
 
 typedef unsigned short int USHORTINT16;
@@ -171,22 +171,22 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
     //else if ( curFileSuffix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     else if ( curFileSuffix && strcasecmp(curFileSuffix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
-//    	  v3d_msg("start to try v3dpbd", 0);
-//        ImageLoaderBasic imageLoader;
-//        if (! imageLoader.loadRaw2StackPBD(imgSrcFile, this, false) == 0) {
-//            v3d_msg("Error happens in v3dpbd file reading. Stop. \n", false);
-//            b_error=1;
-//            return;
-//        }
-//        // The following few lines are to avoid disturbing the existing code below
-//        tmp_datatype=this->getDatatype();
-//        tmp_sz=new V3DLONG[4];
-//        tmp_sz[0]=this->getXDim();
-//        tmp_sz[1]=this->getYDim();
-//        tmp_sz[2]=this->getZDim();
-//        tmp_sz[3]=this->getCDim();
+          v3d_msg("start to try v3dpbd", 0);
+        ImageLoaderBasic imageLoader;
+        if (! imageLoader.loadRaw2StackPBD(imgSrcFile, this, false) == 0) {
+            v3d_msg("Error happens in v3dpbd file reading. Stop. \n", false);
+            b_error=1;
+            return;
+        }
+        // The following few lines are to avoid disturbing the existing code below
+        tmp_datatype=this->getDatatype();
+        tmp_sz=new V3DLONG[4];
+        tmp_sz[0]=this->getXDim();
+        tmp_sz[1]=this->getYDim();
+        tmp_sz[2]=this->getZDim();
+        tmp_sz[3]=this->getCDim();
 
-//        this->setFileName(filename); // PHC added 20121213 to fix a bug in the PDB reading.
+        this->setFileName(filename); // PHC added 20121213 to fix a bug in the PDB reading.
     }
 #endif
 	else //then assume it is Hanchuan's Vaa3D RAW format

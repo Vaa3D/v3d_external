@@ -4,7 +4,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMessageBox>
-#include <QNetworkRequest>
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
@@ -14,14 +13,23 @@ LoginDialog::LoginDialog(QWidget *parent)
     setMinimumSize(QSize(420, 180));
     setWindowTitle(tr("Log in"));
 //    manager = new QNetworkAccessManager(this);
-    userlogin = new HttpUtilsUser(this);
-    connect(userlogin, SIGNAL(loginSuccess()), this, SLOT(emitShowMain()));
-    connect(userlogin, SIGNAL(loginFailed()), this, SLOT(doLoginFailed()));
+    httpUtilsUser = new HttpUtilsUser(this);
+    connect(httpUtilsUser, SIGNAL(loginSuccess()), this, SLOT(emitShowMain()));
+    connect(httpUtilsUser, SIGNAL(loginFailed()), this, SLOT(doLoginFailed()));
+
+
 }
 
 LoginDialog::~LoginDialog()
 {
     delete ui;
+}
+
+void LoginDialog::storeUserCache(QString username, QString password)
+{
+    InfoCache& instance = InfoCache::getInstance();
+    instance.setAccount(username);
+    instance.setToken(password);
 }
 
 
@@ -34,9 +42,8 @@ void LoginDialog::on_confirmButton_clicked()
     QString username = ui->userLineEdit->text();
     QString password = ui->pwdLineEdit->text();
 
-    //    startRequest(QUrl("http://139.155.28.154:26000/dynamic/user/login"));
-//    QString baseUrl = "http://139.155.28.154:26000/dynamic/user/login";
-//    QUrl url(baseUrl);
+    // store userInfo token
+    storeUserCache(username, password);
 
     // 构造Json数据
     QJsonObject userInfo;
@@ -44,7 +51,8 @@ void LoginDialog::on_confirmButton_clicked()
     userInfo.insert("passwd", password);
 //    user.insert("user", userInfo);
 
-    userlogin->loginWithHttp(userInfo);
+    httpUtilsUser->loginWithHttp(userInfo);
+
 }
 
 void LoginDialog::emitShowMain()

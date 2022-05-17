@@ -11,18 +11,16 @@ class HttpUtils: public QObject
     Q_OBJECT
 public:
     HttpUtils(QWidget *parent = nullptr);
+    virtual ~HttpUtils();
 
-    virtual void asyncPostRequest(QUrl url, QJsonObject body);
+    virtual void asyncPostRequest(QString url, QJsonObject &body);
 
-signals:
-//    void loginSuccess();
-
-public slots:
-    virtual void replyFinished(QNetworkReply* reply);
+//public slots:
+//    virtual void replyFinished(QNetworkReply* reply);
 
 protected:
     const QString SERVER_IP  = "http://139.155.28.154:26000";
-    QNetworkAccessManager *manager;
+    QNetworkAccessManager *manager = nullptr;
     QNetworkRequest request;
 };
 

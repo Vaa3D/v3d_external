@@ -1,9 +1,10 @@
 #ifndef CHECKMAPWIDGET_H
 #define CHECKMAPWIDGET_H
 
+#include <QNetworkReply>
 #include <QWidget>
+#include "serverconnection/infocache.h"
 
-#include "net/httputilsimage.h"
 
 namespace Ui {
 class CheckMapWidget;
@@ -17,16 +18,17 @@ public:
     explicit CheckMapWidget(QWidget *parent = nullptr);
     ~CheckMapWidget();
 
-//    void initHttp();
-    // 1. 从服务器获取到数据
-//    void downloadImag();
+//    void getBrainList();
+    void downloadImage(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size);
 
-    // 2. 渲染数据并显示
+public slots:
+    void downloadImageFinish(QNetworkReply *reply);
 
 private:
     Ui::CheckMapWidget *ui;
 
-    HttpUtilsImage *imageUtils;
+    const QString SERVER_IP  = "http://139.155.28.154:26000";
+    const QString URL_DOWNLOAD_IMAGE = SERVER_IP + "/dynamic/image/cropimage";
 };
 
 #endif // CHECKMAPWIDGET_H
