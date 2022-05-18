@@ -2033,9 +2033,9 @@ void XFormView::reset()
 //改成了固定值的
 void XFormView::wheelEvent(QWheelEvent * e) //add this on 2008-01-10
 {
-    //int numDegrees = e->delta() / 8; //change to -e on 080121
+    int numDegrees = e->angleDelta().y()/8;  //change to -e on 080121
 
-    int numSteps = 5;//numDegrees / 15;
+    int numSteps = numDegrees / 15;
 
     if (!imgData) return;
     if (imgData->isEmpty()) return;
