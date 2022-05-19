@@ -4678,12 +4678,17 @@ bool XFormWidget::setCurrentFileName(QString cfilename)
 bool XFormWidget::saveData()
 {
     if (!imgData) {printf("Image data is empty!\n"); return false;}
-
+    QString filter="(*.v3draw);;(*.v3dpbd);;(*.tif);;(*.raw);;(*.nrrd);;(*.nhdr)";
     QString outputFile = QFileDialog::getSaveFileName(0,
                                                       "Choose a filename to save under",
                                                       //"./",
                                                       QString(openFileNameLabel)+".v3draw",
-                                                      "Save file format (*.v3draw *.v3dpbd *.tif *.raw *.nrrd *.nhdr)");
+                                                      filter);
+//    QString outputFile = QFileDialog::getSaveFileName(0,
+//                                                      "Choose a filename to save under",
+//                                                      //"./",
+//                                                      QString(openFileNameLabel)+".v3draw",
+//                                                      "Save file format (*.v3draw *.v3dpbd *.tif *.raw *.nrrd *.nhdr)");
 
     while (outputFile.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
     {
