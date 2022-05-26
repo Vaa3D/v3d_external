@@ -51,21 +51,24 @@ void HttpGetLocation::locationReplyFinished(QNetworkReply *reply)
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if(status == 200) {
         QByteArray data = reply->readAll().trimmed();
-
+        qDebug() << data;
         // pharse Json, need "loc" to download
         QJsonParseError error;
         QJsonDocument doc = QJsonDocument::fromJson(data, &error);
         if(error.error == QJsonParseError::NoError) {
             QVariantMap map = doc.toVariant().toMap();
-            if(map.contains("loc")) {
-//                qDebug() << "map[loc]:" << map["loc"];
-                QVariantMap mapLoc = map["loc"].toMap();
-                int x = mapLoc["x"].toInt();
-                int y = mapLoc["y"].toInt();
-                int z = mapLoc["z"].toInt();
-                // let x,y,z out to CSMainWindow to construct CoordinateConvert
-                emit sendXYZ(x, y, z);
-            }
+            // "id"
+            int id = map["id"].toInt();
+            // "image"
+            QString image = map["image"].toString();
+            // "loc"
+            QVariantMap mapLoc = map["loc"].toMap();
+            int x = mapLoc["x"].toInt();
+            int y = mapLoc["y"].toInt();
+            int z = mapLoc["z"].toInt();
+            // let x,y,z out to CSMainWindow to construct CoordinateConvert
+            emit sendXYZ(id, image, x, y, z);
+
         }
     }
     reply->deleteLater();

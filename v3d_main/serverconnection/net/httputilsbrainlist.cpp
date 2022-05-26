@@ -45,14 +45,30 @@ void HttpUtilsBrainList::brainListReplyFinished(QNetworkReply *reply)
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if(status == 200) {
         QByteArray data = reply->readAll();
-//        qDebug()<<data;
+        qDebug()<<data;
         // pharse data, need BrainId and RES()
         QJsonParseError error;
         QJsonDocument doc = QJsonDocument::fromJson(data, &error);
-        qDebug() << doc;
+
         if(error.error == QJsonParseError::NoError) {
-            qDebug() << "doc is array?" << doc.isArray() << "or doc is object?:" << doc.isObject();
-//            emit sendPotentialLocation(imageID, RES);
+            // doc is array
+            QJsonArray docArray = doc.array();
+            for(int i = 0; i < docArray.count(); i++) {
+                QJsonObject obj = docArray[i].toObject();
+                // locate "detail:RES" and "name"
+                // detail-> RES list, Type is String
+                QString resList = obj.value("detail").toString();
+                QStringList list = resList.split(",");
+                // read first QString, thats the max RES
+                QString res = list.at(1);
+//                res = res.remove("[");
+                res = res.remove("\ ");
+                res = res.remove("\"");
+
+                QString imageID = obj.value("name").toString();
+                emit sendPotentialLocation(imageID, res);
+            }
+
         }
     }
     reply->deleteLater();

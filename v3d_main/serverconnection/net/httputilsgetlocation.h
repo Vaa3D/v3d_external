@@ -15,7 +15,7 @@ public:
     virtual void asyncPostRequest(QString url, QJsonObject &body);
 
 signals:
-    void sendXYZ(int x, int y, int z);
+    void sendXYZ(int id, QString image, int x, int y, int z);
 
 public slots:
     void locationReplyFinished(QNetworkReply* reply);

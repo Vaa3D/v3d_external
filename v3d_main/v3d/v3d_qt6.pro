@@ -180,6 +180,7 @@ HEADERS += \
     ../serverconnection/net/ctoscallback.h \
     ../serverconnection/net/httputils.h \
     ../serverconnection/net/httputilsbrainlist.h \
+    ../serverconnection/net/httputilsdownload.h \
     ../serverconnection/net/httputilsgetlocation.h \
     ../serverconnection/net/httputilsuser.h \
     ../serverconnection/net/networkutils.h \
@@ -310,6 +311,7 @@ SOURCES += \
     ../serverconnection/model/potentialsomainfo.cpp \
     ../serverconnection/net/httputils.cpp \
     ../serverconnection/net/httputilsbrainlist.cpp \
+    ../serverconnection/net/httputilsdownload.cpp \
     ../serverconnection/net/httputilsgetlocation.cpp \
     ../serverconnection/net/httputilsuser.cpp \
     ../serverconnection/net/networkutils.cpp \

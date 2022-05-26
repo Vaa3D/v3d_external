@@ -4,7 +4,9 @@
 #include <QString>
 #include "basic_c_fun/color_xyz.h"
 
-
+/**
+ * @brief Class for future check arbor data structure, nowadays code do not use
+ */
 class PotentialSomaInfo
 {
 public:

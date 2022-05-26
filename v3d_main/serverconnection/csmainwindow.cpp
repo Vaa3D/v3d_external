@@ -16,9 +16,10 @@ CSMainWindow::CSMainWindow(QWidget *parent)
     // that to say firstly do get potential location info and get brain list with http
     httpGetLocation = new HttpGetLocation(this);
     httpGetBrainList = new HttpUtilsBrainList(this);
+    httpUtilsDownload = new HttpUtilsDownLoad(this);
 
     // connect signals and slots
-    connect(httpGetLocation, SIGNAL(sendXYZ(int, int, int)), this, SLOT(setLocXYZ(int, int, int)));
+    connect(httpGetLocation, SIGNAL(sendXYZ(int, QString, int, int, int)), this, SLOT(setLocXYZ(int, QString, int, int, int)));
     connect(httpGetBrainList, SIGNAL(sendPotentialLocation(QString, QString)), this, SLOT(setPotentialLocation(QString, QString)));
     // after http reply, httputilsxxx emit signal with needed infomation
     // in slot function, set the class member userLastCoordinateConvert and *uertLastPotentialSomaInfo
@@ -32,7 +33,8 @@ CSMainWindow::~CSMainWindow()
     delete ui;
     delete httpGetLocation;
     delete httpGetBrainList;
-    delete uertLastPotentialSomaInfo;
+//    delete uertLastPotentialSomaInfo;
+    delete httpUtilsDownload;
 }
 
 void CSMainWindow::getPotentialLoaction()
@@ -53,26 +55,23 @@ void CSMainWindow::getBrainList()
 
 void CSMainWindow::downloadImage()
 {
-//    QString brainId = httpUtilSoma->getPotentialSomaInfo()->getBrainId();
-//    XYZ* loc = httpUtilSoma->getCoordinateConvert()->getCenterLocation();
-//    QString res = httpUtilSoma->resMap[brainId];
-//    if(res == nullptr) {
-//        qDebug()<<"Fail to download image, something wrong with res list!";
-//        isDownloading = false;
-//        return;
-//    }
-//    ui->checkmapwidget->downloadImage(brainId, res, (int)loc->x, (int)loc->y, (int)loc->z, DEFAULT_IMG_SIZE);;
-    ui->checkmapwidget->downloadImage("192334", "RES(30801x18821x11515)", 14239, 28711, 10163, 128);
+//    ui->checkmapwidget->downloadImage(brainId, res, (int)loc->x, (int)loc->y, (int)loc->z, DEFAULT_IMG_SIZE);
+//    ui->checkmapwidget->downloadImage("201589", "RES(15400x9474x5683)", 7587, 15888, 10274, 128);
+//    QString brainId = uertLastPotentialSomaInfo->getBrainId();
+//    XYZ* loc = userLastCoordinateConvert.getCenterLocation();
+//    QString res = resMap.value("brainId");
+//    ui->checkmapwidget->downloadImage(brainId, res, (int)loc->x, (int)loc->y, (int)loc->z, DEFAULT_IMG_SIZE);
+    QString res = resMap[this->brainId];
+    qDebug() << "input download para, [brainId]:" << this->brainId << "[res]:" << res << "[x, y, z]" << (int)xyzForLoc.x <<"," << (int)xyzForLoc.y<< "," << (int)xyzForLoc.z;
+    ui->checkmapwidget->downloadImage(this->brainId, res, (int)xyzForLoc.x, (int)xyzForLoc.y, (int)xyzForLoc.z, DEFAULT_IMG_SIZE);
+//    httpUtilsDownload->downLoadImage(brainId, res, (int)xyzForLoc.x, (int)xyzForLoc.y, (int)xyzForLoc.z, DEFAULT_IMG_SIZE);
 }
 
 
 
 void CSMainWindow::on_checkmapBtn_clicked()
 {
-    // 首先通过httpUtilsSoma的getPotentialLocation设置好内部potentialSomaInfo类
-    // 以此获得brainId
-    // getPotentialLoaction();
-    // 再获得分辨率信息
+    // get potential location
     // getBrainList();
     downloadImage();
 }
@@ -89,20 +88,28 @@ void CSMainWindow::on_getLocationBtn_clicked()
  * @param y
  * @param z
  */
-void CSMainWindow::setLocXYZ(int x, int y, int z)
+void CSMainWindow::setLocXYZ(int id, QString image, int x, int y, int z)
 {
     // after test, xyz has been sent out successfully!
     XYZ loc((float)x, (float)y, (float)z);
-//    userLastCoordinateConvert.initLocation(&loc); // cause crash!
     xyzForLoc = loc;
-
+//    uertLastPotentialSomaInfo = new PotentialSomaInfo(id, image, &xyzForLoc);
+    this->userid = id;
+    this->brainId = image;
 }
 
+/**
+ * @brief according brainid and max res to set resMap
+ * @param imageID
+ * @param RES
+ */
 void CSMainWindow::setPotentialLocation(QString imageID, QString RES)
 {
-    uertLastPotentialSomaInfo = new PotentialSomaInfo(11, "brainid", &xyzForLoc);
-    qDebug()<<"imageID:" << imageID;
-    qDebug()<<"RES: " << RES;
+    // id -> brainId, RES -> RES
+//    uertLastPotentialSomaInfo = new PotentialSomaInfo(11, imageID, &xyzForLoc);
+//    qDebug() << RES;
+    resMap.insert(imageID, RES);
+//    userLastCoordinateConvert.initLocation(uertLastPotentialSomaInfo->getLoaction());
 }
 
 

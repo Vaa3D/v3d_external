@@ -1055,7 +1055,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 delete mypara_3Dview; mypara_3Dview=0; return;
             }
 
-            // 这里是用v3dr_mainwindow检测到是swc数据，直接显示3dview窗口,我定义了我的窗口部件类dlcSWCWidget用于测试qt6新特性
+
             V3dR_MainWindow *my3dwin = 0;
 
             try

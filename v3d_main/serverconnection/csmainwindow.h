@@ -5,6 +5,7 @@
 #include "basic_4dimage.h"
 #include "net/httputilsgetlocation.h"
 #include "net/httputilsbrainlist.h"
+#include "net/httputilsdownload.h"
 #include "serverconnection/model/coordinateconvert.h"
 #include "serverconnection/model/potentialsomainfo.h"
 
@@ -28,24 +29,28 @@ public:
 public:
     HttpGetLocation *httpGetLocation = nullptr;
     HttpUtilsBrainList *httpGetBrainList = nullptr;
-    CoordinateConvert userLastCoordinateConvert;
-    PotentialSomaInfo *uertLastPotentialSomaInfo = nullptr;
+    HttpUtilsDownLoad *httpUtilsDownload = nullptr;
+//    CoordinateConvert userLastCoordinateConvert;
+//    PotentialSomaInfo *uertLastPotentialSomaInfo = nullptr;
+    QHash<QString, QString> resMap; // <brainId, MAXRES>
+    int userid;
+    QString brainId;
+    XYZ xyzForLoc;
 
 public slots:
     void on_checkmapBtn_clicked();
     void on_getLocationBtn_clicked();
 
-    void setLocXYZ(int x, int y, int z);
+    void setLocXYZ(int id, QString image, int x, int y, int z);
     void setPotentialLocation(QString imageID, QString RES);
 
-private slots:
     void on_getBrainListBtn_clicked();
 
 private:
     Ui::CSMainWindow *ui;
     int DEFAULT_IMG_SIZE = 128;
 
-    XYZ xyzForLoc;
+
 
 };
 

@@ -28,14 +28,14 @@ CheckMapWidget::~CheckMapWidget()
 void CheckMapWidget::downloadImage(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size)
 {
     QJsonObject pa1;
-    pa1.insert("x", offsetX - size/2);
-    pa1.insert("y", offsetY - size/2);
-    pa1.insert("z", offsetZ - size/2);
+    pa1.insert("x", offsetX/2 - size/2);
+    pa1.insert("y", offsetY/2 - size/2);
+    pa1.insert("z", offsetZ/2 - size/2);
 
     QJsonObject pa2;
-    pa2.insert("x", offsetX + size/2);
-    pa2.insert("y", offsetY + size/2);
-    pa2.insert("z", offsetZ + size/2);
+    pa2.insert("x", offsetX/2 + size/2);
+    pa2.insert("y", offsetY/2 + size/2);
+    pa2.insert("z", offsetZ/2 + size/2);
 
     QJsonObject bBox;
     bBox.insert("pa1", pa1);
@@ -58,39 +58,35 @@ void CheckMapWidget::downloadImage(QString brainId, QString res, int offsetX, in
     QByteArray dataArray;
 
     dataArray = document.toJson(QJsonDocument::Compact);
-    qDebug() << "download image json: " << dataArray;
+    qDebug() << "download image post json content: " << dataArray;
 
     QNetworkReply* downloadImage = NetWorkUtil::instance()->postRequst(URL_DOWNLOAD_IMAGE, body);
+    Q_UNUSED(downloadImage);
 }
+
+//V3dR_GLWidget *CheckMapWidget::getGLWidget()
+//{
+//    return this->csglwidget;
+//}
 
 void CheckMapWidget::downloadImageFinish(QNetworkReply *reply)
 {
-    qDebug() << "do download image";
+    qDebug() << "do download image in checkmap";
     QByteArray response = reply->readAll();
-//    qDebug() << respons
+    qDebug() << response;
+    // save file
+//    QString storePath = QCoreApplication::applicationDirPath() + "/Image";
+//    // brainId
+//    QString fileName = brainId + "_" + res + "_" + offsetX + "_" + offsetY + "_" + offsetZ + ".v3dpbd";
 
-    int len = response.size();
-    char* data = new char[len + 1];
-    data = response.data();
-    data[len] = '\0';
+    QString filePath = "c:\\Users\\SEU\\Desktop\\1.v3dpbd";
+    QFile file(filePath);
+    file.open(QFile::WriteOnly);
+    file.write(response);
+    file.close();
 
-    qDebug() << "len:" <<len;
-    qDebug() << data[998];
-    qDebug() << "========1111";
-    delete data;
-//    qDebug() << data.size()<<reply->rawHeaderPairs();
-//    qDebug()<<reply->request().url()<<","<<reply->request().;
-//    char* fileContent = data.data();
-
-//    // 保存此图像文件
-//    QString filename = QFileDialog::getSaveFileName(this, "Save File");
-//    QFile file(filename);
-//    file.open(QIODevice::WriteOnly);
-//    QDataStream out(&file);
-////    out.writeRawData(data, data.size()-1);
-//    out.writeBytes(data, len);
-//    file.close();
-
+    // todo: render this image in CSMainwindow
+//    csglwidget->loadObjectFromFile(filePath);
 
     reply->deleteLater();
     reply = nullptr;
