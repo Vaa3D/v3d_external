@@ -1714,28 +1714,37 @@ QList<V3DLONG> DFS(QVector< QVector<V3DLONG> > neighbors, V3DLONG newrootid, V3D
     // Initialization
     QStack<int> pstack;
     QList<int> visited;
-    for(int i=0;i<siz; i++){visited.append(0);}
+
+    for(int i=0;i<max(siz,newrootid)+1; i++){visited.append(0);}
     visited[newrootid]=1;
     pstack.push(newrootid);
     neworder.append(newrootid);
 
     // Tree traverse
     bool is_push;
-    int pid;
+    int pid = 0;
     while(!pstack.isEmpty()){
         is_push = false;
         pid = pstack.top();
         // whether exist unvisited neighbors of pid
         // if yes, push neighbor to stack;
         QVector<V3DLONG>::iterator it;
-        QVector<V3DLONG> cur_neighbors = neighbors.at(pid);
+
+        QVector<V3DLONG> cur_neighbors;
+        if(pid < neighbors.size()){
+            cur_neighbors = neighbors[pid];
+        }
+
+
         for(it=cur_neighbors.begin(); it!=cur_neighbors.end(); ++it)
         {
-            if(visited.at(*it)==0)
+            if(visited.size()>(*it) && visited.at(*it)==0)
             {
                 pstack.push(*it);
                 is_push=true;
+
                 visited[*it]=1;
+                cout<<"------4-----"<<endl;
                 neworder.append(*it);
                 break;
             }
@@ -1786,7 +1795,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
             return(false);
         }
     }
-
+cout<<"---------3------------"<<endl;
     //Major steps
     //do a DFS for the the matrix and re-allocate ids for all the nodes
     QList<V3DLONG> neworder;
@@ -1800,6 +1809,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     cur_neworder= DFS(neighbors, root, siz);
     sorted_size += cur_neworder.size();
     neworder.append(cur_neworder);
+    cout<<"----------4------------"<<endl;
     for(int i=0; i<cur_neworder.size(); i++){
         component_id.append(cur_group);
     }
@@ -1905,28 +1915,41 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
         qDebug()<<QString("Output component %1, root id is %2").arg(i).arg(new_root);
         V3DLONG cnt = 0;
         // Sort current component;
+        //qDebug()<<"----------------0";
         cur_neworder= DFS(neighbors, new_root, siz);
         sorted_size += cur_neworder.size();
         neworder.append(cur_neworder);
+        //qDebug()<<"----------------1";
         for(int i=0; i<cur_neworder.size(); i++){
             component_id.append(cur_group);
         }
         NeuronSWC S;
+        //qDebug()<<"----------------2";
         S.n = offset+1;
         S.pn = -1;
         V3DLONG oriname = LUT.key(new_root);
         V3DLONG oripos = nlist.indexOf(oriname);
-        S.x = neurons.at(oripos).x;
-        S.y = neurons.at(oripos).y;
-        S.z = neurons.at(oripos).z;
-        S.r = neurons.at(oripos).r;
-        S.type = neurons.at(oripos).type;
-        S.seg_id = neurons.at(oripos).seg_id;
-        S.level = neurons.at(oripos).level;
-        S.creatmode = neurons.at(oripos).creatmode;
-        S.timestamp = neurons.at(oripos).timestamp;
-        S.tfresindex = neurons.at(oripos).tfresindex;
-        result.append(S);
+        qDebug()<<"----------------3";
+        qDebug()<<"neurons.size() = "<<neurons.size();
+        qDebug()<<"oripos = "<< oripos;
+        if(oripos < neurons.size() - 1) {
+            S.x = neurons[oripos].x;
+            S.y = neurons[oripos].y;
+            S.z = neurons[oripos].z;
+            S.r = neurons[oripos].r;
+            S.type = neurons[oripos].type;
+            S.seg_id = neurons[oripos].seg_id;
+            S.level = neurons[oripos].level;
+            S.creatmode = neurons[oripos].creatmode;
+            S.timestamp = neurons[oripos].timestamp;
+            S.tfresindex = neurons[oripos].tfresindex;
+            result.append(S);
+        }
+        else {
+            qDebug()<<"----------out of index in oripos----------";
+            continue;
+        }
+
         cnt++;
         qDebug()<<QString("New root %1:").arg(i)<<S.x<<S.y<<S.z;
 
