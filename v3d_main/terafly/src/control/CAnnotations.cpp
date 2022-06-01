@@ -107,6 +107,7 @@ void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
     tree.push_back(p);
 
     // recur on children nodes
+    if(node->children.size())
     for(std::set<annotation*>::const_iterator it = node->children.begin(); it != node->children.end(); it++)
         ricInsertIntoTree((*it), tree);
 }
