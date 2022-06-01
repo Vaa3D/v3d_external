@@ -12,6 +12,7 @@
 
 #include "../basic_c_fun/v3d_interface.h"
 //#include "VRthread.h"
+#include "VRwidget.h"
 
 class CMainApplication;
 struct VRoutInfo
@@ -62,7 +63,7 @@ public:
 };
 
 // bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);
-int startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain, XYZ* zoomPOS = 0);
+int startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain,VRwidget* vrwidget, XYZ* zoomPOS = 0);
 
 
 #endif // VR_MainWindow_H

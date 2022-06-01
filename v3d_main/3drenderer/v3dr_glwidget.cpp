@@ -2169,7 +2169,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
     QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
     cout<<"vr listNeuronTrees.size()"<<listNeuronTrees->size();
     My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
-    this->getMainWindow()->hide();
+    //this->getMainWindow()->hide();
     //process3Dwindow(false);
     //this->getiDrawExternalParameter()->V3Dmainwindow->showMinimized();
     QMessageBox::StandardButton reply;
@@ -2220,14 +2220,14 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
         else
         {
             v3d_msg("The ** client is running.Failed to start VR client.");
-            this->getMainWindow()->show();
+            //this->getMainWindow()->show();
         }
     }
     else
     {
         // bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
 
-        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
+        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),this->getvrwidget(),&teraflyZoomInPOS); // both nt and img4d can be empty.
 
         qDebug()<<"result is "<<_call_that_func;
         qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -2249,7 +2249,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 //         }
     }
         //this->getiDrawExternalParameter()->V3Dmainwindow->showNormal();
-        process3Dwindow(true);
+        //process3Dwindow(true);
 
 }
 void V3dR_GLWidget::doclientView(bool check_flag)

@@ -34,7 +34,7 @@ void VRwidget::seteye(QImage *texture, int eye)
         rightmp=rightmp.fromImage(*texture);
         this->rightlabel->setPixmap(rightmp);
     }
-    QCoreApplication::processEvents();
+    //QCoreApplication::processEvents();
 }
 
 void VRwidget::drawlayout()

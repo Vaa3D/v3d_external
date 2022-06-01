@@ -41,7 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "v3dr_common.h"
 #include "renderer.h"
 #include "../basic_c_fun/basic_view3d.h"
-
+#include "../vrrenderer/VRwidget.h"
 
 
 //#include "glsl_r.h"
@@ -125,6 +125,7 @@ public:
     virtual void preparingRenderer();
 #ifdef __ALLOW_VR_FUNCS__
     void UpdateVRcollaInfo();
+    VRwidget* getvrwidget(){return &vr_widget;} //csz
     bool VRClientON;
     VR_MainWindow * myvrwin;
     V3dR_Communicator * TeraflyCommunicator;
@@ -133,6 +134,7 @@ public:
     XYZ collaborationMaxResolution;
     int CollaborationCreatorRes;
     int Resindex;
+    VRwidget vr_widget; //csz
 
     static bool resumeCollaborationVR;
 #endif

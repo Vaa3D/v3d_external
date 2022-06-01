@@ -28,7 +28,7 @@
 #include <QObject>
 #include <QOpenGLWidget>
 //#include <gltext.hpp>//include freetype and gltest library
-//#include "VRwidget.h"
+#include "VRwidget.h"
 
 struct Agent {
 	QString name;
@@ -259,8 +259,8 @@ public:
 public:
 
 //    QWidget* m_vrwidget;
-//    unsigned char* leftdata;
-//    unsigned char* rightdata;
+    unsigned char* leftdata;
+    unsigned char* rightdata;
 //    QLabel *leftlabel;
 //    QLabel *rightlabel;
 //    QHBoxLayout *layout;
@@ -268,6 +268,7 @@ public:
 //    QPixmap rightmp;
 //    bool isvrclosed=false;
 //    void closeEvent(QCloseEvent *event);
+    VRwidget *mvr_widget;
 
     MainWindow *mainwindow;
 	My4DImage *img4d;

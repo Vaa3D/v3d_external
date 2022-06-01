@@ -760,6 +760,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
     , showshootingray(false)
     , replacetexture(false)//,QWidget()
     //, font_VR (NULL)
+    , mvr_widget(0)
 
 {
     leftEyeDesc.m_nDepthBufferId = leftEyeDesc.m_nRenderFramebufferId = leftEyeDesc.m_nRenderTextureId = leftEyeDesc.m_nResolveFramebufferId = leftEyeDesc.m_nResolveTextureId = 0;
@@ -2128,19 +2129,23 @@ bool CMainApplication::HandleInput()
 void CMainApplication::RunMainLoop()
 {
 //    this->m_vrwidget->getsize(m_nRenderWidth,m_nRenderHeight);
-//    leftdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
-//    rightdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
+    leftdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
+    rightdata = (unsigned char*)malloc(m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
     bool bQuit = false;
     //this->show();
+    this->mvr_widget->show();
     while ( !bQuit )
     {
-        //QCoreApplication::processEvents();
+        //
         bQuit = HandleInput();
-        //if (bQuit||isvrclosed) break;
-        if (bQuit) break;
+        if (bQuit||this->mvr_widget->isvrclosed) break;
+        //if (bQuit) break;
         RenderFrame();
+        QCoreApplication::processEvents();
 
     }
+    this->mvr_widget->isvrclosed=false;
+    this->mvr_widget->close();
 
 //	SDL_StopTextInput();
 }
@@ -4257,29 +4262,33 @@ void CMainApplication::RenderFrame()
         vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture );
 
 
-//        glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId);
-//        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, leftdata);
-//        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_2D, leftEyeDesc.m_nResolveTextureId);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, leftdata);
+        glBindTexture(GL_TEXTURE_2D, 0);
 //        //qDebug()<<leftdata[100];
-//        QImage* leftQImage = new QImage(leftdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
+        QImage* leftQImage = new QImage(leftdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
 //        //qDebug()<<leftpixmap->loadFromData((const uchar *)leftdata,m_nRenderWidth * m_nRenderHeight * sizeof(unsigned char)* 3);
 //        //qDebug()<<myQImage;
-//        leftQImage->mirror();
-//        *leftQImage=leftQImage->scaled(1920/2,1080);
+        leftQImage->mirror();
+        *leftQImage=leftQImage->scaled(1920/2,1080);
+        this->mvr_widget->seteye(leftQImage,1);
 //        leftmp=leftmp.fromImage(*leftQImage);
 //        //this->setPixmap(leftmp);
 //        this->leftlabel->setPixmap(leftmp);
-//        delete leftQImage;
+        delete leftQImage;
+        leftQImage=0;
 
-//        glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId);
-//        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, rightdata);
-//        glBindTexture(GL_TEXTURE_2D, 0);
-//        QImage* rightQImage = new QImage(rightdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
-//        rightQImage->mirror();
-//        *rightQImage=rightQImage->scaled(1920/2,1080);
+        glBindTexture(GL_TEXTURE_2D, rightEyeDesc.m_nResolveTextureId);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, rightdata);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        QImage* rightQImage = new QImage(rightdata,m_nRenderWidth,m_nRenderHeight,QImage::Format_RGB888);
+        rightQImage->mirror();
+        *rightQImage=rightQImage->scaled(1920/2,1080);
+        this->mvr_widget->seteye(rightQImage,2);
 //        rightmp=rightmp.fromImage(*rightQImage);
 //        this->rightlabel->setPixmap(rightmp);
-//        delete rightQImage;
+        delete rightQImage;
+        rightQImage=0;
 
     }
 

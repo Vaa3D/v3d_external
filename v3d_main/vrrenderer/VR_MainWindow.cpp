@@ -708,7 +708,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 //    newwidget->show();
 //    Sleep(10000);
 //}
-int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS )
+int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, VRwidget* vrwidget,XYZ* zoomPOS )
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
     qDebug()<<"csz debug start vr initialize.";
@@ -716,6 +716,7 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
+    pMainApplication->mvr_widget=vrwidget;
 	if(ntlist != NULL)
 	{
 		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
