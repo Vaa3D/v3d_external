@@ -85,9 +85,7 @@ annotation::~annotation()
     #endif
 }
 
-void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
-{
-    // create NeuronSWC node
+NeuronSWC deepcopy(annotation* node){
     NeuronSWC p;
     p.type = node->subtype;
     p.n = node->ID;
@@ -101,15 +99,25 @@ void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
     p.tfresindex = node->tfresindex; //for keepin TeraFly resolution index LMG 13/12/2018
     p.pn = node->parent ? node->parent->ID : -1;
     // add node to list
-    #ifdef terafly_enable_debug_annotations
+#ifdef terafly_enable_debug_annotations
     tf::debug(tf::LEV_MAX, strprintf("Add node %lld(%.0f, %.0f, %.0f) to list", p.n, p.x, p.y, p.z).c_str(), 0, true);
-    #endif
-    tree.push_back(p);
+#endif
+    return p;
+}
 
-    // recur on children nodes
-    if(node->children.size())
-    for(std::set<annotation*>::const_iterator it = node->children.begin(); it != node->children.end(); it++)
-        ricInsertIntoTree((*it), tree);
+void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
+{
+    if(node==nullptr)
+        return;
+    QStack<annotation*> st;
+    st.push(node);
+    while(!st.empty()){
+        annotation* cur=st.top();
+        st.pop();
+        tree.append(deepcopy(cur));
+        for(std::set<annotation*>::const_iterator it = cur->children.begin(); it != cur->children.end(); it++)
+            st.push((*it));
+    }
 }
 
 void annotation::insertIntoTree(QList<NeuronSWC> &tree)

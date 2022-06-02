@@ -75,7 +75,7 @@ int CViewer::newViewerOperationID = 0;
 void CViewer::show()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-    qDebug()<<"csz debug cviewer-show.";
+    //qDebug()<<"csz debug cviewer-show.";
     PMain* pMain = PMain::getInstance();
     QElapsedTimer timer;
     timer.start();
@@ -2865,7 +2865,7 @@ void CViewer::Vaa3D_changeXCut0(int s)
 }
 void CViewer::ShiftToAnotherDirection(int _direction)
 {
-    qDebug()<<"csz debug the signalCallTerafly is received.";
+    //qDebug()<<"csz debug the signalCallTerafly is received.";
 #ifdef __ALLOW_VR_FUNCS__
     // slot func related to VR shift signal
     if (volResIndex == 0 &&(_direction<7 || _direction == 8) )//at lowerest level, do not allow shift and zoom-out.
@@ -2883,47 +2883,47 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             qDebug() << "In terafly,X is " << point.x << " && Y is " << point.y << " && Z is " << point.z;
             if (_direction == 1){
                 newViewer((volH1 - volH0) / 2 + (volH1 - volH0) * (100 - CSettings::instance()->getTraslX()) / 100.0f, point.y, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 1.";
+                //qDebug()<<"csz debug direction is 1.";
             }
             else if (_direction == 2){
                 newViewer((volH1 - volH0) / 2 - (volH1 - volH0) * (100 - CSettings::instance()->getTraslX()) / 100.0f, point.y, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 2.";
+                //qDebug()<<"csz debug direction is 2.";
             }
             else if (_direction == 3){
                 newViewer(point.x, (volV1 - volV0) / 2 + (volV1 - volV0) * (100 - CSettings::instance()->getTraslY()) / 100.0f, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 3.";
+                //qDebug()<<"csz debug direction is 3.";
             }
             else if (_direction == 4){
                 newViewer(point.x, (volV1 - volV0) / 2 - (volV1 - volV0) * (100 - CSettings::instance()->getTraslY()) / 100.0f, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 4.";
+                //qDebug()<<"csz debug direction is 4.";
             }
             else if (_direction == 5){
                 newViewer(point.x, point.y, (volD1 - volD0) / 2 + (volD1 - volD0) * (100 - CSettings::instance()->getTraslZ()) / 100.0f, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 5.";
+                //qDebug()<<"csz debug direction is 5.";
             }
             else if (_direction == 6){
                 newViewer(point.x, point.y, (volD1 - volD0) / 2 - (volD1 - volD0) * (100 - CSettings::instance()->getTraslZ()) / 100.0f, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 6.";
+                //qDebug()<<"csz debug direction is 6.";
             }
-            qDebug()<<"csz debug the newviewer-shift has been created.";
+            //qDebug()<<"csz debug the newviewer-shift has been created.";
         }
     }
     else if(_direction == 7)
     {
         // forcezoomin
-        qDebug()<<"csz debug zoomin 7 begin.";
+        //qDebug()<<"csz debug zoomin 7 begin.";
         if(view3DWidget)
         {
             PMain::getInstance()->resumeVR = true;
             XYZ point = view3DWidget->teraflyZoomInPOS;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
             newViewer(point.x, point.y, point.z,  volResIndex+1, volT0, volT1);
-            qDebug()<<"csz debug zoomin 7 end.";
+            //qDebug()<<"csz debug zoomin 7 end.";
         }
     }
     else if(_direction == 8)
     {
-        qDebug()<<"csz debug zoomout 8 begin.";
+        //qDebug()<<"csz debug zoomout 8 begin.";
         // auto zoom out
         if(prev                                                                    &&  //the previous resolution exists
         !toBeClosed)                                                         //the current resolution does not have to be closed
@@ -2941,7 +2941,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
                 resetZoomHistory();
                 prev->restoreViewerFrom(this);
             }
-            qDebug()<<"csz debug zoomout 8 end.";
+            //qDebug()<<"csz debug zoomout 8 end.";
         }
     }
     else if(_direction == 9)

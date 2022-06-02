@@ -2585,7 +2585,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             }
         case _TeraShift:
             {
-                qDebug()<<"csz debug shiftbutton is clicked.";
+                //qDebug()<<"csz debug shiftbutton is clicked.";
                 const Matrix4 & mat_M = m_rmat4DevicePose[m_iControllerIDLeft];// mat means current controller pos
                     glm::mat4 mat = glm::mat4();
                     for (size_t i = 0; i < 4; i++)
@@ -2636,7 +2636,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             }
         case _TeraZoom:
             {
-                qDebug()<<"csz debug zoombutton is clicked.";
+                //qDebug()<<"csz debug zoombutton is clicked.";
                 if(temp_x>0)
                 {
                     // zoom in
@@ -2659,12 +2659,12 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         qDebug()<<"Out of the bounding box.Ignored!";
                     else
                         postVRFunctionCallMode = 7;
-                    qDebug()<<"csz debug zoominbutton is clicked.";
+                    //qDebug()<<"csz debug zoominbutton is clicked.";
                 }
                 else // zoom out
                 {
                     postVRFunctionCallMode = 8;
-                    qDebug()<<"csz debug zoomoutbutton is clicked.";
+                    //qDebug()<<"csz debug zoomoutbutton is clicked.";
                 }
                 break;
             }

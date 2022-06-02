@@ -2862,7 +2862,7 @@ void PMain::doTeraflyVRView()
 
             if(cur_win->view3DWidget->resumeCollaborationVR)
 			{
-              qDebug()<<"csz debug resumeCollaborationVR is true.";
+              //qDebug()<<"csz debug resumeCollaborationVR is true.";
 				int maxresindex = CImport::instance()->getResolutions()-1;
 				VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
 				cur_win->view3DWidget->collaborationMaxResolution = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
@@ -2872,7 +2872,7 @@ void PMain::doTeraflyVRView()
 			else
             {
                 cur_win->view3DWidget->doimageVRView(false);
-                qDebug()<<"csz debug resumeCollaborationVR is false.";
+                //qDebug()<<"csz debug resumeCollaborationVR is false.";
             }
             //cur_win->storeAnnotations();
             //this->show();
