@@ -578,6 +578,7 @@ CViewer::~CViewer()
 ***********************************************************************************/
 bool CViewer::eventFilter(QObject *object, QEvent *event)
 {
+
     try
     {
         //ignoring all events when window is not active
@@ -618,6 +619,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                isZoomDerivativeNeg()                                                   &&  //zoom derivative is negative
                view3DWidget->zoom() < PMain::getInstance()->zoomOutSens->value())          //zoom-out threshold reached
             {
+
+                qDebug()<<"view3DWidget->zoom() < PMain::getInstance()->zoomOutSens->value()";
                 // if window is not ready for "switch view" events, reset zoom-out and ignore this event
                 if(!_isReady)
                 {
@@ -639,7 +642,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
         {
-            //qDebug()<<"CViewer: get a wheel event ... ...";
+            qDebug()<<"CViewer: get a wheel event ... ...";
 
             QWheelEvent* wheelEvt = (QWheelEvent*)event;
             myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
@@ -656,6 +659,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonPress)
         {
+            qDebug()<<"object == view3DWidget && event->type() == QEvent::MouseButtonPress)";
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
             if(mouseEvt->button() == Qt::RightButton && PAnoToolBar::instance()->buttonMarkerDelete->isChecked())
             {
@@ -843,6 +847,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick)
         {
+//              qDebug()<<"object == view3DWidget && event->type() == QEvent::MouseButtonDblClick";
 //            if(current == this)
 //                qDebug()<<"current == this!";
 //            else if(current == prev)
@@ -854,6 +859,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
             if(PMain::getInstance()->isPRactive())
             {
+                qDebug()<<"------------1)";
                 QMessageBox::information(this->window3D, "Warning", "TeraFly is running in \"Proofreading\" mode. All TeraFly's' navigation features are disabled. "
                                          "Please terminate the \"Proofreading\" mode and try again.");
                 return true;
@@ -868,6 +874,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
             if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
             {
+                qDebug()<<"------------2)";
                 XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
                 if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                 {
@@ -884,12 +891,16 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                               point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
                               point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                               volResIndex, volT0, volT1);
-                }else
+                }else{
+
                     newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+
+                }
             }
             // --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
             else
             {
+                 qDebug()<<"------------4)";
                 // ----------------- The following is intended to solve erroneous zoomed-in block when mouse is clicked outside the image cube. ---------------------------
                 // ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
                 NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
@@ -902,6 +913,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
                 if (dist > 100)
                 {
+                    qDebug()<<"------------5)";
                     cout << "out of nearest SWC search range" << endl;
                     XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
                     if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
@@ -928,7 +940,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 }
                 else
                 {
-                    cout << "using nearest SWC node:" << endl;
+                    qDebug()<<"------------6)";
                     //cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
                     XYZ loc;
                     loc.x = treePtr->listNeuron.at(index).x; loc.y = treePtr->listNeuron.at(index).y; loc.z = treePtr->listNeuron.at(index).z;
@@ -1336,8 +1348,20 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-            if (dx != -1 && dy != -1 && dz != -1)
-                cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+            if (dx != -1 && dy != -1 && dz != -1){
+//add by ljs
+#ifdef MACOS_SYSTEM
+            cVolume->setVoi(0, resolution, y - dy, y + dy, x - 2*dx, x + 2*dx, z - dz, z + dz, t0, t1);
+#endif
+
+#ifdef WINDOWS_SYSTEM
+             cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+#endif
+
+#ifdef LINUX_SYSTEM
+          cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+#endif
+            }
             else
                 cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
         }
