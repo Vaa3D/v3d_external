@@ -85,6 +85,7 @@ struct DataFlow{
         outputimg.clear();
         outputswc.clear();
         dataname.clear();
+        otdataname.clear();
         img_cnt=0;
         swc_cnt=0;
     }
@@ -107,7 +108,7 @@ struct DataFlow{
     int img_cnt;
     int swc_cnt;
     QStringList dataname;
-
+    QStringList otdataname;
 };
 
 struct V3DPluginArgItem
