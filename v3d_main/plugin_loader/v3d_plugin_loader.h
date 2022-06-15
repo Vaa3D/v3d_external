@@ -79,7 +79,9 @@ protected:
     void putDataToCViewer(const unsigned char*,V3DPluginCallback2*);
     bool updateTerafly();
 
-
+    //csz
+    void OpenImageInTerafly(QString image_path,V3DPluginCallback2* callback);
+    bool isCViewerVisable();
 
 	bool runSingleImageInterface(QObject* plugin, const QString& command);
 	bool runPluginInterface(QObject* plugin, const QString& command);

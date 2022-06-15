@@ -194,6 +194,22 @@ void PluginInterface::putDataToCViewer(const unsigned char *data,V3DPluginCallba
     updateTerafly();
 }
 
+void PluginInterface::OpenImageInTerafly(QString image_path,V3DPluginCallback2* callback)
+{
+    //v3d_msg("csz developed");
+    PMain::instance(callback,0);
+    PMain::getInstance()->reset();
+    std::string path=image_path.toStdString();
+    PMain::getInstance()->openImage(path);
+}
+
+bool PluginInterface::isCViewerVisable()
+{
+    if(CViewer::getCurrent())
+        return true;
+    return false;
+}
+
 NeuronTree tf::PluginInterface::getSWC(int resolution)
 {
     NeuronTree nt;

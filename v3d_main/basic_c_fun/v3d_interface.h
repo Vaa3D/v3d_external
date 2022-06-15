@@ -85,6 +85,7 @@ struct DataFlow{
         outputimg.clear();
         outputswc.clear();
         dataname.clear();
+        otdataname.clear();
         img_cnt=0;
         swc_cnt=0;
     }
@@ -107,7 +108,7 @@ struct DataFlow{
     int img_cnt;
     int swc_cnt;
     QStringList dataname;
-
+    QStringList otdataname;
 };
 
 struct V3DPluginArgItem
@@ -289,6 +290,10 @@ public:
     virtual bool updateTerafly() = 0;
     virtual void putDataToCViewer(const unsigned char*,V3DPluginCallback2*) = 0;
     virtual void pushImageToTeraWin(v3dhandle) = 0;
+
+    //csz open image through terafly
+    virtual void OpenImageInTerafly(QString image_path,V3DPluginCallback2* callback)=0;
+    virtual bool isCViewerVisable()=0;
 
 
 
