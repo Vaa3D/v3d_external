@@ -203,6 +203,13 @@ void PluginInterface::OpenImageInTerafly(QString image_path,V3DPluginCallback2* 
     PMain::getInstance()->openImage(path);
 }
 
+bool PluginInterface::isCViewerVisable()
+{
+    if(CViewer::getCurrent())
+        return true;
+    return false;
+}
+
 NeuronTree tf::PluginInterface::getSWC(int resolution)
 {
     NeuronTree nt;

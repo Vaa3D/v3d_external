@@ -906,6 +906,7 @@ class terafly::PluginInterface
 
         //csz
         static void OpenImageInTerafly(QString image_path,V3DPluginCallback2* callback);
+        static bool isCViewerVisable();
 
         // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
         static NeuronTree getSWC(int resolution = infp<int>());

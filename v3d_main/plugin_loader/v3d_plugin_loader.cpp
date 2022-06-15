@@ -1760,6 +1760,11 @@ void V3d_PluginLoader::OpenImageInTerafly(QString image_path,V3DPluginCallback2*
     terafly::PluginInterface::OpenImageInTerafly(image_path,callback);
 }
 
+bool V3d_PluginLoader::isCViewerVisable()
+{
+    return terafly::PluginInterface::isCViewerVisable();
+}
+
 
 
 

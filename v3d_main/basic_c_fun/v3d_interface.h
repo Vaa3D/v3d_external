@@ -293,6 +293,7 @@ public:
 
     //csz open image through terafly
     virtual void OpenImageInTerafly(QString image_path,V3DPluginCallback2* callback)=0;
+    virtual bool isCViewerVisable()=0;
 
 
 
