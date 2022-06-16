@@ -176,6 +176,7 @@ HEADERS += \
     ../serverconnection/infocache.h \
     ../serverconnection/logindialog.h \
     ../serverconnection/model/coordinateconvert.h \
+    ../serverconnection/model/potentialarbormarkerinfo.h \
     ../serverconnection/model/potentialsomainfo.h \
     ../serverconnection/net/ctoscallback.h \
     ../serverconnection/net/httputils.h \
@@ -309,6 +310,7 @@ SOURCES += \
     ../serverconnection/infocache.cpp \
     ../serverconnection/logindialog.cpp \
     ../serverconnection/model/coordinateconvert.cpp \
+    ../serverconnection/model/potentialarbormarkerinfo.cpp \
     ../serverconnection/model/potentialsomainfo.cpp \
     ../serverconnection/net/httputils.cpp \
     ../serverconnection/net/httputilsbrainlist.cpp \

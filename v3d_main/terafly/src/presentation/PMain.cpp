@@ -767,7 +767,13 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     helpBox = new QHelpBox(this);
     progressBar = new QProgressBar(this);
     statusBar = new QStatusBar();
+    // set edit info and font
     editStatus = new QLabel("Here show edit status");
+    QFont font("Microsoft YaHei", 15, 87);
+    font.setFamilies({QString::fromUtf8("Calibri")});
+    font.setPointSize(14);
+    font.setBold(true);
+    editStatus->setFont(font);
 
     //****LAYOUT SECTIONS****
     /**/tf::debug(tf::LEV3, "Layouting", __itm__current__function__);
