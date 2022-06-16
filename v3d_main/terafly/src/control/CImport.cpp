@@ -356,7 +356,9 @@ void CImport::run()
         We generate once for all a volume map from lowest-resolution volume.
         *************************************************************************/
         //string volMapPath = tf::cdUp(path) + "/" + VMAP_BIN_FILE_NAME;
-        string volMapPath = QDir::currentPath().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        //string volMapPath = QDir::currentPath().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        string volMapPath = QApplication::applicationDirPath().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        cout<<volMapPath<<endl;
 
         if(hasVolumeMapToBeRegenerated(volMapPath.c_str(), "0.9.42") || reimport || regenerateVMap)
         {

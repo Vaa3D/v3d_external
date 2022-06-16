@@ -11,14 +11,18 @@ class VRwidget:public QWidget
 public:
     VRwidget();
     ~VRwidget();
-    unsigned char* leftdata;
-    unsigned char* rightdata;
+//    unsigned char* leftdata;
+//    unsigned char* rightdata;
     QLabel *leftlabel;
     QLabel *rightlabel;
     QHBoxLayout *layout;
     QPixmap leftmp;
     QPixmap rightmp;
-    bool isvrclosed=false;
+    bool isvrclosed;
+    bool isdrawlayout;
+
+    void seteye(QImage *texture,int eye);
+    void drawlayout();
     void closeEvent(QCloseEvent *event);
 };
 

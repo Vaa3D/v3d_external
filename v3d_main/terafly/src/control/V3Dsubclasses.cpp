@@ -13,16 +13,24 @@ using namespace std;
 XYZ myRenderer_gl1::get3DPoint(int x, int y)
 {
     /**/tf::debug(tf::LEV1, strprintf("x = %d, y = %d", x, y).c_str(), __itm__current__function__);
-
+    qDebug()<<"XYZ myRenderer_gl1::get3DPoint(int x, int y)";
     Renderer_gl1::MarkerPos pos;
+
     pos.x = x;
     pos.y = y;
-    for (int i=0; i<4; i++)
+
+    for (int i=0; i<4; i++){
             pos.view[i] = this->viewport[i];
+#ifdef MACOS_SYSTEM
+            pos.view[i] = this->viewport[i] / 2;
+#endif
+    }
     for (int i=0; i<16; i++)
     {
         pos.P[i]  = this->projectionMatrix[i];
         pos.MV[i] = this->markerViewMatrix[i];
+
+
     }
     return this->getCenterOfMarkerPos(pos);
 }
@@ -164,6 +172,7 @@ void myV3dR_GLWidget::wheelEventO(QWheelEvent *event)
 //zoomIn method(s)
 void myV3dR_GLWidget::zoomIn(const char* method)
 {
+    qDebug()<<"void myV3dR_GLWidget::zoomIn(const char* method)";
     /**/tf::debug(tf::LEV1, strprintf("title = %s, method = %s", data_title.toStdString().c_str(), method).c_str(), __itm__current__function__);
 
     ZoominRoiOperation::newGroup();

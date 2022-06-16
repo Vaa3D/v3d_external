@@ -75,7 +75,7 @@ int CViewer::newViewerOperationID = 0;
 void CViewer::show()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-    qDebug()<<"csz debug cviewer-show.";
+    //qDebug()<<"csz debug cviewer-show.";
     PMain* pMain = PMain::getInstance();
     QElapsedTimer timer;
     timer.start();
@@ -579,6 +579,7 @@ CViewer::~CViewer()
 ***********************************************************************************/
 bool CViewer::eventFilter(QObject *object, QEvent *event)
 {
+
     try
     {
         //ignoring all events when window is not active
@@ -619,6 +620,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                isZoomDerivativeNeg()                                                   &&  //zoom derivative is negative
                view3DWidget->zoom() < PMain::getInstance()->zoomOutSens->value())          //zoom-out threshold reached
             {
+
+                qDebug()<<"view3DWidget->zoom() < PMain::getInstance()->zoomOutSens->value()";
                 // if window is not ready for "switch view" events, reset zoom-out and ignore this event
                 if(!_isReady)
                 {
@@ -640,7 +643,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if((object == view3DWidget || object == window3D) && event->type() == QEvent::Wheel)
         {
-            //qDebug()<<"CViewer: get a wheel event ... ...";
+            qDebug()<<"CViewer: get a wheel event ... ...";
 
             QWheelEvent* wheelEvt = (QWheelEvent*)event;
             myV3dR_GLWidget::cast(view3DWidget)->wheelEventO(wheelEvt);
@@ -657,6 +660,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonPress)
         {
+            qDebug()<<"object == view3DWidget && event->type() == QEvent::MouseButtonPress)";
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
             if(mouseEvt->button() == Qt::RightButton && PAnoToolBar::instance()->buttonMarkerDelete->isChecked())
             {
@@ -844,6 +848,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick)
         {
+//              qDebug()<<"object == view3DWidget && event->type() == QEvent::MouseButtonDblClick";
 //            if(current == this)
 //                qDebug()<<"current == this!";
 //            else if(current == prev)
@@ -855,6 +860,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
             if(PMain::getInstance()->isPRactive())
             {
+                qDebug()<<"------------1)";
                 QMessageBox::information(this->window3D, "Warning", "TeraFly is running in \"Proofreading\" mode. All TeraFly's' navigation features are disabled. "
                                          "Please terminate the \"Proofreading\" mode and try again.");
                 return true;
@@ -869,6 +875,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
             if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
             {
+                qDebug()<<"------------2)";
                 XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
                 if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                 {
@@ -885,12 +892,16 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                               point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
                               point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                               volResIndex, volT0, volT1);
-                }else
+                }else{
+
                     newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+
+                }
             }
             // --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
             else
             {
+                 qDebug()<<"------------4)";
                 // ----------------- The following is intended to solve erroneous zoomed-in block when mouse is clicked outside the image cube. ---------------------------
                 // ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
                 NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
@@ -903,6 +914,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
                 if (dist > 100)
                 {
+                    qDebug()<<"------------5)";
                     cout << "out of nearest SWC search range" << endl;
                     XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
                     if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
@@ -929,7 +941,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 }
                 else
                 {
-                    cout << "using nearest SWC node:" << endl;
+                    qDebug()<<"------------6)";
                     //cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
                     XYZ loc;
                     loc.x = treePtr->listNeuron.at(index).x; loc.y = treePtr->listNeuron.at(index).y; loc.z = treePtr->listNeuron.at(index).z;
@@ -1337,8 +1349,20 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-            if (dx != -1 && dy != -1 && dz != -1)
-                cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+            if (dx != -1 && dy != -1 && dz != -1){
+//add by ljs
+#ifdef MACOS_SYSTEM
+            cVolume->setVoi(0, resolution, y - dy, y + dy, x - 2*dx, x + 2*dx, z - dz, z + dz, t0, t1);
+#endif
+
+#ifdef WINDOWS_SYSTEM
+             cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+#endif
+
+#ifdef LINUX_SYSTEM
+          cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+#endif
+            }
             else
                 cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
         }
@@ -2221,7 +2245,7 @@ void CViewer::loadAnnotations()
 
 
     //update visible markers
-//    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+    PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
     PLog::instance()->appendOperation(new AnnotationOperation(QString("load annotations: push objects into view ").append(title.c_str()).toStdString(), tf::GPU, timer.elapsed()));
 }
@@ -2866,7 +2890,7 @@ void CViewer::Vaa3D_changeXCut0(int s)
 }
 void CViewer::ShiftToAnotherDirection(int _direction)
 {
-    qDebug()<<"csz debug the signalCallTerafly is received.";
+    //qDebug()<<"csz debug the signalCallTerafly is received.";
 #ifdef __ALLOW_VR_FUNCS__
     // slot func related to VR shift signal
     if (volResIndex == 0 &&(_direction<7 || _direction == 8) )//at lowerest level, do not allow shift and zoom-out.
@@ -2884,47 +2908,47 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             qDebug() << "In terafly,X is " << point.x << " && Y is " << point.y << " && Z is " << point.z;
             if (_direction == 1){
                 newViewer((volH1 - volH0) / 2 + (volH1 - volH0) * (100 - CSettings::instance()->getTraslX()) / 100.0f, point.y, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 1.";
+                //qDebug()<<"csz debug direction is 1.";
             }
             else if (_direction == 2){
                 newViewer((volH1 - volH0) / 2 - (volH1 - volH0) * (100 - CSettings::instance()->getTraslX()) / 100.0f, point.y, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 2.";
+                //qDebug()<<"csz debug direction is 2.";
             }
             else if (_direction == 3){
                 newViewer(point.x, (volV1 - volV0) / 2 + (volV1 - volV0) * (100 - CSettings::instance()->getTraslY()) / 100.0f, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 3.";
+                //qDebug()<<"csz debug direction is 3.";
             }
             else if (_direction == 4){
                 newViewer(point.x, (volV1 - volV0) / 2 - (volV1 - volV0) * (100 - CSettings::instance()->getTraslY()) / 100.0f, point.z, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 4.";
+                //qDebug()<<"csz debug direction is 4.";
             }
             else if (_direction == 5){
                 newViewer(point.x, point.y, (volD1 - volD0) / 2 + (volD1 - volD0) * (100 - CSettings::instance()->getTraslZ()) / 100.0f, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 5.";
+                //qDebug()<<"csz debug direction is 5.";
             }
             else if (_direction == 6){
                 newViewer(point.x, point.y, (volD1 - volD0) / 2 - (volD1 - volD0) * (100 - CSettings::instance()->getTraslZ()) / 100.0f, volResIndex, volT0, volT1);
-                qDebug()<<"csz debug direction is 6.";
+                //qDebug()<<"csz debug direction is 6.";
             }
-            qDebug()<<"csz debug the newviewer-shift has been created.";
+            //qDebug()<<"csz debug the newviewer-shift has been created.";
         }
     }
     else if(_direction == 7)
     {
         // forcezoomin
-        qDebug()<<"csz debug zoomin 7 begin.";
+        //qDebug()<<"csz debug zoomin 7 begin.";
         if(view3DWidget)
         {
             PMain::getInstance()->resumeVR = true;
             XYZ point = view3DWidget->teraflyZoomInPOS;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
             newViewer(point.x, point.y, point.z,  volResIndex+1, volT0, volT1);
-            qDebug()<<"csz debug zoomin 7 end.";
+            //qDebug()<<"csz debug zoomin 7 end.";
         }
     }
     else if(_direction == 8)
     {
-        qDebug()<<"csz debug zoomout 8 begin.";
+        //qDebug()<<"csz debug zoomout 8 begin.";
         // auto zoom out
         if(prev                                                                    &&  //the previous resolution exists
         !toBeClosed)                                                         //the current resolution does not have to be closed
@@ -2942,7 +2966,7 @@ void CViewer::ShiftToAnotherDirection(int _direction)
                 resetZoomHistory();
                 prev->restoreViewerFrom(this);
             }
-            qDebug()<<"csz debug zoomout 8 end.";
+            //qDebug()<<"csz debug zoomout 8 end.";
         }
     }
     else if(_direction == 9)

@@ -1878,6 +1878,7 @@ void Renderer_gl1::_updateDragPoints(int x, int y)
           const MarkerPos &pos = listMarkerPos.at(nm-1);
 
           // get XYZ from MarkerPos
+          qDebug()<<"void Renderer_gl1::_updateDragPoints(int x, int y)";
           XYZ dragPt = getCenterOfMarkerPos(pos);
           //MarkerPosToXYZCenter(pos, dragPt, lastDragPos);
           //lastDragPos = dragPt;
