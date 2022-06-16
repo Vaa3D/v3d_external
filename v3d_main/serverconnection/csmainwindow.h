@@ -6,8 +6,10 @@
 #include "net/httputilsgetlocation.h"
 #include "net/httputilsbrainlist.h"
 #include "net/httputilsdownload.h"
+#include "net/httputilsqualityinspection.h"
 #include "serverconnection/model/coordinateconvert.h"
 #include "serverconnection/model/potentialsomainfo.h"
+
 
 namespace Ui {
 class CSMainWindow;
@@ -21,16 +23,20 @@ public:
     explicit CSMainWindow(QWidget *parent = nullptr);
     ~CSMainWindow();
 
+//    void handleDownloadSWCResult();
+
     void getPotentialLoaction();
     void getBrainList();
     void downloadImage();
+    void getSwc();
 
 //// public member //////
 public:
     HttpGetLocation *httpGetLocation = nullptr;
     HttpUtilsBrainList *httpGetBrainList = nullptr;
     HttpUtilsDownLoad *httpUtilsDownload = nullptr;
-//    CoordinateConvert userLastCoordinateConvert;
+    CoordinateConvert *coordinateConvert;
+    CoordinateConvert *lastDownloadCoordinateConvert;
 //    PotentialSomaInfo *uertLastPotentialSomaInfo = nullptr;
     QHash<QString, QString> resMap; // <brainId, MAXRES>
     int userid;
@@ -48,9 +54,9 @@ public slots:
 
 private:
     Ui::CSMainWindow *ui;
-    int DEFAULT_IMG_SIZE = 128;
-
-
+    int DEFAULT_IMAGE_SIZE = 128;
+    int DEFAULT_RES_INDEX = 2;
+    int resIndex = 2;
 
 };
 

@@ -1532,6 +1532,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_N:
             if (IS_CTRL_MODIFIER)
             {
+                emit changeEditinput("Ctl+N: toggle cell name");
                 toggleCellName();
             }
             else if (IS_SHIFT_MODIFIER) // toggle marker name display. by Lei Qu, 110425
@@ -1540,6 +1541,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             else if (IS_ALT_MODIFIER)
             {
+                emit changeEditinput("Alt+N: show connected segs");
                 callShowConnectedSegs();
             }
             else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)

@@ -24,7 +24,7 @@ QNetworkReply *NetWorkUtil::postRequst(const QString &url, QJsonObject &body)
     QByteArray dataArray;
     dataArray = document.toJson(QJsonDocument::Compact);
 
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json; charset=utf-8");
     request.setUrl(url);
     return d->manager->post(request, dataArray);
 }

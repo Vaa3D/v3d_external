@@ -278,6 +278,7 @@ class terafly::PMain : public QWidget
         QHelpBox* helpBox;              //help box
         QProgressBar* progressBar;      //progress bar
         QStatusBar* statusBar;          //status bar
+        QLabel* editStatus;             //edit infomation
 
         QCheckBox *checkBox_overview;  //added an overview checkbox by ZZ 04262018
         QCheckBox *lockMagnification;

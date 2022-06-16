@@ -767,6 +767,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     helpBox = new QHelpBox(this);
     progressBar = new QProgressBar(this);
     statusBar = new QStatusBar();
+    editStatus = new QLabel("Here show edit status");
 
     //****LAYOUT SECTIONS****
     /**/tf::debug(tf::LEV3, "Layouting", __itm__current__function__);
@@ -1114,6 +1115,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     innerLayout->addLayout(helpBoxLayout, 1);
     innerLayout->setSpacing(5);
     centralLayout->addLayout(innerLayout, 1);
+    bottomLayout->addWidget(editStatus);
     bottomLayout->addWidget(statusBar);
     bottomLayout->addWidget(progressBar);
     bottomLayout->setContentsMargins(10,10,10,10);

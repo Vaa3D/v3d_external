@@ -1,5 +1,6 @@
 #include "httputilsgetlocation.h"
 
+#include <QEventLoop>
 #include <QJsonDocument>
 #include <QJsonObject>
 
@@ -40,7 +41,9 @@ void HttpGetLocation::asyncPostRequest(QString url, QJsonObject &body)
     request.setUrl(QUrl(url));
 
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(locationReplyFinished(QNetworkReply*)));
-    manager->post(request, dataArray);
+    QNetworkReply *reply = manager->post(request, dataArray);
+    QEventLoop eventLoop;
+    connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
 }
 
 /**

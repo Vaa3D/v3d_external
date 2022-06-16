@@ -28,7 +28,7 @@ public:
 private:
     XYZ *startLocation = nullptr;
     XYZ *centerLocation = nullptr;
-    int resIndex;
+    int resIndex; // default = 2
     int imageSize;
 };
 

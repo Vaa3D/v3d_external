@@ -10,7 +10,7 @@
 HttpUtilsDownLoad::HttpUtilsDownLoad(QWidget *parent)
 {
     manager = new QNetworkAccessManager();
-//    connect(NetWorkUtil::instance(), &NetWorkUtil::finished, this, &HttpUtilsDownLoad::downloadReplyFinished);
+    connect(NetWorkUtil::instance(), &NetWorkUtil::finished, this, &HttpUtilsDownLoad::downloadReplyFinished);
 }
 
 HttpUtilsDownLoad::~HttpUtilsDownLoad()
@@ -21,14 +21,14 @@ HttpUtilsDownLoad::~HttpUtilsDownLoad()
 void HttpUtilsDownLoad::downLoadImage(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size)
 {
     QJsonObject pa1;
-    pa1.insert("x", offsetX/2 - size/2);
-    pa1.insert("y", offsetY/2 - size/2);
-    pa1.insert("z", offsetZ/2 - size/2);
+    pa1.insert("x", offsetX - size/2);
+    pa1.insert("y", offsetY - size/2);
+    pa1.insert("z", offsetZ - size/2);
 
     QJsonObject pa2;
-    pa2.insert("x", offsetX/2 + size/2);
-    pa2.insert("y", offsetY/2 + size/2);
-    pa2.insert("z", offsetZ/2 + size/2);
+    pa2.insert("x", offsetX + size/2);
+    pa2.insert("y", offsetY + size/2);
+    pa2.insert("z", offsetZ + size/2);
 
     QJsonObject bBox;
     bBox.insert("pa1", pa1);
@@ -42,8 +42,8 @@ void HttpUtilsDownLoad::downLoadImage(QString brainId, QString res, int offsetX,
 
     // requestBody
     QJsonObject body;
-    body.insert("bb", bBox);
     body.insert("user", userInfo);
+    body.insert("bb", bBox);
 
     // post request
     QJsonDocument document;
@@ -54,15 +54,27 @@ void HttpUtilsDownLoad::downLoadImage(QString brainId, QString res, int offsetX,
     qDebug() << "download image json: " << dataArray;
 
     // test result, try single instance NetWorkUtil to post http request XD
-    QNetworkReply* downloadImage = NetWorkUtil::instance()->postRequst(URL_DOWNLOAD_IMAGE, body);
+//    QNetworkReply* downloadImage = NetWorkUtil::instance()->postRequst(URL_DOWNLOAD_IMAGE, body);
+    asyncPostRequest(URL_DOWNLOAD_IMAGE, body);
 }
 
 
 
 void HttpUtilsDownLoad::asyncPostRequest(QString url, QJsonObject &body)
 {
-    Q_UNUSED(url);
-    Q_UNUSED(body);
+    QJsonDocument document;
+    document.setObject(body);
+    QByteArray dataArray;
+    dataArray = document.toJson(QJsonDocument::Compact);
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json; charset=utf-8");
+    request.setUrl(url);
+
+    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(downloadReplyFinished(QNetworkReply*)));
+    QNetworkReply* reply = manager->post(request, dataArray);
+    QEventLoop eventLoop;
+    connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
+
 }
 
 /**
@@ -71,23 +83,31 @@ void HttpUtilsDownLoad::asyncPostRequest(QString url, QJsonObject &body)
  */
 void HttpUtilsDownLoad::downloadReplyFinished(QNetworkReply *reply)
 {
-    qDebug() << "do download image22222";
-    QByteArray data = reply->readAll();
-    qDebug() << data;
-    // save file setting
-    QString storePath = QCoreApplication::applicationDirPath();
-    QDir imageDir(storePath);
-    imageDir.mkdir("Image");
-    storePath = storePath + "/Image";
-//    QString fileName = brainId + "_" + res + "_" + QString::number(offsetX) + "_" + QString::number(offsetY) + "_" + QString::number(offsetZ) + ".v3dpbd";
-    QString fileName = "1.v3dpbd";
-    qDebug() << "fileName:" << fileName << "whole file:" << storePath + "/" + fileName;
-    QFile file(storePath + "/" + fileName);
-    file.open(QFile::WriteOnly);
-    file.write(data);
-    file.close();
+    int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QByteArray response = reply->readAll();
+    qDebug() << response;
+    if(status == 200) {
+        QByteArray response = reply->readAll();
+    //    qDebug() << response;
+        // save file
+    //    QString storePath = QCoreApplication::applicationDirPath() + "/Image";
+    //    // brainId
+    //    QString fileName = brainId + "_" + res + "_" + offsetX + "_" + offsetY + "_" + offsetZ + ".v3dpbd";
 
-    qDebug() << "finish downloading!";
+        QString filePath = "c:\\Users\\SEU\\Desktop\\1.v3dpbd";
+        QFile file(filePath);
+        file.open(QFile::WriteOnly);
+        file.write(response);
+        file.close();
+
+        // todo: render this image in CSMainwindow
+    //    csglwidget->loadObjectFromFile(filePath);
+        qDebug() << "done download!";
+    }
+    else {
+        qDebug()<< "ERROR: download failed!";
+    }
+
     reply->deleteLater();
     reply = nullptr;
 }

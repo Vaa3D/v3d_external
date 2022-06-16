@@ -7,7 +7,7 @@
 #include "serverconnection/net/networkutils.h"
 #include <fstream>
 /**
- * @brief 此窗口在构造时完成图像下载及渲染
+ * @brief
  * @param parent
  */
 CheckMapWidget::CheckMapWidget(QWidget *parent) :
@@ -15,7 +15,7 @@ CheckMapWidget::CheckMapWidget(QWidget *parent) :
     ui(new Ui::CheckMapWidget)
 {
     ui->setupUi(this);
-    connect(NetWorkUtil::instance(), &NetWorkUtil::finished, this, &CheckMapWidget::downloadImageFinish);
+//    connect(NetWorkUtil::instance(), &NetWorkUtil::finished, this, &CheckMapWidget::downloadImageFinish);
 
 }
 
@@ -73,7 +73,7 @@ void CheckMapWidget::downloadImageFinish(QNetworkReply *reply)
 {
     qDebug() << "do download image in checkmap";
     QByteArray response = reply->readAll();
-    qDebug() << response;
+//    qDebug() << response;
     // save file
 //    QString storePath = QCoreApplication::applicationDirPath() + "/Image";
 //    // brainId
@@ -87,7 +87,7 @@ void CheckMapWidget::downloadImageFinish(QNetworkReply *reply)
 
     // todo: render this image in CSMainwindow
 //    csglwidget->loadObjectFromFile(filePath);
-
+    qDebug() << "done download!";
     reply->deleteLater();
     reply = nullptr;
 }

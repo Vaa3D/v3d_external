@@ -182,6 +182,7 @@ HEADERS += \
     ../serverconnection/net/httputilsbrainlist.h \
     ../serverconnection/net/httputilsdownload.h \
     ../serverconnection/net/httputilsgetlocation.h \
+    ../serverconnection/net/httputilsqualityinspection.h \
     ../serverconnection/net/httputilsuser.h \
     ../serverconnection/net/networkutils.h \
     ../vrrenderer/VRwidget.h \
@@ -313,6 +314,7 @@ SOURCES += \
     ../serverconnection/net/httputilsbrainlist.cpp \
     ../serverconnection/net/httputilsdownload.cpp \
     ../serverconnection/net/httputilsgetlocation.cpp \
+    ../serverconnection/net/httputilsqualityinspection.cpp \
     ../serverconnection/net/httputilsuser.cpp \
     ../serverconnection/net/networkutils.cpp \
     ../vrrenderer/VRwidget.cpp \

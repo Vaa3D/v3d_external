@@ -3,7 +3,7 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
-
+#include "serverconnection/infocache.h"
 
 
 CSMainWindow::CSMainWindow(QWidget *parent)
@@ -17,6 +17,14 @@ CSMainWindow::CSMainWindow(QWidget *parent)
     httpGetLocation = new HttpGetLocation(this);
     httpGetBrainList = new HttpUtilsBrainList(this);
     httpUtilsDownload = new HttpUtilsDownLoad(this);
+//    httpUtilsQualityInspection = new HttpUtilsQualityInspection(this);
+
+    coordinateConvert = new CoordinateConvert();
+    lastDownloadCoordinateConvert = new CoordinateConvert();
+    coordinateConvert->setResIndex(DEFAULT_RES_INDEX);
+    coordinateConvert->setImgSize(DEFAULT_IMAGE_SIZE);
+    lastDownloadCoordinateConvert->setResIndex(DEFAULT_RES_INDEX);
+    lastDownloadCoordinateConvert->setImgSize(DEFAULT_IMAGE_SIZE);
 
     // connect signals and slots
     connect(httpGetLocation, SIGNAL(sendXYZ(int, QString, int, int, int)), this, SLOT(setLocXYZ(int, QString, int, int, int)));
@@ -35,6 +43,7 @@ CSMainWindow::~CSMainWindow()
     delete httpGetBrainList;
 //    delete uertLastPotentialSomaInfo;
     delete httpUtilsDownload;
+//    delete httpUtilsQualityInspection;
 }
 
 void CSMainWindow::getPotentialLoaction()
@@ -55,16 +64,21 @@ void CSMainWindow::getBrainList()
 
 void CSMainWindow::downloadImage()
 {
-//    ui->checkmapwidget->downloadImage(brainId, res, (int)loc->x, (int)loc->y, (int)loc->z, DEFAULT_IMG_SIZE);
-//    ui->checkmapwidget->downloadImage("201589", "RES(15400x9474x5683)", 7587, 15888, 10274, 128);
-//    QString brainId = uertLastPotentialSomaInfo->getBrainId();
-//    XYZ* loc = userLastCoordinateConvert.getCenterLocation();
-//    QString res = resMap.value("brainId");
-//    ui->checkmapwidget->downloadImage(brainId, res, (int)loc->x, (int)loc->y, (int)loc->z, DEFAULT_IMG_SIZE);
+
     QString res = resMap[this->brainId];
     qDebug() << "input download para, [brainId]:" << this->brainId << "[res]:" << res << "[x, y, z]" << (int)xyzForLoc.x <<"," << (int)xyzForLoc.y<< "," << (int)xyzForLoc.z;
-    ui->checkmapwidget->downloadImage(this->brainId, res, (int)xyzForLoc.x, (int)xyzForLoc.y, (int)xyzForLoc.z, DEFAULT_IMG_SIZE);
-//    httpUtilsDownload->downLoadImage(brainId, res, (int)xyzForLoc.x, (int)xyzForLoc.y, (int)xyzForLoc.z, DEFAULT_IMG_SIZE);
+    httpUtilsDownload->downLoadImage(this->brainId, res, (int)(xyzForLoc.x / pow(2, resIndex-1)), (int)(xyzForLoc.y / pow(2, resIndex-1)), (int)(xyzForLoc.z / pow(2, resIndex-1)), DEFAULT_IMAGE_SIZE);
+
+}
+
+void CSMainWindow::getSwc()
+{
+//    QString arborName = curPotentialArborMarkerInfo.getArborName();
+//    XYZ *loc = curPotentialArborMarkerInfo.getLocation();
+//    QString res = "/" + curPotentialArborMarkerInfo.getBrainId() + "/" + curPotentialArborMarkerInfo.getSomaId();
+
+//    httpUtilsQualityInspection->getSWCWithHttp(res, (float)loc->x, (float)loc->y, (float)loc->z, DEFAULT_IMAGE_SIZE * (int)pow(2, lastDownloadCoordinateConvert->getResIndex()-1), arborName);
+
 }
 
 
@@ -72,7 +86,10 @@ void CSMainWindow::downloadImage()
 void CSMainWindow::on_checkmapBtn_clicked()
 {
     // get potential location
-    // getBrainList();
+//    getPotentialLoaction();
+    // get brainlist
+//    getBrainList();
+    // do download
     downloadImage();
 }
 
