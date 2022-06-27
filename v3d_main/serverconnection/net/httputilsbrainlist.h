@@ -15,7 +15,7 @@ public:
 
 signals:
     void sendPotentialLocation(QString imageID, QString RES);
-
+    void getbrainlistdone();
 public slots:
     void brainListReplyFinished(QNetworkReply* reply);
 

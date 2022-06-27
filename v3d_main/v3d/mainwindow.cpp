@@ -71,6 +71,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 
 #include "serverconnection/logindialog.h"
 #include "serverconnection/csmainwindow.h"
+#include "serverconnection/CheckWidget.h" //csz
 //#ifdef __ALLOW_VR_FUNCS__
 //#include "../mozak/MozakUI.h";
 //#endif
@@ -3004,9 +3005,12 @@ void MainWindow::func_procModeNeuronAnnotator()
 void MainWindow::loginDialogShow()
 {
     logindialog = new LoginDialog(this);
-    csmainwindow = new CSMainWindow(this);
+    //csmainwindow = new CSMainWindow(this);
+    ckwidget =new CheckWidget(this);
+    ckwidget->getBrainList();
     logindialog->show();
-    connect(logindialog, SIGNAL(showMain()), csmainwindow, SLOT(show()));
+    //connect(logindialog, SIGNAL(showMain()), csmainwindow, SLOT(show()));
+    connect(logindialog, SIGNAL(showMain()), ckwidget, SLOT(show()));
 }
 
 void MainWindow::setV3DDefaultModeCheck(bool checkState) {

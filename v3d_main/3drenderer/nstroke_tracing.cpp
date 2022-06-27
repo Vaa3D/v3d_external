@@ -6515,7 +6515,6 @@ void Renderer_gl1::cutNeuronsByStroke()
 	return;
 }
 // --------------------- END of [neuron cutting tool, by MK 2017 June] -----------------------
-
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {
     int node_type = 0;
@@ -6564,9 +6563,9 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                                                              "\n 4 -- apical dendrite (purple)"
                                                              "\n else -- custom \n"),
                                                  currentTraceType, 0, 100, 1, &ok);
+
 #endif
         }
-
         if(!ok) return;
         currentTraceType = node_type;
     }else if(neuronColorMode == 5)

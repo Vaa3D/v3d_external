@@ -64,6 +64,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 class V3DWebService; //110315 YuY
 class soappara; //110315 YuY
 #endif
+
+
 class V3d_PluginLoader;
 class Image4DSimple;
 class My4DImage;
@@ -76,6 +78,7 @@ class V3dR_MainWindow;
 class Vaa3DPluginMenu;
 class LoginDialog;
 class CSMainWindow;
+class CheckWidget;  //CSZ
 
 //class QList <V3dR_MainWindow *>;
 //struct LocationSimple; //080107
@@ -538,6 +541,7 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 public: //20220504,DLC, login server dialog
     LoginDialog *logindialog;
     CSMainWindow *csmainwindow;
+    CheckWidget *ckwidget;  //csz
 public slots:
 
 };

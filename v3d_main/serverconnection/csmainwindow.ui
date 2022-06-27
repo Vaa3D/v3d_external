@@ -81,8 +81,8 @@
    <widget class="QCommandLinkButton" name="commandLinkButton">
     <property name="geometry">
      <rect>
-      <x>590</x>
-      <y>250</y>
+      <x>560</x>
+      <y>240</y>
       <width>31</width>
       <height>41</height>
      </rect>
@@ -98,7 +98,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>

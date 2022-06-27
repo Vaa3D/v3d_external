@@ -75,7 +75,7 @@ void printHelp_align();
 void printHelp_straight();
 void printHelp_trace();
 
-V3dApplication* V3dApplication::theApp = 0;
+//V3dApplication* V3dApplication::theApp = 0;   csz20220621
 
 void printHelp_v3d()
 {
@@ -113,6 +113,8 @@ void printHelp_v3d()
 int main(int argc, char **argv)
 {
 //    qInstallMsgHandler(customMessageHandler);
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling,true);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
  for (int myii=0; myii<argc;myii++)
  {
      v3d_msg(QString("[%1]").arg(argv[myii]));

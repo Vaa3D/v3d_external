@@ -78,10 +78,68 @@ enum v3dr_SurfaceType { stSurfaceNone=0,
                 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
+class CtrlT:public QWidget{
+    Q_OBJECT
+public:
+    CtrlT(int mode){
+        confirm=new QPushButton("OK");
+        type=new QSpinBox;
+        text=new QLabel;
+        text->setText("SWC type: \n 0 -- undefined (white)\n 1 -- soma (black)\n 2 -- axon (red)\n 3 -- dendrite (blue)\n 4 -- apical dendrite (purple)\n else -- custom \n");
+        type->setMinimum(0);
+        type->setSingleStep(1);
+        vlayout=new QVBoxLayout;
+        vlayout->addWidget(text);
+        vlayout->addWidget(type);
+        vlayout->addWidget(confirm,Qt::AlignRight);
+        this->setLayout(vlayout);
+
+//        node_type = QInputDialog::getInt(0, QObject::tr("Change node type in segment"),
+//                                             QObject::tr("SWC type: "
+//                                                         "\n 0 -- undefined (white)"
+//                                                         "\n 1 -- soma (black)"
+//                                                         "\n 2 -- axon (red)"
+//                                                         "\n 3 -- dendrite (blue)"
+//                                                         "\n 4 -- apical dendrite (purple)"
+//                                                         "\n else -- custom \n"),
+//                                             currentTraceType, 0, 100, 1, &ok);
+        connect(confirm,SIGNAL(clicked()),this,SLOT(confirmed()));
+        this->setFixedSize(400,500);
+    };
+    ~CtrlT(){
+
+    };
+
+    void setdefault(int value){
+        this->type->setValue(value);
+    };
+signals:
+    void retype(int type,int level);
+//    void readytoclear();
+public slots:
+    void confirmed(){
+        emit retype(this->type->value(),0);
+        this->hide();
+//        emit readytoclear();
+    };
+protected:
+    void closeEvent(QCloseEvent *event){
+        this->hide();
+    };
+
+private:
+    QPushButton *confirm;
+    QSpinBox *type;
+    QLabel *text;
+    QVBoxLayout *vlayout;
+
+};
+
 
 //110813 RZC, change Renderer_tex2 to Renderer_gl1
 class Renderer_gl1 : public Renderer
 {
+    Q_OBJECT
     friend class V3dr_surfaceDialog; //for accessing all surface data structure
     friend class V3dr_colormapDialog;
 
@@ -249,7 +307,7 @@ public:
     void finishEditingNeuronTree();
 
 #endif
-
+    CtrlT *ctrlt;
     static bool rightClickMenuDisabled;
     QString info_Marker(int marker_i);
     QString info_NeuronNode(int node_i, NeuronTree * ptree);
@@ -734,7 +792,11 @@ public:
     RGBA8 currentMarkerColor;//added by ZZ 05142018
 
     float zThick;
-
+signals:
+    void readytoclear();
+public slots:
+    void retypeMultiNeuronsByStroke(int type,int level);
+    void clearlist_listCurvePos(){list_listCurvePos.clear();};
 private:
     void init_members()
     {

@@ -578,7 +578,7 @@ bool loadAnoFile(QString openFileNameLabel, P_ObjectFileType & cc)
 	int cnt=0;
 	for (int i=0;i<tmpList.size(); i++)
 	{
-		//printf("(%s)\n", tmpList.at(i).toAscii().data());
+		//printf("(%s)\n", tmpList.at(i).toLatin1().data());
 		QStringList itemList;
 		
 		if (tmpList.at(i).isEmpty() || tmpList.at(i).at(0)=='#') //a comment line, do nothing

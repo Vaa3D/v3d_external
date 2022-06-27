@@ -1312,7 +1312,6 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
 {
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
-
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {

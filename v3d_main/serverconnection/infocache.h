@@ -3,10 +3,6 @@
 
 #include <QString>
 
-/**
- * @brief 该类需单例创建，用于存储连接网络的用户信息
- * - 使用懒汉式创建，多线程不安全！
- */
 class InfoCache
 {
 private:

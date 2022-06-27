@@ -2793,10 +2793,8 @@ void Renderer_gl1::drawNeuronTreeList()
     //		glStencilMask(-1);
     //		//glDepthMask(GL_TRUE);
     //	}
-    //for (int pass=0; pass<2; pass++) //注释这行，让绘制只走1遍
-
-
-        //setFloatDrawOp(pass, sShowSurfObjects);
+    for (int pass=0; pass<2; pass++) {//注释这行，让绘制只走1遍
+        setFloatDrawOp(pass, sShowSurfObjects);
         //setFloatDrawOp(1,2);
 
         for (int i=0; i<listNeuronTree.size(); i++)
@@ -2809,8 +2807,8 @@ void Renderer_gl1::drawNeuronTreeList()
             glPopName();
             if (S.selected) HIGHLIGHT_OFF();
         }
-
-    //setFloatDrawOp(-1, sShowSurfObjects);
+    }
+    setFloatDrawOp(-1, sShowSurfObjects);
 //	glEnable(GL_LIGHTING);
 //	glDisable(GL_CULL_FACE);
     glPopAttrib();

@@ -150,7 +150,7 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
     ///////////////////////////////////////////////////////////////
 
     //setFormat(QGLFormat(0));
-    qDebug()<<"init_members 之后";
+    //qDebug()<<"init_members 之后";
 
 
     makeCurrent(); //090729: this make sure created GL context
@@ -186,7 +186,7 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
     setFocusPolicy(Qt::StrongFocus); // accept KeyPressEvent when mouse click, by RZC 081028
     //setFocusProxy(mainWindow);
 
-    qDebug("V3dR_GLWidget::V3dR_GLWidget ----- end    in v3dr_glwidget.cpp");
+    //qDebug("V3dR_GLWidget::V3dR_GLWidget ----- end    in v3dr_glwidget.cpp");
     currentPluginState = -1; // May 29, 2012 by Hang
 }
 
@@ -676,7 +676,7 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
         }
     }
 
-    if (event->button()==Qt::RightButton && renderer) //right-click
+    if (!isoperating&&event->button()==Qt::RightButton && renderer) //right-click
     {
         int x = event->x();
         int y = event->y();
@@ -684,11 +684,14 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
         x = 2 * x;
         y = 2 * y;
         #endif
+
         if (renderer->hitPoint(x,y))  //pop-up menu (selectObj) or marker definition (hitPen)
         {
            updateTool();
+           //POST_updateGL();
         }
-        POST_updateGL(); //display result after menu
+        //updateTool();
+        POST_updateGL(); //display result after menu   //csz solve the blue screen don't know the reason
     }
 }
 
@@ -724,10 +727,9 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
         if ( ABS(dx) + ABS(dy) >=2 )
     {
         (renderer->movePen(event->x(), event->y(), true));
-        QPaintEvent *pEvent;
-        paintEvent(pEvent);
-
-        // DO_updateGL(); // instantly display pen track, dlc comment for bug
+//        QPaintEvent *pEvent;
+//        paintEvent(pEvent);
+//        DO_updateGL(); // instantly display pen track, dlc comment for bug
 
 
         return;
@@ -969,6 +971,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }else if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+B: Drawing BBox");
+                if(!isoperating)
+                    isoperating=true;
                 callStrokeCurveDrawingBBoxes();//For serial BBoxes curve drawing shortcut, by ZZ,02212018
             }
             break;
@@ -1032,10 +1036,14 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }else if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+G: Drawing Global");
+                if(!isoperating)
+                    isoperating=true;
                 callStrokeCurveDrawingGlobal();//For Global optimal curve drawing shortcut, by ZZ,02212018
             }else
             {
                 emit changeEditinput("Alt+G: GDTraing");
+                if(!isoperating)
+                    isoperating=true;
                 callGDTracing();
             }
             break;
@@ -1214,6 +1222,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+E");
+                if(!isoperating)
+                    isoperating=true;
                 toggleEditMode();
             }
             else if (IS_SHIFT_MODIFIER)
@@ -1270,6 +1280,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }else if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+T");
+                if(!isoperating)
+                    isoperating=true;
                 callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018
             }
             else if (WITH_ALT_MODIFIER && WITH_SHIFT_MODIFIER)
@@ -1293,6 +1305,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+D: Deleting");
+                if(!isoperating)
+                    isoperating=true;
                 callStrokeDeleteMultiNeurons(); //For multiple segments deleting shortcut, by ZZ,02212018
             }
             else
@@ -1319,6 +1333,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+S");
+                if(!isoperating)
+                    isoperating=true;
                 callStrokeSplitMultiNeurons();//For multiple segments spliting shortcut, by ZZ,02212018
             }
 #ifdef _NEURON_ASSEMBLER_
@@ -1386,6 +1402,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }else if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+C: Connecting");
+                if(!isoperating)
+                    isoperating=true;
                 callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else if (IS_SHIFT_MODIFIER)
@@ -1442,11 +1460,15 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             else if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+V");
+                if(!isoperating)
+                    isoperating=true;
                 changeVolShadingOption();
             }
             else if (IS_CTRL_MODIFIER)
             {
                 emit changeEditinput("Ctl+T");
+                if(!isoperating)
+                    isoperating=true;
                 updateImageData();
             }
             else
@@ -1465,11 +1487,15 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             else if (IS_CTRL_MODIFIER)
             {
                 emit changeEditinput("Ctl+P");
+                if(!isoperating)
+                    isoperating=true;
                 togglePolygonMode();
             }
             else if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+P");
+                if(!isoperating)
+                    isoperating=true;
                 changeObjShadingOption();
             }
             break;
@@ -1496,6 +1522,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_Escape:
             {
                 emit changeEditinput("Esc: cancelled selection");
+                if(isoperating)
+                    isoperating=false;
                 cancelSelect();
 
 #ifdef _NEURON_ASSEMBLER_
@@ -1533,6 +1561,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             if (IS_CTRL_MODIFIER)
             {
                 emit changeEditinput("Ctl+N: toggle cell name");
+                if(!isoperating)
+                    isoperating=true;
                 toggleCellName();
             }
             else if (IS_SHIFT_MODIFIER) // toggle marker name display. by Lei Qu, 110425
@@ -1542,6 +1572,8 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             else if (IS_ALT_MODIFIER)
             {
                 emit changeEditinput("Alt+N: show connected segs");
+                if(!isoperating)
+                    isoperating=true;
                 callShowConnectedSegs();
             }
             else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)
@@ -3783,7 +3815,6 @@ void V3dR_GLWidget::callStrokeCurveDrawingGlobal()
         }
     }
 }
-
 void V3dR_GLWidget::callStrokeRetypeMultiNeurons()
 {
     if (renderer)

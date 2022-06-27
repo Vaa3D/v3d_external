@@ -1,5 +1,7 @@
 #include "v3d_application.h"
 
+V3dApplication* V3dApplication::theApp = 0;   //csz 20220621
+
 MainWindow* V3dApplication::mainWindow=0; //reset to be 0. by Hanchuan Peng, 20110705
 bool V3dApplication::mainWindowIsActive;
 

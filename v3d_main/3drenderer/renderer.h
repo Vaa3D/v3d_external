@@ -64,7 +64,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 //		delete renderer;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Renderer
+class Renderer:public QObject
 {
 public:
     enum RenderMode {rmCrossSection=0,
@@ -119,6 +119,7 @@ public:
 
     bool hasError() {return b_error;}
     void makeCurrent(); //ensure right-GL-context when resize-view, animate, mouse-drop, delete-object, select-object etc. across multiple views, 081105
+    void doneCurrent();
     void drawString(float x, float y, float z, const char* text, int shadow=0, int fontsize=0);
     bool beStill();
 

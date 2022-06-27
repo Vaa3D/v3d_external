@@ -16,7 +16,7 @@ public:
 
 signals:
     void sendXYZ(int id, QString image, int x, int y, int z);
-
+    void getpotentiallocationdone();
 public slots:
     void locationReplyFinished(QNetworkReply* reply);
 

@@ -7,6 +7,7 @@
 HttpUtilsBrainList::HttpUtilsBrainList(QWidget *parent)
 {
     manager = new QNetworkAccessManager();
+    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(brainListReplyFinished(QNetworkReply*)));
 }
 
 HttpUtilsBrainList::~HttpUtilsBrainList()
@@ -36,7 +37,7 @@ void HttpUtilsBrainList::asyncPostRequest(QString url, QJsonObject &body)
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json; charset=utf-8");
     request.setUrl(QUrl(url));
 
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(brainListReplyFinished(QNetworkReply*)));
+
     manager->post(request, dataArray);
 }
 
@@ -68,6 +69,7 @@ void HttpUtilsBrainList::brainListReplyFinished(QNetworkReply *reply)
                 QString imageID = obj.value("name").toString();
                 emit sendPotentialLocation(imageID, res);
             }
+            emit getbrainlistdone();
 
         }
     }

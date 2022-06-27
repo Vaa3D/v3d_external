@@ -80,6 +80,15 @@ void Renderer::makeCurrent()
     w->makeCurrent();
 }
 
+void Renderer::doneCurrent()
+{
+    if (! widget)  return;
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    w->doneCurrent();
+}
+
 void Renderer::drawString(float x, float y, float z, const char* text, int shadow, int fontsize)
 {
     if (! widget)  return;
@@ -555,12 +564,12 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
         glPolygonOffset(0, -1); // deal z-fighting with volume, 081120
 
         glLineWidth(BlineWidth); // work only before glBegin(), by RZC 080827
-//        glBegin(GL_QUADS);qt6
-//        //glBegin(GL_LINES);
-//        {
-//            glColor3fv(color_line.c);	box_quads(BB);
-//        }
-//        glEnd();
+        glBegin(GL_QUADS);//qt6        //csz20220627
+        //glBegin(GL_LINES);
+        {
+            glColor3fv(color_line.c);	box_quads(BB);
+        }
+        glEnd();
     }
 
     glPopAttrib();

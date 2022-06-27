@@ -75,7 +75,10 @@ Renderer_gl1::Renderer_gl1(void* widget)
     this->zThick = 1;
     this->FragTraceMarkerDetector3Dviewer = false;
     this->NAeditingMode = false;
+    this->ctrlt=new CtrlT(1);
 
+    connect(ctrlt,SIGNAL(retype(int,int)),this,SLOT(retypeMultiNeuronsByStroke(int,int)));
+    connect(this,SIGNAL(readytoclear()),this,SLOT(clearlist_listCurvePos));
     qDebug("  Renderer_gl1::Renderer_gl1");
     init_members();
 }
@@ -404,8 +407,8 @@ void Renderer_gl1::setRenderTextureLast(bool renderTextureLast) {
 
 void Renderer_gl1::paint()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    makeCurrent();
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);  //csz20220627
+//    makeCurrent();
     if (b_error) return; //080924 try to catch the memory error
 
     glClearColor(color_background.r, color_background.g, color_background.b, 0);
@@ -417,17 +420,17 @@ void Renderer_gl1::paint()
 //    // significantly because this paint routine spends most of its time redrawing the volume.
 //    // since the volume can't change while the user is drawing a curve, we skip all of the rendering
 //    // steps except drawing the track while the track is being displayed.
-//    if (!sShowTrack || highlightedEndNodeChanged)
-//    {
-//        glClearStencil(0);
-//        glClearDepth(1);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-//        // clearing framebuffer; reset the drawn flag on all the markers
-//        for (int marker = 0; marker < listMarkerPos.size(); marker++)
-//        {
-//            listMarkerPos[marker].drawn = false;
-//        }
-//    }
+    if (!sShowTrack || highlightedEndNodeChanged)    //csz20220627
+    {
+        glClearStencil(0);
+        glClearDepth(1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        // clearing framebuffer; reset the drawn flag on all the markers
+        for (int marker = 0; marker < listMarkerPos.size(); marker++)
+        {
+            listMarkerPos[marker].drawn = false;
+        }
+    }
 
 
     glEnable(GL_DEPTH_TEST);
@@ -457,8 +460,8 @@ void Renderer_gl1::paint()
         if (!b_renderTextureLast) {
             renderVol();
             // 清图像深度缓存为最远,做一个函数
-            glClearDepth(1);
-            glClear(GL_DEPTH_BUFFER_BIT);
+//            glClearDepth(1);          //csz20220627
+//            glClear(GL_DEPTH_BUFFER_BIT);
 
         }
 

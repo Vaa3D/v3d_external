@@ -9,6 +9,7 @@ HttpUtils::HttpUtils(QWidget *parent)
     : QObject(parent)
 {
 
+
 }
 
 HttpUtils::~HttpUtils()

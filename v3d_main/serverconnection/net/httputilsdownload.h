@@ -12,14 +12,7 @@ public:
 
     void downLoadImage(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size);
     virtual void asyncPostRequest(QString url, QJsonObject &body);
-
-public:
-    ////// member //////
-    QString brainId;
-    QString res;
-    int offsetX, offsetY, offsetZ;
-
-
+    void bordercontrol(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size);
 signals:
     //pass
 
@@ -28,6 +21,9 @@ public slots:
 
 private:
     QString URL_DOWNLOAD_IMAGE = SERVER_IP + "/dynamic/image/cropimage";
+    QString mbrainId;
+    QString mres;
+    int moffsetX, moffsetY, moffsetZ;
 };
 
 #endif // HTTPUTILSDOWNLOAD_H

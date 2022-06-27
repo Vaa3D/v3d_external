@@ -171,6 +171,8 @@ HEADERS += \
     ../neuron_annotator/analysis/AnalysisTools.h \
     ../neuron_annotator/analysis/MaskChan.h \
     ../neuron_annotator/analysis/DilationErosion.h \
+    ../serverconnection/CheckGlWidget.h \
+    ../serverconnection/CheckWidget.h \
     ../serverconnection/checkmapwidget.h \
     ../serverconnection/csmainwindow.h \
     ../serverconnection/infocache.h \
@@ -305,6 +307,8 @@ SOURCES += \
 #    ../neuron_annotator/analysis/AnalysisTools.cpp \
 #    ../neuron_annotator/analysis/MaskChan.cpp \
 #    ../neuron_annotator/analysis/DilationErosion.cpp \
+    ../serverconnection/CheckGlWidget.cpp \
+    ../serverconnection/CheckWidget.cpp \
     ../serverconnection/checkmapwidget.cpp \
     ../serverconnection/csmainwindow.cpp \
     ../serverconnection/infocache.cpp \

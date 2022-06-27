@@ -172,7 +172,7 @@ V3dR_MainWindow::~V3dR_MainWindow()
 
 V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
 {
-	qDebug("V3dR_MainWindow::V3dR_MainWindow =====================================");
+    //qDebug("V3dR_MainWindow::V3dR_MainWindow =====================================");
 
     init_members();    // this is important to clear zero before new object, by RZC 080818
 
@@ -238,14 +238,14 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
 
 
     //创建控制信号
-    qDebug("V3dR_MainWindow::createControlWidgets");
+    //qDebug("V3dR_MainWindow::createControlWidgets");
     createControlWidgets(); // RZC 080930, 090420: included connectSignal() & initControlValue()
 
 
     setAcceptDrops(true); //081031
     setFocusPolicy(Qt::StrongFocus); // STRANGE: cannot accept foucusInEvent when mouse click, 081119
 
-    qDebug("V3dR_MainWindow::V3dR_MainWindow ===== end");
+    //qDebug("V3dR_MainWindow::V3dR_MainWindow ===== end");
 }
 
 void V3dR_MainWindow::setDataTitle(QString newdt)

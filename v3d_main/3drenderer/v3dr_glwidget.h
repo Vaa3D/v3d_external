@@ -578,6 +578,7 @@ public:
 
     int _volumeTimePoint; float volumeTimPoint_fraction;
     int neuronColorMode;
+    bool isoperating;
 
     void init_members()
     {
@@ -628,6 +629,7 @@ public:
         teraflyZoomInPOS = 0;
         CollaborationCreatorPos = 0;
         Resindex = 1;
+        isoperating=false;
 #endif
     }
 };

@@ -7,6 +7,7 @@
 HttpGetLocation::HttpGetLocation(QWidget *parent)
 {
     manager = new QNetworkAccessManager();
+    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(locationReplyFinished(QNetworkReply*)));
 }
 
 HttpGetLocation::~HttpGetLocation()
@@ -40,7 +41,7 @@ void HttpGetLocation::asyncPostRequest(QString url, QJsonObject &body)
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json; charset=utf-8");
     request.setUrl(QUrl(url));
 
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(locationReplyFinished(QNetworkReply*)));
+
     QNetworkReply *reply = manager->post(request, dataArray);
     QEventLoop eventLoop;
     connect(reply, &QNetworkReply::finished, &eventLoop, &QEventLoop::quit);
@@ -71,8 +72,11 @@ void HttpGetLocation::locationReplyFinished(QNetworkReply *reply)
             int z = mapLoc["z"].toInt();
             // let x,y,z out to CSMainWindow to construct CoordinateConvert
             emit sendXYZ(id, image, x, y, z);
+            emit getpotentiallocationdone();
 
         }
+    }else{
+        qDebug()<<"Getlocation failed! Exit status "<<status;
     }
     reply->deleteLater();
 }
