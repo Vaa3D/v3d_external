@@ -2573,7 +2573,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         if (b_move)
         {
             qDebug("\t track ( %i, %i ) to define Curve", x,y);
-            this->sShowTrack = 1;
+//            this->sShowTrack = 1;  //csz20220628
             return 1; //display 2d track
         }
         // release button
@@ -2669,7 +2669,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         if (b_move)
         {
             //qDebug("\t track ( %i, %i ) to refine Curve", x,y);
-            this->sShowTrack = 1;
+//            this->sShowTrack = 1;  //csz20220628
             return 1; //display 2d track
         }
         // else release button
