@@ -75,10 +75,10 @@ Renderer_gl1::Renderer_gl1(void* widget)
     this->zThick = 1;
     this->FragTraceMarkerDetector3Dviewer = false;
     this->NAeditingMode = false;
-    this->ctrlt=new CtrlT(1);
+//    this->ctrlt=new CtrlT(1);
 
-    connect(ctrlt,SIGNAL(retype(int,int)),this,SLOT(retypeMultiNeuronsByStroke(int,int)));
-    connect(this,SIGNAL(readytoclear()),this,SLOT(clearlist_listCurvePos));
+//    connect(ctrlt,SIGNAL(retype(int,int)),this,SLOT(retypeMultiNeuronsByStroke(int,int)));
+//    connect(this,SIGNAL(readytoclear()),this,SLOT(clearlist_listCurvePos));
     qDebug("  Renderer_gl1::Renderer_gl1");
     init_members();
 }
@@ -455,7 +455,7 @@ void Renderer_gl1::paint()
 
     prepareVol();
 
-    if (!sShowTrack  || highlightedEndNodeChanged)
+//    if (!sShowTrack  || highlightedEndNodeChanged)
     {
         if (!b_renderTextureLast) {
             renderVol();
@@ -2093,7 +2093,7 @@ void Renderer_gl1::blendTrack()
         const MarkerPos & pos = listMarkerPos.at(i);
 
         // only draw in markers that haven't already been rendered since the last framebuffer clear
-        if (!pos.drawn)
+//        if (!pos.drawn)
         {
             double x = (pos.x   - pos.view[0])/pos.view[2];
             double y = (pos.y   - pos.view[1])/pos.view[3];

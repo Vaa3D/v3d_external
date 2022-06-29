@@ -2573,7 +2573,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         if (b_move)
         {
             qDebug("\t track ( %i, %i ) to define Curve", x,y);
-//            this->sShowTrack = 1;  //csz20220628
+            this->sShowTrack = 1;  //csz20220628
             return 1; //display 2d track
         }
         // release button
@@ -2608,12 +2608,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             }
             else if (selectMode == smRetypeMultiNeurons)
             {
-                if(!this->ctrlt->isVisible()){
-                    this->ctrlt->setdefault(currentTraceType);
-                    this->ctrlt->show();
-                }
+//                if(!this->ctrlt->isVisible()){
+//                    this->ctrlt->setdefault(currentTraceType);
+//                    this->ctrlt->show();
+//                }
                 //connect(ctrlt,SIGNAL(retype(int,int)),this,SLOT(retypeMultiNeuronsByStroke(int,int)));
-                //retypeMultiNeuronsByStroke();
+                retypeMultiNeuronsByStroke();
             }
             else if (selectMode == smBreakMultiNeurons)
             {
@@ -2643,9 +2643,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             // MK, 2017 June ----------------------------------------------------------
             else if (selectMode == smCutNeurons) cutNeuronsByStroke();
             // ------------------------------------------------------------------------
-            if(!this->ctrlt->isVisible()){
+//            if(!this->ctrlt->isVisible()){
                 list_listCurvePos.clear();
-            }
+//            }
             if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3) // make 1-track continue selected mode
                 endSelectMode();
         }
@@ -2669,7 +2669,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         if (b_move)
         {
             //qDebug("\t track ( %i, %i ) to refine Curve", x,y);
-//            this->sShowTrack = 1;  //csz20220628
+            this->sShowTrack = 1;  //csz20220628
             return 1; //display 2d track
         }
         // else release button
@@ -4206,154 +4206,154 @@ void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506
 #endif //test_main_cpp
 }
 
-void Renderer_gl1::retypeMultiNeuronsByStroke(int type, int level)
-{
-    int node_type = 0;
-    int node_level = 0;
+//void Renderer_gl1::retypeMultiNeuronsByStroke(int type, int level)
+//{
+//    int node_type = 0;
+//    int node_level = 0;
 
-    bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
-    bool node_mode = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier);
-    if(neuronColorMode==0)
-    {
-        if (useCurrentTraceTypeForRetyping)
-        {
-            node_type = currentTraceType;
-        }
-        else
-        {
-            node_type=type;
-        }
-        currentTraceType = node_type;
-    }else if(neuronColorMode == 5)
-    {
-        int inputlevel = level;
-        switch (inputlevel)
-        {
-        case 0:  node_level = 20;break;
-        case 1:  node_level = 150;break;
-        case 2:  node_level = 275;break;
-        }
+//    bool contour_mode = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+//    bool node_mode = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier);
+//    if(neuronColorMode==0)
+//    {
+//        if (useCurrentTraceTypeForRetyping)
+//        {
+//            node_type = currentTraceType;
+//        }
+//        else
+//        {
+//            node_type=type;
+//        }
+//        currentTraceType = node_type;
+//    }else if(neuronColorMode == 5)
+//    {
+//        int inputlevel = level;
+//        switch (inputlevel)
+//        {
+//        case 0:  node_level = 20;break;
+//        case 1:  node_level = 150;break;
+//        case 2:  node_level = 275;break;
+//        }
 
-    }else
-        return;
-    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+//    }else
+//        return;
+//    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
-    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
-    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+//    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+//    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-    //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
-    const float tolerance_squared = 100; // tolerance distance from the backprojected neuron to the curve point (squared for faster dist computation)
+//    //v3d_msg(QString("getNumShiftHolding() = ") + QString(w->getNumShiftHolding() ? "YES" : "no"));
+//    const float tolerance_squared = 100; // tolerance distance from the backprojected neuron to the curve point (squared for faster dist computation)
 
-    // contour 2 polygon
-    QPolygon poly;
-    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
-        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
+//    // contour 2 polygon
+//    QPolygon poly;
+//    for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
+//        poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
 
-    // back-project the node curve points and mark segments to be deleted
-    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
-    {
-        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
-        if (p_tree
-                && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
-        {
-            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
-            if (!p_listneuron)
-                continue;
-            bool allUnitsOutsideZCut = false;
-            for (V3DLONG i=0;i<p_listneuron->size();i++)
-            {
-                GLdouble px, py, pz, ix, iy, iz;
-                ix = p_listneuron->at(i).x;
-                iy = p_listneuron->at(i).y;
-                iz = p_listneuron->at(i).z;
-                allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
+//    // back-project the node curve points and mark segments to be deleted
+//    for(V3DLONG j=0; j<listNeuronTree.size(); j++)
+//    {
+//        NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(j))); //curEditingNeuron-1
+//        if (p_tree
+//                && p_tree->editable)    // @FIXED by Alessandro on 2015-05-23. Removing segments from non-editable neurons causes crash.
+//        {
+//            QList <NeuronSWC> *p_listneuron = &(p_tree->listNeuron);
+//            if (!p_listneuron)
+//                continue;
+//            bool allUnitsOutsideZCut = false;
+//            for (V3DLONG i=0;i<p_listneuron->size();i++)
+//            {
+//                GLdouble px, py, pz, ix, iy, iz;
+//                ix = p_listneuron->at(i).x;
+//                iy = p_listneuron->at(i).y;
+//                iz = p_listneuron->at(i).z;
+//                allUnitsOutsideZCut = ! ((((float) iz) >=  this->swcBB.z0)&&( ((float) iz) <=  this->swcBB.z1));
 
-                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
-                {
-                    py = viewport[3]-py; //the Y axis is reversed
-                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
-                    if(contour_mode)
-                    {
-                        if(   (poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)) && !allUnitsOutsideZCut)
-                        {
-                            if (neuronColorMode == 0)
-                            {
-                                change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
-                            }
-                            else
-                                change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
-                        }
-                    }
-                    else
-                    {
+//                if(gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz))
+//                {
+//                    py = viewport[3]-py; //the Y axis is reversed
+//                    QPoint p(static_cast<int>(round(px)), static_cast<int>(round(py)));
+//                    if(contour_mode)
+//                    {
+//                        if(   (poly.boundingRect().contains(p) && pointInPolygon(p.x(), p.y(), poly)) && !allUnitsOutsideZCut)
+//                        {
+//                            if (neuronColorMode == 0)
+//                            {
+//                                change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+//                            }
+//                            else
+//                                change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
+//                        }
+//                    }
+//                    else
+//                    {
 
-                        for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
-                        {
+//                        for (V3DLONG k=0; k<list_listCurvePos.at(0).size(); k++)
+//                        {
 
-                            QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
+//                            QPointF p2(list_listCurvePos.at(0).at(k).x, list_listCurvePos.at(0).at(k).y);
 
-                            if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
-                            {
+//                            if(  ( (p.x()-p2.x())*(p.x()-p2.x()) + (p.y()-p2.y())*(p.y()-p2.y()) <= tolerance_squared  )  && !allUnitsOutsideZCut)
+//                            {
 
-                                if(neuronColorMode==0)
-                                {
-                                    if(node_mode)
-                                    {
-                                        GLdouble spx, spy, spz;
-                                        vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
-                                        int best_dist;
-                                        int best_id;
-                                        for (V3DLONG j=0;j<row.size();j++)
-                                        {
+//                                if(neuronColorMode==0)
+//                                {
+//                                    if(node_mode)
+//                                    {
+//                                        GLdouble spx, spy, spz;
+//                                        vector <V_NeuronSWC_unit> & row = (curImg->tracedNeuron.seg[p_listneuron->at(i).seg_id].row);
+//                                        int best_dist;
+//                                        int best_id;
+//                                        for (V3DLONG j=0;j<row.size();j++)
+//                                        {
 
-                                            gluProject(row[j].x, row[j].y, row[j].z, markerViewMatrix, projectionMatrix, viewport, &spx, &spy, &spz);
-                                            spy =  viewport[3]-spy;
+//                                            gluProject(row[j].x, row[j].y, row[j].z, markerViewMatrix, projectionMatrix, viewport, &spx, &spy, &spz);
+//                                            spy =  viewport[3]-spy;
 
-                                            double dist = (spx-p2.x())*(spx-p2.x()) + (spy-p2.y())*(spy-p2.y());
-                                            if(j==0)
-                                            {
-                                                best_dist = dist;
-                                                best_id = 0;
-                                            }
-                                            else if(best_dist>dist)
-                                            {
-                                                best_dist = dist;
-                                                best_id = j;
-                                            }
-                                        }
-                                        row[best_id].type = node_type;
-                                    }
-                                    else
-                                        change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
-                                }
-                                else
-                                {
-                                    change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
+//                                            double dist = (spx-p2.x())*(spx-p2.x()) + (spy-p2.y())*(spy-p2.y());
+//                                            if(j==0)
+//                                            {
+//                                                best_dist = dist;
+//                                                best_id = 0;
+//                                            }
+//                                            else if(best_dist>dist)
+//                                            {
+//                                                best_dist = dist;
+//                                                best_id = j;
+//                                            }
+//                                        }
+//                                        row[best_id].type = node_type;
+//                                    }
+//                                    else
+//                                        change_type_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_type);
+//                                }
+//                                else
+//                                {
+//                                    change_level_in_seg_of_V_NeuronSWC_list(curImg->tracedNeuron, p_listneuron->at(i).seg_id, node_level);
 
-                                }
-                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
-                            }
-                        }
-                    }
-                }
-            }
-            curImg->update_3drenderer_neuron_view(w, this);
-            QHash<QString, int>  soma_cnt;
-            curImg->proj_trace_history_append();
-            for (V3DLONG i=0;i<p_listneuron->size();i++)
-            {
-                if(p_listneuron->at(i).type == 1)
-                {
-                    QString soma_str = QString("(%1,%2,%3)").arg(p_listneuron->at(i).x).arg(p_listneuron->at(i).y).arg(p_listneuron->at(i).z);
-                    soma_cnt[soma_str]++;
-                }
-            }
-            //if(soma_cnt.size()>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt.size()));
-        }
-    }
-    emit readytoclear();
+//                                }
+//                                break;   // found intersection with neuron segment: no more need to continue on this inner loop
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            curImg->update_3drenderer_neuron_view(w, this);
+//            QHash<QString, int>  soma_cnt;
+//            curImg->proj_trace_history_append();
+//            for (V3DLONG i=0;i<p_listneuron->size();i++)
+//            {
+//                if(p_listneuron->at(i).type == 1)
+//                {
+//                    QString soma_str = QString("(%1,%2,%3)").arg(p_listneuron->at(i).x).arg(p_listneuron->at(i).y).arg(p_listneuron->at(i).z);
+//                    soma_cnt[soma_str]++;
+//                }
+//            }
+//            //if(soma_cnt.size()>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt.size()));
+//        }
+//    }
+//    emit readytoclear();
 
-}
+//}
 void Renderer_gl1::solveCurveViews()
 {
     qDebug("  Renderer_gl1::solveCurveViews");

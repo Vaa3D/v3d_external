@@ -729,7 +729,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
         (renderer->movePen(event->x(), event->y(), true));
 //        QPaintEvent *pEvent;
 //        paintEvent(pEvent);
-//        DO_updateGL(); // instantly display pen track, dlc comment for bug
+        DO_updateGL(); // instantly display pen track, dlc comment for bug
 
 
         return;
