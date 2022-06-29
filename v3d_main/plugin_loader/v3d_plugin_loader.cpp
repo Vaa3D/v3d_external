@@ -52,6 +52,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include <QMessageBox>
 #include <QScrollArea>
 #include <QProgressBar>
+#include <QMessageBox>
+
 void pumpEvents(int loops=100)
 {
 	for (int j=1; j<loops; j++) //try to empty all existing events
@@ -237,6 +239,7 @@ QList<QDir> V3d_PluginLoader::getPluginsDirList()
 
 void V3d_PluginLoader::loadPlugins()
 {
+
 	QAction *plugin_manager = new QAction(tr("Plug-in manager"), this);
 	connect(plugin_manager, SIGNAL(triggered()), this, SLOT(aboutPlugins()));
     QAction *plugin_rescan = new QAction(tr("Re-scan all plugins"), this);
@@ -260,6 +263,12 @@ void V3d_PluginLoader::loadPlugins()
     if (pluginsDirList.size() == 0)
     {
     	qDebug("Cannot find ./plugins directory!");
+#ifdef MACOS_SYSTEM
+        QWidget widget;
+
+        QMessageBox::StandardButton result = QMessageBox::information(&widget, "Mac load plugin","Running Vaa3D on a Mac may sometimes not detect plug-ins. This is because of the Mac's defense mechanism. Simply use the sudo spctl --master-disable command and then allow developers from any source to load the plugin in general.");
+
+#endif
         return;
     }
 

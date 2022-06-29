@@ -16,9 +16,11 @@
 #include "COperation.h"
 #include "CImageUtils.h"
 #include "../presentation/PLog.h"
+#include <QMultiHash>
+#include <QHash>
 //#include "renderer_gl1.h"
 //#include "renderer.h"
-#include "../3drenderer/v3dr_surfaceDialog.h"
+#include "../../../../../3drenderer/v3dr_surfaceDialog.h"
 
 double SOMA_X = -1.1;
 double SOMA_Y = -1.1;
@@ -85,7 +87,9 @@ annotation::~annotation()
     #endif
 }
 
-NeuronSWC deepcopy(annotation* node){
+void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
+{
+    // create NeuronSWC node
     NeuronSWC p;
     p.type = node->subtype;
     p.n = node->ID;
@@ -99,25 +103,14 @@ NeuronSWC deepcopy(annotation* node){
     p.tfresindex = node->tfresindex; //for keepin TeraFly resolution index LMG 13/12/2018
     p.pn = node->parent ? node->parent->ID : -1;
     // add node to list
-#ifdef terafly_enable_debug_annotations
+    #ifdef terafly_enable_debug_annotations
     tf::debug(tf::LEV_MAX, strprintf("Add node %lld(%.0f, %.0f, %.0f) to list", p.n, p.x, p.y, p.z).c_str(), 0, true);
-#endif
-    return p;
-}
+    #endif
+    tree.push_back(p);
 
-void annotation::ricInsertIntoTree(annotation* node, QList<NeuronSWC> &tree)
-{
-    if(node==nullptr)
-        return;
-    QStack<annotation*> st;
-    st.push(node);
-    while(!st.empty()){
-        annotation* cur=st.top();
-        st.pop();
-        tree.append(deepcopy(cur));
-        for(std::set<annotation*>::const_iterator it = cur->children.begin(); it != cur->children.end(); it++)
-            st.push((*it));
-    }
+    // recur on children nodes
+    for(std::set<annotation*>::const_iterator it = node->children.begin(); it != node->children.end(); it++)
+        ricInsertIntoTree((*it), tree);
 }
 
 void annotation::insertIntoTree(QList<NeuronSWC> &tree)
@@ -960,12 +953,12 @@ void CAnnotations::Octree::print()
 //search for neurons in the given 3D volume and puts found neurons into 'neurons'
 void CAnnotations::Octree::find(interval_t V_int, interval_t H_int, interval_t D_int, std::list<annotation*>& neurons)
 {
-	// check interval validity
-	if( H_int.start < 0 || H_int.end < 0 || (H_int.end-H_int.start < 0) || 
-		V_int.start < 0 || V_int.end < 0 || (V_int.end-V_int.start < 0) || 
-		D_int.start < 0 || D_int.end < 0 || (D_int.end-D_int.start < 0))
-		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		H_int.start, H_int.end, V_int.start, V_int.end, D_int.start, D_int.end), tf::shortFuncName(__itm__current__function__));
+    // check interval validity
+    if( H_int.start < 0 || H_int.end < 0 || (H_int.end-H_int.start < 0) ||
+        V_int.start < 0 || V_int.end < 0 || (V_int.end-V_int.start < 0) ||
+        D_int.start < 0 || D_int.end < 0 || (D_int.end-D_int.start < 0))
+        throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+        H_int.start, H_int.end, V_int.start, V_int.end, D_int.start, D_int.end), tf::shortFuncName(__itm__current__function__));
 
 
     /**/tf::debug(tf::LEV2, strprintf("interval = [%d,%d](V) x [%d,%d](H) x [%d,%d](D)", V_int.start, V_int.end, H_int.start, H_int.end, D_int.start, D_int.end).c_str(), __itm__current__function__);
@@ -996,12 +989,12 @@ void CAnnotations::addLandmarks(tf::interval_t X_range, tf::interval_t Y_range, 
     /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d), markers.size = %d",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end, markers.size()).c_str(), __itm__current__function__);
 
-	// check interval validity
-	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
-		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
-		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
+    // check interval validity
+    if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) ||
+        Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) ||
+        Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+        throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+        X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     /**/tf::debug(tf::LEV3, strprintf("%d markers before clearLandmarks", count()).c_str(), __itm__current__function__);
@@ -1035,12 +1028,12 @@ void CAnnotations::clearCurves(tf::interval_t X_range, tf::interval_t Y_range, t
 {
     /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
-	// check interval validity
-	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
-		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
-		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
+    // check interval validity
+    if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) ||
+        Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) ||
+        Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+        throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+        X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     QElapsedTimer timer;
@@ -1076,12 +1069,12 @@ void CAnnotations::clearLandmarks(tf::interval_t X_range, tf::interval_t Y_range
 {
     /**/tf::debug(tf::LEV3, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
-	// check interval validity
-	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
-		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
-		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
+    // check interval validity
+    if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) ||
+        Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) ||
+        Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+        throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+        X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     QElapsedTimer timer;
@@ -1102,12 +1095,12 @@ void CAnnotations::addCurves(tf::interval_t X_range, tf::interval_t Y_range, tf:
 {
     /**/tf::debug(tf::LEV1, strprintf("X[%d,%d), Y[%d,%d), Z[%d,%d)", X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
-	// check interval validity
-	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
-		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
-		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
+    // check interval validity
+    if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) ||
+        Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) ||
+        Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+        throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+        X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     // first clear curves in the given range
@@ -1177,12 +1170,12 @@ void CAnnotations::findLandmarks(interval_t X_range, interval_t Y_range, interva
     /**/tf::debug(tf::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
-	// check interval validity
-	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
-		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
-		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
+    // check interval validity
+    if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) ||
+        Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) ||
+        Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+        throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+        X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     std::list<annotation*> nodes;
@@ -1220,12 +1213,12 @@ void CAnnotations::findCurves(interval_t X_range, interval_t Y_range, interval_t
     /**/tf::debug(tf::LEV1, strprintf("X_range = [%d,%d), Y_range = [%d,%d), Z_range = [%d,%d)",
                                         X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end).c_str(), __itm__current__function__);
 
-	// check interval validity
-	if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) || 
-		Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) || 
-		Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
-		throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
-		X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
+    // check interval validity
+    if( X_range.start < 0 || X_range.end < 0 || (X_range.end-X_range.start < 0) ||
+        Y_range.start < 0 || Y_range.end < 0 || (Y_range.end-Y_range.start < 0) ||
+        Z_range.start < 0 || Z_range.end < 0 || (Z_range.end-Z_range.start < 0))
+        throw tf::RuntimeException( tf::strprintf("invalid interval X[%d,%d), Y[%d,%d), Z[%d,%d)",
+        X_range.start, X_range.end, Y_range.start, Y_range.end, Z_range.start, Z_range.end), tf::shortFuncName(__itm__current__function__));
 
 
     std::list<annotation*> nodes;
@@ -1395,25 +1388,26 @@ void CAnnotations::removeDuplicatedNode(QList<NeuronSWC> &neuron,QList<NeuronSWC
 }
 #define VOID 1000000000
 
-QMultiMap<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLONG> & idlist, const QMultiMap<V3DLONG,V3DLONG> & LUT)
+QHash<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT)
 {
-    QMultiMap<V3DLONG, V3DLONG> cp;
+    QHash<V3DLONG, V3DLONG> cp;
+    //QMultiHash<V3DLONG, V3DLONG>cp;
     for (V3DLONG i=0;i<neurons.size(); i++)
     {
         if (neurons.at(i).pn==-1)
-            cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
+            cp.insert(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
         else if(idlist.indexOf(LUT.value(neurons.at(i).pn)) == 0 && neurons.at(i).pn != neurons.at(0).n)
-            cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
+            cp.insert(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
         else
-            cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), idlist.indexOf(LUT.value(neurons.at(i).pn)));
+            cp.insert(idlist.indexOf(LUT.value(neurons.at(i).n)), idlist.indexOf(LUT.value(neurons.at(i).pn)));
     }
         return cp;
 }
 
-QMultiMap<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
+QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
 {
     // Range of LUT values: [0, # deduplicated neuron list)
-    QMultiMap<V3DLONG,V3DLONG> LUT;
+    QHash<V3DLONG,V3DLONG> LUT;
     V3DLONG cur_id=0;
     for (V3DLONG i=0;i<neurons.size();i++)
     {
@@ -1423,15 +1417,14 @@ QMultiMap<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
             if (neurons.at(i).x==neurons.at(j).x && neurons.at(i).y==neurons.at(j).y && neurons.at(i).z==neurons.at(j).z)	break;
         }
         if(i==j){  // not a duplicate of the previous ones
-            LUT.insertMulti(neurons.at(i).n, cur_id);
+            LUT.insert(neurons.at(i).n, cur_id);
             cur_id++;
         }
         else{
-//            LUT.insertMulti(neurons.at(i).n, LUT.value(neurons.at(j).n));
             if(neurons.at(i).parent<0||neurons.at(j).parent<0)
-                LUT.insertMulti(neurons.at(i).n, LUT.value(neurons.at(j).n));
+                LUT.insert(neurons.at(i).n, LUT.value(neurons.at(j).n));
             else{
-                LUT.insertMulti(neurons.at(i).n, cur_id);
+                LUT.insert(neurons.at(i).n, cur_id);
                 cur_id++;
             }
         }
@@ -1464,13 +1457,13 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
 {
     double thres=0;
     //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
-    QMultiMap<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
 
     //create a new id list to give every different neuron a new id
-    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values().toList());
+    QList<V3DLONG> idlist = LUT.values().toList();
 
     //create a child-parent table, both child and parent id refers to the index of idlist
-    QMultiMap<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
+    QHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
 
 
     V3DLONG siz = idlist.size();
@@ -1486,7 +1479,8 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
     //generate the adjacent matrix for undirected matrix
     for (V3DLONG i = 0;i<siz;i++)
     {
-        QList<V3DLONG> parentSet = cp.values(i); //id of the ith node's parents
+        //ljs fixed
+        QList<V3DLONG> parentSet = cp.keys(i); //id of the ith node's parents
         for (V3DLONG j=0;j<parentSet.size();j++)
         {
             V3DLONG v2 = (V3DLONG) (parentSet.at(j));
@@ -1658,14 +1652,14 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
     return(true);
 
 }
-QVector< QVector<V3DLONG> > get_neighbors(QList<NeuronSWC> &neurons, const QMultiMap<V3DLONG,V3DLONG> & LUT)
+QVector< QVector<V3DLONG> > get_neighbors(QList<NeuronSWC> &neurons, const QHash<V3DLONG,V3DLONG> & LUT)
 {
     // generate neighbor lists for each node, using new ids.
     // LUT (look-up table): old name -> new ids
     // ids are the line numbers
     // names are the node names (neurons.name)
-    //修改
-    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values().toList());
+    //ljs fixed
+    QList<V3DLONG> idlist = LUT.values().toList();
     int siz = idlist.size();
     QList<int> nlist;
     for(V3DLONG i=0; i<neurons.size(); i++){nlist.append(neurons.at(i).n);}
@@ -1723,37 +1717,28 @@ QList<V3DLONG> DFS(QVector< QVector<V3DLONG> > neighbors, V3DLONG newrootid, V3D
     // Initialization
     QStack<int> pstack;
     QList<int> visited;
-
-    for(int i=0;i<max(siz,newrootid)+1; i++){visited.append(0);}
+    for(int i=0;i<siz; i++){visited.append(0);}
     visited[newrootid]=1;
     pstack.push(newrootid);
     neworder.append(newrootid);
 
     // Tree traverse
     bool is_push;
-    int pid = 0;
+    int pid;
     while(!pstack.isEmpty()){
         is_push = false;
         pid = pstack.top();
         // whether exist unvisited neighbors of pid
         // if yes, push neighbor to stack;
         QVector<V3DLONG>::iterator it;
-
-        QVector<V3DLONG> cur_neighbors;
-        if(pid < neighbors.size()){
-            cur_neighbors = neighbors[pid];
-        }
-
-
+        QVector<V3DLONG> cur_neighbors = neighbors.at(pid);
         for(it=cur_neighbors.begin(); it!=cur_neighbors.end(); ++it)
         {
-            if(visited.size()>(*it) && visited.at(*it)==0)
+            if(visited.at(*it)==0)
             {
                 pstack.push(*it);
                 is_push=true;
-
                 visited[*it]=1;
-                cout<<"------4-----"<<endl;
                 neworder.append(*it);
                 break;
             }
@@ -1777,10 +1762,10 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     }
 
     //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
-    QMultiMap<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
 
     //create a new id list to give every different neuron a new id
-    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values().toList());
+     QList<V3DLONG> idlist = LUT.values().toList();
     V3DLONG siz = idlist.size();
 
     // create a vector to keep neighbors of each node
@@ -1804,7 +1789,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
             return(false);
         }
     }
-cout<<"---------3------------"<<endl;
+
     //Major steps
     //do a DFS for the the matrix and re-allocate ids for all the nodes
     QList<V3DLONG> neworder;
@@ -1818,7 +1803,6 @@ cout<<"---------3------------"<<endl;
     cur_neworder= DFS(neighbors, root, siz);
     sorted_size += cur_neworder.size();
     neworder.append(cur_neworder);
-    cout<<"----------4------------"<<endl;
     for(int i=0; i<cur_neworder.size(); i++){
         component_id.append(cur_group);
     }
@@ -1924,41 +1908,28 @@ cout<<"---------3------------"<<endl;
         qDebug()<<QString("Output component %1, root id is %2").arg(i).arg(new_root);
         V3DLONG cnt = 0;
         // Sort current component;
-        //qDebug()<<"----------------0";
         cur_neworder= DFS(neighbors, new_root, siz);
         sorted_size += cur_neworder.size();
         neworder.append(cur_neworder);
-        //qDebug()<<"----------------1";
         for(int i=0; i<cur_neworder.size(); i++){
             component_id.append(cur_group);
         }
         NeuronSWC S;
-        //qDebug()<<"----------------2";
         S.n = offset+1;
         S.pn = -1;
         V3DLONG oriname = LUT.key(new_root);
         V3DLONG oripos = nlist.indexOf(oriname);
-        qDebug()<<"----------------3";
-        qDebug()<<"neurons.size() = "<<neurons.size();
-        qDebug()<<"oripos = "<< oripos;
-        if(oripos < neurons.size() - 1) {
-            S.x = neurons[oripos].x;
-            S.y = neurons[oripos].y;
-            S.z = neurons[oripos].z;
-            S.r = neurons[oripos].r;
-            S.type = neurons[oripos].type;
-            S.seg_id = neurons[oripos].seg_id;
-            S.level = neurons[oripos].level;
-            S.creatmode = neurons[oripos].creatmode;
-            S.timestamp = neurons[oripos].timestamp;
-            S.tfresindex = neurons[oripos].tfresindex;
-            result.append(S);
-        }
-        else {
-            qDebug()<<"----------out of index in oripos----------";
-            continue;
-        }
-
+        S.x = neurons.at(oripos).x;
+        S.y = neurons.at(oripos).y;
+        S.z = neurons.at(oripos).z;
+        S.r = neurons.at(oripos).r;
+        S.type = neurons.at(oripos).type;
+        S.seg_id = neurons.at(oripos).seg_id;
+        S.level = neurons.at(oripos).level;
+        S.creatmode = neurons.at(oripos).creatmode;
+        S.timestamp = neurons.at(oripos).timestamp;
+        S.tfresindex = neurons.at(oripos).tfresindex;
+        result.append(S);
         cnt++;
         qDebug()<<QString("New root %1:").arg(i)<<S.x<<S.y<<S.z;
 
@@ -2030,28 +2001,7 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
     QString output_apo = output_ano + ".apo";
     QString output_swc = as_swc? output_ano+".swc":output_ano+".eswc";
 
-//    if(filename.endsWith(".ano")){
-//        filename.remove(filename.lastIndexOf(".ano"), filename.size());
-//    }
-//    else{
-//        v3d_msg("Input is not an ano file.");
-//        return;
-//    }
 
-////    v3d_msg(QString("fileprefix: %1").arg(fileprefix));
-
-//    QString output_ano = filename;
-//    QString output_apo = filename;
-//    QString output_swc = filename;
-//    output_ano.append(".ano");
-//    output_apo.append(".apo");
-
-//    if(as_swc){
-//        output_swc.append(".swc");
-//    }
-//    else{
-//        output_swc.append(".eswc");
-//    }
     QString fileprefix(filepath);
     if(fileprefix.indexOf("/") != -1){
         fileprefix.remove(fileprefix.lastIndexOf("/")+1, fileprefix.size());
@@ -2072,30 +2022,30 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
     }
 
 #ifdef _YUN_
-	//if (V3dR_GLWidget::surfaceDlg) cout << V3dR_GLWidget::surfaceDlg->getMarkerNum() << endl;
-	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(CViewer::getCurrent()->view3DWidget->getRenderer()));
-	for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
-	{
-		ImageMarker currMarker;
-		float convertedX = CViewer::getCurrent()->coord2global<float>(it->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
-		float convertedY = CViewer::getCurrent()->coord2global<float>(it->y, iim::vertical, false, -1, false, false, __itm__current__function__);
-		float convertedZ = CViewer::getCurrent()->coord2global<float>(it->z, iim::depth, false, -1, false, false, __itm__current__function__);
-		std::list<annotation*>* annoPtrList = octree->find(convertedX, convertedY, convertedZ);
-		if (annoPtrList != nullptr)
-		{
-			if (annoPtrList->size() == 1) annoPtrList->front()->name = it->name.toStdString();
-			else
-			{
-				if (it->name == "duplicated") continue;
-				else
-				{
-					for (std::list<annotation*>::iterator annoIt = annoPtrList->begin(); annoIt != annoPtrList->end(); ++annoIt)
-						(*annoIt)->name = "duplicated";
-					annoPtrList->front()->name = it->name.toStdString();
-				}
-			}
-		}
-	}
+    //if (V3dR_GLWidget::surfaceDlg) cout << V3dR_GLWidget::surfaceDlg->getMarkerNum() << endl;
+    myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(CViewer::getCurrent()->view3DWidget->getRenderer()));
+    for (QList<ImageMarker>::iterator it = thisRenderer->listMarker.begin(); it != thisRenderer->listMarker.end(); ++it)
+    {
+        ImageMarker currMarker;
+        float convertedX = CViewer::getCurrent()->coord2global<float>(it->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+        float convertedY = CViewer::getCurrent()->coord2global<float>(it->y, iim::vertical, false, -1, false, false, __itm__current__function__);
+        float convertedZ = CViewer::getCurrent()->coord2global<float>(it->z, iim::depth, false, -1, false, false, __itm__current__function__);
+        std::list<annotation*>* annoPtrList = octree->find(convertedX, convertedY, convertedZ);
+        if (annoPtrList != nullptr)
+        {
+            if (annoPtrList->size() == 1) annoPtrList->front()->name = it->name.toStdString();
+            else
+            {
+                if (it->name == "duplicated") continue;
+                else
+                {
+                    for (std::list<annotation*>::iterator annoIt = annoPtrList->begin(); annoIt != annoPtrList->end(); ++annoIt)
+                        (*annoIt)->name = "duplicated";
+                    annoPtrList->front()->name = it->name.toStdString();
+                }
+            }
+        }
+    }
 #endif
 
     //saving apo (point cloud) file
@@ -2121,7 +2071,7 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
     fprintf(f, "#name undefined\n");
     fprintf(f, "#comment terafly_annotations\n");
 
-	cout << "Annotation size: " << annotations.size() << endl;
+    cout << "Annotation size: " << annotations.size() << endl;
     if(removedupnode)
     {
         // Peng Xie 2019-04-23
@@ -2237,6 +2187,9 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
             for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
             {
                 NeuronSWC cur_node = nt_sort.at(countNode);
+                if(cur_node.parent == -1 && cur_node.n > 1) {
+                    continue;
+                }
                 fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n",
                         cur_node.n, cur_node.type,
                         cur_node.x, cur_node.y, cur_node.z,
@@ -2408,11 +2361,11 @@ void CAnnotations::load(const char* filepath)
             }
             for(std::map<int, annotation*>::iterator i = annotationsMap.begin(); i!= annotationsMap.end(); i++)
             {
-				if(i->second == NULL)
-				{
-					qDebug()<<"i->second is NULL";
-					continue;
-				}
+                if(i->second == NULL)
+                {
+                    qDebug()<<"i->second is NULL";
+                    continue;
+                }
 
                 i->second->parent = swcMap[i->first]->pn == -1 ? 0 : annotationsMap[swcMap[i->first]->pn];
                 if(i->second->parent)
@@ -2779,7 +2732,7 @@ void CAnnotations::diffAPO( std::string apo1Path,               // first apo fil
         }
     }
 
-    // count false positives, true positives, and false negatives    
+    // count false positives, true positives, and false negatives
     QList<CellAPO> diff_cells;
     tf::uint64 FPs = 0;
     tf::uint64 TPs = 0;
