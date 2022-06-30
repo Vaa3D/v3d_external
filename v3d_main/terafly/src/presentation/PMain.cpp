@@ -1378,6 +1378,9 @@ void PMain::clearRecentVolumes()
 ***********************************************************************************/
 void PMain::openImage(std::string path /*= ""*/)
 {
+    int flag=0;
+    if(path.size()!=0)
+        flag=1;
     try
     {
         // PRECONDITION CHECK: no image is currently open
@@ -1464,7 +1467,7 @@ void PMain::openImage(std::string path /*= ""*/)
 
         // infer image format
         tf::volume_format image_format(tf::volume_format::UNKNOWN);
-        if(sender() == openTeraFlyVolumeAction)
+        if(sender() == openTeraFlyVolumeAction||flag==1)
             image_format.id = tf::volume_format::TERAFLY;
         else if(sender() == openHDF5VolumeAction)
             image_format.id = tf::volume_format::BDVHDF5;

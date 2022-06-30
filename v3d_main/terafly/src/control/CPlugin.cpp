@@ -201,6 +201,7 @@ void PluginInterface::OpenImageInTerafly(QString image_path,V3DPluginCallback2* 
     PMain::getInstance()->reset();
     std::string path=image_path.toStdString();
     PMain::getInstance()->openImage(path);
+
 }
 
 bool PluginInterface::isCViewerVisable()
