@@ -6,7 +6,8 @@
 
 #include <QPixmap>
 #include <QImage>
-
+#include <QSharedMemory>
+#include "Communicate.h"
 #include "../basic_c_fun/v3d_interface.h"
 
 #ifdef Q_OS_WIN
@@ -261,6 +262,8 @@ public:
 //    QWidget* m_vrwidget;
     unsigned char* leftdata;
     unsigned char* rightdata;
+//    QSharedMemory *m_sharedmem;
+//    bool isattach;
 //    QLabel *leftlabel;
 //    QLabel *rightlabel;
 //    QHBoxLayout *layout;

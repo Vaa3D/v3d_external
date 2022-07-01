@@ -708,15 +708,18 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 //    newwidget->show();
 //    Sleep(10000);
 //}
+#include <QDesktopServices>
 int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, VRwidget* vrwidget,XYZ* zoomPOS )
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
+    qDebug()<<"csz debug "<<QCoreApplication::applicationDirPath();
+    QDesktopServices::openUrl(QUrl(QCoreApplication::applicationDirPath()+"/VRViewer.exe"));
     //qDebug()<<"csz debug start vr initialize.";
     CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
-    pMainApplication->mvr_widget=vrwidget;
+//    pMainApplication->mvr_widget=vrwidget;
 	if(ntlist != NULL)
 	{
 		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
