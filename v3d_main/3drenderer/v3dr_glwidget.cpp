@@ -2135,10 +2135,9 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 #ifdef __ALLOW_VR_FUNCS__
 void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
 {
-    qDebug()<<"PMain::doCollaborationVRView()";
     try
     {
-            //this->setWindowState(Qt::WindowMinimized);
+            this->setWindowState(Qt::WindowMinimized);
             //this->hide();
 
             int maxresindex = 1;
@@ -2203,9 +2202,9 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
     QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
     cout<<"vr listNeuronTrees.size()"<<listNeuronTrees->size();
     My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
-    //this->getMainWindow()->hide();
-    //process3Dwindow(false);
-    //this->getiDrawExternalParameter()->V3Dmainwindow->showMinimized();
+    this->getMainWindow()->hide();
+//    process3Dwindow(false);
+    this->getiDrawExternalParameter()->V3Dmainwindow->showMinimized();
     QMessageBox::StandardButton reply;
     if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
         reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
@@ -2261,7 +2260,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
     {
         // bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
 
-        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),this->getvrwidget(),&teraflyZoomInPOS); // both nt and img4d can be empty.
+        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
 
         qDebug()<<"result is "<<_call_that_func;
         qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
@@ -2274,16 +2273,16 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
         {
             call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
         }
-
-//        this->getMainWindow()->show();
+//        qDebug()<<"csz debug";
+        this->getMainWindow()->show();
 //         if(_Call_ZZ_Plugin)
 //         {
 //            // call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
 //            emit(signalCallTerafly());
 //         }
     }
-        //this->getiDrawExternalParameter()->V3Dmainwindow->showNormal();
-        //process3Dwindow(true);
+        this->getiDrawExternalParameter()->V3Dmainwindow->showNormal();
+//        process3Dwindow(true);
 
 }
 void V3dR_GLWidget::doclientView(bool check_flag)

@@ -708,18 +708,16 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 //    newwidget->show();
 //    Sleep(10000);
 //}
-#include <QDesktopServices>
-int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, VRwidget* vrwidget,XYZ* zoomPOS )
+
+int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS )
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
-    qDebug()<<"csz debug "<<QCoreApplication::applicationDirPath();
-    QDesktopServices::openUrl(QUrl(QCoreApplication::applicationDirPath()+"/VRViewer.exe"));
-    //qDebug()<<"csz debug start vr initialize.";
+
     CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
 	//pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
-//    pMainApplication->mvr_widget=vrwidget;
+
 	if(ntlist != NULL)
 	{
 		if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
@@ -769,21 +767,15 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
 	}
 	pMainApplication->SetupCurrentUserInformation("local user", 13);
 
-    //pMainApplication->DrawLayout();
-    //qDebug()<<"csz debug a new vr is created.";
     pMainApplication->RunMainLoop();
-
-
+//    pMainApplication->HandleOneIteration();
 	pMainApplication->Shutdown();
-    qDebug()<<"shut down VR";
 	// bool _call_that_plugin = pMainApplication->_call_assemble_plugin;
 	int _call_that_function = pMainApplication->postVRFunctionCallMode;
 	zoomPOS->x = pMainApplication->teraflyPOS.x;
 	zoomPOS->y = pMainApplication->teraflyPOS.y;
 	zoomPOS->z = pMainApplication->teraflyPOS.z;
-	delete pMainApplication;
-
-	pMainApplication = NULL;
+    delete pMainApplication;
 
 	// return _call_that_plugin;
 	return _call_that_function;

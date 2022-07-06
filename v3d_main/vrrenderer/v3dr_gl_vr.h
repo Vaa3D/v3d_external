@@ -7,11 +7,13 @@
 #include <QPixmap>
 #include <QImage>
 #include <QSharedMemory>
+#include <QObject>
 #include "Communicate.h"
 #include "../basic_c_fun/v3d_interface.h"
 
 #ifdef Q_OS_WIN
 #include <openvr.hpp>
+#include <SDL.h>
 #endif
 #ifdef Q_OS_LINUX
 #include <common_lib/include/SDL/SDL.h>
@@ -32,12 +34,11 @@
 #include "VRwidget.h"
 
 struct Agent {
-	QString name;
-	bool isItSelf;
-	int colorType;
-	float position[16];
+    QString name;
+    bool isItSelf;
+    int colorType;
+    float position[16];
 };
-
 
 enum ModelControlR
 {
@@ -106,7 +107,6 @@ class My4DImage;
 class MainWindow;
 class CGLRenderModel
 {
-
 public:
 	CGLRenderModel( const std::string & sRenderModelName );
 	~CGLRenderModel();
@@ -170,11 +170,11 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-class CMainApplication//:public QWidget
+class CMainApplication:public QObject
 {
-    //Q_OBJECT
+    Q_OBJECT
 public:
-    CMainApplication(int argc = 0, char *argv[] = 0);
+	CMainApplication(int argc = 0, char *argv[] = 0);
 	virtual ~CMainApplication();
 
 	bool BInit();
@@ -203,11 +203,10 @@ public:
 
 	void Shutdown();
 
-    //void DrawLayout();
 	void RunMainLoop();
 	bool HandleInput();//handle controller and keyboard input
 	void ProcessVREvent( const vr::VREvent_t & event );
-	void RenderFrame();
+    void RenderFrame();
 	
 	bool SetupTexturemaps();//load controller textures and setup properties
 	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
@@ -257,23 +256,14 @@ public:
 	void SetupRenderModelForTrackedDevice( vr::TrackedDeviceIndex_t unTrackedDeviceIndex );
 	CGLRenderModel *FindOrLoadRenderModel( const char *pchRenderModelName );
 
+	float GetGlobalScale();
+signals:
+    void stopvr();
+public slots:
+    void startvrloop();     //csz20220706
 public:
-
-//    QWidget* m_vrwidget;
-    unsigned char* leftdata;
-    unsigned char* rightdata;
-//    QSharedMemory *m_sharedmem;
-//    bool isattach;
-//    QLabel *leftlabel;
-//    QLabel *rightlabel;
-//    QHBoxLayout *layout;
-//    QPixmap leftmp;
-//    QPixmap rightmp;
-//    bool isvrclosed=false;
-//    void closeEvent(QCloseEvent *event);
-    VRwidget *mvr_widget;
-
-    MainWindow *mainwindow;
+    QTimer *mvr_timer;      //csz20220706
+	MainWindow *mainwindow;
 	My4DImage *img4d;
 	static My4DImage *img4d_replace;
 	bool replacetexture;
@@ -299,7 +289,6 @@ public:
 	XYZ CollaborationCurrentRes;
 	XYZ CollaborationTargetMarkerRes;
 	XYZ collaborationTargetdelcurveRes;
-
 private: 
 	std::string current_agent_color;
 	std::string current_agent_name;
@@ -317,8 +306,9 @@ private:
 	NeuronTree loadedNT_merged; // merged result of loadedNTList
 	
 	QList<NeuronTree> sketchedNTList; //neuron trees drawn in the VR view.	
+	public:
 	NeuronTree currentNT;// currently drawn stroke of neuron
-	
+	private:
 	NeuronTree tempNT;//used somewhere, can be change to a local variable
 	BoundingBox swcBB;
 	QList<ImageMarker> drawnMarkerList;
@@ -350,11 +340,11 @@ private:
 	static int m_curMarkerColorType;
 
 private: // SDL bookkeeping
-    //SDL_Window *m_pCompanionWindow;
-//	uint32_t m_nCompanionWindowWidth;
-//	uint32_t m_nCompanionWindowHeight;
+	SDL_Window *m_pCompanionWindow;
+	uint32_t m_nCompanionWindowWidth;
+	uint32_t m_nCompanionWindowHeight;
 
-    //SDL_GLContext m_pContext;
+	SDL_GLContext m_pContext;
 
 private: // OpenGL bookkeeping
 	int m_iTrackedControllerCount;
@@ -596,17 +586,12 @@ private:
 	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
-#ifdef Q_OS_WIN
-    __int64 CounterStart;
-    __int64 frameTimeOld;
-#endif
-#ifdef Q_OS_LINUX
-    int64 CounterStart;
-    int64 frameTimeOld;
-#endif
+	__int64 CounterStart;
 
 	int frameCount;
 	int fps;
+
+	__int64 frameTimeOld;
 	double frameTime;
 
 	void StartTimer();
@@ -629,9 +614,6 @@ private:
 	template<typename T>
 	void HelpFunc_createOctreetexture(int step);
 	void bindTexturePara();
-//public :
-//    QPixmap leftmp;
-//    QPixmap rightmp;
 };
 
 //Help Function
