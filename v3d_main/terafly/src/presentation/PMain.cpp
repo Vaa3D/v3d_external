@@ -2823,6 +2823,7 @@ void PMain::doTeraflyVRView()
         CViewer *cur_win = CViewer::getCurrent();
         if(cur_win&&cur_win->view3DWidget)
         {
+            this->hide();
             //this->showMinimized();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
@@ -2841,7 +2842,7 @@ void PMain::doTeraflyVRView()
                 //qDebug()<<"csz debug resumeCollaborationVR is false.";
             }
             //cur_win->storeAnnotations();
-            //this->show();
+            this->show();
         }
     }
     catch(...)

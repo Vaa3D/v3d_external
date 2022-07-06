@@ -188,6 +188,7 @@ HEADERS += \
     ../serverconnection/net/httputilsqualityinspection.h \
     ../serverconnection/net/httputilsuser.h \
     ../serverconnection/net/networkutils.h \
+    ../vrrenderer/Communicate.h \
     ../vrrenderer/VRwidget.h \
     ../webservice/gsoap2/stdsoap2.h \
     ../webservice/console/envH.h \
@@ -323,6 +324,7 @@ SOURCES += \
     ../serverconnection/net/httputilsqualityinspection.cpp \
     ../serverconnection/net/httputilsuser.cpp \
     ../serverconnection/net/networkutils.cpp \
+    ../vrrenderer/Communicate.cpp \
     ../vrrenderer/VRwidget.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \
