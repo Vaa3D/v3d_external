@@ -6694,7 +6694,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     soma_cnt[soma_str]++;
                 }
             }
-            //if(soma_cnt.size()>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt.size()));
+            if(soma_cnt.size()>1) v3d_msg(QString("%1 nodes have been typed as soma (type = 1). Please double check!").arg(soma_cnt.size()));
         }
     }
 }

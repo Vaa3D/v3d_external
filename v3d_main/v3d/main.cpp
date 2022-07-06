@@ -51,6 +51,9 @@ Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsist
 
 #include "v3d_compile_constraints.h"
 
+//add by ljs
+#include <QSplashScreen>
+
 #include <QApplication>
 #include <QFile>
 
@@ -142,11 +145,33 @@ int main(int argc, char **argv)
 
             V3dApplication* app = V3dApplication::getInstance(argc, argv);
 
+
+
+            //创建启动动画类实例
+            //add by ljs
+            QPixmap a = QPixmap(":/pic/v3dIcon128.png");
+            QSplashScreen splash(a); //文件绝对路径 也可以使用相对路径
+            splash.showMessage(QStringLiteral("正在初始化..."));//消息提示
+            splash.show();  //显示
+            app->processEvents(); //保证先完成启动画面的绘制显示，再执行后面的w显示
+
+
+
+
             if(!parser.i_v3d.hideV3D)
             {
                 app->activateMainWindow();
             }
             MainWindow* mainWin=app->getMainWindow();
+
+            //add by ljs add start picture
+            QElapsedTimer t;
+            t.start();
+            while(t.elapsed()<2000){
+                int i = 0;
+            }
+
+            splash.finish(mainWin); //结束
 
 			if (!mainWin)
 			{

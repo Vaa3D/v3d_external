@@ -1220,7 +1220,7 @@ void PMain::reset()
     importOptionsMenu->setEnabled(true);
     loadAnnotationsAction->setEnabled(false);
     saveAnnotationsAction->setEnabled(false);
-    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+    //注释saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
     //saveandchangetype->setEnabled(false);
     saveAnnotationsAsAction->setEnabled(false);
     clearAnnotationsAction->setEnabled(false);
@@ -1814,157 +1814,112 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
-    CViewer *cur_win = CViewer::getCurrent();
+       CViewer *cur_win = CViewer::getCurrent();
 
-    try
-    {
-        if(cur_win)
-        {
-            if(annotationsPathLRU.compare("")==0)
-            {
-                saveAnnotationsAs();
-                return;
-            }
-            QDir dir;
+       try
+       {
+           if(cur_win)
+           {
+               if(annotationsPathLRU.compare("")==0)
+               {
+                   saveAnnotationsAs();
+                   return;
+               }
+               QDir dir;
 
-            if(recentlyUsedPath.isEmpty())
-            {
-                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
-            }
-            else
-            {
-                dir = QFileInfo(recentlyUsedPath).dir();
-            }
+               if(recentlyUsedPath.isEmpty())
+               {
+                   dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+               }
+               else
+               {
+                   dir = QFileInfo(recentlyUsedPath).dir();
+               }
 
-            #ifdef _USE_QT_DIALOGS
-            QString path = "";
-            QFileDialog dialog(0);
-            dialog.setFileMode(QFileDialog::AnyFile);
-            dialog.setAcceptMode(QFileDialog::AcceptSave);
-            dialog.setViewMode(QFileDialog::Detail);
-            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
-            dialog.setWindowTitle("Save annotation file as");
-            dialog.setNameFilter(tr("annotation files (*.ano)"));
-            dialog.setDirectory(dir.absolutePath().toStdString().c_str());
-            if(dialog.exec())
-               if(!dialog.selectedFiles().empty())
-                   path = dialog.selectedFiles().front();
+               #ifdef _USE_QT_DIALOGS
+               QString path = "";
+               QFileDialog dialog(0);
+               dialog.setFileMode(QFileDialog::AnyFile);
+               dialog.setAcceptMode(QFileDialog::AcceptSave);
+               dialog.setViewMode(QFileDialog::Detail);
+               dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+               dialog.setWindowTitle("Save annotation file as");
+               dialog.setNameFilter(tr("annotation files (*.ano)"));
+               dialog.setDirectory(dir.absolutePath().toStdString().c_str());
+               if(dialog.exec())
+                  if(!dialog.selectedFiles().empty())
+                      path = dialog.selectedFiles().front();
 
-            #else
-            //tf::setWidgetOnTop(cur_win->window3D, false);
-#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-            QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-#else
-            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-            QString annotationsBasename = fileFullName;
-            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
-            {
-                QStringList fileNameSplit=fileFullName.split("_stamp_");
-                if(!fileNameSplit.size())
-                    return;
-                annotationsBasename = fileNameSplit[0];
-            }
-#endif
+               #else
+               //tf::setWidgetOnTop(cur_win->window3D, false);
+   #ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+               QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+   #else
+               QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+               QString annotationsBasename = fileFullName;
+               if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+               {
+                   QStringList fileNameSplit=fileFullName.split("_stamp_");
+                   if(!fileNameSplit.size())
+                       return;
+                   annotationsBasename = fileNameSplit[0];
+               }
+   #endif
 
-            QDateTime mytime = QDateTime::currentDateTime();
-//            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm")+"_nodup.ano", tr("annotation files (*.ano)"));
-            QString path = dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm");
-            //tf::setWidgetOnTop(cur_win->window3D, true);
-            #endif
+               QDateTime mytime = QDateTime::currentDateTime();
+   //            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm")+"_nodup.ano", tr("annotation files (*.ano)"));
+               QString path = dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm");
+               //tf::setWidgetOnTop(cur_win->window3D, true);
+               #endif
 
-            if(!path.isEmpty())
-            {
-                string preannotationsPathLRU = annotationsPathLRU;
-                annotationsPathLRU = path.toStdString();
-//#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-//                annotationsPathLRU = path.toStdString();
-//#else
-//                //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-//                string filebasename=QFileInfo(path).baseName().toStdString();
-//                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
-//                {
-//                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
-//                    if(!fileNameSplit.size())
-//                        return;
-//                    filebasename = fileNameSplit[0].toStdString();
-//                }
-//                qDebug()<<"filebasename"<<filebasename;
-//                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-//#endif
-                if(annotationsPathLRU.find(".ano") == string::npos)
-                    annotationsPathLRU.append(".ano");
+               if(!path.isEmpty())
+               {
+                   string preannotationsPathLRU = annotationsPathLRU;
+                   annotationsPathLRU = path.toStdString();
 
-                // save current cursor and set wait cursor
-                QCursor cursor = cur_win->view3DWidget->cursor();
-                if(PAnoToolBar::isInstantiated())
-                    PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                CViewer::setCursor(Qt::WaitCursor);
+                   if(annotationsPathLRU.find(".ano") == string::npos)
+                       annotationsPathLRU.append(".ano");
 
-                // save
-                cur_win->storeAnnotations();
-                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(), true, false);
-//                saveAnnotationsAction->setEnabled(true);
-//                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+                   // save current cursor and set wait cursor
+                   QCursor cursor = cur_win->view3DWidget->cursor();
+                   if(PAnoToolBar::isInstantiated())
+                       PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+                   CViewer::setCursor(Qt::WaitCursor);
 
-                //delete old file
-                if(preannotationsPathLRU.compare(annotationsPathLRU))
-                    CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
+                   // save
+                   cur_win->storeAnnotations();
+                   CAnnotations::getInstance()->save(annotationsPathLRU.c_str(), true, false);
+   //                saveAnnotationsAction->setEnabled(true);
+   //                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
 
-                // reset saved cursor
-                CViewer::setCursor(cursor);
-                if(PAnoToolBar::isInstantiated())
-					//PAnoToolBar::instance()->setCursor(cursor);
-					PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
+                   //delete old file
+                   if(preannotationsPathLRU.compare(annotationsPathLRU))
+                       CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
 
-                // disable save button
-                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
-                saveAnnotationsAction->setEnabled(false);
+                   // reset saved cursor
+                   CViewer::setCursor(cursor);
+                   if(PAnoToolBar::isInstantiated())
+                       //PAnoToolBar::instance()->setCursor(cursor);
+                       PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
-                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
-                recentlyUsedPath = path;
+                   // disable save button
+                   //ljs add saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+                   saveAnnotationsAction->setEnabled(false);
+
+                   CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                   recentlyUsedPath = path;
 
 
-            }
-            else
-                return;
-//            // save current cursor and set wait cursor
-//            QCursor cursor = cur_win->view3DWidget->cursor();
-//            if(PAnoToolBar::isInstantiated())
-//                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-//            CViewer::setCursor(Qt::WaitCursor);
+               }
+               else
+                   return;
 
-//            // save
-//            cur_win->storeAnnotations();
-
-//            // Choose saving format. Peng Xie: 2019-02-28
-////            QStringList items;
-////            items << tr("swc") << tr("eswc");
-
-////            bool ok;
-////            QString item = QInputDialog::getItem(this, tr("Choose saving format:"),
-////                                                 tr("Format:"), items, 0, false, &ok);
-////            bool as_swc=false;
-////            if (ok && !item.isEmpty()){
-////                as_swc = (item=="swc") ? true:false;
-////            }
-
-//            bool as_swc = false; // Format option is blocked for simplicity.
-//            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true, as_swc);
-
-//            // reset saved cursor
-//            CViewer::setCursor(cursor);
-//            if(PAnoToolBar::isInstantiated())
-//                PAnoToolBar::instance()->setCursor(cursor);
-
-//            // disable save button
-//            saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
-//            saveAnnotationsAction->setEnabled(false);
-        }
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-    }
+           }
+       }
+       catch(RuntimeException &ex)
+       {
+           QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+       }
 }
 
 void PMain::autosaveAnnotations()
@@ -2077,115 +2032,115 @@ void PMain::saveAnnotationsAs()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
-    CViewer *cur_win = CViewer::getCurrent();
+        CViewer *cur_win = CViewer::getCurrent();
 
-    try
-    {
-        if(cur_win)
+        try
         {
-            //obtaining current volume's parent folder path
-//            QDir dir(CImport::instance()->getPath().c_str());
-//            dir.cdUp();
-
-            QDir dir;
-
-            if(recentlyUsedPath.isEmpty())
+            if(cur_win)
             {
-                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
-            }
-            else
-            {
-                dir = QFileInfo(recentlyUsedPath).dir();
-            }
+                //obtaining current volume's parent folder path
+    //            QDir dir(CImport::instance()->getPath().c_str());
+    //            dir.cdUp();
 
-            #ifdef _USE_QT_DIALOGS
-            QString path = "";
-            QFileDialog dialog(0);
-            dialog.setFileMode(QFileDialog::AnyFile);
-            dialog.setAcceptMode(QFileDialog::AcceptSave);
-            dialog.setViewMode(QFileDialog::Detail);
-            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
-            dialog.setWindowTitle("Save annotation file as");
-            dialog.setNameFilter(tr("annotation files (*.ano)"));
-            dialog.setDirectory(dir.absolutePath().toStdString().c_str());
-            if(dialog.exec())
-               if(!dialog.selectedFiles().empty())
-                   path = dialog.selectedFiles().front();
+                QDir dir;
 
-            #else
-            //tf::setWidgetOnTop(cur_win->window3D, false);
-#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-			QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-#else
-            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-            QString annotationsBasename = fileFullName;
-            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
-            {
-                QStringList fileNameSplit=fileFullName.split("_stamp_");
-                if(!fileNameSplit.size())
-                    return;
-                annotationsBasename = fileNameSplit[0];
-            }
-#endif
-
-            //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
-            //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
-            //tf::setWidgetOnTop(cur_win->window3D, true);
-            #endif
-
-            QDateTime mytime = QDateTime::currentDateTime();
-
-
-            if(!path.isEmpty())
-            {
-#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-				annotationsPathLRU = path.toStdString();
-#else
-                //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-                string filebasename=QFileInfo(path).baseName().toStdString();
-                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+                if(recentlyUsedPath.isEmpty())
                 {
-                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+                    dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+                }
+                else
+                {
+                    dir = QFileInfo(recentlyUsedPath).dir();
+                }
+
+                #ifdef _USE_QT_DIALOGS
+                QString path = "";
+                QFileDialog dialog(0);
+                dialog.setFileMode(QFileDialog::AnyFile);
+                dialog.setAcceptMode(QFileDialog::AcceptSave);
+                dialog.setViewMode(QFileDialog::Detail);
+                dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+                dialog.setWindowTitle("Save annotation file as");
+                dialog.setNameFilter(tr("annotation files (*.ano)"));
+                dialog.setDirectory(dir.absolutePath().toStdString().c_str());
+                if(dialog.exec())
+                   if(!dialog.selectedFiles().empty())
+                       path = dialog.selectedFiles().front();
+
+                #else
+                //tf::setWidgetOnTop(cur_win->window3D, false);
+    #ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+                QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+    #else
+                QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+                QString annotationsBasename = fileFullName;
+                if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+                {
+                    QStringList fileNameSplit=fileFullName.split("_stamp_");
                     if(!fileNameSplit.size())
                         return;
-                    filebasename = fileNameSplit[0].toStdString();
+                    annotationsBasename = fileNameSplit[0];
                 }
-                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-#endif
-				if(annotationsPathLRU.find(".ano") == string::npos)
-                    annotationsPathLRU.append(".ano");
+    #endif
 
-                // save current cursor and set wait cursor
-                QCursor cursor = cur_win->view3DWidget->cursor();
-                if(PAnoToolBar::isInstantiated())
-                    PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                CViewer::setCursor(Qt::WaitCursor);
+                //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
+                //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+                QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
+                //tf::setWidgetOnTop(cur_win->window3D, true);
+                #endif
 
-                // save
-                cur_win->storeAnnotations();
-                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false,false);
-                saveAnnotationsAction->setEnabled(true);
-                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+                QDateTime mytime = QDateTime::currentDateTime();
 
-                // reset saved cursor
-                CViewer::setCursor(cursor);
-                if(PAnoToolBar::isInstantiated())
-					//PAnoToolBar::instance()->setCursor(cursor);
-					PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
-                //
-                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
-                recentlyUsedPath = path;
+                if(!path.isEmpty())
+                {
+    #ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+                    annotationsPathLRU = path.toStdString();
+    #else
+                    //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+                    string filebasename=QFileInfo(path).baseName().toStdString();
+                    if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+                    {
+                        QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+                        if(!fileNameSplit.size())
+                            return;
+                        filebasename = fileNameSplit[0].toStdString();
+                    }
+                    annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+    #endif
+                    if(annotationsPathLRU.find(".ano") == string::npos)
+                        annotationsPathLRU.append(".ano");
+
+                    // save current cursor and set wait cursor
+                    QCursor cursor = cur_win->view3DWidget->cursor();
+                    if(PAnoToolBar::isInstantiated())
+                        PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+                    CViewer::setCursor(Qt::WaitCursor);
+
+                    // save
+                    cur_win->storeAnnotations();
+                    CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false,false);
+                    saveAnnotationsAction->setEnabled(true);
+                    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+
+                    // reset saved cursor
+                    CViewer::setCursor(cursor);
+                    if(PAnoToolBar::isInstantiated())
+                        //PAnoToolBar::instance()->setCursor(cursor);
+                        PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
+
+                    //
+                    CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                    recentlyUsedPath = path;
+                }
+                else
+                    return;
             }
-            else
-                return;
         }
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-    }
+        catch(RuntimeException &ex)
+        {
+            QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        }
 }
 
 /**********************************************************************************

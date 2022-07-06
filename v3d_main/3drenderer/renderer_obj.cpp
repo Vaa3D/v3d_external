@@ -1787,113 +1787,108 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
     updateBoundingBox(); // all of loaded bounding-box are updated here
 #endif
 }
-#ifndef test_main_cpp
+
 void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 {
     qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
-//	PROGRESS_DIALOG("Updating Neuron structure", widget);
-//	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
-    QList <NeuronSWC> listNeuron;
-    QHash <int, int>  hashNeuron;
+   //	PROGRESS_DIALOG("Updating Neuron structure", widget);
+   //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
+       QList <NeuronSWC> listNeuron;
+       QHash <int, int>  hashNeuron;
 
-    listNeuron.clear();
-    hashNeuron.clear();
-    try {
-        int count = 0;
-        qDebug("-------------------------------------------------------");
-        for (int k=0;k<seg.row.size();k++)
-        {
-            count++;
-            NeuronSWC S;
-            S.n 	= seg.row.at(k).data[0];
-            S.type 	= seg.row.at(k).data[1];
-            S.x 	= seg.row.at(k).data[2];
-            S.y 	= seg.row.at(k).data[3];
-            S.z 	= seg.row.at(k).data[4];
-            S.r 	= seg.row.at(k).data[5];
-            S.pn 	= seg.row.at(k).data[6];
-            //for hit & editing
-            S.seg_id       = seg.row.at(k).seg_id;
-            S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
+       listNeuron.clear();
+       hashNeuron.clear();
+       try {
+           int count = 0;
+           qDebug("-------------------------------------------------------");
+           for (int k=0;k<seg.row.size();k++)
+           {
+               count++;
+               NeuronSWC S;
+               S.n 	= seg.row.at(k).data[0];
+               S.type 	= seg.row.at(k).data[1];
+               S.x 	= seg.row.at(k).data[2];
+               S.y 	= seg.row.at(k).data[3];
+               S.z 	= seg.row.at(k).data[4];
+               S.r 	= seg.row.at(k).data[5];
+               S.pn 	= seg.row.at(k).data[6];
+               //for hit & editing
+               S.seg_id       = seg.row.at(k).seg_id;
+               S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
 
-            S.level = seg.row.at(k).level;
-            S.creatmode = seg.row.at(k).creatmode;
-            S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
-            S.tfresindex = seg.row.at(k).tfresindex; //LMG 13/12/2018
+               S.level = seg.row.at(k).level;
+               S.creatmode = seg.row.at(k).creatmode;
+               S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
+               S.tfresindex = seg.row.at(k).tfresindex; //LMG 13/12/2018
 
-            //qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
-            //if (! listNeuron.contains(S)) // 081024
+               //qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
+               //if (! listNeuron.contains(S)) // 081024
+               {
+                   listNeuron.append(S);
+                   hashNeuron.insert(S.n, listNeuron.size()-1);
+               }
+           }
+           qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
+           if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
+           {
+               for (int i=0; i<listNeuronTree.size(); i++)
+               {
+                   if (listNeuronTree[i].file == QString(seg.file.c_str())) // same file. try to remove all instances with the same name
+                   {
+                       listNeuronTree.removeAt(i);
+                       qDebug()<<"find name matched and remove an empty neuron";
+                   }
+               }
+               updateNeuronBoundingBox();
+               qDebug()<<"remove an empty neuron";
+               return; //////////////////////////////
+           }
+           NeuronTree SS;
+           SS.n = -1;
+           SS.color = XYZW(seg.color_uc[0],seg.color_uc[1],seg.color_uc[2],seg.color_uc[3]);
+           SS.on = true;
+           SS.listNeuron = listNeuron;
+           SS.hashNeuron = hashNeuron;
+           //090914 RZC
+           SS.name = seg.name.c_str();
+           SS.file = seg.file.c_str();
+           // add or replace into listNeuronTree
+           bool contained = false;
+           for (int i=0; i<listNeuronTree.size(); i++)
+               if (SS.file == listNeuronTree[i].file) // same file to replace it
+               {
+                   contained = true;
+                   SS.n = 1+i;
+                   listNeuronTree.replace(i, SS); //090117 use overwrite  by PHC
+                   break;
+               }
+           if (!contained
+                   //&& SS.file!=QString(TRACED_FILE)
+                   ) //listNeuronTree.contains(SS)) // because NeuronTree contains template, so listNeuronTree.contains() cannot work, 081115
+           {
+               SS.n = 1+listNeuronTree.size();
+               listNeuronTree.append(SS);
+           }
+           // make sure only one current editing neuron has editable flag
+           qDebug("	lastEditingNeuron = %d, NeuronTree.n = %d", curEditingNeuron, SS.n);
+           //qDebug("-------------------------------------------------------");
+           for (int i=0; i<listNeuronTree.size(); i++)
+           {
+               listNeuronTree[i].editable = (1+i==SS.n); //090923
+               listNeuronTree[i].on = (1+i==SS.n);  //hide the original one //ZZ 04122018
+           }
+           curEditingNeuron = SS.n;
 
-                listNeuron.append(S);
-                hashNeuron.insert(S.n, listNeuron.size()-1);
-
-        }
-        qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
-        if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
-        {
-            for (int i=0; i<listNeuronTree.size(); i++)
-            {
-                if (listNeuronTree[i].file == QString(seg.file.c_str())) // same file. try to remove all instances with the same name
-                {
-                    listNeuronTree.removeAt(i);
-                    qDebug()<<"find name matched and remove an empty neuron";
-                }
-            }
-            updateNeuronBoundingBox();
-            qDebug()<<"remove an empty neuron";
-            return; //////////////////////////////
-        }
-        NeuronTree SS;
-        SS.n = -1;
-        SS.color = XYZW(seg.color_uc[0],seg.color_uc[1],seg.color_uc[2],seg.color_uc[3]);
-        SS.on = true;
-        SS.listNeuron = listNeuron;
-        SS.hashNeuron = hashNeuron;
-        //090914 RZC
-        SS.name = seg.name.c_str();
-        SS.file = seg.file.c_str();
-        // add or replace into listNeuronTree
-        bool contained = false;
-        for (int i=0; i<listNeuronTree.size(); i++)
-            if (SS.file == listNeuronTree[i].file) // same file to replace it
-            {
-                contained = true;
-                SS.n = 1+i;
-                listNeuronTree.replace(i, SS); //090117 use overwrite  by PHC
-                break;
-            }
-        if (!contained
-                //&& SS.file!=QString(TRACED_FILE)
-                ) //listNeuronTree.contains(SS)) // because NeuronTree contains template, so listNeuronTree.contains() cannot work, 081115
-        {
-            SS.n = 1+listNeuronTree.size();
-            listNeuronTree.append(SS);
-        }
-        // make sure only one current editing neuron has editable flag
-        qDebug("	lastEditingNeuron = %d, NeuronTree.n = %d", curEditingNeuron, SS.n);
-        //qDebug("-------------------------------------------------------");
-        for (int i=0; i<listNeuronTree.size(); i++)
-        {
-            listNeuronTree[i].editable = (1+i==SS.n); //090923
-            listNeuronTree[i].on = (1+i==SS.n);  //hide the original one //ZZ 04122018
-        }
-        curEditingNeuron = SS.n;
-
-
-        if (listNeuronTree.size()==1 && listNeuronTree[0].file=="vaa3d_traced_neuron" && listNeuronTree[0].name=="vaa3d_traced_neuron")
-        {
-            listNeuronTree[0].editable = true;
-            curEditingNeuron = 1;
-        }
-
-    } CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
-
-    updateNeuronBoundingBox();
-    if(colorByAncestry){
-        setColorAncestryInfo();
-    }
-
-    updateBoundingBox(); // all of loaded bounding-box are updated here
+           if (listNeuronTree.size()==1 && listNeuronTree[0].file=="vaa3d_traced_neuron" && listNeuronTree[0].name=="vaa3d_traced_neuron")
+           {
+               listNeuronTree[0].editable = true;
+               curEditingNeuron = 1;
+           }
+       } CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
+       updateNeuronBoundingBox();
+       if(colorByAncestry)
+           setColorAncestryInfo();
+       updateBoundingBox(); // all of loaded bounding-box are updated here
 }
 V_NeuronSWC_list Renderer_gl1::copyToEditableNeuron(NeuronTree * ptree)
 {
@@ -2015,7 +2010,7 @@ void Renderer_gl1::setEditMode()
     }
 }
 
-#endif
+
 void Renderer_gl1::toggleLineType()
 {
     lineType = (lineType +1) %2;

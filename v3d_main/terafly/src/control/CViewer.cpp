@@ -71,11 +71,10 @@ CViewer* CViewer::current = 0;
 int CViewer::nInstances = 0;
 int CViewer::nTotalInstances = 0;
 int CViewer::newViewerOperationID = 0;
-
 void CViewer::show()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-    //qDebug()<<"csz debug cviewer-show.";
+
     PMain* pMain = PMain::getInstance();
     QElapsedTimer timer;
     timer.start();
@@ -85,10 +84,7 @@ void CViewer::show()
         // open tri-view window (and hiding it asap)
         this->window = V3D_env->newImageWindow(QString(title.c_str()));
         this->triViewWidget = (XFormWidget*)window;
-        //修改
-        //triViewWidget->setWindowState(Qt::WindowMinimized);
-        triViewWidget->setWindowState(Qt::WindowNoState);
-        triViewWidget->move(0,0);
+        triViewWidget->setWindowState(Qt::WindowMinimized);
         Image4DSimple* image = new Image4DSimple();
         image->setFileName(title.c_str());
         image->setData(imgData, volH1-volH0, volV1-volV0, volD1-volD0, nchannels*(volT1-volT0+1), V3D_UINT8);
@@ -103,29 +99,26 @@ void CViewer::show()
         //view3DWidget = (myV3dR_GLWidget*)(V3D_env->getView3DControl(window));
         if(!view3DWidget->getiDrawExternalParameter())
             QMessageBox::critical(pMain,QObject::tr("Error"), QObject::tr("Unable to get iDrawExternalParameter from Vaa3D's V3dR_GLWidget"),QObject::tr("Ok"));
-
-        view3DWidget->move(0,0);
-
         window3D = view3DWidget->getiDrawExternalParameter()->window3D;
 
 
-//        // disable progress bar (for faster 3D viewer updates)
+        // disable progress bar (for faster 3D viewer updates)
         view3DWidget->setShowProgressBar(false);
 
 
-//        // start 3D visualization with Vaa3D display controls hidden (or inherit from previous viewer)
+        // start 3D visualization with Vaa3D display controls hidden (or inherit from previous viewer)
         if(!prev || prev->window3D->displayControlsHidden)
             window3D->hideDisplayControls();
 
-//        // remove TeraFly's toolbar from previous viewer (if any) and add to this viewer
-          int tab_selected = PMain::getInstance()->tabs->currentIndex();
+        // remove TeraFly's toolbar from previous viewer (if any) and add to this viewer
+        int tab_selected = PMain::getInstance()->tabs->currentIndex();
         if(prev)
         {
             prev->window3D->centralLayout->takeAt(0);
             PAnoToolBar::instance()->setParent(0);
             PMain::getInstance()->tabs->removeTab(1);
         }
-        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());//坐标的菜单栏
+        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());
 
 
         // @ADDED Vaa3D-controls-within-TeraFly feature.
@@ -137,7 +130,6 @@ void CViewer::show()
         vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
         vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
         vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
-        vaa3d_controls_layout->addWidget(window3D->editLine);
         vaa3d_controls->setLayout(vaa3d_controls_layout);
         PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
@@ -155,11 +147,10 @@ void CViewer::show()
 
 
         // set fixed size that fills available screen space
-       //window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
+       // window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
 
         // resize according to persistent settings
         window3D->resize(CSettings::instance()->getViewerWidth(), CSettings::instance()->getViewerWidth());
-
 
         // show 3D viewer
         window3D->show();
@@ -250,13 +241,11 @@ void CViewer::show()
             updateAnnotationSpace();
 
             //centering the current 3D window and the plugin's window
-           // int screen_height = qApp->desktop()->availableGeometry().height();
-            //int screen_width = qApp->desktop()->availableGeometry().width();
-            int screen_height = 50;
-            int screen_width = 50;
+            int screen_height = QApplication::primaryScreen()->availableGeometry().height();
+            int screen_width = QApplication::primaryScreen()->availableGeometry().width();
             int window_x = (screen_width - (window3D->width() + pMain->width()))/2;
             int window_y = (screen_height - window3D->height()) / 2;
-          //  window3D->move(window_x, window_y);
+            window3D->move(window_x, window_y);
         }
 
         //registrating the current window as the last and current window of the multiresolution explorer windows chain
@@ -332,7 +321,6 @@ void CViewer::show()
         connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
         connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
         connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
-        connect(view3DWidget, SIGNAL(changeEditinput(QString)), PMain::getInstance()->editStatus, SLOT(setText(QString)));
 
         connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
         //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
@@ -375,7 +363,7 @@ void CViewer::show()
 #if defined(USE_Qt5)
         this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
 #else
-        this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+        this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
 #endif
         Vaa3D_rotationchanged(0);
 
@@ -415,6 +403,348 @@ void CViewer::show()
     else
         PLog::instance()->appendOperation(new ImportOperation( "Opened first viewer", tf::GPU, timer.elapsed()));
 }
+//void CViewer::show()
+//{
+//    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+//    //qDebug()<<"csz debug cviewer-show.";
+//    PMain* pMain = PMain::getInstance();
+//    QElapsedTimer timer;
+//    timer.start();
+
+//    try
+//    {
+//        // open tri-view window (and hiding it asap)
+//        this->window = V3D_env->newImageWindow(QString(title.c_str()));
+//        this->triViewWidget = (XFormWidget*)window;
+//        //修改
+//        //triViewWidget->setWindowState(Qt::WindowMinimized);
+//        triViewWidget->setWindowState(Qt::WindowNoState);
+//        triViewWidget->move(0,0);
+//        Image4DSimple* image = new Image4DSimple();
+//        image->setFileName(title.c_str());
+//        image->setData(imgData, volH1-volH0, volV1-volV0, volD1-volD0, nchannels*(volT1-volT0+1), V3D_UINT8);
+//        image->setTDim(volT1-volT0+1);
+//        image->setTimePackType(TIME_PACK_C);
+//        V3D_env->setImage(window, image);
+
+//        // create 3D view window with postponed show()
+//        XFormWidget *w = V3dApplication::getMainWindow()->validateImageWindow(window);
+//        w->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
+//        view3DWidget = (V3dR_GLWidget*)(V3D_env->getView3DControl(window));
+//        //view3DWidget = (myV3dR_GLWidget*)(V3D_env->getView3DControl(window));
+//        if(!view3DWidget->getiDrawExternalParameter())
+//            QMessageBox::critical(pMain,QObject::tr("Error"), QObject::tr("Unable to get iDrawExternalParameter from Vaa3D's V3dR_GLWidget"),QObject::tr("Ok"));
+
+//        view3DWidget->move(0,0);
+
+//        window3D = view3DWidget->getiDrawExternalParameter()->window3D;
+
+
+////        // disable progress bar (for faster 3D viewer updates)
+//        view3DWidget->setShowProgressBar(false);
+
+
+////        // start 3D visualization with Vaa3D display controls hidden (or inherit from previous viewer)
+//        if(!prev || prev->window3D->displayControlsHidden)
+//            window3D->hideDisplayControls();
+
+////        // remove TeraFly's toolbar from previous viewer (if any) and add to this viewer
+//          int tab_selected = PMain::getInstance()->tabs->currentIndex();
+//        if(prev)
+//        {
+//            prev->window3D->centralLayout->takeAt(0);
+//            PAnoToolBar::instance()->setParent(0);
+//            PMain::getInstance()->tabs->removeTab(1);
+//        }
+//        window3D->centralLayout->insertWidget(0, PAnoToolBar::instance());//坐标的菜单栏
+
+
+//        // @ADDED Vaa3D-controls-within-TeraFly feature.
+//        window3D->hideDisplayControlsButton->setVisible(false);
+//        window3D->centralLayout->takeAt(3);
+//        QWidget* vaa3d_controls = new QWidget();
+//        QVBoxLayout* vaa3d_controls_layout = new QVBoxLayout();
+//        vaa3d_controls_layout->addWidget(window3D->tabOptions);
+//        vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
+//        vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
+//        vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
+//        vaa3d_controls_layout->addWidget(window3D->editLine);
+//        vaa3d_controls->setLayout(vaa3d_controls_layout);
+//        PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
+//        PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
+
+//        // also reset undo/redo (which are referred to this viewer)
+//        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+//        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+
+
+//        // re-arrange viewer's layout
+//        window3D->centralLayout->setSpacing(0);
+//        window3D->centralLayout->insertSpacing(2, 10);
+//        window3D->centralLayout->insertSpacing(4, 10);
+//        window3D->centralLayout->setContentsMargins(10,5,5,10);
+
+
+//        // set fixed size that fills available screen space
+//       //window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
+
+//        // resize according to persistent settings
+//        window3D->resize(CSettings::instance()->getViewerWidth(), CSettings::instance()->getViewerWidth());
+
+
+//        // show 3D viewer
+//        window3D->show();
+
+//        // install the event filter on the 3D renderer and on the 3D window
+//        if(!toRetrieveData)
+//        {
+//            view3DWidget->installEventFilter(this);
+//        }
+//        window3D->installEventFilter(this);
+//        window3D->timeSlider->installEventFilter(this);
+
+//        // time slider: disconnect Vaa3D event handlers and set the complete (virtual) time range
+//        disconnect(view3DWidget, SIGNAL(changeVolumeTimePoint(int)), window3D->timeSlider, SLOT(setValue(int)));
+//        disconnect(window3D->timeSlider, SIGNAL(valueChanged(int)), view3DWidget, SLOT(setVolumeTimePoint(int)));
+//        window3D->timeSlider->setMinimum(0);
+//        window3D->timeSlider->setMaximum(CImport::instance()->getTDim()-1);
+
+//        // if the previous explorer window exists
+//        if(prev)
+//        {
+//            // apply the same color map only if it differs from the previous one
+//            Renderer_gl2* prev_renderer = (Renderer_gl2*)(prev->view3DWidget->getRenderer());
+//            Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
+//            curr_renderer->currentTraceType = prev_renderer->currentTraceType;
+//            curr_renderer->currentMarkerColor = prev_renderer->currentMarkerColor;
+//            curr_renderer->neuronColorMode = prev_renderer->neuronColorMode;
+
+
+//            bool changed_cmap = false;
+//            for(int k=0; k<3; k++)
+//            {
+//                RGBA8* prev_cmap = prev_renderer->colormap[k];
+//                RGBA8* curr_cmap = curr_renderer->colormap[k];
+//                for(int i=0; i<256; i++)
+//                {
+//                    if(curr_cmap[i].i != prev_cmap[i].i)
+//                        changed_cmap = true;
+//                    curr_cmap[i] = prev_cmap[i];
+//                }
+//            }
+
+////            if(changed_cmap)
+////                curr_renderer->applyColormapToImage();
+
+//            //positioning the current 3D window exactly at the previous window position
+//            QPoint location = prev->pos();
+//            resize(prev->window3D->size());
+//            move(location);
+
+//            //hiding both tri-view and 3D view
+//            prev->window3D->setVisible(false);
+//            //prev->triViewWidget->setVisible(false);       //---- Alessandro 2013-09-04 fixed: this causes Vaa3D's setCurHiddenSelectedWindow() to fail
+//            prev->view3DWidget->setCursor(Qt::ArrowCursor);
+
+//            //registrating views: ---- Alessandro 2013-04-18 fixed: determining unique triple of rotation angles and assigning absolute rotation
+//            float ratio = CImport::instance()->getVolume(volResIndex)->getDIM_D()/CImport::instance()->getVolume(prev->volResIndex)->getDIM_D();
+//            view3DWidget->setZoom(prev->view3DWidget->zoom()/ratio);
+//            prev->view3DWidget->absoluteRotPose();
+//            view3DWidget->doAbsoluteRot(prev->view3DWidget->xRot(), prev->view3DWidget->yRot(), prev->view3DWidget->zRot());
+
+//            // 5D data: select the same time frame (if available)
+//            if(CImport::instance()->is5D())
+//            {
+//                int prev_s = prev->window3D->timeSlider->value();
+//                if(prev_s < volT0 || prev_s > volT1)
+//                    window3D->timeSlider->setValue(volT0);
+//                else
+//                    window3D->timeSlider->setValue(prev_s);
+//                view3DWidget->setVolumeTimePoint(window3D->timeSlider->value()-volT0);
+//            }
+
+//            //sync widgets
+//            syncWindows(prev->window3D, window3D);
+
+//            //storing annotations done in the previous view and loading annotations of the current view
+//            prev->storeAnnotations();
+//            prev->clearAnnotations();
+//            this->loadAnnotations();
+//        }
+//        //otherwise this is the lowest resolution window
+//        else
+//        {
+//            //registrating the current window as the first window of the multiresolution explorer windows chain
+//            CViewer::first = this;
+
+//            // update annotation space
+//            updateAnnotationSpace();
+
+//            //centering the current 3D window and the plugin's window
+//           // int screen_height = qApp->desktop()->availableGeometry().height();
+//            //int screen_width = qApp->desktop()->availableGeometry().width();
+//            int screen_height = 50;
+//            int screen_width = 50;
+//            int window_x = (screen_width - (window3D->width() + pMain->width()))/2;
+//            int window_y = (screen_height - window3D->height()) / 2;
+//          //  window3D->move(window_x, window_y);
+//        }
+
+//        //registrating the current window as the last and current window of the multiresolution explorer windows chain
+//        CViewer::last = this;
+//        CViewer::current = this;
+
+//        //selecting the current resolution in the PMain GUI and disabling previous resolutions
+//        pMain->resolution_cbox->setCurrentIndex(volResIndex);
+//        for(int i=0; i<pMain->resolution_cbox->count(); i++)
+//        {
+//            // Get the index of the value to disable
+//            QModelIndex index = pMain->resolution_cbox->model()->index(i,0);
+
+//            // These are the effective 'disable/enable' flags
+//            QVariant v1(Qt::NoItemFlags);
+//            QVariant v2(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+//            //the magic
+//            if(i<volResIndex)
+//                pMain->resolution_cbox->model()->setData( index, v1, Qt::UserRole -1);
+//            else
+//                pMain->resolution_cbox->model()->setData( index, v2, Qt::UserRole -1);
+//        }
+//        pMain->gradientBar->setStep(volResIndex);
+//        pMain->gradientBar->update();
+
+//        //disabling translate buttons if needed
+//        if(!pMain->isPRactive())
+//        {
+//            pMain->traslYneg->setEnabled(volV0 > 0);
+//            pMain->traslYpos->setEnabled(volV1 < CImport::instance()->getVolume(volResIndex)->getDIM_V());
+//            pMain->traslXneg->setEnabled(volH0 > 0);
+//            pMain->traslXpos->setEnabled(volH1 < CImport::instance()->getVolume(volResIndex)->getDIM_H());
+//            pMain->traslZneg->setEnabled(volD0 > 0);
+//            pMain->traslZpos->setEnabled(volD1 < CImport::instance()->getVolume(volResIndex)->getDIM_D());
+//            pMain->traslTneg->setEnabled(volT0 > 0);
+//            pMain->traslTpos->setEnabled(volT1 < CImport::instance()->getVolume(volResIndex)->getDIM_T()-1);
+//        }
+
+//        //setting min, max and value of PMain GUI VOI's widgets
+//        /**/tf::debug(tf::LEV2, tf::strprintf("Vaa3D cut is set to V[%d,%d], H[%d,%d], D[%d,%d]",
+//                                                 view3DWidget->yCut0(), view3DWidget->yCut1(),
+//                                                 view3DWidget->xCut0(), view3DWidget->xCut1(),
+//                                                 view3DWidget->zCut0(), view3DWidget->zCut1()).c_str(), __itm__current__function__);
+//        pMain->V0_sbox->setMinimum(coord2global<int>(view3DWidget->yCut0(),     iim::vertical,  true,   -1, true, false, __itm__current__function__) +1);
+//        pMain->V0_sbox->setValue(pMain->V0_sbox->minimum());
+//        pMain->V1_sbox->setMaximum(coord2global<int>(view3DWidget->yCut1()+1,   iim::vertical,  true,   -1, true, false, __itm__current__function__));
+//        pMain->V1_sbox->setValue(pMain->V1_sbox->maximum());
+//        pMain->H0_sbox->setMinimum(coord2global<int>(view3DWidget->xCut0(),     iim::horizontal,true,   -1, true, false, __itm__current__function__) +1);
+//        pMain->H0_sbox->setValue(pMain->H0_sbox->minimum());
+//        pMain->H1_sbox->setMaximum(coord2global<int>(view3DWidget->xCut1()+1,   iim::horizontal,true,   -1, true, false, __itm__current__function__));
+//        pMain->H1_sbox->setValue(pMain->H1_sbox->maximum());
+//        pMain->D0_sbox->setMinimum(coord2global<int>(view3DWidget->zCut0(),     iim::depth,     true,   -1, true, false, __itm__current__function__) +1);
+//        pMain->D0_sbox->setValue(pMain->D0_sbox->minimum());
+//        pMain->D1_sbox->setMaximum(coord2global<int>(view3DWidget->zCut1()+1,   iim::depth,     true,   -1, true, false, __itm__current__function__));
+//        pMain->D1_sbox->setValue(pMain->D1_sbox->maximum());
+//        /**/tf::debug(tf::LEV2, tf::strprintf("sbox set to V[%d,%d], H[%d,%d], D[%d,%d]",
+//                                                 pMain->V0_sbox->minimum(), pMain->V1_sbox->maximum(),
+//                                                 pMain->H0_sbox->minimum(), pMain->H1_sbox->maximum(),
+//                                                 pMain->D0_sbox->minimum(), pMain->D1_sbox->maximum()).c_str(), __itm__current__function__);
+
+//        if(pMain->frameCoord->isEnabled())
+//        {
+//            pMain->T0_sbox->setText(QString::number(volT0+1));
+//            pMain->T1_sbox->setText(QString::number(volT1+1));
+//        }
+
+//        //signal connections
+//        connect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
+//        connect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
+//        connect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
+//        connect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
+//        connect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
+//        connect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
+//        connect(view3DWidget, SIGNAL(signalCallTerafly(int)), this, SLOT(ShiftToAnotherDirection(int)));
+
+//        connect(window3D->timeSlider, SIGNAL(valueChanged(int)), this, SLOT(Vaa3D_changeTSlider(int)));
+//        //connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+//        //connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+//        //connect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+//        connect(pMain->refSys,  SIGNAL(mouseReleased()),   this, SLOT(PMain_rotationchanged()));
+//        connect(pMain->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
+//        connect(pMain->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
+//        connect(pMain->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
+//        connect(pMain->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
+//        connect(pMain->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
+//        connect(pMain->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
+//        connect(pMain->zoomOutMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(zoomOutMethodChanged(int)));
+
+//        disconnect(window3D->zoomSlider, SIGNAL(valueChanged(int)), view3DWidget, SLOT(setZoom(int)));
+//        connect(window3D->zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setZoom(int)));
+
+//        //changing window flags (disabling minimize/maximize buttons)
+//        // ---- Alessandro 2013-04-22 fixed: this causes (somehow) window3D not to respond correctly to the move() method
+////        window3D->setWindowFlags(Qt::Tool
+////                                 | Qt::WindowTitleHint
+////                                 | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint);
+
+//        this->window3D->raise();
+//        this->window3D->activateWindow();
+//        this->window3D->show();
+
+
+//        // updating reference system
+//        if(!PMain::getInstance()->isPRactive())
+//        {
+//            if(!PMain::getInstance()->isOverviewActive)
+//                PMain::getInstance()->refSys->setDims(volH1-volH0+1, volV1-volV0+1, volD1-volD0+1);
+//            else
+//            {
+//                PMain::getInstance()->updateAnnotationStatus();
+//                PMain::getInstance()->setOverview(true);
+//            }
+//        }
+//#if defined(USE_Qt5)
+//        this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+//#else
+//        this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
+//#endif
+//        Vaa3D_rotationchanged(0);
+
+//        // saving subvol spinboxes state ---- Alessandro 2013-04-23: not sure if this is really needed
+//        saveSubvolSpinboxState();
+
+//        // refresh annotation toolbar
+//        PAnoToolBar::instance()->refreshTools();
+
+//        // update curve aspect
+//        pMain->curveAspectChanged();
+
+//        // update marker size
+//        pMain->markersSizeSpinBoxChanged(pMain->markersSizeSpinBox->value());
+
+//        // update visible markers
+//        PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+//    }
+//    catch(RuntimeException &ex)
+//    {
+//        QMessageBox::critical(pMain,QObject::tr("Error"), (std::string(ex.what())+"\nsource: " + ex.getSource()).c_str(),QObject::tr("Ok"));
+//        pMain->closeVolume();
+//    }
+//    catch(const char* error)
+//    {
+//        QMessageBox::critical(pMain,QObject::tr("Error"), QObject::tr(error),QObject::tr("Ok"));
+//        pMain->closeVolume();
+//    }
+//    catch(...)
+//    {
+//        QMessageBox::critical(pMain,QObject::tr("Error"), QObject::tr("Unknown error occurred"),QObject::tr("Ok"));
+//        pMain->closeVolume();
+//    }
+
+//    if(prev)
+//        PLog::instance()->appendOperation(new NewViewerOperation(QString("Opened view ").append(title.c_str()).toStdString(), tf::GPU, timer.elapsed()));
+//    else
+//        PLog::instance()->appendOperation(new ImportOperation( "Opened first viewer", tf::GPU, timer.elapsed()));
+//}
 
 CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
                                  int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID /* = -1 */): QWidget()
@@ -893,7 +1223,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                               point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                               volResIndex, volT0, volT1);
                 }else{
-
+                    qDebug()<<"------------3)";
                     newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
 
                 }
@@ -1184,6 +1514,7 @@ void CViewer::receiveData(
 * Called by the current <CViewer> when the user zooms in and the higher res-
 * lution has to be loaded.
 ***********************************************************************************/
+
 void
 CViewer::newViewer(int x, int y, int z,             //can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
     int resolution,                                 //resolution index of the view requested
@@ -1199,7 +1530,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                                         titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
 
     qDebug()<<"call newViewer ... ... ";
-    //qDebug()<<"csz debug newviewer 1 x="<<x<<",y="<<y<<",z="<<z;
+
     // check precondition #1: active window
     if(!_isActive || toBeClosed)
     {
@@ -1255,7 +1586,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             x = coord2global<int>(x, iim::horizontal, true, resolution, false, false, __itm__current__function__);
             y = coord2global<int>(y, iim::vertical,   true, resolution, false, false, __itm__current__function__);
             z = coord2global<int>(z, iim::depth,      true, resolution, false, false, __itm__current__function__);
-            //qDebug()<<"csz debug newviewer 2 x="<<x<<",y="<<y<<",z="<<z;
             if(x0 != -1)
                 x0 = coord2global<int>(x0, iim::horizontal, true,  resolution, false, false, __itm__current__function__);
             else
@@ -1349,20 +1679,8 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-            if (dx != -1 && dy != -1 && dz != -1){
-//add by ljs
-#ifdef MACOS_SYSTEM
-            cVolume->setVoi(0, resolution, y - dy, y + dy, x - 2*dx, x + 2*dx, z - dz, z + dz, t0, t1);
-#endif
-
-#ifdef WINDOWS_SYSTEM
-             cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
-#endif
-
-#ifdef LINUX_SYSTEM
-          cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
-#endif
-            }
+            if (dx != -1 && dy != -1 && dz != -1)
+                cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
             else
                 cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
         }
@@ -1416,7 +1734,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             int rVoiV1 = CVolume::scaleCoord<int>(cVolume->getVoiV1(), resolution, volResIndex, iim::vertical, true);
             int rVoiD0 = CVolume::scaleCoord<int>(cVolume->getVoiD0(), resolution, volResIndex, iim::depth, true);
             int rVoiD1 = CVolume::scaleCoord<int>(cVolume->getVoiD1(), resolution, volResIndex, iim::depth, true);
-            //qDebug()<<"csz debug this resindex is "<<volResIndex;
             uint8* lowresData = getVOI(rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(),
                                        cVolume->getVoiH1()-cVolume->getVoiH0(),
                                        cVolume->getVoiV1()-cVolume->getVoiV0(),
@@ -1429,7 +1746,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             PLog::instance()->appendOperation(new NewViewerOperation(message, tf::CPU, timer.elapsed()));
 
             // create new window
-            //qDebug()<<"csz debug sliding_viewer_block_ID1 is "<<sliding_viewer_block_ID;
             this->next = new CViewer(V3D_env, resolution, lowresData,
                                              cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
@@ -1457,16 +1773,14 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 
             // meanwhile, show the new window with preview data
             next->show();
-            //int cszdebug1=QMessageBox::information(this,tr("debug1"),tr("show"),QMessageBox::Ok);
 
             // enter "waiting for 5D data" state, if possible
             next->setWaitingForData(true);
-            //int cszdebug2=QMessageBox::information(this,tr("debug2"),tr("waitfordata"),QMessageBox::Ok);
 
             //if the resolution of the loaded voi is the same of the current one, this window will be closed
             if(resolution == volResIndex)
                 this->close();
-            //qDebug()<<"csz debug resolution is "<<resolution;
+
 #ifdef _NEURON_ASSEMBLER_
             // There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
             if (PMain::getInstance()->fragTracePluginInstance)
@@ -1495,7 +1809,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             cVolume->setStreamingSteps(0);
 
             // load data and instance new viewer
-            //qDebug()<<"csz debug sliding_viewer_block_ID2 is "<<sliding_viewer_block_ID;
             this->next = new CViewer(V3D_env, resolution, CVolume::instance()->loadData(),
                                              cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
                                              cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
@@ -1535,6 +1848,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         PMain::getInstance()->resetGUI();
     }
 }
+
 
 //safely close this viewer
 void CViewer::close()
@@ -1750,7 +2064,7 @@ tf::uint8*
 * Makes the current view the last one by  deleting (and deallocting) its subsequent
 * views.
 ***********************************************************************************/
-void CViewer::makeLastView() 
+void CViewer::makeLastView()
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1824,125 +2138,110 @@ void CViewer::restoreSubvolSpinboxState()
 /**********************************************************************************
 * Annotations are stored/loaded to/from the <CAnnotations> object
 ***********************************************************************************/
-void CViewer::storeAnnotations() 
+void CViewer::storeAnnotations()
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-    // MK, June, 2018, Restore neuron display color if highlighting subtree has been triggered
-    myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-    if (thisRenderer->pressedShowSubTree) thisRenderer->escPressed_subtree();
-    //////////////////////////////////////////////////////////////////////////////////////////
+        // MK, June, 2018, Restore neuron display color if highlighting subtree has been triggered
+        myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+        if (thisRenderer->pressedShowSubTree) thisRenderer->escPressed_subtree();
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-    QElapsedTimer timer;
+        QElapsedTimer timer;
 
-    // 2014-11-17. Alessandro. @FIXED "duplicated annotations" bug
-    // use the same annotation VOI that was set for ::loadAnnotations at current explorer creation
-    /**/tf::debug(tf::LEV3, strprintf("use annotation VOI X[%d,%d), Y[%d,%d), Z[%d,%d)", anoH0, anoH1, anoV0, anoV1, anoD0, anoD1).c_str(), __itm__current__function__);
-    interval_t x_range(anoH0, anoH1);
-    interval_t y_range(anoV0, anoV1);
-    interval_t z_range(anoD0, anoD1);
+        // 2014-11-17. Alessandro. @FIXED "duplicated annotations" bug
+        // use the same annotation VOI that was set for ::loadAnnotations at current explorer creation
+        /**/tf::debug(tf::LEV3, strprintf("use annotation VOI X[%d,%d), Y[%d,%d), Z[%d,%d)", anoH0, anoH1, anoV0, anoV1, anoD0, anoD1).c_str(), __itm__current__function__);
+        interval_t x_range(anoH0, anoH1);
+        interval_t y_range(anoV0, anoV1);
+        interval_t z_range(anoD0, anoD1);
 
 
-    // begin new macro group of AnnotationOperation
-    //if(triViewWidget->getImageData()->listLandmarks.empty() == false || V3D_env->getSWC(this->window).listNeuron.empty() == false)
-        tf::AnnotationOperation::newGroup();
+        // begin new macro group of AnnotationOperation
+        //if(triViewWidget->getImageData()->listLandmarks.empty() == false || V3D_env->getSWC(this->window).listNeuron.empty() == false)
+            tf::AnnotationOperation::newGroup();
 
-    /**********************************************************************************
-    * MARKERS
-    ***********************************************************************************/
-    //storing edited markers
-    /**/tf::debug(tf::LEV3, strprintf("triViewWidget->getImageData()->listLandmarks.size() = %d", triViewWidget->getImageData()->listLandmarks.size()).c_str(), __itm__current__function__);
-    QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
-    //if(!markers.empty())  // 2017-10-05. Alessandro. @FIXED: markers set should be saved also when it's empty to deal with the special case when all markers in this VOI have been deleted
-    {
-        // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
-        // load/store annotation VOIs are now the same (see fix of 2014-11-17).
-        // @fixed by Alessandro on 2014-07-21: excluding hidden markers from store operation
-        timer.start();
-//        QList<LocationSimple>::iterator it = markers.begin();
-//        while (it != markers.end())
-//        {
-//            if (is_outside((*it).x, (*it).y, (*it).z))
-//            {
-//                #ifdef terafly_enable_debug_annotations
-//                tf::debug(tf::LEV3, strprintf("(%.0f, %.0f, %.0f) excluded from store operation because it is a hidden marker", it->x, it->y, it->z).c_str(), 0, true);
-//                #endif
-//                it = markers.erase(it);
-//            }
-//            else
-//                ++it;
-//        }
-//        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: exclude hidden landmarks, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
-
-        //converting local coordinates into global coordinates
-        timer.restart();
-        for(int i=0; i<markers.size(); i++)
+        /**********************************************************************************
+        * MARKERS
+        ***********************************************************************************/
+        //storing edited markers
+        /**/tf::debug(tf::LEV3, strprintf("triViewWidget->getImageData()->listLandmarks.size() = %d", triViewWidget->getImageData()->listLandmarks.size()).c_str(), __itm__current__function__);
+        QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
+        //if(!markers.empty())  // 2017-10-05. Alessandro. @FIXED: markers set should be saved also when it's empty to deal with the special case when all markers in this VOI have been deleted
         {
-            markers[i].x = coord2global<float>(markers[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
-            markers[i].y = coord2global<float>(markers[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
-            markers[i].z = coord2global<float>(markers[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
+            // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
+            // load/store annotation VOIs are now the same (see fix of 2014-11-17).
+            // @fixed by Alessandro on 2014-07-21: excluding hidden markers from store operation
+            timer.start();
+
+            timer.restart();
+            for(int i=0; i<markers.size(); i++)
+            {
+                markers[i].x = coord2global<float>(markers[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+                markers[i].y = coord2global<float>(markers[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+                markers[i].z = coord2global<float>(markers[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
+            }
+            PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert landmark coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+
+            //storing markers
+            timer.restart();
+            CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, markers);
+            PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: store landmarks in the octree, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
         }
-        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert landmark coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
 
-        //storing markers
-        timer.restart();
-        CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, markers);
-        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: store landmarks in the octree, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
-    }
-
-    /**********************************************************************************
-    * CURVES
-    ***********************************************************************************/
-    // @FIXED missing hidden neuron segments by Alessandro on 2016-05-31.
-    std::vector<bool> activeNeuronSegments;
-    if(view3DWidget->getiDrawExternalParameter() && view3DWidget->getiDrawExternalParameter()->image4d)
-    {
-        My4DImage* curImg = view3DWidget->getiDrawExternalParameter()->image4d;
-        for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+        /**********************************************************************************
+        * CURVES
+        ***********************************************************************************/
+        // @FIXED missing hidden neuron segments by Alessandro on 2016-05-31.
+        std::vector<bool> activeNeuronSegments;
+        if(view3DWidget->getiDrawExternalParameter() && view3DWidget->getiDrawExternalParameter()->image4d)
         {
-            activeNeuronSegments.push_back(curImg->tracedNeuron.seg[i].on);
-            curImg->tracedNeuron.seg[i].on = true;
+            My4DImage* curImg = view3DWidget->getiDrawExternalParameter()->image4d;
+            for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+            {
+                activeNeuronSegments.push_back(curImg->tracedNeuron.seg[i].on);
+                curImg->tracedNeuron.seg[i].on = true;
+            }
+            curImg->update_3drenderer_neuron_view(view3DWidget, static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
         }
-        curImg->update_3drenderer_neuron_view(view3DWidget, static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-    }
-    else
-        tf::warning("Cannot store hidden neuron segments: cannot retrieve image4D from current 3D widget");
+        else
+            tf::warning("Cannot store hidden neuron segments: cannot retrieve image4D from current 3D widget");
 
-    //storing edited curves
-    NeuronTree nt = this->V3D_env->getSWC(this->window);
-    // if(!nt.listNeuron.empty()) // 2017-10-05. Alessandro. @FIXED: curve set should be saved also when it's empty to deal with the special case when all curves in this VOI have been deleted
-    {
-        //converting local coordinates into global coordinates
-        timer.restart();
-        for(int i=0; i<nt.listNeuron.size(); i++)
+        //storing edited curves
+        NeuronTree nt = this->V3D_env->getSWC(this->window);
+        // if(!nt.listNeuron.empty()) // 2017-10-05. Alessandro. @FIXED: curve set should be saved also when it's empty to deal with the special case when all curves in this VOI have been deleted
         {
-            /* @debug */ //printf("%d(%d) [(%.0f,%.0f,%.0f) ->", nt.listNeuron[i].n, nt.listNeuron[i].pn, nt.listNeuron[i].x, nt.listNeuron[i].y, nt.listNeuron[i].z);
-            nt.listNeuron[i].x = coord2global<float>(nt.listNeuron[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
-            nt.listNeuron[i].y = coord2global<float>(nt.listNeuron[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
-            nt.listNeuron[i].z = coord2global<float>(nt.listNeuron[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
-            /* @debug */ //printf("(%.0f,%.0f,%.0f)]  ", nt.listNeuron[i].x, nt.listNeuron[i].y, nt.listNeuron[i].z);
+            //converting local coordinates into global coordinates
+            timer.restart();
+            for(int i=0; i<nt.listNeuron.size(); i++)
+            {
+                /* @debug */ //printf("%d(%d) [(%.0f,%.0f,%.0f) ->", nt.listNeuron[i].n, nt.listNeuron[i].pn, nt.listNeuron[i].x, nt.listNeuron[i].y, nt.listNeuron[i].z);
+                nt.listNeuron[i].x = coord2global<float>(nt.listNeuron[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+                nt.listNeuron[i].y = coord2global<float>(nt.listNeuron[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+                nt.listNeuron[i].z = coord2global<float>(nt.listNeuron[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
+                /* @debug */ //printf("(%.0f,%.0f,%.0f)]  ", nt.listNeuron[i].x, nt.listNeuron[i].y, nt.listNeuron[i].z);
+            }
+            PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert curve nodes coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+            /* @debug */ //printf("\n");
+
+            //storing curves
+            timer.restart();
+            CAnnotations::getInstance()->addCurves(x_range, y_range, z_range, nt);
+            PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: store curves in the octree, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
         }
-        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert curve nodes coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
-        /* @debug */ //printf("\n");
-
-        //storing curves
-        timer.restart();
-        CAnnotations::getInstance()->addCurves(x_range, y_range, z_range, nt);
-        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: store curves in the octree, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
-    }
 
 
-    // @FIXED missing hidden neuron segments by Alessandro on 2016-05-31.
-    if(view3DWidget->getiDrawExternalParameter() && view3DWidget->getiDrawExternalParameter()->image4d)
-    {
-        My4DImage* curImg = view3DWidget->getiDrawExternalParameter()->image4d;
-        for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
-            curImg->tracedNeuron.seg[i].on = activeNeuronSegments[i];
-        curImg->update_3drenderer_neuron_view(view3DWidget, static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-    }
+        // @FIXED missing hidden neuron segments by Alessandro on 2016-05-31.
+        if(view3DWidget->getiDrawExternalParameter() && view3DWidget->getiDrawExternalParameter()->image4d)
+        {
+            My4DImage* curImg = view3DWidget->getiDrawExternalParameter()->image4d;
+            for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+                curImg->tracedNeuron.seg[i].on = activeNeuronSegments[i];
+            curImg->update_3drenderer_neuron_view(view3DWidget, static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+        }
 }
 
-void CViewer::clearAnnotations() 
+void CViewer::clearAnnotations()
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -1958,7 +2257,7 @@ void CViewer::clearAnnotations()
 }
 
 
-void CViewer::deleteSelectedMarkers() 
+void CViewer::deleteSelectedMarkers()
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2009,7 +2308,7 @@ void CViewer::deleteSelectedMarkers()
 }
 
 
-void CViewer::createMarkerAt(int x, int y) 
+void CViewer::createMarkerAt(int x, int y)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
@@ -2030,7 +2329,7 @@ void CViewer::createMarkerAt(int x, int y)
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
-void CViewer::createMarker2At(int x, int y) 
+void CViewer::createMarker2At(int x, int y)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
@@ -2060,7 +2359,7 @@ void CViewer::createMarker2At(int x, int y)
     }
 }
 
-void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */) 
+void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
 
@@ -2111,7 +2410,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
-void CViewer::updateAnnotationSpace() 
+void CViewer::updateAnnotationSpace()
 {
      /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2165,7 +2464,7 @@ void CViewer::updateAnnotationSpace()
 
 }
 
-void CViewer::loadAnnotations() 
+void CViewer::loadAnnotations()
 {
     myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
@@ -2255,7 +2554,7 @@ void CViewer::loadAnnotations()
 * Called by the next(prev) <CViewer>  when the user  zooms out(in) and  the
 * lower(higher) resoolution has to be reestabilished.
 ***********************************************************************************/
-void CViewer::restoreViewerFrom(CViewer* source) 
+void CViewer::restoreViewerFrom(CViewer* source)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, source->title = %s", titleShort.c_str(), source->titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2567,7 +2866,7 @@ void CViewer::restoreViewerFrom(CViewer* source)
 * renderer at the given location.
 * This is based on the Vaa3D 3D point selection with one mouse click.
 ***********************************************************************************/
-XYZ CViewer::getRenderer3DPoint(int x, int y)  
+XYZ CViewer::getRenderer3DPoint(int x, int y)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
 
@@ -3363,7 +3662,7 @@ void CViewer::setCursor(const QCursor& cur, bool renderer_only /* = false */)
 /**********************************************************************************
 * Refresh image data (if viewer is not busy - otherwise no refresh is possible)
 ***********************************************************************************/
-void CViewer::refresh() 
+void CViewer::refresh()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -3415,7 +3714,7 @@ const Image4DSimple* CViewer::getImage()
 
 
 
-void CViewer::setImage(int x, int y, int z) 
+void CViewer::setImage(int x, int y, int z)
 {
     int current_x = (x-H0_sbox_min)/((H1_sbox_max-H0_sbox_min+1)/(volH1-volH0));
     int current_y = (y-V0_sbox_min)/((V1_sbox_max-V0_sbox_min+1)/(volV1-volV0));

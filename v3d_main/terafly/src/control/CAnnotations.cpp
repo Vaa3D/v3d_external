@@ -16,11 +16,9 @@
 #include "COperation.h"
 #include "CImageUtils.h"
 #include "../presentation/PLog.h"
-#include <QMultiHash>
-#include <QHash>
 //#include "renderer_gl1.h"
 //#include "renderer.h"
-#include "../../../../../3drenderer/v3dr_surfaceDialog.h"
+#include "../../../3drenderer/v3dr_surfaceDialog.h"
 
 double SOMA_X = -1.1;
 double SOMA_Y = -1.1;
@@ -1319,29 +1317,32 @@ void CAnnotations::removeDuplicatedNode(QList<NeuronSWC> &neuron,QList<NeuronSWC
     else
     {
         //remove duplicated root nodes
-//        for(V3DLONG r=0;r<rootnodes.size();r++)
-//        {
-//            for(V3DLONG r1=r+1;r1<rootnodes.size();r1++)
-//            {
-//                if(/*r!=r1&&*/neuron.at(rootnodes.at(r)).x==neuron.at(rootnodes.at(r1)).x
-//                        &&neuron.at(rootnodes.at(r)).y==neuron.at(rootnodes.at(r1)).y
-//                        &&neuron.at(rootnodes.at(r)).z==neuron.at(rootnodes.at(r1)).z)
-//                {
-//                    duplicatednodes.push_back(rootnodes.at(r1));
-//                    for(V3DLONG p=0;p<parentschild.size();p++)
-//                    {
-//                        if(rootnodes.at(r1)==neuron.at(parentschild.at(p)).parent)
-//                        {
-//                            neuron[parentschild.at(p)].parent=neuron.at(rootnodes.at(r)).n;
-//    //                        cout<<"change "<<parentschild.at(p)<<"'s parent id to "<<tipnodes.at(tip)<<"'s "<<neuron.at(tipnodes.at(tip)).n<<endl;
-//                            break;
-//                        }
-//                    }
-//                    break;
-//                }
 
-//            }
-//        }
+        //ljs add
+        for(V3DLONG r=0;r<rootnodes.size();r++)
+        {
+            for(V3DLONG r1=r+1;r1<rootnodes.size();r1++)
+            {
+                if(/*r!=r1&&*/neuron.at(rootnodes.at(r)).x==neuron.at(rootnodes.at(r1)).x
+                        &&neuron.at(rootnodes.at(r)).y==neuron.at(rootnodes.at(r1)).y
+                        &&neuron.at(rootnodes.at(r)).z==neuron.at(rootnodes.at(r1)).z)
+                {
+                    duplicatednodes.push_back(rootnodes.at(r1));
+                    for(V3DLONG p=0;p<parentschild.size();p++)
+                    {
+                        if(rootnodes.at(r1)==neuron.at(parentschild.at(p)).parent)
+                        {
+                            neuron[parentschild.at(p)].parent=neuron.at(rootnodes.at(r)).n;
+    //                        cout<<"change "<<parentschild.at(p)<<"'s parent id to "<<tipnodes.at(tip)<<"'s "<<neuron.at(tipnodes.at(tip)).n<<endl;
+                            break;
+                        }
+                    }
+                    break;
+                }
+
+            }
+        }
+
         for(V3DLONG tip=0;tip<tipnodes.size();tip++)
         {
             for(V3DLONG r=0;r<rootnodes.size();r++)
@@ -1388,26 +1389,30 @@ void CAnnotations::removeDuplicatedNode(QList<NeuronSWC> &neuron,QList<NeuronSWC
 }
 #define VOID 1000000000
 
-QHash<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT)
+QMultiHash<V3DLONG, V3DLONG> ChildParent(QList<NeuronSWC> &neurons, const QList<V3DLONG> & idlist, const QMultiHash<V3DLONG,V3DLONG> & LUT)
 {
-    QHash<V3DLONG, V3DLONG> cp;
-    //QMultiHash<V3DLONG, V3DLONG>cp;
+    QMultiHash<V3DLONG, V3DLONG> cp;
     for (V3DLONG i=0;i<neurons.size(); i++)
     {
         if (neurons.at(i).pn==-1)
+            //cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);//ljs fixed
             cp.insert(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
         else if(idlist.indexOf(LUT.value(neurons.at(i).pn)) == 0 && neurons.at(i).pn != neurons.at(0).n)
+            //cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);//ljs fixed
             cp.insert(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
         else
-            cp.insert(idlist.indexOf(LUT.value(neurons.at(i).n)), idlist.indexOf(LUT.value(neurons.at(i).pn)));
+            //cp.insertMulti(idlist.indexOf(LUT.value(neurons.at(i).n)), idlist.indexOf(LUT.value(neurons.at(i).pn)));//ljs fixed
+            cp.insert(idlist.indexOf(LUT.value(neurons.at(i).n)), -1);
     }
         return cp;
 }
-
-QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
+//ljs fixed
+//QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
+QMultiHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
 {
     // Range of LUT values: [0, # deduplicated neuron list)
-    QHash<V3DLONG,V3DLONG> LUT;
+    //ljs fixed QHash<V3DLONG,V3DLONG> LUT;
+    QMultiHash<V3DLONG,V3DLONG> LUT;
     V3DLONG cur_id=0;
     for (V3DLONG i=0;i<neurons.size();i++)
     {
@@ -1417,20 +1422,26 @@ QHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
             if (neurons.at(i).x==neurons.at(j).x && neurons.at(i).y==neurons.at(j).y && neurons.at(i).z==neurons.at(j).z)	break;
         }
         if(i==j){  // not a duplicate of the previous ones
+            //LUT.insertMulti(neurons.at(i).n, cur_id);
+            //ljs fixed
             LUT.insert(neurons.at(i).n, cur_id);
             cur_id++;
         }
         else{
             if(neurons.at(i).parent<0||neurons.at(j).parent<0)
+                //ljs fixed
+                //LUT.insertMulti(neurons.at(i).n, LUT.value(neurons.at(j).n));
                 LUT.insert(neurons.at(i).n, LUT.value(neurons.at(j).n));
             else{
+                //ljs fixed
+                //LUT.insertMulti(neurons.at(i).n, cur_id);
                 LUT.insert(neurons.at(i).n, cur_id);
                 cur_id++;
             }
         }
 
     }
-    return (LUT);
+    return LUT;
 }
 
 void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG siz, int* numbered, int *group)
@@ -1457,13 +1468,13 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
 {
     double thres=0;
     //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
-    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+    QMultiHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
 
     //create a new id list to give every different neuron a new id
-    QList<V3DLONG> idlist = LUT.values().toList();
+    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values()).toList();
 
     //create a child-parent table, both child and parent id refers to the index of idlist
-    QHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
+    QMultiHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
 
 
     V3DLONG siz = idlist.size();
@@ -1479,8 +1490,7 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
     //generate the adjacent matrix for undirected matrix
     for (V3DLONG i = 0;i<siz;i++)
     {
-        //ljs fixed
-        QList<V3DLONG> parentSet = cp.keys(i); //id of the ith node's parents
+        QList<V3DLONG> parentSet = cp.values(i); //id of the ith node's parents
         for (V3DLONG j=0;j<parentSet.size();j++)
         {
             V3DLONG v2 = (V3DLONG) (parentSet.at(j));
@@ -1652,14 +1662,13 @@ bool CAnnotations::Sort_SWC(QList<NeuronSWC> & neurons, QList<NeuronSWC> & resul
     return(true);
 
 }
-QVector< QVector<V3DLONG> > get_neighbors(QList<NeuronSWC> &neurons, const QHash<V3DLONG,V3DLONG> & LUT)
+QVector< QVector<V3DLONG> > get_neighbors(QList<NeuronSWC> &neurons, const QMultiHash<V3DLONG,V3DLONG> & LUT)
 {
     // generate neighbor lists for each node, using new ids.
     // LUT (look-up table): old name -> new ids
     // ids are the line numbers
     // names are the node names (neurons.name)
-    //ljs fixed
-    QList<V3DLONG> idlist = LUT.values().toList();
+    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values()).toList();
     int siz = idlist.size();
     QList<int> nlist;
     for(V3DLONG i=0; i<neurons.size(); i++){nlist.append(neurons.at(i).n);}
@@ -1762,10 +1771,10 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     }
 
     //create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
-    QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+    QMultiHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
 
     //create a new id list to give every different neuron a new id
-     QList<V3DLONG> idlist = LUT.values().toList();
+    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values()).toList();
     V3DLONG siz = idlist.size();
 
     // create a vector to keep neighbors of each node
@@ -1831,6 +1840,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     qDebug()<<"Number of components before making connections"<<cur_group;
 
     QList<V3DLONG> output_newroot_list;
+
     if((thres != 1000000000) && (thres>0)){  // If distance threshold > 1: make new connections
         qDebug()<<"find the point in non-group 1 that is nearest to group 1";
         //find the point in non-group 1 that is nearest to group 1,
@@ -1889,6 +1899,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
             }
         }
     }
+
 
     // DFS sort of the neuronlist after new connections
     for (int i=0;i<siz;i++)
@@ -2000,7 +2011,6 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
     QString output_ano = input_ano;
     QString output_apo = output_ano + ".apo";
     QString output_swc = as_swc? output_ano+".swc":output_ano+".eswc";
-
 
     QString fileprefix(filepath);
     if(fileprefix.indexOf("/") != -1){
@@ -2154,6 +2164,16 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
             }
         }
         cout<<"nt size is "<<nt.size()<<endl;
+
+
+//        for(int i = 0; i < nt.size(); i++){
+//            qDebug("i = %d type = %d parent = %f x = %f y = %f z = %f",i,nt[i].type,nt[i].parent,nt[i].x,nt[i].y,nt[i].z);
+//        }
+
+
+
+
+
         NeuronTree tp;
         tp.listNeuron = nt;
 
@@ -2169,6 +2189,25 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
             Sort_SWC_NewVersion(nt,nt_sort,soma_name);
         }
         cout<<"nt_sort size is "<<nt_sort.size()<<endl;
+
+        //add by ljs
+        for(auto i = nt_sort.begin(); i != nt_sort.end(); i++){
+            if(i == nt_sort.begin()) {
+                i->type = 1;
+            }
+            if(i != nt_sort.begin()) {
+                i->type = 3;
+                if(i->parent == -1) {
+                    nt_sort.erase(i);
+                    i--;//因为要考虑迭代器失效的问题，没有这步迭代器会自动加一
+                    i->type = 1;
+                }
+            }
+
+        }
+
+
+
 
         // Saving
         if(as_swc){
@@ -2187,9 +2226,6 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
             for(V3DLONG countNode=0;countNode<nt_sort.size();countNode++)
             {
                 NeuronSWC cur_node = nt_sort.at(countNode);
-                if(cur_node.parent == -1 && cur_node.n > 1) {
-                    continue;
-                }
                 fprintf(f, "%lld %d %.3f %.3f %.3f %.3f %lld %lld %lld %d %.0f %d\n",
                         cur_node.n, cur_node.type,
                         cur_node.x, cur_node.y, cur_node.z,
