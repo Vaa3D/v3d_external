@@ -3,6 +3,8 @@
 #include <QLayout>
 #include "xformwidget.h"
 #include "mainwindow.h"
+#include "3drenderer/v3dr_glwidget.h"
+#include "3drenderer/v3dr_mainwindow.h"
 #include "basic_4dimage.h"
 #include "CheckGlWidget.h"
 #include "net/httputilsgetlocation.h"
@@ -47,6 +49,7 @@ public slots:
     void getPotentialLoaction();
     void getBrainList();
     void getSwc();
+    void openimage();
 
 
 
