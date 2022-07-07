@@ -360,11 +360,9 @@ void CViewer::show()
                 PMain::getInstance()->setOverview(true);
             }
         }
-#if defined(USE_Qt5)
+
         this->view3DWidget->update();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
-#else
-        this->view3DWidget->updateGL();     // if omitted, Vaa3D_rotationchanged somehow resets rotation to 0,0,0
-#endif
+
         Vaa3D_rotationchanged(0);
 
         // saving subvol spinboxes state ---- Alessandro 2013-04-23: not sure if this is really needed
