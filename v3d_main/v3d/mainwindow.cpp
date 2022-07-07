@@ -2678,7 +2678,9 @@ void MainWindow::createMenus()
 
     //others
     windowMenu = menuBar()->addMenu(tr("&Window"));
-    connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
+    //windowMenu->addAction(closeAct);
+    updateWindowMenu();
+//    connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT());
     menuBar()->addSeparator();
 #ifdef _ALLOW_WORKMODE_MENU_
     // Work-Mode
