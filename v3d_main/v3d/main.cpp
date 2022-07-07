@@ -167,9 +167,7 @@ int main(int argc, char **argv)
             //add by ljs add start picture
             QElapsedTimer t;
             t.start();
-            while(t.elapsed()<2000){
-                int i = 0;
-            }
+
 
             splash.finish(mainWin); //结束
 
