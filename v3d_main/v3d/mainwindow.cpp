@@ -3011,7 +3011,7 @@ void MainWindow::loginDialogShow()
     ckwidget->getBrainList();
     logindialog->show();
     //connect(logindialog, SIGNAL(showMain()), csmainwindow, SLOT(show()));
-    connect(logindialog, SIGNAL(showMain()), ckwidget, SLOT(show()));
+    connect(logindialog, SIGNAL(showMain()), ckwidget, SLOT(showMaximized()));
 }
 
 void MainWindow::setV3DDefaultModeCheck(bool checkState) {

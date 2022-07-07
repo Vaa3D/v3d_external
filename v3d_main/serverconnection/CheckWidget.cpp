@@ -4,8 +4,9 @@
 CheckWidget::CheckWidget(QWidget *parent)
 {
     mparent=(MainWindow *)parent;
+    cglwidget.clear();
     for(int i=0;i<10;i++){
-        cglwidget.append(new CheckGlWidget(this->mparent));
+        cglwidget.append(new CheckGlWidget(this->mparent,i+1));
     }
     // for downloading, its need to get [id],[barinId],[location],[RES]
     // that to say firstly do get potential location info and get brain list with http
@@ -29,10 +30,10 @@ CheckWidget::CheckWidget(QWidget *parent)
     drawlayout();
 //    connect(checkmap,SIGNAL(clicked()),this,SLOT(downloadImage()));
 //    connect(getlocation,SIGNAL(clicked()),this,SLOT(getPotentialLoaction()));
-//    connect(getbrainlist,SIGNAL(clicked()),this,SLOT(getBrainList()));
+    connect(getbrainlist,SIGNAL(clicked()),this,SLOT(openimage()));
     connect(checkmap,SIGNAL(clicked()),this,SLOT(getPotentialLoaction()));
     connect(httpGetLocation,SIGNAL(getpotentiallocationdone()),this,SLOT(downloadImage()));
-    this->resize(1920,950);
+    //this->resize(1920,950);
     this->setWindowTitle("CheckWidget");
 }
 
@@ -70,6 +71,14 @@ void CheckWidget::getSwc()
 
 }
 
+void CheckWidget::openimage()
+{
+    for(int i=0;i<cglwidget.size();i++){
+        cglwidget[i]->openimage();
+    }
+    update();
+}
+
 void CheckWidget::setLocXYZ(int id, QString image, int x, int y, int z)
 {
     // after test, xyz has been sent out successfully!
@@ -78,7 +87,7 @@ void CheckWidget::setLocXYZ(int id, QString image, int x, int y, int z)
 //    uertLastPotentialSomaInfo = new PotentialSomaInfo(id, image, &xyzForLoc);
     this->userid = id;
     this->brainId = image;
-    emit
+//    emit
 }
 
 void CheckWidget::setPotentialLocation(QString imageID, QString RES)

@@ -46,7 +46,7 @@ void HttpUtilsBrainList::brainListReplyFinished(QNetworkReply *reply)
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if(status == 200) {
         QByteArray data = reply->readAll();
-        qDebug()<<data;
+//        qDebug()<<data;
         // pharse data, need BrainId and RES()
         QJsonParseError error;
         QJsonDocument doc = QJsonDocument::fromJson(data, &error);
