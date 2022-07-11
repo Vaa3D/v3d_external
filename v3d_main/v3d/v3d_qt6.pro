@@ -24,6 +24,9 @@ INCLUDEPATH = $$unique(INCLUDEPATH)
 
 DEFINES *= TEEM_STATIC
 
+RC_FILE = v3d_picture.rc
+RC_ICONS = :/v3dIcon128.ico
+
 macx{
     DEFINES += MACOS_SYSTEM
 
@@ -676,4 +679,8 @@ FORMS += landmark_property.ui \
 #}
 
 #win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
+
+DISTFILES += \
+    v3dIcon128.ico \
+    v3d_picture.rc
 

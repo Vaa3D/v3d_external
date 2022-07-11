@@ -145,8 +145,6 @@ int main(int argc, char **argv)
 
             V3dApplication* app = V3dApplication::getInstance(argc, argv);
 
-
-
             //创建启动动画类实例
             //add by ljs
             QPixmap a = QPixmap(":/pic/v3dIcon128.png");
@@ -154,7 +152,7 @@ int main(int argc, char **argv)
             splash.showMessage(QStringLiteral("正在初始化..."));//消息提示
             splash.show();  //显示
             app->processEvents(); //保证先完成启动画面的绘制显示，再执行后面的w显示
-
+            app->setWindowIcon(QIcon(":/v3dIcon128.ico"));
 
 
 
@@ -297,7 +295,7 @@ int main(int argc, char **argv)
                 }
             }
             //if ( (nchild == 0) && userCanUpdate )
-
+            app->setWindowIcon(QIcon(":/v3dIcon128.ico"));
 #ifndef V3D_SKIP_AUTO_VERSION_CHECK
             {
                 // This is the automatic check for latest version
@@ -331,6 +329,7 @@ int main(int argc, char **argv)
 			// -------------------------------------------------------
 
 		}
+
 		else
 		{
 			return false;

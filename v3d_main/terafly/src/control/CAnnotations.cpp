@@ -1433,7 +1433,7 @@ QMultiHash<V3DLONG, V3DLONG> getUniqueLUT(QList<NeuronSWC> &neurons)
                 //LUT.insertMulti(neurons.at(i).n, LUT.value(neurons.at(j).n));
                 LUT.insert(neurons.at(i).n, LUT.value(neurons.at(j).n));
             else{
-                //ljs fixed
+
                 //LUT.insertMulti(neurons.at(i).n, cur_id);
                 LUT.insert(neurons.at(i).n, cur_id);
                 cur_id++;
@@ -1774,7 +1774,7 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
     QMultiHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
 
     //create a new id list to give every different neuron a new id
-    QList<V3DLONG> idlist = ((QList<V3DLONG>)LUT.values()).toList();
+    QList<V3DLONG> idlist = LUT.values();
     V3DLONG siz = idlist.size();
 
     // create a vector to keep neighbors of each node
@@ -1930,16 +1930,16 @@ bool CAnnotations::Sort_SWC_NewVersion(QList<NeuronSWC> & neurons, QList<NeuronS
         S.pn = -1;
         V3DLONG oriname = LUT.key(new_root);
         V3DLONG oripos = nlist.indexOf(oriname);
-        S.x = neurons.at(oripos).x;
-        S.y = neurons.at(oripos).y;
-        S.z = neurons.at(oripos).z;
-        S.r = neurons.at(oripos).r;
-        S.type = neurons.at(oripos).type;
-        S.seg_id = neurons.at(oripos).seg_id;
-        S.level = neurons.at(oripos).level;
-        S.creatmode = neurons.at(oripos).creatmode;
-        S.timestamp = neurons.at(oripos).timestamp;
-        S.tfresindex = neurons.at(oripos).tfresindex;
+        S.x = neurons[oripos].x;
+        S.y = neurons[oripos].y;
+        S.z = neurons[oripos].z;
+        S.r = neurons[oripos].r;
+        S.type = neurons[oripos].type;
+        S.seg_id = neurons[oripos].seg_id;
+        S.level = neurons[oripos].level;
+        S.creatmode = neurons[oripos].creatmode;
+        S.timestamp = neurons[oripos].timestamp;
+        S.tfresindex = neurons[oripos].tfresindex;
         result.append(S);
         cnt++;
         qDebug()<<QString("New root %1:").arg(i)<<S.x<<S.y<<S.z;
@@ -2191,20 +2191,20 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc)
         cout<<"nt_sort size is "<<nt_sort.size()<<endl;
 
         //add by ljs
-        for(auto i = nt_sort.begin(); i != nt_sort.end(); i++){
-            if(i == nt_sort.begin()) {
-                i->type = 1;
-            }
-            if(i != nt_sort.begin()) {
-                i->type = 3;
-                if(i->parent == -1) {
-                    nt_sort.erase(i);
-                    i--;//因为要考虑迭代器失效的问题，没有这步迭代器会自动加一
-                    i->type = 1;
-                }
-            }
+//        for(auto i = nt_sort.begin(); i != nt_sort.end(); i++){
+//            if(i == nt_sort.begin()) {
+//                i->type = 1;
+//            }
+//            if(i != nt_sort.begin()) {
+//                i->type = 3;
+//                if(i->parent == -1) {
+//                    nt_sort.erase(i);
+//                    i--;//因为要考虑迭代器失效的问题，没有这步迭代器会自动加一
+//                    i->type = 1;
+//                }
+//            }
 
-        }
+//        }
 
 
 
