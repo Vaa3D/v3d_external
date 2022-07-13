@@ -1514,6 +1514,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }
             else
             {
+//                qDebug()<<"-----------ljs debug------------";
                 callCreateMarkerNearestNode();
             }
             break;
@@ -3992,8 +3993,15 @@ void V3dR_GLWidget::callCreateMarkerNearestNode()
     if (renderer)
     {
         QPoint gpos = mapFromGlobal(cursor().pos());
-        renderer->callCreateMarkerNearestNode(gpos.x(),gpos.y());
-        POST_updateGL();
+        int x = gpos.x();
+        int y = gpos.y();
+#ifdef MACOS_SYSTEM
+        x = x * 2;
+        y = y * 2;
+#endif
+        renderer->callCreateMarkerNearestNode(x,y);
+
+        update();
     }
 }
 //end five shortcuts
@@ -4003,6 +4011,12 @@ void V3dR_GLWidget::callCreateSpecialMarkerNearestNode()
     if(renderer)
     {
         QPoint gpos = mapFromGlobal(cursor().pos());
+        int x = gpos.x();
+        int y = gpos.y();
+#ifdef MACOS_SYSTEM
+        x = x * 2;
+        y = y * 2;
+#endif
         renderer->callCreateSpecialMarkerNearestNode(gpos.x(),gpos.y());
     }
 }
