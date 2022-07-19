@@ -147,11 +147,11 @@ int main(int argc, char **argv)
 
             //创建启动动画类实例
             //add by ljs
-            QPixmap a = QPixmap(":/pic/v3dIcon128.png");
-            QSplashScreen splash(a); //文件绝对路径 也可以使用相对路径
-            splash.showMessage(QStringLiteral("正在初始化..."));//消息提示
-            splash.show();  //显示
-            app->processEvents(); //保证先完成启动画面的绘制显示，再执行后面的w显示
+//            QPixmap a = QPixmap(":/pic/v3dIcon128.png");
+//            QSplashScreen splash(a); //文件绝对路径 也可以使用相对路径
+//            splash.showMessage(QStringLiteral("正在初始化..."));//消息提示
+//            splash.show();  //显示
+//            app->processEvents(); //保证先完成启动画面的绘制显示，再执行后面的w显示
             app->setWindowIcon(QIcon(":/v3dIcon128.ico"));
 
 
@@ -163,11 +163,11 @@ int main(int argc, char **argv)
             MainWindow* mainWin=app->getMainWindow();
 
             //add by ljs add start picture
-            QElapsedTimer t;
-            t.start();
+//            QElapsedTimer t;
+//            t.start();
 
 
-            splash.finish(mainWin); //结束
+//            splash.finish(mainWin); //结束
 
 			if (!mainWin)
 			{
