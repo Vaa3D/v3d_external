@@ -7,7 +7,7 @@ class HttpUtilsBrainList: public HttpUtils
 {
     Q_OBJECT
 public:
-    HttpUtilsBrainList(QWidget *parent = nullptr);
+    HttpUtilsBrainList(QObject *parent = nullptr);
     ~HttpUtilsBrainList();
 
     void getBrainList(QJsonObject &userInfo);

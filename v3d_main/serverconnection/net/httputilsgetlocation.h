@@ -8,7 +8,7 @@ class HttpGetLocation: public HttpUtils
     Q_OBJECT
 public:
 ////// public functions ///////
-    HttpGetLocation(QWidget *parent = nullptr);
+    HttpGetLocation(QObject *parent = nullptr);
     ~HttpGetLocation();
 
     void getPotentialLoaction(QJsonObject &userInfo);
@@ -18,6 +18,7 @@ signals:
     void sendXYZ(int id, QString image, int x, int y, int z);
     void getpotentiallocationdone();
 public slots:
+//    void getPotentialLoaction(QJsonObject userInfo);
     void locationReplyFinished(QNetworkReply* reply);
 
 private:

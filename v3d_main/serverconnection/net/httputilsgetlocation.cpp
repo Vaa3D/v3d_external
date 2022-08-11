@@ -4,7 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-HttpGetLocation::HttpGetLocation(QWidget *parent)
+HttpGetLocation::HttpGetLocation(QObject *parent)
 {
     manager = new QNetworkAccessManager();
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(locationReplyFinished(QNetworkReply*)));

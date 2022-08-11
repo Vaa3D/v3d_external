@@ -7,8 +7,8 @@ CheckGlWidget::CheckGlWidget(QWidget* parent,int id)
     cw_xfwidget=nullptr;
     cw_window=nullptr;
     m_id=id;
-    status=-1;
-    path="C:\\Users\\admin\\Desktop\\21_seg_color.tif";
+    status=0;
+    path="";
     //path="D:/A_DLcsz/DLtrain/fixed_data/result/2.tiff";
     drawlayout();
     connect(level1,SIGNAL(clicked()),this,SLOT(level1pushed()));
@@ -23,8 +23,19 @@ CheckGlWidget::~CheckGlWidget()
 
 }
 
-void CheckGlWidget::openimage()
+void CheckGlWidget::clear()
 {
+    level1->setChecked(false);
+    level2->setChecked(false);
+    level3->setChecked(false);
+    level4->setChecked(false);
+    status=0;
+
+}
+
+void CheckGlWidget::openimage(QString extern_path)
+{
+    path=extern_path;
     cw_xfwidget = mparent->newImageWindow(path);
     Image4DSimple *img=new Image4DSimple;
     img->loadImage(path.toLatin1().data());
@@ -37,6 +48,9 @@ void CheckGlWidget::openimage()
 //    cw_window->hideDisplayControls();
 //    cw_glwidget->resize(300,300);
     glWidgetArea->setWidget(cw_glwidget);
+    QString swcpath=path.mid(0,path.size()-7);
+//    cw_glwidget->loadObjectFromFile(extern_path.split('.')[0]+".eswc");
+    cw_glwidget->loadObjectFromFile(swcpath+".eswc");
     //cw_glwidget->setMinimumSize(300,300);
     //cw_glwidget->move(0,0);
 //    cw_glwidget->show();
@@ -52,18 +66,18 @@ void CheckGlWidget::level1pushed()
         level2->setChecked(false);
         level3->setChecked(false);
         level4->setChecked(false);
-        status=-1;
+        status=0;
         return;
     }
     switch(status){
-    case -1:{
+    case 0:{
         level1->setChecked(true);
         status=1;
         break;
     }
     case 1:{
         level1->setChecked(false);
-        status=-1;
+        status=0;
         break;
     }
     case 2:{
@@ -94,11 +108,11 @@ void CheckGlWidget::level2pushed()
         level2->setChecked(false);
         level3->setChecked(false);
         level4->setChecked(false);
-        status=-1;
+        status=0;
         return;
     }
     switch(status){
-    case -1:{
+    case 0:{
         level2->setChecked(true);
         status=2;
         break;
@@ -111,7 +125,7 @@ void CheckGlWidget::level2pushed()
     }
     case 2:{
         level2->setChecked(false);
-        status=-1;
+        status=0;
         break;
     }
     case 3:{
@@ -136,11 +150,11 @@ void CheckGlWidget::level3pushed()
         level2->setChecked(false);
         level3->setChecked(false);
         level4->setChecked(false);
-        status=-1;
+        status=0;
         return;
     }
     switch(status){
-    case -1:{
+    case 0:{
         status=3;
         level3->setChecked(true);
         break;
@@ -159,7 +173,7 @@ void CheckGlWidget::level3pushed()
     }
     case 3:{
         level3->setChecked(false);
-        status=-1;
+        status=0;
         break;
     }
     case 4:{
@@ -178,11 +192,11 @@ void CheckGlWidget::level4pushed()
         level2->setChecked(false);
         level3->setChecked(false);
         level4->setChecked(false);
-        status=-1;
+        status=0;
         return;
     }
     switch(status){
-    case -1:{
+    case 0:{
         status=4;
         level4->setChecked(true);
         break;
@@ -207,7 +221,7 @@ void CheckGlWidget::level4pushed()
     }
     case 4:{
         level4->setChecked(false);
-        status=-1;
+        status=0;
         break;
     }
     }

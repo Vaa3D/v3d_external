@@ -4,7 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-HttpUtilsBrainList::HttpUtilsBrainList(QWidget *parent)
+HttpUtilsBrainList::HttpUtilsBrainList(QObject *parent)
 {
     manager = new QNetworkAccessManager();
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(brainListReplyFinished(QNetworkReply*)));
@@ -69,6 +69,7 @@ void HttpUtilsBrainList::brainListReplyFinished(QNetworkReply *reply)
                 QString imageID = obj.value("name").toString();
                 emit sendPotentialLocation(imageID, res);
             }
+            qDebug()<<"getbrainlistdone";
             emit getbrainlistdone();
 
         }

@@ -3,7 +3,7 @@
 #include "CheckWidget.h"
 
 
-
+class CheckManager;
 class CheckGlWidget:public QWidget{
     Q_OBJECT
 public:
@@ -12,8 +12,11 @@ public:
 
 
     bool isglwidget(){return cw_glwidget==nullptr?false:true;}
+    int getstatus(){return status;};
+    void clear();
+    QString imgname;
 public slots:
-    void openimage();
+    void openimage(QString extern_path);
     void level1pushed();
     void level2pushed();
     void level3pushed();

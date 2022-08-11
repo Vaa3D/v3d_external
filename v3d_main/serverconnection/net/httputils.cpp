@@ -5,7 +5,7 @@
 #include <QUrl>
 #include <QMessageBox> // delete this will report QOBject error
 
-HttpUtils::HttpUtils(QWidget *parent)
+HttpUtils::HttpUtils(QObject *parent)
     : QObject(parent)
 {
 

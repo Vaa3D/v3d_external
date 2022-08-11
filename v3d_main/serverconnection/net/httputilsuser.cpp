@@ -3,7 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-HttpUtilsUser::HttpUtilsUser(QWidget *parent)
+HttpUtilsUser::HttpUtilsUser(QObject *parent)
     : HttpUtils(parent)
 {
     manager = new QNetworkAccessManager(this);

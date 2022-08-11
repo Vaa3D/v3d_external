@@ -10,7 +10,7 @@ class HttpUtils: public QObject
 {
     Q_OBJECT
 public:
-    HttpUtils(QWidget *parent = nullptr);
+    HttpUtils(QObject *parent = nullptr);
     virtual ~HttpUtils();
 
     virtual void asyncPostRequest(QString url, QJsonObject &body);

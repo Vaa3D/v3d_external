@@ -7,7 +7,7 @@ class HttpUtilsUser: public HttpUtils
 {
     Q_OBJECT
 public:
-    HttpUtilsUser(QWidget *parent = nullptr);
+    HttpUtilsUser(QObject *parent = nullptr);
     ~HttpUtilsUser();
 
     void loginWithHttp(QJsonObject &userInfo);
