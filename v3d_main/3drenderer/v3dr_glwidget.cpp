@@ -2275,7 +2275,7 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
             call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
         }
 //        qDebug()<<"csz debug";
-        this->getMainWindow()->show();
+//        this->getMainWindow()->show();
 //         if(_Call_ZZ_Plugin)
 //         {
 //            // call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));

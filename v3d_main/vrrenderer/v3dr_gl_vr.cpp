@@ -6424,7 +6424,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 	}
 	//=================== draw the controller axis lines ======================
-    bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputAvailable();
+    bool bIsInputCapturedByAnotherProcess = !m_pHMD->IsInputAvailable();
 	if( !bIsInputCapturedByAnotherProcess&&m_modeTouchPad_R == tr_clipplane)
 	{
 		glUseProgram( m_unControllerTransformProgramID );
