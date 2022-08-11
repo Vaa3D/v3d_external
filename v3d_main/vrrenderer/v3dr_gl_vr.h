@@ -586,12 +586,12 @@ private:
 	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
-	__int64 CounterStart;
+    long long CounterStart;
 
 	int frameCount;
 	int fps;
 
-	__int64 frameTimeOld;
+    long long frameTimeOld;
 	double frameTime;
 
 	void StartTimer();

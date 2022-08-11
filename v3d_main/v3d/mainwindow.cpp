@@ -2695,7 +2695,7 @@ void MainWindow::createMenus()
     //    helpMenu->addAction(aboutQtAct);
 
     // Connect to Server
-    connectServer = menuBar()->addMenu(tr("CtoS"));
+    connectServer = menuBar()->addMenu(tr("CheckMode"));
     loginAct->setText(tr("Login"));
     connectServer->addAction(loginAct);
     connect(loginAct, SIGNAL(triggered()), this, SLOT(loginDialogShow()));

@@ -97,7 +97,9 @@ bool CMainApplication::showshootingPad = false;
 #define default_radius 0.618
 #define drawing_step_size 2  //the larger, the fewer SWC nodes
 //LMG for Windows UTC Timestamp 15/10/2018
+#ifdef Q_OS_WIN
 #define timegm _mkgmtime
+#endif
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
 const double neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
@@ -666,14 +668,17 @@ void dprintf( const char *fmt, ... )
 	va_list args;
 	char buffer[ 2048 ];
 
-	va_start( args, fmt );
+    va_start( args, fmt );
+#ifdef Q_OS_WIN
 	vsprintf_s( buffer, fmt, args );
+#endif
 	va_end( args );
 
 	if ( g_bPrintf )
 		printf( "%s", buffer );
-
+#ifdef Q_OS_WIN
 	OutputDebugStringA( buffer );
+#endif
 }
 
 
@@ -759,6 +764,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 
 	for( int i = 1; i < argc; i++ )
 	{
+#ifdef Q_OS_WIN
 		if( !stricmp( argv[i], "-gldebug" ) )
 		{
 			m_bDebugOpenGL = true;
@@ -779,6 +785,27 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 		{
 			g_bPrintf = false;
 		}
+#endif
+        if( !strcmp( argv[i], "-gldebug" ) )
+        {
+            m_bDebugOpenGL = true;
+        }
+        else if( !strcmp( argv[i], "-verbose" ) )
+        {
+            m_bVerbose = true;
+        }
+        else if( !strcmp( argv[i], "-novblank" ) )
+        {
+            m_bVblank = false;
+        }
+        else if( !strcmp( argv[i], "-noglfinishhack" ) )
+        {
+            m_bGlFinishHack = false;
+        }
+        else if( !strcmp( argv[i], "-noprintf" ) )
+        {
+            g_bPrintf = false;
+        }
 	}
 	// other initialization tasks are done in BInit
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
@@ -834,7 +861,9 @@ bool CMainApplication::BInit()
 	{
 		m_pHMD = NULL;
 		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+
+        printf( buf, sizeof( buf ), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+
         //SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
@@ -850,7 +879,7 @@ bool CMainApplication::BInit()
 		vr::VR_Shutdown();
 
 		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+        printf( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
         //SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
@@ -863,7 +892,7 @@ bool CMainApplication::BInit()
 		vr::VR_Shutdown();
 
 		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+        printf( buf, sizeof( buf ), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
         //SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
@@ -5667,9 +5696,15 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 void CMainApplication::RenderControllerAxes() //note: note render, actually setup VAO and VBO for axes
 {
 	// don't draw controllers if somebody else has input focus
-    if( m_pHMD->IsInputAvailable() )
+#ifdef Q_OS_WIN
+    if( !m_pHMD->IsInputAvailable() )
 		return;
+#endif
 
+#ifdef Q_OS_LINUX
+    if( m_pHMD->IsInputFocusCapturedByAnotherProcess() )
+        return;
+#endif
 	std::vector<float> vertdataarray;
 
 	m_uiControllerVertcount = 0;
@@ -6424,7 +6459,12 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 	}
 	//=================== draw the controller axis lines ======================
+#ifdef Q_OS_WIN
     bool bIsInputCapturedByAnotherProcess = !m_pHMD->IsInputAvailable();
+#endif
+#ifdef Q_OS_LINUX
+    bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
+#endif
 	if( !bIsInputCapturedByAnotherProcess&&m_modeTouchPad_R == tr_clipplane)
 	{
 		glUseProgram( m_unControllerTransformProgramID );
@@ -6931,11 +6971,20 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 	CGLRenderModel *pRenderModel = NULL;
 	for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
 	{
+#ifdef Q_OS_WIN
 		if( !stricmp( (*i)->GetName().c_str(), pchRenderModelName ) )
 		{
 			pRenderModel = *i;
 			break;
 		}
+#endif
+#ifdef Q_OS_LINUX
+        if( !strcmp( (*i)->GetName().c_str(), pchRenderModelName ) )
+        {
+            pRenderModel = *i;
+            break;
+        }
+#endif
 	}
 
 	// load the model if we didn't find one
@@ -8319,6 +8368,7 @@ void CMainApplication::HelpFunc_createOctreetexture(int step)
 }
 void CMainApplication::StartTimer()
 {
+#ifdef Q_OS_WIN
 	LARGE_INTEGER frequencyCount;
 	QueryPerformanceFrequency(&frequencyCount);
 
@@ -8327,17 +8377,21 @@ void CMainApplication::StartTimer()
 
 	QueryPerformanceCounter(&frequencyCount);
 	CounterStart = frequencyCount.QuadPart;
+#endif
 }
 
 double CMainApplication::GetTime()
 {
+#ifdef Q_OS_WIN
 	LARGE_INTEGER currentTime;
 	QueryPerformanceCounter(&currentTime);
 	return double(currentTime.QuadPart-CounterStart)/countsPerSecond;
+#endif
 }
 
 double CMainApplication::GetFrameTime()
 {
+#ifdef Q_OS_WIN
 	LARGE_INTEGER currentTime;
 	__int64 tickCount;
 	QueryPerformanceCounter(&currentTime);
@@ -8349,6 +8403,7 @@ double CMainApplication::GetFrameTime()
 		tickCount = 0.0f;
 
 	return float(tickCount)/countsPerSecond;
+#endif
 }
 void CMainApplication::bindTexturePara()
 {

@@ -581,6 +581,7 @@ SOURCES += \
 unix:!macx{
 INCLUDEPATH += ../common_lib/include/SDL/ #for VR, by PHC 20170615
 INCLUDEPATH += ../common_lib/include/glew/  #for VR, by PHC 20170615
+LIBS += ../common_lib/lib_ubuntu/libSDL2-2.0.so.0
 #INCLUDEPATH += ..\common_lib\include\openvr/   #for VR, by PHC 20170615
 LIBS += -L../common_lib/lib_ubuntu -lGLEW -ldl
 
