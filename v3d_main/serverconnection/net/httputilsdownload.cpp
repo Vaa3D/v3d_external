@@ -235,7 +235,9 @@ void HttpUtilsDownLoad::downloadReplyFinished(QNetworkReply *reply)
     if(status == 200) {
         std::string WritePath = QApplication::applicationDirPath().toStdString() + "/checkcache/";
         QString filePath = QString::fromStdString(WritePath)+ mbrainId+"_"+QString::number(moffsetX)+"_"+ QString::number(moffsetY)+"_"+ QString::number(moffsetZ)+".v3dpbd";
+#ifdef Q_OS_WIN
         filePath.replace(QString("/"),QString("\\"));
+#endif
         //qDebug()<<response.size();
         QFile file(filePath);
         //qDebug()<<file.isOpen();
@@ -265,8 +267,11 @@ void HttpUtilsDownLoad::SWCReply(QNetworkReply *reply)
         QByteArray result=coordinateconvert(response);
         std::string WritePath = QApplication::applicationDirPath().toStdString() + "/checkcache/";
         QString filePath = QString::fromStdString(WritePath)+ mbrainId+"_"+QString::number(moffsetX)+"_"+ QString::number(moffsetY)+"_"+ QString::number(moffsetZ)+".eswc";
+#ifdef Q_OS_WIN
         filePath.replace(QString("/"),QString("\\"));
+#endif
         QFile file(filePath);
+        qDebug()<<filePath;
         if(!file.open(QFile::ReadWrite)){
             qDebug()<<filePath<<"open failed!";
             return;

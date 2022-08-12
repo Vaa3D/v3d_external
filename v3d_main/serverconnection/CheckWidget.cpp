@@ -204,6 +204,7 @@ void CheckWidget::csztest()
     isopen=false;
     qDebug()<<"imgs are updated!"<<isopen;
     //clearcache();
+    this->getarbor();
 }
 
 void CheckWidget::drawlayout()
