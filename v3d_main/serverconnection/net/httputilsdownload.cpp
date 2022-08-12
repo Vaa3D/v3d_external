@@ -138,31 +138,31 @@ void HttpUtilsDownLoad::bordercontrol(QString brainId, QString res, int offsetX,
 {
     mbrainId=brainId;
     mres=res;
-    QString border=res.mid(4,res.size()-5);
-    QStringList xyzborder=border.split("x");
-    int xborder=xyzborder[0].toInt();
-    int yborder=xyzborder[1].toInt();
-    int zborder=xyzborder[2].toInt();
+//    QString border=res.mid(4,res.size()-5);
+//    QStringList xyzborder=border.split("x");
+//    int xborder=xyzborder[0].toInt();
+//    int yborder=xyzborder[1].toInt();
+//    int zborder=xyzborder[2].toInt();
 
-    if(offsetX<=size/2)
-        moffsetX=size/2+1;
-    else if(offsetX>=xborder-size/2)
-        moffsetX=xborder-size/2-1;
-    else
+//    if(offsetX<=size/2)
+//        moffsetX=size/2+1;
+//    else if(offsetX>=xborder-size/2)
+//        moffsetX=xborder-size/2-1;
+//    else
         moffsetX=offsetX;
 
-    if(offsetY<=size/2)
-        moffsetY=size/2+1;
-    else if(offsetY>=yborder-size/2)
-        moffsetY=yborder-size/2-1;
-    else
+//    if(offsetY<=size/2)
+//        moffsetY=size/2+1;
+//    else if(offsetY>=yborder-size/2)
+//        moffsetY=yborder-size/2-1;
+//    else
         moffsetY=offsetY;
 
-    if(offsetZ<=size/2)
-        moffsetZ=size/2+1;
-    else if(offsetZ>=zborder-size/2)
-        moffsetZ=zborder-size/2-1;
-    else
+//    if(offsetZ<=size/2)
+//        moffsetZ=size/2+1;
+//    else if(offsetZ>=zborder-size/2)
+//        moffsetZ=zborder-size/2-1;
+//    else
         moffsetZ=offsetZ;
 
     start_x=moffsetX-size/2;
@@ -301,6 +301,7 @@ void HttpUtilsDownLoad::deletethis()
             temp.remove();
         }
     }
+    qDebug()<<"right to delete.";
     delete managerimg;
     delete managerswc;
     delete this;
@@ -308,9 +309,11 @@ void HttpUtilsDownLoad::deletethis()
 
 void HttpUtilsDownLoad::istimeout()
 {
-    if(m_etimer->elapsed()>10000){
+//    if(m_etimer->elapsed()>10000){
+//        deletethis();
+//    }
+    if(isswcdone&&isimgdone)
         deletethis();
-    }
 }
 
 

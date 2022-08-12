@@ -39,23 +39,23 @@ void CheckGlWidget::openimage(QString extern_path)
     cw_xfwidget = mparent->newImageWindow(path);
     Image4DSimple *img=new Image4DSimple;
     img->loadImage(path.toLatin1().data());
-    mparent->setImage((void *)cw_xfwidget,img);
-    cw_xfwidget->hide();
+    if(mparent->setImage((void *)cw_xfwidget,img)){
+        cw_xfwidget->hide();
 
-    cw_xfwidget->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
-    cw_glwidget=cw_xfwidget->getView3D();
-    cw_window=cw_glwidget->getiDrawExternalParameter()->window3D;
-//    cw_window->hideDisplayControls();
-//    cw_glwidget->resize(300,300);
-    glWidgetArea->setWidget(cw_glwidget);
-    QString swcpath=path.mid(0,path.size()-7);
-//    cw_glwidget->loadObjectFromFile(extern_path.split('.')[0]+".eswc");
-    cw_glwidget->loadObjectFromFile(swcpath+".eswc");
-    //cw_glwidget->setMinimumSize(300,300);
-    //cw_glwidget->move(0,0);
-//    cw_glwidget->show();
-//    this->show();
-
+        cw_xfwidget->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
+        cw_glwidget=cw_xfwidget->getView3D();
+        cw_window=cw_glwidget->getiDrawExternalParameter()->window3D;
+    //    cw_window->hideDisplayControls();
+    //    cw_glwidget->resize(300,300);
+        glWidgetArea->setWidget(cw_glwidget);
+        QString swcpath=path.mid(0,path.size()-7);
+    //    cw_glwidget->loadObjectFromFile(extern_path.split('.')[0]+".eswc");
+        cw_glwidget->loadObjectFromFile(swcpath+".eswc");
+        //cw_glwidget->setMinimumSize(300,300);
+        //cw_glwidget->move(0,0);
+    //    cw_glwidget->show();
+    //    this->show();
+}
 
 }
 

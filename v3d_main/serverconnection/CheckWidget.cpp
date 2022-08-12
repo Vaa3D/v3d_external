@@ -9,8 +9,12 @@ CheckWidget::CheckWidget(QWidget *parent)
     cachepath=QString::fromStdString(WritePath);
 
     QDir ckdir(cachepath);
-    if(!ckdir.exists())
+    if(ckdir.exists()){
+        ckdir.removeRecursively();
         ckdir.mkdir(cachepath);
+    }else{
+        ckdir.mkdir(cachepath);
+    }
 
     QDir cktdir(cachepath+"trash/");
     if(!cktdir.exists())
