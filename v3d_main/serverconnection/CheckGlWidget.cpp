@@ -45,9 +45,9 @@ void CheckGlWidget::openimage(QString extern_path)
         cw_xfwidget->doImage3DView(true, 0, -1, -1,-1, -1, -1,-1, false);
         cw_glwidget=cw_xfwidget->getView3D();
         cw_window=cw_glwidget->getiDrawExternalParameter()->window3D;
-    //    cw_window->hideDisplayControls();
+        cw_window->hideDisplayControls();
     //    cw_glwidget->resize(300,300);
-        glWidgetArea->setWidget(cw_glwidget);
+        glWidgetArea->setWidget(cw_window);
         QString swcpath=path.mid(0,path.size()-7);
     //    cw_glwidget->loadObjectFromFile(extern_path.split('.')[0]+".eswc");
         cw_glwidget->loadObjectFromFile(swcpath+".eswc");
@@ -248,7 +248,7 @@ void CheckGlWidget::drawlayout()
 
     glWidgetArea = new QScrollArea;
     glWidgetArea->setMinimumSize(300,300);
-    if(cw_glwidget)  	glWidgetArea->setWidget(cw_glwidget);
+    if(cw_window)  	glWidgetArea->setWidget(cw_window);
     m_id_label=new QLabel(QString::number(m_id));
     m_id_label->setAlignment(Qt::AlignHCenter);
     top->addWidget(m_id_label);
