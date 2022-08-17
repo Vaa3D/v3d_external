@@ -13,7 +13,6 @@ struct ArborInfo{
     double y;
     double z;
     int status;
-//    QString birthtime;
     QString ab_path;
 
     bool isvisable;
@@ -27,7 +26,6 @@ struct ArborInfo{
         y=-1;
         z=-1;
         status=-2;
-//        birthtime="";
         ab_path="";
 
         isvisable=false;
@@ -42,24 +40,22 @@ struct ArborInfo{
     }
 };
 
+struct ImgStatus{
+    bool isopen=false;
+    bool isimgready=false;
+    bool isswcready=false;
+    bool ischecked=false;
+};
+
 class InfoCache
 {
-private:
-
-    InfoCache() {};
-    QString account;
-    QString token;
-
 public:
     // best of all singleton(lazy)
     static InfoCache& getInstance() {
-//        if(instance == nullptr) {
-//            instance = new InfoCache();
-//        }
         static InfoCache instance;
         return instance;
     }
-    ~InfoCache() {};
+    ~InfoCache() {imgs=nullptr;}
     InfoCache& operator=(const InfoCache&)=delete;
 
 
@@ -78,6 +74,22 @@ public:
 
     void setAccount(QString account);
     void setToken(QString token);
+
+    void setPimgs(QVector<ArborInfo>* t_imgs);
+
+    QHash<QString,ImgStatus> WidgetStatus;
+
+    int getready();
+
+    void resetws();
+private:
+
+    QVector<ArborInfo>* imgs=nullptr;
+    InfoCache() {};
+    QString account;
+    QString token;
+
+
 
 };
 

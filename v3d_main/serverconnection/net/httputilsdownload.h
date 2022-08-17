@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 #include <QTimer>
 #include <QThread>
+
 class HttpUtilsDownLoad: public HttpUtils
 {
     Q_OBJECT
@@ -18,6 +19,7 @@ public:
     void bordercontrol(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size);
     void Download(QString brainId, QString arborname,QString res, int offsetX, int offsetY, int offsetZ, int size);
     QByteArray coordinateconvert(QString response);
+    QString getfinalpath()const;
 signals:
     //pass
 //    void todelete();
@@ -29,14 +31,21 @@ public slots:
 private:
 
 
-
+    std::string WritePath;
+    QString finalpath;
     QString URL_DOWNLOAD_IMAGE = SERVER_IP + "/dynamic/image/cropimage";
     QString URL_GET_SWC = SERVER_IP + "/dynamic/swc/cropswc";
     QNetworkAccessManager *managerimg;
     QNetworkAccessManager *managerswc;
     QString mbrainId;
+    QString marborname;
     QString mres;
+    QString somaID;
     int moffsetX, moffsetY, moffsetZ;
+    float moffsetXs, moffsetYs, moffsetZs;
+    int msizeimg,msizeswc;
+
+    int cntimg,cntswc;
     float start_x,start_y,start_z;
     bool isswcdone,isimgdone;
     bool ttd;

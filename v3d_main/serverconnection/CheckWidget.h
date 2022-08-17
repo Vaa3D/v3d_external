@@ -14,7 +14,6 @@
 #include "serverconnection/model/potentialsomainfo.h"
 #include "serverconnection/infocache.h"
 #include "CheckGlWidget.h"
-#include "CheckManager.h"
 #include <QJsonArray>
 #include <QJsonObject>
 
@@ -47,19 +46,20 @@ public:
     QString brainId;
     XYZ xyzForLoc;
 
-
 public slots:
 
     void setLocXYZ(int id, QString image, int x, int y, int z);
     void setPotentialLocation(QString imageID, QString RES);
     void setArborInfo(int arborid,QString name,QString somaId,QString image,double x,double y,double z);
 
-    void csztest();
+    void update();
+
     void downloadImage();
     void getPotentialLoaction();
     void getBrainList();
     void getarbor();
     void openimage();
+    void openimage2();
 
     void timetoopen();
 
@@ -73,6 +73,8 @@ private:
     void drawlayout();
     void clearcache();
 
+    int updatecnt;
+    bool updatedone;
     QGroupBox *checkwidgetgp;
     QGroupBox *controlwidgetgp;
     QPushButton *checkmap;

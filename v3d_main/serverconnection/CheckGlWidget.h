@@ -40,6 +40,8 @@ private:
     QHBoxLayout *top;
     QHBoxLayout *bottom;
 
+
+    QScrollBar *sb;
     QVBoxLayout *central;
 };
 

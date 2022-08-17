@@ -1,6 +1,7 @@
 #include "httputilsdownload.h"
 
 #include <QCoreApplication>
+#include <QApplication>
 #include <QFileDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -16,6 +17,9 @@ HttpUtilsDownLoad::HttpUtilsDownLoad(QObject *parent)
     isimgdone=false;
     m_timer=new QTimer;
     m_etimer=new QElapsedTimer;
+    cntimg=0;cntswc=0;
+    WritePath = QApplication::applicationDirPath().toStdString() + "/checkcache/";
+    finalpath="TBD";
     connect(NetWorkUtil::instance(), &NetWorkUtil::finished, this, &HttpUtilsDownLoad::downloadReplyFinished);
     connect(managerimg, SIGNAL(finished(QNetworkReply*)), this, SLOT(downloadReplyFinished(QNetworkReply*)));
     connect(managerswc, SIGNAL(finished(QNetworkReply*)), this, SLOT(SWCReply(QNetworkReply*)));
@@ -32,6 +36,11 @@ HttpUtilsDownLoad::~HttpUtilsDownLoad()
 void HttpUtilsDownLoad::downLoadImage(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size)
 {
     bordercontrol(brainId,res,offsetX,offsetY,offsetZ,size);
+    if(InfoCache::getInstance().WidgetStatus[finalpath].isimgready){
+        qDebug()<<"The img file already exists";
+        isimgdone=true;
+        return;
+    }
     QJsonObject pa1;
     pa1.insert("x", moffsetX - size/2);
     pa1.insert("y", moffsetY - size/2);
@@ -74,6 +83,20 @@ void HttpUtilsDownLoad::downLoadImage(QString brainId, QString res, int offsetX,
 void HttpUtilsDownLoad::getSWCWithHttp(QString arborname,QString res, float offsetX, float offsetY, float offsetZ, int size)
 {
 //    bordercontrol(brainId,res,offsetX,offsetY,offsetZ,size);
+//    qDebug()<<finalpath;
+    if(InfoCache::getInstance().WidgetStatus[finalpath].isswcready){
+
+        qDebug()<<"The swc file already exists";
+        isswcdone=true;
+        return;
+    }
+    marborname=arborname;
+    somaID=res;
+    moffsetXs=offsetX;
+    moffsetYs=offsetY;
+    moffsetZs=offsetZ;
+    msizeswc=size;
+
     QJsonObject pa1;
     pa1.insert("x", offsetX - size/2);
     pa1.insert("y", offsetY - size/2);
@@ -138,36 +161,21 @@ void HttpUtilsDownLoad::bordercontrol(QString brainId, QString res, int offsetX,
 {
     mbrainId=brainId;
     mres=res;
-//    QString border=res.mid(4,res.size()-5);
-//    QStringList xyzborder=border.split("x");
-//    int xborder=xyzborder[0].toInt();
-//    int yborder=xyzborder[1].toInt();
-//    int zborder=xyzborder[2].toInt();
 
-//    if(offsetX<=size/2)
-//        moffsetX=size/2+1;
-//    else if(offsetX>=xborder-size/2)
-//        moffsetX=xborder-size/2-1;
-//    else
-        moffsetX=offsetX;
+    moffsetX=offsetX;
 
-//    if(offsetY<=size/2)
-//        moffsetY=size/2+1;
-//    else if(offsetY>=yborder-size/2)
-//        moffsetY=yborder-size/2-1;
-//    else
-        moffsetY=offsetY;
+    moffsetY=offsetY;
 
-//    if(offsetZ<=size/2)
-//        moffsetZ=size/2+1;
-//    else if(offsetZ>=zborder-size/2)
-//        moffsetZ=zborder-size/2-1;
-//    else
-        moffsetZ=offsetZ;
+    moffsetZ=offsetZ;
 
     start_x=moffsetX-size/2;
     start_y=moffsetY-size/2;
     start_z=moffsetZ-size/2;
+    msizeimg=size;
+
+    if(finalpath=="TBD"){
+        finalpath=QString::fromStdString(WritePath)+ mbrainId+"_"+QString::number(moffsetX)+"_"+ QString::number(moffsetY)+"_"+ QString::number(moffsetZ);
+    }
 }
 
 void HttpUtilsDownLoad::Download(QString brainId, QString arborname,QString res, int offsetX, int offsetY, int offsetZ, int size)
@@ -222,22 +230,24 @@ QByteArray HttpUtilsDownLoad::coordinateconvert(QString response)
     return result;
 }
 
+QString HttpUtilsDownLoad::getfinalpath() const
+{
+    return finalpath;
+}
+
 /**
  * @brief slot for address reply data, thats image binary data
  * @param reply
  */
-#include <QApplication>
+
 void HttpUtilsDownLoad::downloadReplyFinished(QNetworkReply *reply)
 {
 //    qDebug()<<QThread::currentThreadId();
     int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QByteArray response = reply->readAll();
     if(status == 200) {
-        std::string WritePath = QApplication::applicationDirPath().toStdString() + "/checkcache/";
         QString filePath = QString::fromStdString(WritePath)+ mbrainId+"_"+QString::number(moffsetX)+"_"+ QString::number(moffsetY)+"_"+ QString::number(moffsetZ)+".v3dpbd";
-#ifdef Q_OS_WIN
         filePath.replace(QString("/"),QString("\\"));
-#endif
         //qDebug()<<response.size();
         QFile file(filePath);
         //qDebug()<<file.isOpen();
@@ -248,10 +258,16 @@ void HttpUtilsDownLoad::downloadReplyFinished(QNetworkReply *reply)
         file.write(response);
         file.close();
         isimgdone=true;
+        InfoCache::getInstance().WidgetStatus[finalpath].isimgready=true;
         qDebug() << "img done download!";
     }
     else {
         qDebug()<< "ERROR: download failed!";
+        qDebug()<< "try again!";
+        if(cntimg==5)
+            return;
+        downLoadImage(mbrainId,mres,moffsetX,moffsetY,moffsetZ,msizeimg);
+        cntimg++;
 
     }
     reply->deleteLater();
@@ -265,13 +281,9 @@ void HttpUtilsDownLoad::SWCReply(QNetworkReply *reply)
     if(status == 200) {
         QString response = reply->readAll();
         QByteArray result=coordinateconvert(response);
-        std::string WritePath = QApplication::applicationDirPath().toStdString() + "/checkcache/";
         QString filePath = QString::fromStdString(WritePath)+ mbrainId+"_"+QString::number(moffsetX)+"_"+ QString::number(moffsetY)+"_"+ QString::number(moffsetZ)+".eswc";
-#ifdef Q_OS_WIN
         filePath.replace(QString("/"),QString("\\"));
-#endif
         QFile file(filePath);
-        qDebug()<<filePath;
         if(!file.open(QFile::ReadWrite)){
             qDebug()<<filePath<<"open failed!";
             return;
@@ -279,9 +291,16 @@ void HttpUtilsDownLoad::SWCReply(QNetworkReply *reply)
         file.write(result);
         file.close();
         isswcdone=true;
+        //qDebug()<<finalpath;
+        InfoCache::getInstance().WidgetStatus[finalpath].isswcready=true;
         qDebug() << "swc done download!";
     }else {
         qDebug()<< "ERROR: download failed!";
+        qDebug()<< "try again!";
+        if(cntswc==5)
+            return;
+        getSWCWithHttp(marborname,somaID,moffsetXs,moffsetYs,moffsetZs,msizeswc);
+        cntswc++;
 
     }
     reply->deleteLater();
@@ -306,7 +325,6 @@ void HttpUtilsDownLoad::deletethis()
             temp.remove();
         }
     }
-    qDebug()<<"right to delete.";
     delete managerimg;
     delete managerswc;
     delete this;

@@ -18,6 +18,8 @@ public:
     void getarborWithHttp(int Maxid=0);
     void updateArborResult(int arborid, int result);
     virtual void asyncPostRequest(QString url, QJsonObject &body);
+    int getupdatecnt() const;
+    void resetupdatecnt();
 //    void bordercontrol(QString brainId, QString res, int offsetX, int offsetY, int offsetZ, int size);
 public slots:
 
@@ -41,6 +43,7 @@ private:
     QString mbrainId;
     QString mres;
     int moffsetX, moffsetY, moffsetZ;
+    int updatecnt;
 };
 
 #endif // HTTPUTILSQUALITYINSPECTION_H

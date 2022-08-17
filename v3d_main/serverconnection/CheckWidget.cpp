@@ -20,6 +20,7 @@ CheckWidget::CheckWidget(QWidget *parent)
     if(!cktdir.exists())
         cktdir.mkdir(cachepath+"trash/");
 
+    updatedone=false;
     mparent=(MainWindow *)parent;
     cglwidget.clear();
     for(int i=0;i<10;i++){
@@ -51,7 +52,7 @@ CheckWidget::CheckWidget(QWidget *parent)
 //    connect(checkmap,SIGNAL(clicked()),this,SLOT(downloadImage()));
 //    connect(getlocation,SIGNAL(clicked()),this,SLOT(getPotentialLoaction()));
     connect(Getarbor,SIGNAL(clicked()),this,SLOT(getarbor()));
-    connect(updatebtn,SIGNAL(clicked()),this,SLOT(csztest()));
+    connect(updatebtn,SIGNAL(clicked()),this,SLOT(update()));
     connect(getArbor,SIGNAL(readytodownload()),this,SLOT(downloadImage()));
     connect(isopenimg,SIGNAL(timeout()),this,SLOT(timetoopen()));
 
@@ -61,7 +62,8 @@ CheckWidget::CheckWidget(QWidget *parent)
 //    connect(httpGetLocation,SIGNAL(getpotentiallocationdone()),this,SLOT(downloadImage()));
     //this->resize(1920,950);
     this->setWindowTitle("CheckWidget");
-    CheckManager::instance()->setmainwidget(this);
+//    CheckManager::instance()->setmainwidget(this);
+    InfoCache::getInstance().setPimgs(&imgs);
     isopenimg->start(200);
 }
 
@@ -92,16 +94,19 @@ void CheckWidget::getBrainList()
 void CheckWidget::downloadImage()
 {
     isopen=false;
-    qDebug()<<imgs.size();
+//    qDebug()<<imgs.size();
     for(int i=0;i<imgs.size();i++){
 //        QThread *nthread=new QThread;
         HttpUtilsDownLoad *temp=new HttpUtilsDownLoad(this);
 //        temp->moveToThread(nthread);
 //        nthread->start();
         QString res = resMap[imgs[i].image];
-        imgs[i].ab_path=imgs[i].image+"_"+QString::number((int)(imgs[i].x / pow(2, resIndex-1)))+"_"+ QString::number((int)(imgs[i].y / pow(2, resIndex-1)))+"_"+ QString::number((int)(imgs[i].z / pow(2, resIndex-1)))+".v3dpbd";
         qDebug() << "input download para, [brainId]:" << imgs[i].image << "[res]:" << res << "[x, y, z]" << imgs[i].x <<"," << imgs[i].y<< "," << imgs[0].z;
         temp->downLoadImage(imgs[i].image,res, (int)(imgs[i].x / pow(2, resIndex-1)), (int)(imgs[i].y / pow(2, resIndex-1)), (int)(imgs[i].z / pow(2, resIndex-1)), DEFAULT_IMAGE_SIZE);
+        imgs[i].ab_path=temp->getfinalpath();
+        ImgStatus nis;
+        if(!InfoCache::getInstance().WidgetStatus.contains(imgs[i].ab_path))
+            InfoCache::getInstance().WidgetStatus.insert(imgs[i].ab_path,nis);
         QString t_res = "/"+imgs[i].image+"/"+imgs[i].somaId;
         temp->getSWCWithHttp(imgs[i].name,t_res,imgs[i].x,imgs[i].y,imgs[i].z,DEFAULT_IMAGE_SIZE);
     }
@@ -118,6 +123,7 @@ void CheckWidget::getarbor()
     //qDebug() << "input download para, [brainId]:" << this->brainId << "[res]:" << res << "[x, y, z]" << (int)xyzForLoc.x <<"," << (int)xyzForLoc.y<< "," << (int)xyzForLoc.z;
     //getArbor->getSWCWithHttp( res, (int)(xyzForLoc.x / pow(2, resIndex-1)), (int)(xyzForLoc.y / pow(2, resIndex-1)), (int)(xyzForLoc.z / pow(2, resIndex-1)), DEFAULT_IMAGE_SIZE,this->brainId);
     imgs.clear();
+    InfoCache::getInstance().resetws();
     getArbor->getarborWithHttp();
     //httpUtilsDownload->downLoadImage(this->brainId, res, (int)(xyzForLoc.x / pow(2, resIndex-1)), (int)(xyzForLoc.y / pow(2, resIndex-1)), (int)(xyzForLoc.z / pow(2, resIndex-1)), DEFAULT_IMAGE_SIZE);
 }
@@ -128,10 +134,7 @@ void CheckWidget::openimage()
     QStringList nameFilters;
     nameFilters <<"*.v3dpbd";
     QStringList files = dir.entryList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
-//    clearcache();
-    //QStringList imgs_path=CheckManager::instance()->validimg(cglwidget.size());
     for(int i=0;i<imgs.size();i++){
-        //cglwidget[i]->openimage(imgs_path[i]);
         if(!QFile::rename(cachepath+imgs[i].ab_path,cachepath+"trash/"+imgs[i].ab_path))
             QFile::remove(cachepath+imgs[i].ab_path);
         QString swcrawpath=(cachepath+imgs[i].ab_path).mid(0,(cachepath+imgs[i].ab_path).size()-7);
@@ -144,15 +147,26 @@ void CheckWidget::openimage()
     //    update();
 }
 
+void CheckWidget::openimage2()
+{
+    for(int i=0;i<imgs.size();i++){
+        QStringList t=imgs[i].ab_path.split('/');
+        cglwidget[i]->imgname=t[t.size()-1];
+        cglwidget[i]->openimage(imgs[i].ab_path);
+    }
+}
+
 void CheckWidget::timetoopen()
 {
-    QDir dir(cachepath);
-    QStringList nameFilters;
-    nameFilters <<"*.v3dpbd"<<"*.eswc";
-    QStringList files = dir.entryList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
-    if(files.size()==20){
+    if(updatedone&&updatecnt==getArbor->getupdatecnt()){
+        getArbor->resetupdatecnt();
+        updatedone=false;
+        getarbor();
+    }
+//    qDebug()<<InfoCache::getInstance().getready();
+    if(InfoCache::getInstance().getready()>=10){
         if(isopen==false){
-            openimage();
+            openimage2();
             isopen=true;
         }
     }
@@ -192,20 +206,26 @@ void CheckWidget::setArborInfo(int arborid, QString name, QString somaId, QStrin
     imgs.push_back(temp);
 }
 
-void CheckWidget::csztest()
+void CheckWidget::update()
 {
 //    qDebug()<<imgs.size();
+    updatecnt=0;
     for(int i=0;i<imgs.size();i++){
         qDebug()<<cglwidget[i]->imgname<<cglwidget[i]->getstatus();
-        if(cglwidget[i]->getstatus()!=0)
+        if(cglwidget[i]->getstatus()!=0){
             getArbor->updateArborResult(imgs[i].arborid,cglwidget[i]->getstatus());
-            cglwidget[i]->clear();
+            InfoCache::getInstance().WidgetStatus[imgs[i].ab_path].ischecked=true;
+            updatecnt++;
+        }
+        cglwidget[i]->clear();
     }
+    updatedone=true;
     isopen=false;
     qDebug()<<"imgs are updated!"<<isopen;
     //clearcache();
-    this->getarbor();
 }
+
+
 
 void CheckWidget::drawlayout()
 {
