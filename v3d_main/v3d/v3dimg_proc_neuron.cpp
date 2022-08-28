@@ -1045,7 +1045,7 @@ void My4DImage::proj_trace_history_undo(V_NeuronSWC_list & tNeuron)
 //	qDebug()<<"UNDO  historylist last ="<<tracedNeuron_historylist.size()-1<<"  cur_history ="<<cur_history;
 
     cur_history--;
-	if (tracedNeuron_historylist.size()<1 ||  //090924 RZC: fixed from <2 to <1
+    if (tracedNeuron_historylist.size()<1 ||  //090924 RZC: fixed from <2 to <1
 		cur_history < -1)
 	{
 		cur_history = -1;
@@ -1053,10 +1053,14 @@ void My4DImage::proj_trace_history_undo(V_NeuronSWC_list & tNeuron)
 	}
 	else if (cur_history == -1)  //20170803 RZC: make no msgbox for terafly undo
     {
-        if (tNeuron.b_traced) tNeuron.seg.clear();
+        //切换分辨率走的是这个
+        qDebug()<<"-----------------11-----";
+        //fixed if (tNeuron.b_traced)
+            tNeuron.seg.clear();
 	}
 	else if (cur_history>=0 && cur_history<tracedNeuron_historylist.size())
 	{
+        qDebug()<<"-----------------12-----";
 		tNeuron = tracedNeuron_historylist.at(cur_history);
     }
 
