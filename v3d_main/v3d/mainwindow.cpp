@@ -2068,8 +2068,8 @@ void MainWindow::updateWindowMenu()
         action->setCheckable(true);
         action ->setChecked(child == activeMdiChild());
 
-//        connect(action, &QAction::triggered, [=]() { workspace->setActiveSubWindow( child ); });
-       connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
+        connect(action, &QAction::triggered, [=]() { workspace->setActiveSubWindow( child ); });
+//       connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
         windowMapper->setMapping(action, child);
 
     }
@@ -2079,18 +2079,18 @@ void MainWindow::updateWindowMenu()
         windowMenu->addSeparator();
         for (i = 0; i < list_3Dview_win.size(); ++i)
         {
-//            V3dR_MainWindow *vchild = qobject_cast<V3dR_MainWindow *>(list_3Dview_win.at(i));
-//            QString text;
-//            if (i < 9) {
-//                text = tr("%1: &%2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
-//            } else {
-//                text = tr("%1: %2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
-//            }
-//            QAction *action  = windowMenu->addAction(text);
-//            action->setCheckable(true);
-//            //raise() is the right function to bring it to front (not activateWindow() which is not a slot, or show()). by PHC. 090626
-//            //however because raise does not mean the window is activated, thus I write a wrapper slot called raise_and_activate to call both raise() followed by activatedWindow()
-//            connect(action, SIGNAL(triggered()), vchild, SLOT(raise_and_activate()));
+            V3dR_MainWindow *vchild = qobject_cast<V3dR_MainWindow *>(list_3Dview_win.at(i));
+            QString text;
+            if (i < 9) {
+                text = tr("%1: &%2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
+            } else {
+                text = tr("%1: %2 %3").arg(vchild->getTitlePrefix()).arg(i + 1).arg(vchild->getDataTitle());
+            }
+            QAction *action  = windowMenu->addAction(text);
+            action->setCheckable(true);
+            //raise() is the right function to bring it to front (not activateWindow() which is not a slot, or show()). by PHC. 090626
+            //however because raise does not mean the window is activated, thus I write a wrapper slot called raise_and_activate to call both raise() followed by activatedWindow()
+            connect(action, SIGNAL(triggered()), vchild, SLOT(raise_and_activate()));
         }
     }
 }
@@ -2678,8 +2678,8 @@ void MainWindow::createMenus()
 
     //others
     windowMenu = menuBar()->addMenu(tr("&Window"));
-    updateWindowMenu();//ljs fix
-    //connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
+//    updateWindowMenu();//ljs fix
+    connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
     menuBar()->addSeparator();
 #ifdef _ALLOW_WORKMODE_MENU_
     // Work-Mode
