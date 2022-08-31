@@ -2678,7 +2678,7 @@ void MainWindow::createMenus()
 
     //others
     windowMenu = menuBar()->addMenu(tr("&Window"));
-//    updateWindowMenu();//ljs fix
+    updateWindowMenu();//ljs fix
     connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
     menuBar()->addSeparator();
 #ifdef _ALLOW_WORKMODE_MENU_

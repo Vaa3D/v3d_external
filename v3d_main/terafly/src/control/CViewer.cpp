@@ -1203,6 +1203,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 
             if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
             {
+                //ljs debug double click terafly widget steps
                 qDebug()<<"------------2)";
                 XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
                 if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
@@ -1220,6 +1221,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                               point.y + ysign*(volV1-volV0)*(100-CSettings::instance()->getTraslY())/100.0f,
                               point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                               volResIndex, volT0, volT1);
+
+
                 }else{
                     qDebug()<<"------------3)";
                     newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
@@ -1677,10 +1680,19 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
+#ifdef MACOS_SYSTEM
+
+            if (dx != -1 && dy != -1 && dz != -1)
+                cVolume->setVoi(0, resolution, y - dy, y + dy, x - 2* dx, x + 2* dx, z - dz, z + dz, t0, t1);
+            else
+                cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
+#else
             if (dx != -1 && dy != -1 && dz != -1)
                 cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
             else
                 cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
+
+#endif
         }
         catch(RuntimeException &ex)
         {
