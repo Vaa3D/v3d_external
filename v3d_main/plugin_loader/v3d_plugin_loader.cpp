@@ -53,6 +53,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include <QScrollArea>
 #include <QProgressBar>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 void pumpEvents(int loops=100)
 {
@@ -326,19 +327,19 @@ void V3d_PluginLoader::updated_recentPlugins()
             }
         }
 
-        //QRegExp reg("%");
-//        for(int i = 0; i < recentpluginsList.size(); i++)
-//        {
-//            QStringList plugininfo = recentpluginsList.at(i).split(reg);
-//            QAction *action = new QAction(plugininfo.at(0),this);
-//            connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-//            plugin_recent->addAction(action);
+        QRegularExpression reg("%");
+        for(int i = 0; i < recentpluginsList.size(); i++)
+        {
+            QStringList plugininfo = recentpluginsList.at(i).split(reg);
+            QAction *action = new QAction(plugininfo.at(0),this);
+            connect(action, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+            plugin_recent->addAction(action);
 
-//            QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
-//            QAction *action_index = new QAction(plugininfo_index.at(0),this);
-//            connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
-//            plugin_most->addAction(action_index);
-//        }
+            QStringList plugininfo_index = recentpluginsList.at(sort_index[i]).split(reg);
+            QAction *action_index = new QAction(plugininfo_index.at(0),this);
+            connect(action_index, SIGNAL(triggered()), this, SLOT(runRecentPlugin()));
+            plugin_most->addAction(action_index);
+        }
     }
 }
 
@@ -346,13 +347,13 @@ void V3d_PluginLoader::runRecentPlugin()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     int i;
-    //QRegExp reg("%");
+    QRegularExpression reg("%");
     QStringList plugininfo;
     for(i = 0; i< recentpluginsList.size(); i++)
     {
-//        plugininfo = recentpluginsList.at(i).split(reg);
-//        if(plugininfo.at(0) == action->text())
-//            break;
+        plugininfo = recentpluginsList.at(i).split(reg);
+        if(plugininfo.at(0) == action->text())
+            break;
     }
     QPluginLoader* loader = new QPluginLoader(plugininfo.at(1));
     return runPlugin(loader,plugininfo.at(0));
