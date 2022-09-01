@@ -474,7 +474,7 @@ bool XFormWidget::screenShot3DWindow(QString filename)
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D
 			&& (w = mypara_3Dview.window3D->getGLWidget()))
 	{
-        //return w->screenShot(filename);
+        return w->screenShot(filename);
 	}
 	return false;
 }
@@ -485,7 +485,7 @@ bool XFormWidget::screenShotROI3DWindow(QString filename)
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
-        //return w->screenShot(filename);
+        return w->screenShot(filename);
 	}
 	return false;
 }

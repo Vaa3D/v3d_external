@@ -1099,6 +1099,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 
+    //connect(glWidget, SIGNAL(changeEditinput(QString)), editStatus, SLOT(setText(QString))); // DLC.2021123
+
+
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Others");
