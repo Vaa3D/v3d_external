@@ -2677,8 +2677,11 @@ void MainWindow::createMenus()
 //    connect(pluginProcMenu, SIGNAL(QAction::triggered()), this, SLOT(updatePluginMenu()));
 
     //others
+
     windowMenu = menuBar()->addMenu(tr("&Window"));
+#ifdef MACOS_SYSTEM
     updateWindowMenu();//ljs fix
+#endif
     connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
     menuBar()->addSeparator();
 #ifdef _ALLOW_WORKMODE_MENU_
