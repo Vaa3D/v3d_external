@@ -4014,7 +4014,7 @@ void PMain::login()
             if(!settings.value("vr_userName").toString().isEmpty())
                 userNameDefault = settings.value("vr_userName").toString();
             bool ok3;
-             userName = QInputDialog::getText(0, "Lgoin Name",
+             userName = QInputDialog::getText(0, "Login Name",
                 "Please enter your login name:", QLineEdit::Normal,
                 userNameDefault, &ok3);
 
