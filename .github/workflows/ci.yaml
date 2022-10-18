@@ -1,0 +1,96 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build x86_64
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout v3d_external
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+          path: v3d_external
+
+      - name: Checkout vaa3d_tools
+        uses: actions/checkout@v3
+        with:
+          repository: Vaa3D/vaa3d_tools
+          submodules: 'recursive'
+          fetch-depth: 0
+          path: vaa3d_tools
+
+      - name: Install build dependencies
+        run: |
+          set -x
+          sudo apt-get update -q
+          sudo apt-get install -y clang-4.0 qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
+          
+      - name: Setup links
+        run: |
+          cd vaa3d_tools
+          ln -s ../v3d_external/v3d_main v3d_main
+          ln -s ../v3d_external/bin bin
+          cd ../v3d_external
+          ln -s ../vaa3d_tools/released_plugins released_plugins_more
+
+      - name: Build
+        run: |
+          set -x
+          cd v3d_external
+          ./build.linux -j2
+          ls -la
+          ls -la bin
+  
+  build-aarch64:
+    name: Build aarch64
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout v3d_external
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+          path: v3d_external
+
+      - name: Checkout v3d_tools
+        uses: actions/checkout@v3
+        with:
+          repository: Vaa3D/vaa3d_tools
+          submodules: 'recursive'
+          fetch-depth: 0
+          path: vaa3d_tools
+
+      - name: Build
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu18.04
+          githubToken: ${{ github.token }}
+          dockerRunArgs: |
+            --volume "${PWD}:/v3d"
+          install: |
+            set -x
+            apt-get update -q -y
+            apt-get install -q -y clang-4.0 make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
+            update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
+            update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
+          
+
+          run: |
+            set -x
+            ln -s /v3d/v3d_external/v3d_main /v3d/vaa3d_tools/v3d_main
+            ln -s /v3d/v3d_external/bin /v3d/vaa3d_tools/bin
+            ln -s /v3d/vaa3d_tools/released_plugins /v3d/v3d_external/released_plugins_more
+            cd /v3d/v3d_external
+            ./build.linux -j2
+            ls -la
+            ls -la bin
+          
