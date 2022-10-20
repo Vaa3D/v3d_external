@@ -5,8 +5,19 @@ on: [push, pull_request]
 jobs:
   build:
     name: Build x86_64
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:18.04 # use plain Ubuntu 18.04 instead of the Azure one
     steps:
+      - name: Install build dependencies
+        run: |
+          set -x
+          apt-get update -q
+          apt-get install -y clang-4.0 git make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev libomp-dev
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
+          update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
+          update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
+          
       - name: Checkout v3d_external
         uses: actions/checkout@v3
         with:
@@ -22,15 +33,6 @@ jobs:
           fetch-depth: 0
           path: vaa3d_tools
 
-      - name: Install build dependencies
-        run: |
-          set -x
-          sudo apt-get update -q
-          sudo apt-get install -y clang-4.0 qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libomp-dev
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
-          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
-          
       - name: Setup links
         run: |
           cd vaa3d_tools
