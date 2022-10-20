@@ -26,7 +26,7 @@ jobs:
         run: |
           set -x
           sudo apt-get update -q
-          sudo apt-get install -y clang-4.0 qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev
+          sudo apt-get install -y clang-4.0 qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libomp-dev
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
           sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
@@ -78,7 +78,7 @@ jobs:
           install: |
             set -x
             apt-get update -q -y
-            apt-get install -q -y clang-4.0 make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev
+            apt-get install -q -y clang-4.0 make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev libomp-dev
             update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
             update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
             update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
