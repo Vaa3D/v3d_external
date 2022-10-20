@@ -13,6 +13,9 @@ jobs:
         run: |
           set -x
           apt-get update -q
+          apt-get install -y -q software-properties-common
+          add-apt-repository ppa:git-core/ppa
+          apt-get update -q
           apt-get install -y clang-4.0 git make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev libomp-dev
           update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
           update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
