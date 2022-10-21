@@ -16,11 +16,10 @@ jobs:
           apt-get install -y -q software-properties-common
           add-apt-repository ppa:git-core/ppa
           apt-get update -q
-          apt-get install -y clang-4.0 git make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev libomp-dev unzip wget
-          apt-get remove -y gcc g++
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
-          update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
-          update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
+          apt-get install -q -y git gcc-4.8 g++-4.8 make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev libomp-dev unzip wget
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40
+          update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-4.8 40
+          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 40
           
       - name: Checkout v3d_external
         uses: actions/checkout@v3
@@ -84,12 +83,10 @@ jobs:
           install: |
             set -x
             apt-get update -q -y
-            apt-get install -q -y clang-4.0 make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev libomp-dev unzip wget
-            apt-get remove -y gcc g++
-            update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-4.0 40
-            update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-4.0 40
-            update-alternatives --install /usr/bin/g++ g++ /usr/bin/clang++-4.0 40
-          
+            apt-get install -q -y gcc-4.8 g++-4.8 make qt4-qmake libqt4-dev libqtcore4 libqtgui4 mesa-common-dev libglu1-mesa-dev libhdf5-dev libtiff-dev libomp-dev unzip wget
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40
+            update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-4.8 40
+            update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 40
 
           run: |
             set -x
