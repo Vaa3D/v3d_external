@@ -738,7 +738,7 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
             if(lastActive)
             {
                 qDebug()<<"this->getDataTitle()="<<this->getDataTitle();
-                qDebug()<<"lastActive->getDataTitle()="<<dynamic_cast<V3dR_MainWindow*>(lastActive)->getDataTitle();
+                //qDebug()<<"lastActive->getDataTitle()="<<dynamic_cast<V3dR_MainWindow*>(lastActive)->getDataTitle();
                 lastActive->hide();
             }
 			lastActive = this;

@@ -6684,6 +6684,8 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 void Renderer_gl1::retypeMultiNeuronsByStroke()
 {
 
+    qDebug()<<"use this retypeMultiNeuronByStrokeFunction";
+
     int node_type = 0;
     int node_level = 0;
 
@@ -6694,26 +6696,26 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
     if(neuronColorMode==0)
     {
                 node_type = currentTraceType;
-//        if (useCurrentTraceTypeForRetyping)
-//        {
-//            node_type = currentTraceType;
-//        }
-//        else
-//        {
+        if (useCurrentTraceTypeForRetyping)
+        {
+            node_type = currentTraceType;
+        }
+        else
+        {
 
-//            node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
-//                                                 QObject::tr("SWC type: "
-//                                                             "\n 0 -- undefined (white)"
-//                                                             "\n 1 -- soma (black)"
-//                                                             "\n 2 -- axon (red)"
-//                                                             "\n 3 -- dendrite (blue)"
-//                                                             "\n 4 -- apical dendrite (purple)"
-//                                                             "\n else(<21) -- custom \n"),
-//                                                 currentTraceType, 0, 100, 1, &ok);
-//        }
+            node_type = QInputDialog::getInteger(0, QObject::tr("Change node type in segment"),
+                                                 QObject::tr("SWC type: "
+                                                             "\n 0 -- undefined (white)"
+                                                             "\n 1 -- soma (black)"
+                                                             "\n 2 -- axon (red)"
+                                                             "\n 3 -- dendrite (blue)"
+                                                             "\n 4 -- apical dendrite (purple)"
+                                                             "\n else(<21) -- custom \n"),
+                                                 currentTraceType, 0, 100, 1, &ok);
+        }
 
-//        if(!ok) return;
-//        currentTraceType = node_type;
+        if(!ok) return;
+        currentTraceType = node_type;
 
         const int neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
                 {255, 255, 255},  // white,   0-undefined

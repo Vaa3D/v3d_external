@@ -3977,6 +3977,10 @@ void PMain::configApp()
     auto UserPasswd = QInputDialog::getText(0, "UserPasswd","Please enter the UserPasswd:", QLineEdit::Normal,settings.value("UserPasswd").toString(), &ok);
     if(ok&&!HostAddress.isEmpty())
         settings.setValue("UserPasswd", UserPasswd);
+
+    auto UserID = QInputDialog::getText(0,"ID","Please enter the UserID:", QLineEdit::Normal,settings.value("UserID").toString(), &ok);
+    if(ok&&!HostAddress.isEmpty())
+        settings.setValue("UserID", UserID);
 }
 
 void PMain::LoadFromServer()
@@ -3990,6 +3994,8 @@ void PMain::LoadFromServer()
     QSettings settings("HHMI", "Vaa3D");
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
+    userinfo.id = settings.value("UserID").toInt();
+    //qDebug()<<"csz debug "<<userinfo.name<<","<<userinfo.passwd<<","<<userinfo.id;
     LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
 
     if(!accessmanager)
@@ -4045,12 +4051,15 @@ void PMain::startCollaborate(QString ano,QString port)
     QSettings settings("HHMI", "Vaa3D");
 
     Communicator->socket->connectToHost(settings.value("HostIP").toString(),port.toUInt());
+    qDebug() << "---------" << settings.value("HostIP").toString() << " " << port.toUInt() << "\n";
 
-    if(!Communicator->socket->waitForConnected(100000*20))
+    if(!Communicator->socket->waitForConnected(1000*20))
     {
         QMessageBox::information(0,tr("Message "),
                          tr("connect failed"),
                          QMessageBox::Ok);
+
+        qDebug() <<"commnicator.error"<<Communicator->socket->errorString();
         Communicator->deleteLater();
         Communicator=nullptr;
         return;
@@ -4058,7 +4067,7 @@ void PMain::startCollaborate(QString ano,QString port)
 }
 void PMain::ColLoadANO(QString ANOfile)
 {
-    qDebug()<<ANOfile;
+    qDebug()<<"ColoadAno_anofile"<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
     QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
     QStringList anoList=QDir(loaddir).entryList(QDir::Files);
@@ -4069,6 +4078,7 @@ void PMain::ColLoadANO(QString ANOfile)
         return;
     }
     QString ANOpath=QCoreApplication::applicationDirPath()+"/loaddata/"+ANOfile;
+    qDebug()<<"anopath"<<ANOpath;
 
     CAnnotations::getInstance()->load(ANOpath.toStdString().c_str());
     NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();

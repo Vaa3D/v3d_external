@@ -190,7 +190,6 @@ void VR_MainWindow::TVProcess(QString line)
         }else if(operationtype == "retypeline")
         {
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
-
             if(listwithheader.size()<1) return;
             QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
             int type=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[2].trimmed().toInt();

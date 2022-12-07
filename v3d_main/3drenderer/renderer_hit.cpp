@@ -2314,7 +2314,7 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
 }
 int Renderer_gl1::movePen(int x, int y, bool b_move)
 {
-	//qDebug("  Renderer_gl1::movePen");
+    qDebug("csz  Renderer_gl1::movePen");
 	//	//100731 RZC
 	//	if (renderMode==rmCrossSection)
 	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType

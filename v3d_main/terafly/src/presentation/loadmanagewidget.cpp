@@ -76,12 +76,18 @@ void LoadManageWidget::getImages()
     imageWidget->clear();
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()==200)
     {
-
-        for(auto &image: QString(reply->readAll()).split(',')){
-            imageWidget->addItem(image);
+        qDebug()<<"200 Ok";
+        QStringList imageList;
+        for(auto &image: QString(reply->readAll()).split(','))
+        {
+            imageList.append(image);
         }
+        imageList.removeDuplicates();
+        imageList.removeAll("182722,191797,191798,191799,192346,192348,194060,18454");
+        imageWidget->addItems(imageList);
     }else{
         //错误警告
+        qDebug()<<request.url()<<" 1\n"<<json<<" "<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         emit signal(1);
     }
 }
@@ -115,6 +121,7 @@ void LoadManageWidget::getNeurons()
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()==200)
     {
         json=reply->readAll();
+        qDebug()<<"getNeuronsjson"<<json;
 
         QJson::Parser parser;
         auto neurons=parser.parse(json,&ok).toList();
@@ -154,6 +161,7 @@ void LoadManageWidget::getAnos()
         userinfo->id=reply->rawHeader("Set-Cookie").toInt();
         qDebug()<<"user info "<<reply->rawHeader("Set-Cookie")<<" "<<userinfo->id;
         json=reply->readAll();
+        qDebug()<<json<<"getAnos";
         QJson::Parser parser;
         auto neurons=parser.parse(json,&ok).toList();
         for(auto &neuron:neurons){
@@ -169,6 +177,7 @@ void LoadManageWidget::getAnos()
 
 void LoadManageWidget::loadAno()
 {
+    qDebug()<<"begin to load Ano";
     if(!anoWidget->currentItem()) return;
     QNetworkRequest request;
     request.setUrl(QUrl(HostAddress+"/collaborate/inheritother"));
@@ -192,9 +201,12 @@ void LoadManageWidget::loadAno()
     QObject::connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
 
+    qDebug()<<"replycode_before"<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt()==200)
     {
+        qDebug()<<"replycode"<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
         json=reply->readAll();
+        qDebug()<<"loadAnojson"<<json;
         QJson::Parser parser;
         auto result=parser.parse(json,&ok).toMap();
         auto ano=result["ano"].toString();

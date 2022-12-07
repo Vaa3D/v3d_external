@@ -4359,7 +4359,7 @@ void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 {
-//    qDebug()<<"in collaAddseg"<<segInfo;
+    qDebug()<<"csz debug "<<segInfo;
 //    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
 //    SetupCollaborateInfo();
 //    vector<XYZ> loc_coords;

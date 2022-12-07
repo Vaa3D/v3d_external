@@ -55,7 +55,7 @@ void V3dR_Communicator::onReadyRead()
                     char *data=new char[datatype.datasize+1];
                     socket->read(data,datatype.datasize);
                     data[datatype.datasize]='\0';
-//                    std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<(++receivedcnt)<<" receive from "<<username.toStdString()<<" :"<<data<<std::endl;
+                    std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<" receive from "<<userName.toStdString()<<" :"<<data<<std::endl;
                     //处理消息
                     preprocessmsgs(QString(data).trimmed().split(';',QString::SkipEmptyParts));
                     resetdatatype();
@@ -78,6 +78,7 @@ void V3dR_Communicator::onReadyRead()
                 if(f.open(QIODevice::WriteOnly)){
                     f.write(filedata,datatype.filesize);
                 }
+
                 delete [] filedata;
                 delete [] data;
 
@@ -104,12 +105,14 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     //1. 开始协作
     //2. 更新用户
     //3. 处理协作指令
+    qDebug()<<"begin to preprocessmsgs";
 
     QRegExp usersRex("^/activeusers:(.*)$");
     for(auto &msg:list)
     {
         qDebug()<<"OnRead:"<<msg;
         if(msg.startsWith("STARTCOLLABORATE:")){
+            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
         }else if(usersRex.indexIn(msg) != -1){
             emit updateuserview(usersRex.cap(1));
@@ -213,6 +216,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
             QString user=listwithheader[0].split(" ").at(1).trimmed();
             int type=listwithheader[0].split(" ").at(2).trimmed().toInt();
+            qDebug()<<"type = listwithheader[0]"<<listwithheader;
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
@@ -296,6 +300,7 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         sendMsg(QString("/retypeline_norm:"+result.join(",")));
+        qDebug()<<"retypeline_norm"+result.join(",");
     }
 }
 

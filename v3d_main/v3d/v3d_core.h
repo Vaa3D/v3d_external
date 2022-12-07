@@ -85,6 +85,8 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 
 #include "mapview.h"
 
+#include "loadmanagewidget.h"
+
 // // Added by MK, 11/23/2016, for migrating from VS2010/Qt4 to VS2015/Qt5
 #include <arthurwidgets.h>
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +122,7 @@ struct CurveTracePara; //in curve_trace_para_dialog.h
 struct Options_Rotate;
 
 typedef unsigned short int USHORTINT16;
+
 
 enum ImagePlaneDisplayType {imgPlaneUndefined, imgPlaneX, imgPlaneY, imgPlaneZ};
 enum AxisCode {axis_x, axis_y, axis_z, axis_c};
@@ -160,7 +163,6 @@ bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype);
 QList <LocationSimple> readPosFile(const char * posFile); //080107. obsolete. try not to use. 090725
 QList <LocationSimple> readPosFile_usingMarkerCode(const char * posFile);
 bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * & sz, ImagePixelType & datatype);
-
 QStringList importSeriesFileList_addnumbersort(const QString & individualFileName, TimePackType & timepacktype);
 
 // @ADDED by Alessandro on 2015-05-09. Method to get the path-based URL from the file-based URL

@@ -1666,6 +1666,7 @@ void Renderer_gl1::segEnd2SegIDmapping(My4DImage* curImg)
 	}
 }
 
+
 void Renderer_gl1::callDefine3DPolyline()
 {
     if(editinput == 3)
