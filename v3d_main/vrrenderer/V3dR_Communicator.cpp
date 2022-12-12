@@ -225,6 +225,27 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 emit retypeSeg(listwithheader.join(","),type);
             }
         }
+//        else if(operationtype == "connectline")
+//        {
+//            QString msg = operatorMsg;
+//            QStringList listwithheader = msg.split(',',QString::SkipEmptyParts);
+//            if(listwithheader.size()<=1)
+//            {
+//                qDebug()<<"msg only contains header:"<<msg;
+//                return;
+//            }
+//            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+//            QString user=listwithheader[0].split(" ").at(1).trimmed();
+//            qDebug()<<"type = listwithheader[0]"<<listwithheader;
+//            if (user == userName && isNorm && isTeraFly)
+//                qDebug() << "user:" << user << "==userName" << userName;
+//            else
+//            {
+//                listwithheader.removeAt(0);
+//                emit connectSeg(listwithheader.join(","));
+//            }
+
+//        }
     }
 }
 
@@ -244,6 +265,23 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
         redoDeque.clear();
     }
 }
+
+//void V3dR_Communicator::UpdateConnectSegMsg(V_NeuronSWC seg,QString clienttype)
+//{
+//    if(clienttype=="TeraFly")
+//    {
+//        QStringList result;
+//        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+//        result+=V_NeuronSWCToSendMSG(seg);
+//        sendMsg(QString("/connectline_norm:"+result.join(",")));
+//        while(undoDeque.size()>=dequeszie)
+//        {
+//            undoDeque.pop_front();
+//        }
+//        undoDeque.push_back(QString("/delline_undo:"+result.join(",")));
+//        redoDeque.clear();
+//    }
+//}
 
 void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
 {
@@ -351,6 +389,11 @@ void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,Q
         UpdateAddSegMsg(newseg,clienttype);
     }
 }
+//void V3dR_Communicator::UpdateConnectSegMsg(V_NeuronSWC seg)
+//{
+//    this->sendMsg("/connectSwc_norm");
+
+//}
 
 void V3dR_Communicator::UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QString addMsg2)
 {

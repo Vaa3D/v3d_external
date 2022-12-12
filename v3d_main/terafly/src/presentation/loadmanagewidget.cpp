@@ -54,7 +54,6 @@ LoadManageWidget::LoadManageWidget(QNetworkAccessManager *accessManager,UserInfo
 
 }
 
-
 void LoadManageWidget::getImages()
 {
     QNetworkRequest request;

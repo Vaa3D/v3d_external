@@ -3662,6 +3662,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 // --------- Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018 ---------
 void Renderer_gl1::simpleConnect()
 {
+    qDebug()<<"enter simpleConnect---zll";
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -5693,6 +5694,7 @@ void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID)
 // --------------------- segment/points could/marker connecting tool, by MK 2017 April --------------------------
 void Renderer_gl1::connectNeuronsByStroke()
 {
+    qDebug()<<"enter connectNeuronsByStroke ----zll";
 	connectEdit = segmentEdit;
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;

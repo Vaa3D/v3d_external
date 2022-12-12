@@ -10,6 +10,7 @@
 struct UserInfo{
     QString name,passwd;
     int id;
+    int colorid;
 };
 class LoadManageWidget:public QWidget
 {

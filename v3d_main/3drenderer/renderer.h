@@ -109,6 +109,7 @@ public:
     
 	UI3dViewMode  ui3dviewMode;
 	void* widget;
+    int userid;
 
 public:
 	Renderer(void* widget); //100827 add widget

@@ -55,7 +55,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include <time.h>
 #include <map>
 #include <set>
-
 enum v3dr_DataClass { dcDataNone=0,
 				dcVolume=1,
 				dcSurface=2
@@ -390,6 +389,8 @@ public:
 
 
 	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
+
+    void setUserColor(int userId);
 	// this will call setColorByAncestry if needed.
 	void setNeuronReviewColors(NeuronSWC s); // review mode
 	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
@@ -474,6 +475,7 @@ public:
 	 NeuronTree treeOnTheFly;
 	 bool isLoadFromFile;
 	 bool hierarchyRelabel;
+
 	 void simpleConnect();
 	 void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
 	 void showSubtree();
@@ -845,7 +847,7 @@ public:
 	void saveNeuronTree(int kk, const QString& filename); //kk is the cur number of the tree to save
 	void loadNeuronTree(const QString& filename);
 	void updateNeuronBoundingBox();
-	virtual void drawNeuronTree(int i);
+    virtual void drawNeuronTree(int i);
 	virtual void drawNeuronTreeList();
 	virtual void drawGrid();
 

@@ -100,7 +100,6 @@ Due to the use of Windows Kits 8.1, the variable scr2 has been defined in dlgs.h
 #define SAVE_HISTORY_OF_TRACE_STEP 0 // must be <=0; 0 only save the final res, -1 also saves the smoothing res, -2 also save the graph step res. -3 for a special use
 //#define FORCE_GRAPH_RESOLUTION	//trace_para.sp_graph_resolution_step=2; //force high resolution
 
-//extern struct UserInfo userinfo;
 bool My4DImage::proj_trace_deformablepath_one_point(V3DLONG startmark_id)
 {
 	if (startmark_id<0 && startmark_id>=listLandmarks.size())
@@ -842,7 +841,6 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 #define ___trace_add_segment_default_type___
 bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/, double default_radius/*=1*/, double creatmode/*=0*/, double default_timestamp/*=0*/, double default_tfresindex/*=0*/)
 {
-//    UserInfo userinfo;
     if (mCoord.size()<=0)  return false;
 
     //V3DLONG nexist = tracedNeuron.nnodes();
@@ -887,7 +885,6 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
 	this->colla_cur_seg.clear();
 	for (V3DLONG k = 0; k < (V3DLONG)cur_seg.nrows(); k++){
 		colla_cur_seg.append(cur_seg.row[k]);
-//        colla_cur_seg.row[0].type = userinfo.id;
 	}
 	colla_cur_seg.name = cur_seg.name;   
     tracedNeuron.name = TRACED_NAME;

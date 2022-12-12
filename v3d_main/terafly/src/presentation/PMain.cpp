@@ -3994,8 +3994,7 @@ void PMain::LoadFromServer()
     QSettings settings("HHMI", "Vaa3D");
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
-    userinfo.id = settings.value("UserID").toInt();
-    //qDebug()<<"csz debug "<<userinfo.name<<","<<userinfo.passwd<<","<<userinfo.id;
+    userinfo.colorid = settings.value("UserID").toInt();
     LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
 
     if(!accessmanager)
@@ -4031,6 +4030,9 @@ void PMain::startCollaborate(QString ano,QString port)
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userName=QString::number(userinfo.id);
 
+    Renderer *render = cur_win->getGLWidget()->getRenderer();
+    render->userid = userinfo.colorid;
+
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
 
@@ -4045,6 +4047,9 @@ void PMain::startCollaborate(QString ano,QString port)
 
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
             cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
+
+//    connectcur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(connectSeg(QString,int)),
+//            cur_win->getGLWidget(),SLOT(CollconnectSeg(QString,int)));
 
     connect(Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
     connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));

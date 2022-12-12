@@ -95,7 +95,8 @@ void V3dR_MainWindow::closeEvent(QCloseEvent* e)
 		if (glWidgetArea) glWidgetArea->takeWidget();
 		glWidget->deleteLater();
 	}
-
+    if(lastActive==this)
+        lastActive=nullptr;
 	////////////////////////////////////////////////////////////
 	// delete large memory object here to override the Qt's bug of de-constructor never be called, by Ruan ZongCai 2008-08-13
 	deleteLater(); // delay delete in event loop, by RZC 20080924
@@ -735,6 +736,10 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 
         if (!this->isHidden()&&lastActive != this) //need updateTool
         {
+//            cout<<endl;
+//            cout<<lastActive;
+//            cout<<this;
+//            cout<<endl;
             if(lastActive)
             {
                 qDebug()<<"this->getDataTitle()="<<this->getDataTitle();

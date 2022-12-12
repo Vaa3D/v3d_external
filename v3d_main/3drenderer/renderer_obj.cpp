@@ -2156,10 +2156,45 @@ void Renderer_gl1::toggleLineType()
 //	}
 //}
 
+void Renderer_gl1::setUserColor(int userId)
+{
+    switch(userId)
+    {
+    case 3:
+        glColor3ub(0, 20, 200);
+        break;
+    case 4:
+        glColor3ub(200, 0, 200);
+        break;
+    case 5:
+        glColor3ub(0, 200, 200);
+        break;
+    case 6:
+        glColor3ub(220, 200, 0);
+        break;
+    case 7:
+        glColor3ub(0, 200, 20);
+        break;
+    case 8:
+        glColor3ub(250, 100, 120);
+        break;
+    case 9:
+        glColor3ub(180, 200, 120);
+        break;
+    case 10:
+        glColor3ub(188, 94, 37);
+        break;
+    }
+
+}
+
 
 void Renderer_gl1::setNeuronColor(NeuronSWC s, time_t seconds){
 	switch (neuronColorMode){
-case 0:	break;
+case 0:
+        if(s.type != 2)
+            setUserColor(userid);
+        break;
 case 1:
     glColor3ub(255, 255, 0);
     setColorByAncestry(s, seconds);
@@ -2740,7 +2775,7 @@ void Renderer_gl1::drawNeuronTree(int index)
 				if (length >0)  // branch line
 				{
 					glLineWidth(lineWidth);
-					setNeuronColor(S1, seconds);
+					setNeuronColor(S1, seconds);                
                     //if(colorByAncestry){
                      //   glColor3ub(255, 255, 0);
                      //   setColorByAncestry(S1, seconds);
