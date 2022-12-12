@@ -2382,7 +2382,7 @@ void MainWindow::createActions()
     // Windows:close all DLC
     closeAllAct = new QAction(tr("Close &All"), this);
     closeAllAct->setStatusTip(tr("Close all the windows"));
-    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
+    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllSubWindows()));
     //connect(closeAllAct, SIGNAL(triggered()), this, SLOT(handleCoordinatedCloseEvent_real()));
 
     // Windows:tile DLC
