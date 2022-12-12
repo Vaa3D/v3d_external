@@ -3853,6 +3853,20 @@ void Renderer_gl1::simpleConnect()
 						curImg->tracedNeuron.seg[segInfo[0].segID].on = false;
 					}
 				}
+
+                if(w->TeraflyCommunicator)
+                {
+                    for(int cnt=0;cnt<idlist.size();cnt++)
+                        if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
+                        {
+                            if(w->TeraflyCommunicator
+                            &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                            {
+                                w->SetupCollaborateInfo();
+                                w->TeraflyCommunicator->UpdateConnectSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],"TeraFly");
+                            }
+                        }
+                }
 				
 				curImg->update_3drenderer_neuron_view(w, this);
 				curImg->proj_trace_history_append();

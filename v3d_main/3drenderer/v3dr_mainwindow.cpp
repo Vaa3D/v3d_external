@@ -88,7 +88,10 @@ void V3dR_MainWindow::closeEvent(QCloseEvent* e)
 	//setEnabled(false);
 
 	if (glWidget) //090705 RZC: move form ~V3dR_MainWindow()
-	{
+    {
+
+        glWidget->TeraflyCommunicator->socket->disconnect();
+        glWidget->OnVRSocketDisConnected();
 		//DELETE_AND_ZERO(glWidget->renderer); //090710
 		glWidget->deleteRenderer(); //090711 RZC: fixed the problem of Over delete OpenGL resource cross different glWidget
 
@@ -736,10 +739,6 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 
         if (!this->isHidden()&&lastActive != this) //need updateTool
         {
-//            cout<<endl;
-//            cout<<lastActive;
-//            cout<<this;
-//            cout<<endl;
             if(lastActive)
             {
                 qDebug()<<"this->getDataTitle()="<<this->getDataTitle();
@@ -765,6 +764,8 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                        <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0)"
                        <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0);
+                qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString,int)), 0, 0)"
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), 0, 0);
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), glWidget, SLOT(CollaAddSeg(QString,int)));"
                        <<connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), glWidget, SLOT(CollaAddSeg(QString)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));"
@@ -775,6 +776,8 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                        <<connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), glWidget, SLOT(CollaAddMarker(QString)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(delMarker(QString)));"
                        <<connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(CollaDelMarker(QString)));
+                qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), glWidget, SLOT(CollconnectSeg(QString)));"
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), glWidget, SLOT(CollconnectSeg(QString)));
             }else
             {
                 qDebug()<<"glWidget->TeraflyCommunicator==0";

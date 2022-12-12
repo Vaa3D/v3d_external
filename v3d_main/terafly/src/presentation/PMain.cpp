@@ -4016,7 +4016,6 @@ void PMain::startCollaborate(QString ano,QString port)
     managewidget->hide();
     Communicator = new V3dR_Communicator;
 
-    qDebug()<<"tttt 1";
     int maxresindex = terafly::CImport::instance()->getResolutions()-1;
     IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
     qDebug()<<vol->getDIM_H();
@@ -4048,8 +4047,8 @@ void PMain::startCollaborate(QString ano,QString port)
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
             cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
 
-//    connectcur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(connectSeg(QString,int)),
-//            cur_win->getGLWidget(),SLOT(CollconnectSeg(QString,int)));
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(connectSeg(QString)),
+            cur_win->getGLWidget(),SLOT(CollconnectSeg(QString)));
 
     connect(Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
     connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
@@ -4086,6 +4085,7 @@ void PMain::ColLoadANO(QString ANOfile)
     qDebug()<<"anopath"<<ANOpath;
 
     CAnnotations::getInstance()->load(ANOpath.toStdString().c_str());
+
     NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
     // save current cursor and set wait cursor
 

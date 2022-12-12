@@ -4382,6 +4382,10 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 //    POST_updateGL();
     addCurveInAllSapce(segInfo);
 }
+void V3dR_GLWidget::CollconnectSeg(QString segInfo)
+{
+    addCurveInAllSapce(segInfo);
+}
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {

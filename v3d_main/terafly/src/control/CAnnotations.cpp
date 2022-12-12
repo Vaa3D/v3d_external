@@ -2264,10 +2264,10 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
     this->clear();
 
     // open ANO file
+
     std::ifstream f(filepath);
     if(!f.is_open())
         throw RuntimeException(strprintf("in CAnnotations::load(): cannot load file \"%s\"", filepath));
-
     // read line by line
     for (std::string line; std::getline(f, line); )
     {
@@ -2275,7 +2275,6 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
         terafly::split(line, "=", tokens);
         if(tokens.size() != 2)
             throw RuntimeException(strprintf("in CAnnotations::load(const char* filepath = \"%s\"): cannot parse line \"%s\"",filepath,line.c_str()));
-
         QDir dir(filepath);
         dir.cdUp();
         if(tokens[0].compare("APOFILE") == 0)
@@ -2358,11 +2357,14 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
                     i->second->parent->children.insert(i->second);
                 }
             }
+
         }
         else
             throw RuntimeException(strprintf("in CAnnotations::load(const char* filepath = \"%s\"): unable to recognize file type \"%s\"", filepath, tokens[0].c_str()));
     }
+
     f.close();
+
 
     PLog::instance()->appendOperation(new AnnotationOperation("load annotations: read .ano from disk", tf::IO, timer.elapsed()));
 }

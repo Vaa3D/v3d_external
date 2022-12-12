@@ -2105,7 +2105,6 @@ void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("assigning annotations").c_str(), __itm__current__function__);
     timer.restart();
     V3D_env->setLandmark(window, vaa3dMarkers);
-
     V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
