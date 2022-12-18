@@ -4029,8 +4029,8 @@ void PMain::startCollaborate(QString ano,QString port)
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userName=QString::number(userinfo.id);
 
-    Renderer *render = cur_win->getGLWidget()->getRenderer();
-    render->userid = userinfo.colorid;
+//    Renderer *render = cur_win->getGLWidget()->getRenderer();
+//    render->userid = userinfo.colorid;
 
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));

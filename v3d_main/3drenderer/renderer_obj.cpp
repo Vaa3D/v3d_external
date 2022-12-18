@@ -2192,8 +2192,8 @@ void Renderer_gl1::setUserColor(int userId)
 void Renderer_gl1::setNeuronColor(NeuronSWC s, time_t seconds){
 	switch (neuronColorMode){
 case 0:
-        if(s.type != 2)
-            setUserColor(userid);
+//        if(s.type != 2)
+//            setUserColor(userid);
         break;
 case 1:
     glColor3ub(255, 255, 0);

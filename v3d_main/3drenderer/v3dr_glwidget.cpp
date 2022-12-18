@@ -4329,6 +4329,7 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 //}
 void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
 {
+    qDebug()<<"begin collretypeseg";
     if(segInfo.isEmpty()) return;
     QStringList delSegGlobalList=segInfo.split(",",QString::SkipEmptyParts);
     QVector<XYZ> coords;
@@ -4337,21 +4338,26 @@ void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
        auto node= delSegGlobalList.at(i).split(" ");
        coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
     }
+    qDebug()<<"zll______________retype1";
     NeuronTree  nt = terafly::PluginInterface::getSWC();
+    qDebug()<<"zll______________retype2";
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
     int index=findseg(v_ns_list,coords);
+    qDebug()<<"zll______________retype3";
     if(index>=0)
     {
         for(int k=0;k<v_ns_list.seg.at(index).row.size();k++)
         {
+            qDebug()<<"zll______________retype4";
             v_ns_list.seg.at(index).row.at(k).type=type;
         }
         qDebug()<<"retype sucess";
     }else
     {
+        qDebug()<<"zll______________retype5";
 		qDebug()<<"Error:cannot find segment to retype " + segInfo;
     }
-
+    qDebug()<<"zll______________retype6";
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
 
     terafly::PluginInterface::setSWC(nt,true);
@@ -4359,7 +4365,6 @@ void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 {
-    qDebug()<<"csz debug "<<segInfo;
 //    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
 //    SetupCollaborateInfo();
 //    vector<XYZ> loc_coords;
@@ -4439,9 +4444,11 @@ int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 
 void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo) //only call by delete curve
 {
+    qDebug()<<"enter deleteCurveInAllSpace";
     if(segInfo.isEmpty()) return;
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    qDebug()<<"ZLL________________1";
 
     auto segInfos=segInfo.split(",");
 
@@ -4453,17 +4460,22 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo) //only call by delete
        auto node= segInfos.at(i).split(" ");
        coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
     }
+    qDebug()<<"ZLL________________2";
     int index=findseg(v_ns_list,coords);
+    qDebug()<<"INDEX"<<index;
     if(index>=0)
     {
+        qDebug()<<"ZLL_____________________2.5";
         v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
     }else
     {
 		qDebug()<<"ERROR:cannot delete curve " + segInfo;
     }
+    qDebug()<<"ZLL________________3";
 
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
     terafly::PluginInterface::setSWC(nt,true);
+    qDebug()<<"ZLL________________4";
 }
 
 void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)

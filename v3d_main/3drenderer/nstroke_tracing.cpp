@@ -3854,19 +3854,7 @@ void Renderer_gl1::simpleConnect()
 					}
 				}
 
-                if(w->TeraflyCommunicator)
-                {
-                    for(int cnt=0;cnt<idlist.size();cnt++)
-                        if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
-                        {
-                            if(w->TeraflyCommunicator
-                            &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-                            {
-                                w->SetupCollaborateInfo();
-                                w->TeraflyCommunicator->UpdateConnectSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],"TeraFly");
-                            }
-                        }
-                }
+
 				
 				curImg->update_3drenderer_neuron_view(w, this);
 				curImg->proj_trace_history_append();
@@ -3882,6 +3870,20 @@ void Renderer_gl1::simpleConnect()
 						//cout << this->branchSegIDmap[it->branchingProfile.ID] << ", " << it->branchingProfile.ID << endl;
 					}
 				}
+
+                if(w->TeraflyCommunicator)
+                {
+
+                    for (int cnt=0;cnt<curImg->tracedNeuron.seg.size();cnt++)
+                        if(w->TeraflyCommunicator &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                        {
+                            w->SetupCollaborateInfo();
+                            w->TeraflyCommunicator->UpdateConnectSegMsg(curImg->tracedNeuron.seg[cnt],"TeraFly");
+                        }
+
+                }
+
+
 				cout << endl;
 			}
 		}

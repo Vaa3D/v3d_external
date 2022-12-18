@@ -208,6 +208,7 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
 
 bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate,int resolution)
 {
+
     try
     {
 //        CViewer::mutex.lock();
