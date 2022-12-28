@@ -379,6 +379,7 @@ NeuronTree readSWC_file(const QString& filename)
 
 bool writeSWC_file(const QString& filename, const NeuronTree& nt, const QStringList *infostring)
 {
+    qDebug()<<"writeswcfile_____zll";
 	QString curFile = filename;
 	if (curFile.trimmed().isEmpty()) //then open a file dialog to choose file
 	{

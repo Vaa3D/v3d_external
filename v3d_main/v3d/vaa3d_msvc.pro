@@ -126,6 +126,7 @@ win32 {
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)
+    BOOSTPATH = $$(BOOST_PATH)
     LIBS = $$unique(LIBS)
 }
 

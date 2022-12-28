@@ -1034,7 +1034,6 @@ void My4DImage::proj_trace_history_append(V_NeuronSWC_list & tNeuron)
 
 	tracedNeuron_historylist.push_back(tNeuron);
 	cur_history = tracedNeuron_historylist.size()-1;
-
 	//	qDebug()<<"***************************************************************";
 	//	qDebug()<<"APPEND historylist last ="<<tracedNeuron_historylist.size()-1<<"  cur_history ="<<cur_history;
 	//	qDebug()<<"***************************************************************";

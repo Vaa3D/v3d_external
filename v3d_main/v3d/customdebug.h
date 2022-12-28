@@ -33,11 +33,11 @@ void customMessageHandler(QtMsgType type, const char *msg)
     }
 
     //保存输出相关信息到指定文件
-   // QFile outputFile("customMessageLog.txt");
-   // outputFile.open(QIODevice::WriteOnly | QIODevice::Append);
-//QTextStream textStream(&outputFile);
+    QFile outputFile("customMessageLog.txt");
+    outputFile.open(QIODevice::WriteOnly | QIODevice::Append);
+QTextStream textStream(&outputFile);
     time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
-    //textStream << time<<":"<<txtMessage << endl;
+    textStream << time<<":"<<txtMessage << endl;
     std::cout<<time.toStdString().data()<<txtMessage.toStdString().data()<<"\n";
 }
 

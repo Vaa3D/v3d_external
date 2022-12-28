@@ -391,6 +391,7 @@ public:
 	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
 
     void setUserColor(int userId);
+//    int userColorid;
 	// this will call setColorByAncestry if needed.
 	void setNeuronReviewColors(NeuronSWC s); // review mode
 	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
@@ -708,7 +709,7 @@ public:
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
      bool b_renderTextureLast;
 	double currentTraceType;
-	bool useCurrentTraceTypeForRetyping;
+    bool useCurrentTraceTypeForRetyping;
 
     RGBA8 currentMarkerColor;//added by ZZ 05142018
 
@@ -772,13 +773,13 @@ private:
           b_editDroppedNeuron = false; //20150527, PHC
 
           highlightedNodeType = -1; //20170804 RZC
-          currentTraceType=3;
+          currentTraceType= 3;
           useCurrentTraceTypeForRetyping = false;
         cuttingZ = false;
         cuttingXYZ = false;
 		zMin =-1.0;
 		zMax = 1.0;
-		initColorMaps();
+        initColorMaps();
 		gridSpacing = 10.0;
         currentMarkerColor.r=0;
         currentMarkerColor.g=20;

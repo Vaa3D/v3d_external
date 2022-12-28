@@ -4006,7 +4006,8 @@ void PMain::LoadFromServer()
 
     //更新一下用户信息
     managewidget=new LoadManageWidget(accessmanager,&userinfo);
-    connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(startCollaborate(QString,QString)));
+    connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(
+                startCollaborate(QString,QString)));
     managewidget->show();
 
 }
@@ -4029,8 +4030,9 @@ void PMain::startCollaborate(QString ano,QString port)
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userName=QString::number(userinfo.id);
 
-//    Renderer *render = cur_win->getGLWidget()->getRenderer();
-//    render->userid = userinfo.colorid;
+//    Renderer_gl1* render = (Renderer_gl1*)cur_win->view3DWidget->getRenderer();
+//    render->userColorid = userinfo.colorid;
+//    qDebug()<<"userColorId" <<render->userColorid;
 
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));

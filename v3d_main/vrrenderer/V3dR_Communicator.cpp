@@ -29,6 +29,7 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
 void V3dR_Communicator::onReadyRead()
 {
     while(1){
+        qDebug() << "enter onReadyRead " << socket->bytesAvailable() << " datatype.datasize " << datatype.datasize;
         if(!datatype.isFile)
         {
             //不是准备接受文件数据
@@ -37,8 +38,10 @@ void V3dR_Communicator::onReadyRead()
                 if(socket->canReadLine()){
                     QString msg=socket->readLine(1024).trimmed();
                     if(!msg.startsWith("DataTypeWithSize:")){
-                        socket->write({"Socket Receive ERROR!"});
-                        std::cerr<<userName.toStdString()+" receive not match format\n";
+//                        socket->write({"Socket Receive ERROR!"});
+//                        std::cerr<<userName.toStdString()+" receive not match format\n";
+                        qDebug() << userName << " receive not match format\n";
+                        socket->disconnectFromHost();
                     }
                     qDebug()<<msg;
                     auto ps=msg.right(msg.size()-QString("DataTypeWithSize:").size()).split(' ');
@@ -47,6 +50,7 @@ void V3dR_Communicator::onReadyRead()
                     if(datatype.isFile)
                         datatype.filesize=ps[2].toUInt();
                 }else{
+                    qDebug()<<"socket readline failed";
                     break;
                 }
             }else{
@@ -61,6 +65,7 @@ void V3dR_Communicator::onReadyRead()
                     resetdatatype();
                     delete [] data;
                 }else{
+                    qDebug()<<"socket->bytesAvailable<datatype datasize"<<"datatype.datasize "<<datatype.datasize;
                     break;
                 }
             }
@@ -136,6 +141,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         {
             QString msg=operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"drawline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -154,6 +160,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         {
             QString msg = operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"delline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -207,6 +214,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         {
             QString msg =operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"retypeline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<=1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -229,6 +237,7 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
         {
             QString msg = operatorMsg;
             QStringList listwithheader = msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"connectline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<=1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -255,6 +264,7 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
+        qDebug()<<"drawline_sendMsg"<<result.count();
         sendMsg(QString("/drawline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
         {
@@ -272,6 +282,7 @@ void V3dR_Communicator::UpdateConnectSegMsg(V_NeuronSWC seg,QString clienttype)
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
+        qDebug()<<"connectline_sendMsg"<<result.count();
         sendMsg(QString("/connectline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
         {
@@ -290,6 +301,7 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
+        qDebug()<<"delline_sendMsg"<<result.count();
         sendMsg(QString("/delline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
         {
@@ -336,6 +348,7 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
+        qDebug()<<"retypeline_sendMsg"<<result.count();
         sendMsg(QString("/retypeline_norm:"+result.join(",")));
         qDebug()<<"retypeline_norm"+result.join(",");
     }

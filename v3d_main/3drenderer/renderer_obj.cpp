@@ -2184,6 +2184,12 @@ void Renderer_gl1::setUserColor(int userId)
     case 10:
         glColor3ub(188, 94, 37);
         break;
+    case 11:
+        glColor3ub(120,200,200);
+        break;
+    case 12:
+        glColor3ub(100,120,200);
+        break;
     }
 
 }
