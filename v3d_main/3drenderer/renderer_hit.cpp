@@ -1875,7 +1875,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 {
                     p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
                     curEditingNeuron = 1;
-                    realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
+                    realCurEditingNeuron_inNeuronTree = curEditingNeuron-1;
+                     qDebug() << "names[2]=" << names[2] << " p_tree1=" << p_tree;//keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
                 }
                 else
                 {
@@ -1895,19 +1896,26 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 }
 
                 curImg->tracedNeuron = copyToEditableNeuron(p_tree);
+                curImg->tracedNeuron.color_uc[3] = 1;
                 curImg->tracedNeuron.name = "vaa3d_traced_neuron";
                 curImg->tracedNeuron.file = "vaa3d_traced_neuron";
                 listNeuronTree.clear();
+
                 qDebug("	listNeuronTree.size() = %d!!!!!", listNeuronTree.size());
 
                 //v3d_msg(QString("after copy current traceNeuron.nseg=%1").arg(curImg->tracedNeuron.nsegs()));
                 curImg->proj_trace_history_append();
+                curImg->updateViews();
+                w->update();
                 curImg->update_3drenderer_neuron_view(w, this);
+
+
             }
         }
     }
     else if (act==actNeuronFinishEditing)
     {
+        curImg->tracedNeuron.color_uc[3] = curImg->tracedNeuron_old.color_uc[3];
         if (NEURON_CONDITION)
         {
             //150523. There seems to be some remaining bugs that need to be fixed later when multiple neurons are presented.
@@ -2537,16 +2545,16 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
     pos.drawn = false;
     for (int i=0; i<4; i++){
         pos.view[i] = viewport[i];
-        qDebug("--------pos.view[%d]--------%d", i,pos.view[i]);
+        //qDebug("--------pos.view[%d]--------%d", i,pos.view[i]);
     }
     for (int i=0; i<16; i++)
     {
         pos.P[i]  = projectionMatrix[i];
         pos.MV[i] = markerViewMatrix[i];
-        qDebug("--------pos.P[%d]----%e      pos.MV[%d]--%e", i,pos.P[i],i,pos.MV[i]);
+        //qDebug("--------pos.P[%d]----%e      pos.MV[%d]--%e", i,pos.P[i],i,pos.MV[i]);
     }
     listMarkerPos.append(pos);
-    qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
+    //qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
 }
 int Renderer_gl1::movePen(int x, int y, bool b_move)
 {

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
@@ -75,7 +74,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 
 // this is a no-no?  neuron_type_color is a global here...
 
-
+//>>>>>>> 80abd961fbb56aa528c1d7e054dd32ceef38d966
 
 const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
 { 255, 255, 255}, //white
@@ -701,8 +700,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
         else if (filename.endsWith(".v3ds", Qt::CaseInsensitive) || filename.endsWith(".vaa3ds", Qt::CaseInsensitive) )
         {
             type = stLabelSurface;
-            //loadV3DSurface(filename); DLC, load .v3ds file failed, so use next function
-            loadV3DSFile(filename);
+            loadV3DSurface(filename);
             ep->surface_file = filename;
         }
         else if (filename.endsWith(".marker", Qt::CaseInsensitive) || filename.endsWith(".csv", Qt::CaseInsensitive))
@@ -712,7 +710,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
         }
         // if swc
         else if (filename.endsWith(".swc", Qt::CaseInsensitive))
-        {            
+        {
             type = stNeuronStructure;
             loadNeuronTree(filename);
             if (!(ep->swc_file_list.contains(filename)))
@@ -923,7 +921,7 @@ void Renderer_gl1::MarkerSpaceToNormalizeSpace(XYZ & p)
 void Renderer_gl1::drawMarker()
 {
     glPushName(stImageMarker);
-     drawMarkerList();
+        drawMarkerList();
     glPopName();
 }
 void Renderer_gl1::setSurfaceStretchSpace()
@@ -934,7 +932,6 @@ void Renderer_gl1::setSurfaceStretchSpace()
             b_surfStretch)  // 090423 RZC: stretch surface object with image thickness
     {
         glScaled(thicknessX, thicknessY, thicknessZ);
-
     }
 }
 void Renderer_gl1::drawObj()
@@ -957,7 +954,6 @@ void Renderer_gl1::drawObj()
         drawCellList();
     glPopName();
     if (b_useClipBoxforSubjectObjs)  disableClipBoundingBox(); // surface clip do not include markers, and labelText
-
 }
 #define IS_TRANSPARENT  (polygonMode>=3 && !b_selecting)
 void Renderer_gl1::disObjLighting()
@@ -1333,7 +1329,7 @@ void Renderer_gl1::drawMarkerList()
             glTranslated(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
 #if defined(USE_Qt5)
 #else
-            //((QGLWidget*)widget)->renderText(0., 0., 0., QString("%1").arg(i+1));
+            ((QGLWidget*)widget)->renderText(0., 0., 0., QString("%1").arg(i+1));
 #endif
             //char sbuf[20];	sprintf(sbuf, "%d", i+1);	drawString(0, 0, 0, sbuf);
             glPopMatrix();
@@ -1372,7 +1368,7 @@ void Renderer_gl1::drawMarkerList()
             }
 #if defined(USE_Qt5)
 #else
-            //((QGLWidget*)widget)->renderText(0., 0., 0., (mystr)); //do not use font for now. by PHC, 110426
+            ((QGLWidget*)widget)->renderText(0., 0., 0., (mystr)); //do not use font for now. by PHC, 110426
 #endif
 #if defined(USE_Qt5)
 #else
@@ -1441,8 +1437,9 @@ void Renderer_gl1::drawCellList()
     if (sShowSurfObjects==0) return;
     float maxD = boundingBox.Dmax();
     float marker_size = maxD * markerSize / 1000.f;
-
-        //setFloatDrawOp(0, sShowSurfObjects);
+    for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
+    {
+        setFloatDrawOp(pass, sShowSurfObjects);
         for (int i=0; i<listCell.size(); i++)
         {
             const CellAPO& S = listCell[i];
@@ -1469,8 +1466,8 @@ void Renderer_gl1::drawCellList()
             glPopMatrix();
             if (S.selected) HIGHLIGHT_OFF();
         }
-
-    //setFloatDrawOp(-1, sShowSurfObjects);
+    }
+    setFloatDrawOp(-1, sShowSurfObjects);
     // cell name
     //qDebug(" b_showCellName = %i", (b_showCellName));
     //qDebug("widget = 0x%p", widget);
@@ -1495,7 +1492,7 @@ void Renderer_gl1::drawCellList()
             //qDebug()<<" cellName = "<<S.name <<"\n";
 #if defined(USE_Qt5)
 #else
-            //((QGLWidget*)widget)->renderText(0., 0., 0., (S.name));
+            ((QGLWidget*)widget)->renderText(0., 0., 0., (S.name));
 #endif
 #if defined(USE_Qt5)
 #else
@@ -1787,108 +1784,108 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
     updateBoundingBox(); // all of loaded bounding-box are updated here
 #endif
 }
-
+#ifndef test_main_cpp
 void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 {
     qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
-   //	PROGRESS_DIALOG("Updating Neuron structure", widget);
-   //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
-       QList <NeuronSWC> listNeuron;
-       QHash <int, int>  hashNeuron;
+    PROGRESS_DIALOG("Updating Neuron structure", widget);
+//	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
+    QList <NeuronSWC> listNeuron;
+    QHash <int, int>  hashNeuron;
 
-       listNeuron.clear();
-       hashNeuron.clear();
-       try {
-           int count = 0;
-           qDebug("-------------------------------------------------------");
-           for (int k=0;k<seg.row.size();k++)
-           {
-               count++;
-               NeuronSWC S;
-               S.n 	= seg.row.at(k).data[0];
-               S.type 	= seg.row.at(k).data[1];
-               S.x 	= seg.row.at(k).data[2];
-               S.y 	= seg.row.at(k).data[3];
-               S.z 	= seg.row.at(k).data[4];
-               S.r 	= seg.row.at(k).data[5];
-               S.pn 	= seg.row.at(k).data[6];
-               //for hit & editing
-               S.seg_id       = seg.row.at(k).seg_id;
-               S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
+    listNeuron.clear();
+    hashNeuron.clear();
+    try {
+        int count = 0;
+        qDebug("-------------------------------------------------------");
+        for (int k=0;k<seg.row.size();k++)
+        {
+            count++;
+            NeuronSWC S;
+            S.n 	= seg.row.at(k).data[0];
+            S.type 	= seg.row.at(k).data[1];
+            S.x 	= seg.row.at(k).data[2];
+            S.y 	= seg.row.at(k).data[3];
+            S.z 	= seg.row.at(k).data[4];
+            S.r 	= seg.row.at(k).data[5];
+            S.pn 	= seg.row.at(k).data[6];
+            //for hit & editing
+            S.seg_id       = seg.row.at(k).seg_id;
+            S.nodeinseg_id = seg.row.at(k).nodeinseg_id;
 
-               S.level = seg.row.at(k).level;
-               S.creatmode = seg.row.at(k).creatmode;
-               S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
-               S.tfresindex = seg.row.at(k).tfresindex; //LMG 13/12/2018
+            S.level = seg.row.at(k).level;
+            S.creatmode = seg.row.at(k).creatmode;
+            S.timestamp = seg.row.at(k).timestamp; //LMG 11/10/2018
+            S.tfresindex = seg.row.at(k).tfresindex; //LMG 13/12/2018
 
-               //qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
-               //if (! listNeuron.contains(S)) // 081024
-               {
-                   listNeuron.append(S);
-                   hashNeuron.insert(S.n, listNeuron.size()-1);
-               }
-           }
-           qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
-           if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
-           {
-               for (int i=0; i<listNeuronTree.size(); i++)
-               {
-                   if (listNeuronTree[i].file == QString(seg.file.c_str())) // same file. try to remove all instances with the same name
-                   {
-                       listNeuronTree.removeAt(i);
-                       qDebug()<<"find name matched and remove an empty neuron";
-                   }
-               }
-               updateNeuronBoundingBox();
-               qDebug()<<"remove an empty neuron";
-               return; //////////////////////////////
-           }
-           NeuronTree SS;
-           SS.n = -1;
-           SS.color = XYZW(seg.color_uc[0],seg.color_uc[1],seg.color_uc[2],seg.color_uc[3]);
-           SS.on = true;
-           SS.listNeuron = listNeuron;
-           SS.hashNeuron = hashNeuron;
-           //090914 RZC
-           SS.name = seg.name.c_str();
-           SS.file = seg.file.c_str();
-           // add or replace into listNeuronTree
-           bool contained = false;
-           for (int i=0; i<listNeuronTree.size(); i++)
-               if (SS.file == listNeuronTree[i].file) // same file to replace it
-               {
-                   contained = true;
-                   SS.n = 1+i;
-                   listNeuronTree.replace(i, SS); //090117 use overwrite  by PHC
-                   break;
-               }
-           if (!contained
-                   //&& SS.file!=QString(TRACED_FILE)
-                   ) //listNeuronTree.contains(SS)) // because NeuronTree contains template, so listNeuronTree.contains() cannot work, 081115
-           {
-               SS.n = 1+listNeuronTree.size();
-               listNeuronTree.append(SS);
-           }
-           // make sure only one current editing neuron has editable flag
-           qDebug("	lastEditingNeuron = %d, NeuronTree.n = %d", curEditingNeuron, SS.n);
-           //qDebug("-------------------------------------------------------");
-           for (int i=0; i<listNeuronTree.size(); i++)
-           {
-               listNeuronTree[i].editable = (1+i==SS.n); //090923
-               listNeuronTree[i].on = (1+i==SS.n);  //hide the original one //ZZ 04122018
-           }
-           curEditingNeuron = SS.n;
+            //qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
+            //if (! listNeuron.contains(S)) // 081024
+            {
+                listNeuron.append(S);
+                hashNeuron.insert(S.n, listNeuron.size()-1);
+            }
+        }
+        qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
+        if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
+        {
+            for (int i=0; i<listNeuronTree.size(); i++)
+            {
+                if (listNeuronTree[i].file == QString(seg.file.c_str())) // same file. try to remove all instances with the same name
+                {
+                    listNeuronTree.removeAt(i);
+                    qDebug()<<"find name matched and remove an empty neuron";
+                }
+            }
+            updateNeuronBoundingBox();
+            qDebug()<<"remove an empty neuron";
+            return; //////////////////////////////
+        }
+        NeuronTree SS;
+        SS.n = -1;
+        SS.color = XYZW(seg.color_uc[0],seg.color_uc[1],seg.color_uc[2],seg.color_uc[3]);
+        SS.on = true;
+        SS.listNeuron = listNeuron;
+        SS.hashNeuron = hashNeuron;
+        //090914 RZC
+        SS.name = seg.name.c_str();
+        SS.file = seg.file.c_str();
+        // add or replace into listNeuronTree
+        bool contained = false;
+        for (int i=0; i<listNeuronTree.size(); i++)
+            if (SS.file == listNeuronTree[i].file) // same file to replace it
+            {
+                contained = true;
+                SS.n = 1+i;
+                listNeuronTree.replace(i, SS); //090117 use overwrite  by PHC
+                break;
+            }
+        if (!contained
+                //&& SS.file!=QString(TRACED_FILE)
+                ) //listNeuronTree.contains(SS)) // because NeuronTree contains template, so listNeuronTree.contains() cannot work, 081115
+        {
+            SS.n = 1+listNeuronTree.size();
+            listNeuronTree.append(SS);
+        }
+        // make sure only one current editing neuron has editable flag
+        qDebug("	lastEditingNeuron = %d, NeuronTree.n = %d", curEditingNeuron, SS.n);
+        //qDebug("-------------------------------------------------------");
+        for (int i=0; i<listNeuronTree.size(); i++)
+        {
+            listNeuronTree[i].editable = (1+i==SS.n); //090923
+            listNeuronTree[i].on = (1+i==SS.n);  //hide the original one //ZZ 04122018
+        }
+        curEditingNeuron = SS.n;
 
-           if (listNeuronTree.size()==1 && listNeuronTree[0].file=="vaa3d_traced_neuron" && listNeuronTree[0].name=="vaa3d_traced_neuron")
-           {
-               listNeuronTree[0].editable = true;
-               curEditingNeuron = 1;
-           }
-       } CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
-       updateNeuronBoundingBox();
-       if(colorByAncestry)
-           setColorAncestryInfo();
-       updateBoundingBox(); // all of loaded bounding-box are updated here
+        if (listNeuronTree.size()==1 && listNeuronTree[0].file=="vaa3d_traced_neuron" && listNeuronTree[0].name=="vaa3d_traced_neuron")
+        {
+            listNeuronTree[0].editable = true;
+            curEditingNeuron = 1;
+        }
+    } CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
+    updateNeuronBoundingBox();
+    if(colorByAncestry)
+        setColorAncestryInfo();
+    updateBoundingBox(); // all of loaded bounding-box are updated here
 }
 V_NeuronSWC_list Renderer_gl1::copyToEditableNeuron(NeuronTree * ptree)
 {
@@ -1960,33 +1957,28 @@ void Renderer_gl1::toggleEditMode()
 void Renderer_gl1::setEditMode()
 {
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-    My4DImage* curImg = 0;       if (w){ qDebug()<<"ctrl+d debug:----2"; curImg = v3dr_getImage4d(_idep); }
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 
     if(listNeuronTree.size()>=1 && w && curImg)
     {
-        qDebug()<<"ListNeuronTree.size() = "<< listNeuronTree.size();
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
-            qDebug()<<"ctrl + d debug: ----3";
             return;
-        }
-        else
+        }else
+
         {
-            qDebug()<<"ctrl + d debug: ----4";
             listNeuronTree_old = listNeuronTree;
 
             NeuronTree *p_tree = 0;
 
             if (listNeuronTree.size()==1)
             {
-                qDebug()<<"ctrl+d debug:----5";
                 p_tree = (NeuronTree *)(&(listNeuronTree.at(0)));
                 curEditingNeuron = 1;
                 realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
             }
             else
             {
-                qDebug()<<"ctrl+d debug:----6";
                 p_tree = (NeuronTree *)(&(listNeuronTree.at(1)));
                 curEditingNeuron = 2;
                 realCurEditingNeuron_inNeuronTree = curEditingNeuron-1; //keep an index of the real neuron being edited. Note that curEditingNeuron can be changed later during editing
@@ -2010,7 +2002,7 @@ void Renderer_gl1::setEditMode()
     }
 }
 
-
+#endif
 void Renderer_gl1::toggleLineType()
 {
     lineType = (lineType +1) %2;
@@ -2643,8 +2635,7 @@ void Renderer_gl1::drawNeuronTree(int index)
                      //   setColorByAncestry(S1, seconds);
                    // }
                     glBegin(GL_LINES);
-                    glVertex3f(S0.x, S0.y, S0.z);
-                    glVertex3f(S1.x, S1.y, S1.z);
+                    glVertex3f(S0.x, S0.y, S0.z);	glVertex3f(S1.x, S1.y, S1.z);
                     glEnd();
                     if (nodeSize)
                     {
@@ -2788,10 +2779,9 @@ void Renderer_gl1::drawNeuronTreeList()
     //		glStencilMask(-1);
     //		//glDepthMask(GL_TRUE);
     //	}
-    for (int pass=0; pass<2; pass++) {//注释这行，让绘制只走1遍
+    for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
+    {
         setFloatDrawOp(pass, sShowSurfObjects);
-        //setFloatDrawOp(1,2);
-
         for (int i=0; i<listNeuronTree.size(); i++)
         {
             const NeuronTree& S = listNeuronTree[i];
@@ -2830,9 +2820,9 @@ void Renderer_gl1::drawGrid()
     //glCullFace(GL_BACK);
     //glEnable(GL_CULL_FACE);
     float eps = gridSpacing*.01;
-//    for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
-//    {
-        //setFloatDrawOp(pass, sShowSurfObjects);
+    for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
+    {
+        setFloatDrawOp(pass, sShowSurfObjects);
         for (int i=0; i<gridList.size(); i++)
         {
             ImageMarker gridMarker = gridList.at(i);
@@ -2873,10 +2863,9 @@ void Renderer_gl1::drawGrid()
             glPopName();
 
         }
-
-//    setFloatDrawOp(-1, sShowSurfObjects);
+    }
+    setFloatDrawOp(-1, sShowSurfObjects);
 //	glEnable(GL_LIGHTING);
 //	glDisable(GL_CULL_FACE);
     glPopAttrib();
 }
-
