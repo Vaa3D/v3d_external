@@ -90,8 +90,8 @@ void V3dR_MainWindow::closeEvent(QCloseEvent* e)
 	if (glWidget) //090705 RZC: move form ~V3dR_MainWindow()
     {
 
-        glWidget->TeraflyCommunicator->socket->disconnect();
-        glWidget->OnVRSocketDisConnected();
+//        glWidget->TeraflyCommunicator->socket->disconnect();
+//        glWidget->OnVRSocketDisConnected();
 		//DELETE_AND_ZERO(glWidget->renderer); //090710
 		glWidget->deleteRenderer(); //090711 RZC: fixed the problem of Over delete OpenGL resource cross different glWidget
 

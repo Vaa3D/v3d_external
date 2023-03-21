@@ -60,7 +60,7 @@ namespace v3d {
 
     QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
-        "), Vaa3D-Neuron (2.1), Vaa3D Plugin Interface (2.12),MR-Farm(2.0.4.1) ";
+        "), Vaa3D-Neuron (2.1), Vaa3D Plugin Interface (2.12),MR-Farm(2.0.4.2) ";
 }
 
 

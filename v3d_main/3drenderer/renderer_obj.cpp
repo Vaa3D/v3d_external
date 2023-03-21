@@ -333,20 +333,55 @@ const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----
 //>>>>>>> master
 #define ____neuron_color_table____
 const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
-		{255, 255, 255},  // white,   0-undefined
-		{20,  20,  20 },  // black,   1-soma
-		{200, 20,  0  },  // red,     2-axon
-		{0,   20,  200},  // blue,    3-dendrite
-		{200, 0,   200},  // purple,  4-apical dendrite
-		//the following is Hanchuan's extended color. 090331
-		{0,   200, 200},  // cyan,    5
-		{220, 200, 0  },  // yellow,  6
-		{0,   200, 20 },  // green,   7
+                                         //for neuron complexity
+//        {240,248,255},
+//        {204,236,255},
+//        {155,217,255},
+//        {47,82,143},
+//        {47,82,143},
+//        {30,144,255},
+//        {0,0,255},
+//        {0,0,205},
+//        {0,0,139},
+//        {0,0,128},
+//        {0,0,0},
+//        {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+//                                         {0,0,0},
+                                         //for neuron complexity
+
+        {255, 255, 255},  // white,   0-undefined
+        {20,  20,  20 },  // black,   1-soma
+        {200, 20,  0  },  // red,     2-axon
+        {0,   20,  200},  // blue,    3-dendrite
+        {200, 0,   200},  // purple,  4-apical dendrite
+//        {255, 255,   102},
+//		//the following is Hanchuan's extended color. 090331
+        {0,   200, 200},  // cyan,    5
+//        {255, 207, 5},
+        {220, 200, 0  },  // yellow,  6
+//        {255, 135, 42  },
+        {0,   200, 20 },  // green,   7
+//        {255,  95, 0 },
         {250, 100, 120},  // coffee,  8 change to 10
-		{180, 200, 120},  // asparagus,	9
+//        {170, 0, 1},  // coffee,  8 change to 10
+        {180, 200, 120},  // asparagus,	9
         {188, 94,  37 },  // salmon,	10  change to 8
-		{120, 200, 200},  // ice,		11
-		{100, 120, 200},  // orchid,	12
+        {120, 200, 200},  // ice,		11
+        {100, 120, 200},  // orchid,	12
+
     //the following is Hanchuan's further extended color. 111003
     {255, 128, 168},  //	13
     {128, 255, 168},  //	14

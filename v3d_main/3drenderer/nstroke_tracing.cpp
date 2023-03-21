@@ -3673,7 +3673,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
 // --------- Simple connecting tool (no geometrical analysis, only 2 segments at a time), MK, April, 2018 ---------
 void Renderer_gl1::simpleConnect()
 {
-    qDebug()<<"enter simpleConnect---zll";
+//    qDebug()<<"enter simpleConnect---zll";
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
@@ -3927,10 +3927,10 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 		double assignedType;
 		assignedType = curImg->tracedNeuron.seg[segInfo.at(0).segID].row[0].type;
 		curImg->tracedNeuron.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
-        qDebug()<<"zll___debug__mainSeg.head_tail"<<mainSeg.head_tail;
+//        qDebug()<<"zll___debug__mainSeg.head_tail"<<mainSeg.head_tail;
 		if (mainSeg.head_tail == -1)
 		{
-            qDebug()<<"(zll-debug)branchSeg.head_tail="<<branchSeg.head_tail;
+//            qDebug()<<"(zll-debug)branchSeg.head_tail="<<branchSeg.head_tail;
 			if (branchSeg.head_tail == -1) // head to head
 			{
 				for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.end() - 1;
@@ -3966,7 +3966,7 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 		else if (mainSeg.head_tail == 2)
 		{
 			std::reverse(curImg->tracedNeuron.seg[mainSeg.segID].row.begin(), curImg->tracedNeuron.seg[mainSeg.segID].row.end());
-            qDebug()<<"zll___debug__2_branchSeg.head_tail"<<branchSeg.head_tail;
+//            qDebug()<<"zll___debug__2_branchSeg.head_tail"<<branchSeg.head_tail;
 			if (branchSeg.head_tail == -1) // tail to head
 			{
 				for (vector<V_NeuronSWC_unit>::iterator itNextSeg = curImg->tracedNeuron.seg[branchSeg.segID].row.end() - 1;
@@ -4007,7 +4007,7 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
 		{
 			reID->seg_id = mainSeg.segID;
 			reID->type = assignedType;
-            qDebug()<<"zll_debug"<<reID->type;
+//            qDebug()<<"zll_debug"<<reID->type;
 		}
 	}
 	//////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
@@ -5723,7 +5723,7 @@ void Renderer_gl1::rc_downstream_segID(My4DImage* curImg, size_t segID)
 // --------------------- segment/points could/marker connecting tool, by MK 2017 April --------------------------
 void Renderer_gl1::connectNeuronsByStroke()
 {
-    qDebug()<<"enter connectNeuronsByStroke ----zll";
+//    qDebug()<<"enter connectNeuronsByStroke ----zll";
 	connectEdit = segmentEdit;
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -7037,7 +7037,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                                 V_NeuronSWC seg= curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id);
                                 for(auto &node:seg.row) {
                                     node.type = currentTraceType;
-                                    qDebug()<<"zll____debug__currentTraceType"<<node.type;
+//                                    qDebug()<<"zll____debug__currentTraceType"<<node.type;
                                 }
                                 w->TeraflyCommunicator->UpdateSplitSegMsg(
                                     seg,p_listneuron->at(i).nodeinseg_id,"TeraFly");

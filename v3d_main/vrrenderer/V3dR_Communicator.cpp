@@ -117,7 +117,7 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     {
         qDebug()<<"OnRead:"<<msg;
         if(msg.startsWith("STARTCOLLABORATE:")){
-            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
+//            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
         }else if(usersRex.indexIn(msg) != -1){
             emit updateuserview(usersRex.cap(1));

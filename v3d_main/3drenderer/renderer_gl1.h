@@ -391,7 +391,7 @@ public:
 	void setNeuronColor(NeuronSWC s, time_t seconds);  // method to set different color modes. 
 
     void setUserColor(int userId);
-//    int userColorid;
+    int userColorid;
 	// this will call setColorByAncestry if needed.
 	void setNeuronReviewColors(NeuronSWC s); // review mode
 	void setHighlightColors(NeuronSWC s); // highlight only the children of a selected node
