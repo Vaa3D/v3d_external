@@ -3305,16 +3305,16 @@ void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, in
 // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
 void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 {
+//    qDebug()<<"enter deleteMultiNeuronsByStrokeCommit";
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
-    if (w->TeraflyCommunicator
-    &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+    if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
 	{
         vector<V_NeuronSWC> vector_VSWC;
         curImg->ExtractDeletingNode(vector_VSWC);
 
-		w->SetupCollaborateInfo();
+        w->SetupCollaborateInfo();
         for(auto seg:vector_VSWC)
             w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
 //        w->getRenderer()->endSelectMode();

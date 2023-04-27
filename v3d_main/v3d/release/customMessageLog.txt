@@ -1,0 +1,3 @@
+2023/03/31 18:46:50:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d" 
+2023/03/31 18:46:50:Debug: Cannot find ./plugins directory!
+2023/03/31 18:46:50:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d" 

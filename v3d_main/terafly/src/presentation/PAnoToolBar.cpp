@@ -377,7 +377,8 @@ void PAnoToolBar::buttonUndoClicked()
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
 	qDebug() << "-----------------terafly undo --------------";
         CViewer* expl = CViewer::getCurrent();
-        if(expl->getGLWidget()->TeraflyCommunicator)
+        //新增
+        if(expl->getGLWidget()->TeraflyCommunicator&&expl->getGLWidget()->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
         {
             expl->getGLWidget()->TeraflyCommunicator->UpdateUndoDeque();
         }else
@@ -397,7 +398,7 @@ void PAnoToolBar::buttonRedoClicked()
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
     qDebug()<<"flag huanglei";
     CViewer* expl = CViewer::getCurrent();
-    if(expl->getGLWidget()->TeraflyCommunicator)
+    if(expl->getGLWidget()->TeraflyCommunicator&&expl->getGLWidget()->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
     {
         qDebug()<<"redo 1";
         expl->getGLWidget()->TeraflyCommunicator->UpdateRedoDeque();

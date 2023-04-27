@@ -591,21 +591,22 @@ class terafly::PMain : public QWidget
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 public:
-		V3dR_Communicator * Communicator;
+        static V3dR_Communicator *Communicator;
         QMenu* collaborateMenu,*userMenu;
         QAction *loadAction,*configAction;
         QListWidget *userView;
         static UserInfo userinfo;
         static LoadManageWidget *managewidget;
-        static QNetworkAccessManager *accessmanager;
+//        static QNetworkAccessManager *accessmanager;
 public slots:
         void configApp();
         void LoadFromServer();
         void startCollaborate(QString ano,QString port);
         void ColLoadANO(QString ANOfile);
         void onMessageDisConnect();
+        void onMessageError(QAbstractSocket::SocketError);
         void updateuserview(QString userlist);
-
+        void handleExit();
 //        void startAutoTrace();//自动算法
 signals:
 

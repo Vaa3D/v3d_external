@@ -123,6 +123,7 @@ V3dR_GLWidget::~V3dR_GLWidget()
 
 	POST_CLOSE(mainwindow);
 	QCoreApplication::sendPostedEvents(0, 0); // process all blocked events
+    //TeraflyCommunicator->deleteLater();
 }
 
 V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, QString title)
@@ -1130,12 +1131,23 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 				Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
 				if (thisRenderer->selectMode == Renderer::smShowSubtree)
 				{
+                    V3dR_GLWidget* w = this;
 					My4DImage* curImg = 0;
 					if (this) curImg = v3dr_getImage4d(_idep);
 					if (thisRenderer->originalSegMap.empty()) return;
 
-					for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
-						curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
+                    for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+                        curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
+
+                    if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        vector<V_NeuronSWC> vector_VSWC;
+                        curImg->ExtractDeletingNode(vector_VSWC);
+
+                        w->SetupCollaborateInfo();
+                        for(auto seg:vector_VSWC)
+                            w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
+                    }
 
 					thisRenderer->escPressed_subtree();
 
@@ -1213,7 +1225,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }else if (IS_ALT_MODIFIER)
             {
 
-                callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
+                //callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else
             {
@@ -3703,6 +3715,7 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 			{
 				cout << "  --> assigned color(type) to highlighted neuron:" << pressedNumber << " " << endl;
 				My4DImage* curImg = 0;
+                V3dR_GLWidget* w = this;
 				if (this) curImg = v3dr_getImage4d(_idep);
 				if (thisRenderer->originalSegMap.empty()) return;
 
@@ -3716,6 +3729,15 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 					curImg->tracedNeuron.seg[*segIDit].row = thisRenderer->originalSegMap[*segIDit];
 					//}
 				}
+
+                if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+
+                    for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+                    {
+                        w->SetupCollaborateInfo();
+                        w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[*segIDit],pressedNumber,"TeraFly");
+                    }
+                }
 
 				curImg->update_3drenderer_neuron_view(this, thisRenderer);
 				curImg->proj_trace_history_append();
@@ -4211,37 +4233,6 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 //    }
 }
 
-void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
-{
-    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
-    LandmarkList markers=terafly::PluginInterface::getLandmark();
-
-    LocationSimple marker;
-    marker.x=markerXYZ.at(1).toFloat();
-    marker.y=markerXYZ.at(2).toFloat();
-    marker.z=markerXYZ.at(3).toFloat();
-
-    int index=-1;
-    double mindist=1;
-    for(int i=0;i<markers.size();i++)
-    {
-        double dist = sqrt(
-                    (markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
-                    (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
-                    (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z)
-                    );
-        if(dist<mindist)
-        {
-            mindist=dist;
-            index=i;
-        }
-    }
-    if(index>=0)
-        markers.removeAt(index);
-    else
-		qDebug()<<"Error:cannot find marker <1 " + markerPOS;
-   terafly::PluginInterface::setLandmark(markers,true);
-}
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
 {
     QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
@@ -4282,9 +4273,89 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
     marker.color.r = neuron_type_color[type][0];
     marker.color.g = neuron_type_color[type][1];
     marker.color.b = neuron_type_color[type][2];
+
+    for(auto it=markers.begin();it!=markers.end(); ++it)
+    {
+        if(it->color.r==marker.color.r&&it->color.g==marker.color.g&&it->color.b==marker.color.b
+            &&abs(it->x-marker.x)<1&&abs(it->y-marker.y)<1&&abs(it->z-marker.z)<1)
+        {
+            qDebug()<<"the marker has already existed";
+            return;
+        }
+    }
+
     markers.append(marker);
    L: terafly::PluginInterface::setLandmark(markers,true);
 }
+
+void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
+{
+    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+
+    LocationSimple marker;
+    marker.x=markerXYZ.at(1).toFloat();
+    marker.y=markerXYZ.at(2).toFloat();
+    marker.z=markerXYZ.at(3).toFloat();
+
+    int index=-1;
+    double mindist=1;
+    for(int i=0;i<markers.size();i++)
+    {
+        double dist = sqrt(
+            (markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
+            (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
+            (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z)
+            );
+        if(dist<mindist)
+        {
+            mindist=dist;
+            index=i;
+        }
+    }
+    if(index>=0)
+        markers.removeAt(index);
+    else
+        qDebug()<<"Error:cannot find marker <1 " + markerPOS;
+    terafly::PluginInterface::setLandmark(markers,true);
+}
+
+void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
+    QStringList markerInfo=markerPOS.split(" ",QString::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+
+    LocationSimple marker;
+
+    marker.x=markerInfo.at(3).toFloat();
+    marker.y=markerInfo.at(4).toFloat();
+    marker.z=markerInfo.at(5).toFloat();
+
+    int index=-1;
+    double mindist=1;
+    for(int i=0;i<markers.size();i++)
+    {
+        double dist = sqrt(
+            (markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
+            (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
+            (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z)
+            );
+        if(dist<mindist)
+        {
+            mindist=dist;
+            index=i;
+        }
+    }
+    if(index>=0)
+    {
+        markers[index].color.r=markerInfo.at(0).toUInt();
+        markers[index].color.g=markerInfo.at(1).toUInt();
+        markers[index].color.b=markerInfo.at(2).toUInt();
+    }
+    else
+        qDebug()<<"Error:cannot find marker <1 " + markerPOS;
+    terafly::PluginInterface::setLandmark(markers,true);
+}
+
 
 void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 {
@@ -4327,9 +4398,9 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo)
 //    }
 //    return newTempNT;
 //}
-void V3dR_GLWidget::CollretypeSeg(QString segInfo,int type)
+void V3dR_GLWidget::CollaRetypeSeg(QString segInfo,int type)
 {
-//    qDebug()<<"begin collretypeseg";
+    qDebug()<<"begin collretypeseg";
     if(segInfo.isEmpty()) return;
     QStringList delSegGlobalList=segInfo.split(",",QString::SkipEmptyParts);
     QVector<XYZ> coords;
@@ -4387,7 +4458,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 //    POST_updateGL();
     addCurveInAllSapce(segInfo);
 }
-void V3dR_GLWidget::CollconnectSeg(QString segInfo)
+void V3dR_GLWidget::CollaConnectSeg(QString segInfo)
 {
     addCurveInAllSapce(segInfo);
 }

@@ -1,4 +1,4 @@
-
+﻿
 /**
  * @file nstroke.cpp
  * @brief n-right-strokes curve drawing (refine)

@@ -1,0 +1,46 @@
+-IE:/AnaConda/Library/mkspecs/win32-msvc
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include
+-IE:/AnaConda/Library/demos/shared
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include/SDL
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include/glew
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include/openvr
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include/hdf5
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include/hdf5-win64
+-IE:/AnaConda/Library/demos/shared
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/basic_c_fun
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/3drenderer
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/basic_c_fun/customary_structs
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/iomanager
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/imagemanager
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/stitcher
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/utils/volumeconverter
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/volumemanager
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/crossmips
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/3rdparty/tinyxml
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/terarepo/src/common
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/control
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/terafly/src/presentation
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/mozak/m_terafly/src/control
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/mozak/m_terafly/src/presentation
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/basic_c_fun/include
+-ID:/source/C++ project/Vaa3d/v3d_external/v3d_main/common_lib/include
+-ID:/libs/C++ libs/boost_1_61_0
+-IE:/AnaConda/Library/include/qt
+-IE:/AnaConda/Library/include/qt/QtOpenGL
+-IE:/AnaConda/Library/include/qt/QtSvg
+-IE:/AnaConda/Library/include/qt/QtWidgets
+-IE:/AnaConda/Library/include/qt/QtGui
+-IE:/AnaConda/Library/include/qt/QtANGLE
+-IE:/AnaConda/Library/include/qt/QtNetwork
+-IE:/AnaConda/Library/include/qt/QtXml
+-IE:/AnaConda/Library/include/qt/QtCore
+-IE:\VS2013\VC\INCLUDE
+-IE:\VS2013\VC\ATLMFC\INCLUDE
+-IC:\Program Files (x86)\Windows Kits\8.1\include\shared
+-IC:\Program Files (x86)\Windows Kits\8.1\include\um
+-IC:\Program Files (x86)\Windows Kits\8.1\include\winrt

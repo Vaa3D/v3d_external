@@ -68,10 +68,19 @@ public:
     void UpdateDelMarkerSeg(float x,float y,float z,QString clienttype);
     void UpdateDelMarkerSeg(QString TVdelMarkerMSG);
     /**
+     * @brief UpdateSendDelMarkerInfo
+     * @param x
+     * @param y
+     * @param z
+     * @param color
+     * 发送改marker颜色
+     */
+    void UpdateRetypeMarkerMsg(float x, float y, float z, RGBA8 color, QString clienttype);
+    /**
      * @brief Updateretype
      * @param seg
      * @param type
-     * 发送改颜色
+     * 发送改seg颜色
      */
     void UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clienttype);
     void UpdateRetypeSegMsg(QString TVretypeSegMSG);
@@ -104,6 +113,13 @@ public slots:
      */
     void TFProcess(QString msg,bool flag_init=0);
     /**
+     * @brief processWarnMsg
+     * @param msg
+     * @param flag_init
+     * 警告处理函数
+     */
+    void processWarnMsg(QString msg, bool flag_init=0);
+    /**
      * @brief onReadyRead
      * 读取输入，并执行相关处理
      */
@@ -113,6 +129,19 @@ public slots:
      * 发送用户登陆消息
      */
     void onConnected();
+    /**
+     * @brief autoReconnect
+     * 自动重连
+     */
+    void autoReconnect();
+    /**
+     * @brief initConnect
+     * 初始连接
+     */
+    void initConnect();
+    void autoExit();
+    void resetWarnMulBifurcationFlag();
+    void resetWarnLoopFlag();
 //    /**
 //     * @brief onDisconnected
 //     * 服务器断开
@@ -125,15 +154,19 @@ signals:
     void load(QString);
     //msg process
     void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
+    void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
 
     void addSeg(QString);//加线信号 （type x y z;type x y z;...）
     void delSeg(QString);//减线信号 （type x y z;type x y z;...）
     void addMarker(QString);//加marker信号 (type x y z)
     void delMarker(QString);//减marker信号 (type x y z)
+    void retypeMarker(QString);//改marker颜色信号(r,g,b,x,y,z)
     void retypeSeg(QString,int);//改线的颜色信号（type x y z;type x y z;...）
     void connectSeg(QString);
     void updateuserview(QString);
     //msg process end
+
+    void exit();
 public:
     void emitAddSeg(QString segInfo) {emit addSeg(segInfo);}
     void emitDelSeg(QString segInfo) {emit delSeg(segInfo);}
@@ -141,6 +174,9 @@ public:
     void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
     void emitRetypeSeg(QString segInfo,int type) {emit retypeSeg(segInfo,type);}
     void emitConnectSeg(QString segInfo){emit connectSeg(segInfo);}
+    void setAddressIP(QString addressIp);
+    void setPort(uint port);
+    void resetdatatype();
 private:
     /**
      * @brief processReaded
@@ -161,8 +197,23 @@ private:
 
 public:
 //	float VR_globalScale;//used to
-    QString userName;//
-    QTcpSocket* socket;//
+    static QString userName;//
+    QString m_strAddressIP;
+    uint m_iPort;
+    static QTcpSocket* socket;//
+    //连接状态
+    bool b_isConnectedState;
+    bool b_isWarnMulBifurcationHandled;
+    bool b_isWarnLoopHandled;
+    //重连定时器
+    QTimer *m_timerConnect;
+    //初始化连接定时器
+    QTimer *timer_iniconn;
+    QTimer *timer_exit;
+
+    int initConnectCnt;
+    int reconnectCnt;
+
     double cur_createmode;
     int cur_chno;
 
@@ -183,8 +234,7 @@ public:
     std::deque<QString> redoDeque;
 private:
     DataType datatype;
-    void resetdatatype();
-    const int dequeszie=10;
+    const int dequeszie=15;
 
 
 //    int receiveCNT=0;

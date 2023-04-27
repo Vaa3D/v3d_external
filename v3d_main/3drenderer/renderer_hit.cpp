@@ -894,6 +894,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     RGBA8 cc = listMarker.at(names[2]-1).color;
                     LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
                     s->color = cc;
+                    if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        w->SetupCollaborateInfo();
+                        w->TeraflyCommunicator->UpdateRetypeMarkerMsg(s->x,s->y,s->z,s->color,"TeraFly");
+                    }
                 }
             }
         }
@@ -2279,7 +2284,10 @@ void Renderer_gl1::endSelectMode()
     // @ADDED by Alessandro on 2015-05-23. Called when the operation is finalized (i.e. "Esc" key is pressed) and
     // neuron segments have to be deleted also from the underlying tracedNeuron structure (and not only from the display)
     if(selectMode == smDeleteMultiNeurons)
+    {
         deleteMultiNeuronsByStrokeCommit();
+//        callStrokeDeleteMultiNeurons();
+    }
 
 //    if(selectMode == smBreakMultiNeurons)
 //        breakMultiNeuronsByStrokeCommit();
@@ -2372,6 +2380,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             // 2015-05-06. @ADDED by Alessandro. Just enabled an already existing function developed by ZJL, 20120806
             else if (selectMode == smDeleteMultiNeurons)
             {
+//                qDebug()<<"lllllllllllllllllll";
 //                qDebug()<<"000000000-0000007";
                 deleteMultiNeuronsByStroke();
 				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -2384,7 +2393,10 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 //                    vector<XYZ> DeleteNodes = curImg->ExtractDeletingNode(vector_VSWC);
 //                    w->TeraflyCommunicator->pushVSWCundoStack(vector_VSWC);
 //                    w->TeraflyCommunicator->UpdateDeleteMsg(DeleteNodes);
-                    w->getRenderer()->endSelectMode();                }
+//                    qDebug()<<"llllllllllllllll";
+//                    w->getRenderer()->endSelectMode();
+                    deleteMultiNeuronsByStrokeCommit();
+                }
 //                qDebug()<<"000000000-0000008";
             }
             else if (selectMode == smRetypeMultiNeurons)
@@ -4261,7 +4273,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 		S.z = pt.z;
 		if (V3Dmainwindow)
 			S.radius = V3Dmainwindow->global_setting.default_marker_radius;
-		S.on = true;
+        S.on = true;
         qDebug()<<"Marker:"<<S.x<<","<<S.y<<","<<S.z<<","<<S.color.r<<","<<S.color.g<<","<<S.color.b;
 		listLoc.append(S);
 
@@ -4270,6 +4282,8 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
             w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,int(currentTraceType),"TeraFly");
         }
+
+        updateLandmark();
     }
 #else
 
@@ -4383,6 +4397,7 @@ void Renderer_gl1::addSpecialMarker(XYZ &loc)
         updateLandmark();
     }
 }//add special marker, by XZ, 20190720
+
 void Renderer_gl1::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC, 090120
 {
 	XYZ pt(loc.x+1, loc.y+1, loc.z+1); // 090505 RZC : marker position is 1-based

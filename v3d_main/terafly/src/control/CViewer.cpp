@@ -1833,13 +1833,23 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
                     {
                         deletedMarkers.push_back(*jt);
                         jt = vaa3dMarkers.erase(jt);
+
+                        if(view3DWidget->TeraflyCommunicator!=nullptr
+                            &&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+                        {
+                            view3DWidget->SetupCollaborateInfo();
+                            view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(it->x,it->y,it->z,"TeraFly");
+                        }
+
                         break;
                     }
                     else
                         ++jt;
                 }
+
                 it->selected = false;
             }
+
         }
 
         // set new markers

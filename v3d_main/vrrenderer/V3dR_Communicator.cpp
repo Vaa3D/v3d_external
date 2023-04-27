@@ -12,18 +12,23 @@
 //指令内部:指令头+数据体，使用','
 //每个点使用‘’
 
-V3dR_Communicator::V3dR_Communicator(QObject *partent):QObject(partent)
+QTcpSocket* V3dR_Communicator::socket=0;
+QString V3dR_Communicator::userName="";
+V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false), b_isWarnMulBifurcationHandled(false), b_isWarnLoopHandled(false), reconnectCnt(0), initConnectCnt(0), QObject(partent)
 {
 	CreatorMarkerPos = 0;
 	CreatorMarkerRes = 0;
 	userName="";
+    qDebug()<<"userName=\"\"";
 
-    socket = new QTcpSocket(this);
+//    socket = new QTcpSocket(this);
     resetdatatype();
-    connect(socket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
-    connect(this->socket,SIGNAL(connected()),this,SLOT(onConnected()));
+    connect(this,SIGNAL(msgtowarn(QString)),this,SLOT(processWarnMsg(QString)));
 //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
+    m_timerConnect = new QTimer(this);
+    timer_iniconn=new QTimer(this);
+    timer_exit=new QTimer(this);
 }
 
 void V3dR_Communicator::onReadyRead()
@@ -64,6 +69,7 @@ void V3dR_Communicator::onReadyRead()
                     preprocessmsgs(QString(data).trimmed().split(';',QString::SkipEmptyParts));
                     resetdatatype();
                     delete [] data;
+
                 }else{
                     qDebug()<<"socket->bytesAvailable<datatype datasize"<<"datatype.datasize "<<datatype.datasize;
                     break;
@@ -78,6 +84,10 @@ void V3dR_Communicator::onReadyRead()
                 // std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<(++receivedcnt)<<" receive from "<<username.toStdString()<<" :"<<data<<std::endl;
                 //只会接收刚开始协作时同步的文件，开始加载同步数据由服务器发出消息通知
                 char *filedata=new char[datatype.filesize];
+                QDir dir(QCoreApplication::applicationDirPath()+"/loaddata");
+                if(!dir.exists()){
+                    dir.mkdir(QCoreApplication::applicationDirPath()+"/loaddata");
+                }
                 QFile f(QCoreApplication::applicationDirPath()+"/loaddata/"+data);
                 socket->read(filedata,datatype.filesize);
                 if(f.open(QIODevice::WriteOnly)){
@@ -103,6 +113,10 @@ void V3dR_Communicator::sendMsg(QString msg)
     socket->write(header.c_str(),header.size());
     socket->write(data.c_str(),data.size());
     socket->flush();
+    if(timer_exit->isActive()){
+        timer_exit->stop();
+    }
+    timer_exit->start(2*60*60*1000);
 }
 
 void V3dR_Communicator::preprocessmsgs(QStringList list)
@@ -113,6 +127,7 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     qDebug()<<"begin to preprocessmsgs";
 
     QRegExp usersRex("^/activeusers:(.*)$");
+    QRegExp warnRex("^/WARN_(.*)$");
     for(auto &msg:list)
     {
         qDebug()<<"OnRead:"<<msg;
@@ -121,9 +136,56 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
         }else if(usersRex.indexIn(msg) != -1){
             emit updateuserview(usersRex.cap(1));
-        }else{
+        }else if(warnRex.indexIn(msg) != -1){
+            emit msgtowarn(msg);
+        }
+        else{
             emit msgtoprocess(msg);
         }
+    }
+}
+
+void V3dR_Communicator::processWarnMsg(QString line,bool flag_init){
+    QRegExp warnreg("/WARN_(.*):(.*)");
+    line=line.trimmed();
+    if(warnreg.indexIn(line)!=-1)
+    {
+        QString reason=warnreg.cap(1).trimmed();
+        QString operatorMsg=warnreg.cap(2).trimmed();
+
+//        if(reason=="MulBifurcation"&&!b_isWarnMulBifurcationHandled)
+//        {
+//            QMessageBox::warning(0,tr("Warning "),
+//                                     tr("Multiple bifurcation exists! Notice the brown markers."),
+//                                     QMessageBox::Ok);
+//            b_isWarnMulBifurcationHandled=true;
+//            QTimer::singleShot(30*1000,this,SLOT(resetWarnMulBifurcationFlag()));
+//        }
+
+//        if(reason=="Loop"&&!b_isWarnLoopHandled)
+//        {
+//            QMessageBox::warning(0,tr("Warning "),
+//                                     tr("Loop exists! Notice the black markers."),
+//                                     QMessageBox::Ok);
+//            b_isWarnLoopHandled=true;
+//            QTimer::singleShot(30*1000,this,SLOT(resetWarnLoopFlag()));
+//        }
+
+        QString msg = operatorMsg;
+        QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+        if(listwithheader.size()<1)
+        {
+            qDebug()<<"msg only contains header:"<<msg;
+            return;
+        }
+        bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+        QString sender=listwithheader[0].split(" ").at(1).trimmed();
+        if (sender=="server" && isTeraFly)
+        {
+            qDebug() << "sender:" << sender;
+            emit addMarker(listwithheader[1]);
+        }
+
     }
 }
 
@@ -210,7 +272,25 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             {
                 emit delMarker(listwithheader[1]);
             }
-        }else if(operationtype == "retypeline")
+        }else if(operationtype == "retypemarker")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
+            if (user == userName && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                emit retypeMarker(listwithheader[1]);
+            }
+        }
+        else if(operationtype == "retypeline")
         {
             QString msg =operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
@@ -327,6 +407,22 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
 
     }
 }
+
+void V3dR_Communicator::UpdateRetypeMarkerMsg(float X,float Y,float Z, RGBA8 color, QString clienttype)
+{
+    if(clienttype=="TeraFly")
+    {
+
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+
+        XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+        sendMsg(QString("/retypemarker_norm:"+result.join(",")));
+
+    }
+}
+
 void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clienttype)
 {
     if(clienttype=="TeraFly")
@@ -392,6 +488,7 @@ void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
 {
     this->sendMsg("/retypeline_norm:"+TVretypeSegMSG);
 }
+
 void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype)
 {
     UpdateDelSegMsg(seg,clienttype);
@@ -471,10 +568,125 @@ void V3dR_Communicator::UpdateRedoDeque()
     }
 }
 
+void V3dR_Communicator::setAddressIP(QString addressIp){
+    m_strAddressIP=addressIp;
+}
+
+void V3dR_Communicator::setPort(uint port){
+    m_iPort=port;
+}
+
 void V3dR_Communicator::onConnected() {
+    qDebug()<<userName;
     qDebug()<<"Message onConnected";
+    b_isConnectedState=true;
+    m_timerConnect->stop();
+    reconnectCnt=0;
     //发送用户ID和设备类型 0 桌面设备，可查看全脑，需要发送全脑图像
     sendMsg(QString("/login:%1 %2").arg(userName).arg(0));
+    QMessageBox::information(0,tr("Message "),
+                             tr("Connect success! Ready to start collaborating"),
+                             QMessageBox::Ok);
+//    if(timer_exit->isActive())
+//        timer_exit->stop();
+//    timer_exit->start(30*1000);
+}
+
+void V3dR_Communicator::initConnect(){
+    qDebug()<<"enter initConnect";
+    if(b_isConnectedState)
+    {
+        timer_iniconn->stop();
+        return;
+    }
+
+    if(socket->state() != QAbstractSocket::UnconnectedState)
+        return;
+    // 未连接时，每隔五秒自动向指定服务器发送连接请求
+    if(socket->state() == QAbstractSocket::UnconnectedState)
+    {
+        initConnectCnt++;
+        if(initConnectCnt>=6){
+            QMessageBox::information(0,tr("Message "),
+                                     tr("Connect failed. Please Restart Vaa3d"),
+                                     QMessageBox::Ok);
+
+            qDebug() <<"Connect failed."<<socket->errorString();
+            emit exit();
+            timer_iniconn->stop();
+        }
+        qDebug()<<"initconnect state:"<<socket->state();
+        socket->abort();
+        socket->connectToHost(m_strAddressIP, m_iPort);
+    }
+
+    // 连接成功后关闭初始化连接定时器，后面的断线重连与此无关
+    else if(socket->state() == QAbstractSocket::ConnectedState)
+    {
+        timer_iniconn->stop();
+    }
+
+}
+
+void V3dR_Communicator::autoReconnect(){
+    if(b_isConnectedState)
+        return;
+
+    if(socket->state() != QAbstractSocket::UnconnectedState)
+        return;
+
+    reconnectCnt++;
+    if(reconnectCnt>=6){
+        QMessageBox::information(0,tr("Message "),
+                                 tr("Reconnect failed. Please Restart Vaa3d"),
+                                 QMessageBox::Ok);
+
+        qDebug() <<"Reconnect failed."<<socket->errorString();
+        emit exit();
+        m_timerConnect->stop();
+    }
+    qDebug()<<"reconnect state:"<<socket->state();
+    socket->abort();
+    socket->connectToHost(m_strAddressIP, m_iPort);
+//    if(!socket->waitForConnected(1000*5))
+//    {
+//        QMessageBox::information(0,tr("Message "),
+//                                 tr(QString("Reconnect failed %1").arg(reconnectCnt).toStdString().c_str()),
+//                                 QMessageBox::Ok);
+
+//        qDebug() <<"reconnect failed!"<<socket->errorString();
+//        if(reconnectCnt>=5){
+//            QMessageBox::information(0,tr("Message "),
+//                                     tr("Too many reconnection failures. Please Restart Vaa3d"),
+//                                     QMessageBox::Ok);
+
+//            qDebug() <<"Too many reconnection failures!"<<socket->errorString();
+//            emit exit();
+//            m_timerConnect->stop();
+//        }
+//    }
+
+
+}
+
+void V3dR_Communicator::autoExit(){
+    qDebug()<<"enter autoExit";
+    qDebug()<<this->socket;
+    if(!this->socket)
+        return;
+    this->socket->disconnectFromHost();
+    QMessageBox::information(0,tr("Message "),
+                             tr("Long time no operation, please try to reload the anofile!"),
+                             QMessageBox::Ok);
+    timer_exit->stop();
+}
+
+void V3dR_Communicator::resetWarnMulBifurcationFlag(){
+    b_isWarnMulBifurcationHandled=false;
+}
+
+void V3dR_Communicator::resetWarnLoopFlag(){
+    b_isWarnLoopHandled=false;
 }
 
 QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)

@@ -92,7 +92,8 @@ string PMain::HTquickscan = "<i>QuickScan</i>: a scrollable maximum-intensity-pr
 PMain* PMain::uniqueInstance = 0;
 
 LoadManageWidget* PMain::managewidget=0;
-QNetworkAccessManager* PMain::accessmanager=0;
+V3dR_Communicator* PMain::Communicator=0;
+//QNetworkAccessManager* PMain::accessmanager=0;
 UserInfo PMain::userinfo;
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
 {
@@ -244,14 +245,19 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 #ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
     collaborateMenu=menuBar->addMenu("Collaborate");
+    configAction=new QAction("Config",collaborateMenu);
+    collaborateMenu->addAction(configAction);
+    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
+
     loadAction=new QAction("Load Ano From Server",collaborateMenu);
     collaborateMenu->addAction(loadAction);
     connect(loadAction,SIGNAL(triggered()),this,SLOT(LoadFromServer()));
 
-    userMenu=collaborateMenu->addMenu("Option");
-    configAction=new QAction("Config",userMenu);
-    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
-    userMenu->addAction(configAction);
+//    userMenu=collaborateMenu->addMenu("Option");
+//    configAction=new QAction("Config",userMenu);
+//    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
+
+//    userMenu->addAction(configAction);
     Communicator=nullptr;
     userView=nullptr;
 
@@ -3961,26 +3967,31 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
+    QString HostAddress="http://114.117.165.134:26000/dynamic";
+    QString HostIp="114.117.165.134";
     bool ok;
-    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,settings.value("HostAddress").toString(), &ok);
-    if(ok&&!HostAddress.isEmpty())
-        settings.setValue("HostAddress", HostAddress);
+//    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,settings.value("HostAddress").toString(), &ok);
+//    if(ok&&!HostAddress.isEmpty())
+//        settings.setValue("HostAddress", HostAddress);
 
-    auto HostIP = QInputDialog::getText(0, "IP","Please enter the HostIP:", QLineEdit::Normal,settings.value("HostIP").toString(), &ok);
-    if(ok&&!HostAddress.isEmpty())
-        settings.setValue("HostIP", HostIP);
+//    auto HostIP = QInputDialog::getText(0, "IP","Please enter the HostIP:", QLineEdit::Normal,settings.value("HostIP").toString(), &ok);
+//    if(ok&&!HostAddress.isEmpty())
+//        settings.setValue("HostIP", HostIP);
+
+    settings.setValue("HostAddress", HostAddress);
+    settings.setValue("HostIP", HostIp);
 
     auto UserName = QInputDialog::getText(0, "UserName","Please enter the UserName:", QLineEdit::Normal,settings.value("UserName").toString(), &ok);
-    if(ok&&!HostAddress.isEmpty())
+    if(ok)
         settings.setValue("UserName", UserName);
 
     auto UserPasswd = QInputDialog::getText(0, "UserPasswd","Please enter the UserPasswd:", QLineEdit::Normal,settings.value("UserPasswd").toString(), &ok);
-    if(ok&&!HostAddress.isEmpty())
+    if(ok)
         settings.setValue("UserPasswd", UserPasswd);
 
-    auto UserID = QInputDialog::getText(0,"ID","Please enter the UserID:", QLineEdit::Normal,settings.value("UserID").toString(), &ok);
-    if(ok&&!HostAddress.isEmpty())
-        settings.setValue("UserID", UserID);
+//    auto UserID = QInputDialog::getText(0,"ID","Please enter the UserID:", QLineEdit::Normal,settings.value("UserID").toString(), &ok);
+//    if(ok&&!HostAddress.isEmpty())
+//        settings.setValue("UserID", UserID);
 }
 
 void PMain::LoadFromServer()
@@ -3997,15 +4008,38 @@ void PMain::LoadFromServer()
     userinfo.colorid = settings.value("UserID").toInt();
     LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
 
-    if(!accessmanager)
-        accessmanager=new QNetworkAccessManager(this);
+    qDebug()<<"10";
     if(managewidget){
+        qDebug()<<"delete managewidget";
         delete managewidget;
         managewidget=0;
     }
 
+//    if(accessmanager){
+//        accessmanager->deleteLater();
+//    }
+    qDebug()<<"11";
+//    accessmanager=new QNetworkAccessManager(this);
+//    qDebug()<<accessmanager;
+//    if(accessmanager){
+//        qDebug()<<accessmanager;
+//        qDebug()<<"delete accessmanager";
+//        accessmanager->deleteLater();
+//        accessmanager=0;
+//    }
+
+//    if(!accessmanager)
+//    {
+//        qDebug()<<"构造accessmanager";
+//        accessmanager=new QNetworkAccessManager(this);
+//        accessmanager->activeConfiguration();
+//    }
+//    if(!managewidget){
+//        managewidget=new LoadManageWidget(accessmanager,&userinfo);
+//    }
+    qDebug()<<"12";
     //更新一下用户信息
-    managewidget=new LoadManageWidget(accessmanager,&userinfo);
+    managewidget=new LoadManageWidget(&userinfo);
     connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(
                 startCollaborate(QString,QString)));
     managewidget->show();
@@ -4014,8 +4048,43 @@ void PMain::LoadFromServer()
 
 void PMain::startCollaborate(QString ano,QString port)
 {
+    qDebug()<<"enter startCollaborate========================================";
     managewidget->hide();
-    Communicator = new V3dR_Communicator;
+//    if(this->Communicator){
+//        qDebug()<<this->Communicator;
+//        qDebug()<<"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
+//        this->Communicator->socket->deleteLater();
+//        this->Communicator ->deleteLater();
+//    }
+
+//    Communicator = new V3dR_Communicator;
+    qDebug()<<Communicator;
+    if(!Communicator)
+    {
+        Communicator=new V3dR_Communicator();
+    }
+    else{
+        Communicator->CreatorMarkerPos = 0;
+        Communicator->CreatorMarkerRes = 0;
+        Communicator->resetdatatype();
+        qDebug()<<"1111111111111111";
+        qDebug()<<"22222222222222222222";
+//        Communicator->socket = new QTcpSocket(Communicator);
+        qDebug()<<"333333333333333333333";
+    }
+
+    connect(Communicator->timer_iniconn, SIGNAL(timeout()), Communicator, SLOT(initConnect()));//初始化客户端未获得连接时，每五秒自动连接一次
+    connect(Communicator->m_timerConnect, SIGNAL(timeout()), Communicator, SLOT(autoReconnect()));
+    connect(Communicator->timer_exit, SIGNAL(timeout()), Communicator, SLOT(autoExit()));
+    qDebug()<<Communicator;
+
+    if(Communicator->socket){
+        qDebug()<<"0000000000";
+        delete Communicator->socket;
+        Communicator->socket=0;
+    }
+    qDebug()<<"44444444444444444444444";
+    Communicator->socket=new QTcpSocket();
 
     int maxresindex = terafly::CImport::instance()->getResolutions()-1;
     IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
@@ -4025,11 +4094,13 @@ void PMain::startCollaborate(QString ano,QString port)
     collaborationVRView->setEnabled(true);
     collautotrace->setEnabled(false);
 
+    //为什么要用Qt::DirectConnection
+    // load信号会在接收到服务器传来的startCollaborate消息后触发
     connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)),Qt::DirectConnection);
     terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userName=QString::number(userinfo.id);
-
+    qDebug()<<Communicator->userName;
 //    Renderer_gl1* render = (Renderer_gl1*)cur_win->view3DWidget->getRenderer();
 //    render->userColorid = userinfo.colorid;
 //    qDebug()<<"userColorId" <<render->userColorid;
@@ -4046,31 +4117,49 @@ void PMain::startCollaborate(QString ano,QString port)
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
             cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
 
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeMarker(QString)),
+            cur_win->getGLWidget(),SLOT(CollaRetypeMarker(QString)));
+
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
-            cur_win->getGLWidget(),SLOT(CollretypeSeg(QString,int)));
+            cur_win->getGLWidget(),SLOT(CollaRetypeSeg(QString,int)));
 
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(connectSeg(QString)),
-            cur_win->getGLWidget(),SLOT(CollconnectSeg(QString)));
+            cur_win->getGLWidget(),SLOT(CollaConnectSeg(QString)));
+
+    connect(Communicator->socket,SIGNAL(readyRead()),Communicator,SLOT(onReadyRead()));
+    connect(Communicator->socket,SIGNAL(connected()),Communicator,SLOT(onConnected()));
 
     connect(Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
+    connect(Communicator->socket,SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onMessageError(QAbstractSocket::SocketError)));
+    connect(Communicator,SIGNAL(exit()), this, SLOT(handleExit()));
+
     connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
     QSettings settings("HHMI", "Vaa3D");
+    Communicator->setAddressIP(settings.value("HostIP").toString());
+    Communicator->setPort(port.toUInt());
 
+    qDebug()<<"5555555555555555555";
+    //Communicator->socket->abort();
+
+    qDebug()<<Communicator->userName;
     Communicator->socket->connectToHost(settings.value("HostIP").toString(),port.toUInt());
     qDebug() << "---------" << settings.value("HostIP").toString() << " " << port.toUInt() << "\n";
+//    Communicator->timer_iniconn->start(5000);
 
-    if(!Communicator->socket->waitForConnected(1000*20))
+    if(!Communicator->socket->waitForConnected(1000*5))
     {
         QMessageBox::information(0,tr("Message "),
                          tr("connect failed"),
                          QMessageBox::Ok);
-
-        qDebug() <<"commnicator.error"<<Communicator->socket->errorString();
+        this->Communicator->socket->deleteLater();
+        this->Communicator->socket=nullptr;
         Communicator->deleteLater();
         Communicator=nullptr;
         return;
     }
 }
+
+//这个函数需要服务器那边文件发送完再执行，或者做相应处理
 void PMain::ColLoadANO(QString ANOfile)
 {
     qDebug()<<"ColoadAno_anofile"<<ANOfile;
@@ -4081,10 +4170,24 @@ void PMain::ColLoadANO(QString ANOfile)
     if(!anoList.contains(ANOfile))
     {
         qDebug()<<"cannot find load data "<<ANOfile;
+        // 做一些处理？
+        QMessageBox::information(0,tr("Warning "),
+                                 tr("Cannot find anofile!"),
+                                 QMessageBox::Ok);
         return;
     }
     QString ANOpath=QCoreApplication::applicationDirPath()+"/loaddata/"+ANOfile;
     qDebug()<<"anopath"<<ANOpath;
+
+    //新增
+//    QFileInfo fileInfo = QFileInfo(ANOpath);
+//    int interval = fileInfo.lastModified().msecsTo(QDateTime::currentDateTime());
+//    if(interval > 1000*60*1)
+//    {
+//        qDebug()<<"file data error"<<ANOfile;
+//        // 做一些处理？
+//        return;
+//    }
 
     CAnnotations::getInstance()->load(ANOpath.toStdString().c_str());
 
@@ -4140,6 +4243,7 @@ void PMain::ColLoadANO(QString ANOfile)
         //        f=0;
     }
     V3dR_GLWidget::noTerafly=false;
+    return;
 
 }
 void PMain::updateuserview(QString userlist)
@@ -4157,14 +4261,112 @@ void PMain::updateuserview(QString userlist)
 
 void PMain::onMessageDisConnect()
 {
-    this->Communicator->socket->deleteLater();
-    this->Communicator ->deleteLater();
-    this->Communicator = nullptr;
-    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
-    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
-    QMessageBox::information(0,tr("Message "),
-                     tr("Data unloaded.Further operations won't be synced!"),
-                     QMessageBox::Ok);
+    qDebug() <<"Disconnection!";
+    if(Communicator->socket)
+        qDebug()<<Communicator->socket->errorString();
+
+//    QMessageBox::information(0,tr("Message "),
+//                             tr("Server rejected connect! Further operations won't be synced!"),
+//                             QMessageBox::Ok);
+//    if(this->Communicator->m_timerConnect->isActive()){
+//        return;
+//    }
+
+//    else{
+    qDebug()<<this->Communicator->socket;
+    if(this->Communicator->socket)
+    {
+        qDebug()<<this->Communicator->socket;
+        this->Communicator->socket->deleteLater();
+        this->Communicator->socket=0;
+    }
+    //    this->Communicator ->deleteLater();
+    //    this->Communicator = nullptr;
+    //    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    //    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+
+    if(userView)
+    {
+        userView->deleteLater();
+        userView=nullptr;
+    }
+
+//  this->Communicator->b_isConnectedState = false;
+//  this->Communicator->m_timerConnect->start(5000);
+
+
+//    this->Communicator->socket->deleteLater();
+//    this->Communicator ->deleteLater();
+//    this->Communicator = nullptr;
+//    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+//    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+
+//    if(userView)
+//    {
+//        userView->deleteLater();
+//        userView=nullptr;
+//    }
+}
+
+void PMain::onMessageError(QAbstractSocket::SocketError socketError)
+{
+    qDebug() <<"Error!";
+    if(Communicator->socket)
+        qDebug()<<Communicator->socket->errorString();
+
+    const QMetaObject & mo = QAbstractSocket::staticMetaObject;
+    QMetaEnum me = mo.enumerator(mo.indexOfEnumerator("SocketError"));
+    qDebug()<<me.valueToKey(socketError);
+
+    this->Communicator->b_isConnectedState = false;
+//    this->Communicator->m_timerConnect->start(5000);
+//    if(me.valueToKey(socketError)=="SocketTimeoutError"){
+//        QMessageBox::information(0,tr("Message "),
+//                                 tr("Disconnection! Further operations won't be synced! Reconnect will start"),
+//                                 QMessageBox::Ok);
+//        this->Communicator->m_timerConnect->start(5000);
+//    }
+//    else if(me.valueToKey(socketError)=="RemoteHostClosedError"){
+//        QMessageBox::information(0,tr("Message "),
+//                             tr("Disconnection! Further operations won't be synced! Please restart the software."),
+//                             QMessageBox::Ok);
+//    }else{
+//        QMessageBox::information(0,tr("Message "),
+//                                 tr("Connect failed!"),
+//                                 QMessageBox::Ok);
+//    }
+     QMessageBox::information(0,tr("Message "),
+                                tr("Disconnection! Further operations won't be synced! Please restart the software."),
+                                QMessageBox::Ok);
+
+//    this->Communicator->socket->deleteLater();
+//    this->Communicator ->deleteLater();
+//    this->Communicator = nullptr;
+//    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+//    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+//    QMessageBox::information(0,tr("Message "),
+//                             tr("Error! Further operations won't be synced!"),
+//                             QMessageBox::Ok);
+//    if(userView)
+//    {
+//        userView->deleteLater();
+//        userView=nullptr;
+//    }
+}
+
+void PMain::handleExit(){
+    qDebug()<<this->Communicator->socket;
+    if(this->Communicator->socket)
+    {
+        this->Communicator->socket->deleteLater();
+        this->Communicator->socket=0;
+
+    }
+//    this->Communicator ->deleteLater();
+//    this->Communicator = nullptr;
+//    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+//    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+
     if(userView)
     {
         userView->deleteLater();

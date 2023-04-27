@@ -12,6 +12,8 @@ message(CONFIG=$$unique(CONFIG))
 
 CONFIG += warn_off  # should turn off later to view all warning during compilation
 CONFIG += CONSOLE   # make a console application instead of a windows GUI only application
+CONFIG += warn_on debug console
+CONFIG+=debug
 
 QMAKE_CXXFLAGS += /MP
 QMAKE_LFLAGS   += /STACK:104857600
@@ -130,3 +132,10 @@ win32 {
     LIBS = $$unique(LIBS)
 }
 
+
+win32:CONFIG(release, debug|release): LIBS += -LC:/local/boost_1_61_0/lib64-msvc-12.0/ -llibboost_regex-vc120-mt-1_61
+else:win32:CONFIG(debug, debug|release): LIBS += -LC:/local/boost_1_61_0/lib64-msvc-12.0/ -llibboost_regex-vc120-mt-1_61d
+else:unix: LIBS += -LC:/local/boost_1_61_0/lib64-msvc-12.0/ -llibboost_regex-vc120-mt-1_61
+
+INCLUDEPATH += C:/local/boost_1_61_0/lib64-msvc-12.0
+DEPENDPATH += C:/local/boost_1_61_0/lib64-msvc-12.0

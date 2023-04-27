@@ -1,0 +1,498 @@
+﻿生成启动时间为 2023/4/13 22:56:28。
+     1>项目“D:\source\C++ project\Vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj”在节点 2 上(Build 个目标)。
+     1>Link:
+         E:\VS2013\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"debug\\vaa3d_msvc.exe" /NOLOGO /LIBPATH:e:\Qt4\4.8.6\demos\shared\release /LIBPATH:e:\Qt4\4.8.6\lib /LIBPATH:E:/Qt4/4.8.6/demos/shared /LIBPATH:E:/Qt4/4.8.6/demos/shared/release /LIBPATH:"C:\Program Files\Microsoft Visual Studio 9.0\VC\lib" /LIBPATH:"C:\Program Files\Microsoft SDKs\Windows\v6.0A\\Lib\x64" /LIBPATH:..\common_lib\winlib64 /LIBPATH:"C:/local/boost_1_61_0/lib64-msvc-12.0/" glu32.lib opengl32.lib gdi32.lib user32.lib e:\Qt4\4.8.6\demos\shared\release\demo_shared.lib ..\common_lib\winlib64\libtiff.lib ..\common_lib\winlib64\teem.lib ..\common_lib\winlib64\libnewmat.lib ..\common_lib\winlib64\libjba.lib ..\common_lib\winlib64\libFL_cellseg.lib ..\common_lib\winlib64\libFL_brainseg.lib ..\common_lib\winlib64\openvr_api.lib ..\common_lib\winlib64\glew32.lib ..\common_lib\winlib64\SDL2.lib ..\common_lib\winlib64\SDL2main.lib ..\common_lib\winlib64\libhdf5.lib ..\common_lib\winlib64\libszip.lib ..\common_lib\winlib64\libzlib.lib ..\common_lib\winlib64\qjson.lib "C:/local/boost_1_61_0/lib64-msvc-12.0/\libboost_regex-vc120-mt-1_61.lib" e:\Qt4\4.8.6\lib\QtSvgd4.lib e:\Qt4\4.8.6\lib\QtXmld4.lib e:\Qt4\4.8.6\lib\QtOpenGLd4.lib e:\Qt4\4.8.6\lib\QtGuid4.lib e:\Qt4\4.8.6\lib\QtNetworkd4.lib e:\Qt4\4.8.6\lib\QtCored4.lib e:\Qt4\4.8.6\lib\QtOpenGL4.lib e:\Qt4\4.8.6\lib\QtGui4.lib e:\Qt4\4.8.6\lib\QtCore4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"debug\vaa3d_msvc.pdb" /SUBSYSTEM:CONSOLE /STACK:"104857600" /TLBID:1 /DYNAMICBASE /NXCOMPAT /MACHINE:X64 "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" debug\ActorGL.obj
+         debug\AlignerUtils.obj
+         debug\AnalysisTools.obj
+         debug\AngleWidget.obj
+         debug\AnimationFrame.obj
+         debug\AnnotatedBranch.obj
+         debug\AnnotatedBranchTreeModel.obj
+         debug\AnnotatedBranchTreeView.obj
+         debug\AnnotationSession.obj
+         debug\AnnotationWidget.obj
+         debug\BDVVolume.obj
+         debug\CAnnotations.obj
+         debug\CConverter.obj
+         debug\CImageUtils.obj
+         debug\CImport.obj
+         debug\COperation.obj
+         debug\CPlugin.obj
+         debug\CSettings.obj
+         debug\CViewer.obj
+         debug\CVolume.obj
+         debug\CameraModel.obj
+         debug\CameraTransformGL.obj
+         debug\CellCounter3D.obj
+         debug\ChannelTable.obj
+         debug\ColorRangeSliderWidget.obj
+         debug\ColorSeparatorConsolidator.obj
+         debug\CommandManager.obj
+         debug\CompartmentMapComboBox.obj
+         debug\CompartmentMapWidget.obj
+         debug\ComposedVolume.obj
+         debug\ConsoleObserver.obj
+         debug\ConsoleObserverServiceImpl.obj
+         debug\CubeTestActorGL.obj
+         debug\CustomClipPlanes.obj
+         debug\CutPlanner.obj
+         debug\Cylinder.obj
+         debug\DataColorModel.obj
+         debug\DataFlowModel.obj
+         debug\DataThread.obj
+         debug\DilationErosion.obj
+         debug\Dimension.obj
+         debug\Displacement.obj
+         debug\DisplacementMIPNCC.obj
+         debug\DownloadManager.obj
+         debug\DynamicRangeTool.obj
+         debug\Entity.obj
+         debug\EntityAdapter.obj
+         debug\EntityData.obj
+         debug\EntityTreeItem.obj
+         debug\EntityTreeModel.obj
+         debug\EntityTreeView.obj
+         debug\ExportFile.obj
+         debug\Fast3DTexture.obj
+         debug\FileTreeSearcher.obj
+         debug\FooDebug.obj
+         debug\FragmentGalleryWidget.obj
+         debug\GLee_r.obj
+         debug\GalleryButton.obj
+         debug\GalleryMipImages.obj
+         debug\GammaWidget.obj
+         debug\HDF5Mngr.obj
+         debug\IMS_HDF5.obj
+         debug\IMS_HDF5Mngr.obj
+         debug\IM_config.obj
+         debug\Icons.obj
+         debug\ImageLoader.obj
+         debug\ImageLoaderBasic.obj
+         debug\ItemEditor.obj
+         debug\JacsUtil.obj
+         debug\LegacyVolumeActor.obj
+         debug\MaskChan.obj
+         debug\Matrices.obj
+         debug\MergeTiles.obj
+         debug\MipFragmentColors.obj
+         debug\MipFragmentData.obj
+         debug\MipMergedData.obj
+         debug\MouseClickManager.obj
+         debug\Mozak3DView.obj
+         debug\MozakUI.obj
+         debug\MultiColorImageStackNode.obj
+         debug\MultiCycleVolume.obj
+         debug\MultiSliceVolume.obj
+         debug\Na2DViewer.obj
+         debug\Na3DWidget.obj
+         debug\NaLargeMIPWidget.obj
+         debug\NaLockableData.obj
+         debug\NaMainWindow.obj
+         debug\NaSharedDataSignaller.obj
+         debug\NaViewer.obj
+         debug\NaVolumeData.obj
+         debug\NaZStackWidget.obj
+         debug\NeuronAnnotatorResultNode.obj
+         debug\NeuronContextMenu.obj
+         debug\NeuronFragmentData.obj
+         debug\NeuronFragmentEditor.obj
+         debug\NeuronMaskEntry.obj
+         debug\NeuronQAction.obj
+         debug\NeuronSelectionModel.obj
+         debug\NeuronSelector.obj
+         debug\Ontology.obj
+         debug\OntologyAnnotation.obj
+         debug\OntologyTreeModel.obj
+         debug\OntologyTreeView.obj
+         debug\PAbout.obj
+         debug\PAnoToolBar.obj
+         debug\PConverter.obj
+         debug\PDAlgo.obj
+         debug\PDAlgoMIPNCC.obj
+         debug\PDialogImport.obj
+         debug\PDialogProofreading.obj
+         debug\PDialogVirtualPyramid.obj
+         debug\PLog.obj
+         debug\PMain.obj
+         debug\PTabVolumeInfo.obj
+         debug\PreferencesDialog.obj
+         debug\PrivateDataColorModel.obj
+         debug\PrivateNeuronFragmentData.obj
+         debug\PrivateVolumeTexture.obj
+         debug\ProgressBar.obj
+         debug\QArrowButton.obj
+         debug\QGLRefSys.obj
+         debug\QGradientBar.obj
+         debug\QHelpBox.obj
+         debug\QPixmapToolTip.obj
+         debug\QPrefixSuffixLineEdit.obj
+         debug\QProgressSender.obj
+         debug\QUndoMarkerCreate.obj
+         debug\QUndoMarkerDelete.obj
+         debug\QUndoMarkerDeleteROI.obj
+         debug\RawFmtMngr.obj
+         debug\RawVolume.obj
+         debug\RenderableObject.obj
+         debug\RendererNeuronAnnotator.obj
+         debug\Rotation3D.obj
+         debug\SampledVolumeMetadata.obj
+         debug\ScaleBar.obj
+         debug\ScreenPatternAnnotator.obj
+         debug\ShaderProgramGL.obj
+         debug\SimpleVolume.obj
+         debug\SimpleVolumeRaw.obj
+         debug\SingleCut.obj
+         debug\SingleNeuronLsmSetReader.obj
+         debug\SleepThread.obj
+         debug\SlotMerger.obj
+         debug\Sphere.obj
+         debug\Stack.obj
+         debug\StackRaw.obj
+         debug\StackRestorer.obj
+         debug\StackStitcher.obj
+         debug\StackedVolume.obj
+         debug\StagedFileLoader.obj
+         debug\Stereo3DMode.obj
+         debug\StitchedFileUtility.obj
+         debug\TPAlgo.obj
+         debug\TPAlgoLQP.obj
+         debug\TPAlgoMST.obj
+         debug\Tiff3DMngr.obj
+         debug\TiledMCVolume.obj
+         debug\TiledVolume_partialdata.obj
+         debug\TimeSeries.obj
+         debug\TimebasedIdentifierGenerator.obj
+         debug\UnstitchedVolume.obj
+         debug\V3Dsubclasses.obj
+         debug\V3dR_Communicator.obj
+         debug\VRFinger.obj
+         debug\VR_MainWindow.obj
+         debug\Vector3D.obj
+         debug\VirtualFmtMngr.obj
+         debug\VirtualPyramid.obj
+         debug\VirtualVolume.obj
+         debug\VolumeConverter.obj
+         debug\VolumeIndex.obj
+         debug\VolumePatternIndex.obj
+         debug\VolumeTexture.obj
+         debug\VoxelRayCastShader.obj
+         debug\WireCube.obj
+         debug\ZSliceColors.obj
+         debug\ZoomSpinBox.obj
+         debug\ZoomWidget.obj
+         debug\apo_xforms.obj
+         debug\asc_to_swc.obj
+         debug\atlas_viewer.obj
+         debug\barFigureDialog.obj
+         debug\basic_4dimage.obj
+         debug\basic_4dimage_create.obj
+         debug\basic_surf_objs.obj
+         debug\bdb_minus.obj
+         debug\bfs_1root.obj
+         debug\cdsC.obj
+         debug\cdsConsoleDataServiceProxy.obj
+         debug\colormap.obj
+         debug\compute_funcs.obj
+         debug\config.obj
+         debug\dcimg.obj
+         debug\dialog_keypoint_features.obj
+         debug\dialog_rotate.obj
+         debug\dij_bgl.obj
+         debug\dijk.obj
+         debug\envC.obj
+         debug\exampleplugin2D.obj
+         debug\fileserver.obj
+         debug\fit_gmm.obj
+         debug\global_feature_compute.obj
+         debug\gradients.obj
+         debug\histeq.obj
+         debug\histogramsimple.obj
+         debug\imBlock.obj
+         debug\import_filelistname.obj
+         debug\import_tiffseries.obj
+         debug\interpolate.obj
+         debug\io_bioformats.obj
+         debug\iomanager.config.obj
+         debug\landmark_property_dialog.obj
+         debug\libcrossmips.obj
+         debug\loadmanagewidget.obj
+         debug\lodepng.obj
+         debug\m_CAnnotations.obj
+         debug\m_CConverter.obj
+         debug\m_CImageUtils.obj
+         debug\m_CImport.obj
+         debug\m_COperation.obj
+         debug\m_CPlugin.obj
+         debug\m_CSettings.obj
+         debug\m_CViewer.obj
+         debug\m_CVolume.obj
+         debug\m_PAbout.obj
+         debug\m_PAnoToolBar.obj
+         debug\m_PConverter.obj
+         debug\m_PDialogImport.obj
+         debug\m_PDialogProofreading.obj
+         debug\m_PLog.obj
+         debug\m_PMain.obj
+         debug\m_QArrowButton.obj
+         debug\m_QGLRefSys.obj
+         debug\m_QGradientBar.obj
+         debug\m_QHelpBox.obj
+         debug\m_QPixmapToolTip.obj
+         debug\m_QUndoMarkerCreate.obj
+         debug\m_QUndoMarkerDelete.obj
+         debug\m_QUndoMarkerDeleteROI.obj
+         debug\m_V3Dsubclasses.obj
+         debug\main.obj
+         debug\mainwindow.obj
+         debug\mainwindow_interface.obj
+         debug\managesocket.obj
+         debug\mapview.obj
+         debug\mg_image_lib.obj
+         debug\mg_utilities.obj
+         debug\mst_prim_c.obj
+         debug\my4dimage.obj
+         debug\neuron_format_converter.obj
+         debug\neuron_sim_scores.obj
+         debug\neuron_xforms.obj
+         debug\nstroke.obj
+         debug\nstroke_tracing.obj
+         debug\obsC.obj
+         debug\obsConsoleObserverService.obj
+         debug\pluginDialog.obj
+         debug\pluginfunchandler.obj
+         debug\renderer.obj
+         debug\renderer_gl2.obj
+         debug\renderer_hit.obj
+         debug\renderer_labelfield.obj
+         debug\renderer_obj.obj
+         debug\renderer_tex.obj
+         debug\resumer.obj
+         debug\rotate_image.obj
+         debug\spline_cubic.obj
+         debug\stackutil.obj
+         debug\stdsoap2.obj
+         debug\surfaceobj_geometry_dialog.obj
+         debug\template_matching_seg.obj
+         debug\tiff2D.obj
+         debug\tiff3D.obj
+         debug\tinystr.obj
+         debug\tinyxml.obj
+         debug\tinyxmlerror.obj
+         debug\tinyxmlparser.obj
+         debug\url_tools.obj
+         debug\v3d_actions.obj
+         debug\v3d_application.obj
+         debug\v3d_commandlineparser.obj
+         debug\v3d_core.obj
+         debug\v3d_custom_toolbar.obj
+         debug\v3d_imaging.obj
+         debug\v3d_message.obj
+         debug\v3d_multithreadimageIO.obj
+         debug\v3d_nrrd.obj
+         debug\v3d_plugin_loader.obj
+         debug\v3d_version_info.obj
+         debug\v3dimg_proc_neuron.obj
+         debug\v3dimgproc_entry.obj
+         debug\v3dr_colormapDialog.obj
+         debug\v3dr_gl_vr.obj
+         debug\v3dr_glwidget.obj
+         debug\v3dr_mainwindow.obj
+         debug\v3dr_surfaceDialog.obj
+         debug\v_neuronswc.obj
+         debug\vaa3d_neurontoolbox.obj
+         debug\vano_linker_loader_dialog.obj
+         debug\vcdiff.obj
+         debug\vcresumer.obj
+         debug\vmBlock.obj
+         debug\vmBlockVolume.obj
+         debug\vmCacheManager.obj
+         debug\vmMCVolume.obj
+         debug\vmStack.obj
+         debug\vmStackedVolume.obj
+         debug\vmVirtualStack.obj
+         debug\vmVirtualVolume.obj
+         debug\volumemanager.config.obj
+         debug\vr_vaa3d_call.obj
+         debug\moc_AngleWidget.obj
+         debug\moc_AnnotatedBranchTreeModel.obj
+         debug\moc_AnnotatedBranchTreeView.obj
+         debug\moc_AnnotationWidget.obj
+         debug\moc_CConverter.obj
+         debug\moc_CImport.obj
+         debug\moc_CPlugin.obj
+         debug\moc_CViewer.obj
+         debug\moc_CVolume.obj
+         debug\moc_CameraModel.obj
+         debug\moc_ChannelTable.obj
+         debug\moc_ColorRangeSliderWidget.obj
+         debug\moc_CompartmentMapComboBox.obj
+         debug\moc_CompartmentMapWidget.obj
+         debug\moc_ConsoleObserver.obj
+         debug\moc_ConsoleObserverServiceImpl.obj
+         debug\moc_CutPlanner.obj
+         debug\moc_DataColorModel.obj
+         debug\moc_DataFlowModel.obj
+         debug\moc_DataThread.obj
+         debug\moc_DownloadManager.obj
+         debug\moc_DynamicRangeTool.obj
+         debug\moc_EntityTreeModel.obj
+         debug\moc_EntityTreeView.obj
+         debug\moc_ExportFile.obj
+         debug\moc_Fast3DTexture.obj
+         debug\moc_FooDebug.obj
+         debug\moc_FragmentGalleryWidget.obj
+         debug\moc_GalleryButton.obj
+         debug\moc_GalleryMipImages.obj
+         debug\moc_GammaWidget.obj
+         debug\moc_ImageLoader.obj
+         debug\moc_ItemEditor.obj
+         debug\moc_MipFragmentColors.obj
+         debug\moc_MipFragmentData.obj
+         debug\moc_MipMergedData.obj
+         debug\moc_MouseClickManager.obj
+         debug\moc_Mozak3DView.obj
+         debug\moc_Na2DViewer.obj
+         debug\moc_Na3DWidget.obj
+         debug\moc_NaLargeMIPWidget.obj
+         debug\moc_NaLockableData.obj
+         debug\moc_NaMainWindow.obj
+         debug\moc_NaSharedDataSignaller.obj
+         debug\moc_NaVolumeData.obj
+         debug\moc_NaZStackWidget.obj
+         debug\moc_NeuronContextMenu.obj
+         debug\moc_NeuronFragmentData.obj
+         debug\moc_NeuronQAction.obj
+         debug\moc_NeuronSelectionModel.obj
+         debug\moc_NeuronSelector.obj
+         debug\moc_OntologyTreeModel.obj
+         debug\moc_OntologyTreeView.obj
+         debug\moc_PAbout.obj
+         debug\moc_PAnoToolBar.obj
+         debug\moc_PConverter.obj
+         debug\moc_PDialogImport.obj
+         debug\moc_PDialogProofreading.obj
+         debug\moc_PDialogVirtualPyramid.obj
+         debug\moc_PLog.obj
+         debug\moc_PMain.obj
+         debug\moc_PTabVolumeInfo.obj
+         debug\moc_PreferencesDialog.obj
+         debug\moc_QArrowButton.obj
+         debug\moc_QGLRefSys.obj
+         debug\moc_QGradientBar.obj
+         debug\moc_QHelpBox.obj
+         debug\moc_QPixmapToolTip.obj
+         debug\moc_QPrefixSuffixLineEdit.obj
+         debug\moc_QProgressSender.obj
+         debug\moc_RendererNeuronAnnotator.obj
+         debug\moc_SingleCut.obj
+         debug\moc_StagedFileLoader.obj
+         debug\moc_V3Dsubclasses.obj
+         debug\moc_V3dR_Communicator.obj
+         debug\moc_VR_MainWindow.obj
+         debug\moc_VolumeTexture.obj
+         debug\moc_ZSliceColors.obj
+         debug\moc_ZoomSpinBox.obj
+         debug\moc_ZoomWidget.obj
+         debug\moc_atlas_viewer.obj
+         debug\moc_basic_thread.obj
+         debug\moc_dialog_curve_trace_para.obj
+         debug\moc_dialog_imagecrop_bbox.obj
+         debug\moc_dialog_imageresample.obj
+         debug\moc_dialog_keypoint_features.obj
+         debug\moc_dialog_maskroi.obj
+         debug\moc_dialog_rotate.obj
+         debug\moc_fileserver.obj
+         debug\moc_gradients.obj
+         debug\moc_import_filelist_dialog.obj
+         debug\moc_import_images_tool_dialog.obj
+         debug\moc_landmark_property_dialog.obj
+         debug\moc_loadmanagewidget.obj
+         debug\moc_m_CConverter.obj
+         debug\moc_m_CImport.obj
+         debug\moc_m_CPlugin.obj
+         debug\moc_m_CViewer.obj
+         debug\moc_m_CVolume.obj
+         debug\moc_m_PAbout.obj
+         debug\moc_m_PAnoToolBar.obj
+         debug\moc_m_PConverter.obj
+         debug\moc_m_PDialogImport.obj
+         debug\moc_m_PDialogProofreading.obj
+         debug\moc_m_PLog.obj
+         debug\moc_m_PMain.obj
+         debug\moc_m_QArrowButton.obj
+         debug\moc_m_QGLRefSys.obj
+         debug\moc_m_QGradientBar.obj
+         debug\moc_m_QHelpBox.obj
+         debug\moc_m_QPixmapToolTip.obj
+         debug\moc_m_V3Dsubclasses.obj
+         debug\moc_mainwindow.obj
+         debug\moc_managesocket.obj
+         debug\moc_pluginDialog.obj
+         debug\moc_surfaceobj_annotation_dialog.obj
+         debug\moc_surfaceobj_geometry_dialog.obj
+         debug\moc_template_matching_cellseg_dialog.obj
+         debug\moc_v3d_actions.obj
+         debug\moc_v3d_application.obj
+         debug\moc_v3d_core.obj
+         debug\moc_v3d_custom_toolbar.obj
+         debug\moc_v3d_global_preference_dialog.obj
+         debug\moc_v3d_plugin_loader.obj
+         debug\moc_v3d_version_info.obj
+         debug\moc_v3dr_colormapDialog.obj
+         debug\moc_v3dr_glwidget.obj
+         debug\moc_v3dr_mainwindow.obj
+         debug\moc_v3dr_surfaceDialog.obj
+         debug\moc_vano_linker_loader_dialog.obj
+         debug\moc_xformwidget.obj
+         debug\qrc_3drenderer.obj
+         debug\qrc_icons.obj
+         debug\qrc_mozak.obj
+         debug\qrc_resources.obj
+         debug\qrc_v3d.obj
+     1>demo_shared.lib(hoverpoints.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>demo_shared.lib(hoverpoints.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>demo_shared.lib(arthurwidgets.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>demo_shared.lib(arthurwidgets.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>demo_shared.lib(moc_arthurwidgets.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>demo_shared.lib(moc_arthurwidgets.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>demo_shared.lib(moc_hoverpoints.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>demo_shared.lib(moc_hoverpoints.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat6.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat6.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat8.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat8.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat4.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat4.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat5.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat5.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat7.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat7.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat3.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat3.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(submat.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(submat.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat2.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat2.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(evalue.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(evalue.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(svd.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(svd.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmatex.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmatex.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(myexcept.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(myexcept.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(bandmat.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(bandmat.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat1.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmat1.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(sort.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(sort.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmatrm.obj) : error LNK2038: 检测到“_ITERATOR_DEBUG_LEVEL”的不匹配项:  值“0”不匹配值“2”(AlignerUtils.obj 中)
+     1>libnewmat.lib(newmatrm.obj) : error LNK2038: 检测到“RuntimeLibrary”的不匹配项:  值“MD_DynamicRelease”不匹配值“MDd_DynamicDebug”(AlignerUtils.obj 中)
+     1>LINK : warning LNK4098: 默认库“MSVCRT”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
+     1>debug\\vaa3d_msvc.exe : fatal error LNK1319: 检测到 40 个不匹配项
+     1>已完成生成项目“D:\source\C++ project\Vaa3d\v3d_external\v3d_main\v3d\vaa3d_msvc.vcxproj”(Build 个目标)的操作 - 失败。
+
+生成失败。
+
+已用时间 00:00:02.19

@@ -1,4 +1,4 @@
-#include "Mozak3DView.h"
+﻿#include "Mozak3DView.h"
 #include "MozakUI.h"
 #include <math.h>
 #include "renderer_gl2.h"
@@ -506,7 +506,7 @@ bool Mozak3DView::eventFilter(QObject *object, QEvent *event)
 				break;
 			case Qt::Key_1:
 				curr_renderer->currentTraceType = 1; // soma
-				updateTypeLabel();
+                updateTypeLabel();
 				break;
 			case Qt::Key_2:
 				curr_renderer->currentTraceType = 2; // axon

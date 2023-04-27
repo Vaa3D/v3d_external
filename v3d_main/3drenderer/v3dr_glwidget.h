@@ -613,8 +613,9 @@ public slots:
     void CollaDelSeg(QString markerPOS);
     void CollaAddMarker(QString markerPOS);
     void CollaDelMarker(QString markerPOS);
-    void CollretypeSeg(QString markerPOS,int type);
-    void CollconnectSeg(QString segInfo);
+    void CollaRetypeMarker(QString markerPos);
+    void CollaRetypeSeg(QString markerPOS,int type);
+    void CollaConnectSeg(QString segInfo);
 
 
 public:

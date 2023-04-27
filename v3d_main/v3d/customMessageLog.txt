@@ -1,0 +1,115 @@
+2023/04/07 21:02:41:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d" 
+2023/04/07 21:02:41:Debug: Cannot find ./plugins directory!
+2023/04/07 21:02:41:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d" 
+2023/04/07 21:02:51:Debug: transparency true 
+2023/04/07 21:02:58:Debug: SYL TEST CViewer::CViewer 
+2023/04/07 21:02:58:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x24cb73d0cf0) 
+2023/04/07 21:02:58:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 104),Volume X=[1,256], Y=[1,256], Z=[1,104], T=[0,0], 1 channels" 
+2023/04/07 21:02:58:Debug: MainWindow newImageWindow:  "ID(0), Res(256 x 256 x 104),Volume X=[1,256], Y=[1,256], Z=[1,104], T=[0,0], 1 channels" 
+2023/04/07 21:02:58:Debug: V3d_PluginLoader newImageWindow:  XFormWidget(0x24cb73d0cf0) 
+2023/04/07 21:02:58:Debug: V3d_PluginLoader setImage:  0x24cb73d0cf0 0x24cb73c3170 
+2023/04/07 21:02:58:Debug: MainWindow setImage now:  XFormWidget(0x24cb73d0cf0) 0x24cb73c3170 
+2023/04/07 21:02:58:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2023/04/07 21:02:58:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 104),Volume X=[1,256], Y=[1,256], Z=[1,104], T=[0,0], 1 channels_processed" 
+2023/04/07 21:02:58:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2023/04/07 21:02:58:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2023/04/07 21:02:58:Debug: "3D View [ID(0), Res(256 x 256 x 104),Volume X=[1,256], Y=[1,256], Z=[1,104], T=[0,0], 1 channels_processed]" 
+2023/04/07 21:02:58:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2023/04/07 21:02:58:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2023/04/07 21:02:58:Debug: "ID(0), Res(256 x 256 x 104),Volume X=[1,256], Y=[1,256], Z=[1,104], T=[0,0], 1 channels_processed" 
+2023/04/07 21:02:58:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2023/04/07 21:02:58:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2023/04/07 21:02:58:Debug: V3d_PluginLoader getView3DControl =  0x24cb7509a88  :  XFormWidget(0x24cb73d0cf0) / 0x24cb73d0cf0 
+2023/04/07 21:02:58:Debug: V3dR_GLWidget::initializeGL
+2023/04/07 21:02:58:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2023/04/07 21:02:58:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2023/04/07 21:02:58:Debug: V3dR_GLWidget::choiceRenderer
+2023/04/07 21:02:58:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2023/04/07 21:02:58:Debug:   Renderer_gl1::Renderer_gl1
+2023/04/07 21:02:58:Debug:    Renderer_gl2::Renderer_gl2
+2023/04/07 21:02:58:Debug: V3dR_GLWidget::settingRenderer
+2023/04/07 21:02:58:Debug: V3dR_GLWidget::preparingRenderer
+2023/04/07 21:02:58:Debug:    Renderer_gl1::cleanData
+2023/04/07 21:02:58:Debug:   Renderer_gl1::setupData
+2023/04/07 21:02:58:Debug: 	Down-sampling to 512x512x256 
+2023/04/07 21:02:58:Debug:    data4dp = 0x24cb9ef9040 	(start 0x0x0_0_0, size 256x256x104_1_1)
+2023/04/07 21:02:58:Debug:    rgbaBuf = 0x24cc42cc040 	(256x256x104_1_1)
+2023/04/07 21:02:58:Debug:    data box in original image space @	(0 0 0)--(255 255 103)
+2023/04/07 21:02:58:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.069 sec
+2023/04/07 21:02:58:Debug:    Renderer_gl2::initialize (2)
+2023/04/07 21:02:58:Debug:   Renderer_gl1::initialize (1)
+2023/04/07 21:02:58:Debug:  Renderer::initialize (0)
+2023/04/07 21:02:58:Debug:    Renderer_gl1::cleanObj
+2023/04/07 21:02:58:Debug:   Renderer_gl1::loadObj
+2023/04/07 21:02:58:Debug:    Renderer_gl1::cleanVol
+2023/04/07 21:02:58:Debug:     Renderer_gl2::cleanStreamBuffer
+2023/04/07 21:02:58:Debug:   Renderer_gl1::loadVol
+2023/04/07 21:02:58:Debug: "	ARB_texture_non_power_of_two           supported " 
+2023/04/07 21:02:58:Debug: "	ARB_texture_compression                supported " 
+2023/04/07 21:02:58:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2023/04/07 21:02:58:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2023/04/07 21:02:58:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2023/04/07 21:02:58:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2023/04/07 21:02:58:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x104   fillTexture = 256x256x128
+2023/04/07 21:02:58:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2023/04/07 21:02:58:Debug:    setupStack: id & buffer ....................... cost time = 0.003 sec
+2023/04/07 21:02:58:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2023/04/07 21:02:58:Debug: Renderer_gl2::setupStackTexture() start 
+2023/04/07 21:02:58:Debug: Renderer_gl1::setupStackTexture() start 
+2023/04/07 21:02:58:Debug: 	texture:   real = 256x256x104   fill = 256x256x128
+2023/04/07 21:02:59:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 1.023 sec
+2023/04/07 21:02:59:Debug: 	  tex_stream_buffer = false
+2023/04/07 21:02:59:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2023/04/07 21:02:59:Debug: 	BoundingBox default (0 0 0)--(256 256 104)
+2023/04/07 21:02:59:Debug:     Renderer_gl2::cleanShader
+2023/04/07 21:02:59:Debug:    Renderer_gl2::loadShader
+2023/04/07 21:02:59:Debug: +++++++++ shader for Surface Object
+2023/04/07 21:02:59:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2023/04/07 21:02:59:Debug: Load shader:  ":/shader/lighting.txt" 
+2023/04/07 21:02:59:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2023/04/07 21:02:59:Debug: Load shader:  ":/shader/lighting.txt" 
+2023/04/07 21:02:59:Debug: +++++++++ shader for Volume texture2D
+2023/04/07 21:02:59:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2023/04/07 21:02:59:Debug: +++++++++ shader for Volume texture3D
+2023/04/07 21:02:59:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2023/04/07 21:02:59:Debug: +++++++++ GLSL shader setup finished.
+2023/04/07 21:02:59:Debug:    Renderer_gl2::initColormap
+2023/04/07 21:02:59:Debug: ++++++++++++ customEvent:  4 
+2023/04/07 21:02:59:Debug: V3dR_GLWidget::customEvent( ? )
+2023/04/07 21:02:59:Debug: 	( QEvent_InitControlValue )
+2023/04/07 21:02:59:Debug: V3dR_MainWindow::initControlValue
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateBoundingBox surface (1 1 1)--(-1 -1 -1)
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateBoundingBox default (0 0 0)--(256 256 104)
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateBoundingBox surface (1 1 1)--(-1 -1 -1)
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateBoundingBox default (0 0 0)--(256 256 104)
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateBoundingBox surface (1 1 1)--(-1 -1 -1)
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateBoundingBox default (0 0 0)--(256 256 104)
+2023/04/07 21:02:59:Debug: 	GL texture compression supported, enable texture compression function
+2023/04/07 21:02:59:Debug: 	GL shading language supported, enable volume colormap function
+2023/04/07 21:02:59:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2023/04/07 21:02:59:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [ID(0), Res(256 x 256 x 104),Volume X=[1,256], Y=[1,256], Z=[1,104], T=[0,0], 1 channels_processed]" 
+2023/04/07 21:02:59:Debug: glWidget->TeraflyCommunicator==0 
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )
+2023/04/07 21:02:59:Debug: -------------------------------------------------------
+2023/04/07 21:02:59:Debug: ---------------------read 0 lines, 0 remained lines
+2023/04/07 21:02:59:Debug: remove an empty neuron 
+2023/04/07 21:02:59:Debug:   Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )
+2023/04/07 21:02:59:Debug: -------------------------------------------------------
+2023/04/07 21:02:59:Debug: ---------------------read 0 lines, 0 remained lines
+2023/04/07 21:02:59:Debug: remove an empty neuron 
+2023/04/07 21:02:59:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2023/04/07 21:02:59:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2023/04/07 21:02:59:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2023/04/07 21:02:59:Debug: ++++++++++++ customEvent:  2 
+2023/04/07 21:02:59:Debug: V3dR_GLWidget::customEvent( ? )
+2023/04/07 21:02:59:Debug: 	( QEvent_OpenFiles )
+2023/04/07 21:02:59:Debug:    Renderer_gl1::loadObjectListFromFile
+2023/04/07 21:02:59:Debug: ++++++++++++ customEvent:  1 
+2023/04/07 21:02:59:Debug: V3dR_GLWidget::customEvent( ? )
+2023/04/07 21:02:59:Debug: 	( QEvent_Ready )
+2023/04/07 21:02:59:Debug: -------------------------------------------------------------- Ready
+2023/04/07 21:03:01:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2023/04/07 21:03:04:Debug: 200 Ok 
+2023/04/07 21:03:06:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2023/04/07 21:03:06:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 

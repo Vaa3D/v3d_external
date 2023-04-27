@@ -1,4 +1,4 @@
-#ifndef LOADMANAGEWIDGET_H
+﻿#ifndef LOADMANAGEWIDGET_H
 #define LOADMANAGEWIDGET_H
 
 #include <QWidget>
@@ -6,6 +6,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QNetworkAccessManager>
+#include <QMessageBox>
 
 struct UserInfo{
     QString name,passwd;
@@ -16,12 +17,11 @@ class LoadManageWidget:public QWidget
 {
     Q_OBJECT
 public:
-    LoadManageWidget(QNetworkAccessManager *accessManager,UserInfo *user);
+    LoadManageWidget(UserInfo *user);
     QPushButton *getImageBtn,*getNeuronBtn,*getAnoBtn,*loadBtn;
     QListWidget *imageWidget,*neuronWidget,*anoWidget;
-    QNetworkAccessManager *accessManager;
+    static QNetworkAccessManager *accessManager;
     UserInfo *userinfo;
-
     static QString HostAddress;
 public slots:
     void getImages();
