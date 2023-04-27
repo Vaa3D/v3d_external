@@ -666,7 +666,6 @@ void V3dR_Communicator::autoReconnect(){
 //        }
 //    }
 
-
 }
 
 void V3dR_Communicator::autoExit(){
