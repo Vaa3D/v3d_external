@@ -3309,7 +3309,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
-    if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+    if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
 	{
         vector<V_NeuronSWC> vector_VSWC;
         curImg->ExtractDeletingNode(vector_VSWC);
@@ -7031,7 +7031,7 @@ void Renderer_gl1::breakMultiNeuronsByStroke()
                             V_NeuronSWC seg=curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id);
 
                             if(w->TeraflyCommunicator
-                                &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                             {
                                 w->SetupCollaborateInfo();
                                 V_NeuronSWC seg= curImg->tracedNeuron.seg.at(p_listneuron->at(i).seg_id);

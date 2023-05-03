@@ -3967,7 +3967,7 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/dynamic";
+    QString HostAddress="http://114.117.165.134:26000/test";
     QString HostIp="114.117.165.134";
     bool ok;
 //    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,settings.value("HostAddress").toString(), &ok);
@@ -4073,9 +4073,15 @@ void PMain::startCollaborate(QString ano,QString port)
         qDebug()<<"333333333333333333333";
     }
 
+    disconnect(Communicator->timer_iniconn, SIGNAL(timeout()), 0, 0);
     connect(Communicator->timer_iniconn, SIGNAL(timeout()), Communicator, SLOT(initConnect()));//初始化客户端未获得连接时，每五秒自动连接一次
+
+    disconnect(Communicator->m_timerConnect, SIGNAL(timeout()), 0, 0);
     connect(Communicator->m_timerConnect, SIGNAL(timeout()), Communicator, SLOT(autoReconnect()));
+
+    disconnect(Communicator->timer_exit, SIGNAL(timeout()), 0, 0);
     connect(Communicator->timer_exit, SIGNAL(timeout()), Communicator, SLOT(autoExit()));
+
     qDebug()<<Communicator;
 
     if(Communicator->socket){
@@ -4094,6 +4100,7 @@ void PMain::startCollaborate(QString ano,QString port)
     collaborationVRView->setEnabled(true);
     collautotrace->setEnabled(false);
 
+    disconnect(Communicator,SIGNAL(load(QString)), 0, 0);
     //为什么要用Qt::DirectConnection
     // load信号会在接收到服务器传来的startCollaborate消息后触发
     connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)),Qt::DirectConnection);
@@ -4105,24 +4112,31 @@ void PMain::startCollaborate(QString ano,QString port)
 //    render->userColorid = userinfo.colorid;
 //    qDebug()<<"userColorId" <<render->userColorid;
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
             cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeMarker(QString)),
             cur_win->getGLWidget(),SLOT(CollaRetypeMarker(QString)));
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
             cur_win->getGLWidget(),SLOT(CollaRetypeSeg(QString,int)));
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(connectSeg(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(connectSeg(QString)),
             cur_win->getGLWidget(),SLOT(CollaConnectSeg(QString)));
 
@@ -4131,8 +4145,12 @@ void PMain::startCollaborate(QString ano,QString port)
 
     connect(Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
     connect(Communicator->socket,SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onMessageError(QAbstractSocket::SocketError)));
+
+
+    disconnect(Communicator,SIGNAL(exit()), 0, 0);
     connect(Communicator,SIGNAL(exit()), this, SLOT(handleExit()));
 
+    disconnect(Communicator,SIGNAL(updateuserview(QString)), 0, 0);
     connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
     QSettings settings("HHMI", "Vaa3D");
     Communicator->setAddressIP(settings.value("HostIP").toString());
@@ -4277,6 +4295,7 @@ void PMain::onMessageDisConnect()
     if(this->Communicator->socket)
     {
         qDebug()<<this->Communicator->socket;
+        this->Communicator->socket->close();
         this->Communicator->socket->deleteLater();
         this->Communicator->socket=0;
     }
@@ -4336,7 +4355,7 @@ void PMain::onMessageError(QAbstractSocket::SocketError socketError)
 //                                 QMessageBox::Ok);
 //    }
      QMessageBox::information(0,tr("Message "),
-                                tr("Disconnection! Further operations won't be synced! Please restart the software."),
+                                tr("Disconnection! Further operations won't be synced! Please try to reload the anofile."),
                                 QMessageBox::Ok);
 
 //    this->Communicator->socket->deleteLater();

@@ -1139,7 +1139,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                     for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
                         curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
 
-                    if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
                         vector<V_NeuronSWC> vector_VSWC;
                         curImg->ExtractDeletingNode(vector_VSWC);

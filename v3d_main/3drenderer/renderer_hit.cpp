@@ -894,7 +894,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     RGBA8 cc = listMarker.at(names[2]-1).color;
                     LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
                     s->color = cc;
-                    if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
                         w->SetupCollaborateInfo();
                         w->TeraflyCommunicator->UpdateRetypeMarkerMsg(s->x,s->y,s->z,s->color,"TeraFly");
@@ -4277,7 +4277,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
         qDebug()<<"Marker:"<<S.x<<","<<S.y<<","<<S.z<<","<<S.color.r<<","<<S.color.g<<","<<S.color.b;
 		listLoc.append(S);
 
-        if(!fromserver&&w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+        if(!fromserver&&w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
         {
             w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,int(currentTraceType),"TeraFly");

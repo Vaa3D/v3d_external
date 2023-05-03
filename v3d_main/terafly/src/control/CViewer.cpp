@@ -1835,7 +1835,7 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
                         jt = vaa3dMarkers.erase(jt);
 
                         if(view3DWidget->TeraflyCommunicator!=nullptr
-                            &&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+                                &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
                         {
                             view3DWidget->SetupCollaborateInfo();
                             view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(it->x,it->y,it->z,"TeraFly");

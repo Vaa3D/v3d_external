@@ -1862,7 +1862,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 			{
 
                 if (w->TeraflyCommunicator
-                 &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState
+                    &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState
                  && curImg->colla_cur_seg.row.size() > 0)
 				{
                     qDebug()<<"seg type="<<curImg->colla_cur_seg.row[0].type;
