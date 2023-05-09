@@ -64,7 +64,8 @@ void V3dR_Communicator::onReadyRead()
                     char *data=new char[datatype.datasize+1];
                     socket->read(data,datatype.datasize);
                     data[datatype.datasize]='\0';
-                    std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<" receive from "<<userName.toStdString()<<" :"<<data<<std::endl;
+                    if(strlen(data)<128)
+                        std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<" receive from "<<userName.toStdString()<<" :"<<data<<std::endl;
                     //处理消息
                     preprocessmsgs(QString(data).trimmed().split(';',QString::SkipEmptyParts));
                     resetdatatype();
@@ -107,7 +108,8 @@ void V3dR_Communicator::onReadyRead()
 
 void V3dR_Communicator::sendMsg(QString msg)
 {
-    qDebug()<<"send:"<<msg;
+    if(msg.size()<128)
+        qDebug()<<"send:"<<msg;
     const std::string data=msg.toStdString();
     const std::string header=QString("DataTypeWithSize:%1 %2\n").arg(0).arg(data.size()).toStdString();
     socket->write(header.c_str(),header.size());
@@ -130,7 +132,8 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     QRegExp warnRex("^/WARN_(.*)$");
     for(auto &msg:list)
     {
-        qDebug()<<"OnRead:"<<msg;
+        if(msg.size()<128)
+            qDebug()<<"OnRead:"<<msg;
         if(msg.startsWith("STARTCOLLABORATE:")){
 //            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
@@ -229,14 +232,18 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 return;
             }
             qDebug() << "+============delseg process begin========";
-            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
+            QStringList infos=listwithheader[0].split(" ");
+            bool isTeraFly=infos.at(0).trimmed()=="0";
+            QString user=infos.at(1).trimmed();
+            unsigned int isMany=0;
+            if(infos.size()>=6)
+                isMany=infos.at(5).trimmed().toInt();
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
                 listwithheader.removeAt(0);
-                emit delSeg(listwithheader.join(","));
+                emit delSeg(listwithheader.join(","),isMany);
             }
         }else if(operationtype == "addmarker")
         {
@@ -301,16 +308,21 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 return;
             }
 
-            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
-            int type=listwithheader[0].split(" ").at(2).trimmed().toInt();
-            qDebug()<<"type = listwithheader[0]"<<listwithheader;
+            QStringList infos=listwithheader[0].split(" ");
+
+            bool isTeraFly=infos.at(0).trimmed()=="0";
+            QString user=infos.at(1).trimmed();
+            int type=infos.at(2).trimmed().toInt();
+            unsigned int isMany=0;
+            if(infos.size()>=7)
+                isMany=infos.at(6).trimmed().toInt();
+            //qDebug()<<"type = listwithheader[0]"<<listwithheader;
             if (user == userName && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userName" << userName;
             else
             {
                 listwithheader.removeAt(0);
-                emit retypeSeg(listwithheader.join(","),type);
+                emit retypeSeg(listwithheader.join(","),type,isMany);
             }
         }
         else if(operationtype == "connectline")
@@ -355,21 +367,21 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
     }
 }
 
-void V3dR_Communicator::UpdateConnectSegMsg(V_NeuronSWC seg,QString clienttype)
+void V3dR_Communicator::UpdateConnectSegMsg(segInfoUnit segInfo1, segInfoUnit segInfo2, QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
-        result+=V_NeuronSWCToSendMSG(seg);
-        qDebug()<<"connectline_sendMsg"<<result.count();
-        sendMsg(QString("/connectline_norm:"+result.join(",")));
-        while(undoDeque.size()>=dequeszie)
-        {
-            undoDeque.pop_front();
-        }
-        undoDeque.push_back(QString("/delline_undo:"+result.join(",")));
-        redoDeque.clear();
+//        result+=V_NeuronSWCToSendMSG(seg);
+//        qDebug()<<"connectline_sendMsg"<<result.count();
+//        sendMsg(QString("/connectline_norm:"+result.join(",")));
+//        while(undoDeque.size()>=dequeszie)
+//        {
+//            undoDeque.pop_front();
+//        }
+//        undoDeque.push_back(QString("/delline_undo:"+result.join(",")));
+//        redoDeque.clear();
     }
 }
 
@@ -379,7 +391,7 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(0));
         result+=V_NeuronSWCToSendMSG(seg);
         qDebug()<<"delline_sendMsg"<<result.count();
         sendMsg(QString("/delline_norm:"+result.join(",")));
@@ -389,6 +401,29 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
         }
         undoDeque.push_back(QString("/drawline_undo:"+result.join(",")));
         redoDeque.clear();
+
+    }
+}
+
+void V3dR_Communicator::UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString clienttype){
+    if(clienttype=="TeraFly")
+    {
+
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
+        for(int i=0;i<segs.size();i++){
+            result+=V_NeuronSWCToSendMSG(segs[i]);
+            result.push_back("$");
+        }
+
+        qDebug()<<"delline_sendMsg"<<result.count()<<"!!!!!!!!";
+        sendMsg(QString("/delline_norm:"+result.join(",")));
+//        while(undoDeque.size()>=dequeszie)
+//        {
+//            undoDeque.pop_front();
+//        }
+//        undoDeque.push_back(QString("/drawline_undo:"+result.join(",")));
+//        redoDeque.clear();
 
     }
 }
@@ -447,6 +482,23 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
         qDebug()<<"retypeline_sendMsg"<<result.count();
         sendMsg(QString("/retypeline_norm:"+result.join(",")));
         qDebug()<<"retypeline_norm"+result.join(",");
+    }
+}
+
+void V3dR_Communicator::UpdateRetypeManySegsMsg(vector<V_NeuronSWC> segs,int type,QString clienttype)
+{
+    if(clienttype=="TeraFly")
+    {
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5 %6 %7").arg(0).arg(userName).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
+
+        for(int i=0;i<segs.size();i++){
+            result+=V_NeuronSWCToSendMSG(segs[i]);
+            result.push_back("$");
+        }
+
+        qDebug()<<"retypeline_sendMsg"<<result.count()<<"!!!!!!!!";
+        sendMsg(QString("/retypeline_norm:"+result.join(",")));
     }
 }
 
@@ -700,6 +752,10 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
 //            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
     }
     return result;
+}
+
+QStringList V3dR_Communicator::segInfoUnitToSendMSG(segInfoUnit seginfo){
+
 }
 
 XYZ V3dR_Communicator::ConvertGlobaltoLocalBlockCroods(double x,double y,double z)

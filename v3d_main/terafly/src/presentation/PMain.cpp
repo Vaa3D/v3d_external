@@ -4113,32 +4113,36 @@ void PMain::startCollaborate(QString ano,QString port)
 //    qDebug()<<"userColorId" <<render->userColorid;
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString)), 0, 0);
+//    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
+//            cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
-            cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
+            cur_win->getGLWidget(),SLOT(fAddSeg(QString)));
 
-    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0);
-    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString)),
-            cur_win->getGLWidget(),SLOT(CollaDelSeg(QString)));
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString,int)),
+            cur_win->getGLWidget(),SLOT(fDelSeg(QString,int)));
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
-            cur_win->getGLWidget(),SLOT(CollaAddMarker(QString)));
+            cur_win->getGLWidget(),SLOT(fAddMarker(QString)));
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
-            cur_win->getGLWidget(),SLOT(CollaDelMarker(QString)));
+            cur_win->getGLWidget(),SLOT(fDelMarker(QString)));
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeMarker(QString)),
-            cur_win->getGLWidget(),SLOT(CollaRetypeMarker(QString)));
+            cur_win->getGLWidget(),SLOT(fRetypeMarker(QString)));
 
-    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0);
-    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
-            cur_win->getGLWidget(),SLOT(CollaRetypeSeg(QString,int)));
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int,int)), 0, 0);
+//    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
+//            cur_win->getGLWidget(),SLOT(CollaRetypeSeg(QString,int)));
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int,int)),
+            cur_win->getGLWidget(),SLOT(fRetypeSeg(QString,int,int)));
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(connectSeg(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(connectSeg(QString)),
-            cur_win->getGLWidget(),SLOT(CollaConnectSeg(QString)));
+            cur_win->getGLWidget(),SLOT(fConnectSeg(QString)));
 
     connect(Communicator->socket,SIGNAL(readyRead()),Communicator,SLOT(onReadyRead()));
     connect(Communicator->socket,SIGNAL(connected()),Communicator,SLOT(onConnected()));

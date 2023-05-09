@@ -118,7 +118,7 @@ void VR_MainWindow::TVProcess(QString line)
                     {
                         qDebug()<<"delete in block failed";
                             listwithheader.removeAt(0);
-                            VR_Communicator->emitDelSeg(listwithheader.join(";"));
+                            VR_Communicator->emitDelSeg(listwithheader.join(";"), 0);
                             //全局删线处理
                     }
                 }
@@ -212,7 +212,7 @@ void VR_MainWindow::TVProcess(QString line)
                       {
                           qDebug()<<"Vr call fly retype ";
                           listwithheader.removeAt(0);
-                          VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type);
+                          VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type,0);
                       }
                   }
             }

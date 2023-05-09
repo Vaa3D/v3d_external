@@ -6942,20 +6942,34 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                 }
             }
 
-            if(w->TeraflyCommunicator)
-            {
-                for(int cnt=0;cnt<idlist.size();cnt++)
-                    if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
-                    {
-                        if(w->TeraflyCommunicator
-                        &&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-                        {
-                            w->SetupCollaborateInfo();
-                            w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
-                        }
-                    }
+            vector<V_NeuronSWC> allsegs;
+            for(int cnt=0;cnt<idlist.size();cnt++){
+                if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size())){
+                    allsegs.push_back(curImg->tracedNeuron.seg[idlist.at(cnt)]);
+                }
             }
 
+            if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+            {
+//                    for(int cnt=0;cnt<idlist.size();cnt++)
+//                        if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
+//                        {
+//                            if(w->TeraflyCommunicator
+//                                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+//                            {
+//                                w->SetupCollaborateInfo();
+//                                w->TeraflyCommunicator->UpdateRetypeSegMsg(curImg->tracedNeuron.seg[idlist.at(cnt)],currentTraceType,"TeraFly");
+//                            }
+//                        }
+
+                if(w->TeraflyCommunicator
+                    &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                {
+                    w->SetupCollaborateInfo();
+                    w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,currentTraceType,"TeraFly");
+                }
+
+            }
 
             curImg->update_3drenderer_neuron_view(w, this);
             QHash<QString, int>  soma_cnt;

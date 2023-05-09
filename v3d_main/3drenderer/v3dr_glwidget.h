@@ -610,17 +610,23 @@ public:
     //for collaborate
 public slots:
     void CollaAddSeg(QString segInfo);
-    void CollaDelSeg(QString markerPOS);
+    void CollaDelSeg(QString segInfo, int isMany);
     void CollaAddMarker(QString markerPOS);
     void CollaDelMarker(QString markerPOS);
     void CollaRetypeMarker(QString markerPos);
-    void CollaRetypeSeg(QString markerPOS,int type);
+    void CollaRetypeSeg(QString segInfo,int type, int isMany);
     void CollaConnectSeg(QString segInfo);
-
+    void fAddSeg(QString segInfo);
+    void fDelSeg(QString segInfo, int isMany);
+    void fAddMarker(QString markerPOS);
+    void fDelMarker(QString markerPOS);
+    void fRetypeMarker(QString markerPos);
+    void fRetypeSeg(QString segInfo,int type,int isMany);
+    void fConnectSeg(QString segInfo);
 
 public:
     XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
-    void deleteCurveInAllSpace(QString segInfo);//neewd to finish
+    void deleteCurveInAllSpace(QString segInfo, int isMany);//neewd to finish
     void addCurveInAllSapce(QString segInfo);
     int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);
     static bool noTerafly;

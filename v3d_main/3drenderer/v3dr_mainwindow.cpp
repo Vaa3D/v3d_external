@@ -757,7 +757,7 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), 0, 0):"
                        <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0)"
-                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0);
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString,int)), 0, 0):"
                        <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0)"
@@ -765,23 +765,23 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), 0, 0)"
                          <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0)"
-                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0);
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int,int)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString,int)), 0, 0)"
                        <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), 0, 0);
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), glWidget, SLOT(CollaAddSeg(QString,int)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), glWidget, SLOT(CollaAddSeg(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), glWidget, SLOT(fAddSeg(QString)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), glWidget, SLOT(fDelSeg(QString,int)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0)"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), glWidget, SLOT(CollaRetypeSeg(QString,int)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int,int)), glWidget, SLOT(fRetypeSeg(QString,int,int)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString,int)), glWidget, SLOT(addMarker(QString,int)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), glWidget, SLOT(CollaAddMarker(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), glWidget, SLOT(fAddMarker(QString)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(delMarker(QString)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(CollaDelMarker(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(fDelMarker(QString)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), glWidget, SLOT(retypeMarker(QString)));"
-                         <<connect(glWidget->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), glWidget, SLOT(CollaRetypeMarker(QString)));
+                         <<connect(glWidget->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), glWidget, SLOT(fRetypeMarker(QString)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), glWidget, SLOT(CollconnectSeg(QString)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), glWidget, SLOT(CollconnectSeg(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), glWidget, SLOT(fConnectSeg(QString)));
             }else
             {
                 qDebug()<<"glWidget->TeraflyCommunicator==0";

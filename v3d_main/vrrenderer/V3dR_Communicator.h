@@ -24,6 +24,18 @@ class V3dR_Communicator : public QObject
         qint64 filesize=0;
 
     };
+
+    struct segInfoUnit
+    {
+        segInfoUnit() { hierarchy = 0; }
+        long segID;
+        long head_tail;
+        long nodeCount;
+        bool refine;
+
+        int branchID, paBranchID;
+        int hierarchy;
+    };
 public:
     explicit V3dR_Communicator(QObject *partent=nullptr);
     ~V3dR_Communicator()=default;
@@ -47,6 +59,7 @@ public:
      * 发送减线segment到服务器
      */
     void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype);
+    void UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString clienttype);
     void UpdateDelSegMsg(QString TVdelSegMSG);//this node is second node of seg,because this is esay to delete correct seg
     /**
      * @brief UpdateSendPoolNode
@@ -83,6 +96,7 @@ public:
      * 发送改seg颜色
      */
     void UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clienttype);
+    void UpdateRetypeManySegsMsg(vector<V_NeuronSWC> segs,int type,QString clienttype);
     void UpdateRetypeSegMsg(QString TVretypeSegMSG);
 
     void UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype);
@@ -96,9 +110,10 @@ public:
      * @return 将局部坐标的seg按格式转换为要发送的string
      */
 
-    void UpdateConnectSegMsg(V_NeuronSWC seg,QString clienttype);
+    void UpdateConnectSegMsg(segInfoUnit segInfo1, segInfoUnit segInfo2, QString clienttype);
 
     QStringList V_NeuronSWCToSendMSG(V_NeuronSWC seg);
+    QStringList segInfoUnitToSendMSG(segInfoUnit seginfo);
     //Coordinate transform
     XYZ ConvertGlobaltoLocalBlockCroods(double x,double y,double z);
     XYZ ConvertLocalBlocktoGlobalCroods(double x,double y,double z);
@@ -157,11 +172,11 @@ signals:
     void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
 
     void addSeg(QString);//加线信号 （type x y z;type x y z;...）
-    void delSeg(QString);//减线信号 （type x y z;type x y z;...）
+    void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
     void addMarker(QString);//加marker信号 (type x y z)
     void delMarker(QString);//减marker信号 (type x y z)
     void retypeMarker(QString);//改marker颜色信号(r,g,b,x,y,z)
-    void retypeSeg(QString,int);//改线的颜色信号（type x y z;type x y z;...）
+    void retypeSeg(QString,int,int);//改线的颜色信号（type x y z;type x y z;...）
     void connectSeg(QString);
     void updateuserview(QString);
     //msg process end
@@ -169,10 +184,10 @@ signals:
     void exit();
 public:
     void emitAddSeg(QString segInfo) {emit addSeg(segInfo);}
-    void emitDelSeg(QString segInfo) {emit delSeg(segInfo);}
+    void emitDelSeg(QString segInfo, int isMany) {emit delSeg(segInfo,isMany);}
     void emitAddMarker(QString markerInfo) {emit addMarker(markerInfo);}
     void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
-    void emitRetypeSeg(QString segInfo,int type) {emit retypeSeg(segInfo,type);}
+    void emitRetypeSeg(QString segInfo,int type, int isMany) {emit retypeSeg(segInfo,type,isMany);}
     void emitConnectSeg(QString segInfo){emit connectSeg(segInfo);}
     void setAddressIP(QString addressIp);
     void setPort(uint port);
