@@ -73,6 +73,17 @@ class V3dR_GLWidget : public QOpenGLWidget_proxy, public View3DControl
 //	friend class V3dR_MainWindow; //090710 RZC: to delete renderer before ~V3dR_GLWidget()
 //	friend class v3dr_surfaceDialog;
 //	friend class v3dr_colormapDialog;
+    struct segInfoUnit
+    {
+        segInfoUnit() { hierarchy = 0; }
+        long segID;
+        long head_tail;
+        long nodeCount;
+        bool refine;
+
+        int branchID, paBranchID;
+        int hierarchy;
+    };
 
 public:
     V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow=0, QString title="");
@@ -512,7 +523,7 @@ signals:
 		void signalCallTerafly(int nDirect);
 
 public slots:
-	void subtreeHighlightModeMonitor();
+    void subtreeHighlightModeMonitor();
 
 public:
 	bool _still, _stillpaint_need, _stillpaint_pending;
@@ -628,6 +639,8 @@ public:
     XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
     void deleteCurveInAllSpace(QString segInfo, int isMany);//neewd to finish
     void addCurveInAllSapce(QString segInfo);
+    void connectCurveInAllSapce(QString info);
+    void simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo);
     int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);
     static bool noTerafly;
     //    static QStringList global_delMSG;

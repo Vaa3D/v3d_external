@@ -25,17 +25,7 @@ class V3dR_Communicator : public QObject
 
     };
 
-    struct segInfoUnit
-    {
-        segInfoUnit() { hierarchy = 0; }
-        long segID;
-        long head_tail;
-        long nodeCount;
-        bool refine;
 
-        int branchID, paBranchID;
-        int hierarchy;
-    };
 public:
     explicit V3dR_Communicator(QObject *partent=nullptr);
     ~V3dR_Communicator()=default;
@@ -110,10 +100,9 @@ public:
      * @return 将局部坐标的seg按格式转换为要发送的string
      */
 
-    void UpdateConnectSegMsg(segInfoUnit segInfo1, segInfoUnit segInfo2, QString clienttype);
+    void UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_NeuronSWC seg2, QString clienttype);
 
     QStringList V_NeuronSWCToSendMSG(V_NeuronSWC seg);
-    QStringList segInfoUnitToSendMSG(segInfoUnit seginfo);
     //Coordinate transform
     XYZ ConvertGlobaltoLocalBlockCroods(double x,double y,double z);
     XYZ ConvertLocalBlocktoGlobalCroods(double x,double y,double z);

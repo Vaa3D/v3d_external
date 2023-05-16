@@ -115,10 +115,6 @@ void V3dR_Communicator::sendMsg(QString msg)
     socket->write(header.c_str(),header.size());
     socket->write(data.c_str(),data.size());
     socket->flush();
-    if(timer_exit->isActive()){
-        timer_exit->stop();
-    }
-    timer_exit->start(2*60*60*1000);
 }
 
 void V3dR_Communicator::preprocessmsgs(QStringList list)
@@ -367,12 +363,22 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
     }
 }
 
-void V3dR_Communicator::UpdateConnectSegMsg(segInfoUnit segInfo1, segInfoUnit segInfo2, QString clienttype)
+void V3dR_Communicator::UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_NeuronSWC seg2, QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        XYZ GlobalCrood1 = ConvertLocalBlocktoGlobalCroods(p1.x,p1.y,p1.z);
+        XYZ GlobalCrood2 = ConvertLocalBlocktoGlobalCroods(p2.x,p2.y,p2.z);
+        result.push_back(QString("%1 %2 %3").arg(GlobalCrood1.x).arg(GlobalCrood1.y).arg(GlobalCrood1.z));
+        result.push_back(QString("%1 %2 %3").arg(GlobalCrood2.x).arg(GlobalCrood2.y).arg(GlobalCrood2.z));
+        result+=V_NeuronSWCToSendMSG(seg1);
+        result.push_back("$");
+        result+=V_NeuronSWCToSendMSG(seg2);
+        result.push_back("$");
+        qDebug()<<"connectline_sendMsg"<<result.count();
+        sendMsg(QString("/connectline_norm:"+result.join(",")));
 //        result+=V_NeuronSWCToSendMSG(seg);
 //        qDebug()<<"connectline_sendMsg"<<result.count();
 //        sendMsg(QString("/connectline_norm:"+result.join(",")));
@@ -412,8 +418,10 @@ void V3dR_Communicator::UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString cl
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
         for(int i=0;i<segs.size();i++){
-            result+=V_NeuronSWCToSendMSG(segs[i]);
-            result.push_back("$");
+            if(segs[i].on){
+                result+=V_NeuronSWCToSendMSG(segs[i]);
+                result.push_back("$");
+            }
         }
 
         qDebug()<<"delline_sendMsg"<<result.count()<<"!!!!!!!!";
@@ -754,10 +762,6 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
     return result;
 }
 
-QStringList V3dR_Communicator::segInfoUnitToSendMSG(segInfoUnit seginfo){
-
-}
-
 XYZ V3dR_Communicator::ConvertGlobaltoLocalBlockCroods(double x,double y,double z)
 {
     auto node=ConvertMaxRes2CurrResCoords(x,y,z);
@@ -787,7 +791,7 @@ XYZ V3dR_Communicator::ConvertMaxRes2CurrResCoords(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertCurrRes2MaxResCoords(double x,double y,double z)
 {
-    qDebug()<<ImageMaxRes.x/ImageCurRes.x;
+//    qDebug()<<ImageMaxRes.x/ImageCurRes.x;
     x*=(ImageMaxRes.x/ImageCurRes.x);
     y*=(ImageMaxRes.y/ImageCurRes.y);
     z*=(ImageMaxRes.z/ImageCurRes.z);

@@ -3315,8 +3315,15 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
         curImg->ExtractDeletingNode(vector_VSWC);
 
         w->SetupCollaborateInfo();
-        for(auto seg:vector_VSWC)
-            w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
+        for(auto seg:vector_VSWC){
+            if(seg.on){
+               w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
+            }
+        }
+        if(w->TeraflyCommunicator->timer_exit->isActive()){
+            w->TeraflyCommunicator->timer_exit->stop();
+        }
+        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
     }
@@ -3324,6 +3331,13 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
 
     //curImg->proj_trace_history_append();          // no need to update the history
     curImg->update_3drenderer_neuron_view(w, this);
+
+//    QFuture<void> future = QtConcurrent::run([=](){
+//        for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
+//            curImg->tracedNeuron.seg[i].printInfo();
+//        }
+//    });
+
 //    NeuronTree nt= terafly::PluginInterface::getSWC();
 //    terafly::PluginInterface::setSWC(nt,false);// remove status delete segment
 }
@@ -3745,6 +3759,8 @@ void Renderer_gl1::simpleConnect()
 						}
 					}
 				}
+
+                vector<XYZ> specPoints;
 				/* ==== END of [Only take in the nodes within the rectangle that contains the stroke] ==== */
 
 				/* ========= Acquire the 1st 2 and only the 1st 2 segments touched by stroke ========= */
@@ -3781,7 +3797,7 @@ void Renderer_gl1::simpleConnect()
 									it != curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].row.end(); it++)
 								{
 									if (nodeOnStroke.at(j).x == it->data[2] && nodeOnStroke.at(j).y == it->data[3] && nodeOnStroke.at(j).z == it->data[4])
-									{
+                                    {
 										//---------------------- Get seg IDs
 										//qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
 										segInfoUnit curSeg;
@@ -3797,6 +3813,7 @@ void Renderer_gl1::simpleConnect()
 										{
 											segInfo.push_back(curSeg);
 											segCheck = it->data[6];
+                                            specPoints.push_back(XYZ(it->data[2],it->data[3],it->data[4]));
 										}
 										else
 										{
@@ -3814,6 +3831,7 @@ void Renderer_gl1::simpleConnect()
 											{
 												segInfo.push_back(curSeg);
 												segCheck = it->data[6];
+                                                specPoints.push_back(XYZ(it->data[2],it->data[3],it->data[4]));
 											}
 										}
 									}
@@ -3821,8 +3839,21 @@ void Renderer_gl1::simpleConnect()
 								break;
 							}
 						}
-					}
-					if (segInfo.size() == 2) break; // simple connection only allows 2 segments involved
+                    }
+                    if (segInfo.size() == 2){
+                        if (w->TeraflyCommunicator
+                            &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                        {
+                            w->SetupCollaborateInfo();
+                            w->TeraflyCommunicator->UpdateConnectSegMsg(specPoints[0], specPoints[1], curImg->tracedNeuron.seg[segInfo[0].segID],curImg->tracedNeuron.seg[segInfo[1].segID],"TeraFly");
+                            if(w->TeraflyCommunicator->timer_exit->isActive()){
+                                w->TeraflyCommunicator->timer_exit->stop();
+                            }
+                            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                        }
+
+                        break; // simple connection only allows 2 segments involved
+                    }
 				}
 				cout << endl;
 				for (vector<segInfoUnit>::iterator segInfoIt = segInfo.begin(); segInfoIt != segInfo.end(); ++segInfoIt)
@@ -3891,7 +3922,10 @@ void Renderer_gl1::simpleConnect()
 //                   }
 //                QString fileName = "";
 //                writeSWC_file(fileName, V_NeuronSWC_list__2__NeuronTree(curImg->tracedNeuron));
-				cout << endl;
+                cout << endl;
+//                for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
+//                    curImg->tracedNeuron.seg[i].printInfo();
+//                }
 			}
 		}
 	//}
@@ -4435,9 +4469,10 @@ void Renderer_gl1::showConnectedSegs()
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
-	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
-	
-	w->subtreeHighlightModeMonitor(); // Switch on subtree highlighting mode monitor in v3dr_glwidget.
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+    bool flag=true;
+
+    w->subtreeHighlightModeMonitor(); // Switch on subtree highlighting mode monitor in v3dr_glwidget.
 
 	//for (vector<V_NeuronSWC_unit>::iterator tempIt = curImg->tracedNeuron.seg.at(517).row.begin(); tempIt != curImg->tracedNeuron.seg.at(517).row.end(); ++tempIt)
 	//	tempIt->type = 0; // --> this is for debug purpose
@@ -5110,6 +5145,7 @@ void Renderer_gl1::escPressed_subtree()
 
 		this->originalSegMap.clear();
 		this->highlightedSegMap.clear();
+
 	}
 }
 // ----------------- END of [Highlight the selected segment with its downstream subtree, MK, June, 2018] -----------------
@@ -5120,7 +5156,8 @@ void Renderer_gl1::showSubtree()
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
-	w->subtreeHighlightModeMonitor();
+
+    w->subtreeHighlightModeMonitor();
 
 	float tolerance = 20; // tolerance distance from the backprojected neuron to the curve point
 
@@ -6948,9 +6985,6 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
                     allsegs.push_back(curImg->tracedNeuron.seg[idlist.at(cnt)]);
                 }
             }
-
-            if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-            {
 //                    for(int cnt=0;cnt<idlist.size();cnt++)
 //                        if (!(idlist.at(cnt)<0 || idlist.at(cnt)>= curImg->tracedNeuron.seg.size()))
 //                        {
@@ -6962,13 +6996,15 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 //                            }
 //                        }
 
-                if(w->TeraflyCommunicator
-                    &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-                {
-                    w->SetupCollaborateInfo();
-                    w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,currentTraceType,"TeraFly");
+            if(w->TeraflyCommunicator
+                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+            {
+                w->SetupCollaborateInfo();
+                w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,currentTraceType,"TeraFly");
+                if(w->TeraflyCommunicator->timer_exit->isActive()){
+                    w->TeraflyCommunicator->timer_exit->stop();
                 }
-
+                w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
             }
 
             curImg->update_3drenderer_neuron_view(w, this);

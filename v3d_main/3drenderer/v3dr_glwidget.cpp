@@ -1156,10 +1156,21 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 //                        }
                     });
 
+                    if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        if(w->TeraflyCommunicator->timer_exit->isActive()){
+                            w->TeraflyCommunicator->timer_exit->stop();
+                        }
+                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                    }
+
 					thisRenderer->escPressed_subtree();
 
 					curImg->update_3drenderer_neuron_view(this, thisRenderer);
 					curImg->proj_trace_history_append();
+//                    for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
+//                        curImg->tracedNeuron.seg[i].printInfo();
+//                    }
 				}
 			}
             break;
@@ -1232,7 +1243,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             }else if (IS_ALT_MODIFIER)
             {
 
-                //callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
+                callStrokeConnectMultiNeurons();//For multiple segments connection shortcut, by ZZ,02212018
             }
             else
             {
@@ -3744,22 +3755,28 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
                 }
 
                 if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+                    w->SetupCollaborateInfo();
+
                     QFuture<void> future = QtConcurrent::run([=]() {
-                        w->SetupCollaborateInfo();
                         w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,pressedNumber,"TeraFly");
+                        qDebug()<<"123";
                     });
-//                    while(!future.isFinished())
-//                    {
-//                        QApplication::processEvents(QEventLoop::AllEvents, 100);
-//                    }
+
+                    if(w->TeraflyCommunicator->timer_exit->isActive()){
+                        w->TeraflyCommunicator->timer_exit->stop();
+                    }
+                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+
                 }
 
 				curImg->update_3drenderer_neuron_view(this, thisRenderer);
 				curImg->proj_trace_history_append();
+                thisRenderer->escPressed_subtree();
+                return;
 			}
 		}
 
-		QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
+        QTimer::singleShot(50, this, SLOT(subtreeHighlightModeMonitor()));
 	}
 }
 
@@ -4415,11 +4432,12 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo, int isMany)
 }
 
 void V3dR_GLWidget::fDelSeg(QString segInfo, int isMany){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelSeg, segInfo, isMany);
-    while(!future.isFinished())
-    {
-        QApplication::processEvents(QEventLoop::AllEvents, 100);
-    }
+    CollaDelSeg(segInfo, isMany);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelSeg, segInfo, isMany);
+//    while(!future.isFinished())
+//    {
+//        QApplication::processEvents(QEventLoop::AllEvents, 100);
+//    }
 }
 
 //NeuronTree V3dR_GLWidget::convertMsg2NT(QStringList list)
@@ -4542,16 +4560,17 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 }
 
 void V3dR_GLWidget::fAddSeg(QString segInfo){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddSeg, segInfo);
-    while(!future.isFinished())
-    {
-        QApplication::processEvents(QEventLoop::AllEvents, 100);
-    }
+    CollaAddSeg(segInfo);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddSeg, segInfo);
+//    while(!future.isFinished())
+//    {
+//        QApplication::processEvents(QEventLoop::AllEvents, 100);
+//    }
 }
 
 void V3dR_GLWidget::CollaConnectSeg(QString segInfo)
 {
-    addCurveInAllSapce(segInfo);
+    connectCurveInAllSapce(segInfo);
 }
 
 void V3dR_GLWidget::fConnectSeg(QString segInfo){
@@ -4691,34 +4710,34 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
 {
     if(segInfo.isEmpty()) return;
     V_NeuronSWC seg;
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    QStringList qsl=segInfo.split(",",QString::SkipEmptyParts);
+    qDebug()<<"after receive the msg"<<segInfo;
+    for (int i = 0; i<qsl.size(); i++)
     {
-        NeuronTree newTempNT;
-        newTempNT.listNeuron.clear();
-        newTempNT.hashNeuron.clear();
-        QStringList qsl=segInfo.split(",",QString::SkipEmptyParts);
-        qDebug()<<"after receive the msg"<<segInfo;
-        for (int i = 0; i<qsl.size(); i++)
-        {
-            NeuronSWC S;
-            QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
-            qDebug()<<i<<":"<<nodelist;
-            if(nodelist.size()<4) return;
-            S.n=i+1;
-            S.type=nodelist[0].toInt();
-            S.x=nodelist[1].toFloat();
-            S.y=nodelist[2].toFloat();
-            S.z=nodelist[3].toFloat();
-            S.r=1;
-            if(i==0)
-                S.pn=-1;
-            else
-                S.pn=i;
-            newTempNT.listNeuron.push_back(S);
-            newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
-        }
-//        qDebug()<<"new NT is constructed";
-        seg=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
+        NeuronSWC S;
+        QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
+        qDebug()<<i<<":"<<nodelist;
+        if(nodelist.size()<4) return;
+        S.n=i+1;
+        S.type=nodelist[0].toInt();
+        S.x=nodelist[1].toFloat();
+        S.y=nodelist[2].toFloat();
+        S.z=nodelist[3].toFloat();
+        S.r=1;
+        if(i==0)
+            S.pn=-1;
+        else
+            S.pn=i;
+        newTempNT.listNeuron.push_back(S);
+        newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
     }
+//        qDebug()<<"new NT is constructed";
+    seg=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
+
     qDebug()<<"new seg is constructed";
 
     NeuronTree  nt = terafly::PluginInterface::getSWC();
@@ -4728,6 +4747,318 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
     terafly::PluginInterface::setSWC(nt,true);
 //    QString fileName = "";
 //    writeSWC_file(fileName,nt);
+}
+
+void V3dR_GLWidget::connectCurveInAllSapce(QString info){
+    QStringList pointlist=info.split(",",QString::SkipEmptyParts);
+    QStringList specPointsInfo1=pointlist[0].split(' ',QString::SkipEmptyParts);
+    QStringList specPointsInfo2=pointlist[1].split(' ',QString::SkipEmptyParts);
+    XYZ p1=XYZ(specPointsInfo1[0].toFloat(), specPointsInfo1[1].toFloat(), specPointsInfo1[2].toFloat());
+    XYZ p2=XYZ(specPointsInfo2[0].toFloat(), specPointsInfo2[1].toFloat(), specPointsInfo2[2].toFloat());
+    pointlist.removeAt(0);
+    pointlist.removeAt(0);
+
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    for(int i=0;i<v_ns_list.seg.size();i++){
+        v_ns_list.seg[i].printInfo();
+    }
+
+    vector<segInfoUnit> segInfo;
+
+    float mindist=1;
+
+    QVector<XYZ> coords;
+    for(int i=0;i<pointlist.size();i++)
+    {
+        if(pointlist.at(i)!="$"){
+            auto node= pointlist.at(i).split(" ");
+            coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
+        }
+        else{
+            int index=findseg(v_ns_list,coords);
+            qDebug()<<"INDEX"<<index;
+            if(index>=0)
+            {
+                //父子关系逆序
+                if (v_ns_list.seg[index].row.begin()->data[6] != 2) // Sort the node numbers of involved segments
+                {
+                    int nodeNo = 1;
+                    for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
+                         it_unit != v_ns_list.seg[index].row.end(); it_unit++)
+                    {
+                        it_unit->data[0] = nodeNo;
+                        it_unit->data[6] = nodeNo + 1;
+                        ++nodeNo;
+                    }
+                    (v_ns_list.seg[index].row.end() - 1)->data[6] = -1;
+                }
+
+                //构造segInfo
+                if(segInfo.size()==0){
+                    for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
+                         it_unit != v_ns_list.seg[index].row.end(); it_unit++)
+                    {
+                        if (p1.x == it_unit->data[2] && p1.y == it_unit->data[3] && p1.z == it_unit->data[4])
+                        {
+                            //---------------------- Get seg IDs
+                            //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
+                            segInfoUnit curSeg;
+                            curSeg.head_tail = it_unit->data[6];
+                            curSeg.segID = index;
+                            curSeg.nodeCount = v_ns_list.seg[index].row.size();
+                            curSeg.refine = false;
+                            curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
+                            curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
+                            curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
+                            segInfo.push_back(curSeg);
+                            break;
+                        }
+                    }
+                }
+
+                else if(segInfo.size()==1){
+                    for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
+                         it_unit != v_ns_list.seg[index].row.end(); it_unit++)
+                    {
+                        if (p2.x == it_unit->data[2] && p2.y == it_unit->data[3] && p2.z == it_unit->data[4])
+                        {
+                            //---------------------- Get seg IDs
+                            //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
+                            segInfoUnit curSeg;
+                            curSeg.head_tail = it_unit->data[6];
+                            curSeg.segID = index;
+                            curSeg.nodeCount = v_ns_list.seg[index].row.size();
+                            curSeg.refine = false;
+                            curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
+                            curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
+                            curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
+                            segInfo.push_back(curSeg);
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                qDebug()<<"ERROR:cannot find curve " + info;
+            }
+            coords.clear();
+        }
+    }
+
+    simpleConnectExecutor(v_ns_list, segInfo);
+
+    if (v_ns_list.seg[segInfo[0].segID].to_be_deleted)
+    {
+        qDebug()<<"enter tracedNeuron.seg[segInfo[0]]";
+        vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(v_ns_list.seg[segInfo[1].segID]);
+        for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
+            v_ns_list.seg.push_back(*addedIt);
+
+        v_ns_list.seg[segInfo[1].segID].to_be_deleted = true;
+        v_ns_list.seg[segInfo[1].segID].on = false;
+
+    }
+    else if (v_ns_list.seg[segInfo[1].segID].to_be_deleted)
+    {
+        qDebug()<<"enter tracedNeuron.seg[segInfo[1]]";
+        vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(v_ns_list.seg[segInfo[0].segID]);
+        for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
+            v_ns_list.seg.push_back(*addedIt);
+
+        v_ns_list.seg[segInfo[0].segID].to_be_deleted = true;
+        v_ns_list.seg[segInfo[0].segID].on = false;
+    }
+
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+
+}
+
+void V3dR_GLWidget::simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo){
+    qDebug()<<"begin to simpleConnectExecutor";
+    // This method is the "executor" of Renderer_gl1::simpleConnect(), MK, May, 2018
+
+    //////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
+    if ((segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2) && (segInfo.at(1).head_tail == -1 || segInfo.at(1).head_tail == 2))
+    {
+        segInfoUnit mainSeg, branchSeg;
+        if (segInfo.at(0).nodeCount >= segInfo.at(1).nodeCount)
+        {
+            mainSeg = segInfo.at(0);
+            branchSeg = segInfo.at(1);
+            qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+            qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+        else
+        {
+            mainSeg = segInfo.at(1);
+            branchSeg = segInfo.at(0);
+            qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+            qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+
+        double assignedType;
+        assignedType = segments.seg[segInfo.at(0).segID].row[0].type;
+        segments.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
+        //        qDebug()<<"zll___debug__mainSeg.head_tail"<<mainSeg.head_tail;
+        if (mainSeg.head_tail == -1)
+        {
+            //            qDebug()<<"(zll-debug)branchSeg.head_tail="<<branchSeg.head_tail;
+            if (branchSeg.head_tail == -1) // head to head
+            {
+                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.end() - 1;
+                     itNextSeg >= segments.seg[branchSeg.segID].row.begin(); --itNextSeg)
+                {
+                    itNextSeg->seg_id = branchSeg.segID;
+                    segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+            }
+            else if (branchSeg.head_tail == 2) // head to tail
+            {
+                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.begin();
+                     itNextSeg != segments.seg[branchSeg.segID].row.end(); ++itNextSeg)
+                {
+                    itNextSeg->seg_id = branchSeg.segID;
+                    segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+            }
+            segments.seg[branchSeg.segID].to_be_deleted = true;
+            segments.seg[branchSeg.segID].on = false;
+
+            // sorting the new segment here, and reassign the root node to the new tail
+            size_t nextSegNo = 1;
+            for (vector<V_NeuronSWC_unit>::iterator itSort = segments.seg[mainSeg.segID].row.begin();
+                 itSort != segments.seg[mainSeg.segID].row.end(); ++itSort)
+            {
+                itSort->data[0] = nextSegNo;
+                itSort->data[6] = itSort->data[0] + 1;
+                ++nextSegNo;
+            }
+            (segments.seg[mainSeg.segID].row.end() - 1)->data[6] = -1;
+        }
+        else if (mainSeg.head_tail == 2)
+        {
+            std::reverse(segments.seg[mainSeg.segID].row.begin(), segments.seg[mainSeg.segID].row.end());
+            //            qDebug()<<"zll___debug__2_branchSeg.head_tail"<<branchSeg.head_tail;
+            if (branchSeg.head_tail == -1) // tail to head
+            {
+                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.end() - 1;
+                     itNextSeg >= segments.seg[branchSeg.segID].row.begin(); itNextSeg--)
+                {
+                    itNextSeg->seg_id = branchSeg.segID;
+                    segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+            }
+            else if (branchSeg.head_tail == 2) // tail to tail
+            {
+                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.begin();
+                     itNextSeg != segments.seg[branchSeg.segID].row.end(); itNextSeg++)
+                {
+                    itNextSeg->seg_id = branchSeg.segID;
+                    segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+            }
+            segments.seg[branchSeg.segID].to_be_deleted = true;
+            segments.seg[branchSeg.segID].on = false;
+
+            // sorting the new segment here, and reassign the root node to the new tail
+            std::reverse(segments.seg[mainSeg.segID].row.begin(), segments.seg[mainSeg.segID].row.end());
+            size_t nextSegNo = 1;
+            for (vector<V_NeuronSWC_unit>::iterator itSort = segments.seg[mainSeg.segID].row.begin();
+                 itSort != segments.seg[mainSeg.segID].row.end(); itSort++)
+            {
+                itSort->data[0] = nextSegNo;
+                itSort->data[6] = itSort->data[0] + 1;
+                ++nextSegNo;
+            }
+            (segments.seg[mainSeg.segID].row.end() - 1)->data[6] = -1;
+        }
+
+        // correcting types, based on the main segment type
+        for (vector<V_NeuronSWC_unit>::iterator reID = segments.seg[mainSeg.segID].row.begin();
+             reID != segments.seg[mainSeg.segID].row.end(); ++reID)
+        {
+            reID->seg_id = mainSeg.segID;
+            reID->type = assignedType;
+            //            qDebug()<<"zll_debug"<<reID->type;
+        }
+    }
+    //////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
+
+    //////////////////////////////////////////// BRANCHING CONNECTION ////////////////////////////////////////////
+    if ((segInfo.at(0).head_tail != -1 && segInfo.at(0).head_tail != 2) ^ (segInfo.at(1).head_tail != -1 && segInfo.at(1).head_tail != 2))
+    {
+        segInfoUnit mainSeg, branchSeg;
+        if (segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2)
+        {
+            mainSeg = segInfo.at(1);
+            branchSeg = segInfo.at(0);
+            qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+            qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+        else
+        {
+            mainSeg = segInfo.at(0);
+            branchSeg = segInfo.at(1);
+            qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+            qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+
+        double assignedType;
+        assignedType = segments.seg[segInfo.at(0).segID].row[0].type;
+        segments.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
+        if (branchSeg.head_tail == 2) // branch to tail
+        {
+            std::reverse(segments.seg[branchSeg.segID].row.begin(), segments.seg[branchSeg.segID].row.end());
+            size_t branchSegLength = segments.seg[branchSeg.segID].row.size();
+            size_t mainSegLength = segments.seg[mainSeg.segID].row.size();
+            segments.seg[mainSeg.segID].row.insert(segments.seg[mainSeg.segID].row.end(), segments.seg[branchSeg.segID].row.begin(), segments.seg[branchSeg.segID].row.end());
+            size_t branchN = mainSegLength + 1;
+            for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[mainSeg.segID].row.end() - 1;
+                 itNextSeg != segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSegLength - 1); --itNextSeg)
+            {
+                itNextSeg->n = branchN;
+                itNextSeg->seg_id = mainSeg.segID;
+                itNextSeg->parent = branchN - 1;
+                ++branchN;
+            }
+            (segments.seg[mainSeg.segID].row.end() - 1)->parent = (segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
+            segments.seg[branchSeg.segID].to_be_deleted = true;
+            segments.seg[branchSeg.segID].on = false;
+        }
+        else if (branchSeg.head_tail == -1) // branch to head
+        {
+            size_t branchSegLength = segments.seg[branchSeg.segID].row.size();
+            size_t mainSegLength = segments.seg[mainSeg.segID].row.size();
+            segments.seg[mainSeg.segID].row.insert(segments.seg[mainSeg.segID].row.end(), segments.seg[branchSeg.segID].row.begin(), segments.seg[branchSeg.segID].row.end());
+            size_t branchN = mainSegLength + 1;
+            for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[mainSeg.segID].row.end() - 1;
+                 itNextSeg != segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSegLength - 1); --itNextSeg)
+            {
+                itNextSeg->n = branchN;
+                itNextSeg->seg_id = mainSeg.segID;
+                itNextSeg->parent = branchN - 1;
+                ++branchN;
+            }
+            (segments.seg[mainSeg.segID].row.end() - 1)->parent = (segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
+            segments.seg[branchSeg.segID].to_be_deleted = true;
+            segments.seg[branchSeg.segID].on = false;
+        }
+
+        // correcting types, based on the main segment type
+        for (vector<V_NeuronSWC_unit>::iterator reID = segments.seg[mainSeg.segID].row.begin();
+             reID != segments.seg[mainSeg.segID].row.end(); ++reID)
+        {
+            reID->seg_id = mainSeg.segID;
+            reID->type = assignedType;
+        }
+    }
+    //////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
+
+    return;
 }
 
 XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> local

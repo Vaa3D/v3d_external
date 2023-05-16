@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
  * All rights reserved.
  */
@@ -57,14 +57,16 @@ using namespace std;
 
 void V_NeuronSWC::printInfo()
 {
-	qDebug()<<"*********** start print info";
-	qDebug()<<"name=["<<name.c_str()<<"] comment=["<<comment.c_str()<<"] file=["<<file.c_str()<<"] b_linegraph=["<<b_linegraph<<"] b_jointed=["<<b_jointed<<"]";
-	for (V3DLONG i=0;i<row.size();i++)
-	{
-		V_NeuronSWC_unit v = row.at(i);
-		qDebug()<<"row ["<< i <<"] : "<<v.data[0]<<" "<<v.data[1]<<" "<<v.data[2]<<" "<<v.data[3]<<" "<<v.data[4]<<" "<<v.data[5]<<" "<<v.data[6];
-	}
-	qDebug()<<"*********** finish print info";
+    qDebug()<<"*********** start print info";
+    qDebug()<<"name=["<<name.c_str()<<"] comment=["<<comment.c_str()<<"] file=["<<file.c_str()<<"] b_linegraph=["<<b_linegraph<<"] b_jointed=["<<b_jointed<<"]";
+    qDebug()<<"to_be_deleted=["<<to_be_deleted<<"]";
+    for (V3DLONG i=0;i<row.size();i++)
+    {
+        V_NeuronSWC_unit v = row.at(i);
+        qDebug()<<"row ["<< i <<"] : "<<v.data[0]<<" "<<v.data[1]<<" "<<v.data[2]<<" "<<v.data[3]<<" "<<v.data[4]<<" "<<v.data[5]<<" "<<v.data[6];
+        qDebug()<<"segId: "<<v.seg_id;
+    }
+    qDebug()<<"*********** finish print info";
 }
 
 

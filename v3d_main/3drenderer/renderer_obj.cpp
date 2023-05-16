@@ -1871,14 +1871,24 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
 					w->SetupCollaborateInfo();
                     w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg,"TeraFly");
+                    if(w->TeraflyCommunicator->timer_exit->isActive()){
+                        w->TeraflyCommunicator->timer_exit->stop();
+                    }
+                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
                 }/*else
                 {
                     QMessageBox::information(0,tr("Message "),
                                      tr("Connection Lost!Data has been saved!"),
                                      QMessageBox::Ok);
                 }*/
-			}	
+			}
             curImg->update_3drenderer_neuron_view(w, this);
+
+//            QFuture<void> future = QtConcurrent::run([=](){
+//                for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
+//                    curImg->tracedNeuron.seg[i].printInfo();
+//                }
+//            });
         }
     }
 
