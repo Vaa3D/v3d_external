@@ -4320,12 +4320,12 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
    L: terafly::PluginInterface::setLandmark(markers,true);
 }
 
-void V3dR_GLWidget::fAddMarker(QString markerPOS){
+void V3dR_GLWidget::newThreadAddMarker(QString markerPOS){
     QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddMarker, markerPOS);
-    while(!future.isFinished())
-    {
-        QApplication::processEvents(QEventLoop::AllEvents, 100);
-    }
+//    while(!future.isFinished())
+//    {
+//        QApplication::processEvents(QEventLoop::AllEvents, 100);
+//    }
 }
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
@@ -4360,12 +4360,12 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
     terafly::PluginInterface::setLandmark(markers,true);
 }
 
-void V3dR_GLWidget::fDelMarker(QString markerPOS){
+void V3dR_GLWidget::newThreadDelMarker(QString markerPOS){
     QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelMarker, markerPOS);
-    while(!future.isFinished())
-    {
-        QApplication::processEvents(QEventLoop::AllEvents, 100);
-    }
+//    while(!future.isFinished())
+//    {
+//        QApplication::processEvents(QEventLoop::AllEvents, 100);
+//    }
 }
 
 void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
@@ -4404,12 +4404,12 @@ void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
     terafly::PluginInterface::setLandmark(markers,true);
 }
 
-void V3dR_GLWidget::fRetypeMarker(QString markerPOS){
+void V3dR_GLWidget::newThreadRetypeMarker(QString markerPOS){
     QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeMarker, markerPOS);
-    while(!future.isFinished())
-    {
-        QApplication::processEvents(QEventLoop::AllEvents, 100);
-    }
+//    while(!future.isFinished())
+//    {
+//        QApplication::processEvents(QEventLoop::AllEvents, 100);
+//    }
 }
 
 
@@ -4431,7 +4431,7 @@ void V3dR_GLWidget::CollaDelSeg(QString segInfo, int isMany)
 //    POST_updateGL();
 }
 
-void V3dR_GLWidget::fDelSeg(QString segInfo, int isMany){
+void V3dR_GLWidget::newThreadDelSeg(QString segInfo, int isMany){
     CollaDelSeg(segInfo, isMany);
 //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelSeg, segInfo, isMany);
 //    while(!future.isFinished())
@@ -4526,12 +4526,12 @@ void V3dR_GLWidget::CollaRetypeSeg(QString segInfo,int type,int isMany)
     terafly::PluginInterface::setSWC(nt,true);
 }
 
-void V3dR_GLWidget::fRetypeSeg(QString segInfo,int type, int isMany){
+void V3dR_GLWidget::newThreadRetypeSeg(QString segInfo,int type, int isMany){
     QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeSeg, segInfo, type, isMany);
-    while(!future.isFinished())
-    {
-        QApplication::processEvents(QEventLoop::AllEvents, 100);
-    }
+//    while(!future.isFinished())
+//    {
+//        QApplication::processEvents(QEventLoop::AllEvents, 100);
+//    }
 }
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo)
@@ -4559,7 +4559,7 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo)
     addCurveInAllSapce(segInfo);
 }
 
-void V3dR_GLWidget::fAddSeg(QString segInfo){
+void V3dR_GLWidget::newThreadAddSeg(QString segInfo){
     CollaAddSeg(segInfo);
 //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddSeg, segInfo);
 //    while(!future.isFinished())
@@ -4573,17 +4573,135 @@ void V3dR_GLWidget::CollaConnectSeg(QString segInfo)
     connectCurveInAllSapce(segInfo);
 }
 
-void V3dR_GLWidget::fConnectSeg(QString segInfo){
+void V3dR_GLWidget::newThreadConnectSeg(QString segInfo){
     QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaConnectSeg, segInfo);
-    while(!future.isFinished())
+//    while(!future.isFinished())
+//    {
+//        QApplication::processEvents(QEventLoop::AllEvents, 100);
+//    }
+}
+
+void V3dR_GLWidget::CollaSplitSeg(QString segInfo){
+    if(segInfo.isEmpty()) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    XYZ point1,point2;
+
+    auto segInfos=segInfo.split(",");
+
+    float mindist=1;
+
+    QVector<XYZ> coords;
+    int firstIndex;
+    for(int i=0;i<segInfos.size();i++)
     {
-        QApplication::processEvents(QEventLoop::AllEvents, 100);
+        if(segInfos.at(i)!="$"){
+            auto node= segInfos.at(i).split(" ");
+            coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
+        }
+        else{
+            firstIndex=i;
+            int index=findseg(v_ns_list,coords);
+            qDebug()<<"INDEX:"<<index;
+            if(index>=0)
+            {
+                point1.x=v_ns_list.seg[index].row[0].x;
+                point1.y=v_ns_list.seg[index].row[0].y;
+                point1.z=v_ns_list.seg[index].row[0].z;
+                point2.x=v_ns_list.seg[index].row[v_ns_list.seg[index].row.size()-1].x;
+                point2.y=v_ns_list.seg[index].row[v_ns_list.seg[index].row.size()-1].y;
+                point2.z=v_ns_list.seg[index].row[v_ns_list.seg[index].row.size()-1].z;
+                v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
+            }else
+            {
+                qDebug()<<"ERROR:cannot delete curve " + segInfo;
+                return;
+            }
+            coords.clear();
+            break;
+        }
     }
+
+    QStringList pointlist=segInfos;
+    for(int i=0;i<=firstIndex;i++){
+        pointlist.removeAt(0);
+    }
+//    qDebug()<<pointlist;
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    int index=0;
+    int cnt=pointlist.size();
+    for(int i=0;i<cnt;i++)
+    {
+        if(pointlist[i]!="$"){
+            NeuronSWC S;
+            QStringList nodelist=pointlist[i].split(' ',QString::SkipEmptyParts);
+            if(nodelist.size()<4)
+                return;
+            S.n=i+1;
+            S.type=nodelist[0].toUInt();
+
+            S.x=nodelist[1].toFloat();
+            S.y=nodelist[2].toFloat();
+            S.z=nodelist[3].toFloat();
+            S.r=1;
+
+            if(index==0) S.pn=-1;
+            else S.pn=i;
+            newTempNT.listNeuron.push_back(S);
+            newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+            index++;
+        }
+        else{
+            index=0;
+        }
+
+    }
+    vector<V_NeuronSWC> addsegs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
+
+    qDebug()<<"new seg is constructed";
+
+    for(int i=0;i<addsegs.size();i++){
+        if(distance(addsegs[i].row[0].x,point1.x,addsegs[i].row[0].y,point1.y,addsegs[i].row[0].z,point1.z)<0.3){
+            addsegs[i].row[0].x=point1.x;
+            addsegs[i].row[0].y=point1.y;
+            addsegs[i].row[0].z=point1.z;
+        }
+        if(distance(addsegs[i].row[0].x,point2.x,addsegs[i].row[0].y,point2.y,addsegs[i].row[0].z,point2.z)<0.3){
+            addsegs[i].row[0].x=point2.x;
+            addsegs[i].row[0].y=point2.y;
+            addsegs[i].row[0].z=point2.z;
+        }
+        if(distance(addsegs[i].row[addsegs[i].row.size()-1].x,point2.x,addsegs[i].row[addsegs[i].row.size()-1].y,point2.y,addsegs[i].row[addsegs[i].row.size()-1].z,point2.z)<0.3){
+            addsegs[i].row[addsegs[i].row.size()-1].x=point2.x;
+            addsegs[i].row[addsegs[i].row.size()-1].y=point2.y;
+            addsegs[i].row[addsegs[i].row.size()-1].z=point2.z;
+        }
+        if(distance(addsegs[i].row[addsegs[i].row.size()-1].x,point1.x,addsegs[i].row[addsegs[i].row.size()-1].y,point1.y,addsegs[i].row[addsegs[i].row.size()-1].z,point1.z)<0.3){
+            addsegs[i].row[addsegs[i].row.size()-1].x=point1.x;
+            addsegs[i].row[addsegs[i].row.size()-1].y=point1.y;
+            addsegs[i].row[addsegs[i].row.size()-1].z=point1.z;
+        }
+        v_ns_list.seg.push_back(addsegs[i]);
+    }
+
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+}
+
+void V3dR_GLWidget::newThreadSplitSeg(QString segInfo){
+    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaSplitSeg, segInfo);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
 }
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {
-    float mindist=0.2/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
+    float mindist=0.6/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
     qDebug()<<"threshold="<<mindist;
     int index=-1;
 
@@ -4709,40 +4827,174 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
 void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
 {
     if(segInfo.isEmpty()) return;
-    V_NeuronSWC seg;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    XYZ point1,point2;
+    QStringList pointlist=segInfo.split(",",QString::SkipEmptyParts);
+    QStringList pointlist_1=pointlist[0].split(' ',QString::SkipEmptyParts);
+    point1.x=pointlist_1[1].toFloat();
+    point1.y=pointlist_1[2].toFloat();
+    point1.z=pointlist_1[3].toFloat();
+    for(int i=0;i<pointlist.size();i++)
+    {
+        if(pointlist[i]=="$"){
+            QStringList pointlist_2=pointlist[i-1].split(' ',QString::SkipEmptyParts);
+            point2.x=pointlist_2[1].toFloat();
+            point2.y=pointlist_2[2].toFloat();
+            point2.z=pointlist_2[3].toFloat();
+            break;
+        }
+    }
 
     NeuronTree newTempNT;
     newTempNT.listNeuron.clear();
     newTempNT.hashNeuron.clear();
     QStringList qsl=segInfo.split(",",QString::SkipEmptyParts);
     qDebug()<<"after receive the msg"<<segInfo;
+    int index=0;
+    int timestamp=QDateTime::currentMSecsSinceEpoch();
     for (int i = 0; i<qsl.size(); i++)
     {
-        NeuronSWC S;
-        QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
-        qDebug()<<i<<":"<<nodelist;
-        if(nodelist.size()<4) return;
-        S.n=i+1;
-        S.type=nodelist[0].toInt();
-        S.x=nodelist[1].toFloat();
-        S.y=nodelist[2].toFloat();
-        S.z=nodelist[3].toFloat();
-        S.r=1;
-        if(i==0)
-            S.pn=-1;
-        else
-            S.pn=i;
-        newTempNT.listNeuron.push_back(S);
-        newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+        if(qsl[i]!="$"){
+            NeuronSWC S;
+            QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
+            qDebug()<<i<<":"<<nodelist;
+            if(nodelist.size()<4) return;
+            S.n=i+1;
+            S.type=nodelist[0].toInt();
+            S.x=nodelist[1].toFloat();
+            S.y=nodelist[2].toFloat();
+            S.z=nodelist[3].toFloat();
+            S.r=1;
+            if(index==0) S.pn=-1;
+            else S.pn=i;
+            S.timestamp=timestamp;
+            newTempNT.listNeuron.push_back(S);
+            newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+            index++;
+        }
+        else{
+            index=0;
+        }
     }
-//        qDebug()<<"new NT is constructed";
-    seg=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg.at(0);
 
+//        qDebug()<<"new NT is constructed";
+    auto segs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
+    bool flag;
+    if(point1.x==segs[0].row[0].x&&point1.y==segs[0].row[0].y&&point1.z==segs[0].row[0].z)
+        flag=true;
+    else
+        flag=false;
     qDebug()<<"new seg is constructed";
 
-    NeuronTree  nt = terafly::PluginInterface::getSWC();
-    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
-    v_ns_list.seg.push_back(seg);
+    QVector<XYZ> coords;
+    if(segs.size()==2){
+        for(int i=0;i<segs[1].row.size();i++){
+            coords.push_back(XYZ(segs[1].row[i].x,segs[1].row[i].y,segs[1].row[i].z));
+        }
+        index=findseg(v_ns_list, coords);
+        if(index>=0)
+        {
+            for(int i=0;i<v_ns_list.seg[index].row.size();i++){
+                if(flag){
+                    if(distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z)<0.3)
+                    {
+                        segs[0].row[0].x=v_ns_list.seg[index].row[i].x;
+                        segs[0].row[0].y=v_ns_list.seg[index].row[i].y;
+                        segs[0].row[0].z=v_ns_list.seg[index].row[i].z;
+                        qDebug()<<"firstSeg success";
+                        break;
+                    }
+                }else{
+                    if(distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z)<0.3)
+                    {
+                        segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[i].x;
+                        segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[i].y;
+                        segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[i].z;
+                        qDebug()<<"firstSeg success";
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
+        }
+    }
+
+    if(segs.size()==3){
+        for(int i=0;i<segs[1].row.size();i++){
+            coords.push_back(XYZ(segs[1].row[i].x,segs[1].row[i].y,segs[1].row[i].z));
+        }
+        index=findseg(v_ns_list, coords);
+        if(index>=0)
+        {
+            for(int i=0;i<v_ns_list.seg[index].row.size();i++){
+                if(flag){
+                    if(distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z)<0.3)
+                    {
+                        segs[0].row[0].x=v_ns_list.seg[index].row[i].x;
+                        segs[0].row[0].y=v_ns_list.seg[index].row[i].y;
+                        segs[0].row[0].z=v_ns_list.seg[index].row[i].z;
+                        qDebug()<<"firstSeg success";
+                        break;
+                    }
+                }else{
+                    if(distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z)<0.3)
+                    {
+                        segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[i].x;
+                        segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[i].y;
+                        segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[i].z;
+                        qDebug()<<"firstSeg success";
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
+        }
+
+        coords.clear();
+        for(int i=0;i<segs[2].row.size();i++){
+            coords.push_back(XYZ(segs[2].row[i].x,segs[2].row[i].y,segs[2].row[i].z));
+        }
+        index=findseg(v_ns_list, coords);
+
+        if(index>=0)
+        {
+            for(int i=0;i<v_ns_list.seg[index].row.size();i++){
+                if(!flag){
+                    if(distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z)<0.3)
+                    {
+                        segs[0].row[0].x=v_ns_list.seg[index].row[i].x;
+                        segs[0].row[0].y=v_ns_list.seg[index].row[i].y;
+                        segs[0].row[0].z=v_ns_list.seg[index].row[i].z;
+                        qDebug()<<"secondSeg success";
+                        break;
+                    }
+                }else{
+                    if(distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z)<0.3)
+                    {
+                        segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[i].x;
+                        segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[i].y;
+                        segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[i].z;
+                        qDebug()<<"secondSeg success";
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
+        }
+    }
+
+    v_ns_list.seg.push_back(segs[0]);
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
     terafly::PluginInterface::setSWC(nt,true);
 //    QString fileName = "";
@@ -5059,6 +5311,14 @@ void V3dR_GLWidget::simpleConnectExecutor(V_NeuronSWC_list& segments, vector<seg
     //////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
 
     return;
+}
+
+double V3dR_GLWidget::distance(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2){
+    return sqrt(
+        (x1-x2)*(x1-x2)+
+        (y1-y2)*(y1-y2)+
+        (z1-z2)*(z1-z2)
+        );
 }
 
 XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> local

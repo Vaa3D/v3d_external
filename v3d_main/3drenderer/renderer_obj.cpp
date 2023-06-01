@@ -1857,10 +1857,36 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
 
+            QVector<XYZ> coords;
+            int firstSegID=-1;
+            int secondSegID=-1;
+            for(int i=0;i<curImg->colla_cur_seg.row.size();i++)
+            {
+                coords.push_back(XYZ(curImg->colla_cur_seg.row[i].x,curImg->colla_cur_seg.row[i].y,curImg->colla_cur_seg.row[i].z));
+            }
+            int index=w->findseg(curImg->tracedNeuron,coords);
+            if(index<0)
+                qDebug("addCurve: index<0");
+
+            for(size_t i=0; i<curImg->tracedNeuron.seg.size(); ++i){
+                V_NeuronSWC seg=curImg->tracedNeuron.seg[i];
+                for(size_t j=0; j<seg.row.size(); j++){
+                    if(seg.row[j].x==curImg->colla_cur_seg.row[0].x&&seg.row[j].y==curImg->colla_cur_seg.row[0].y&&seg.row[j].z==curImg->colla_cur_seg.row[0].z&&index!=i)
+                        firstSegID=i;
+                    if(seg.row[j].x==curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].x&&seg.row[j].y==curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].y&&seg.row[j].z==curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].z&&index!=i)
+                        secondSegID=i;
+                }
+            }
+
+            qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
+            vector<V_NeuronSWC> connectedSegs;
+            if(firstSegID!=-1)
+                connectedSegs.push_back(curImg->tracedNeuron.seg[firstSegID]);
+            if(secondSegID!=-1)
+                connectedSegs.push_back(curImg->tracedNeuron.seg[secondSegID]);
 
             if (!fromserver)
 			{
-
                 if (w->TeraflyCommunicator
                     &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState
                  && curImg->colla_cur_seg.row.size() > 0)
@@ -1870,7 +1896,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 					w->TeraflyCommunicator->cur_chno = curImg->cur_chno;
 					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
 					w->SetupCollaborateInfo();
-                    w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg,"TeraFly");
+                    w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg, connectedSegs, "TeraFly");
                     if(w->TeraflyCommunicator->timer_exit->isActive()){
                         w->TeraflyCommunicator->timer_exit->stop();
                     }

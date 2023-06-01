@@ -241,6 +241,28 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
                 listwithheader.removeAt(0);
                 emit delSeg(listwithheader.join(","),isMany);
             }
+        }else if(operationtype=="splitline")
+        {
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"splitline_msg_count"<<listwithheader.count();
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            qDebug() << "+============delseg process begin========";
+            QStringList infos=listwithheader[0].split(" ");
+            bool isTeraFly=infos.at(0).trimmed()=="0";
+            QString user=infos.at(1).trimmed();
+
+            if (user == userName && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userName" << userName;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit splitSeg(listwithheader.join(","));
+            }
         }else if(operationtype == "addmarker")
         {
             QString msg = operatorMsg;
@@ -345,13 +367,18 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
     }
 }
 
-void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype)
+void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> connectedSegs, QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
+        result+="$";
+        for(auto connectedseg:connectedSegs){
+            result+=V_NeuronSWCToSendMSG(connectedseg);
+            result+="$";
+        }
         qDebug()<<"drawline_sendMsg"<<result.count();
         sendMsg(QString("/drawline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
@@ -378,6 +405,7 @@ void V3dR_Communicator::UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_
         result+=V_NeuronSWCToSendMSG(seg2);
         result.push_back("$");
         qDebug()<<"connectline_sendMsg"<<result.count();
+        qDebug()<<"/connectline_norm:"+result.join(",");
         sendMsg(QString("/connectline_norm:"+result.join(",")));
 //        result+=V_NeuronSWCToSendMSG(seg);
 //        qDebug()<<"connectline_sendMsg"<<result.count();
@@ -391,16 +419,22 @@ void V3dR_Communicator::UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_
     }
 }
 
-void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype)
+void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vector<V_NeuronSWC> connectedSegs)
 {
     if(clienttype=="TeraFly")
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(0));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         qDebug()<<"delline_sendMsg"<<result.count();
         sendMsg(QString("/delline_norm:"+result.join(",")));
+
+        result+="$";
+        for(auto connectedseg:connectedSegs){
+            result+=V_NeuronSWCToSendMSG(connectedseg);
+            result+="$";
+        }
         while(undoDeque.size()>=dequeszie)
         {
             undoDeque.pop_front();
@@ -551,12 +585,30 @@ void V3dR_Communicator::UpdateRetypeSegMsg(QString TVretypeSegMSG)
 
 void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,QString clienttype)
 {
-    UpdateDelSegMsg(seg,clienttype);
-    V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
-    for(auto newseg:new_slist.seg)
+    if(clienttype=="TeraFly")
     {
-        UpdateAddSegMsg(newseg,clienttype);
+        V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result+=V_NeuronSWCToSendMSG(seg);
+        result.push_back("$");
+
+        for(auto newseg:new_slist.seg){
+            result+=V_NeuronSWCToSendMSG(newseg);
+            result.push_back("$");
+        }
+
+        qDebug()<<"splitline_sendMsg"<<result.count();
+        sendMsg(QString("/splitline_norm:"+result.join(",")));
+
     }
+//    V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
+//    UpdateDelSegMsg(seg,clienttype);
+
+//    for(auto newseg:new_slist.seg)
+//    {
+//        UpdateAddSegMsg(newseg,clienttype);
+//    }
 }
 
 void V3dR_Communicator::UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QString addMsg2)
@@ -574,11 +626,27 @@ void V3dR_Communicator::UpdateUndoDeque()
         QRegExp reg("/(.*)_(.*):(.*)");
         if(reg.indexIn(msg)!=-1)
         {
+            QString operationType=reg.cap(1);
+            QString operatorMsg=reg.cap(3);
+
+            if("delline"==operationType){
+                QString newMsg="";
+                QStringList pointlist=operatorMsg.split(",",QString::SkipEmptyParts);
+                for(int i=0;i<pointlist.size();i++){
+                    if(pointlist[i]=="$"){
+                        break;
+                    }else{
+                        newMsg+=pointlist[i];
+                        newMsg+=",";
+                    }
+                }
+                newMsg.chop(1);
+                msg="/"+operationType+"_undo:"+newMsg;
+            }
+
             sendMsg(msg);
             undoDeque.pop_back();
 
-            QString operationType=reg.cap(1);
-            QString operatorMsg=reg.cap(3);
             if("drawline"==operationType)
                 operationType="/delline";
             else if("delline"==operationType)
@@ -605,11 +673,28 @@ void V3dR_Communicator::UpdateRedoDeque()
         QRegExp reg("/(.*)_(.*):(.*)");
         if(reg.indexIn(msg)!=-1)
         {
+            QString operationType=reg.cap(1);
+            QString operatorMsg=reg.cap(3);
+
+            if("delline"==operationType){
+                QString newMsg="";
+                QStringList pointlist=operatorMsg.split(",",QString::SkipEmptyParts);
+                for(int i=0;i<pointlist.size();i++){
+                    if(pointlist[i]=="$"){
+                        break;
+                    }else{
+                        newMsg+=pointlist[i];
+                        newMsg+=",";
+                    }
+                }
+                newMsg.chop(1);
+                msg="/"+operationType+"_redo:"+newMsg;
+            }
+
+//            qDebug()<<msg;
             sendMsg(msg);
             redoDeque.pop_back();
 
-            QString operationType=reg.cap(1);
-            QString operatorMsg=reg.cap(3);
             if("drawline"==operationType)
                 operationType="/delline";
             else if("delline"==operationType)

@@ -3309,17 +3309,63 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
     My4DImage* curImg = 0;       if (w) {editinput = 3;curImg = v3dr_getImage4d(_idep);}
+    vector<V_NeuronSWC> vector_VSWC;
+    curImg->ExtractDeletingNode(vector_VSWC);
+
+    vector<V_NeuronSWC> vector_VSWC_ON;
+    for(auto seg:vector_VSWC){
+        if(seg.on)
+            vector_VSWC_ON.push_back(seg);
+    }
+
     if (w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
 	{
-        vector<V_NeuronSWC> vector_VSWC;
-        curImg->ExtractDeletingNode(vector_VSWC);
 
         w->SetupCollaborateInfo();
-        for(auto seg:vector_VSWC){
-            if(seg.on){
-               w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
+//        for(auto seg:vector_VSWC){
+//            if(seg.on){
+//               w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
+//            }
+//        }
+        QVector<XYZ> coords;
+        for(int i=0;i<vector_VSWC_ON.size();i++){
+            int firstSegID=-1;
+            int secondSegID=-1;
+            auto tempseg=vector_VSWC_ON[i];
+            for(int j=0; j<tempseg.row.size(); j++){
+               coords.push_back(XYZ(tempseg.row[j].x,tempseg.row[j].y,tempseg.row[j].z));
             }
+            int index=w->findseg(curImg->tracedNeuron,coords);
+            if(index<0)
+               qDebug("deleteCurve: index<0");
+            bool flagFirst=false, flagSecond=false;
+            for(size_t j=0; j<curImg->tracedNeuron.seg.size(); ++j){
+               V_NeuronSWC seg=curImg->tracedNeuron.seg[j];
+               for(size_t q=0; q<seg.row.size(); q++){
+                       if(seg.row[q].x==tempseg.row[0].x&&seg.row[q].y==tempseg.row[0].y&&seg.row[q].z==tempseg.row[0].z&&index!=j&&!flagFirst)
+                       {
+                              firstSegID=j;
+                              flagFirst=true;
+                       }
+                       if(seg.row[q].x==tempseg.row[tempseg.row.size()-1].x&&seg.row[q].y==tempseg.row[tempseg.row.size()-1].y&&seg.row[q].z==tempseg.row[tempseg.row.size()-1].z&&index!=j&&!flagSecond)
+                       {
+                              secondSegID=j;
+                              flagSecond=true;
+                       }
+               }
+               if(firstSegID!=-1&&secondSegID!=-1)
+                       break;
+            }
+            qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
+            vector<V_NeuronSWC> connectedSegs;
+            if(firstSegID!=-1)
+               connectedSegs.push_back(curImg->tracedNeuron.seg[firstSegID]);
+            if(secondSegID!=-1)
+               connectedSegs.push_back(curImg->tracedNeuron.seg[secondSegID]);
+            w->TeraflyCommunicator->UpdateDelSegMsg(tempseg,"TeraFly",connectedSegs);
+            coords.clear();
         }
+
         if(w->TeraflyCommunicator->timer_exit->isActive()){
             w->TeraflyCommunicator->timer_exit->stop();
         }

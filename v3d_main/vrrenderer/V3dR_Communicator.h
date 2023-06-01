@@ -41,14 +41,14 @@ public:
      * @param seg
      * 发送加线segment到服务器
      */
-    void UpdateAddSegMsg(V_NeuronSWC seg,QString clienttype);
+    void UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> connectedSegs, QString clienttype);
     void UpdateAddSegMsg(QString TVaddSegMSG);
     /**
      * @brief UpdateDeleteMsg
      * @param seg
      * 发送减线segment到服务器
      */
-    void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype);
+    void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vector<V_NeuronSWC> connectedSegs);
     void UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString clienttype);
     void UpdateDelSegMsg(QString TVdelSegMSG);//this node is second node of seg,because this is esay to delete correct seg
     /**
@@ -162,6 +162,7 @@ signals:
 
     void addSeg(QString);//加线信号 （type x y z;type x y z;...）
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
+    void splitSeg(QString);//break seg信号
     void addMarker(QString);//加marker信号 (type x y z)
     void delMarker(QString);//减marker信号 (type x y z)
     void retypeMarker(QString);//改marker颜色信号(r,g,b,x,y,z)

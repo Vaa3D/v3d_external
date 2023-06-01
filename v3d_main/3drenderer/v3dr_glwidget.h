@@ -627,15 +627,19 @@ public slots:
     void CollaRetypeMarker(QString markerPos);
     void CollaRetypeSeg(QString segInfo,int type, int isMany);
     void CollaConnectSeg(QString segInfo);
-    void fAddSeg(QString segInfo);
-    void fDelSeg(QString segInfo, int isMany);
-    void fAddMarker(QString markerPOS);
-    void fDelMarker(QString markerPOS);
-    void fRetypeMarker(QString markerPos);
-    void fRetypeSeg(QString segInfo,int type,int isMany);
-    void fConnectSeg(QString segInfo);
+    void CollaSplitSeg(QString segInfo);
+
+    void newThreadAddSeg(QString segInfo);
+    void newThreadDelSeg(QString segInfo, int isMany);
+    void newThreadAddMarker(QString markerPOS);
+    void newThreadDelMarker(QString markerPOS);
+    void newThreadRetypeMarker(QString markerPos);
+    void newThreadRetypeSeg(QString segInfo,int type,int isMany);
+    void newThreadConnectSeg(QString segInfo);
+    void newThreadSplitSeg(QString segInfo);
 
 public:
+    double distance(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
     XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
     void deleteCurveInAllSpace(QString segInfo, int isMany);//neewd to finish
     void addCurveInAllSapce(QString segInfo);
