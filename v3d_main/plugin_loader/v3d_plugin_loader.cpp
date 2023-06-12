@@ -1834,3 +1834,72 @@ void V3d_PluginLoader::openVRWindowV2(v3dhandle image_window, bool bOnlineMode)
    if(vi) vi->doimageVRView(bOnlineMode);
 }
 #endif
+QHash<QString, Image4DSimple*> DataFlowPlus::imgflow;
+QHash<QString, NeuronTree*> DataFlowPlus::ntflow;
+QHash<QString, void*> DataFlowPlus::voidflow;
+
+DataFlowPlus::DataFlowPlus()
+{
+
+}
+
+void DataFlowPlus::insert(QString name, Image4DSimple *img)
+{
+    if(imgflow.contains(name))
+        return;
+    Image4DSimple *saveimg=new Image4DSimple;
+    unsigned char* rawdata=new unsigned char[img->getXDim()*img->getYDim()*img->getZDim()*img->getCDim()];
+    memcpy(img->getRawData(), rawdata, img->getTotalBytes());
+    saveimg->setData(rawdata,img->getXDim(),img->getYDim(),img->getZDim(),img->getCDim(),img->getDatatype());
+    imgflow.insert(name,saveimg);
+}
+
+void DataFlowPlus::insert(QString name, NeuronTree *nt)
+{
+    if(ntflow.contains(name))
+        return;
+    NeuronTree *savent=new NeuronTree;
+    savent->deepCopy(*nt);
+    ntflow.insert(name,savent);
+}
+
+void DataFlowPlus::insert(QString name, void *sth)
+{
+    if(voidflow.contains(name))
+        return;
+    voidflow.insert(name,sth);
+}
+
+Image4DSimple *DataFlowPlus::findimg(QString name)
+{
+    if(!imgflow.contains(name))
+        return nullptr;
+    Image4DSimple *saveed=imgflow[name];
+    Image4DSimple *getimg=new Image4DSimple;
+    unsigned char* rawdata=new unsigned char[saveed->getXDim()*saveed->getYDim()*saveed->getZDim()*saveed->getCDim()];
+    memcpy(saveed->getRawData(), rawdata, saveed->getTotalBytes());
+    getimg->setData(rawdata,saveed->getXDim(),saveed->getYDim(),saveed->getZDim(),saveed->getCDim(),saveed->getDatatype());
+    return getimg;
+}
+
+NeuronTree *DataFlowPlus::findnt(QString name)
+{
+    if(!ntflow.contains(name))
+        return nullptr;
+    NeuronTree *saveed=ntflow[name];
+    NeuronTree *getnt=new NeuronTree;
+    getnt->deepCopy(*saveed);
+    return getnt;
+}
+
+void *DataFlowPlus::findvoid(QString name)
+{
+    if(!voidflow.contains(name))
+        return nullptr;
+    return voidflow[name];
+}
+
+DataFlowPlus::~DataFlowPlus()
+{
+
+}

@@ -2219,8 +2219,12 @@ int saveStack2Tif(const char * filename, const unsigned char * img, const V3DLON
 	}
 
 	int kind;
-	if (sz[3]==1)
+    if (sz[3]==1){
+        if(datatype==1)
 		kind = GREY;
+        else
+            kind=GREY16;
+    }
 	else //if (sz[3]>1) //but only output the 3 first channels
 		kind = COLOR;
 

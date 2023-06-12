@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -53,7 +53,30 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin);
 
 class MainWindow;
 class V3d_PluginLoader;
+class DataFlowPlus{
+public:
+    static DataFlowPlus& getInstance(){
+        static DataFlowPlus instance;
+        return instance;
+    }
 
+    // Avoid copy construct
+    DataFlowPlus(DataFlowPlus const&) = delete;
+    void operator=(DataFlowPlus const&)  = delete;
+    void insert(QString name,Image4DSimple* img);
+    void insert(QString name,NeuronTree* nt);
+    void insert(QString name,void* sth);
+    Image4DSimple* findimg(QString name);
+    NeuronTree* findnt(QString name);
+    void* findvoid(QString name);
+private:
+    DataFlowPlus();
+    ~DataFlowPlus();
+    static QHash<QString,Image4DSimple*> imgflow;
+    static QHash<QString,NeuronTree*> ntflow;
+    static QHash<QString,void*> voidflow;
+
+};
 class V3d_PluginLoader : public QObject, public V3DPluginCallback2
 {
     Q_OBJECT;

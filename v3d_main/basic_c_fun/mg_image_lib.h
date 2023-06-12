@@ -171,7 +171,7 @@ typedef struct
 
 #define STACK_PIXEL_16(img,x,y,z,c) \
       ((uint16 *) ((img)->array +   \
-           ((((z)*(img)->height + (y))*(img)->width + (x))*(img)->kind + (c))))
+           ((((z)*(img)->height + (y))*(img)->width + (x))*(img)->kind/2 + (c))))
 
 static inline int Get_Stack_Pixel(Stack *stack, int x, int y, int z, int c)
 { if (stack->kind == GREY16)
