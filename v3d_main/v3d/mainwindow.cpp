@@ -654,7 +654,6 @@ void MainWindow::dropEvent(QDropEvent *event)
 
     #endif
     #endif
-
                 fileName = url;
                 qDebug() <<tr("  the file to open: [")+ fileName +("]");
             }
@@ -664,15 +663,18 @@ void MainWindow::dropEvent(QDropEvent *event)
         {
             qDebug() <<tr("  Unknown drop data");
         }
+        qDebug()<<"jazz debug--------------1";
+        qDebug()<<fileName;
     #ifdef Q_OS_LINUX
         fileName.replace("%20"," ");//fixed the space path issue on Linux machine by Zhi Zhou May 14 2015
     #endif
-        fileName.remove(0,8);
 
+        fileName.remove(0,8);
     #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        qDebug()<<"jazz debug--------------3";
         fileName = "/" + fileName;
     #endif
-
+        qDebug()<<fileName;
         if (!QFile::exists(fileName))
         {
             v3d_msg(QString("The file [%1] specified does not exist").arg(fileName));
@@ -685,6 +687,8 @@ void MainWindow::dropEvent(QDropEvent *event)
         qDebug()<<"-------加载时间ms";
                 qDebug()<<time.elapsed();
 }
+
+
 void MainWindow::newFile()
 {
     XFormWidget *child = createMdiChild();
