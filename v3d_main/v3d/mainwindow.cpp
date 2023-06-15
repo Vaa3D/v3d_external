@@ -608,9 +608,9 @@ void MainWindow::dropEvent(QDropEvent *event)
         {
             qDebug() <<tr("  drop Text data: ")+(mimeData->text());
             fileName = mimeData->text().trimmed();
-    #ifdef Q_OS_LINUX
-            fileName.remove(0,7);
-    #endif
+//    #ifdef Q_OS_LINUX
+//            fileName.remove(0,7);
+//    #endif
             qDebug("the file to open=[%s]",qPrintable(fileName));
         }
         else if (mimeData->hasUrls())
@@ -668,8 +668,13 @@ void MainWindow::dropEvent(QDropEvent *event)
     #ifdef Q_OS_LINUX
         fileName.replace("%20"," ");//fixed the space path issue on Linux machine by Zhi Zhou May 14 2015
     #endif
-
-        fileName.remove(0,8);
+//#ifdef Q_OS_MACOS
+//        fileName.remove(0,8);
+//#endif
+//#ifdef win32
+//         fileName.remove(0,8);
+//#endif
+         fileName.remove(0,8);
     #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
         qDebug()<<"jazz debug--------------3";
         fileName = "/" + fileName;
@@ -856,7 +861,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
     {
         XFormWidget *existing_imgwin = findMdiChild(fileName);
         if (existing_imgwin)
-        {      
+        {
            workspace->setActiveSubWindow(existing_imgwin);
 
            return;
@@ -3267,4 +3272,3 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     // Delegate to parent if we don't want to consume the event
     return QMainWindow::eventFilter(obj, event);
 }
-
