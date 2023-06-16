@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -667,14 +667,15 @@ void MainWindow::dropEvent(QDropEvent *event)
         qDebug()<<fileName;
     #ifdef Q_OS_LINUX
         fileName.replace("%20"," ");//fixed the space path issue on Linux machine by Zhi Zhou May 14 2015
+        fileName.remove(0,7);
     #endif
 //#ifdef Q_OS_MACOS
 //        fileName.remove(0,8);
 //#endif
-//#ifdef win32
-//         fileName.remove(0,8);
-//#endif
+#ifdef win32
          fileName.remove(0,8);
+#endif
+
     #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
         qDebug()<<"jazz debug--------------3";
         fileName = "/" + fileName;
