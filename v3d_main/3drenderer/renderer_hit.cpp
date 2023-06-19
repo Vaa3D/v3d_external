@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -2540,8 +2540,14 @@ void Renderer_gl1::endSelectMode()
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
     MarkerPos pos;
+#ifdef Q_OS_WIN
     pos.x = x;
     pos.y = y;
+#endif
+#ifdef Q_OS_LINUX
+    pos.x = 2 * x;
+    pos.y = 2 * y;
+#endif
     pos.drawn = false;
     for (int i=0; i<4; i++){
         pos.view[i] = viewport[i];
