@@ -60,6 +60,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include <QCloseEvent>
 #include <QDialog>
 
+#include <cstdio>
+
 //#include <QGLFormat>
 
 #include<QWidget>
@@ -687,6 +689,8 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 
         if (renderer->hitPoint(x,y))  //pop-up menu (selectObj) or marker definition (hitPen)
         {
+            const char* callerFunName = __builtin_FUNCTION();
+            qDebug()<<callerFunName;
            updateTool();
            //POST_updateGL();
         }
@@ -704,6 +708,8 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
     if (event->button()==Qt::RightButton && renderer) //right-drag end
     {
+        const char* callerFunName = __builtin_FUNCTION();
+        qDebug()<<callerFunName;
         (renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
         //qDebug() << "done drawing\n";
         updateTool();
@@ -2052,6 +2058,8 @@ void V3dR_GLWidget::hideTool()
 }
 void V3dR_GLWidget::updateTool()
 {
+    const char* callerFunName = __builtin_FUNCTION();
+    qDebug()<<callerFunName;
     qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p) v3dr_glwidget.cpp", surfaceDlg, colormapDlg);
 
     if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
@@ -3579,6 +3587,8 @@ void V3dR_GLWidget::loadObjectFromFile(QString url)
             renderer->loadObjectFromFile(Q_CSTR(url));
         else
             renderer->loadObjectFromFile(0);
+        const char* callerFunName = __builtin_FUNCTION();
+        qDebug()<<callerFunName;
         updateTool();
         POST_updateGL();
     }
@@ -3588,6 +3598,9 @@ void V3dR_GLWidget::loadObjectListFromFile()
     if (renderer)
     {
         renderer->loadObjectListFromFile();
+
+        const char* callerFunName = __builtin_FUNCTION();
+        qDebug()<<callerFunName;
         updateTool();
         POST_updateGL();
     }
@@ -4392,6 +4405,9 @@ void V3dR_GLWidget::reloadData()
     POST_EVENT(this, QEvent::Type(QEvent_OpenFiles)); // open objects after loading volume, 081025
     POST_EVENT(this, QEvent::Type(QEvent_Ready));  //081124
 
+
+    const char* callerFunName = __builtin_FUNCTION();
+    qDebug()<<callerFunName;
     updateTool(); //081222
     POST_updateGL();
 
