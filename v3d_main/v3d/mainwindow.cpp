@@ -608,6 +608,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         {
             qDebug() <<tr("  drop Text data: ")+(mimeData->text());
             fileName = mimeData->text().trimmed();
+            qDebug()<<"wlj debug _____________ " + fileName;
 //    #ifdef Q_OS_LINUX
 //            fileName.remove(0,7);
 //    #endif
@@ -621,7 +622,7 @@ void MainWindow::dropEvent(QDropEvent *event)
                 QString url = urlList.at(i).path().trimmed();
                 qDebug() <<tr("  drop Url data: ")+url;
     #ifdef WIN32
-                url.remove(0,1); // remove the first '/' of "/C:/...", 081102
+                url.remove(0,7); // remove the first '/' of "/C:/...", 081102
     #endif
 
     // @FIXED by Alessandro on 2015-05-09. Call method to fix the file-based URL (if any)
@@ -680,12 +681,14 @@ void MainWindow::dropEvent(QDropEvent *event)
         qDebug()<<"jazz debug--------------3";
         fileName = "/" + fileName;
     #endif
+        fileName.remove(0,8);
         qDebug()<<fileName;
         if (!QFile::exists(fileName))
         {
             v3d_msg(QString("The file [%1] specified does not exist").arg(fileName));
             return;
         }
+
         loadV3DFile(fileName, true, global_setting.b_autoOpenImg3DViewer); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
         setBackgroundRole(QPalette::Dark);
         event->acceptProposedAction();
@@ -3266,7 +3269,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     {
         QFileOpenEvent *openEvent = static_cast<QFileOpenEvent*>(event);
         QString fileName = openEvent->file();
-        // v3d_msg("file open event: " + fileName);
+         v3d_msg("file open event: " + fileName);
         loadV3DFile(fileName, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
         return true; // consume event
     }
