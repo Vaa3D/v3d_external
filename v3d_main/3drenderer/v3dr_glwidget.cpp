@@ -2056,13 +2056,42 @@ void V3dR_GLWidget::updateTool()
 
     if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
     {
+
         //int i = surfaceDlg->getCurTab();
         surfaceDlg->linkTo(this);
         surfaceDlg->setCurTab(-1);  //-1 = last tab
     }
+    else
+    {
+        qDebug()<<"wlj debug _____________1";
+//        surfaceDlg = new V3dr_surfaceDialog(this);
+//        if (surfaceDlg)
+//        {
+//            surfaceDlg->show();
+//            this->raise();       //110713
+//            surfaceDlg->raise(); //090710
+
+//            surfaceSelectTab(-1);  //-1 = last tab
+//        }
+
+    }
     if (colormapDlg && !(colormapDlg->isHidden()) ) //081219
     {
+
         colormapDlg->linkTo(this);
+    }
+    else
+    {
+//        colormapDlg = new V3dr_colormapDialog(this);
+//        if (colormapDlg)
+//        {
+
+//            colormapDlg->show();
+//            this->raise();        //110713
+//            colormapDlg->raise(); //090710
+//        }
+        qDebug()<<"wlj debug _____________2";
+
     }
 }
 
