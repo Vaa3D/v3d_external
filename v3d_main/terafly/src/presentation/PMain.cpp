@@ -2073,9 +2073,9 @@ void PMain::saveAnnotationsAs()
                 #else
                 //tf::setWidgetOnTop(cur_win->window3D, false);
     #ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-                QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+                QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).completeBaseName();
     #else
-                QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+                QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).completeBaseName();
                 QString annotationsBasename = fileFullName;
                 if(fileFullName.toStdString().find("_stamp_")!=string::npos)
                 {
@@ -2101,10 +2101,10 @@ void PMain::saveAnnotationsAs()
                     annotationsPathLRU = path.toStdString();
     #else
                     //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-                    string filebasename=QFileInfo(path).baseName().toStdString();
-                    if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+                    string filebasename=QFileInfo(path).completeBaseName().toStdString();
+                    if(QFileInfo(path).completeBaseName().toStdString().find("_stamp_")!=string::npos)
                     {
-                        QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+                        QStringList fileNameSplit=QFileInfo(path).completeBaseName().split("_stamp_");
                         if(!fileNameSplit.size())
                             return;
                         filebasename = fileNameSplit[0].toStdString();
