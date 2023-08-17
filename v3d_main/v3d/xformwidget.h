@@ -133,7 +133,7 @@ class XFormWidget : public QMdiSubWindow, public TriviewControl //class XFormWid
 class XFormWidget : public QMdiSubWindow, public TriviewControl
 #endif
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     XFormWidget(QWidget *parent);

@@ -608,7 +608,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         {
             qDebug() <<tr("  drop Text data: ")+(mimeData->text());
             fileName = mimeData->text().trimmed();
-            qDebug()<<"wlj debug _____________ " + fileName;
+
 //    #ifdef Q_OS_LINUX
 //            fileName.remove(0,7);
 //    #endif
@@ -621,9 +621,9 @@ void MainWindow::dropEvent(QDropEvent *event)
             {
                 QString url = urlList.at(i).path().trimmed();
                 qDebug() <<tr("  drop Url data: ")+url;
-    #ifdef WIN32
-                url.remove(0,7); // remove the first '/' of "/C:/...", 081102
-    #endif
+        #ifdef WIN32
+                    url.remove(0,7); // remove the first '/' of "/C:/...", 081102
+        #endif
 
     // @FIXED by Alessandro on 2015-05-09. Call method to fix the file-based URL (if any)
     #ifdef Q_OS_MAC
@@ -664,25 +664,23 @@ void MainWindow::dropEvent(QDropEvent *event)
         {
             qDebug() <<tr("  Unknown drop data");
         }
-        qDebug()<<"jazz debug--------------1";
+
         qDebug()<<fileName;
     #ifdef Q_OS_LINUX
         fileName.replace("%20"," ");//fixed the space path issue on Linux machine by Zhi Zhou May 14 2015
         fileName.remove(0,7);
     #endif
-//#ifdef Q_OS_MACOS
-//        fileName.remove(0,8);
-//#endif
-#ifdef win32
-         fileName.remove(0,8);
-#endif
 
-    #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
-        qDebug()<<"jazz debug--------------3";
-        fileName = "/" + fileName;
-    #endif
+    #ifdef WIN32
         fileName.remove(0,8);
         qDebug()<<fileName;
+    #endif
+
+    #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
+        fileName = "/" + fileName;
+    #endif
+//      fileName.remove(0,8);
+
         if (!QFile::exists(fileName))
         {
             v3d_msg(QString("The file [%1] specified does not exist").arg(fileName));

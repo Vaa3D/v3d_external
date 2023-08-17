@@ -1088,7 +1088,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
             char * p_tmpstr=0;
             int len_name;
             QF_READ( len_name );
-            if (len_name<0 || len_name>5000) {throw (const char*)"V3DS1: the surface object name length is invalid (<0 or >5000 letters)";	return;}
+            if ((len_name<0) || (len_name>5000)) {throw (const char*)"V3DS1: the surface object name length is invalid (<0 or >5000 letters)";	return;}
             p_tmpstr = new char [len_name+1];
             for (j=0;j<len_name;j++) QF_READ( p_tmpstr[j] );
             p_tmpstr[len_name] = '\0';
@@ -1097,7 +1097,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
 
             int len_comment;
             QF_READ( len_comment );
-            if (len_comment<0 || len_comment>10000) {throw (const char*)"V3DS1: the surface object comment length is invalid (<0 or >10000 letters)";	return;}
+            if ((len_comment<0) || (len_comment)>10000) {throw (const char*)"V3DS1: the surface object comment length is invalid (<0 or >10000 letters)";	return;}
             p_tmpstr = new char [len_comment+1];
             for (j=0;j<len_comment;j++) QF_READ( p_tmpstr[j] );
             p_tmpstr[len_comment] = '\0';
@@ -1165,6 +1165,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
         compileLabelfieldSurf();
 
     lf_busy=false;
+    qDebug()<<"wlj debug ____________  96";
 }
 
 // revise from loadV3DSurface to truncate all interactive operations
@@ -1235,7 +1236,7 @@ void Renderer_gl1::loadV3DSFile(const QString& filename)
             char * p_tmpstr=0;
             int len_name;
             QF_READ( len_name );
-            if (len_name<0 || len_name>5000) {throw (const char*)"V3DS1: the surface object name length is invalid (<0 or >5000 letters)";	return;}
+            if ((len_name<0) || (len_name>5000)) {throw (const char*)"V3DS1: the surface object name length is invalid (<0 or >5000 letters)";	return;}
             p_tmpstr = new char [len_name+1];
             for (j=0;j<len_name;j++) QF_READ( p_tmpstr[j] );
             p_tmpstr[len_name] = '\0';
@@ -1244,7 +1245,7 @@ void Renderer_gl1::loadV3DSFile(const QString& filename)
 
             int len_comment;
             QF_READ( len_comment );
-            if (len_comment<0 || len_comment>10000) {throw (const char*)"V3DS1: the surface object comment length is invalid (<0 or >10000 letters)";	return;}
+            if ((len_comment<0) || (len_comment>10000)) {throw (const char*)"V3DS1: the surface object comment length is invalid (<0 or >10000 letters)";	return;}
             p_tmpstr = new char [len_comment+1];
             for (j=0;j<len_comment;j++) QF_READ( p_tmpstr[j] );
             p_tmpstr[len_comment] = '\0';
@@ -1308,6 +1309,7 @@ void Renderer_gl1::loadV3DSFile(const QString& filename)
 
     //
     updateBoundingBox(); // all of loaded bounding-box are updated here
+    qDebug()<<"wlj debug ____________  97";
 
 }
 

@@ -478,6 +478,7 @@ void V3dR_GLWidget::customEvent(QEvent* e)
     {
     case QEvent_OpenFiles:
         qDebug("	( QEvent_OpenFiles )");
+        qDebug("WLJ ___________ customEvent: QEvent_OpenFiles ");
         loadObjectListFromFile();
         break;
 
@@ -504,6 +505,7 @@ void V3dR_GLWidget::customEvent(QEvent* e)
         break;
 
     }
+
     POST_updateGL();
 }
 
@@ -3588,9 +3590,11 @@ void V3dR_GLWidget::loadObjectFromFile(QString url)
         else
             renderer->loadObjectFromFile(0);
         const char* callerFunName = __builtin_FUNCTION();
-        qDebug()<<callerFunName;
+        qDebug()<<callerFunName<<"____1";
         updateTool();
         POST_updateGL();
+//        repaint();
+        qDebug()<<callerFunName<<"____2";
     }
 }
 void V3dR_GLWidget::loadObjectListFromFile()
@@ -3600,8 +3604,9 @@ void V3dR_GLWidget::loadObjectListFromFile()
         renderer->loadObjectListFromFile();
 
         const char* callerFunName = __builtin_FUNCTION();
-        qDebug()<<callerFunName;
+        qDebug()<<callerFunName<<"____2";
         updateTool();
+
         POST_updateGL();
     }
 }

@@ -642,6 +642,7 @@ void Renderer_gl1::loadObjectFromFile(const char* url)
     qDebug()<< "open file: " << filename;
     if (filename.size()>0)
         loadObjectFilename(filename);
+    qDebug()<<"wlj arrive loadObjectFromFile(const char* url)";
 }
 void Renderer_gl1::loadObjectListFromFile()
 {
@@ -669,8 +670,11 @@ void Renderer_gl1::loadObjectListFromFile()
         if (filename.size()>0)
             loadObjectFilename(filename);
     }
-    ((QWidget*)widget)->show();
+    ((QWidget*) widget)->show();
+    qDebug()<<"wlj arrive ((QWidget*)widget)->show();";
 }
+
+
 void Renderer_gl1::loadObjectFilename(const QString& filename)
 {
 #ifndef test_main_cpp
@@ -702,6 +706,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
             type = stLabelSurface;
             loadV3DSurface(filename);
             ep->surface_file = filename;
+            qDebug()<<"wlj arrive loadObjectFilename_______filename:"+filename;
         }
         else if (filename.endsWith(".marker", Qt::CaseInsensitive) || filename.endsWith(".csv", Qt::CaseInsensitive))
         {
@@ -750,6 +755,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
         }
     } CATCH_handler( "Renderer_gl1::loadObjectFilename" );
     updateBoundingBox(); ///// 081121, all of loaded bounding-box are updated here
+
     if (widget) //090522 RZC
     {
         ((V3dR_GLWidget*)widget)->surfaceSelectTab(type-1);
@@ -867,6 +873,7 @@ void Renderer_gl1::updateThicknessBox()
         BB.y1 = imageY / sampleScaleY * thicknessY;
         BB.z1 = imageZ / sampleScaleZ * thicknessZ;
         //qDebug("	 BoundingBox (%g %g %g)--(%g %g %g)", BB.x0,BB.y0,BB.z0, BB.x1,BB.y1,BB.z1 );
+        qDebug("wlj arrive updateThicknessBox()1");
     }
     else // no image
     {
@@ -878,7 +885,8 @@ void Renderer_gl1::updateThicknessBox()
         BB.x1 = sBB.x1 * thicknessX;
         BB.y1 = sBB.y1 * thicknessY;
         BB.z1 = sBB.z1 * thicknessZ;
-        //qDebug("	 BoundingBox (%g %g %g)--(%g %g %g)", BB.x0,BB.y0,BB.z0, BB.x1,BB.y1,BB.z1 );
+//        qDebug("	 BoundingBox (%g %g %g)--(%g %g %g)", BB.x0,BB.y0,BB.z0, BB.x1,BB.y1,BB.z1 );
+        qDebug("wlj arrive updateThicknessBox()2");
     }
 }
 void Renderer_gl1::setMarkerSpace()

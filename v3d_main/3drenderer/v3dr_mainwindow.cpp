@@ -677,6 +677,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
         url = "/" + url;
 #endif
         if (glWidget) glWidget->loadObjectFromFile(url);
+        qDebug()<<"wlj debug dropEvent1";
     }
     else if (mimeData->hasUrls())
     {
@@ -704,6 +705,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
             }
 #endif
             if (glWidget) glWidget->loadObjectFromFile(url);
+            qDebug()<<"wlj debug dropEvent2";
             //setDataTitle(url);
         }
         event->acceptProposedAction();
