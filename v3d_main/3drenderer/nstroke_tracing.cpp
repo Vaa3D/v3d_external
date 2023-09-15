@@ -6759,10 +6759,12 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 
             }
             if(!ok) return;
+            else currentTraceType=node_type;
 
         }else{
-            node_type = 2;
-            currentTraceType = node_type;
+            return;
+//            node_type = 2;
+//            currentTraceType = node_type;
         }
 
 //		if (useCurrentTraceTypeForRetyping)
@@ -6787,7 +6789,7 @@ void Renderer_gl1::retypeMultiNeuronsbyshortcut()
 //        }
 
 
-		currentTraceType = node_type;
+//        currentTraceType = node_type;
         const int neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
                 {255, 255, 255},  // white,   0-undefined
                 {20,  20,  20 },  // black,   1-soma
@@ -6834,7 +6836,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 
     if(neuronColorMode==0)
     {
-                node_type = currentTraceType;
+        node_type = currentTraceType;
 //        if (useCurrentTraceTypeForRetyping)
 //        {
 //            node_type = currentTraceType;

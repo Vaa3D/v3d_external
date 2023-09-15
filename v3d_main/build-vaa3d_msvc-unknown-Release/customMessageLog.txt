@@ -1,0 +1,3 @@
+2023/08/09 00:17:39:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/08/09 00:17:39:Debug: Cannot find ./plugins directory!
+2023/08/09 00:17:39:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 

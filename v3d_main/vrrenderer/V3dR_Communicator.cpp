@@ -19,7 +19,7 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false)
 	CreatorMarkerPos = 0;
 	CreatorMarkerRes = 0;
 	userName="";
-    qDebug()<<"userName=\"\"";
+//    qDebug()<<"userName=\"\"";
 
 //    socket = new QTcpSocket(this);
     resetdatatype();
@@ -405,7 +405,7 @@ void V3dR_Communicator::UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_
         result+=V_NeuronSWCToSendMSG(seg2);
         result.push_back("$");
         qDebug()<<"connectline_sendMsg"<<result.count();
-        qDebug()<<"/connectline_norm:"+result.join(",");
+//        qDebug()<<"/connectline_norm:"+result.join(",");
         sendMsg(QString("/connectline_norm:"+result.join(",")));
 //        result+=V_NeuronSWCToSendMSG(seg);
 //        qDebug()<<"connectline_sendMsg"<<result.count();
@@ -588,6 +588,8 @@ void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,Q
     if(clienttype=="TeraFly")
     {
         V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
+        if(new_slist.seg.size()==1)
+            return;
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -727,8 +729,10 @@ void V3dR_Communicator::onConnected() {
     b_isConnectedState=true;
     m_timerConnect->stop();
     reconnectCnt=0;
+    QString RES=QString("RES(%1x%2x%3)").arg(ImageMaxRes.y).arg(ImageMaxRes.x).arg(ImageMaxRes.z);
     //发送用户ID和设备类型 0 桌面设备，可查看全脑，需要发送全脑图像
-    sendMsg(QString("/login:%1 %2").arg(userName).arg(0));
+    sendMsg(QString("/login:%1 %2 %3").arg(userName).arg(RES).arg(0));
+//    sendMsg(QString("/login:%1 %2").arg(userName).arg(0));
     QMessageBox::information(0,tr("Message "),
                              tr("Connect success! Ready to start collaborating"),
                              QMessageBox::Ok);

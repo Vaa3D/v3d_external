@@ -3964,10 +3964,11 @@ void PMain::setLockMagnification(bool locked)
 /*----------------collaborate mdoe-------------------*/
 #ifdef __ALLOW_VR_FUNCS__
 
+//注意HostAddress更改时一定要用config
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/test";
+    QString HostAddress="http://114.117.165.134:26000/dynamic";
     QString HostIp="114.117.165.134";
     bool ok;
 //    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,settings.value("HostAddress").toString(), &ok);

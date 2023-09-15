@@ -4321,7 +4321,8 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
 }
 
 void V3dR_GLWidget::newThreadAddMarker(QString markerPOS){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddMarker, markerPOS);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddMarker, markerPOS);
+    CollaAddMarker(markerPOS);
 //    while(!future.isFinished())
 //    {
 //        QApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -4361,7 +4362,8 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
 }
 
 void V3dR_GLWidget::newThreadDelMarker(QString markerPOS){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelMarker, markerPOS);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelMarker, markerPOS);
+    CollaDelMarker(markerPOS);
 //    while(!future.isFinished())
 //    {
 //        QApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -4405,7 +4407,8 @@ void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
 }
 
 void V3dR_GLWidget::newThreadRetypeMarker(QString markerPOS){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeMarker, markerPOS);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeMarker, markerPOS);
+    CollaRetypeMarker(markerPOS);
 //    while(!future.isFinished())
 //    {
 //        QApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -4527,7 +4530,8 @@ void V3dR_GLWidget::CollaRetypeSeg(QString segInfo,int type,int isMany)
 }
 
 void V3dR_GLWidget::newThreadRetypeSeg(QString segInfo,int type, int isMany){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeSeg, segInfo, type, isMany);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeSeg, segInfo, type, isMany);
+    CollaRetypeSeg(segInfo, type, isMany);
 //    while(!future.isFinished())
 //    {
 //        QApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -4574,7 +4578,8 @@ void V3dR_GLWidget::CollaConnectSeg(QString segInfo)
 }
 
 void V3dR_GLWidget::newThreadConnectSeg(QString segInfo){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaConnectSeg, segInfo);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaConnectSeg, segInfo);
+    CollaConnectSeg(segInfo);
 //    while(!future.isFinished())
 //    {
 //        QApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -4660,7 +4665,8 @@ void V3dR_GLWidget::CollaSplitSeg(QString segInfo){
 
     }
     vector<V_NeuronSWC> addsegs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
-
+    if(addsegs.size()<=1)
+        return;
     qDebug()<<"new seg is constructed";
 
     for(int i=0;i<addsegs.size();i++){
@@ -4673,6 +4679,19 @@ void V3dR_GLWidget::CollaSplitSeg(QString segInfo){
             addsegs[i].row[0].x=point2.x;
             addsegs[i].row[0].y=point2.y;
             addsegs[i].row[0].z=point2.z;
+            if(addsegs[i].row[0].parent!=-1){
+                reverse(addsegs[i].row.begin(),addsegs[i].row.end());
+                //父子关系逆序
+                int nodeNo = 1;
+                for (vector<V_NeuronSWC_unit>::iterator it_unit = addsegs[i].row.begin();
+                     it_unit != addsegs[i].row.end(); it_unit++)
+                {
+                    it_unit->data[0] = nodeNo;
+                    it_unit->data[6] = nodeNo + 1;
+                    ++nodeNo;
+                }
+                (addsegs[i].row.end() - 1)->data[6] = -1;
+            }
         }
         if(distance(addsegs[i].row[addsegs[i].row.size()-1].x,point2.x,addsegs[i].row[addsegs[i].row.size()-1].y,point2.y,addsegs[i].row[addsegs[i].row.size()-1].z,point2.z)<0.3){
             addsegs[i].row[addsegs[i].row.size()-1].x=point2.x;
@@ -4683,6 +4702,19 @@ void V3dR_GLWidget::CollaSplitSeg(QString segInfo){
             addsegs[i].row[addsegs[i].row.size()-1].x=point1.x;
             addsegs[i].row[addsegs[i].row.size()-1].y=point1.y;
             addsegs[i].row[addsegs[i].row.size()-1].z=point1.z;
+            if(addsegs[i].row[0].parent!=-1){
+                reverse(addsegs[i].row.begin(),addsegs[i].row.end());
+                //父子关系逆序
+                int nodeNo = 1;
+                for (vector<V_NeuronSWC_unit>::iterator it_unit = addsegs[i].row.begin();
+                     it_unit != addsegs[i].row.end(); it_unit++)
+                {
+                    it_unit->data[0] = nodeNo;
+                    it_unit->data[6] = nodeNo + 1;
+                    ++nodeNo;
+                }
+                (addsegs[i].row.end() - 1)->data[6] = -1;
+            }
         }
         v_ns_list.seg.push_back(addsegs[i]);
     }
@@ -4692,7 +4724,8 @@ void V3dR_GLWidget::CollaSplitSeg(QString segInfo){
 }
 
 void V3dR_GLWidget::newThreadSplitSeg(QString segInfo){
-    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaSplitSeg, segInfo);
+//    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaSplitSeg, segInfo);
+    CollaSplitSeg(segInfo);
     //    while(!future.isFinished())
     //    {
     //        QApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -4701,7 +4734,7 @@ void V3dR_GLWidget::newThreadSplitSeg(QString segInfo){
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {
-    float mindist=0.6/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
+    float mindist=100/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
     qDebug()<<"threshold="<<mindist;
     int index=-1;
 
@@ -4851,7 +4884,7 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
     newTempNT.listNeuron.clear();
     newTempNT.hashNeuron.clear();
     QStringList qsl=segInfo.split(",",QString::SkipEmptyParts);
-    qDebug()<<"after receive the msg"<<segInfo;
+//    qDebug()<<"after receive the msg"<<segInfo;
     int index=0;
     int timestamp=QDateTime::currentMSecsSinceEpoch();
     for (int i = 0; i<qsl.size(); i++)
@@ -4859,7 +4892,7 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
         if(qsl[i]!="$"){
             NeuronSWC S;
             QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
-            qDebug()<<i<<":"<<nodelist;
+//            qDebug()<<i<<":"<<nodelist;
             if(nodelist.size()<4) return;
             S.n=i+1;
             S.type=nodelist[0].toInt();
@@ -5013,9 +5046,9 @@ void V3dR_GLWidget::connectCurveInAllSapce(QString info){
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
 
-    for(int i=0;i<v_ns_list.seg.size();i++){
-        v_ns_list.seg[i].printInfo();
-    }
+//    for(int i=0;i<v_ns_list.seg.size();i++){
+//        v_ns_list.seg[i].printInfo();
+//    }
 
     vector<segInfoUnit> segInfo;
 
@@ -5052,7 +5085,7 @@ void V3dR_GLWidget::connectCurveInAllSapce(QString info){
                     for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
                          it_unit != v_ns_list.seg[index].row.end(); it_unit++)
                     {
-                        if (p1.x == it_unit->data[2] && p1.y == it_unit->data[3] && p1.z == it_unit->data[4])
+                        if(distance(p1.x,it_unit->data[2],p1.y,it_unit->data[3],p1.z,it_unit->data[4])<0.3)
                         {
                             //---------------------- Get seg IDs
                             //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
@@ -5074,7 +5107,7 @@ void V3dR_GLWidget::connectCurveInAllSapce(QString info){
                     for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
                          it_unit != v_ns_list.seg[index].row.end(); it_unit++)
                     {
-                        if (p2.x == it_unit->data[2] && p2.y == it_unit->data[3] && p2.z == it_unit->data[4])
+                        if(distance(p2.x,it_unit->data[2],p2.y,it_unit->data[3],p2.z,it_unit->data[4])<0.3)
                         {
                             //---------------------- Get seg IDs
                             //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
