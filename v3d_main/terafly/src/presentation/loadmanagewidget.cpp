@@ -94,7 +94,8 @@ void LoadManageWidget::getImages()
         QStringList imageList;
         for(auto &image: QString(reply->readAll()).split(','))
         {
-            imageList.append(image);
+            if(image.startsWith("18454"))
+                imageList.append(image);
         }
         imageList.removeDuplicates();
         imageList.removeAll("182722,191797,191798,191799,192346,192348,194060,18454");
@@ -163,7 +164,8 @@ void LoadManageWidget::getNeurons()
         auto neurons=parser.parse(json,&ok).toList();
         for(auto &neuron:neurons){
             auto item=neuron.toMap();
-            neuronWidget->addItem(item["name"].toString());
+            if(item["name"].toString()=="18454_00019")
+                neuronWidget->addItem(item["name"].toString());
         }
 
     }

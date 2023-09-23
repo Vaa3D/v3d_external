@@ -50,7 +50,7 @@ namespace terafly
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.5.11";          // software version
+    std::string version = "1.0.0";          // software version
     int DEBUG = LEV_MAX;                    // debug level
     debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
     std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
@@ -77,7 +77,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
     //register custom types
     qRegisterMetaType<tf::integer_array>("tf::integer_array");
 
-    if (menu_name == tr("TeraFly"))
+    if (menu_name == tr("CAR-WS"))
     {
         // launch plugin's GUI
         PMain::instance(&callback, 0);
@@ -100,7 +100,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
             CViewer::getCurrent()->invokedFromVaa3D();
         else
             QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
-                                     "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
+                                     "You can find TeraFly under Advanced > Big-Image-Data > CAR-WS.");
     }
     else
     {
@@ -117,7 +117,7 @@ void TeraFly::doaction(const QString &action_name)
             CViewer::getCurrent()->invokedFromVaa3D();
         else
             QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
-                                     "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
+                                     "You can find TeraFly under Advanced > Big-Image-Data > CAR-WS.");
     }
     else if(action_name == tr("marker multiselect"))
     {

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -2159,7 +2159,7 @@ void MainWindow::updateProcessingMenu()
 #endif
 #ifdef _ALLOW_TERAFLY_MENU_
     QMenu *proc_terafly_menu = advancedProcMenu->addMenu(tr("Big-Image-Data"));
-    QAction* open_terafly_action = new QAction(tr("TeraFly"), this);
+    QAction* open_terafly_action = new QAction(tr("CAR-WS"), this);
     proc_terafly_menu->addAction(open_terafly_action);
     connect(open_terafly_action, SIGNAL(triggered()), this, SLOT(func_open_terafly()));
     QAction* open_teraconverter_action = new QAction(tr("TeraConverter"), this);
@@ -3007,7 +3007,7 @@ void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
 void MainWindow::func_open_terafly()
 {
     V3d_PluginLoader *pl = new V3d_PluginLoader(this);
-    terafly::TeraFly::domenu("TeraFly", *pl, this);
+    terafly::TeraFly::domenu("CAR-WS", *pl, this);
 }
 void MainWindow::func_open_teraconverter()
 {

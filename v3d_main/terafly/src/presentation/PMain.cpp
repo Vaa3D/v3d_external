@@ -249,7 +249,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborateMenu->addAction(configAction);
     connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
 
-    loadAction=new QAction("Load Ano From Server",collaborateMenu);
+    loadAction=new QAction("Load Reconstruction From Server",collaborateMenu);
     collaborateMenu->addAction(loadAction);
     connect(loadAction,SIGNAL(triggered()),this,SLOT(LoadFromServer()));
 
@@ -530,9 +530,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     // "Help" menu
     helpMenu = menuBar->addMenu("Help");
-    aboutAction = new QAction("Info about TeraFly", helpMenu);
+    aboutAction = new QAction("Info about CAR-WS", helpMenu);
     aboutAction->setIcon(QIcon(":/icons/about.png"));
-    connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+//    connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
     helpMenu->addAction(aboutAction);
 
     //toolbar
@@ -964,7 +964,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	teraflyVRView = new QPushButton("See in VR",0);
 	teraflyVRView->setToolTip("You can see current image in VR environment.");
 
-    collaborationVRView = new QPushButton("Collaborate in VR",0);
+    collaborationVRView = new QPushButton("Collaborate in CAR-VR",0);
     collaborationVRView->setDisabled(true);
     collaborationVRView->setToolTip("Start collaboration mode with VR.");
 	
@@ -1100,7 +1100,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 
     //pages
-    tabs->addTab(controls_page, "TeraFly controls");
+    tabs->addTab(controls_page, "Controls");
     tabs->addTab(info_page, "Others");
 //    #ifdef Q_OS_MAC
 //    tabs->addTab(minimap_page, "Overview");
@@ -1131,7 +1131,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     layout->setSpacing(0);
     setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
+    setWindowTitle(QString("CAR-WS v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
 	this->fragTracePluginInstance = false; // MK, 2019, Sep; for monitoring FragTrace app status.

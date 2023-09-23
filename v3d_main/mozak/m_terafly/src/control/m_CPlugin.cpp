@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
             CViewer::getCurrent()->invokedFromVaa3D();
         else
             QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
-                                     "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
+                                     "You can find TeraFly under Advanced > Big-Image-Data > CAR-WS.");
     }
     else
     {
