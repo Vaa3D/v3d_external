@@ -55,7 +55,7 @@ unix:!macx {
     DEFINES += LINUX_SYSTEM
     DEFINES += __ALLOW_VR_FUNCS__
     LIBS =  -lGLU -lglut
-    LIBS += -L../common_lib/lib_ubuntu  -lv3dtiff -lv3dnewmat -lmylib -lteem -lbz2 -lz -lszip
+    LIBS += -L../common_lib/lib_ubuntu  -lhdf5 -lv3dtiff -lv3dnewmat -lmylib -lteem -lbz2 -lz -lszip
 
 }
 
@@ -591,10 +591,10 @@ LIBS += -L$$PWD/../common_lib/lib_ubuntu/ -lopenvr_api
 INCLUDEPATH += $$PWD/../common_lib/include/openvr
 DEPENDPATH += $$PWD/../common_lib/include/openvr
 
-LIBS += -L$$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5
+#LIBS += -L$$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5
 
-INCLUDEPATH += $$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/include
-DEPENDPATH += $$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/include
+#INCLUDEPATH += $$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/include
+#DEPENDPATH += $$PWD/../../../../../../usr/lib/x86_64-linux-gnu/hdf5/serial/include
 
 HEADERS += \
     ../vrrenderer/v3dr_gl_vr.h \
