@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -126,6 +126,7 @@
 #include <QLayout>
 #include <QPainter>
 #include <QPainterPath>
+#include <QGuiApplication>
 //#include <QTextEdit>
 
 #if defined(USE_Qt5)
@@ -2989,6 +2990,12 @@ XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QMdiSubWindow
 
 void XFormWidget::initialize()
 {
+    QRect screenRect = QGuiApplication::primaryScreen()->geometry();
+    screenW = screenRect.width();
+    screenH = screenRect.height();
+    qDebug()<<"screenW: "<<screenW;
+    qDebug()<<"screenH: "<<screenH;
+
     imgData = 0;
     openFileNameLabel = QString(""); //"/Users/hanchuanpeng/work/v3d/test1.raw"
 
@@ -3835,7 +3842,7 @@ QWidget* XFormWidget::createColorGUI()
             connect(this, SIGNAL(colorChanged(int)), channelTabXView, SLOT(updateXFormWidget(int)));
 
             channelTabXView->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
-            channelTabXView->setFixedHeight(200); //200 is best for 4 rows
+            channelTabXView->setMaximumHeight(0.22 * screenH); //200 is best for 4 rows
         }
         return channelTabXView;
     }else
@@ -3906,9 +3913,17 @@ void XFormWidget::createGUI()
     bLinkFocusViews = true;
     bDisplayFocusCross = true;
 
+    QFont font;
+    font.setPointSize(9);
+
      /* Set up the data related GUI */
-     dataGroup = new QGroupBox(self);
-     dataGroup->setTitle("Image data");
+    dataGroup = new QGroupBox(self);
+
+    dataGroup->setMinimumSize(screenW * 0.23, screenH * 0.65 );
+//    dataGroup->setMaximumHeight(screenH * 0.7);
+//    dataGroup->setMaximumHeight(screenH * 0.8);
+    dataGroup->setFont(font);
+    dataGroup->setTitle("Image data");
 
      viewGroup = new QGroupBox(dataGroup);
      viewGroup->setTitle("Views [XY: upper-left] [ZY: upper-right] [XZ: lower-left]");
@@ -3941,11 +3956,15 @@ void XFormWidget::createGUI()
 
      focusPointFeatureWidget = new MyTextBrowser(infoGroup);
     //	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->width()+yz_view->width()));
-    focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->get_disp_width()+yz_view->get_disp_width()));
-
+     focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->get_disp_width()+yz_view->get_disp_width()));
+//     focusPointFeatureWidget->setFixedWidth(qMax(100, 0));
     mainGroup = new QGroupBox(self);
-    mainGroup->setFixedWidth(300);
+    //原来是300
+    mainGroup->setMinimumSize(screenW * 0.2, screenH * 0.65);
+//    mainGroup->setMaximumHeight(screenH * 0.7);
+    mainGroup->setFont(font);
     mainGroup->setTitle("Options");
+    mainGroup->setContentsMargins(6, 6, 6, 6);
 
     // focus planes group
 
@@ -4022,9 +4041,7 @@ void XFormWidget::createGUI()
 
     resetButton = new QPushButton(scaleGroup);
     resetButton->setText("Reset");
-
-
-
+//    resetButton->setFixedSize(screenW * 0.05, screenH * 0.025);
 
 
     zoomWholeViewButton = new QPushButton();
@@ -4061,14 +4078,18 @@ void XFormWidget::createGUI()
 
     landmarkManagerButton = new QPushButton(landmarkGroup);
     landmarkManagerButton->setText("Landmark/Atlas/Color Manager");
+    landmarkManagerButton->setMaximumHeight(0.022 * screenH);
 
     imgV3DButton = new QPushButton(mainGroup);
     imgV3DButton->setText("See in 3D");
+    imgV3DButton->setMaximumHeight(0.022 * screenH);
+
 
     createMenuOf3DViewer();
 
     whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText("Help ... ");
+    whatsThisButton->setMaximumHeight(0.022 * screenH);
 
     xyzViewLayout = new QGridLayout(viewGroup);
     xyzViewLayout->addWidget(xy_view, 0, 0, 1, 1, Qt::AlignRight | Qt::AlignBottom);
@@ -4114,6 +4135,8 @@ void XFormWidget::createGUI()
     coordGroupLayout->addWidget(cBox_bSendSignalToExternal,     3, 8, 1, 6);
     coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 3, 8+6, 1, 6);
 
+    coordGroup->setMaximumHeight(0.18 * screenH);
+
     // layout for scaling factors
 
     scaleGroupLayout = new QGridLayout(scaleGroup);
@@ -4127,12 +4150,13 @@ void XFormWidget::createGUI()
     scaleGroupLayout->addWidget(yScaleSliderLabel, 2, 14, 1, 6);
 //本来是3，0，1，13的
     scaleGroupLayout->addWidget(lookingGlassCheckBox, 3, 0, 1, 13);
-
+    scaleGroupLayout->addWidget(resetButton, 3, 14, 1, 3);
 
 
 
     scaleGroupLayout->addWidget(zoomWholeViewButton, 4, 0, 1, 20);
 
+    scaleGroup->setMaximumHeight(0.18 * screenH);
     // color display layout
     //moved to createColorGUI();
 
@@ -4143,7 +4167,9 @@ void XFormWidget::createGUI()
     LandmarkGroupLayout->addWidget(landmarkPasteButton, 0, 5, 1, 4);
     LandmarkGroupLayout->addWidget(landmarkLoadButton, 0, 10, 1, 4);
     LandmarkGroupLayout->addWidget(landmarkSaveButton, 0, 15, 1, 4);
-
+    LandmarkGroupLayout->setContentsMargins(2,2,2,2);
+    landmarkGroup->setMaximumHeight(0.06 * screenH);
+    //landmarkGroup->setContentsMargins(0.1 * landmarkGroup->width(), 0.5 * landmarkGroup->height(), 0.1 * landmarkGroup->width(), 0);
     //LandmarkGroupLayout->addWidget(landmarkLabelDispCheckBox, 1, 0, 1, 11);
 
 
@@ -4153,8 +4179,9 @@ void XFormWidget::createGUI()
     //btnLayout->setContentsMargins(0,0,0,0); //remove margins
     btnLayout->addWidget(landmarkManagerButton);
     btnLayout->addWidget(imgV3DButton);
-    btnLayout->addStretch(0);
+//    btnLayout->addStretch(0);
     btnLayout->addWidget(whatsThisButton);
+    btnArea->setMaximumHeight(0.15 * screenH);
 
     // main control panel layout ====================================
 
@@ -4293,7 +4320,9 @@ void XFormWidget::updateDataRelatedGUI()
         {
             focusPointFeatureWidget->setFixedWidth(qMax(200, int(imgData->getXDim()+imgData->getZDim())));
         }
-        focusPointFeatureWidget->setMinimumHeight(100);
+        focusPointFeatureWidget->setMinimumHeight(0.1 * screenH);
+        focusPointFeatureWidget->setMaximumHeight(0.25 * screenH);
+
         imgData->setFocusFeatureView((MyTextBrowser*)focusPointFeatureWidget);
 
         imgData->setMainWidget((XFormWidget *)this);

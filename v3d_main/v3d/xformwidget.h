@@ -212,6 +212,9 @@ public:
 		bbz1 = z1;
 	}
 
+    //screen size
+    int screenW;
+    int screenH;
 
 	double disp_zoom; //081114
 	bool b_use_dispzoom;
