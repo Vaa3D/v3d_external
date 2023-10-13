@@ -407,8 +407,9 @@ void Renderer_gl1::setRenderTextureLast(bool renderTextureLast) {
 
 void Renderer_gl1::paint()
 {
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);  //csz20220627
-//    makeCurrent();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);  //csz20220627
+    makeCurrent();
+
     if (b_error) return; //080924 try to catch the memory error
 
     glClearColor(color_background.r, color_background.g, color_background.b, 0);
@@ -459,9 +460,9 @@ void Renderer_gl1::paint()
     {
         if (!b_renderTextureLast) {
             renderVol();
-            // 清图像深度缓存为最远,做一个函数
-//            glClearDepth(1);          //csz20220627
-//            glClear(GL_DEPTH_BUFFER_BIT);
+//             清图像深度缓存为最远,做一个函数
+            glClearDepth(1);          //csz20220627
+            glClear(GL_DEPTH_BUFFER_BIT);
 
         }
 
