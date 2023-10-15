@@ -267,7 +267,7 @@ void V3d_PluginLoader::loadPlugins()
 #ifdef MACOS_SYSTEM
         QWidget widget;
 
-        QMessageBox::StandardButton result = QMessageBox::information(&widget, "Mac load plugin","Running Vaa3D on a Mac may sometimes not detect plug-ins. This is because of the Mac's defense mechanism. Simply use the sudo spctl --master-disable command and then allow developers from any source to load the plugin in general.");
+        QMessageBox::StandardButton result = QMessageBox::information(&widget, "Mac load plugin Error","Unable to detect plugins. Please place the 'plugins' folder from the .dmg file next to the Vaa3D-x.app in the same directory.");
 
 #endif
         return;
