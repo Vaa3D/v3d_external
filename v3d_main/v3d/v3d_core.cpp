@@ -3842,7 +3842,7 @@ QWidget* XFormWidget::createColorGUI()
             connect(this, SIGNAL(colorChanged(int)), channelTabXView, SLOT(updateXFormWidget(int)));
 
             channelTabXView->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
-            channelTabXView->setMaximumHeight(0.22 * screenH); //200 is best for 4 rows
+            channelTabXView->setMaximumHeight(0.20 * screenH); //200 is best for 4 rows
         }
         return channelTabXView;
     }else
@@ -3960,7 +3960,8 @@ void XFormWidget::createGUI()
 //     focusPointFeatureWidget->setFixedWidth(qMax(100, 0));
     mainGroup = new QGroupBox(self);
     //原来是300
-    mainGroup->setMinimumSize(screenW * 0.2, screenH * 0.65);
+    mainGroup->setMinimumSize(screenW * 0.15, screenH * 0.5);
+    mainGroup->setMaximumSize(screenW * 0.18, screenH * 1);
 //    mainGroup->setMaximumHeight(screenH * 0.7);
     mainGroup->setFont(font);
     mainGroup->setTitle("Options");
@@ -4041,7 +4042,7 @@ void XFormWidget::createGUI()
 
     resetButton = new QPushButton(scaleGroup);
     resetButton->setText("Reset");
-//    resetButton->setFixedSize(screenW * 0.05, screenH * 0.025);
+    resetButton->setMinimumSize(screenW * 0.04, screenH * 0.024);
 
 
     zoomWholeViewButton = new QPushButton();
