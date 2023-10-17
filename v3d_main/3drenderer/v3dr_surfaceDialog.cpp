@@ -985,34 +985,39 @@ QTableWidget* V3dr_surfaceDialog::createTableSWC()
 	QTableWidget* t = new QTableWidget(row,col, this);
 	t->setHorizontalHeaderLabels(qsl);
 
-	qDebug("  create begin t->rowCount = %d", t->rowCount());
-	for (int i=0; i<row; i++)
+    QList <NeuronTree> displayTrees = r->listNeuronTree;
+    std::reverse(displayTrees.begin(), displayTrees.end());
+
+    qDebug("  create begin t->rowCount = %d", t->rowCount());
+    for (int i=0; i<row; i++)
 	{
 		int j=0;
 		QTableWidgetItem *curItem;
 
-		ADD_ONOFF(r->listNeuronTree[i].on);
-		ADD_QCOLOR(r->listNeuronTree[i].color);
+        ADD_ONOFF(displayTrees[i].on);
+        ADD_QCOLOR(displayTrees[i].color);
 
-		ADD_STRING( tr("%1").arg(r->listNeuronTree[i].listNeuron.size()) );
+        ADD_STRING( tr("%1").arg(displayTrees[i].listNeuron.size()) );
 
-        switch (r->listNeuronTree[i].linemode)
+        switch (displayTrees[i].linemode)
         {
         case 1: ADD_STRING( tr("line") ); break;
         case 0: ADD_STRING( tr("tube") ); break;
         default: ADD_STRING( tr("global") ); break;
         }
 
-        if (r->listNeuronTree[i].editable) {
+        if (displayTrees[i].editable) {
 			ADD_STRING( tr("Yes") );
 		} else
 			ADD_STRING( tr("") );
 
-		ADD_STRING( r->listNeuronTree[i].name ); //by PHC, add a column of name, which is different from file name. 090219
+        ADD_STRING( displayTrees[i].name ); //by PHC, add a column of name, which is different from file name. 090219
 
-		ADD_STRING( r->listNeuronTree[i].comment );
+        ADD_STRING( displayTrees[i].comment );
 
-		ADD_STRING( r->listNeuronTree[i].file );
+        ADD_STRING( displayTrees[i].file );
+
+        qDebug() << "add swc file:" << displayTrees[i].file;
 
 		MESSAGE_ASSERT(j==col);
 	}

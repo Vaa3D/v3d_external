@@ -704,7 +704,8 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
         else if (filename.endsWith(".v3ds", Qt::CaseInsensitive) || filename.endsWith(".vaa3ds", Qt::CaseInsensitive) )
         {
             type = stLabelSurface;
-            loadV3DSurface(filename);
+            loadV3DSFile(filename);
+            //loadV3DSurface(filename);
             ep->surface_file = filename;
             qDebug()<<"wlj arrive loadObjectFilename_______filename:"+filename;
         }
