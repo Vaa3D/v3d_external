@@ -755,7 +755,7 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
             {
                 qDebug()<<glWidget<<" "<<glWidget->TeraflyCommunicator<<" "<<glWidget->data_title;
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), 0, 0):"
-                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), 0, 0);
+                       <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), 0, 0)"
                        <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), 0, 0);
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(splitSeg(QString)), 0, 0)"
@@ -771,7 +771,7 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                 qDebug()<<"disconnect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString,int)), 0, 0)"
                        <<disconnect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), 0, 0);
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), glWidget, SLOT(CollaAddSeg(QString,int)));"
-                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString)), glWidget, SLOT(newThreadAddSeg(QString)));
+                       <<connect(glWidget->TeraflyCommunicator, SIGNAL(addSeg(QString,int)), glWidget, SLOT(newThreadAddSeg(QString,int)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString)), glWidget, SLOT(CollaDelSeg(QString)));"
                        <<connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), glWidget, SLOT(newThreadDelSeg(QString,int)));
                 qDebug()<<"connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int)), 0, 0)"

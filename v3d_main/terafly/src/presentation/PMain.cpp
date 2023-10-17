@@ -3968,7 +3968,7 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/dynamic";
+    QString HostAddress="http://114.117.165.134:26000/test";
     QString HostIp="114.117.165.134";
     bool ok;
 //    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,settings.value("HostAddress").toString(), &ok);
@@ -4113,11 +4113,11 @@ void PMain::startCollaborate(QString ano,QString port)
 //    render->userColorid = userinfo.colorid;
 //    qDebug()<<"userColorId" <<render->userColorid;
 
-    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString)), 0, 0);
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString, int)), 0, 0);
 //    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
 //            cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
-    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
-            cur_win->getGLWidget(),SLOT(newThreadAddSeg(QString)));
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString, int)),
+            cur_win->getGLWidget(),SLOT(newThreadAddSeg(QString, int)));
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString,int)),

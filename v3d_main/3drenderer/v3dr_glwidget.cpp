@@ -4538,7 +4538,7 @@ void V3dR_GLWidget::newThreadRetypeSeg(QString segInfo,int type, int isMany){
 //    }
 }
 
-void V3dR_GLWidget::CollaAddSeg(QString segInfo)
+void V3dR_GLWidget::CollaAddSeg(QString segInfo, int isBegin)
 {
 //    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
 //    SetupCollaborateInfo();
@@ -4560,11 +4560,11 @@ void V3dR_GLWidget::CollaAddSeg(QString segInfo)
 //    qDebug()<<"add in seg";
 //    rendererGL1Ptr->addCurveSWC(loc_coords, 1, 1,type);
 //    POST_updateGL();
-    addCurveInAllSapce(segInfo);
+    addCurveInAllSapce(segInfo, isBegin);
 }
 
-void V3dR_GLWidget::newThreadAddSeg(QString segInfo){
-    CollaAddSeg(segInfo);
+void V3dR_GLWidget::newThreadAddSeg(QString segInfo, int isBegin){
+    CollaAddSeg(segInfo, isBegin);
 //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddSeg, segInfo);
 //    while(!future.isFinished())
 //    {
@@ -4857,7 +4857,7 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
 
 //}
 
-void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
+void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
 {
     if(segInfo.isEmpty()) return;
     NeuronTree  nt = terafly::PluginInterface::getSWC();
@@ -4914,41 +4914,39 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
 
 //        qDebug()<<"new NT is constructed";
     auto segs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
-    bool flag;
-    if(point1.x==segs[0].row[0].x&&point1.y==segs[0].row[0].y&&point1.z==segs[0].row[0].z)
-        flag=true;
-    else
-        flag=false;
-    qDebug()<<"new seg is constructed";
 
     QVector<XYZ> coords;
     if(segs.size()==2){
+        int comparedIndex=0;
+        if(isBegin==1){
+            comparedIndex=segs[0].row.size()-1;
+        }else if(isBegin==0){
+            comparedIndex=0;
+        }
         for(int i=0;i<segs[1].row.size();i++){
             coords.push_back(XYZ(segs[1].row[i].x,segs[1].row[i].y,segs[1].row[i].z));
         }
         index=findseg(v_ns_list, coords);
         if(index>=0)
         {
+            int row_index = -1;
+            double mindist = 5;
             for(int i=0;i<v_ns_list.seg[index].row.size();i++){
-                if(flag){
-                    if(distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z)<0.3)
-                    {
-                        segs[0].row[0].x=v_ns_list.seg[index].row[i].x;
-                        segs[0].row[0].y=v_ns_list.seg[index].row[i].y;
-                        segs[0].row[0].z=v_ns_list.seg[index].row[i].z;
-                        qDebug()<<"firstSeg success";
-                        break;
-                    }
-                }else{
-                    if(distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z)<0.3)
-                    {
-                        segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[i].x;
-                        segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[i].y;
-                        segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[i].z;
-                        qDebug()<<"firstSeg success";
-                        break;
-                    }
+                double dist=distance(segs[0].row[comparedIndex].x,v_ns_list.seg[index].row[i].x,segs[0].row[comparedIndex].y,v_ns_list.seg[index].row[i].y,segs[0].row[comparedIndex].z,v_ns_list.seg[index].row[i].z);
+                if(dist<mindist)
+                {
+                    mindist=dist;
+                    row_index=i;
                 }
+            }
+            if(row_index == -1){
+                qDebug()<<"INFO:cannot find nearest point in first connected seg";
+                qDebug()<<segs[0].row[comparedIndex].x<<" "<<segs[0].row[comparedIndex].y<<" "<<segs[0].row[comparedIndex].z;
+            }
+            else{
+                segs[0].row[comparedIndex].x=v_ns_list.seg[index].row[row_index].x;
+                segs[0].row[comparedIndex].y=v_ns_list.seg[index].row[row_index].y;
+                segs[0].row[comparedIndex].z=v_ns_list.seg[index].row[row_index].z;
             }
         }
         else
@@ -4964,26 +4962,24 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
         index=findseg(v_ns_list, coords);
         if(index>=0)
         {
+            int row_index = -1;
+            double mindist = 5;
             for(int i=0;i<v_ns_list.seg[index].row.size();i++){
-                if(flag){
-                    if(distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z)<0.3)
-                    {
-                        segs[0].row[0].x=v_ns_list.seg[index].row[i].x;
-                        segs[0].row[0].y=v_ns_list.seg[index].row[i].y;
-                        segs[0].row[0].z=v_ns_list.seg[index].row[i].z;
-                        qDebug()<<"firstSeg success";
-                        break;
-                    }
-                }else{
-                    if(distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z)<0.3)
-                    {
-                        segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[i].x;
-                        segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[i].y;
-                        segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[i].z;
-                        qDebug()<<"firstSeg success";
-                        break;
-                    }
+                double dist=distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z);
+                if(dist<mindist)
+                {
+                    mindist=dist;
+                    row_index=i;
                 }
+            }
+            if(row_index == -1){
+                qDebug()<<"INFO:cannot find nearest point in first connected seg";
+                qDebug()<<segs[0].row[segs[0].row.size()-1].x<<" "<<segs[0].row[segs[0].row.size()-1].y<<" "<<segs[0].row[segs[0].row.size()-1].z;
+            }
+            else{
+                segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[row_index].x;
+                segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[row_index].y;
+                segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[row_index].z;
             }
         }
         else
@@ -4999,26 +4995,24 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo)
 
         if(index>=0)
         {
+            int row_index = -1;
+            double mindist = 5;
             for(int i=0;i<v_ns_list.seg[index].row.size();i++){
-                if(!flag){
-                    if(distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z)<0.3)
-                    {
-                        segs[0].row[0].x=v_ns_list.seg[index].row[i].x;
-                        segs[0].row[0].y=v_ns_list.seg[index].row[i].y;
-                        segs[0].row[0].z=v_ns_list.seg[index].row[i].z;
-                        qDebug()<<"secondSeg success";
-                        break;
-                    }
-                }else{
-                    if(distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z)<0.3)
-                    {
-                        segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[i].x;
-                        segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[i].y;
-                        segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[i].z;
-                        qDebug()<<"secondSeg success";
-                        break;
-                    }
+                double dist=distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z);
+                if(dist<mindist)
+                {
+                    mindist=dist;
+                    row_index=i;
                 }
+            }
+            if(row_index == -1){
+                qDebug()<<"INFO:cannot find nearest point in first connected seg";
+                qDebug()<<segs[0].row[0].x<<" "<<segs[0].row[0].y<<" "<<segs[0].row[0].z;
+            }
+            else{
+                segs[0].row[0].x=v_ns_list.seg[index].row[row_index].x;
+                segs[0].row[0].y=v_ns_list.seg[index].row[row_index].y;
+                segs[0].row[0].z=v_ns_list.seg[index].row[row_index].z;
             }
         }
         else
@@ -5082,46 +5076,72 @@ void V3dR_GLWidget::connectCurveInAllSapce(QString info){
 
                 //构造segInfo
                 if(segInfo.size()==0){
+                    double mindist=5;
+                    vector<V_NeuronSWC_unit>::iterator it_res=v_ns_list.seg[index].row.end();
                     for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
                          it_unit != v_ns_list.seg[index].row.end(); it_unit++)
                     {
-                        if(distance(p1.x,it_unit->data[2],p1.y,it_unit->data[3],p1.z,it_unit->data[4])<0.3)
+                        double dist=distance(p1.x,it_unit->data[2],p1.y,it_unit->data[3],p1.z,it_unit->data[4]);
+                        if(dist<mindist)
                         {
-                            //---------------------- Get seg IDs
-                            //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
-                            segInfoUnit curSeg;
-                            curSeg.head_tail = it_unit->data[6];
-                            curSeg.segID = index;
-                            curSeg.nodeCount = v_ns_list.seg[index].row.size();
-                            curSeg.refine = false;
-                            curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
-                            curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
-                            curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
-                            segInfo.push_back(curSeg);
-                            break;
+                            mindist=dist;
+                            it_res=it_unit;
                         }
+
+                    }
+                    if(it_res==v_ns_list.seg[index].row.end()){
+                        qDebug()<<"cannot find nearest point in first to be connected seg";
+                        qDebug()<<p1.x<<" "<<p1.y<<" "<<p1.z;
+                    }
+                    else{
+                        //---------------------- Get seg IDs
+                        //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
+                        qDebug()<<p1.x<<" "<<p1.y<<" "<<p1.z;
+                        qDebug()<<it_res->data[2]<<" "<<it_res->data[3]<<" "<<it_res->data[4];
+                        segInfoUnit curSeg;
+                        curSeg.head_tail = it_res->data[6];
+                        curSeg.segID = index;
+                        curSeg.nodeCount = v_ns_list.seg[index].row.size();
+                        curSeg.refine = false;
+                        curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
+                        curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
+                        curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
+                        segInfo.push_back(curSeg);
                     }
                 }
 
                 else if(segInfo.size()==1){
+                    double mindist=5;
+                    vector<V_NeuronSWC_unit>::iterator it_res=v_ns_list.seg[index].row.end();
                     for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
                          it_unit != v_ns_list.seg[index].row.end(); it_unit++)
                     {
-                        if(distance(p2.x,it_unit->data[2],p2.y,it_unit->data[3],p2.z,it_unit->data[4])<0.3)
+                        double dist=distance(p2.x,it_unit->data[2],p2.y,it_unit->data[3],p2.z,it_unit->data[4]);
+                        if(dist<mindist)
                         {
-                            //---------------------- Get seg IDs
-                            //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
-                            segInfoUnit curSeg;
-                            curSeg.head_tail = it_unit->data[6];
-                            curSeg.segID = index;
-                            curSeg.nodeCount = v_ns_list.seg[index].row.size();
-                            curSeg.refine = false;
-                            curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
-                            curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
-                            curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
-                            segInfo.push_back(curSeg);
-                            break;
+                            mindist=dist;
+                            it_res=it_unit;
                         }
+
+                    }
+                    if(it_res==v_ns_list.seg[index].row.end()){
+                        qDebug()<<"cannot find nearest point in first to be connected seg";
+                        qDebug()<<p2.x<<" "<<p2.y<<" "<<p2.z;
+                    }
+                    else{
+                        //---------------------- Get seg IDs
+                        //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
+                        qDebug()<<p2.x<<" "<<p2.y<<" "<<p2.z;
+                        qDebug()<<it_res->data[2]<<" "<<it_res->data[3]<<" "<<it_res->data[4];
+                        segInfoUnit curSeg;
+                        curSeg.head_tail = it_res->data[6];
+                        curSeg.segID = index;
+                        curSeg.nodeCount = v_ns_list.seg[index].row.size();
+                        curSeg.refine = false;
+                        curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
+                        curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
+                        curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
+                        segInfo.push_back(curSeg);
                     }
                 }
             }

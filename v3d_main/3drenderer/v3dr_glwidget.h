@@ -620,7 +620,7 @@ public:
 #ifdef __ALLOW_VR_FUNCS__
     //for collaborate
 public slots:
-    void CollaAddSeg(QString segInfo);
+    void CollaAddSeg(QString segInfo, int isBegin);
     void CollaDelSeg(QString segInfo, int isMany);
     void CollaAddMarker(QString markerPOS);
     void CollaDelMarker(QString markerPOS);
@@ -629,7 +629,7 @@ public slots:
     void CollaConnectSeg(QString segInfo);
     void CollaSplitSeg(QString segInfo);
 
-    void newThreadAddSeg(QString segInfo);
+    void newThreadAddSeg(QString segInfo, int isBegin);
     void newThreadDelSeg(QString segInfo, int isMany);
     void newThreadAddMarker(QString markerPOS);
     void newThreadDelMarker(QString markerPOS);
@@ -642,7 +642,7 @@ public:
     double distance(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
     XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
     void deleteCurveInAllSpace(QString segInfo, int isMany);//neewd to finish
-    void addCurveInAllSapce(QString segInfo);
+    void addCurveInAllSapce(QString segInfo, int isBegin);
     void connectCurveInAllSapce(QString info);
     void simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo);
     int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);

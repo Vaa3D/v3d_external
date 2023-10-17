@@ -1871,19 +1871,29 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
             for(size_t i=0; i<curImg->tracedNeuron.seg.size(); ++i){
                 V_NeuronSWC seg=curImg->tracedNeuron.seg[i];
                 for(size_t j=0; j<seg.row.size(); j++){
-                    if(seg.row[j].x==curImg->colla_cur_seg.row[0].x&&seg.row[j].y==curImg->colla_cur_seg.row[0].y&&seg.row[j].z==curImg->colla_cur_seg.row[0].z&&index!=i)
+                    if(fabs(seg.row[j].x-curImg->colla_cur_seg.row[0].x)<1e-4&&fabs(seg.row[j].y-curImg->colla_cur_seg.row[0].y)<1e-4&&
+                        fabs(seg.row[j].z-curImg->colla_cur_seg.row[0].z)<1e-4&&index!=i)
                         firstSegID=i;
-                    if(seg.row[j].x==curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].x&&seg.row[j].y==curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].y&&seg.row[j].z==curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].z&&index!=i)
+                    if(fabs(seg.row[j].x-curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].x)<1e-4&&
+                        fabs(seg.row[j].y-curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].y)<1e-4&&
+                        fabs(seg.row[j].z-curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].z)<1e-4&&index!=i)
                         secondSegID=i;
                 }
             }
 
             qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
             vector<V_NeuronSWC> connectedSegs;
+            bool isBegin = true;
+
             if(firstSegID!=-1)
                 connectedSegs.push_back(curImg->tracedNeuron.seg[firstSegID]);
             if(secondSegID!=-1)
                 connectedSegs.push_back(curImg->tracedNeuron.seg[secondSegID]);
+
+            if(firstSegID!=-1&&connectedSegs.size()==1)
+                isBegin=true;
+            if(secondSegID!=-1&&connectedSegs.size()==1)
+                isBegin=false;
 
             if (!fromserver)
 			{
@@ -1896,7 +1906,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 					w->TeraflyCommunicator->cur_chno = curImg->cur_chno;
 					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
 					w->SetupCollaborateInfo();
-                    w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg, connectedSegs, "TeraFly");
+                    w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg, connectedSegs, "TeraFly", isBegin);
                     if(w->TeraflyCommunicator->timer_exit->isActive()){
                         w->TeraflyCommunicator->timer_exit->stop();
                     }

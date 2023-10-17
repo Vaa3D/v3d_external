@@ -2987,3 +2987,69 @@ reimplement QApplication::notify() and catch all exceptions there.
 exceptions from an event handler is not supported in Qt. You must
 reimplement QApplication::notify() and catch all exceptions there.
 
+2023/10/11 10:38:08:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 10:38:08:Debug: Cannot find ./plugins directory!
+2023/10/11 10:38:08:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:48:25:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:48:25:Debug: Cannot find ./plugins directory!
+2023/10/11 11:48:25:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:48:37:Debug: Vaa3D MainWindow::dropEvent
+2023/10/11 11:48:37:Debug: "  drop Url data: /C:/Users/10422/Desktop/img1.v3dpbd" 
+2023/10/11 11:48:37:Debug: "  the file to open: [C:/Users/10422/Desktop/img1.v3dpbd]" 
+2023/10/11 11:48:37:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x1c444cd9b90) 
+2023/10/11 11:48:37:Debug: My4DImage::loadImage() set b_useMylib to value= false  based on global settings from MainWindow 
+2023/10/11 11:48:37:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2023/10/11 11:48:37:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2023/10/11 11:48:37:Debug: time consume ... 89 
+2023/10/11 11:51:27:Debug: ***v3d: XFormWidget::closeEvent
+2023/10/11 11:51:34:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:51:34:Debug: Cannot find ./plugins directory!
+2023/10/11 11:51:34:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:51:44:Debug: Vaa3D MainWindow::dropEvent
+2023/10/11 11:51:44:Debug: "  drop Url data: /C:/Users/10422/Desktop/img1.v3dpbd" 
+2023/10/11 11:51:44:Debug: "  the file to open: [C:/Users/10422/Desktop/img1.v3dpbd]" 
+2023/10/11 11:51:44:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x1e94b0f5fd0) 
+2023/10/11 11:51:44:Debug: My4DImage::loadImage() set b_useMylib to value= false  based on global settings from MainWindow 
+2023/10/11 11:51:44:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2023/10/11 11:51:44:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2023/10/11 11:51:44:Debug: time consume ... 56 
+2023/10/11 11:52:10:Debug: ***v3d: XFormWidget::closeEvent
+2023/10/11 11:54:13:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:54:13:Debug: Cannot find ./plugins directory!
+2023/10/11 11:54:13:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:54:17:Debug: Vaa3D MainWindow::dropEvent
+2023/10/11 11:54:17:Debug: "  drop Url data: /C:/Users/10422/Desktop/img1.v3dpbd" 
+2023/10/11 11:54:17:Debug: "  the file to open: [C:/Users/10422/Desktop/img1.v3dpbd]" 
+2023/10/11 11:54:17:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x2a9d52715d0) 
+2023/10/11 11:54:17:Debug: My4DImage::loadImage() set b_useMylib to value= false  based on global settings from MainWindow 
+2023/10/11 11:54:17:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2023/10/11 11:54:17:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2023/10/11 11:54:17:Debug: time consume ... 68 
+2023/10/11 11:54:45:Debug: ***v3d: XFormWidget::closeEvent
+2023/10/11 11:55:33:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:55:33:Debug: Cannot find ./plugins directory!
+2023/10/11 11:55:33:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 11:55:37:Debug: Vaa3D MainWindow::dropEvent
+2023/10/11 11:55:37:Debug: "  drop Url data: /C:/Users/10422/Desktop/img1.v3dpbd" 
+2023/10/11 11:55:37:Debug: "  the file to open: [C:/Users/10422/Desktop/img1.v3dpbd]" 
+2023/10/11 11:55:37:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x1e5021ffd20) 
+2023/10/11 11:55:37:Debug: My4DImage::loadImage() set b_useMylib to value= false  based on global settings from MainWindow 
+2023/10/11 11:55:37:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2023/10/11 11:55:37:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2023/10/11 11:55:37:Debug: time consume ... 52 
+2023/10/11 11:55:53:Debug: ***v3d: XFormWidget::closeEvent
+2023/10/11 12:00:51:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 12:00:51:Debug: Cannot find ./plugins directory!
+2023/10/11 12:00:51:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 12:00:58:Debug: Vaa3D MainWindow::dropEvent
+2023/10/11 12:00:58:Debug: "  drop Url data: /C:/Users/10422/Desktop/img1.v3dpbd" 
+2023/10/11 12:00:58:Debug: "  the file to open: [C:/Users/10422/Desktop/img1.v3dpbd]" 
+2023/10/11 12:00:58:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x1dbe8cd5fe0) 
+2023/10/11 12:00:58:Debug: My4DImage::loadImage() set b_useMylib to value= false  based on global settings from MainWindow 
+2023/10/11 12:00:58:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2023/10/11 12:00:58:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2023/10/11 12:00:58:Debug: time consume ... 56 
+2023/10/11 12:01:18:Debug: ***v3d: XFormWidget::closeEvent
+2023/10/11 12:01:25:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2023/10/11 12:01:25:Debug: Cannot find ./plugins directory!
+2023/10/11 12:01:25:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 

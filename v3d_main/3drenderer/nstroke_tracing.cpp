@@ -3362,7 +3362,12 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
                connectedSegs.push_back(curImg->tracedNeuron.seg[firstSegID]);
             if(secondSegID!=-1)
                connectedSegs.push_back(curImg->tracedNeuron.seg[secondSegID]);
-            w->TeraflyCommunicator->UpdateDelSegMsg(tempseg,"TeraFly",connectedSegs);
+            bool isBegin=true;
+            if(firstSegID!=-1&&connectedSegs.size()==1)
+               isBegin=true;
+            else if(secondSegID!=-1&&connectedSegs.size()==1)
+               isBegin=false;
+            w->TeraflyCommunicator->UpdateDelSegMsg(tempseg,"TeraFly",connectedSegs, isBegin);
             coords.clear();
         }
 

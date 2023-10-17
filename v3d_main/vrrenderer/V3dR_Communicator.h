@@ -41,14 +41,14 @@ public:
      * @param seg
      * 发送加线segment到服务器
      */
-    void UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> connectedSegs, QString clienttype);
+    void UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> connectedSegs, QString clienttype, bool isBegin);
     void UpdateAddSegMsg(QString TVaddSegMSG);
     /**
      * @brief UpdateDeleteMsg
      * @param seg
      * 发送减线segment到服务器
      */
-    void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vector<V_NeuronSWC> connectedSegs);
+    void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vector<V_NeuronSWC> connectedSegs, bool isBegin);
     void UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString clienttype);
     void UpdateDelSegMsg(QString TVdelSegMSG);//this node is second node of seg,because this is esay to delete correct seg
     /**
@@ -160,7 +160,7 @@ signals:
     void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
     void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
 
-    void addSeg(QString);//加线信号 （type x y z;type x y z;...）
+    void addSeg(QString,int);//加线信号 （type x y z;type x y z;...）
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
     void splitSeg(QString);//break seg信号
     void addMarker(QString);//加marker信号 (type x y z)
@@ -173,7 +173,7 @@ signals:
 
     void exit();
 public:
-    void emitAddSeg(QString segInfo) {emit addSeg(segInfo);}
+    void emitAddSeg(QString segInfo, int isBegin) {emit addSeg(segInfo, isBegin);}
     void emitDelSeg(QString segInfo, int isMany) {emit delSeg(segInfo,isMany);}
     void emitAddMarker(QString markerInfo) {emit addMarker(markerInfo);}
     void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
