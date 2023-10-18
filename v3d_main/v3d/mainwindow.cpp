@@ -671,6 +671,10 @@ void MainWindow::dropEvent(QDropEvent *event)
         fileName.remove(0,7);
     #endif
 
+    #ifdef Q_OS_MACOS
+        fileName.remove(0,8);
+    #endif
+
     #ifdef WIN32
         fileName.remove(0,8);
         qDebug()<<fileName;
