@@ -681,6 +681,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
         qDebug("the file to open=[%s]",qPrintable(url));
 #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
         url = "/" + url;
+        url.remove(0,8);
 #endif
         if (glWidget) glWidget->loadObjectFromFile(url);
         qDebug()<<"wlj debug dropEvent1";
@@ -711,7 +712,6 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
             }
 #endif
             if (glWidget) glWidget->loadObjectFromFile(url);
-            qDebug()<<"wlj debug dropEvent2";
             //setDataTitle(url);
         }
         event->acceptProposedAction();
