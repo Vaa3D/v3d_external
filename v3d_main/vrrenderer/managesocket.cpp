@@ -199,7 +199,7 @@ void ManageSocket::processMsg( QString &msg)
         connect(pmain->Communicator,SIGNAL(load(QString)),pmain,SLOT(ColLoadANO(QString)));
         terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
 		cur_win->getGLWidget()->TeraflyCommunicator = pmain->Communicator;
-        pmain->Communicator->userName=name;
+        pmain->Communicator->userId=name;
 
         connect(cur_win->getGLWidget()->TeraflyCommunicator->socket,SIGNAL(connected()),
                 this,SLOT(onMessageConnect()));

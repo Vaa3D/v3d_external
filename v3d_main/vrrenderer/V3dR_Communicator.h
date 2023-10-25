@@ -115,14 +115,21 @@ public slots:
      * @param flag_init
      * 消息处理函数
      */
-    void TFProcess(QString msg,bool flag_init=0);
+    void TFProcess(QString msg);
     /**
      * @brief processWarnMsg
      * @param msg
      * @param flag_init
      * 警告处理函数
      */
-    void processWarnMsg(QString msg, bool flag_init=0);
+    void processWarnMsg(QString msg);
+    /**
+     * @brief processAnalyzeMsg
+     * @param msg
+     * @param flag_init
+     * 分析处理函数
+     */
+    void processAnalyzeMsg(QString msg);
     /**
      * @brief onReadyRead
      * 读取输入，并执行相关处理
@@ -159,6 +166,7 @@ signals:
     //msg process
     void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
     void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
+    void msgtoanalyze(QString);//转发消息给分析处理函数(processAnalyzeMsg)
 
     void addSeg(QString,int);//加线信号 （type x y z;type x y z;...）
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
@@ -202,7 +210,7 @@ private:
 
 public:
 //	float VR_globalScale;//used to
-    static QString userName;//
+    static QString userId;//
     QString m_strAddressIP;
     uint m_iPort;
     static QTcpSocket* socket;//

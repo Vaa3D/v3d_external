@@ -592,8 +592,10 @@ class terafly::PMain : public QWidget
 /*----------------collaborate mdoe-------------------*/
 public:
         static V3dR_Communicator *Communicator;
-        QMenu* collaborateMenu,*userMenu;
+        QMenu *collaborateMenu,*userMenu;
+        QMenu *analyzeMenu;
         QAction *loadAction,*configAction;
+        QAction *somaNearByAction,*colorMutationAction,*dissociativeAction;
         QListWidget *userView;
         static UserInfo userinfo;
         static LoadManageWidget *managewidget;
@@ -607,6 +609,10 @@ public slots:
         void onMessageError(QAbstractSocket::SocketError);
         void updateuserview(QString userlist);
         void handleExit();
+
+        void analyzeSomaNearBy();
+        void analyzeColorMutation();
+        void analyzeDissociative();
 //        void startAutoTrace();//自动算法
 signals:
 

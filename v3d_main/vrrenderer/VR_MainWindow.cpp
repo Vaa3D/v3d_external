@@ -20,8 +20,8 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
     disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
 //    connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySendSeg()));
-    userName = TeraflyCommunicator->userName;
-    qDebug()<<"userName "<<userName<<" "<<VR_Communicator->userName;
+    userName = TeraflyCommunicator->userId;
+    qDebug()<<"userName "<<userName<<" "<<VR_Communicator->userId;
     CURRENT_DATA_IS_SENT=false;
 }
 
@@ -85,7 +85,7 @@ void VR_MainWindow::TVProcess(QString line)
                 }
             }
 
-            if(user==VR_Communicator->userName)
+            if(user==VR_Communicator->userId)
             {
                 qDebug()<<"release lock";
                 pMainApplication->READY_TO_SEND=false;
@@ -125,13 +125,13 @@ void VR_MainWindow::TVProcess(QString line)
             }
 
 
-            if(user==VR_Communicator->userName)
+            if(user==VR_Communicator->userId)
             {
                 pMainApplication->READY_TO_SEND=false;
                 CURRENT_DATA_IS_SENT=false;
 
             }else{
-				qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
+                qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
             }
         }else if(operationtype == "addmarker")
         {
@@ -152,12 +152,12 @@ void VR_MainWindow::TVProcess(QString line)
                 pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
                 //需要判断点是否在图像中，如果不在则全局处理
             }
-            if(user==VR_Communicator->userName)
+            if(user==VR_Communicator->userId)
             {
                 pMainApplication->READY_TO_SEND=false;
                 CURRENT_DATA_IS_SENT=false;
             }else{
-				qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
+                qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
             }
         }else if(operationtype == "delmarker")
         {
@@ -180,12 +180,12 @@ void VR_MainWindow::TVProcess(QString line)
                     VR_Communicator->emitDelMarker(listwithheader.join(";"));
                 }
             }
-            if(user==VR_Communicator->userName)
+            if(user==VR_Communicator->userId)
             {
                 pMainApplication->READY_TO_SEND=false;
                 CURRENT_DATA_IS_SENT=false;
             }else{
-				qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
+                qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
             }
         }else if(operationtype == "retypeline")
         {
@@ -217,12 +217,12 @@ void VR_MainWindow::TVProcess(QString line)
                   }
             }
 
-              if(user==VR_Communicator->userName)
+              if(user==VR_Communicator->userId)
               {
                   pMainApplication->READY_TO_SEND=false;
                   CURRENT_DATA_IS_SENT=false;
               }else{
-				  qDebug() << "user = " << user << " " << VR_Communicator->userName << " " << userName;
+                  qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
               }
         }
     }
@@ -286,7 +286,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
 		return 0;
 	}
 	SendVRconfigInfo();
-    pMainApplication->SetupCurrentUserInformation(VR_Communicator->userName.toStdString(),0);
+    pMainApplication->SetupCurrentUserInformation(VR_Communicator->userId.toStdString(),0);
 	RunVRMainloop(zoomPOS);
     pMainApplication->Shutdown();
     qDebug()<<"Now quit VR";
@@ -379,7 +379,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     if(VR_Communicator&&
                             VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
-                        waitsend.push_front(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                        waitsend.push_front(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                         VR_Communicator->UpdateAddSegMsg(waitsend.join(","));
                         CURRENT_DATA_IS_SENT=true;
                     }
@@ -395,7 +395,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
                 {
                     QStringList result;
-                    result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
                         result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
@@ -424,7 +424,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 {
                     QStringList result;
                     QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPosTobeDeleted);
-                    result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     result.push_back(ConvertedmarkerPOS);
                     if(ConvertedmarkerPOS.split(" ")[0]=="-1")
                     {
@@ -456,7 +456,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if (pMainApplication->SegNode_tobedeleted.x >0 || pMainApplication->SegNode_tobedeleted.y > 0 || pMainApplication->SegNode_tobedeleted.z > 0)
                 {
                     QStringList result;
-                    result.push_back(QString("1 %1 %2 %3 %4 %5").arg(VR_Communicator->userName).arg(pMainApplication->m_curMarkerColorType).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    result.push_back(QString("1 %1 %2 %3 %4 %5").arg(VR_Communicator->userId).arg(pMainApplication->m_curMarkerColorType).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
                         result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
@@ -491,7 +491,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                             qDebug()<<"TeraVR del seg failed";
                     }
                     QStringList result;
-                    result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                    result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
                         result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
@@ -502,7 +502,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     for(auto nt:pMainApplication->segaftersplit)
                     {
                         QStringList waitsend=pMainApplication->NT2QString(nt);
-                        waitsend.push_front(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userName).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                        waitsend.push_front(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                         waitsends.push_back(waitsend.join(","));
                     }
                     pMainApplication->segaftersplit.clear();

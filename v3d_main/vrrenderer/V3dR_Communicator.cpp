@@ -13,18 +13,19 @@
 //每个点使用‘’
 
 QTcpSocket* V3dR_Communicator::socket=0;
-QString V3dR_Communicator::userName="";
+QString V3dR_Communicator::userId="";
 V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false), b_isWarnMulBifurcationHandled(false), b_isWarnLoopHandled(false), reconnectCnt(0), initConnectCnt(0), QObject(partent)
 {
 	CreatorMarkerPos = 0;
 	CreatorMarkerRes = 0;
-	userName="";
+    userId="";
 //    qDebug()<<"userName=\"\"";
 
 //    socket = new QTcpSocket(this);
     resetdatatype();
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(this,SIGNAL(msgtowarn(QString)),this,SLOT(processWarnMsg(QString)));
+    connect(this,SIGNAL(msgtoanalyze(QString)),this,SLOT(processAnalyzeMsg(QString)));
 //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
     m_timerConnect = new QTimer(this);
     timer_iniconn=new QTimer(this);
@@ -45,7 +46,7 @@ void V3dR_Communicator::onReadyRead()
                     if(!msg.startsWith("DataTypeWithSize:")){
 //                        socket->write({"Socket Receive ERROR!"});
 //                        std::cerr<<userName.toStdString()+" receive not match format\n";
-                        qDebug() << userName << " receive not match format\n";
+                        qDebug() << userId << " receive not match format\n";
                         socket->disconnectFromHost();
                     }
                     qDebug()<<msg;
@@ -65,7 +66,7 @@ void V3dR_Communicator::onReadyRead()
                     socket->read(data,datatype.datasize);
                     data[datatype.datasize]='\0';
                     if(strlen(data)<128)
-                        std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<" receive from "<<userName.toStdString()<<" :"<<data<<std::endl;
+                        std::cout<<QDateTime::currentDateTime().toString(" yyyy/MM/dd hh:mm:ss ").toStdString()<<" receive from "<<userId.toStdString()<<" :"<<data<<std::endl;
                     //处理消息
                     preprocessmsgs(QString(data).trimmed().split(';',QString::SkipEmptyParts));
                     resetdatatype();
@@ -125,7 +126,8 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     qDebug()<<"begin to preprocessmsgs";
 
     QRegExp usersRex("^/activeusers:(.*)$");
-    QRegExp warnRex("^/WARN_(.*)$");
+    QRegExp warnRex("^/WARN_(.*):.*$");
+    QRegExp analyzeRex("^/ANALYZE_(.*):.*$");
     for(auto &msg:list)
     {
         if(msg.size()<128)
@@ -137,6 +139,8 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
             emit updateuserview(usersRex.cap(1));
         }else if(warnRex.indexIn(msg) != -1){
             emit msgtowarn(msg);
+        }else if(analyzeRex.indexIn(msg) != -1){
+            emit msgtoanalyze(msg);
         }
         else{
             emit msgtoprocess(msg);
@@ -144,7 +148,7 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     }
 }
 
-void V3dR_Communicator::processWarnMsg(QString line,bool flag_init){
+void V3dR_Communicator::processWarnMsg(QString line){
     QRegExp warnreg("/WARN_(.*):(.*)");
     line=line.trimmed();
     if(warnreg.indexIn(line)!=-1)
@@ -177,9 +181,8 @@ void V3dR_Communicator::processWarnMsg(QString line,bool flag_init){
             qDebug()<<"msg only contains header:"<<msg;
             return;
         }
-        bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-        QString sender=listwithheader[0].split(" ").at(1).trimmed();
-        if (sender=="server" && isTeraFly)
+        QString sender=listwithheader[0].split(" ").at(0).trimmed();
+        if (sender=="server")
         {
             qDebug() << "sender:" << sender;
             emit addMarker(listwithheader[1]);
@@ -188,7 +191,83 @@ void V3dR_Communicator::processWarnMsg(QString line,bool flag_init){
     }
 }
 
-void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
+void V3dR_Communicator::processAnalyzeMsg(QString line){
+    qDebug()<<line;
+    QRegExp analyzereg("/ANALYZE_(.*):(.*)");
+    line=line.trimmed();
+    if(analyzereg.indexIn(line)!=-1)
+    {
+        QString type=analyzereg.cap(1).trimmed();
+        QString operatorMsg=analyzereg.cap(2).trimmed();
+
+        qDebug()<<"type:"<<type;
+        qDebug()<<"operatormsg:"<<operatorMsg;
+        if(type=="SomaNearBy"){
+            QString sender=operatorMsg.split(" ").at(0).trimmed();
+            int result=operatorMsg.split(" ").at(1).trimmed().toUInt();
+            if (sender=="server" && result==1)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                    tr("no error"),
+                    QMessageBox::Ok);
+            }
+            else if(sender=="server" && result==0){
+                QMessageBox::information(0,tr("Infomation "),
+                    tr("error: soma is not connected to one point!"),
+                    QMessageBox::Ok);
+            }
+        }
+        if(type=="ColorMutation"){
+            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+            QString msgHeader=listWithHeader[0];
+            QStringList msgList=listWithHeader;
+            msgList.removeAt(0);
+
+            QString sender=msgHeader.split(" ").at(0).trimmed();
+            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            if (sender=="server" && result==1)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("no error"),
+                                         QMessageBox::Ok);
+            }
+            else if(sender=="server" && result==0){
+                for(int i=0; i<msgList.size(); i++){
+                    emit addMarker(msgList[i]);
+                }
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("error: color mutation exists! notice the red markers!"),
+                                         QMessageBox::Ok);
+            }
+        }
+        if(type=="Dissociative"){
+            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+            QString msgHeader=listWithHeader[0];
+            QStringList msgList=listWithHeader;
+            msgList.removeAt(0);
+
+            QString sender=msgHeader.split(" ").at(0).trimmed();
+            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            if (sender=="server" && result==1)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("no error"),
+                                         QMessageBox::Ok);
+            }
+            else if(sender=="server" && result==0){
+                for(int i=0; i<msgList.size(); i++){
+                    emit addMarker(msgList[i]);
+                }
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("error: dissociative seg exists! notice the red markers!"),
+                                         QMessageBox::Ok);
+            }
+        }
+
+    }
+}
+
+void V3dR_Communicator::TFProcess(QString line) {
     QRegExp msgreg("/(.*)_(.*):(.*)");
 
     line=line.trimmed();
@@ -211,8 +290,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
             QString user=listwithheader[0].split(" ").at(1).trimmed();
             int isBegin=listwithheader[0].split(" ").at(2).toUInt();
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
             else
             {
                 listwithheader.removeAt(0);
@@ -235,8 +314,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             unsigned int isMany=0;
             if(infos.size()>=6)
                 isMany=infos.at(5).trimmed().toInt();
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
             else
             {
                 listwithheader.removeAt(0);
@@ -257,8 +336,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             bool isTeraFly=infos.at(0).trimmed()=="0";
             QString user=infos.at(1).trimmed();
 
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==useriD" << userId;
             else
             {
                 listwithheader.removeAt(0);
@@ -275,8 +354,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
             QString user=listwithheader[0].split(" ").at(1).trimmed();
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
             else
             {
                 emit addMarker(listwithheader[1]);
@@ -292,8 +371,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
             QString user=listwithheader[0].split(" ").at(1).trimmed();
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
             else
             {
                 emit delMarker(listwithheader[1]);
@@ -309,8 +388,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
             QString user=listwithheader[0].split(" ").at(1).trimmed();
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
             else
             {
                 emit retypeMarker(listwithheader[1]);
@@ -336,8 +415,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             if(infos.size()>=7)
                 isMany=infos.at(6).trimmed().toInt();
             //qDebug()<<"type = listwithheader[0]"<<listwithheader;
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
             else
             {
                 listwithheader.removeAt(0);
@@ -356,8 +435,8 @@ void V3dR_Communicator::TFProcess(QString line,bool flag_init) {
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
             QString user=listwithheader[0].split(" ").at(1).trimmed();
-            if (user == userName && isNorm && isTeraFly)
-                qDebug() << "user:" << user << "==userName" << userName;
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
             else
             {
                 listwithheader.removeAt(0);
@@ -373,7 +452,7 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> con
     if(clienttype=="TeraFly")
     {
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(int(isBegin)).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(int(isBegin)).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         result+="$";
         for(auto connectedseg:connectedSegs){
@@ -397,7 +476,7 @@ void V3dR_Communicator::UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_
     if(clienttype=="TeraFly")
     {
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ GlobalCrood1 = ConvertLocalBlocktoGlobalCroods(p1.x,p1.y,p1.z);
         XYZ GlobalCrood2 = ConvertLocalBlocktoGlobalCroods(p2.x,p2.y,p2.z);
         result.push_back(QString("%1 %2 %3").arg(GlobalCrood1.x).arg(GlobalCrood1.y).arg(GlobalCrood1.z));
@@ -427,7 +506,7 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vecto
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         qDebug()<<"delline_sendMsg"<<result.count();
         sendMsg(QString("/delline_norm:"+result.join(",")));
@@ -436,7 +515,7 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vecto
         {
             undoDeque.pop_front();
         }
-        QString undoMsgHeader=QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(int(isBegin)).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+        QString undoMsgHeader=QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(int(isBegin)).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
         QStringList undoMsg;
         undoMsg.push_back(undoMsgHeader);
         undoMsg+=V_NeuronSWCToSendMSG(seg);
@@ -456,7 +535,7 @@ void V3dR_Communicator::UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString cl
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
         for(int i=0;i<segs.size();i++){
             if(segs[i].on){
                 result+=V_NeuronSWCToSendMSG(segs[i]);
@@ -482,7 +561,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
@@ -497,7 +576,7 @@ void V3dR_Communicator::UpdateRetypeMarkerMsg(float X,float Y,float Z, RGBA8 col
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
@@ -512,7 +591,7 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
     {
 
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
         result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/delmarker_norm:"+result.join(",")));
@@ -525,7 +604,7 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
     if(clienttype=="TeraFly")
     {
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userName).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         qDebug()<<"retypeline_sendMsg"<<result.count();
         sendMsg(QString("/retypeline_norm:"+result.join(",")));
@@ -538,7 +617,7 @@ void V3dR_Communicator::UpdateRetypeManySegsMsg(vector<V_NeuronSWC> segs,int typ
     if(clienttype=="TeraFly")
     {
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5 %6 %7").arg(0).arg(userName).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6 %7").arg(0).arg(userId).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
 
         for(int i=0;i<segs.size();i++){
             result+=V_NeuronSWCToSendMSG(segs[i]);
@@ -597,7 +676,7 @@ void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,Q
         if(new_slist.seg.size()==1)
             return;
         QStringList result;
-        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userName).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
         result.push_back("$");
 
@@ -744,21 +823,19 @@ void V3dR_Communicator::setPort(uint port){
 }
 
 void V3dR_Communicator::onConnected() {
-    qDebug()<<userName;
+    qDebug()<<userId;
     qDebug()<<"Message onConnected";
     b_isConnectedState=true;
     m_timerConnect->stop();
     reconnectCnt=0;
     QString RES=QString("RES(%1x%2x%3)").arg(ImageMaxRes.y).arg(ImageMaxRes.x).arg(ImageMaxRes.z);
-    //发送用户ID和设备类型 0 桌面设备，可查看全脑，需要发送全脑图像
-    sendMsg(QString("/login:%1 %2 %3").arg(userName).arg(RES).arg(0));
-//    sendMsg(QString("/login:%1 %2").arg(userName).arg(0));
+
+    sendMsg(QString("/login:%1 %2 %3").arg(userId).arg(RES).arg(0));
+//    sendMsg(QString("/login:%1 %2").arg(userId).arg(0));
     QMessageBox::information(0,tr("Message "),
                              tr("Connect success! Ready to start collaborating"),
                              QMessageBox::Ok);
-//    if(timer_exit->isActive())
-//        timer_exit->stop();
-//    timer_exit->start(30*1000);
+
 }
 
 void V3dR_Communicator::initConnect(){

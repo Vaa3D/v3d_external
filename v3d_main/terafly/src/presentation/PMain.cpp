@@ -245,6 +245,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 #ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
     collaborateMenu=menuBar->addMenu("Collaborate");
+
     configAction=new QAction("Config",collaborateMenu);
     collaborateMenu->addAction(configAction);
     connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
@@ -253,7 +254,20 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborateMenu->addAction(loadAction);
     connect(loadAction,SIGNAL(triggered()),this,SLOT(LoadFromServer()));
 
-//    userMenu=collaborateMenu->addMenu("Option");
+    analyzeMenu=collaborateMenu->addMenu("Analyze");
+    somaNearByAction=new QAction("Analyze points near soma", analyzeMenu);
+    analyzeMenu->addAction(somaNearByAction);
+    connect(somaNearByAction,SIGNAL(triggered()),this,SLOT(analyzeSomaNearBy()));
+
+    colorMutationAction=new QAction("Analyze color mutations", analyzeMenu);
+    analyzeMenu->addAction(colorMutationAction);
+    connect(colorMutationAction,SIGNAL(triggered()),this,SLOT(analyzeColorMutation()));
+
+    dissociativeAction=new QAction("Analyze dissociative segs", analyzeMenu);
+    analyzeMenu->addAction(dissociativeAction);
+    connect(dissociativeAction,SIGNAL(triggered()),this,SLOT(analyzeDissociative()));
+
+    //    userMenu=collaborateMenu->addMenu("Option");
 //    configAction=new QAction("Config",userMenu);
 //    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
 
@@ -3968,16 +3982,9 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/test";
+    QString HostAddress="http://114.117.165.134:26000/dynamic";
     QString HostIp="114.117.165.134";
     bool ok;
-//    auto HostAddress = QInputDialog::getText(0, "HostAddress","Please enter the HostAddress:", QLineEdit::Normal,settings.value("HostAddress").toString(), &ok);
-//    if(ok&&!HostAddress.isEmpty())
-//        settings.setValue("HostAddress", HostAddress);
-
-//    auto HostIP = QInputDialog::getText(0, "IP","Please enter the HostIP:", QLineEdit::Normal,settings.value("HostIP").toString(), &ok);
-//    if(ok&&!HostAddress.isEmpty())
-//        settings.setValue("HostIP", HostIP);
 
     settings.setValue("HostAddress", HostAddress);
     settings.setValue("HostIP", HostIp);
@@ -3990,9 +3997,6 @@ void PMain::configApp()
     if(ok)
         settings.setValue("UserPasswd", UserPasswd);
 
-//    auto UserID = QInputDialog::getText(0,"ID","Please enter the UserID:", QLineEdit::Normal,settings.value("UserID").toString(), &ok);
-//    if(ok&&!HostAddress.isEmpty())
-//        settings.setValue("UserID", UserID);
 }
 
 void PMain::LoadFromServer()
@@ -4016,29 +4020,6 @@ void PMain::LoadFromServer()
         managewidget=0;
     }
 
-//    if(accessmanager){
-//        accessmanager->deleteLater();
-//    }
-    qDebug()<<"11";
-//    accessmanager=new QNetworkAccessManager(this);
-//    qDebug()<<accessmanager;
-//    if(accessmanager){
-//        qDebug()<<accessmanager;
-//        qDebug()<<"delete accessmanager";
-//        accessmanager->deleteLater();
-//        accessmanager=0;
-//    }
-
-//    if(!accessmanager)
-//    {
-//        qDebug()<<"构造accessmanager";
-//        accessmanager=new QNetworkAccessManager(this);
-//        accessmanager->activeConfiguration();
-//    }
-//    if(!managewidget){
-//        managewidget=new LoadManageWidget(accessmanager,&userinfo);
-//    }
-    qDebug()<<"12";
     //更新一下用户信息
     managewidget=new LoadManageWidget(&userinfo);
     connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(
@@ -4051,15 +4032,7 @@ void PMain::startCollaborate(QString ano,QString port)
 {
     qDebug()<<"enter startCollaborate========================================";
     managewidget->hide();
-//    if(this->Communicator){
-//        qDebug()<<this->Communicator;
-//        qDebug()<<"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
-//        this->Communicator->socket->deleteLater();
-//        this->Communicator ->deleteLater();
-//    }
 
-//    Communicator = new V3dR_Communicator;
-    qDebug()<<Communicator;
     if(!Communicator)
     {
         Communicator=new V3dR_Communicator();
@@ -4068,10 +4041,8 @@ void PMain::startCollaborate(QString ano,QString port)
         Communicator->CreatorMarkerPos = 0;
         Communicator->CreatorMarkerRes = 0;
         Communicator->resetdatatype();
-        qDebug()<<"1111111111111111";
-        qDebug()<<"22222222222222222222";
+
 //        Communicator->socket = new QTcpSocket(Communicator);
-        qDebug()<<"333333333333333333333";
     }
 
     disconnect(Communicator->timer_iniconn, SIGNAL(timeout()), 0, 0);
@@ -4085,13 +4056,13 @@ void PMain::startCollaborate(QString ano,QString port)
 
     qDebug()<<Communicator;
 
+
     if(Communicator->socket){
-        qDebug()<<"0000000000";
         delete Communicator->socket;
         Communicator->socket=0;
     }
-    qDebug()<<"44444444444444444444444";
     Communicator->socket=new QTcpSocket();
+
 
     int maxresindex = terafly::CImport::instance()->getResolutions()-1;
     IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
@@ -4102,16 +4073,17 @@ void PMain::startCollaborate(QString ano,QString port)
     collautotrace->setEnabled(false);
 
     disconnect(Communicator,SIGNAL(load(QString)), 0, 0);
-    //为什么要用Qt::DirectConnection
+
+
+
     // load信号会在接收到服务器传来的startCollaborate消息后触发
     connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)),Qt::DirectConnection);
+
+
     terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
-    Communicator->userName=QString::number(userinfo.id);
-    qDebug()<<Communicator->userName;
-//    Renderer_gl1* render = (Renderer_gl1*)cur_win->view3DWidget->getRenderer();
-//    render->userColorid = userinfo.colorid;
-//    qDebug()<<"userColorId" <<render->userColorid;
+    Communicator->userId=QString::number(userinfo.id);
+    qDebug()<<Communicator->userId;
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString, int)), 0, 0);
 //    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
@@ -4163,12 +4135,15 @@ void PMain::startCollaborate(QString ano,QString port)
     connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
     QSettings settings("HHMI", "Vaa3D");
     Communicator->setAddressIP(settings.value("HostIP").toString());
+
+
+
     Communicator->setPort(port.toUInt());
 
-    qDebug()<<"5555555555555555555";
-    //Communicator->socket->abort();
 
-    qDebug()<<Communicator->userName;
+
+    qDebug()<<Communicator->userId;
+
     Communicator->socket->connectToHost(settings.value("HostIP").toString(),port.toUInt());
     qDebug() << "---------" << settings.value("HostIP").toString() << " " << port.toUInt() << "\n";
 //    Communicator->timer_iniconn->start(5000);
@@ -4186,7 +4161,6 @@ void PMain::startCollaborate(QString ano,QString port)
     }
 }
 
-//这个函数需要服务器那边文件发送完再执行，或者做相应处理
 void PMain::ColLoadANO(QString ANOfile)
 {
     qDebug()<<"ColoadAno_anofile"<<ANOfile;
@@ -4399,6 +4373,24 @@ void PMain::handleExit(){
     {
         userView->deleteLater();
         userView=nullptr;
+    }
+}
+
+void PMain::analyzeSomaNearBy(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_SomaNearBy:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::analyzeColorMutation(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_ColorMutation:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::analyzeDissociative(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_Dissociative:%1 %2").arg(0).arg(Communicator->userId));
     }
 }
 
