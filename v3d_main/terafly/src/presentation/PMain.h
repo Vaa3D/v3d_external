@@ -595,7 +595,7 @@ public:
         QMenu *collaborateMenu,*userMenu;
         QMenu *analyzeMenu;
         QAction *loadAction,*configAction;
-        QAction *somaNearByAction,*colorMutationAction,*dissociativeAction;
+        QAction *somaNearByAction,*colorMutationAction,*dissociativeAction,*angleAction;
         QListWidget *userView;
         static UserInfo userinfo;
         static LoadManageWidget *managewidget;
@@ -613,6 +613,7 @@ public slots:
         void analyzeSomaNearBy();
         void analyzeColorMutation();
         void analyzeDissociative();
+        void analyzeAngle();
 //        void startAutoTrace();//自动算法
 signals:
 

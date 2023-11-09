@@ -646,6 +646,8 @@ public:
     void connectCurveInAllSapce(QString info);
     void simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo);
     int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);
+    map<string, set<size_t>> getWholeGrid2SegIDMap(V_NeuronSWC_list& inputSegments);
+    void reverseSeg(V_NeuronSWC& seg);
     static bool noTerafly;
     //    static QStringList global_delMSG;
     //    NeuronTree convertMsg2NT(QStringList list);

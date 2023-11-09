@@ -263,6 +263,29 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                                          QMessageBox::Ok);
             }
         }
+        if(type=="Angle"){
+            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+            QString msgHeader=listWithHeader[0];
+            QStringList msgList=listWithHeader;
+            msgList.removeAt(0);
+
+            QString sender=msgHeader.split(" ").at(0).trimmed();
+            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            if (sender=="server" && result==1)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("no error"),
+                                         QMessageBox::Ok);
+            }
+            else if(sender=="server" && result==0){
+                for(int i=0; i<msgList.size(); i++){
+                    emit addMarker(msgList[i]);
+                }
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("error: incorrect angle exists! notice the red markers!"),
+                                         QMessageBox::Ok);
+            }
+        }
 
     }
 }

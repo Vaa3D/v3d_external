@@ -876,8 +876,8 @@ void Renderer_gl1::updateBoundingBox()
 		//qDebug("	!have_image");
 		boundingBox = surfBoundingBox; //081031
 	}
-	qDebug("  Renderer_gl1::updateBoundingBox surface (%g %g %g)--(%g %g %g)", sBB.x0,sBB.y0,sBB.z0, sBB.x1,sBB.y1,sBB.z1 );
-	qDebug("  Renderer_gl1::updateBoundingBox default (%g %g %g)--(%g %g %g)", BB.x0,BB.y0,BB.z0, BB.x1,BB.y1,BB.z1 );
+    //qDebug("  Renderer_gl1::updateBoundingBox surface (%g %g %g)--(%g %g %g)", sBB.x0,sBB.y0,sBB.z0, sBB.x1,sBB.y1,sBB.z1 );
+    //qDebug("  Renderer_gl1::updateBoundingBox default (%g %g %g)--(%g %g %g)", BB.x0,BB.y0,BB.z0, BB.x1,BB.y1,BB.z1 );
 	updateThicknessBox(); //090806
 }
 void Renderer_gl1::setThickness(double t)
@@ -1868,6 +1868,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
             if(index<0)
                 qDebug("addCurve: index<0");
 
+//            curImg->colla_cur_seg.printInfo();
             for(size_t i=0; i<curImg->tracedNeuron.seg.size(); ++i){
                 V_NeuronSWC seg=curImg->tracedNeuron.seg[i];
                 for(size_t j=0; j<seg.row.size(); j++){
@@ -1980,7 +1981,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 #ifndef test_main_cpp
 void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 {
-    qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
+//    qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
 //	PROGRESS_DIALOG("Updating Neuron structure", widget);
 //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 	QList <NeuronSWC> listNeuron;
@@ -2018,7 +2019,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 				hashNeuron.insert(S.n, listNeuron.size()-1);
             }
 		}
-		qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
+        //qDebug("---------------------read %d lines, %d remained lines", count, listNeuron.size());
 		if (listNeuron.size()<1) //this is used to remove a neuron with the same name if the size is <=0
 		{
 			for (int i=0; i<listNeuronTree.size(); i++)
@@ -2026,11 +2027,11 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 				if (listNeuronTree[i].file == QString(seg.file.c_str())) // same file. try to remove all instances with the same name
 				{
 					listNeuronTree.removeAt(i);
-					qDebug()<<"find name matched and remove an empty neuron";
+                    //qDebug()<<"find name matched and remove an empty neuron";
 				}
 			}
 		    updateNeuronBoundingBox();
-		    qDebug()<<"remove an empty neuron";
+            //qDebug()<<"remove an empty neuron";
 			return; //////////////////////////////
 		}
 		NeuronTree SS;
@@ -2060,7 +2061,7 @@ void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 			listNeuronTree.append(SS);
 		}
 		// make sure only one current editing neuron has editable flag
-		qDebug("	lastEditingNeuron = %d, NeuronTree.n = %d", curEditingNeuron, SS.n);
+        //qDebug("	lastEditingNeuron = %d, NeuronTree.n = %d", curEditingNeuron, SS.n);
 		//qDebug("-------------------------------------------------------");
 		for (int i=0; i<listNeuronTree.size(); i++)
 		{

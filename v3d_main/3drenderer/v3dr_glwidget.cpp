@@ -4782,6 +4782,34 @@ int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
     return index;
 }
 
+map<string, set<size_t>> V3dR_GLWidget::getWholeGrid2SegIDMap(V_NeuronSWC_list& inputSegments){
+    map<string, set<size_t>> wholeGrid2SegIDMap;
+
+    for(size_t i=0; i<inputSegments.seg.size(); ++i){
+        V_NeuronSWC seg = inputSegments.seg[i];
+
+        for(size_t j=0; j<seg.row.size(); ++j){
+            float xLabel = seg.row[j].x;
+            float yLabel = seg.row[j].y;
+            float zLabel = seg.row[j].z;
+            QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+            string gridKey = gridKeyQ.toStdString();
+            wholeGrid2SegIDMap[gridKey].insert(size_t(i));
+        }
+    }
+
+    return wholeGrid2SegIDMap;
+}
+
+void V3dR_GLWidget::reverseSeg(V_NeuronSWC& seg){
+    reverse(seg.row.begin(), seg.row.end());
+    for(int i=0; i<seg.row.size(); i++){
+        seg.row[i].n=i+1;
+        seg.row[i].parent=i+2;
+    }
+    seg.row[seg.row.size()-1].parent=-1;
+}
+
 void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only call by delete curve
 {
 //    qDebug()<<"enter deleteCurveInAllSpace";
@@ -4916,6 +4944,7 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
     auto segs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
 
     QVector<XYZ> coords;
+    bool isNeedReverse = false;
     if(segs.size()==2){
         int comparedIndex=0;
         if(isBegin==1){
@@ -4947,7 +4976,11 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
                 segs[0].row[comparedIndex].x=v_ns_list.seg[index].row[row_index].x;
                 segs[0].row[comparedIndex].y=v_ns_list.seg[index].row[row_index].y;
                 segs[0].row[comparedIndex].z=v_ns_list.seg[index].row[row_index].z;
+                if(comparedIndex==0)
+                    isNeedReverse=true;
             }
+            if(isNeedReverse)
+                reverseSeg(segs[0]);
         }
         else
         {
@@ -4956,6 +4989,10 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
     }
 
     if(segs.size()==3){
+        set<size_t> segIds1;
+        set<size_t> segIds2;
+        int firstIndex = -1;
+        int firstEndIndex = -1;
         for(int i=0;i<segs[1].row.size();i++){
             coords.push_back(XYZ(segs[1].row[i].x,segs[1].row[i].y,segs[1].row[i].z));
         }
@@ -4980,6 +5017,15 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
                 segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[row_index].x;
                 segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[row_index].y;
                 segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[row_index].z;
+                float xLabel = v_ns_list.seg[index].row[row_index].x;
+                float yLabel = v_ns_list.seg[index].row[row_index].y;
+                float zLabel = v_ns_list.seg[index].row[row_index].z;
+                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+                string gridKey = gridKeyQ.toStdString();
+                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
+                segIds1 = wholeGrid2SegIDMap[gridKey];
+                firstIndex = row_index;
+                firstEndIndex = v_ns_list.seg[index].row.size()-1;
             }
         }
         else
@@ -5013,12 +5059,25 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
                 segs[0].row[0].x=v_ns_list.seg[index].row[row_index].x;
                 segs[0].row[0].y=v_ns_list.seg[index].row[row_index].y;
                 segs[0].row[0].z=v_ns_list.seg[index].row[row_index].z;
+                float xLabel = v_ns_list.seg[index].row[row_index].x;
+                float yLabel = v_ns_list.seg[index].row[row_index].y;
+                float zLabel = v_ns_list.seg[index].row[row_index].z;
+                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+                string gridKey = gridKeyQ.toStdString();
+                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
+                segIds2 = wholeGrid2SegIDMap[gridKey];
             }
         }
         else
         {
             std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
         }
+        if(segIds1.size()==1 && segIds2.size()==1 && firstIndex==firstEndIndex && firstEndIndex!=-1 )
+            isNeedReverse = true;
+        if(segIds1.size()==1 && segIds2.size()>1)
+            isNeedReverse = true;
+        if(isNeedReverse)
+            reverseSeg(segs[0]);
     }
 
     v_ns_list.seg.push_back(segs[0]);

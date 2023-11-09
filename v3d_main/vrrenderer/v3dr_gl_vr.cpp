@@ -897,7 +897,7 @@ bool CMainApplication::BInit()
 
 
 
-	m_pCompanionWindow = SDL_CreateWindow( "TeraVR", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
+    m_pCompanionWindow = SDL_CreateWindow( "CAR-VR", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
 	if (m_pCompanionWindow == NULL)
 	{
 		printf( "%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
@@ -933,7 +933,7 @@ bool CMainApplication::BInit()
 	m_strDisplay = GetTrackedDeviceString( m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String );
 
 	//std::string strWindowTitle = "Vaa3D VR - " + m_strDriver + " " + m_strDisplay;
-	std::string strWindowTitle = "TeraVR - Initializing";
+    std::string strWindowTitle = "CAR-VR - Initializing";
 	SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 
 	
@@ -4104,7 +4104,7 @@ void CMainApplication::RenderFrame()
 	if ( m_pHMD )
 	{
 		QString AgentsNum = QString("%1").arg(Agents_spheres.size()+1);
-        std::string strWindowTitle = "TeraVR [Username: "+current_agent_name+"]";
+        std::string strWindowTitle = "CAR-VR [Username: "+current_agent_name+"]";
 //                [Color: "+current_agent_color+"][#Online users: "+AgentsNum.toStdString() + "]";
 		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();

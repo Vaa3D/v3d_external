@@ -267,6 +267,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     analyzeMenu->addAction(dissociativeAction);
     connect(dissociativeAction,SIGNAL(triggered()),this,SLOT(analyzeDissociative()));
 
+    angleAction=new QAction("Analyze the Angle of dendrite bifurcations", analyzeMenu);
+    analyzeMenu->addAction(angleAction);
+    connect(angleAction,SIGNAL(triggered()),this,SLOT(analyzeAngle()));
+
     //    userMenu=collaborateMenu->addMenu("Option");
 //    configAction=new QAction("Config",userMenu);
 //    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
@@ -3982,7 +3986,7 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/dynamic";
+    QString HostAddress="http://114.117.165.134:26000/test";
     QString HostIp="114.117.165.134";
     bool ok;
 
@@ -4391,6 +4395,12 @@ void PMain::analyzeColorMutation(){
 void PMain::analyzeDissociative(){
     if(this->Communicator && this->Communicator->socket){
         Communicator->sendMsg(QString("/ANALYZE_Dissociative:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::analyzeAngle(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_Angle:%1 %2").arg(0).arg(Communicator->userId));
     }
 }
 
