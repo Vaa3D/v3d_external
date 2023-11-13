@@ -3986,7 +3986,7 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/test";
+    QString HostAddress="http://114.117.165.134:26000/dynamic";
     QString HostIp="114.117.165.134";
     bool ok;
 
@@ -4106,6 +4106,10 @@ void PMain::startCollaborate(QString ano,QString port)
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString)),
             cur_win->getGLWidget(),SLOT(newThreadAddMarker(QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addManyMarkers(QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addManyMarkers(QString)),
+            cur_win->getGLWidget(),SLOT(newThreadAddManyMarkers(QString)));
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),

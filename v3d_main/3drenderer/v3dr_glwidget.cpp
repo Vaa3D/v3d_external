@@ -4317,7 +4317,7 @@ void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
     }
 
     markers.append(marker);
-   L: terafly::PluginInterface::setLandmark(markers,true);
+    L: terafly::PluginInterface::setLandmark(markers,true);
 }
 
 void V3dR_GLWidget::newThreadAddMarker(QString markerPOS){
@@ -4327,6 +4327,75 @@ void V3dR_GLWidget::newThreadAddMarker(QString markerPOS){
 //    {
 //        QApplication::processEvents(QEventLoop::AllEvents, 100);
 //    }
+}
+
+void V3dR_GLWidget::CollaAddManyMarkers(QString markersPOS){
+    if(markersPOS.isEmpty())
+        return;
+
+    QStringList tobeAddMarkers=markersPOS.split(",",QString::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+    const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
+        {255, 255, 255},  // white,   0-undefined
+        {20,  20,  20 },  // black,   1-soma
+        {200, 20,  0  },  // red,     2-axon
+        {0,   20,  200},  // blue,    3-dendrite
+        {200, 0,   200},  // purple,  4-apical dendrite
+        //the following is Hanchuan's extended color. 090331
+        {0,   200, 200},  // cyan,    5
+        {220, 200, 0  },  // yellow,  6
+        {0,   200, 20 },  // green,   7
+        {188, 94,  37 },  // coffee,  8
+        {180, 200, 120},  // asparagus,	9
+        {250, 100, 120},  // salmon,	10
+        {120, 200, 200},  // ice,		11
+        {100, 120, 200},  // orchid,	12
+        //the following is Hanchuan's further extended color. 111003
+        {255, 128, 168},  //	13
+        {128, 255, 168},  //	14
+        {128, 168, 255},  //	15
+        {168, 255, 128},  //	16
+        {255, 168, 128},  //	17
+        {168, 128, 255}, //	18
+        {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+        //the following (20-275) is used for matlab heat map. 120209 by WYN
+        {0,0,131}, //20
+    };
+
+    for(int i=0; i<tobeAddMarkers.size(); i++){
+        bool needAdd = true;
+        QStringList markerXYZ=tobeAddMarkers[i].split(" ",QString::SkipEmptyParts);
+        LocationSimple marker/*=markers.at(0)*/;
+        marker.x=markerXYZ.at(1).toFloat();
+        marker.y=markerXYZ.at(2).toFloat();
+        marker.z=markerXYZ.at(3).toFloat();
+        int type=markerXYZ.at(0).toInt();
+
+        marker.color.r = neuron_type_color[type][0];
+        marker.color.g = neuron_type_color[type][1];
+        marker.color.b = neuron_type_color[type][2];
+
+        for(auto it=markers.begin();it!=markers.end(); ++it)
+        {
+            if(it->color.r==marker.color.r&&it->color.g==marker.color.g&&it->color.b==marker.color.b
+                &&abs(it->x-marker.x)<1&&abs(it->y-marker.y)<1&&abs(it->z-marker.z)<1)
+            {
+                qDebug()<<"the marker has already existed";
+                needAdd = false;
+                break;
+            }
+        }
+
+        if(needAdd)
+            markers.append(marker);
+    }
+
+    L: terafly::PluginInterface::setLandmark(markers,true);
+
+}
+
+void V3dR_GLWidget::newThreadAddManyMarkers(QString markersPOS){
+    CollaAddManyMarkers(markersPOS);
 }
 
 void V3dR_GLWidget::CollaDelMarker(QString markerPOS)

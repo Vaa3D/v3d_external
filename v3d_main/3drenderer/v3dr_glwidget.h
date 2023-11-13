@@ -623,6 +623,7 @@ public slots:
     void CollaAddSeg(QString segInfo, int isBegin);
     void CollaDelSeg(QString segInfo, int isMany);
     void CollaAddMarker(QString markerPOS);
+    void CollaAddManyMarkers(QString markersPOS);
     void CollaDelMarker(QString markerPOS);
     void CollaRetypeMarker(QString markerPos);
     void CollaRetypeSeg(QString segInfo,int type, int isMany);
@@ -632,6 +633,7 @@ public slots:
     void newThreadAddSeg(QString segInfo, int isBegin);
     void newThreadDelSeg(QString segInfo, int isMany);
     void newThreadAddMarker(QString markerPOS);
+    void newThreadAddManyMarkers(QString markersPOS);
     void newThreadDelMarker(QString markerPOS);
     void newThreadRetypeMarker(QString markerPos);
     void newThreadRetypeSeg(QString segInfo,int type,int isMany);

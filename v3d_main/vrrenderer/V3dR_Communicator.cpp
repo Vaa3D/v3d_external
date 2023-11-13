@@ -155,37 +155,23 @@ void V3dR_Communicator::processWarnMsg(QString line){
     {
         QString reason=warnreg.cap(1).trimmed();
         QString operatorMsg=warnreg.cap(2).trimmed();
-
-//        if(reason=="MulBifurcation"&&!b_isWarnMulBifurcationHandled)
-//        {
-//            QMessageBox::warning(0,tr("Warning "),
-//                                     tr("Multiple bifurcation exists! Notice the brown markers."),
-//                                     QMessageBox::Ok);
-//            b_isWarnMulBifurcationHandled=true;
-//            QTimer::singleShot(30*1000,this,SLOT(resetWarnMulBifurcationFlag()));
-//        }
-
-//        if(reason=="Loop"&&!b_isWarnLoopHandled)
-//        {
-//            QMessageBox::warning(0,tr("Warning "),
-//                                     tr("Loop exists! Notice the black markers."),
-//                                     QMessageBox::Ok);
-//            b_isWarnLoopHandled=true;
-//            QTimer::singleShot(30*1000,this,SLOT(resetWarnLoopFlag()));
-//        }
-
         QString msg = operatorMsg;
         QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
-        if(listwithheader.size()<1)
+        if(listwithheader.size()<2)
         {
             qDebug()<<"msg only contains header:"<<msg;
             return;
         }
         QString sender=listwithheader[0].split(" ").at(0).trimmed();
-        if (sender=="server")
+        listwithheader.removeAt(0);
+
+        if (sender=="server" && reason=="Loop")
         {
-            qDebug() << "sender:" << sender;
-            emit addMarker(listwithheader[1]);
+            emit addManyMarkers(listwithheader.join(","));
+        }
+        else if(sender=="server")
+        {
+            emit addMarker(listwithheader[0]);
         }
 
     }
@@ -236,7 +222,7 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                     emit addMarker(msgList[i]);
                 }
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("error: color mutation exists! notice the red markers!"),
+                                         tr("error: color mutation exists! notice the soma nearby and the red markers!"),
                                          QMessageBox::Ok);
             }
         }

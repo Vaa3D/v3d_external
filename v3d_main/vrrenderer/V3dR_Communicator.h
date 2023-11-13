@@ -172,6 +172,7 @@ signals:
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
     void splitSeg(QString);//break seg信号
     void addMarker(QString);//加marker信号 (type x y z)
+    void addManyMarkers(QString);//增加很多marker信号 (type x y z;type x y z;...)
     void delMarker(QString);//减marker信号 (type x y z)
     void retypeMarker(QString);//改marker颜色信号(r,g,b,x,y,z)
     void retypeSeg(QString,int,int);//改线的颜色信号（type x y z;type x y z;...）
@@ -182,6 +183,7 @@ signals:
     void exit();
 public:
     void emitAddSeg(QString segInfo, int isBegin) {emit addSeg(segInfo, isBegin);}
+    void emitAddManyMarkers(QString segInfo) {emit addManyMarkers(segInfo);}
     void emitDelSeg(QString segInfo, int isMany) {emit delSeg(segInfo,isMany);}
     void emitAddMarker(QString markerInfo) {emit addMarker(markerInfo);}
     void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
