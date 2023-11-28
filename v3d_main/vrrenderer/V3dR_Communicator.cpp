@@ -26,9 +26,10 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false)
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(this,SIGNAL(msgtowarn(QString)),this,SLOT(processWarnMsg(QString)));
     connect(this,SIGNAL(msgtoanalyze(QString)),this,SLOT(processAnalyzeMsg(QString)));
+    connect(this,SIGNAL(msgtosend(QString)),this,SLOT(processSendMsg(QString)));
 //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
-    m_timerConnect = new QTimer(this);
-    timer_iniconn=new QTimer(this);
+//    m_timerConnect = new QTimer(this);
+//    timer_iniconn=new QTimer(this);
     timer_exit=new QTimer(this);
 }
 
@@ -127,10 +128,13 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
 
     QRegExp usersRex("^/activeusers:(.*)$");
     QRegExp warnRex("^/WARN_(.*):.*$");
-    QRegExp analyzeRex("^/ANALYZE_(.*):.*$");
+    QRegExp analyzeRex("^/FEEDBACK_ANALYZE_(.*):.*$");
+    QRegExp defineRex("^/FEEDBACK_DEFINE_(.*):.*$");
+    QRegExp sendRex("^/FEEDBACK_SEND_(.*):.*$");
+
     for(auto &msg:list)
     {
-        if(msg.size()<128)
+        if(msg.size()<64)
             qDebug()<<"OnRead:"<<msg;
         if(msg.startsWith("STARTCOLLABORATE:")){
 //            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
@@ -139,8 +143,10 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
             emit updateuserview(usersRex.cap(1));
         }else if(warnRex.indexIn(msg) != -1){
             emit msgtowarn(msg);
-        }else if(analyzeRex.indexIn(msg) != -1){
+        }else if(analyzeRex.indexIn(msg) != -1 || defineRex.indexIn(msg) != -1){
             emit msgtoanalyze(msg);
+        }else if(sendRex.indexIn(msg) != -1){
+            emit msgtosend(msg);
         }
         else{
             emit msgtoprocess(msg);
@@ -157,20 +163,32 @@ void V3dR_Communicator::processWarnMsg(QString line){
         QString operatorMsg=warnreg.cap(2).trimmed();
         QString msg = operatorMsg;
         QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
-        if(listwithheader.size()<2)
-        {
-            qDebug()<<"msg only contains header:"<<msg;
-            return;
-        }
-        QString sender=listwithheader[0].split(" ").at(0).trimmed();
+//        if(listwithheader.size()<2)
+//        {
+//            qDebug()<<"msg only contains header:"<<msg;
+//            return;
+//        }
+
+        QString header = listwithheader[0];
+        QString sender=header.split(" ").at(0).trimmed();
         listwithheader.removeAt(0);
 
-        if (sender=="server" && reason=="Loop")
+        if (sender=="server" && (reason=="TipUndone" || reason=="CrossingError" || reason=="MulBifurcation"))
         {
             emit addManyMarkers(listwithheader.join(","));
         }
-        else if(sender=="server")
+        else if(sender=="server" && reason=="Loop")
         {
+            int result = header.split(" ").at(1).trimmed().toUInt();
+            if(result == 1){
+//                emit setDefineSomaActionState(true);
+            }
+            if(result == 0){
+//                emit setDefineSomaActionState(false);
+                emit addManyMarkers(listwithheader.join(","));
+            }
+        }
+        else if(sender=="server"){
             emit addMarker(listwithheader[0]);
         }
 
@@ -179,9 +197,10 @@ void V3dR_Communicator::processWarnMsg(QString line){
 
 void V3dR_Communicator::processAnalyzeMsg(QString line){
     qDebug()<<line;
-    QRegExp analyzereg("/ANALYZE_(.*):(.*)");
+    QRegExp analyzereg("/FEEDBACK_ANALYZE_(.*):(.*)");
+    QRegExp definereg("/FEEDBACK_DEFINE_(.*):(.*)");
     line=line.trimmed();
-    if(analyzereg.indexIn(line)!=-1)
+    if(analyzereg.indexIn(line) != -1)
     {
         QString type=analyzereg.cap(1).trimmed();
         QString operatorMsg=analyzereg.cap(2).trimmed();
@@ -269,6 +288,69 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                 }
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("error: incorrect angle exists! notice the red markers!"),
+                                         QMessageBox::Ok);
+            }
+        }
+    }
+    else if(definereg.indexIn(line) != -1){
+        QString type=definereg.cap(1).trimmed();
+        QString operatorMsg=definereg.cap(2).trimmed();
+
+        qDebug()<<"type:"<<type;
+        qDebug()<<"operatormsg:"<<operatorMsg;
+        if(type=="Soma"){
+            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+            QString msgHeader=listWithHeader[0];
+            QStringList msgList=listWithHeader;
+            msgList.removeAt(0);
+
+            QString sender=msgHeader.split(" ").at(0).trimmed();
+            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+
+            if (sender=="server" && result==0)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         "error: " + msgList[0],
+                                         QMessageBox::Ok);
+            }
+            if(sender=="server" && result==1)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         msgList[0],
+                                         QMessageBox::Ok);
+            }
+        }
+    }
+}
+
+void V3dR_Communicator::processSendMsg(QString line){
+    QRegExp sendreg("/FEEDBACK_SEND_(.*):(.*)");
+    line=line.trimmed();
+    if(sendreg.indexIn(line)!=-1)
+    {
+        QString type=sendreg.cap(1).trimmed();
+        QString operatorMsg=sendreg.cap(2).trimmed();
+        QString msg = operatorMsg;
+
+        QStringList listWithHeader=msg.split(',',QString::SkipEmptyParts);
+        QString msgHeader=listWithHeader[0];
+        QString sender=msgHeader.split(" ").at(0).trimmed();
+        QStringList msgList=listWithHeader;
+        msgList.removeAt(0);
+
+        if (sender=="server" && type=="SomaPos")
+        {
+            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            if (result==0)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         "error: " + msgList[0],
+                                         QMessageBox::Ok);
+            }
+            if(result==1)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         msgList[0],
                                          QMessageBox::Ok);
             }
         }
@@ -656,7 +738,7 @@ void V3dR_Communicator::UpdateDelSegMsg(QString TVdelSegMSG)
     {
         undoDeque.pop_front();
     }
-    undoDeque.push_back(QString("/drawline_undo:"+TVdelSegMSG));
+    undoDeque.push_back(QString("/drawline_undo:"+TVdelSegMSG+",$"));
     redoDeque.clear();
 }
 
@@ -835,7 +917,6 @@ void V3dR_Communicator::onConnected() {
     qDebug()<<userId;
     qDebug()<<"Message onConnected";
     b_isConnectedState=true;
-    m_timerConnect->stop();
     reconnectCnt=0;
     QString RES=QString("RES(%1x%2x%3)").arg(ImageMaxRes.y).arg(ImageMaxRes.x).arg(ImageMaxRes.z);
 
@@ -847,81 +928,81 @@ void V3dR_Communicator::onConnected() {
 
 }
 
-void V3dR_Communicator::initConnect(){
-    qDebug()<<"enter initConnect";
-    if(b_isConnectedState)
-    {
-        timer_iniconn->stop();
-        return;
-    }
-
-    if(socket->state() != QAbstractSocket::UnconnectedState)
-        return;
-    // 未连接时，每隔五秒自动向指定服务器发送连接请求
-    if(socket->state() == QAbstractSocket::UnconnectedState)
-    {
-        initConnectCnt++;
-        if(initConnectCnt>=6){
-            QMessageBox::information(0,tr("Message "),
-                                     tr("Connect failed. Please Restart Vaa3d"),
-                                     QMessageBox::Ok);
-
-            qDebug() <<"Connect failed."<<socket->errorString();
-            emit exit();
-            timer_iniconn->stop();
-        }
-        qDebug()<<"initconnect state:"<<socket->state();
-        socket->abort();
-        socket->connectToHost(m_strAddressIP, m_iPort);
-    }
-
-    // 连接成功后关闭初始化连接定时器，后面的断线重连与此无关
-    else if(socket->state() == QAbstractSocket::ConnectedState)
-    {
-        timer_iniconn->stop();
-    }
-
-}
-
-void V3dR_Communicator::autoReconnect(){
-    if(b_isConnectedState)
-        return;
-
-    if(socket->state() != QAbstractSocket::UnconnectedState)
-        return;
-
-    reconnectCnt++;
-    if(reconnectCnt>=6){
-        QMessageBox::information(0,tr("Message "),
-                                 tr("Reconnect failed. Please Restart Vaa3d"),
-                                 QMessageBox::Ok);
-
-        qDebug() <<"Reconnect failed."<<socket->errorString();
-        emit exit();
-        m_timerConnect->stop();
-    }
-    qDebug()<<"reconnect state:"<<socket->state();
-    socket->abort();
-    socket->connectToHost(m_strAddressIP, m_iPort);
-//    if(!socket->waitForConnected(1000*5))
+//void V3dR_Communicator::initConnect(){
+//    qDebug()<<"enter initConnect";
+//    if(b_isConnectedState)
 //    {
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr(QString("Reconnect failed %1").arg(reconnectCnt).toStdString().c_str()),
-//                                 QMessageBox::Ok);
-
-//        qDebug() <<"reconnect failed!"<<socket->errorString();
-//        if(reconnectCnt>=5){
-//            QMessageBox::information(0,tr("Message "),
-//                                     tr("Too many reconnection failures. Please Restart Vaa3d"),
-//                                     QMessageBox::Ok);
-
-//            qDebug() <<"Too many reconnection failures!"<<socket->errorString();
-//            emit exit();
-//            m_timerConnect->stop();
-//        }
+//        timer_iniconn->stop();
+//        return;
 //    }
 
-}
+//    if(socket->state() != QAbstractSocket::UnconnectedState)
+//        return;
+//    // 未连接时，每隔五秒自动向指定服务器发送连接请求
+//    if(socket->state() == QAbstractSocket::UnconnectedState)
+//    {
+//        initConnectCnt++;
+//        if(initConnectCnt>=6){
+//            QMessageBox::information(0,tr("Message "),
+//                                     tr("Connect failed. Please Restart Vaa3d"),
+//                                     QMessageBox::Ok);
+
+//            qDebug() <<"Connect failed."<<socket->errorString();
+//            emit exit();
+//            timer_iniconn->stop();
+//        }
+//        qDebug()<<"initconnect state:"<<socket->state();
+//        socket->abort();
+//        socket->connectToHost(m_strAddressIP, m_iPort);
+//    }
+
+//    // 连接成功后关闭初始化连接定时器，后面的断线重连与此无关
+//    else if(socket->state() == QAbstractSocket::ConnectedState)
+//    {
+//        timer_iniconn->stop();
+//    }
+
+//}
+
+//void V3dR_Communicator::autoReconnect(){
+//    if(b_isConnectedState)
+//        return;
+
+//    if(socket->state() != QAbstractSocket::UnconnectedState)
+//        return;
+
+//    reconnectCnt++;
+//    if(reconnectCnt>=6){
+//        QMessageBox::information(0,tr("Message "),
+//                                 tr("Reconnect failed. Please Restart Vaa3d"),
+//                                 QMessageBox::Ok);
+
+//        qDebug() <<"Reconnect failed."<<socket->errorString();
+//        emit exit();
+//        m_timerConnect->stop();
+//    }
+//    qDebug()<<"reconnect state:"<<socket->state();
+//    socket->abort();
+//    socket->connectToHost(m_strAddressIP, m_iPort);
+////    if(!socket->waitForConnected(1000*5))
+////    {
+////        QMessageBox::information(0,tr("Message "),
+////                                 tr(QString("Reconnect failed %1").arg(reconnectCnt).toStdString().c_str()),
+////                                 QMessageBox::Ok);
+
+////        qDebug() <<"reconnect failed!"<<socket->errorString();
+////        if(reconnectCnt>=5){
+////            QMessageBox::information(0,tr("Message "),
+////                                     tr("Too many reconnection failures. Please Restart Vaa3d"),
+////                                     QMessageBox::Ok);
+
+////            qDebug() <<"Too many reconnection failures!"<<socket->errorString();
+////            emit exit();
+////            m_timerConnect->stop();
+////        }
+////    }
+
+//}
 
 void V3dR_Communicator::autoExit(){
     qDebug()<<"enter autoExit";

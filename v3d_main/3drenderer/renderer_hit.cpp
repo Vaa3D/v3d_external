@@ -2342,12 +2342,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		_appendMarkerPos(x,y);
 		if (b_move)
 		{
-			qDebug("\t track ( %i, %i ) to define Curve", x,y);
+//			qDebug("\t track ( %i, %i ) to define Curve", x,y);
 			this->sShowTrack = 1;
 			return 1; //display 2d track
 		}
 		// release button
-		qDebug("\t track-end ( %i, %i ) to define Curve (%i points)", x,y, listMarkerPos.size());
+        //qDebug("\t track-end ( %i, %i ) to define Curve (%i points)", x,y, listMarkerPos.size());
 		if (listMarkerPos.size() >=3) //drop short click
 			list_listCurvePos.append(listMarkerPos);
 		listMarkerPos.clear();
@@ -3055,7 +3055,7 @@ int Renderer_gl1::hitPen(int x, int y)
 			selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
 			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
 	{
-		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
+        //qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 		_appendMarkerPos(x,y);
 		// endSlectMode() in movePen
 		return 1;
@@ -3541,6 +3541,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 	////////////////////////////////////////////////////////////////////////
 	qDebug()<<"\n  3d curve in channel # "<<((chno<0)? chno :chno+1);
+    qDebug()<<currentTraceType;
 	vector <XYZ> loc_vec;
 	loc_vec.clear();
 	int N = loc_vec_input.size();

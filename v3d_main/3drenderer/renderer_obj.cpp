@@ -1850,6 +1850,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
         //// Vaa3d || Terafly
         else
         {
+//            qDebug()<<"11111111111111:   currentTraceType: "<<currentTraceType;
             if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
                 creatmode = 1;
             if(selectMode == smCurveCreate_MarkerCreate1_fm)
@@ -1857,6 +1858,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
 
+//            qDebug()<<"22222222222222:   currentTraceType: "<<currentTraceType;
             QVector<XYZ> coords;
             int firstSegID=-1;
             int secondSegID=-1;
@@ -1902,8 +1904,8 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
                     &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState
                  && curImg->colla_cur_seg.row.size() > 0)
 				{
-                    qDebug()<<"seg type="<<curImg->colla_cur_seg.row[0].type;
-                    cout << "Send msg success" << endl;
+//                    qDebug()<<"seg type="<<curImg->colla_cur_seg.row[0].type;
+//                    cout << "Send msg success" << endl;
 					w->TeraflyCommunicator->cur_chno = curImg->cur_chno;
 					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
 					w->SetupCollaborateInfo();

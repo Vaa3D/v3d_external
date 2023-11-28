@@ -254,6 +254,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborateMenu->addAction(loadAction);
     connect(loadAction,SIGNAL(triggered()),this,SLOT(LoadFromServer()));
 
+    sendSomaPosAction=new QAction("Send Soma Position",collaborateMenu);
+    collaborateMenu->addAction(sendSomaPosAction);
+    connect(sendSomaPosAction,SIGNAL(triggered()),this,SLOT(sendSomaPosition()));
+
     analyzeMenu=collaborateMenu->addMenu("Analyze");
     somaNearByAction=new QAction("Analyze points near soma", analyzeMenu);
     analyzeMenu->addAction(somaNearByAction);
@@ -270,6 +274,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     angleAction=new QAction("Analyze the Angle of dendrite bifurcations", analyzeMenu);
     analyzeMenu->addAction(angleAction);
     connect(angleAction,SIGNAL(triggered()),this,SLOT(analyzeAngle()));
+
+    defineSomaAction=new QAction("Define Soma",collaborateMenu);
+    collaborateMenu->addAction(defineSomaAction);
+    connect(defineSomaAction,SIGNAL(triggered()),this,SLOT(defineSoma()));
+
+//    defineSomaAction->setEnabled(false);
 
     //    userMenu=collaborateMenu->addMenu("Option");
 //    configAction=new QAction("Config",userMenu);
@@ -3986,7 +3996,7 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/dynamic";
+    QString HostAddress="http://114.117.165.134:26000/test";
     QString HostIp="114.117.165.134";
     bool ok;
 
@@ -4049,11 +4059,11 @@ void PMain::startCollaborate(QString ano,QString port)
 //        Communicator->socket = new QTcpSocket(Communicator);
     }
 
-    disconnect(Communicator->timer_iniconn, SIGNAL(timeout()), 0, 0);
-    connect(Communicator->timer_iniconn, SIGNAL(timeout()), Communicator, SLOT(initConnect()));//初始化客户端未获得连接时，每五秒自动连接一次
+//    disconnect(Communicator->timer_iniconn, SIGNAL(timeout()), 0, 0);
+//    connect(Communicator->timer_iniconn, SIGNAL(timeout()), Communicator, SLOT(initConnect()));//初始化客户端未获得连接时，每五秒自动连接一次
 
-    disconnect(Communicator->m_timerConnect, SIGNAL(timeout()), 0, 0);
-    connect(Communicator->m_timerConnect, SIGNAL(timeout()), Communicator, SLOT(autoReconnect()));
+//    disconnect(Communicator->m_timerConnect, SIGNAL(timeout()), 0, 0);
+//    connect(Communicator->m_timerConnect, SIGNAL(timeout()), Communicator, SLOT(autoReconnect()));
 
     disconnect(Communicator->timer_exit, SIGNAL(timeout()), 0, 0);
     connect(Communicator->timer_exit, SIGNAL(timeout()), Communicator, SLOT(autoExit()));
@@ -4077,9 +4087,6 @@ void PMain::startCollaborate(QString ano,QString port)
     collautotrace->setEnabled(false);
 
     disconnect(Communicator,SIGNAL(load(QString)), 0, 0);
-
-
-
     // load信号会在接收到服务器传来的startCollaborate消息后触发
     connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)),Qt::DirectConnection);
 
@@ -4135,20 +4142,21 @@ void PMain::startCollaborate(QString ano,QString port)
     connect(Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
     connect(Communicator->socket,SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onMessageError(QAbstractSocket::SocketError)));
 
-
     disconnect(Communicator,SIGNAL(exit()), 0, 0);
     connect(Communicator,SIGNAL(exit()), this, SLOT(handleExit()));
 
     disconnect(Communicator,SIGNAL(updateuserview(QString)), 0, 0);
     connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
+
+    disconnect(Communicator,SIGNAL(setDefineSomaActionState(bool)), 0, 0);
+    connect(Communicator,SIGNAL(setDefineSomaActionState(bool)),this,SLOT(setDefineSomaState(bool)));
+
     QSettings settings("HHMI", "Vaa3D");
     Communicator->setAddressIP(settings.value("HostIP").toString());
 
 
 
     Communicator->setPort(port.toUInt());
-
-
 
     qDebug()<<Communicator->userId;
 
@@ -4406,6 +4414,22 @@ void PMain::analyzeAngle(){
     if(this->Communicator && this->Communicator->socket){
         Communicator->sendMsg(QString("/ANALYZE_Angle:%1 %2").arg(0).arg(Communicator->userId));
     }
+}
+
+void PMain::defineSoma(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/DEFINE_Soma:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::sendSomaPosition(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/SEND_SomaPos:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::setDefineSomaState(bool flag){
+    defineSomaAction->setEnabled(flag);
 }
 
 //void PMain::startAutoTrace()

@@ -112,24 +112,27 @@ public slots:
     /**
      * @brief TFProcess
      * @param msg
-     * @param flag_init
      * 消息处理函数
      */
     void TFProcess(QString msg);
     /**
      * @brief processWarnMsg
      * @param msg
-     * @param flag_init
      * 警告处理函数
      */
     void processWarnMsg(QString msg);
     /**
      * @brief processAnalyzeMsg
      * @param msg
-     * @param flag_init
      * 分析处理函数
      */
     void processAnalyzeMsg(QString msg);
+    /**
+     * @brief processSendMsg
+     * @param msg
+     * 分析处理函数
+     */
+    void processSendMsg(QString msg);
     /**
      * @brief onReadyRead
      * 读取输入，并执行相关处理
@@ -144,12 +147,12 @@ public slots:
      * @brief autoReconnect
      * 自动重连
      */
-    void autoReconnect();
-    /**
-     * @brief initConnect
-     * 初始连接
-     */
-    void initConnect();
+//    void autoReconnect();
+//    /**
+//     * @brief initConnect
+//     * 初始连接
+//     */
+//    void initConnect();
     void autoExit();
     void resetWarnMulBifurcationFlag();
     void resetWarnLoopFlag();
@@ -167,6 +170,7 @@ signals:
     void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
     void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
     void msgtoanalyze(QString);//转发消息给分析处理函数(processAnalyzeMsg)
+    void msgtosend(QString);//转发消息给发送处理函数(processSendMsg)
 
     void addSeg(QString,int);//加线信号 （type x y z;type x y z;...）
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
@@ -178,6 +182,7 @@ signals:
     void retypeSeg(QString,int,int);//改线的颜色信号（type x y z;type x y z;...）
     void connectSeg(QString);
     void updateuserview(QString);
+    void setDefineSomaActionState(bool);
     //msg process end
 
     void exit();
@@ -220,10 +225,10 @@ public:
     bool b_isConnectedState;
     bool b_isWarnMulBifurcationHandled;
     bool b_isWarnLoopHandled;
-    //重连定时器
-    QTimer *m_timerConnect;
-    //初始化连接定时器
-    QTimer *timer_iniconn;
+//    //重连定时器
+//    QTimer *m_timerConnect;
+//    //初始化连接定时器
+//    QTimer *timer_iniconn;
     QTimer *timer_exit;
 
     int initConnectCnt;

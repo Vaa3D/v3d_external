@@ -1,4 +1,4 @@
-// Feb 27, 2012      Hang Xiao
+﻿// Feb 27, 2012      Hang Xiao
 
 #ifndef __FASTMARCHING_LINKER_H__
 #define __FASTMARCHING_LINKER_H__

@@ -3759,7 +3759,6 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 
                     QFuture<void> future = QtConcurrent::run([=]() {
                         w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,pressedNumber,"TeraFly");
-                        qDebug()<<"123";
                     });
 
                     if(w->TeraflyCommunicator->timer_exit->isActive()){
@@ -4803,7 +4802,7 @@ void V3dR_GLWidget::newThreadSplitSeg(QString segInfo){
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {
-    float mindist=100/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
+    float mindist=5/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
     qDebug()<<"threshold="<<mindist;
     int index=-1;
 
@@ -4956,6 +4955,7 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
 
 void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
 {
+//    qDebug()<<"enter";
     if(segInfo.isEmpty()) return;
     NeuronTree  nt = terafly::PluginInterface::getSWC();
     V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
@@ -5058,10 +5058,10 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
     }
 
     if(segs.size()==3){
-        set<size_t> segIds1;
-        set<size_t> segIds2;
-        int firstIndex = -1;
-        int firstEndIndex = -1;
+//        set<size_t> segIds1;
+//        set<size_t> segIds2;
+//        int firstIndex = -1;
+//        int firstEndIndex = -1;
         for(int i=0;i<segs[1].row.size();i++){
             coords.push_back(XYZ(segs[1].row[i].x,segs[1].row[i].y,segs[1].row[i].z));
         }
@@ -5086,15 +5086,15 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
                 segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[row_index].x;
                 segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[row_index].y;
                 segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[row_index].z;
-                float xLabel = v_ns_list.seg[index].row[row_index].x;
-                float yLabel = v_ns_list.seg[index].row[row_index].y;
-                float zLabel = v_ns_list.seg[index].row[row_index].z;
-                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
-                string gridKey = gridKeyQ.toStdString();
-                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
-                segIds1 = wholeGrid2SegIDMap[gridKey];
-                firstIndex = row_index;
-                firstEndIndex = v_ns_list.seg[index].row.size()-1;
+//                float xLabel = v_ns_list.seg[index].row[row_index].x;
+//                float yLabel = v_ns_list.seg[index].row[row_index].y;
+//                float zLabel = v_ns_list.seg[index].row[row_index].z;
+//                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+//                string gridKey = gridKeyQ.toStdString();
+//                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
+//                segIds1 = wholeGrid2SegIDMap[gridKey];
+//                firstIndex = row_index;
+//                firstEndIndex = v_ns_list.seg[index].row.size()-1;
             }
         }
         else
@@ -5128,30 +5128,31 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
                 segs[0].row[0].x=v_ns_list.seg[index].row[row_index].x;
                 segs[0].row[0].y=v_ns_list.seg[index].row[row_index].y;
                 segs[0].row[0].z=v_ns_list.seg[index].row[row_index].z;
-                float xLabel = v_ns_list.seg[index].row[row_index].x;
-                float yLabel = v_ns_list.seg[index].row[row_index].y;
-                float zLabel = v_ns_list.seg[index].row[row_index].z;
-                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
-                string gridKey = gridKeyQ.toStdString();
-                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
-                segIds2 = wholeGrid2SegIDMap[gridKey];
+//                float xLabel = v_ns_list.seg[index].row[row_index].x;
+//                float yLabel = v_ns_list.seg[index].row[row_index].y;
+//                float zLabel = v_ns_list.seg[index].row[row_index].z;
+//                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+//                string gridKey = gridKeyQ.toStdString();
+//                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
+//                segIds2 = wholeGrid2SegIDMap[gridKey];
             }
         }
         else
         {
             std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
         }
-        if(segIds1.size()==1 && segIds2.size()==1 && firstIndex==firstEndIndex && firstEndIndex!=-1 )
-            isNeedReverse = true;
-        if(segIds1.size()==1 && segIds2.size()>1)
-            isNeedReverse = true;
-        if(isNeedReverse)
-            reverseSeg(segs[0]);
+//        if(segIds1.size()==1 && segIds2.size()==1 && firstIndex==firstEndIndex && firstEndIndex!=-1 )
+//            isNeedReverse = true;
+//        if(segIds1.size()==1 && segIds2.size()>1)
+//            isNeedReverse = true;
+//        if(isNeedReverse)
+//            reverseSeg(segs[0]);
     }
 
     v_ns_list.seg.push_back(segs[0]);
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
     terafly::PluginInterface::setSWC(nt,true);
+//    qDebug()<<"end";
 //    QString fileName = "";
 //    writeSWC_file(fileName,nt);
 }

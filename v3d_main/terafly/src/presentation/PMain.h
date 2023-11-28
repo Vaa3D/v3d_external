@@ -596,6 +596,7 @@ public:
         QMenu *analyzeMenu;
         QAction *loadAction,*configAction;
         QAction *somaNearByAction,*colorMutationAction,*dissociativeAction,*angleAction;
+        QAction *defineSomaAction,*sendSomaPosAction;
         QListWidget *userView;
         static UserInfo userinfo;
         static LoadManageWidget *managewidget;
@@ -614,8 +615,12 @@ public slots:
         void analyzeColorMutation();
         void analyzeDissociative();
         void analyzeAngle();
+        void defineSoma();
+        void sendSomaPosition();
+        void setDefineSomaState(bool);
 //        void startAutoTrace();//自动算法
 signals:
+
 
 private:
         QString currentPath;//for auto trace

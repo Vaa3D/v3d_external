@@ -324,7 +324,6 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(N-1).x, list_listCurvePos.at(index).at(N-1).y, p_tree, best_dist);
                                 qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-
                 double th_merge = 5;
 
 				bool b_start_merged=false, b_end_merged=false;
@@ -1127,7 +1126,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                          V3DLONG n_id_start = findNearestNeuronNode_Loc(loc_vec.at(0), p_tree);
                          V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
                          qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
-
+                         qDebug()<<currentTraceType;
                          double th_merge = 5;
 
                          bool b_start_merged=false, b_end_merged=false;
@@ -1496,9 +1495,7 @@ double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //u
 	int chno = checkCurChannel();
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 	qDebug()<<"\n solveCurveMarkerLists_fm: 3d curve in channel # "<<((chno<0)? chno :chno+1);
-
 	loc_vec.clear();
-
      V3DLONG szx = curImg->getXDim();
      V3DLONG szy = curImg->getYDim();
      V3DLONG szz = curImg->getZDim();
@@ -1961,7 +1958,7 @@ if (0)
 }
 
      PROGRESS_PERCENT(90);
-
+     qDebug()<<currentTraceType;
      N = loc_vec.size();
      if(N<1) return t.elapsed(); // all points are outside the volume. ZJL 110913
 
@@ -1991,7 +1988,7 @@ if (0)
                 V3DLONG marker_id_start = findNearestMarker_Loc(loc_vec.at(0),listLoc,mode);
                 V3DLONG marker_id_end = findNearestMarker_Loc(loc_vec.at(N-1),listLoc,mode);
                 qDebug("detect nearest special marker [%ld] for the curve-start and marker [%ld] for curve-end",marker_id_start,marker_id_end);
-
+//                qDebug()<<currentTraceType;
                 double th_merge_m = 7;
 
                 bool b_start_merged = false, b_end_merged = false;
@@ -2052,7 +2049,7 @@ if (0)
                     V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
                     qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-
+//                    qDebug()<<currentTraceType;
 //                    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 //                    for(V3DLONG i=0;i<N;++i)
 //                    {
@@ -2154,9 +2151,9 @@ if (0)
 
                 if (b_start_merged || b_end_merged)
                 {
-                    if (selected_node.seg_id>=0 && selected_node.seg_id< curImg->tracedNeuron.seg.size())
-                        if(curImg->tracedNeuron.seg[selected_node.seg_id].row.size() >0)
-                            currentTraceType = curImg->tracedNeuron.seg[selected_node.seg_id].row[0].type;
+//                    if (selected_node.seg_id>=0 && selected_node.seg_id< curImg->tracedNeuron.seg.size())
+//                        if(curImg->tracedNeuron.seg[selected_node.seg_id].row.size() >0)
+//                            currentTraceType = curImg->tracedNeuron.seg[selected_node.seg_id].row[0].type;
                 }
 			}
 		}
@@ -2186,7 +2183,8 @@ if (0)
      {
           if (b_addthiscurve)
           {
-			  cout << "addcurve pos mode 2" << endl;
+              cout << "addcurve pos mode 2" << endl;
+               qDebug()<<currentTraceType;
                addCurveSWC(loc_vec_resampled, chno, 2); //LMG 26/10/2018 solveCurveMarkerLists_fm (BBox/Draw Global tracing alt+B/alt+G) mode 2 <- BBox will be converted to 1 in addCurveSwc
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec_resampled);
@@ -4639,7 +4637,7 @@ void Renderer_gl1::showConnectedSegs()
 			for (set<size_t>::iterator segIt = this->subtreeSegs.begin(); segIt != this->subtreeSegs.end(); ++segIt)
 			{
 				this->originalSegMap.insert(pair<size_t, vector<V_NeuronSWC_unit> >(*segIt, curImg->tracedNeuron.seg[*segIt].row));
-                cout << *segIt << " "<<curImg->tracedNeuron.seg[*segIt].row.size()<<endl;
+                //cout << *segIt << " "<<curImg->tracedNeuron.seg[*segIt].row.size()<<endl;
 				for (vector<V_NeuronSWC_unit>::iterator unitIt = curImg->tracedNeuron.seg[*segIt].row.begin(); unitIt != curImg->tracedNeuron.seg[*segIt].row.end(); ++unitIt)
                     unitIt->type = color_code;
 //                color_code++;
@@ -7050,7 +7048,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 //                        }
 
             if(w->TeraflyCommunicator
-                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState&&allsegs.size()>0)
             {
                 w->SetupCollaborateInfo();
                 w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,currentTraceType,"TeraFly");

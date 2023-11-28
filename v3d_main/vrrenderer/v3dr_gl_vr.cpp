@@ -6804,12 +6804,13 @@ QStringList CMainApplication::NT2QString(NeuronTree nt)
 }
 
 void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to be changed to AddtoNTList( , )
-{	
-	NeuronTree newTempNT;
-	newTempNT.listNeuron.clear();
-	newTempNT.hashNeuron.clear();
-    for(int i=0;i<coords.size();i++)
-	{
+{
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    int timestamp=QDateTime::currentMSecsSinceEpoch();
+    for (int i = 0; i<coords.size(); i++)
+    {
         NeuronSWC S_temp;
         S_temp.n=i+1;
         S_temp.x=coords[i].x;
@@ -6821,9 +6822,10 @@ void CMainApplication::UpdateNTList(QVector<XYZ> coords, int type)//may need to 
             S_temp.pn=-1;
         else
             S_temp.pn=i;
-        newTempNT.listNeuron.append(S_temp);
-        newTempNT.hashNeuron.insert(S_temp.n, newTempNT.listNeuron.size()-1);
+        newTempNT.listNeuron.push_back(S_temp);
+        newTempNT.hashNeuron.insert(S_temp.n,newTempNT.listNeuron.size()-1);
     }
+
     newTempNT.name="sketch_"+QString("%1").arg(sketchNum++);
     qDebug()<<"befor push  sketch "<<sketchedNTList.size();
 	sketchedNTList.push_back(newTempNT);

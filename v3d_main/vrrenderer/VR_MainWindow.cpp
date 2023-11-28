@@ -26,7 +26,7 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 }
 
 VR_MainWindow::~VR_MainWindow() {
-    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
+    disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
 }
 
@@ -60,10 +60,12 @@ void VR_MainWindow::TVProcess(QString line)
         QString operatorMsg=msgreg.cap(3).trimmed();
         if(operationtype == "drawline" )
         {
+            QString msg=operatorMsg;
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
             if(listwithheader.size()<1) return;
 
-            QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
+            //QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
 
             int type=-1;
             if(listwithheader.size()>1)
@@ -71,6 +73,8 @@ void VR_MainWindow::TVProcess(QString line)
                 QVector<XYZ> coords;
                 for(int i=1;i<listwithheader.size();i++)
                 {
+                    if(listwithheader[i]=="$")
+                        break;
                     auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
                     auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
                     coords.push_back(converted);
@@ -95,33 +99,51 @@ void VR_MainWindow::TVProcess(QString line)
             }
         }else if(operationtype == "delline")
         {
+            QString msg = operatorMsg;
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
     //        qDebug()<<"list with header:"<<listwithheader;
             if(listwithheader.size()<1) return;
-             QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
+            // QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
 
-            qDebug()<<"user="<<user;
+            QStringList infos=listwithheader[0].split(" ");
+            QString user=infos.at(1).trimmed();
+            unsigned int isMany=0;
+            if(infos.size()>=6)
+                isMany=infos.at(5).trimmed().toInt();
+
+            QStringList coordsInSeg;
+
             if(listwithheader.size()>1)
             {
                 QVector<XYZ> coords;
                 for(int i=1;i<listwithheader.size();i++)
                 {
+                    if(i==listwithheader.size()-1 || listwithheader[i]=="$"){
+                        if(listwithheader[i]!="$"){
+                            auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                            auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                            coords.push_front(converted);
+                            coordsInSeg.append(listwithheader[i]);
+                        }
+                        if(pMainApplication&&!coords.isEmpty())
+                        {
+                            if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
+                            {
+                                qDebug()<<"delete in block failed";
+                                VR_Communicator->emitDelSeg(coordsInSeg.join(";"), 0);
+                                //全局删线处理
+                            }
+                        }
+                        coords.clear();
+                        coordsInSeg.clear();
+                        continue;
+                    }
                     auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
                     auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
                     coords.push_front(converted);
-
+                    coordsInSeg.append(listwithheader[i]);
                 }
 
-                if(pMainApplication&&!coords.isEmpty())
-                {
-                    if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
-                    {
-                        qDebug()<<"delete in block failed";
-                            listwithheader.removeAt(0);
-                            VR_Communicator->emitDelSeg(listwithheader.join(";"), 0);
-                            //全局删线处理
-                    }
-                }
             }
 
 
@@ -133,8 +155,95 @@ void VR_MainWindow::TVProcess(QString line)
             }else{
                 qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
             }
+        }else if(operationtype == "splitline"){
+            QString msg = operatorMsg;
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"splitline_msg_count"<<listwithheader.count();
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            QStringList infos=listwithheader[0].split(" ");
+            QString user=infos.at(1).trimmed();
+            QStringList coordsInDelSeg;
+            int index=0;
+            if(listwithheader.size()>1)
+            {
+                QVector<XYZ> coords;
+                for(int i=1;i<listwithheader.size();i++)
+                {
+                    if(listwithheader[i]=="$"){
+                        if(pMainApplication&&!coords.isEmpty())
+                        {
+                            if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
+                            {
+                                qDebug()<<"delete in block failed";
+                                VR_Communicator->emitDelSeg(coordsInDelSeg.join(";"), 0);
+                                //全局删线处理
+                            }
+                        }
+                        coords.clear();
+                        coordsInDelSeg.clear();
+                        index = i+1;
+                        break;
+                    }
+                    auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                    auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                    coords.push_front(converted);
+                    coordsInDelSeg.append(listwithheader[i]);
+                }
+
+            }
+            if(user==VR_Communicator->userId)
+            {
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+
+            }else{
+                qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
+            }
+
+            int type=-1;
+            if(listwithheader.size()>1)
+            {
+                QVector<XYZ> coords;
+                for(int i=index;i<listwithheader.size();i++)
+                {
+                    if(i==listwithheader.size()-1 || listwithheader[i]=="$"){
+                        if(listwithheader[i]!="$"){
+                            auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                            auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                            coords.push_front(converted);
+                        }
+                        if(pMainApplication&&!coords.isEmpty())
+                        {
+                            qDebug()<<type<<" "<<coords.size();
+                            pMainApplication->UpdateNTList(coords,type);
+                            //需要判断线是否在图像中，如果不在则调用全局处理
+                        }
+                        coords.clear();
+                        continue;
+                    }
+                    auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                    auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                    coords.push_back(converted);
+                    type=nodeinfo[0].toInt();
+                }
+            }
+
+            if(user==VR_Communicator->userId)
+            {
+                qDebug()<<"release lock";
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+            }else{
+                qDebug()<<"user = "<<user<<" "<<userName;
+            }
+
         }else if(operationtype == "addmarker")
         {
+            QString msg = operatorMsg;
             qDebug()<<"TeraVR add marker";
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
 
@@ -189,41 +298,61 @@ void VR_MainWindow::TVProcess(QString line)
             }
         }else if(operationtype == "retypeline")
         {
+            QString msg =operatorMsg;
             QStringList listwithheader=operatorMsg.split(",",QString::SkipEmptyParts);
             if(listwithheader.size()<1) return;
+            QStringList infos=listwithheader[0].split(" ");
+
+
             QString user=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[1].trimmed();
             int type=listwithheader[0].trimmed().split(' ',QString::SkipEmptyParts)[2].trimmed().toInt();
+            unsigned int isMany=0;
+            if(infos.size()>=7)
+                isMany=infos.at(6).trimmed().toInt();
 
+            QStringList coordsInSeg;
             if(listwithheader.size()>1)
             {
                 QVector<XYZ> coords;
                 for(int i=1;i<listwithheader.size();i++)
                 {
+                    if(i==listwithheader.size()-1 || listwithheader[i]=="$"){
+                        if(listwithheader[i]!="$"){
+                            auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
+                            auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                            coords.push_front(converted);
+                            coordsInSeg.append(listwithheader[i]);
+                        }
+                        if(pMainApplication&&!coords.isEmpty())
+                        {
+                            if(!pMainApplication->retypeSegment(
+                                    coords,
+                                    1.0*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,
+                                    type))
+                            {
+                                qDebug()<<"Vr call fly retype ";
+                                VR_Communicator->emitRetypeSeg(coordsInSeg.join(";"),type,0);
+                            }
+                        }
+                        coords.clear();
+                        coordsInSeg.clear();
+                        continue;
+                    }
                     auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
-                    coords.push_front(ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat()));
+                    auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
+                    coords.push_front(converted);
+                    coordsInSeg.append(listwithheader[i]);
                 }
-                if(pMainApplication&&!coords.isEmpty())
-                  {
 
-                      if(!pMainApplication->retypeSegment(
-                                  coords,
-                                  1.0*VRVolumeCurrentRes.x/VRvolumeMaxRes.x,
-                                  type))
-                      {
-                          qDebug()<<"Vr call fly retype ";
-                          listwithheader.removeAt(0);
-                          VR_Communicator->emitRetypeSeg(listwithheader.join(";"),type,0);
-                      }
-                  }
             }
 
-              if(user==VR_Communicator->userId)
-              {
-                  pMainApplication->READY_TO_SEND=false;
-                  CURRENT_DATA_IS_SENT=false;
-              }else{
-                  qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
-              }
+            if(user==VR_Communicator->userId)
+            {
+                pMainApplication->READY_TO_SEND=false;
+                CURRENT_DATA_IS_SENT=false;
+            }else{
+                qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userName;
+            }
         }
     }
 }
@@ -380,6 +509,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                             VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
                         waitsend.push_front(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                        waitsend.append("$");
                         VR_Communicator->UpdateAddSegMsg(waitsend.join(","));
                         CURRENT_DATA_IS_SENT=true;
                     }
@@ -503,6 +633,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     {
                         QStringList waitsend=pMainApplication->NT2QString(nt);
                         waitsend.push_front(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
+                        waitsend.append("$");
                         waitsends.push_back(waitsend.join(","));
                     }
                     pMainApplication->segaftersplit.clear();
