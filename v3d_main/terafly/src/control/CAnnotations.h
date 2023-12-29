@@ -23,7 +23,7 @@ struct terafly::annotation
     annotation* parent;             //parent node pointer (used in case of linked structures)
     std::set<annotation*> children; //children nodes pointers (used in case of linked structures)
     void* container;                //address of the container object
-    int vaa3d_n;                    //Vaa3D's swc/apo index
+    V3DLONG vaa3d_n;                    //Vaa3D's swc/apo index
     bool smart_delete;              // = true by default, enables "smart" deletion (see decontructor code)
     long level;
     int creatmode;                  //for timestamping and quality control LMG 8/10/2018

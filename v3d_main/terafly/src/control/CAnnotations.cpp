@@ -2100,16 +2100,22 @@ void CAnnotations::save(const char* filepath, bool removedupnode, bool as_swc) t
         {
             if((*i)->type == 1) //selecting NeuronSWC
             {
-                if((*i)->subtype == 1){ // soma found in current annotation
-                    if(soma_found_new == 0){
+                if((*i)->subtype == 1)
+                { // soma found in current annotation
+                    qDebug()<<"'type1: "<<(*i)->x<<","<<(*i)->y<<","<<(*i)->z<<(*i)->ID;
+                    if(soma_found_new == 0)
+                    {
                         soma_found_new ++;
                         soma_x_new = (*i)->x;
                         soma_y_new = (*i)->y;
                         soma_z_new = (*i)->z;
+//                        qDebug()<<"'find soma node-1: "<<(*i)->vaa3d_n;
                     }
-                    else{
-                        if(((*i)->x != soma_x_new) || ((*i)->y != soma_y_new) || ((*i)->x != soma_y_new)){
+                    else
+                    {
+                        if(((*i)->x != soma_x_new) || ((*i)->y != soma_y_new) || ((*i)->z != soma_z_new)){
                             soma_found_new ++;
+//                            qDebug()<<"'find soma node-2: "<<(*i)->vaa3d_n;
                         }
                     }
                 }
@@ -2345,6 +2351,7 @@ void CAnnotations::load(const char* filepath) throw (RuntimeException)
 //                if((!soma_found) && (i->pn == -1) && (i->type == 1)){
                 if(i->type == 1){
 //                    v3d_msg(QString("Soma found: %1 %2 %3 %4").arg(i->n).arg(i->x).arg(i->y).arg(i->z));
+                    qDebug()<<"Type=1, node "<<i->n;
                     if(SOMA_FOUND == 0){
                         SOMA_X = i->x;  // If multiple soma found, throw a warning and use the 1st one for sorting.
                         SOMA_Y = i->y;
