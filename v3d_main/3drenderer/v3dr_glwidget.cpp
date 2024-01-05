@@ -1068,6 +1068,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 			else if (IS_ALT_MODIFIER)
 			{
+                break;
 				//QPluginLoader* loader = new QPluginLoader("plugins/Fragmented_Auto-trace/Fragmented_Auto-trace.dll");
 				//if (!loader) v3d_msg("Fragmented auto-tracing module not found. Do nothing.");
 				terafly::PMain& pMain = *(terafly::PMain::getInstance());
@@ -1089,6 +1090,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
          case Qt::Key_E:
             if (IS_ALT_MODIFIER)
             {
+                break;
                 toggleEditMode();
             }
             else
@@ -1140,7 +1142,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                         curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
 
                     vector<V_NeuronSWC> vector_VSWC;
-                    curImg->ExtractDeletingNode(vector_VSWC);
+                    curImg->ExtractDeletingNode2(thisRenderer->originalSegMap, vector_VSWC);
 
                     QFuture<void> future = QtConcurrent::run([=]() {
                         if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
@@ -1292,6 +1294,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         case Qt::Key_Y:
             if (IS_ALT_MODIFIER)
             {
+                break;
                 callDefine3DPolyline();//For 3D polyline shortcut, by ZZ,03262018
             }
             break;
@@ -1367,11 +1370,13 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
           case Qt::Key_W:
 		    if (IS_ALT_MODIFIER)
-		    {
+            {
+                break;
 				setDragWinSize(+2);
             }
             else if(IS_SHIFT_MODIFIER)
             {
+                break;
                 setDragWinSize(-2);
             }
 			else
@@ -1422,6 +1427,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		case Qt::Key_X: //090924 RZC: redo
 		    if (IS_CTRL_MODIFIER)
 		    {
+                break;
 		    	if (!V3dR_GLWidget::disableUndoRedo && v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_redo();
@@ -4266,44 +4272,16 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 
 void V3dR_GLWidget::CollaAddMarker(QString markerPOS)
 {
-    QStringList markerXYZ=markerPOS.split(" ",QString::SkipEmptyParts);
+    QStringList markerInfo=markerPOS.split(" ",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
     LocationSimple marker/*=markers.at(0)*/;
-    marker.x=markerXYZ.at(1).toFloat();
-    marker.y=markerXYZ.at(2).toFloat();
-    marker.z=markerXYZ.at(3).toFloat();
-    int type=markerXYZ.at(0).toInt();
-	unsigned char r, g, b;
-    const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
-            {255, 255, 255},  // white,   0-undefined
-            {20,  20,  20 },  // black,   1-soma
-            {200, 20,  0  },  // red,     2-axon
-            {0,   20,  200},  // blue,    3-dendrite
-            {200, 0,   200},  // purple,  4-apical dendrite
-            //the following is Hanchuan's extended color. 090331
-            {0,   200, 200},  // cyan,    5
-            {220, 200, 0  },  // yellow,  6
-            {0,   200, 20 },  // green,   7
-            {188, 94,  37 },  // coffee,  8
-            {180, 200, 120},  // asparagus,	9
-            {250, 100, 120},  // salmon,	10
-            {120, 200, 200},  // ice,		11
-            {100, 120, 200},  // orchid,	12
-        //the following is Hanchuan's further extended color. 111003
-        {255, 128, 168},  //	13
-        {128, 255, 168},  //	14
-        {128, 168, 255},  //	15
-        {168, 255, 128},  //	16
-        {255, 168, 128},  //	17
-        {168, 128, 255}, //	18
-        {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
-        //the following (20-275) is used for matlab heat map. 120209 by WYN
-        {0,0,131}, //20
-            };
-    marker.color.r = neuron_type_color[type][0];
-    marker.color.g = neuron_type_color[type][1];
-    marker.color.b = neuron_type_color[type][2];
+    marker.color.r = markerInfo.at(0).toUInt();
+    marker.color.g = markerInfo.at(1).toUInt();
+    marker.color.b = markerInfo.at(2).toUInt();
+    marker.x=markerInfo.at(3).toFloat();
+    marker.y=markerInfo.at(4).toFloat();
+    marker.z=markerInfo.at(5).toFloat();
 
     for(auto it=markers.begin();it!=markers.end(); ++it)
     {
@@ -4334,45 +4312,17 @@ void V3dR_GLWidget::CollaAddManyMarkers(QString markersPOS){
 
     QStringList tobeAddMarkers=markersPOS.split(",",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
-    const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
-        {255, 255, 255},  // white,   0-undefined
-        {20,  20,  20 },  // black,   1-soma
-        {200, 20,  0  },  // red,     2-axon
-        {0,   20,  200},  // blue,    3-dendrite
-        {200, 0,   200},  // purple,  4-apical dendrite
-        //the following is Hanchuan's extended color. 090331
-        {0,   200, 200},  // cyan,    5
-        {220, 200, 0  },  // yellow,  6
-        {0,   200, 20 },  // green,   7
-        {188, 94,  37 },  // coffee,  8
-        {180, 200, 120},  // asparagus,	9
-        {250, 100, 120},  // salmon,	10
-        {120, 200, 200},  // ice,		11
-        {100, 120, 200},  // orchid,	12
-        //the following is Hanchuan's further extended color. 111003
-        {255, 128, 168},  //	13
-        {128, 255, 168},  //	14
-        {128, 168, 255},  //	15
-        {168, 255, 128},  //	16
-        {255, 168, 128},  //	17
-        {168, 128, 255}, //	18
-        {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
-        //the following (20-275) is used for matlab heat map. 120209 by WYN
-        {0,0,131}, //20
-    };
 
     for(int i=0; i<tobeAddMarkers.size(); i++){
         bool needAdd = true;
-        QStringList markerXYZ=tobeAddMarkers[i].split(" ",QString::SkipEmptyParts);
+        QStringList markerInfo=tobeAddMarkers[i].split(" ",QString::SkipEmptyParts);
         LocationSimple marker/*=markers.at(0)*/;
-        marker.x=markerXYZ.at(1).toFloat();
-        marker.y=markerXYZ.at(2).toFloat();
-        marker.z=markerXYZ.at(3).toFloat();
-        int type=markerXYZ.at(0).toInt();
-
-        marker.color.r = neuron_type_color[type][0];
-        marker.color.g = neuron_type_color[type][1];
-        marker.color.b = neuron_type_color[type][2];
+        marker.color.r = markerInfo.at(0).toUInt();
+        marker.color.g = markerInfo.at(1).toUInt();
+        marker.color.b = markerInfo.at(2).toUInt();
+        marker.x=markerInfo.at(3).toFloat();
+        marker.y=markerInfo.at(4).toFloat();
+        marker.z=markerInfo.at(5).toFloat();
 
         for(auto it=markers.begin();it!=markers.end(); ++it)
         {
@@ -4403,9 +4353,9 @@ void V3dR_GLWidget::CollaDelMarker(QString markerPOS)
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
     LocationSimple marker;
-    marker.x=markerXYZ.at(1).toFloat();
-    marker.y=markerXYZ.at(2).toFloat();
-    marker.z=markerXYZ.at(3).toFloat();
+    marker.x=markerXYZ.at(3).toFloat();
+    marker.y=markerXYZ.at(4).toFloat();
+    marker.z=markerXYZ.at(5).toFloat();
 
     int index=-1;
     double mindist=1;
@@ -4640,6 +4590,10 @@ void V3dR_GLWidget::newThreadAddSeg(QString segInfo, int isBegin){
 //    }
 }
 
+void V3dR_GLWidget::CollaAddManySegs(QString segsInfo){
+    addManyCurvesInAllSpace(segsInfo);
+}
+
 void V3dR_GLWidget::CollaConnectSeg(QString segInfo)
 {
     connectCurveInAllSapce(segInfo);
@@ -4802,8 +4756,7 @@ void V3dR_GLWidget::newThreadSplitSeg(QString segInfo){
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {
-    float mindist=5/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
-    qDebug()<<"threshold="<<mindist;
+    float mindist=1.5/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
     int index=-1;
 
 //    for(int j=0;j<coords.size();j++)
@@ -4843,10 +4796,6 @@ int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
         }
     }
     if(index<0) qDebug()<<"fail to findseg";
-    else
-    {
-        qDebug()<<"find index "<<index;
-    }
     return index;
 }
 
@@ -4899,7 +4848,6 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
         }
         else{
             int index=findseg(v_ns_list,coords);
-            qDebug()<<"INDEX"<<index;
             if(index>=0)
             {
                 //        qDebug()<<"ZLL_____________________2.5";
@@ -4913,7 +4861,6 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
     }
     if(isMany==0){
         int index=findseg(v_ns_list,coords);
-        qDebug()<<"INDEX"<<index;
         if(index>=0)
         {
             //        qDebug()<<"ZLL_____________________2.5";
@@ -5155,6 +5102,52 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
 //    qDebug()<<"end";
 //    QString fileName = "";
 //    writeSWC_file(fileName,nt);
+}
+
+void V3dR_GLWidget::addManyCurvesInAllSpace(QString segsInfo){
+    if(segsInfo.isEmpty()) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    QStringList qsl=segsInfo.split(",",QString::SkipEmptyParts);
+    //    qDebug()<<"after receive the msg"<<segInfo;
+    int index=0;
+    int timestamp=QDateTime::currentMSecsSinceEpoch();
+    for (int i = 0; i<qsl.size(); i++)
+    {
+        if(qsl[i]!="$"){
+            NeuronSWC S;
+            QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
+            //            qDebug()<<i<<":"<<nodelist;
+            if(nodelist.size()<4) return;
+            S.n=i+1;
+            S.type=nodelist[0].toInt();
+            S.x=nodelist[1].toFloat();
+            S.y=nodelist[2].toFloat();
+            S.z=nodelist[3].toFloat();
+            S.r=1;
+            if(index==0) S.pn=-1;
+            else S.pn=i;
+            S.timestamp=timestamp;
+            newTempNT.listNeuron.push_back(S);
+            newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+            index++;
+        }
+        else{
+            index=0;
+        }
+    }
+
+    auto segs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
+    for(auto seg:segs){
+        v_ns_list.seg.push_back(seg);
+    }
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+    qDebug()<<"addManySegs finished";
 }
 
 void V3dR_GLWidget::connectCurveInAllSapce(QString info){

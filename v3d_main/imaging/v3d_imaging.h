@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -32,9 +32,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define __V3D_IMAGING_H__
 
 #include "../basic_c_fun/customary_structs/v3d_imaging_para.h"
+#include "./vrrenderer/V3dR_Communicator.h"
 
 class MainWindow;
-bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras &p);
+bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras &p, V3dR_Communicator* communicator=0);
 
 #endif
 

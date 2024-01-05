@@ -6675,6 +6675,25 @@ vector<XYZ> My4DImage::ExtractDeletingNode(vector<V_NeuronSWC> &vector_VSWC)
     return out_LocList;
 }
 
+vector<XYZ> My4DImage::ExtractDeletingNode2(map<size_t, vector<V_NeuronSWC_unit>> &originalSegMap, vector<V_NeuronSWC> &vector_VSWC)
+{
+    vector<XYZ> out_LocList;
+
+    for(int i=0;i<tracedNeuron.seg.size();i++)
+    {
+        if(tracedNeuron.seg.at(i).to_be_deleted)
+        {
+            if(tracedNeuron.seg.at(i).row.size()>0)
+            {
+               V_NeuronSWC seg = tracedNeuron.seg.at(i);
+               seg.row = originalSegMap[i];
+               vector_VSWC.push_back(seg);
+            }
+        }
+    }
+
+    return out_LocList;
+}
 
 
 void My4DImage::update_3drenderer_neuron_view()

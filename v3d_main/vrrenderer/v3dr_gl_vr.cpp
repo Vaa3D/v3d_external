@@ -1995,18 +1995,17 @@ void CMainApplication::SetupCurrentUserInformation(string name, int typeNumber)
 void CMainApplication::SetupMarkerandSurface(double x,double y,double z,int type)
 {
 	ImageMarker mk(x,y,z);
-    mk.type = type;
 //    mk.type = 3;
 	mk.radius = 0.02f / m_globalScale;
 
 	glm::vec3 agentclr=glm::vec3();
-	agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-	agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-	agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+    agentclr[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+    agentclr[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+    agentclr[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
 
-	mk.color.r = agentclr[0];
-	mk.color.g = agentclr[1];
-	mk.color.b = agentclr[2];
+    mk.color.r = agentclr[0];
+    mk.color.g = agentclr[1];
+    mk.color.b = agentclr[2];
     mk.name=QString("Marker_%1").arg(markerNum++);
 	drawnMarkerList.push_back(mk);
 	markerVisibility.push_back(1);
@@ -3347,13 +3346,16 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                         }
                     }
                     if(index>=0)
-                    {markerPosTobeDeleted=QString("%1 %2 %3 %4").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1);}
+                    {
+                        markerPosTobeDeleted=QString("%1 %2 %3 %4 %5 %6").arg(drawnMarkerList[index].x).arg(drawnMarkerList[index].y).arg(drawnMarkerList[index].z).arg(-1).arg(-1).arg(-1);
+                    }
+
                     else
                     {
                         bool IsOutofBounds = ((m_v4DevicePose.x>img4d->getXDim()) || (m_v4DevicePose.x<=0))
                         ||((m_v4DevicePose.y>img4d->getYDim()) || (m_v4DevicePose.y<=0))
                         ||((m_v4DevicePose.z>img4d->getZDim()) || (m_v4DevicePose.z<=0));
-                        if(IsOutofBounds!=true) markerPosTobeDeleted = QString("%1 %2 %3 %4").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(m_curMarkerColorType);
+                        if(IsOutofBounds!=true) markerPosTobeDeleted = QString("%1 %2 %3 %4 %5 %6").arg(m_v4DevicePose.x).arg(m_v4DevicePose.y).arg(m_v4DevicePose.z).arg(neuron_type_color[m_curMarkerColorType][0]).arg(neuron_type_color[m_curMarkerColorType][1]).arg(neuron_type_color[m_curMarkerColorType][2]);
                         else
                         {
                             qDebug()<<"add marker out "<<READY_TO_SEND;

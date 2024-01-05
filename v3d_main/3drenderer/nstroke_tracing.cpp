@@ -3340,12 +3340,12 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
             for(size_t j=0; j<curImg->tracedNeuron.seg.size(); ++j){
                V_NeuronSWC seg=curImg->tracedNeuron.seg[j];
                for(size_t q=0; q<seg.row.size(); q++){
-                       if(seg.row[q].x==tempseg.row[0].x&&seg.row[q].y==tempseg.row[0].y&&seg.row[q].z==tempseg.row[0].z&&index!=j&&!flagFirst)
+                       if(fabs(seg.row[q].x-tempseg.row[0].x)<1e-4&&fabs(seg.row[q].y-tempseg.row[0].y)<1e-4&&fabs(seg.row[q].z-tempseg.row[0].z)<1e-4&&index!=j&&!flagFirst)
                        {
                               firstSegID=j;
                               flagFirst=true;
                        }
-                       if(seg.row[q].x==tempseg.row[tempseg.row.size()-1].x&&seg.row[q].y==tempseg.row[tempseg.row.size()-1].y&&seg.row[q].z==tempseg.row[tempseg.row.size()-1].z&&index!=j&&!flagSecond)
+                       if(fabs(seg.row[q].x-tempseg.row[tempseg.row.size()-1].x)<1e-4&&fabs(seg.row[q].y-tempseg.row[tempseg.row.size()-1].y)<1e-4&&fabs(seg.row[q].z-tempseg.row[tempseg.row.size()-1].z)<1e-4&&index!=j&&!flagSecond)
                        {
                               secondSegID=j;
                               flagSecond=true;

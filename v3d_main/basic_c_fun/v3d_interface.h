@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -74,6 +74,8 @@ QT_END_NAMESPACE
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
 #include <set>
+#include <vector>
+#include "../neuron_editing/v_neuronswc.h"
 
 struct V3DPluginArgItem
 {
@@ -179,6 +181,7 @@ struct DataLists_in_3dviewer
 class V3DPluginCallback2 : public V3DPluginCallback
 {
 public:
+
 	virtual ~V3DPluginCallback2() {}
 
 	virtual View3DControl * getView3DControl(v3dhandle image_window) = 0;
@@ -256,6 +259,8 @@ public:
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex) = 0;
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex) = 0;
 	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
+    virtual v3dhandle getTeraflyCommunicator() = 0;
+    virtual void syncAddManySegs(std::vector<V_NeuronSWC> segs) = 0;
 
 #ifdef __ALLOW_VR_FUNCS__
     virtual void openVRWindow(V3dR_MainWindow *w, bool bOnlineMode = false) = 0;

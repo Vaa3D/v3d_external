@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include "../basic_c_fun/v3d_interface.h"
-
+#include "./vrrenderer/V3dR_Communicator.h"
 
 QString     v3d_getInterfaceName(QObject *plugin);
 QStringList v3d_getInterfaceMenuList(QObject *plugin);
@@ -67,13 +67,14 @@ public:
     V3d_PluginLoader(MainWindow* mainwindow); //by PHC, 101008. a convenience function for access plugin interface w/o a menu
     virtual ~V3d_PluginLoader() {clear();}
     static QList<QDir> getPluginsDirList();
+    V3dR_Communicator* TeraflyCommunicator;
 
 public slots:
 	void rescanPlugins();
 	void populateMenus(); //hook menu to v3d, called by rescanPlugins, MainWindow::updateProcessingMenu
 	void aboutPlugins();
     void runPlugin();
-	void runPlugin(QPluginLoader *loader, const QString & menuString); //by PHC, 101008
+    void runPlugin(QPluginLoader *loader, const QString & menuString); //by PHC, 101008
 
     void runRecentPlugin(); //added by Zhi Z, 20140721
     void clear_recentPlugins();
@@ -81,8 +82,8 @@ public slots:
 protected:
 	bool runSingleImageInterface(QObject* plugin, const QString& command);
 	bool runPluginInterface(QObject* plugin, const QString& command);
-	bool runPluginInterface2(QObject* plugin, const QString& command);
-	bool runPluginInterface2_1(QObject* plugin, const QString& command);
+    bool runPluginInterface2(QObject* plugin, const QString& command);
+    bool runPluginInterface2_1(QObject* plugin, const QString& command);
 
 	void clear();
 	void loadPlugins(); //load only once
@@ -239,6 +240,8 @@ public:
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex);
 	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
+    virtual v3dhandle getTeraflyCommunicator();
+    virtual void syncAddManySegs(std::vector<V_NeuronSWC> segs);
 };
 
 #endif

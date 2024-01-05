@@ -213,7 +213,7 @@ public:
 	void SetupSingleMorphologyLine(int ntIndex, int procvessMode = 0);
 	void SetupAllMorphologyLine();
 
-	void SetupMarkerandSurface(double x,double y,double z,int type =3);
+    void SetupMarkerandSurface(double x,double y,double z,int type);
 	void SetupMarkerandSurface(double x,double y,double z,int colorR,int colorG,int colorB);
 
         bool RemoveMarkerandSurface(double x,double y,double z/*,int type=3,bool asg=0*/);

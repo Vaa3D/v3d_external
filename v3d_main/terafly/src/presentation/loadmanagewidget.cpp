@@ -12,7 +12,7 @@
 #include <qjson/qobjecthelper.h>
 
 QNetworkAccessManager* LoadManageWidget::accessManager= new QNetworkAccessManager();
-QString LoadManageWidget::HostAddress="http://192.168.3.155:8000/dynamic";
+QString LoadManageWidget::HostAddress="http://114.117.165.134:26000/test";
 LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
 {
 //    this->setAttribute(Qt::WA_DeleteOnClose);

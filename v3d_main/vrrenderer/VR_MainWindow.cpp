@@ -253,12 +253,15 @@ void VR_MainWindow::TVProcess(QString line)
             if(listwithheader.size()>1)
             {
                 auto node=listwithheader[1].split(" ");
-                int type=node[0].toInt();
-                float mx = node.at(1).toFloat();
-                float my = node.at(2).toFloat();
-                float mz = node.at(3).toFloat();
+                RGB8 color;
+                color.r = node.at(0).toUInt();
+                color.g = node.at(1).toUInt();
+                color.b = node.at(2).toUInt();
+                float mx = node.at(3).toFloat();
+                float my = node.at(4).toFloat();
+                float mz = node.at(5).toFloat();
                 XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
-                pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, type);
+                pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, color.r, color.g, color.b);
                 //需要判断点是否在图像中，如果不在则全局处理
             }
             if(user==VR_Communicator->userId)
@@ -279,9 +282,9 @@ void VR_MainWindow::TVProcess(QString line)
             if(listwithheader.size()>1)
             {
                 auto node=listwithheader[1].split(" ");
-                float mx = node.at(1).toFloat();
-                float my = node.at(2).toFloat();
-                float mz = node.at(3).toFloat();
+                float mx = node.at(3).toFloat();
+                float my = node.at(4).toFloat();
+                float mz = node.at(5).toFloat();
                 XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
                 if(pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z))
                 {
@@ -562,7 +565,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         if(VR_Communicator&&
                             VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                         {
-                            VR_Communicator->UpdateDelMarkerSeg(QString(result.join(",")));
+                            VR_Communicator->UpdateDelMarkerMsg(QString(result.join(",")));
                         }
                     }else
                     {
@@ -784,14 +787,16 @@ QString VR_MainWindow::ConvertToMaxGlobal(QString coords)
 	float x = coords.section(' ',0, 0).toFloat();  // str == "bin/myapp"
 	float y = coords.section(' ',1, 1).toFloat();  // str == "bin/myapp"
 	float z = coords.section(' ',2, 2).toFloat();  // str == "bin/myapp"
-    int type=coords.section(' ',3, 3).toInt();
+    int r=coords.section(' ',3, 3).toInt();
+    int g=coords.section(' ',4, 4).toInt();
+    int b=coords.section(' ',5, 5).toInt();
 	x+=(VRVolumeStartPoint.x-1);
 	y+=(VRVolumeStartPoint.y-1);
 	z+=(VRVolumeStartPoint.z-1);
 	x*=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
 	y*=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
 	z*=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
-    return QString("%1 %2 %3 %4").arg(type).arg(x).arg(y).arg(z);
+    return QString("%1 %2 %3 %4 %5 %6").arg(r).arg(g).arg(b).arg(x).arg(y).arg(z);
 }
 
 void VR_MainWindow::SendVRconfigInfo()

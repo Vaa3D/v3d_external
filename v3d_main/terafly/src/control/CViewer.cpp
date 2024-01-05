@@ -1817,6 +1817,7 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
     qDebug()<<"delete mul selected markers huanglei";
+
     if(PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
     {
         // associate selected image markers to vaa3d markers and delete
@@ -1832,13 +1833,14 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
                     if(jt->x == it->x && jt->y == it->y && jt->z == it->z)
                     {
                         deletedMarkers.push_back(*jt);
+                        RGBA8 color = jt->color;
                         jt = vaa3dMarkers.erase(jt);
 
                         if(view3DWidget->TeraflyCommunicator!=nullptr
                                 &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
                         {
                             view3DWidget->SetupCollaborateInfo();
-                            view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(it->x,it->y,it->z,"TeraFly");
+                            view3DWidget->TeraflyCommunicator->UpdateDelMarkerMsg(it->x,it->y,it->z,color,"TeraFly");
                             if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
                                 view3DWidget->TeraflyCommunicator->timer_exit->stop();
                             }
@@ -1953,16 +1955,18 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                 if(vaa3dMarkers[j].x == imageMarkers[i].x &&
                    vaa3dMarkers[j].y == imageMarkers[i].y &&
                    vaa3dMarkers[j].z == imageMarkers[i].z &&
-                   !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this))
-                    vaa3dMarkers_tbd.push_back(j);
-			 
+                   !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this)){
+                      vaa3dMarkers_tbd.push_back(j);
+                }
+
+            qDebug()<<"imageMarkers[i].color: "<<imageMarkers[i].color.r<<" "<<imageMarkers[i].color.g<<" "<<imageMarkers[i].color.b;
 
             if(view3DWidget->TeraflyCommunicator!=nullptr
 				&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
             {
                 view3DWidget->SetupCollaborateInfo();
-                view3DWidget->TeraflyCommunicator->UpdateDelMarkerSeg(imageMarkers[i].x,
-                               imageMarkers[i].y,imageMarkers[i].z,"TeraFly");
+                view3DWidget->TeraflyCommunicator->UpdateDelMarkerMsg(imageMarkers[i].x,
+                               imageMarkers[i].y,imageMarkers[i].z,imageMarkers[i].color,"TeraFly");
                 if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
                     view3DWidget->TeraflyCommunicator->timer_exit->stop();
                 }

@@ -380,7 +380,23 @@ void PAnoToolBar::buttonUndoClicked()
         //新增
         if(expl->getGLWidget()->TeraflyCommunicator&&expl->getGLWidget()->TeraflyCommunicator->socket&&expl->getGLWidget()->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
         {
+            bool flag = false;
+            if(expl->getGLWidget()->TeraflyCommunicator->undoDeque.size()!=0)
+            {
+                QString msg=expl->getGLWidget()->TeraflyCommunicator->undoDeque.back();
+                QRegExp reg("/(.*)_(.*):(.*)");
+                if(reg.indexIn(msg)!=-1)
+                {
+                    QString operationType=reg.cap(1);
+                    QString operatorMsg=reg.cap(3);
+                    if("drawmanylines"==operationType){
+                        flag=true;
+                    }
+                }
+            }
             expl->getGLWidget()->TeraflyCommunicator->UpdateUndoDeque();
+            if(flag)
+                expl->getGLWidget()->cancelSelect();
         }else
         {
             if(expl && expl->undoStack.canUndo())

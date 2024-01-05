@@ -43,6 +43,7 @@ public:
      */
     void UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> connectedSegs, QString clienttype, bool isBegin);
     void UpdateAddSegMsg(QString TVaddSegMSG);
+    void UpdateAddManySegsMsg(vector<V_NeuronSWC> segs, QString clienttype);
     /**
      * @brief UpdateDeleteMsg
      * @param seg
@@ -59,7 +60,7 @@ public:
      * @param type
      * 发送加点的
      */
-    void UpdateAddMarkerMsg(float x,float y,float z,int type,QString clienttype);
+    void UpdateAddMarkerMsg(float x,float y,float z,RGBA8 color,QString clienttype);
     void UpdateAddMarkerMsg(QString TVaddMarkerMSG);
     /**
      * @brief UpdateSendDelMarkerInfo
@@ -68,8 +69,8 @@ public:
      * @param z
      * 发送减点
      */
-    void UpdateDelMarkerSeg(float x,float y,float z,QString clienttype);
-    void UpdateDelMarkerSeg(QString TVdelMarkerMSG);
+    void UpdateDelMarkerMsg(float x,float y,float z,RGBA8 color,QString clienttype);
+    void UpdateDelMarkerMsg(QString TVdelMarkerMSG);
     /**
      * @brief UpdateSendDelMarkerInfo
      * @param x
@@ -173,6 +174,7 @@ signals:
     void msgtosend(QString);//转发消息给发送处理函数(processSendMsg)
 
     void addSeg(QString,int);//加线信号 （type x y z;type x y z;...）
+    void addManySegs(QString);//加很多线信号
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
     void splitSeg(QString);//break seg信号
     void addMarker(QString);//加marker信号 (type x y z)
@@ -188,6 +190,7 @@ signals:
     void exit();
 public:
     void emitAddSeg(QString segInfo, int isBegin) {emit addSeg(segInfo, isBegin);}
+    void emitAddManySegs(QString segsInfo) {emit addManySegs(segsInfo);}
     void emitAddManyMarkers(QString segInfo) {emit addManyMarkers(segInfo);}
     void emitDelSeg(QString segInfo, int isMany) {emit delSeg(segInfo,isMany);}
     void emitAddMarker(QString markerInfo) {emit addMarker(markerInfo);}

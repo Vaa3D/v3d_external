@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -1097,6 +1097,21 @@ QList<NeuronTree> V3d_PluginLoader::loadedNeurons(V3dR_MainWindow* window, QList
 		return v3d_mainwindow->loadedNeurons(window, loadedSurfaces);
 	}
 	return emptyList;
+}
+
+v3dhandle V3d_PluginLoader::getTeraflyCommunicator(){
+    if(TeraflyCommunicator)
+        return v3dhandle(TeraflyCommunicator);
+}
+
+void V3d_PluginLoader::syncAddManySegs(std::vector<V_NeuronSWC> segs){
+    for(auto &seg:segs){
+        std::reverse(seg.row.begin(), seg.row.end());
+    }
+    if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+    {
+        TeraflyCommunicator->UpdateAddManySegsMsg(segs, "TeraFly");
+    }
 }
 
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs

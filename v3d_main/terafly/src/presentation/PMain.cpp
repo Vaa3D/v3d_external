@@ -1727,7 +1727,7 @@ void PMain::loadAnnotations()
                 // load
                 cur_win->loadAnnotations();
                 saveAnnotationsAction->setEnabled(true);
-                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+                //saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
                 virtualSpaceSizeMenu->setEnabled(false);
 				myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
 
@@ -2193,7 +2193,7 @@ void PMain::saveAnnotationsAs()
                 cur_win->storeAnnotations();
                 CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false,false);
                 saveAnnotationsAction->setEnabled(true);
-                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+                //saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
 
                 // reset saved cursor
                 CViewer::setCursor(cursor);
@@ -3570,7 +3570,7 @@ void PMain::annotationsChanged()
     if(!annotationsPathLRU.empty())
     {
         saveAnnotationsAction->setEnabled(true);
-        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+        //saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
     }
 
     // update mini-map, realtime update is slow
@@ -3996,7 +3996,7 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/test";
+    QString HostAddress="http://114.117.165.134:26000/dynamic";
     QString HostIp="114.117.165.134";
     bool ok;
 
@@ -4025,9 +4025,9 @@ void PMain::LoadFromServer()
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
     userinfo.colorid = settings.value("UserID").toInt();
+    settings.setValue("HostAddress", "http://114.117.165.134:26000/test");
     LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
 
-    qDebug()<<"10";
     if(managewidget){
         qDebug()<<"delete managewidget";
         delete managewidget;
@@ -4097,10 +4097,12 @@ void PMain::startCollaborate(QString ano,QString port)
     qDebug()<<Communicator->userId;
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString, int)), 0, 0);
-//    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString)),
-//            cur_win->getGLWidget(),SLOT(CollaAddSeg(QString)));
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString, int)),
             cur_win->getGLWidget(),SLOT(newThreadAddSeg(QString, int)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addManySegs(QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addManySegs(QString)),
+            cur_win->getGLWidget(),SLOT(CollaAddManySegs(QString)));
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString,int)),
@@ -4219,7 +4221,7 @@ void PMain::ColLoadANO(QString ANOfile)
     // load
     cur_win->loadAnnotations();
     saveAnnotationsAction->setEnabled(true);
-    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+    //saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
     virtualSpaceSizeMenu->setEnabled(false);
 
     myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;

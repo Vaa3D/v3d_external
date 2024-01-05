@@ -50,7 +50,6 @@ void V3dR_Communicator::onReadyRead()
                         qDebug() << userId << " receive not match format\n";
                         socket->disconnectFromHost();
                     }
-                    qDebug()<<msg;
                     auto ps=msg.right(msg.size()-QString("DataTypeWithSize:").size()).split(' ');
                     datatype.isFile=ps[0].toUInt();
                     datatype.datasize=ps[1].toUInt();
@@ -209,7 +208,7 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
         qDebug()<<"operatormsg:"<<operatorMsg;
         if(type=="SomaNearBy"){
             QString sender=operatorMsg.split(" ").at(0).trimmed();
-            int result=operatorMsg.split(" ").at(1).trimmed().toUInt();
+            int result=operatorMsg.split(" ").at(1).trimmed().toInt();
             if (sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
@@ -220,6 +219,10 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                 QMessageBox::information(0,tr("Infomation "),
                     tr("error: soma is not connected to one point!"),
                     QMessageBox::Ok);
+            }else if(sender=="server" && result==-1){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("error: soma not detected!"),
+                                         QMessageBox::Ok);
             }
         }
         if(type=="ColorMutation"){
@@ -229,7 +232,7 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             msgList.removeAt(0);
 
             QString sender=msgHeader.split(" ").at(0).trimmed();
-            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            int result=msgHeader.split(" ").at(1).trimmed().toInt();
             if (sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
@@ -242,6 +245,10 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                 }
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("error: color mutation exists! notice the soma nearby and the red markers!"),
+                                         QMessageBox::Ok);
+            }else if(sender=="server" && result==-1){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("error: soma not detected!"),
                                          QMessageBox::Ok);
             }
         }
@@ -275,7 +282,7 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             msgList.removeAt(0);
 
             QString sender=msgHeader.split(" ").at(0).trimmed();
-            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            int result=msgHeader.split(" ").at(1).trimmed().toInt();
             if (sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
@@ -288,6 +295,10 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                 }
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("error: incorrect angle exists! notice the red markers!"),
+                                         QMessageBox::Ok);
+            }else if(sender=="server" && result==-1){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("error: soma not detected!"),
                                          QMessageBox::Ok);
             }
         }
@@ -398,7 +409,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
             }
-            qDebug() << "+============delseg process begin========";
             QStringList infos=listwithheader[0].split(" ");
             bool isTeraFly=infos.at(0).trimmed()=="0";
             QString user=infos.at(1).trimmed();
@@ -422,7 +432,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
             }
-            qDebug() << "+============delseg process begin========";
             QStringList infos=listwithheader[0].split(" ");
             bool isTeraFly=infos.at(0).trimmed()=="0";
             QString user=infos.at(1).trimmed();
@@ -438,6 +447,7 @@ void V3dR_Communicator::TFProcess(QString line) {
         {
             QString msg = operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"addmarker_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -455,6 +465,7 @@ void V3dR_Communicator::TFProcess(QString line) {
         {
             QString msg = operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"delmarker_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -472,6 +483,7 @@ void V3dR_Communicator::TFProcess(QString line) {
         {
             QString msg = operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"retypemarker_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
@@ -533,7 +545,25 @@ void V3dR_Communicator::TFProcess(QString line) {
                 listwithheader.removeAt(0);
                 emit connectSeg(listwithheader.join(","));
             }
-
+        }
+        else if(operationtype == "drawmanylines"){
+            QString msg=operatorMsg;
+            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+            qDebug()<<"drawmanylines_msg_count"<<listwithheader.count();
+            if(listwithheader.size()<1)
+            {
+                qDebug()<<"msg only contains header:"<<msg;
+                return;
+            }
+            bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+            QString user=listwithheader[0].split(" ").at(1).trimmed();
+            if (user == userId && isNorm && isTeraFly)
+                qDebug() << "user:" << user << "==userId" << userId;
+            else
+            {
+                listwithheader.removeAt(0);
+                emit addManySegs(listwithheader.join(","));
+            }
         }
     }
 }
@@ -559,6 +589,22 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> con
         }
         undoDeque.push_back(QString("/delline_undo:"+result.join(",")));
         redoDeque.clear();
+    }
+}
+
+void V3dR_Communicator::UpdateAddManySegsMsg(vector<V_NeuronSWC> segs, QString clienttype){
+    if(clienttype=="TeraFly")
+    {
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
+        for(int i=0;i<segs.size();i++){
+            if(segs[i].on){
+                result+=V_NeuronSWCToSendMSG(segs[i]);
+                result.push_back("$");
+            }
+        }
+        qDebug()<<"drawmanylines_sendMsg"<<result.count();
+        sendMsg(QString("/drawmanylines_norm:"+result.join(",")));
     }
 }
 
@@ -636,17 +682,28 @@ void V3dR_Communicator::UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString cl
 
         qDebug()<<"delline_sendMsg"<<result.count()<<"!!!!!!!!";
         sendMsg(QString("/delline_norm:"+result.join(",")));
-//        while(undoDeque.size()>=dequeszie)
-//        {
-//            undoDeque.pop_front();
-//        }
-//        undoDeque.push_back(QString("/drawline_undo:"+result.join(",")));
-//        redoDeque.clear();
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
+        }
+
+        QStringList undo_result;
+        undo_result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
+        for(int i=0;i<segs.size();i++){
+            if(segs[i].on){
+                reverse(segs[i].row.begin(), segs[i].row.end());
+                undo_result+=V_NeuronSWCToSendMSG(segs[i]);
+                undo_result.push_back("$");
+            }
+        }
+
+        undoDeque.push_back(QString("/drawmanylines_undo:"+undo_result.join(",")));
+        redoDeque.clear();
 
     }
 }
 
-void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QString clienttype)
+void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,RGBA8 color,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
@@ -655,9 +712,19 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,int type,QS
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(X,Y,Z);
-        result.push_back(QString("%1 %2 %3 %4").arg(type).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/addmarker_norm:"+result.join(",")));
 
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
+        }
+        QString undoMsgHeader=QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+        QStringList undoMsg;
+        undoMsg.push_back(undoMsgHeader);
+        undoMsg.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+        undoDeque.push_back(QString("/delmarker_undo:"+undoMsg.join(",")));
+        redoDeque.clear();
     }
 }
 
@@ -676,7 +743,7 @@ void V3dR_Communicator::UpdateRetypeMarkerMsg(float X,float Y,float Z, RGBA8 col
     }
 }
 
-void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clienttype)
+void V3dR_Communicator::UpdateDelMarkerMsg(float x,float y,float z,RGBA8 color,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
@@ -684,8 +751,19 @@ void V3dR_Communicator::UpdateDelMarkerSeg(float x,float y,float z,QString clien
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
-        result.push_back(QString("%1 %2 %3 %4").arg(-1).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
         sendMsg(QString("/delmarker_norm:"+result.join(",")));
+
+        while(undoDeque.size()>=dequeszie)
+        {
+            undoDeque.pop_front();
+        }
+        QString undoMsgHeader=QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+        QStringList undoMsg;
+        undoMsg.push_back(undoMsgHeader);
+        undoMsg.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+        undoDeque.push_back(QString("/addmarker_undo:"+undoMsg.join(",")));
+        redoDeque.clear();
 
     }
 }
@@ -748,7 +826,7 @@ void V3dR_Communicator::UpdateAddMarkerMsg(QString TVaddMarkerMSG)
 
 }
 
-void V3dR_Communicator::UpdateDelMarkerSeg(QString TVdelMarkerMSG)
+void V3dR_Communicator::UpdateDelMarkerMsg(QString TVdelMarkerMSG)
 {
     this->sendMsg("/delmarker_norm:"+TVdelMarkerMSG);
 
@@ -836,11 +914,17 @@ void V3dR_Communicator::UpdateUndoDeque()
                 operationType="/delline";
             else if("delline"==operationType)
                 operationType="/drawline";
+            else if("addmarker"==operationType)
+                operationType="/delmarker";
+            else if("delmarker"==operationType)
+                operationType="/addmarker";
+
             while(redoDeque.size()>=dequeszie)
             {
                 redoDeque.pop_front();
             }
-            redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
+            if("drawmanylines"!=operationType)
+                redoDeque.push_back(QString(operationType+"_redo:"+operatorMsg));
         }
     }else
     {
@@ -891,6 +975,11 @@ void V3dR_Communicator::UpdateRedoDeque()
                 operationType="/delline";
             else if("delline"==operationType)
                 operationType="/drawline";
+            else if("addmarker"==operationType)
+                operationType="/delmarker";
+            else if("delmarker"==operationType)
+                operationType="/addmarker";
+
             while(undoDeque.size()>=dequeszie)
             {
                 undoDeque.pop_front();

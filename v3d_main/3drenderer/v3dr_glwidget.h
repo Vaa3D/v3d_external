@@ -629,6 +629,7 @@ public slots:
     void CollaRetypeSeg(QString segInfo,int type, int isMany);
     void CollaConnectSeg(QString segInfo);
     void CollaSplitSeg(QString segInfo);
+    void CollaAddManySegs(QString segsInfo);
 
     void newThreadAddSeg(QString segInfo, int isBegin);
     void newThreadDelSeg(QString segInfo, int isMany);
@@ -644,6 +645,7 @@ public:
     double distance(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
     XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
     void deleteCurveInAllSpace(QString segInfo, int isMany);//neewd to finish
+    void addManyCurvesInAllSpace(QString segsInfo);
     void addCurveInAllSapce(QString segInfo, int isBegin);
     void connectCurveInAllSapce(QString info);
     void simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo);

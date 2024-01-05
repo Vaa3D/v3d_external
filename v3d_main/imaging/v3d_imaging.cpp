@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -24,7 +24,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifdef __WIN32 
 // #include "../sub_projects/imaging_piezo/microimaging.h"
 #endif
-bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
+bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p, V3dR_Communicator* communicator)
 {
 	v3d_msg(QString("Now try to do imaging or other plugin functions [%1]").arg(p.OPS), 0);
 
@@ -93,6 +93,14 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
             if (pluginsDir.cd("plugins/neuron_utilities/assemble_neuron_live")==false)
             {
                 v3d_msg("Cannot find ./plugins/neuron_utilities/assemble_neuron_live!",0);
+                return false;
+            }
+        }
+        else if (p.OPS == "Retrace" || p.OPS == "app2Convenient" || p.OPS == "app2Terafly" || p.OPS == "app2MultiTerafly" || p.OPS == "app2TeraflyWithPara" || p.OPS == "app2MultiTeraflyWithPara") //ZZ, 02012018
+        {
+            if (pluginsDir.cd("plugins/Retrace")==false)
+            {
+                v3d_msg("Cannot find ./plugins/Retrace",0);
                 return false;
             }
         }
@@ -165,6 +173,8 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		v3d_msg(fullpath, 0);
 		
         V3d_PluginLoader mypluginloader(mainwindow);
+        if(communicator)
+            mypluginloader.TeraflyCommunicator = communicator;
 
         if (curw)
         {
