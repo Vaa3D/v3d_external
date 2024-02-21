@@ -236,6 +236,11 @@ void V3dR_Communicator::processWarnMsg(QString line){
                                          tr("UpdateSwcAttachmentApoError from DBMS!"),
                                          QMessageBox::Ok);
             }
+            else if(reason=="FullNumberError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("The number of collaborating users has been full about this swc!"),
+                                         QMessageBox::Ok);
+            }
             else {
                 emit addMarker(listwithheader[0]);
             }
