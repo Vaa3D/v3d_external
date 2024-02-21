@@ -30,7 +30,8 @@ public:
 	int StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator*TeraflyCommunicator, XYZ* zoomPOS = 0,XYZ *CreatorPos = 0,XYZ  MaxResolution = 0);
     void RunVRMainloop(XYZ* zoomPOS = 0);
     void GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ CollaborationMaxResolution);
-    QString ConvertToMaxGlobal(QString coords);
+    QString ConvertToMaxGlobalForMarker(QString coords);
+    QString ConvertToMaxGlobalForSeg(QString coords);
     XYZ ConvertMaxGlobal2LocalBlock(float x,float y,float z);
     XYZ ConvertBlock2GloabelInRES(XYZ local);
     void SendVRconfigInfo();

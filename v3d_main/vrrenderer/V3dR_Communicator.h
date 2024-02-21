@@ -221,6 +221,8 @@ private:
 public:
 //	float VR_globalScale;//used to
     static QString userId;//
+    static QString userName;
+    static QString password;
     QString m_strAddressIP;
     uint m_iPort;
     static QTcpSocket* socket;//

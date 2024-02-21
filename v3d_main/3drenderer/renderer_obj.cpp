@@ -1910,10 +1910,10 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
 					w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
 					w->SetupCollaborateInfo();
                     w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg, connectedSegs, "TeraFly", isBegin);
-                    if(w->TeraflyCommunicator->timer_exit->isActive()){
-                        w->TeraflyCommunicator->timer_exit->stop();
-                    }
-                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                    if(w->TeraflyCommunicator->timer_exit->isActive()){
+//                        w->TeraflyCommunicator->timer_exit->stop();
+//                    }
+//                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
                 }/*else
                 {
                     QMessageBox::information(0,tr("Message "),

@@ -3369,10 +3369,10 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
             coords.clear();
         }
 
-        if(w->TeraflyCommunicator->timer_exit->isActive()){
-            w->TeraflyCommunicator->timer_exit->stop();
-        }
-        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//        if(w->TeraflyCommunicator->timer_exit->isActive()){
+//            w->TeraflyCommunicator->timer_exit->stop();
+//        }
+//        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
 //        w->getRenderer()->endSelectMode();
 //        CViewer::getCurrent()->loadAnnotations(false);
     }
@@ -3895,10 +3895,10 @@ void Renderer_gl1::simpleConnect()
                         {
                             w->SetupCollaborateInfo();
                             w->TeraflyCommunicator->UpdateConnectSegMsg(specPoints[0], specPoints[1], curImg->tracedNeuron.seg[segInfo[0].segID],curImg->tracedNeuron.seg[segInfo[1].segID],"TeraFly");
-                            if(w->TeraflyCommunicator->timer_exit->isActive()){
-                                w->TeraflyCommunicator->timer_exit->stop();
-                            }
-                            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                            if(w->TeraflyCommunicator->timer_exit->isActive()){
+//                                w->TeraflyCommunicator->timer_exit->stop();
+//                            }
+//                            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
                         }
 
                         break; // simple connection only allows 2 segments involved
@@ -7052,10 +7052,10 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             {
                 w->SetupCollaborateInfo();
                 w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,currentTraceType,"TeraFly");
-                if(w->TeraflyCommunicator->timer_exit->isActive()){
-                    w->TeraflyCommunicator->timer_exit->stop();
-                }
-                w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                if(w->TeraflyCommunicator->timer_exit->isActive()){
+//                    w->TeraflyCommunicator->timer_exit->stop();
+//                }
+//                w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
             }
 
             curImg->update_3drenderer_neuron_view(w, this);

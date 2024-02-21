@@ -3053,3 +3053,11 @@ reimplement QApplication::notify() and catch all exceptions there.
 2023/10/11 12:01:25:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
 2023/10/11 12:01:25:Debug: Cannot find ./plugins directory!
 2023/10/11 12:01:25:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2024/01/19 16:48:32:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2024/01/19 16:48:32:Debug: Searching in ./plugins ...... 
+2024/01/19 16:48:32:Debug: Fail instantiation( The file 'D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release/plugins/_Vaa3D_plugin_creator/plugin_creator.dll' is not a valid Qt plugin. ):  "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release/plugins/_Vaa3D_plugin_creator/plugin_creator.dll" 
+2024/01/19 16:48:32:Debug: Fail instantiation( The file 'D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release/plugins/imageProcess/imageProcess.exp' is not a valid Qt plugin. ):  "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release/plugins/imageProcess/imageProcess.exp" 
+2024/01/19 16:48:32:Debug: Fail instantiation( The file 'D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release/plugins/imageProcess/imageProcess.lib' is not a valid Qt plugin. ):  "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release/plugins/imageProcess/imageProcess.lib" 
+2024/01/19 16:48:32:Debug: Searching ./plugins done.
+2024/01/19 16:48:32:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Release" 
+2024/01/19 16:48:35:Debug: transparency true 

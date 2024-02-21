@@ -18,14 +18,19 @@ class LoadManageWidget:public QWidget
     Q_OBJECT
 public:
     LoadManageWidget(UserInfo *user);
-    QPushButton *getImageBtn,*getNeuronBtn,*getAnoBtn,*loadBtn;
-    QListWidget *imageWidget,*neuronWidget,*anoWidget;
+    QPushButton *loadBtn;
+    QListWidget *anoWidget;
+//    QPushButton *getImageBtn,*getNeuronBtn,*getAnoBtn,*loadBtn;
+//    QListWidget *imageWidget,*neuronWidget,*anoWidget;
     static QNetworkAccessManager *accessManager;
     UserInfo *userinfo;
     static QString HostAddress;
+    static QString DBMSAddress;
+    static QString ApiVersion;
 public slots:
-    void getImages();
-    void getNeurons();
+//    void getImages();
+//    void getNeurons();
+    void getUserId();
     void getAnos();
     void loadAno();
 signals:

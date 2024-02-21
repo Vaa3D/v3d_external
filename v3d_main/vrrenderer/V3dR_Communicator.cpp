@@ -14,11 +14,14 @@
 
 QTcpSocket* V3dR_Communicator::socket=0;
 QString V3dR_Communicator::userId="";
+QString V3dR_Communicator::userName = "";
+QString V3dR_Communicator::password = "";
 V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false), b_isWarnMulBifurcationHandled(false), b_isWarnLoopHandled(false), reconnectCnt(0), initConnectCnt(0), QObject(partent)
 {
 	CreatorMarkerPos = 0;
 	CreatorMarkerRes = 0;
     userId="";
+    userName="";
 //    qDebug()<<"userName=\"\"";
 
 //    socket = new QTcpSocket(this);
@@ -172,23 +175,70 @@ void V3dR_Communicator::processWarnMsg(QString line){
         QString sender=header.split(" ").at(0).trimmed();
         listwithheader.removeAt(0);
 
-        if (sender=="server" && (reason=="TipUndone" || reason=="CrossingError" || reason=="MulBifurcation"))
-        {
-            emit addManyMarkers(listwithheader.join(","));
-        }
-        else if(sender=="server" && reason=="Loop")
-        {
-            int result = header.split(" ").at(1).trimmed().toUInt();
-            if(result == 1){
-//                emit setDefineSomaActionState(true);
-            }
-            if(result == 0){
-//                emit setDefineSomaActionState(false);
+        if(sender=="server"){
+            if(reason=="TipUndone" || reason=="CrossingError" || reason=="MulBifurcation")
+            {
                 emit addManyMarkers(listwithheader.join(","));
             }
-        }
-        else if(sender=="server"){
-            emit addMarker(listwithheader[0]);
+            else if(reason=="Loop")
+            {
+                int result = header.split(" ").at(1).trimmed().toUInt();
+                if(result == 1){
+    //                emit setDefineSomaActionState(true);
+                }
+                if(result == 0){
+    //                emit setDefineSomaActionState(false);
+                    emit addManyMarkers(listwithheader.join(","));
+                }
+            }
+            else if(reason=="DisconnectError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("Disconnect from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="GetSwcMetaInfoError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("GetSwcMetaInfoError from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="ApoFileNotFoundError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("ApoFileNotFoundError!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="GetApoDataError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("GetApoDataError from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="GetSwcFullNodeDataError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("GetSwcFullNodeDataError from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="AddSwcNodeDataError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("AddSwcNodeDataError from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="DeleteSwcNodeDataError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("DeleteSwcNodeDataError from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="ModifySwcNodeDataError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("ModifySwcNodeDataError from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else if(reason=="UpdateSwcAttachmentApoError"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("UpdateSwcAttachmentApoError from DBMS!"),
+                                         QMessageBox::Ok);
+            }
+            else {
+                emit addMarker(listwithheader[0]);
+            }
         }
 
     }
@@ -1009,8 +1059,8 @@ void V3dR_Communicator::onConnected() {
     reconnectCnt=0;
     QString RES=QString("RES(%1x%2x%3)").arg(ImageMaxRes.y).arg(ImageMaxRes.x).arg(ImageMaxRes.z);
 
-    sendMsg(QString("/login:%1 %2 %3").arg(userId).arg(RES).arg(0));
-//    sendMsg(QString("/login:%1 %2").arg(userId).arg(0));
+    sendMsg(QString("/login:%1 %2 %3 %4 %5").arg(userId).arg(userName).arg(password).arg(RES).arg(0));
+//    sendMsg(QString("/login:%1 %2 %3").arg(userId).arg(RES).arg(0));
     QMessageBox::information(0,tr("Message "),
                              tr("Connect success! Ready to start collaborating"),
                              QMessageBox::Ok);

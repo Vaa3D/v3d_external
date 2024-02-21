@@ -531,7 +531,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
-                        result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
+                        result.push_back(ConvertToMaxGlobalForSeg(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                         .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                     }
                     if(VR_Communicator&&
@@ -556,7 +556,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 if(pMainApplication->markerPosTobeDeleted!="")
                 {
                     QStringList result;
-                    QString ConvertedmarkerPOS = ConvertToMaxGlobal(pMainApplication->markerPosTobeDeleted);
+                    QString ConvertedmarkerPOS = ConvertToMaxGlobalForMarker(pMainApplication->markerPosTobeDeleted);
                     result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     result.push_back(ConvertedmarkerPOS);
                     if(ConvertedmarkerPOS.split(" ")[0]=="-1")
@@ -592,7 +592,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     result.push_back(QString("1 %1 %2 %3 %4 %5").arg(VR_Communicator->userId).arg(pMainApplication->m_curMarkerColorType).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
-                        result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
+                        result.push_back(ConvertToMaxGlobalForSeg(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                         .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                     }
                     if(VR_Communicator&&
@@ -627,7 +627,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     result.push_back(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
                     for(int i=0;i<pMainApplication->segtobedeleted.listNeuron.size();i++)
                     {
-                        result.push_back(ConvertToMaxGlobal(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
+                        result.push_back(ConvertToMaxGlobalForSeg(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                         .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                     }
                     qDebug()<<"result = "<<result;
@@ -782,7 +782,7 @@ void VR_MainWindow::GetResindexandStartPointfromVRInfo(QString VRinfo,XYZ Collab
 
 }
 
-QString VR_MainWindow::ConvertToMaxGlobal(QString coords)
+QString VR_MainWindow::ConvertToMaxGlobalForMarker(QString coords)
 {
 	float x = coords.section(' ',0, 0).toFloat();  // str == "bin/myapp"
 	float y = coords.section(' ',1, 1).toFloat();  // str == "bin/myapp"
@@ -797,6 +797,20 @@ QString VR_MainWindow::ConvertToMaxGlobal(QString coords)
 	y*=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
 	z*=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
     return QString("%1 %2 %3 %4 %5 %6").arg(r).arg(g).arg(b).arg(x).arg(y).arg(z);
+}
+
+QString VR_MainWindow::ConvertToMaxGlobalForSeg(QString coords){
+    float x = coords.section(' ',0, 0).toFloat();  // str == "bin/myapp"
+    float y = coords.section(' ',1, 1).toFloat();  // str == "bin/myapp"
+    float z = coords.section(' ',2, 2).toFloat();  // str == "bin/myapp"
+    int type = coords.section(' ',3, 3).toInt();
+    x+=(VRVolumeStartPoint.x-1);
+    y+=(VRVolumeStartPoint.y-1);
+    z+=(VRVolumeStartPoint.z-1);
+    x*=(VRvolumeMaxRes.x/VRVolumeCurrentRes.x);
+    y*=(VRvolumeMaxRes.y/VRVolumeCurrentRes.y);
+    z*=(VRvolumeMaxRes.z/VRVolumeCurrentRes.z);
+    return QString("%1 %2 %3 %4").arg(type).arg(x).arg(y).arg(z);
 }
 
 void VR_MainWindow::SendVRconfigInfo()

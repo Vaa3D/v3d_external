@@ -1841,10 +1841,10 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
                         {
                             view3DWidget->SetupCollaborateInfo();
                             view3DWidget->TeraflyCommunicator->UpdateDelMarkerMsg(it->x,it->y,it->z,color,"TeraFly");
-                            if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
-                                view3DWidget->TeraflyCommunicator->timer_exit->stop();
-                            }
-                            view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                            if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
+//                                view3DWidget->TeraflyCommunicator->timer_exit->stop();
+//                            }
+//                            view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
                         }
 
                         break;
@@ -1967,10 +1967,10 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                 view3DWidget->SetupCollaborateInfo();
                 view3DWidget->TeraflyCommunicator->UpdateDelMarkerMsg(imageMarkers[i].x,
                                imageMarkers[i].y,imageMarkers[i].z,imageMarkers[i].color,"TeraFly");
-                if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
-                    view3DWidget->TeraflyCommunicator->timer_exit->stop();
-                }
-                view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
+//                    view3DWidget->TeraflyCommunicator->timer_exit->stop();
+//                }
+//                view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
             }/*else
             {
                 QMessageBox::information(0,tr("Message "),

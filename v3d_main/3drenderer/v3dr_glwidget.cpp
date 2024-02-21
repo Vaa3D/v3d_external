@@ -1144,26 +1144,23 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                     vector<V_NeuronSWC> vector_VSWC;
                     curImg->ExtractDeletingNode2(thisRenderer->originalSegMap, vector_VSWC);
 
-                    QFuture<void> future = QtConcurrent::run([=]() {
-                        if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-                        {
-                            w->SetupCollaborateInfo();
+                    if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        w->SetupCollaborateInfo();
                             //                        for(auto seg:vector_VSWC)
                             //                            w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
-                            w->TeraflyCommunicator->UpdateDelManySegsMsg(vector_VSWC,"TeraFly");
-                        }
+                        w->TeraflyCommunicator->UpdateDelManySegsMsg(vector_VSWC,"TeraFly");
+                    }
 //                        while(!future.isFinished())
 //                        {
 //                            QApplication::processEvents(QEventLoop::AllEvents, 100);
 //                        }
-                    });
-
                     if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
-                        if(w->TeraflyCommunicator->timer_exit->isActive()){
-                            w->TeraflyCommunicator->timer_exit->stop();
-                        }
-                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                        if(w->TeraflyCommunicator->timer_exit->isActive()){
+//                            w->TeraflyCommunicator->timer_exit->stop();
+//                        }
+//                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
                     }
 
 					thisRenderer->escPressed_subtree();
@@ -3762,15 +3759,12 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
 
                 if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
                     w->SetupCollaborateInfo();
+                    w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,pressedNumber,"TeraFly");
 
-                    QFuture<void> future = QtConcurrent::run([=]() {
-                        w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,pressedNumber,"TeraFly");
-                    });
-
-                    if(w->TeraflyCommunicator->timer_exit->isActive()){
-                        w->TeraflyCommunicator->timer_exit->stop();
-                    }
-                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                    if(w->TeraflyCommunicator->timer_exit->isActive()){
+//                        w->TeraflyCommunicator->timer_exit->stop();
+//                    }
+//                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
 
                 }
 

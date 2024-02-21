@@ -60,8 +60,11 @@
 #include <QFile>
 #include "../../../../vrrenderer/V3dR_Communicator.h"
 #include "../../../../vrrenderer/managesocket.h"
-
-
+#include <qjson/serializer.h>
+#include <qjson/parser.h>
+#include <qjson/qobjecthelper.h>
+#include <cstdlib>
+#include <future>
 
 #include "../../v3d/CustomDefine.h"
 
@@ -93,6 +96,7 @@ PMain* PMain::uniqueInstance = 0;
 
 LoadManageWidget* PMain::managewidget=0;
 V3dR_Communicator* PMain::Communicator=0;
+QString PMain::urlToDBMS="http://114.117.165.134:14252/swcdbms/proto.DBMS/";
 //QNetworkAccessManager* PMain::accessmanager=0;
 UserInfo PMain::userinfo;
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
@@ -278,6 +282,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     defineSomaAction=new QAction("Define Soma",collaborateMenu);
     collaborateMenu->addAction(defineSomaAction);
     connect(defineSomaAction,SIGNAL(triggered()),this,SLOT(defineSoma()));
+
+    openSwcManagerClientAction=new QAction("Data Management Client", collaborateMenu);
+    collaborateMenu->addAction(openSwcManagerClientAction);
+    connect(openSwcManagerClientAction,SIGNAL(triggered()),this,SLOT(openSwcManagerClient()));
+    openSwcManagerClientAction->setDisabled(false);
 
 //    defineSomaAction->setEnabled(false);
 
@@ -4024,7 +4033,8 @@ void PMain::LoadFromServer()
     QSettings settings("HHMI", "Vaa3D");
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
-    userinfo.colorid = settings.value("UserID").toInt();
+//    userinfo.colorid = settings.value("UserID").toInt();
+    userinfo.id = 0;
     settings.setValue("HostAddress", "http://114.117.165.134:26000/test");
     LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
 
@@ -4039,7 +4049,7 @@ void PMain::LoadFromServer()
     connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(
                 startCollaborate(QString,QString)));
     managewidget->show();
-
+    qDebug()<<userinfo.id;
 }
 
 void PMain::startCollaborate(QString ano,QString port)
@@ -4065,8 +4075,8 @@ void PMain::startCollaborate(QString ano,QString port)
 //    disconnect(Communicator->m_timerConnect, SIGNAL(timeout()), 0, 0);
 //    connect(Communicator->m_timerConnect, SIGNAL(timeout()), Communicator, SLOT(autoReconnect()));
 
-    disconnect(Communicator->timer_exit, SIGNAL(timeout()), 0, 0);
-    connect(Communicator->timer_exit, SIGNAL(timeout()), Communicator, SLOT(autoExit()));
+//    disconnect(Communicator->timer_exit, SIGNAL(timeout()), 0, 0);
+//    connect(Communicator->timer_exit, SIGNAL(timeout()), Communicator, SLOT(autoExit()));
 
     qDebug()<<Communicator;
 
@@ -4088,13 +4098,16 @@ void PMain::startCollaborate(QString ano,QString port)
 
     disconnect(Communicator,SIGNAL(load(QString)), 0, 0);
     // load信号会在接收到服务器传来的startCollaborate消息后触发
-    connect(Communicator,SIGNAL(load(QString)),this,SLOT(ColLoadANO(QString)),Qt::DirectConnection);
+    connect(Communicator,SIGNAL(load(QString)),this,SLOT(getAndLoadAno(QString)),Qt::DirectConnection);
 
 
     terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userId=QString::number(userinfo.id);
+    Communicator->userName=userinfo.name;
+    Communicator->password=userinfo.passwd;
     qDebug()<<Communicator->userId;
+    qDebug()<<Communicator->userName;
 
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString, int)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString, int)),
@@ -4177,6 +4190,71 @@ void PMain::startCollaborate(QString ano,QString port)
         Communicator=nullptr;
         return;
     }
+}
+
+void PMain::getAno(QString anoFile){
+    QString savedDirPath = QCoreApplication::applicationDirPath()+"/loaddata";
+    QDir dir(savedDirPath);
+    if(!dir.exists()){
+        dir.mkdir(savedDirPath);
+    }
+
+    QNetworkRequest request;
+    QNetworkAccessManager accessManager;
+    request.setUrl(QUrl(urlToDBMS+"getanoimage"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+    QVariantMap userVerify;
+    userVerify.insert("name",userinfo.name);
+    userVerify.insert("passwd",userinfo.passwd);
+    QVariantMap param;
+    param.insert("user",userVerify);
+    QJson::Serializer serializer;
+    bool ok;
+    QByteArray json=serializer.serialize(param,&ok);
+    qDebug()<<json;
+    QNetworkReply* reply = accessManager.post(request, json);
+    if(!reply)
+        qDebug()<<"reply = nullptr";
+
+    QEventLoop eventLoop;
+    connect(reply, SIGNAL(finished()),&eventLoop,SLOT(quit()));
+    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+
+    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    qDebug()<<"getAno"<<code;
+    if(code==200)
+    {
+        // 读取服务器端文件数据
+        QByteArray data = reply->readAll();
+
+        // 定义本地文件路径
+        QString localFilePath = savedDirPath + "/" + anoFile;
+
+        // 创建QFile对象用于写入本地文件
+        QFile localFile(localFilePath);
+        if (localFile.open(QIODevice::WriteOnly)) {
+            // 写入文件
+            localFile.write(data);
+            localFile.close();
+            qDebug() << "ano File saved to: " << localFilePath;
+        } else {
+            qDebug() << "Failed to open local file for writing.";
+        }
+    }
+    else{
+        qDebug() << "Error during HTTP request: " << reply->errorString();
+        QMessageBox::information(0,tr("Message "),
+                                 tr("get file error!"),
+                                 QMessageBox::Ok);
+    }
+
+    reply->deleteLater();
+
+}
+
+void PMain::getAndLoadAno(QString anoFile){
+//    getAno(anoFile);
+    ColLoadANO(anoFile);
 }
 
 void PMain::ColLoadANO(QString ANOfile)
@@ -4432,6 +4510,32 @@ void PMain::sendSomaPosition(){
 
 void PMain::setDefineSomaState(bool flag){
     defineSomaAction->setEnabled(flag);
+}
+
+void PMain::openSwcManagerClient(){
+    char formattedString[256];
+    // 设置要运行的程序的路径
+    const char* programDirPath = ((QCoreApplication::applicationDirPath()).toStdString() + "/thirdparty/SwcDbmsQtGuiClient_Win").c_str();
+    const char* programName = "SwcManagerClient.exe";
+
+    sprintf(formattedString, R"(start "" "%s/%s")", programDirPath, programName);
+
+    // 设置命令行参数（可选）
+
+    // 启动应用程序并返回一个 std::future 对象
+    std::future<int> resultFuture = std::async(std::launch::async, [&formattedString]() {
+        return system(formattedString);
+    });
+
+    // 等待应用程序完成并获取返回值
+    int result = resultFuture.get();
+
+    // 检查返回值
+    if (result == 0) {
+        std::cout << "Application exited successfully." << std::endl;
+    } else {
+        std::cout << "Failed to start or application exited with an error." << std::endl;
+    }
 }
 
 //void PMain::startAutoTrace()

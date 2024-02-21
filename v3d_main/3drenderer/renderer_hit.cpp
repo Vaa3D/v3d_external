@@ -915,10 +915,10 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     {
                         w->SetupCollaborateInfo();
                         w->TeraflyCommunicator->UpdateRetypeMarkerMsg(s->x,s->y,s->z,s->color,"TeraFly");
-                        if(w->TeraflyCommunicator->timer_exit->isActive()){
-                            w->TeraflyCommunicator->timer_exit->stop();
-                        }
-                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//                        if(w->TeraflyCommunicator->timer_exit->isActive()){
+//                            w->TeraflyCommunicator->timer_exit->stop();
+//                        }
+//                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
                     }
                 }
             }
@@ -4451,10 +4451,10 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
         {
             w->SetupCollaborateInfo();
             w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,S.color,"TeraFly");
-            if(w->TeraflyCommunicator->timer_exit->isActive()){
-                w->TeraflyCommunicator->timer_exit->stop();
-            }
-            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+//            if(w->TeraflyCommunicator->timer_exit->isActive()){
+//                w->TeraflyCommunicator->timer_exit->stop();
+//            }
+//            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
         }
 
         updateLandmark();

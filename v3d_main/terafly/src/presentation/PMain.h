@@ -597,14 +597,19 @@ public:
         QAction *loadAction,*configAction;
         QAction *somaNearByAction,*colorMutationAction,*dissociativeAction,*angleAction;
         QAction *defineSomaAction,*sendSomaPosAction;
+        QAction *openSwcManagerClientAction;
         QListWidget *userView;
         static UserInfo userinfo;
         static LoadManageWidget *managewidget;
+        static QString urlToDBMS;
+
+        void getAno(QString anoFile);
 //        static QNetworkAccessManager *accessmanager;
 public slots:
         void configApp();
         void LoadFromServer();
         void startCollaborate(QString ano,QString port);
+        void getAndLoadAno(QString anoFile);
         void ColLoadANO(QString ANOfile);
         void onMessageDisConnect();
         void onMessageError(QAbstractSocket::SocketError);
@@ -618,6 +623,7 @@ public slots:
         void defineSoma();
         void sendSomaPosition();
         void setDefineSomaState(bool);
+        void openSwcManagerClient();
 //        void startAutoTrace();//自动算法
 signals:
 
