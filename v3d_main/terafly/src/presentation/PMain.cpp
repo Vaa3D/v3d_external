@@ -25,7 +25,10 @@
 *    4. Neither the name of University  Campus Bio-Medico of Rome, nor Alessandro Bria and Giulio Iannello, may be used to endorse or  promote products  derived from this software without
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
-
+#include <iostream>
+#include <fstream>
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
 #include "PMain.h"
 #include "PDialogImport.h"
 #include "PAbout.h"
@@ -65,7 +68,6 @@
 #include <qjson/qobjecthelper.h>
 #include <cstdlib>
 #include <future>
-
 #include "../../v3d/CustomDefine.h"
 
 using namespace terafly;
@@ -96,7 +98,9 @@ PMain* PMain::uniqueInstance = 0;
 
 LoadManageWidget* PMain::managewidget=0;
 V3dR_Communicator* PMain::Communicator=0;
-QString PMain::urlToDBMS="http://114.117.165.134:14252/swcdbms/proto.DBMS/";
+string PMain::braintellServerAddress;
+string PMain::dbmsServerAddress;
+string PMain::apiVersion;
 //QNetworkAccessManager* PMain::accessmanager=0;
 UserInfo PMain::userinfo;
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
@@ -4005,13 +4009,8 @@ void PMain::setLockMagnification(bool locked)
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
-    QString HostAddress="http://114.117.165.134:26000/dynamic";
-    QString HostIp="114.117.165.134";
+
     bool ok;
-
-    settings.setValue("HostAddress", HostAddress);
-    settings.setValue("HostIP", HostIp);
-
     auto UserName = QInputDialog::getText(0, "UserName","Please enter the UserName:", QLineEdit::Normal,settings.value("UserName").toString(), &ok);
     if(ok)
         settings.setValue("UserName", UserName);
@@ -4035,8 +4034,49 @@ void PMain::LoadFromServer()
     userinfo.passwd=settings.value("UserPasswd").toString();
 //    userinfo.colorid = settings.value("UserID").toInt();
     userinfo.id = 0;
-    settings.setValue("HostAddress", "http://114.117.165.134:26000/test");
-    LoadManageWidget::HostAddress=settings.value("HostAddress").toString();
+
+    // 读取 JSON 配置文件
+    string configFilePath = QCoreApplication::applicationDirPath().toStdString() + "/config.json";
+    std::ifstream configFile(configFilePath);
+    if (!configFile.is_open()) {
+        std::cerr << "Failed to open config file." << std::endl;
+    }
+
+    // 将文件流转换为 IStreamWrapper
+    rapidjson::IStreamWrapper isw(configFile);
+
+    // 解析 JSON 数据
+    rapidjson::Document document;
+    document.ParseStream(isw);
+
+    // 检查解析是否成功
+    if (document.HasParseError()) {
+        std::cerr << "Failed to parse config file. Error code: " << document.GetParseError() << std::endl;
+    }
+
+    // 读取配置项
+    if (document.HasMember("braintellServerAddress") && document["braintellServerAddress"].IsString()) {
+        PMain::braintellServerAddress = document["braintellServerAddress"].GetString();
+        std::cout << "braintellServerAddress: " << braintellServerAddress << std::endl;
+    } else {
+        std::cerr << "Failed to read braintellServerAddress from config file." << std::endl;
+    }
+    if (document.HasMember("dbmsServerAddress") && document["dbmsServerAddress"].IsString()) {
+        PMain::dbmsServerAddress = document["dbmsServerAddress"].GetString();
+        std::cout << "dbmsServerAddress: " << dbmsServerAddress << std::endl;
+    } else {
+        std::cerr << "Failed to read dbmsServerAddress from config file." << std::endl;
+    }
+    if (document.HasMember("apiVersion") && document["apiVersion"].IsString()) {
+        PMain::apiVersion = document["apiVersion"].GetString();
+        std::cout << "apiVersion: " << apiVersion << std::endl;
+    } else {
+        std::cerr << "Failed to read apiVersion from config file." << std::endl;
+    }
+
+    LoadManageWidget::HostAddress=QString::fromStdString(braintellServerAddress);
+    LoadManageWidget::DBMSAddress=QString::fromStdString(dbmsServerAddress);
+    LoadManageWidget::ApiVersion=QString::fromStdString(apiVersion);
 
     if(managewidget){
         qDebug()<<"delete managewidget";
@@ -4192,65 +4232,65 @@ void PMain::startCollaborate(QString ano,QString port)
     }
 }
 
-void PMain::getAno(QString anoFile){
-    QString savedDirPath = QCoreApplication::applicationDirPath()+"/loaddata";
-    QDir dir(savedDirPath);
-    if(!dir.exists()){
-        dir.mkdir(savedDirPath);
-    }
+//void PMain::getAno(QString anoFile){
+//    QString savedDirPath = QCoreApplication::applicationDirPath()+"/loaddata";
+//    QDir dir(savedDirPath);
+//    if(!dir.exists()){
+//        dir.mkdir(savedDirPath);
+//    }
 
-    QNetworkRequest request;
-    QNetworkAccessManager accessManager;
-    request.setUrl(QUrl(urlToDBMS+"getanoimage"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
-    QVariantMap userVerify;
-    userVerify.insert("name",userinfo.name);
-    userVerify.insert("passwd",userinfo.passwd);
-    QVariantMap param;
-    param.insert("user",userVerify);
-    QJson::Serializer serializer;
-    bool ok;
-    QByteArray json=serializer.serialize(param,&ok);
-    qDebug()<<json;
-    QNetworkReply* reply = accessManager.post(request, json);
-    if(!reply)
-        qDebug()<<"reply = nullptr";
+//    QNetworkRequest request;
+//    QNetworkAccessManager accessManager;
+//    request.setUrl(QUrl(urlToDBMS+"getanoimage"));
+//    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+//    QVariantMap userVerify;
+//    userVerify.insert("name",userinfo.name);
+//    userVerify.insert("passwd",userinfo.passwd);
+//    QVariantMap param;
+//    param.insert("user",userVerify);
+//    QJson::Serializer serializer;
+//    bool ok;
+//    QByteArray json=serializer.serialize(param,&ok);
+//    qDebug()<<json;
+//    QNetworkReply* reply = accessManager.post(request, json);
+//    if(!reply)
+//        qDebug()<<"reply = nullptr";
 
-    QEventLoop eventLoop;
-    connect(reply, SIGNAL(finished()),&eventLoop,SLOT(quit()));
-    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+//    QEventLoop eventLoop;
+//    connect(reply, SIGNAL(finished()),&eventLoop,SLOT(quit()));
+//    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
 
-    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    qDebug()<<"getAno"<<code;
-    if(code==200)
-    {
-        // 读取服务器端文件数据
-        QByteArray data = reply->readAll();
+//    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+//    qDebug()<<"getAno"<<code;
+//    if(code==200)
+//    {
+//        // 读取服务器端文件数据
+//        QByteArray data = reply->readAll();
 
-        // 定义本地文件路径
-        QString localFilePath = savedDirPath + "/" + anoFile;
+//        // 定义本地文件路径
+//        QString localFilePath = savedDirPath + "/" + anoFile;
 
-        // 创建QFile对象用于写入本地文件
-        QFile localFile(localFilePath);
-        if (localFile.open(QIODevice::WriteOnly)) {
-            // 写入文件
-            localFile.write(data);
-            localFile.close();
-            qDebug() << "ano File saved to: " << localFilePath;
-        } else {
-            qDebug() << "Failed to open local file for writing.";
-        }
-    }
-    else{
-        qDebug() << "Error during HTTP request: " << reply->errorString();
-        QMessageBox::information(0,tr("Message "),
-                                 tr("get file error!"),
-                                 QMessageBox::Ok);
-    }
+//        // 创建QFile对象用于写入本地文件
+//        QFile localFile(localFilePath);
+//        if (localFile.open(QIODevice::WriteOnly)) {
+//            // 写入文件
+//            localFile.write(data);
+//            localFile.close();
+//            qDebug() << "ano File saved to: " << localFilePath;
+//        } else {
+//            qDebug() << "Failed to open local file for writing.";
+//        }
+//    }
+//    else{
+//        qDebug() << "Error during HTTP request: " << reply->errorString();
+//        QMessageBox::information(0,tr("Message "),
+//                                 tr("get file error!"),
+//                                 QMessageBox::Ok);
+//    }
 
-    reply->deleteLater();
+//    reply->deleteLater();
 
-}
+//}
 
 void PMain::getAndLoadAno(QString anoFile){
 //    getAno(anoFile);

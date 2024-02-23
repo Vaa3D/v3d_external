@@ -14,9 +14,9 @@
 #include <qjson/qobjecthelper.h>
 
 QNetworkAccessManager* LoadManageWidget::accessManager= new QNetworkAccessManager();
-QString LoadManageWidget::HostAddress="http://114.117.165.134:26000/dynamic";
-QString LoadManageWidget::DBMSAddress="http://114.117.165.134:14252/proto.DBMS/";
-QString LoadManageWidget::ApiVersion="2024.01.19";
+QString LoadManageWidget::HostAddress="";
+QString LoadManageWidget::DBMSAddress="";
+QString LoadManageWidget::ApiVersion="";
 LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
 {
 //    this->setAttribute(Qt::WA_DeleteOnClose);
@@ -95,7 +95,9 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
 
 void LoadManageWidget::getUserId(){
     QNetworkRequest request;
-    request.setUrl(QUrl(DBMSAddress+"GetUser"));
+    QString urlForGetUser = DBMSAddress + "/GetUser";
+    request.setUrl(QUrl(urlForGetUser));
+//    request.setUrl(QUrl("http://114.117.165.134:14252/proto.DBMS/GetUser"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QVariantMap userVerify;
     userVerify.insert("UserName",userinfo->name);
@@ -344,91 +346,92 @@ void LoadManageWidget::getUserId(){
 //}
 
 void LoadManageWidget::getAnos(){
-        QNetworkRequest request;
-        request.setUrl(QUrl(DBMSAddress+"GetAllSwcMetaInfo"));
-        request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
-        QVariantMap userVerify;
-        userVerify.insert("UserName",userinfo->name);
-        userVerify.insert("UserToken","");
-        QVariantMap metaInfo;
-        metaInfo.insert("ApiVersion",ApiVersion);
-        QVariantMap param;
-        param.insert("metaInfo",metaInfo);
-        param.insert("UserVerifyInfo",userVerify);
-        QJson::Serializer serializer;
-        bool ok;
-        QByteArray json=serializer.serialize(param,&ok);
+    QNetworkRequest request;
+    QString urlForGetAllSwcMetaInfo = DBMSAddress + "/GetAllSwcMetaInfo";
+    request.setUrl(QUrl(urlForGetAllSwcMetaInfo));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+    QVariantMap userVerify;
+    userVerify.insert("UserName",userinfo->name);
+    userVerify.insert("UserToken","");
+    QVariantMap metaInfo;
+    metaInfo.insert("ApiVersion",ApiVersion);
+    QVariantMap param;
+    param.insert("metaInfo",metaInfo);
+    param.insert("UserVerifyInfo",userVerify);
+    QJson::Serializer serializer;
+    bool ok;
+    QByteArray json=serializer.serialize(param,&ok);
 
-        QNetworkReply* reply = accessManager->post(request, json);
-        QEventLoop eventLoop;
-        connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
-        eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-        anoWidget->clear();
+    QNetworkReply* reply = accessManager->post(request, json);
+    QEventLoop eventLoop;
+    connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
+    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+    anoWidget->clear();
 
-        int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        qDebug()<<"getAnos"<<code;
-        if(code==200)
-        {
-            json=reply->readAll();
+    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    qDebug()<<"getAnos"<<code;
+    if(code==200)
+    {
+        json=reply->readAll();
 
-            QJson::Parser parser;
-            auto result = parser.parse(json,&ok).toMap();
-            auto metaInfo = result["metaInfo"].toMap();
-            bool status = metaInfo["Status"].toBool();
-            QString message = metaInfo["Message"].toString();
-            if(!status){
-                QString msg = "GetUser Failed! " + message;
-                qDebug()<<msg;
-                QMessageBox::information(0,tr("Message "),
-                                         tr(msg.toStdString().c_str()),
-                                         QMessageBox::Ok);
-                return;
-            }
-
-            auto swcInfos = result["SwcInfo"].toList();
-            std::vector<int> imageList;
-            std::vector<int> indexs;
-            for(int i=0; i<swcInfos.size(); i++){
-                indexs.push_back(i);
-            }
-            for(auto &swcInfo:swcInfos){
-                auto item = swcInfo.toMap();
-                QStringList parts = item["Name"].toString().split("_");
-                QString image = parts[0];
-                imageList.push_back(image.toInt());
-            }
-            if(indexs.size()>=2){
-                for(int i=1; i<indexs.size(); i++) {
-                    int temp = imageList[i];
-                    int tempIndex = indexs[i];
-                    int k = i-1;
-                    for(; k >= 0 && imageList[k] > temp; ) {
-                        k--;
-                    }
-
-                    for(int j=i; j>k+1; j--) {
-                        imageList[j] = imageList[j-1];
-                        indexs[j] = indexs[j-1];
-                    }
-                    imageList[k+1] = temp;
-                    indexs[k+1] = tempIndex;
-                }
-            }
-
-            for(int i=0; i<indexs.size(); i++){
-                auto item = swcInfos.at(indexs[i]).toMap();
-                int removedLen = QString(".ano.eswc").length();
-                int len = item["Name"].toString().size();
-                QString anoName = item["Name"].toString().remove(len-removedLen, removedLen);
-                anoWidget->addItem(anoName);
-            }
-        }
-        else{
-            QString reason=reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+        QJson::Parser parser;
+        auto result = parser.parse(json,&ok).toMap();
+        auto metaInfo = result["metaInfo"].toMap();
+        bool status = metaInfo["Status"].toBool();
+        QString message = metaInfo["Message"].toString();
+        if(!status){
+            QString msg = "GetUser Failed! " + message;
+            qDebug()<<msg;
             QMessageBox::information(0,tr("Message "),
-                                     tr(reason.toStdString().c_str()),
+                                     tr(msg.toStdString().c_str()),
                                      QMessageBox::Ok);
+            return;
         }
+
+        auto swcInfos = result["SwcInfo"].toList();
+        std::vector<int> imageList;
+        std::vector<int> indexs;
+        for(int i=0; i<swcInfos.size(); i++){
+            indexs.push_back(i);
+        }
+        for(auto &swcInfo:swcInfos){
+            auto item = swcInfo.toMap();
+            QStringList parts = item["Name"].toString().split("_");
+            QString image = parts[0];
+            imageList.push_back(image.toInt());
+        }
+        if(indexs.size()>=2){
+            for(int i=1; i<indexs.size(); i++) {
+                int temp = imageList[i];
+                int tempIndex = indexs[i];
+                int k = i-1;
+                for(; k >= 0 && imageList[k] > temp; ) {
+                    k--;
+                }
+
+                for(int j=i; j>k+1; j--) {
+                    imageList[j] = imageList[j-1];
+                    indexs[j] = indexs[j-1];
+                }
+                imageList[k+1] = temp;
+                indexs[k+1] = tempIndex;
+            }
+        }
+
+        for(int i=0; i<indexs.size(); i++){
+            auto item = swcInfos.at(indexs[i]).toMap();
+            int removedLen = QString(".ano.eswc").length();
+            int len = item["Name"].toString().size();
+            QString anoName = item["Name"].toString().remove(len-removedLen, removedLen);
+            anoWidget->addItem(anoName);
+        }
+    }
+    else{
+        QString reason=reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+        QMessageBox::information(0,tr("Message "),
+                                 tr(reason.toStdString().c_str()),
+                                 QMessageBox::Ok);
+    }
 }
 
 void LoadManageWidget::loadAno()

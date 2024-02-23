@@ -176,7 +176,7 @@ void V3dR_Communicator::processWarnMsg(QString line){
         listwithheader.removeAt(0);
 
         if(sender=="server"){
-            if(reason=="TipUndone" || reason=="CrossingError" || reason=="MulBifurcation")
+            if(reason=="TipUndone" || reason=="CrossingError" || reason=="MulBifurcation" || reason=="BranchingError")
             {
                 emit addManyMarkers(listwithheader.join(","));
             }

@@ -601,7 +601,9 @@ public:
         QListWidget *userView;
         static UserInfo userinfo;
         static LoadManageWidget *managewidget;
-        static QString urlToDBMS;
+        static string dbmsServerAddress;
+        static string braintellServerAddress;
+        static string apiVersion;
 
         void getAno(QString anoFile);
 //        static QNetworkAccessManager *accessmanager;
