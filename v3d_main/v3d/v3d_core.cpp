@@ -3931,8 +3931,8 @@ void XFormWidget::createGUI()
 
      xy_view = new XFormView(viewGroup);
     xy_view->setImgData(imgPlaneZ, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
-     xy_view->setFixedWidth(xy_view->get_disp_width()*1.5);
-     xy_view->setFixedHeight(xy_view->get_disp_height()*1.5);
+     xy_view->setFixedWidth(qMin(0.2*screenW, xy_view->get_disp_width()*1.5));
+    xy_view->setFixedHeight(qMin(0.2*screenH, xy_view->get_disp_height()*1.5));
      xy_view->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
      xy_view->setFocusPolicy(Qt::ClickFocus);
 
@@ -3956,7 +3956,7 @@ void XFormWidget::createGUI()
 
      focusPointFeatureWidget = new MyTextBrowser(infoGroup);
     //	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->width()+yz_view->width()));
-     focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->get_disp_width()+yz_view->get_disp_width()));
+     focusPointFeatureWidget->setFixedWidth(qMax(100, xy_view->get_disp_width()+yz_view->get_disp_width()));
 //     focusPointFeatureWidget->setFixedWidth(qMax(100, 0));
     mainGroup = new QGroupBox(self);
     //原来是300
@@ -4042,11 +4042,12 @@ void XFormWidget::createGUI()
 
     resetButton = new QPushButton(scaleGroup);
     resetButton->setText("Reset");
-    resetButton->setMinimumSize(screenW * 0.04, screenH * 0.024);
+    resetButton->setMinimumSize(screenW * 0.04, screenH * 0.022);
 
 
     zoomWholeViewButton = new QPushButton();
     zoomWholeViewButton->setText("TriView zoom=1. Click to set.");
+    zoomWholeViewButton->setFixedHeight(0.025 * screenH);
 
     createMenuOfTriviewZoom();
 
@@ -4079,18 +4080,18 @@ void XFormWidget::createGUI()
 
     landmarkManagerButton = new QPushButton(landmarkGroup);
     landmarkManagerButton->setText("Landmark/Atlas/Color Manager");
-    landmarkManagerButton->setMaximumHeight(0.022 * screenH);
+    landmarkManagerButton->setFixedHeight(0.025 * screenH);
 
     imgV3DButton = new QPushButton(mainGroup);
     imgV3DButton->setText("See in 3D");
-    imgV3DButton->setMaximumHeight(0.022 * screenH);
+    imgV3DButton->setFixedHeight(0.025 * screenH);
 
 
     createMenuOf3DViewer();
 
     whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText("Help ... ");
-    whatsThisButton->setMaximumHeight(0.022 * screenH);
+    whatsThisButton->setFixedHeight(0.025 * screenH);
 
     xyzViewLayout = new QGridLayout(viewGroup);
     xyzViewLayout->addWidget(xy_view, 0, 0, 1, 1, Qt::AlignRight | Qt::AlignBottom);
@@ -4207,6 +4208,7 @@ void XFormWidget::createGUI()
     //hideDisplayControlsButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     connect(hideDisplayControlsButton, SIGNAL(clicked()), this, SLOT(hideDisplayControls()));
 
+    mainGroup->setMinimumWidth(0.25 * screenW);
     allLayout = new QHBoxLayout();
     allLayout->addWidget(dataGroup, 1);
     allLayout->addWidget(hideDisplayControlsButton);
@@ -4273,8 +4275,8 @@ void XFormWidget::updateDataRelatedGUI()
             xy_view->set_disp_height(imgData->getYDim());
             xy_view->set_disp_scale(1);
         }
-        xy_view->setFixedWidth(xy_view->get_disp_width());
-        xy_view->setFixedHeight(xy_view->get_disp_height());
+        xy_view->setFixedWidth(qMin(xy_view->get_disp_width(), int(0.08 * screenW)));
+        xy_view->setFixedHeight(qMin(xy_view->get_disp_height(), int(0.08 * screenW)));
         imgData->set_xy_view(xy_view);
 
         //
@@ -4291,8 +4293,8 @@ void XFormWidget::updateDataRelatedGUI()
             yz_view->set_disp_height(imgData->getYDim());
             yz_view->set_disp_scale(1);
         }
-        yz_view->setFixedWidth(yz_view->get_disp_width());
-        yz_view->setFixedHeight(yz_view->get_disp_height());
+        yz_view->setFixedWidth(qMin(yz_view->get_disp_width(), int(0.08 * screenW)));
+        yz_view->setFixedHeight(qMin(yz_view->get_disp_height(), int(0.08 * screenW)));
         imgData->set_yz_view(yz_view);
 
         //
@@ -4309,8 +4311,8 @@ void XFormWidget::updateDataRelatedGUI()
             zx_view->set_disp_height(imgData->getZDim());
             zx_view->set_disp_scale(1);
         }
-        zx_view->setFixedWidth(zx_view->get_disp_width());
-        zx_view->setFixedHeight(zx_view->get_disp_height());
+        zx_view->setFixedWidth(qMin(zx_view->get_disp_width(), int(0.08 * screenW)));
+        zx_view->setFixedHeight(qMin(zx_view->get_disp_height(), int(0.08 * screenW)));
         imgData->set_zx_view(zx_view);
 
         if (b_use_dispzoom)
@@ -4323,6 +4325,7 @@ void XFormWidget::updateDataRelatedGUI()
         }
         focusPointFeatureWidget->setMinimumHeight(0.1 * screenH);
         focusPointFeatureWidget->setMaximumHeight(0.25 * screenH);
+        focusPointFeatureWidget->setFixedWidth(0.24 * screenW);
 
         imgData->setFocusFeatureView((MyTextBrowser*)focusPointFeatureWidget);
 
