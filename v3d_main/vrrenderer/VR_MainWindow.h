@@ -37,6 +37,8 @@ public:
     void SendVRconfigInfo();
 public slots:
     void TVProcess(QString);
+    void processWarnMsg(QString);
+    void processAnalyzeMsg(QString line);
 //    /**
 //     * @brief onReadySendSeg
 //     * 从队列中发出画线命令
@@ -55,7 +57,7 @@ public:
 //    VRoutInfo VROutinfo;
 private:
 	V3dR_Communicator* VR_Communicator;
-    QString userName;
+    QString userId;
     bool CURRENT_DATA_IS_SENT;
     vector<QString> CollaborationSendPool;
 //    QTcpSocket* socket;

@@ -174,11 +174,22 @@ void V3dR_Communicator::processWarnMsg(QString line){
         QString header = listwithheader[0];
         QString sender=header.split(" ").at(0).trimmed();
         listwithheader.removeAt(0);
+        QString comment="";
 
         if(sender=="server"){
             if(reason=="TipUndone" || reason=="CrossingError" || reason=="MulBifurcation" || reason=="BranchingError")
             {
-                emit addManyMarkers(listwithheader.join(","));
+
+                if(reason == "TipUndone"){
+                    comment = "Missing";
+                }else if(reason == "CrossingError"){
+                    comment = "Crossing error";
+                }else if(reason == "MulBifurcation"){
+                    comment = "Multifurcation";
+                }else if(reason == "BranchingError"){
+                    comment = "Branching error";
+                }
+                emit addManyMarkers(listwithheader.join(","), comment);
             }
             else if(reason=="Loop")
             {
@@ -188,7 +199,7 @@ void V3dR_Communicator::processWarnMsg(QString line){
                 }
                 if(result == 0){
     //                emit setDefineSomaActionState(false);
-                    emit addManyMarkers(listwithheader.join(","));
+                    emit addManyMarkers(listwithheader.join(","), "Loop");
                 }
             }
             else if(reason=="DisconnectError"){
@@ -242,7 +253,7 @@ void V3dR_Communicator::processWarnMsg(QString line){
                                          QMessageBox::Ok);
             }
             else {
-                emit addMarker(listwithheader[0]);
+                emit addMarker(listwithheader[0], "Approaching bifurcation");
             }
         }
 
@@ -263,17 +274,18 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
         qDebug()<<"operatormsg:"<<operatorMsg;
         if(type=="SomaNearBy"){
             QString sender=operatorMsg.split(" ").at(0).trimmed();
-            int result=operatorMsg.split(" ").at(1).trimmed().toInt();
+            QString request_senderid=operatorMsg.split(" ").at(1).trimmed();
+            int result=operatorMsg.split(" ").at(2).trimmed().toInt();
             if (sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
-                    tr("no error"),
-                    QMessageBox::Ok);
+                                         tr("no error"),
+                                         QMessageBox::Ok);
             }
             else if(sender=="server" && result==0){
                 QMessageBox::information(0,tr("Infomation "),
-                    tr("error: soma is not connected to one point!"),
-                    QMessageBox::Ok);
+                                         tr("error: soma is not connected to one point!"),
+                                         QMessageBox::Ok);
             }else if(sender=="server" && result==-1){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("error: soma not detected!"),
@@ -287,7 +299,8 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             msgList.removeAt(0);
 
             QString sender=msgHeader.split(" ").at(0).trimmed();
-            int result=msgHeader.split(" ").at(1).trimmed().toInt();
+            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+            int result=msgHeader.split(" ").at(2).trimmed().toInt();
             if (sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
@@ -295,12 +308,12 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                                          QMessageBox::Ok);
             }
             else if(sender=="server" && result==0){
-                for(int i=0; i<msgList.size(); i++){
-                    emit addMarker(msgList[i]);
-                }
-                QMessageBox::information(0,tr("Infomation "),
-                                         tr("error: color mutation exists! notice the soma nearby and the red markers!"),
-                                         QMessageBox::Ok);
+                emit addManyMarkers(msgList.join(","), "Color mutation");
+
+                if( request_senderid==userId )
+                    QMessageBox::information(0,tr("Infomation "),
+                                             tr("error: color mutation exists! notice the soma nearby and the red markers!"),
+                                             QMessageBox::Ok);
             }else if(sender=="server" && result==-1){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("error: soma not detected!"),
@@ -314,7 +327,8 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             msgList.removeAt(0);
 
             QString sender=msgHeader.split(" ").at(0).trimmed();
-            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+            int result=msgHeader.split(" ").at(2).trimmed().toInt();
             if (sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
@@ -322,12 +336,12 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                                          QMessageBox::Ok);
             }
             else if(sender=="server" && result==0){
-                for(int i=0; i<msgList.size(); i++){
-                    emit addMarker(msgList[i]);
-                }
-                QMessageBox::information(0,tr("Infomation "),
-                                         tr("error: dissociative seg exists! notice the red markers!"),
-                                         QMessageBox::Ok);
+                emit addManyMarkers(msgList.join(","), "Dissociative seg");
+
+                if(request_senderid==userId)
+                    QMessageBox::information(0,tr("Infomation "),
+                                             tr("error: dissociative seg exists! notice the red markers!"),
+                                             QMessageBox::Ok);
             }
         }
         if(type=="Angle"){
@@ -337,7 +351,8 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             msgList.removeAt(0);
 
             QString sender=msgHeader.split(" ").at(0).trimmed();
-            int result=msgHeader.split(" ").at(1).trimmed().toInt();
+            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+            int result=msgHeader.split(" ").at(2).trimmed().toInt();
             if (sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
@@ -345,12 +360,12 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                                          QMessageBox::Ok);
             }
             else if(sender=="server" && result==0){
-                for(int i=0; i<msgList.size(); i++){
-                    emit addMarker(msgList[i]);
-                }
-                QMessageBox::information(0,tr("Infomation "),
-                                         tr("error: incorrect angle exists! notice the red markers!"),
-                                         QMessageBox::Ok);
+                emit addManyMarkers(msgList.join(","), "Angle error");
+
+                if(request_senderid==userId)
+                    QMessageBox::information(0,tr("Infomation "),
+                                             tr("error: incorrect angle exists! notice the red markers!"),
+                                             QMessageBox::Ok);
             }else if(sender=="server" && result==-1){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("error: soma not detected!"),
@@ -371,18 +386,19 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             msgList.removeAt(0);
 
             QString sender=msgHeader.split(" ").at(0).trimmed();
-            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
+            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+            int result=msgHeader.split(" ").at(2).trimmed().toInt();
 
             if (sender=="server" && result==0)
             {
                 QMessageBox::information(0,tr("Infomation "),
-                                         "error: " + msgList[0],
+                                         "error: " + msgList.join(","),
                                          QMessageBox::Ok);
             }
             if(sender=="server" && result==1)
             {
                 QMessageBox::information(0,tr("Infomation "),
-                                         msgList[0],
+                                         msgList.join(","),
                                          QMessageBox::Ok);
             }
         }
@@ -401,12 +417,13 @@ void V3dR_Communicator::processSendMsg(QString line){
         QStringList listWithHeader=msg.split(',',QString::SkipEmptyParts);
         QString msgHeader=listWithHeader[0];
         QString sender=msgHeader.split(" ").at(0).trimmed();
+        QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+        int result=msgHeader.split(" ").at(2).trimmed().toInt();
         QStringList msgList=listWithHeader;
         msgList.removeAt(0);
 
         if (sender=="server" && type=="SomaPos")
         {
-            int result=msgHeader.split(" ").at(1).trimmed().toUInt();
             if (result==0)
             {
                 QMessageBox::information(0,tr("Infomation "),
@@ -514,14 +531,14 @@ void V3dR_Communicator::TFProcess(QString line) {
                 qDebug() << "user:" << user << "==userId" << userId;
             else
             {
-                emit addMarker(listwithheader[1]);
+                emit addMarker(listwithheader[1], "");
             }
         }else if(operationtype == "delmarker")
         {
             QString msg = operatorMsg;
             QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"delmarker_msg_count"<<listwithheader.count();
-            if(listwithheader.size()<1)
+            if(listwithheader.size()<=1)
             {
                 qDebug()<<"msg only contains header:"<<msg;
                 return;
@@ -532,7 +549,8 @@ void V3dR_Communicator::TFProcess(QString line) {
                 qDebug() << "user:" << user << "==userId" << userId;
             else
             {
-                emit delMarker(listwithheader[1]);
+                listwithheader.removeAt(0);
+                emit delMarker(listwithheader.join(","));
             }
         }else if(operationtype == "retypemarker")
         {
@@ -798,28 +816,32 @@ void V3dR_Communicator::UpdateRetypeMarkerMsg(float X,float Y,float Z, RGBA8 col
     }
 }
 
-void V3dR_Communicator::UpdateDelMarkerMsg(float x,float y,float z,RGBA8 color,QString clienttype)
+void V3dR_Communicator::UpdateDelMarkersMsg(vector<CellAPO> markers,QString clienttype)
 {
     if(clienttype=="TeraFly")
     {
 
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
-        XYZ global_node=ConvertLocalBlocktoGlobalCroods(x,y,z);
-        result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+
+        for(auto it=markers.begin(); it!=markers.end(); it++){
+            XYZ global_node=ConvertLocalBlocktoGlobalCroods(it->x,it->y,it->z);
+            RGBA8 color = it->color;
+            result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+
+            while(undoDeque.size()>=dequeszie)
+            {
+                undoDeque.pop_front();
+            }
+            QString undoMsgHeader=QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+            QStringList undoMsg;
+            undoMsg.push_back(undoMsgHeader);
+            undoMsg.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
+            undoDeque.push_back(QString("/addmarker_undo:"+undoMsg.join(",")));
+        }
         sendMsg(QString("/delmarker_norm:"+result.join(",")));
 
-        while(undoDeque.size()>=dequeszie)
-        {
-            undoDeque.pop_front();
-        }
-        QString undoMsgHeader=QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
-        QStringList undoMsg;
-        undoMsg.push_back(undoMsgHeader);
-        undoMsg.push_back(QString("%1 %2 %3 %4 %5 %6").arg(color.r).arg(color.g).arg(color.b).arg(global_node.x).arg(global_node.y).arg(global_node.z));
-        undoDeque.push_back(QString("/addmarker_undo:"+undoMsg.join(",")));
         redoDeque.clear();
-
     }
 }
 

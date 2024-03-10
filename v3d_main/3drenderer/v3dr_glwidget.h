@@ -58,7 +58,7 @@ class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
 class V3dR_Communicator;
 #ifdef __ALLOW_VR_FUNCS__
-	class VR_MainWindow;
+class VR_MainWindow;
 #endif
 //class SurfaceObjGeometryDialog;
 
@@ -70,9 +70,9 @@ class V3dR_GLWidget : public QOpenGLWidget_proxy, public View3DControl
 #endif
 {
     Q_OBJECT;
-//	friend class V3dR_MainWindow; //090710 RZC: to delete renderer before ~V3dR_GLWidget()
-//	friend class v3dr_surfaceDialog;
-//	friend class v3dr_colormapDialog;
+    //	friend class V3dR_MainWindow; //090710 RZC: to delete renderer before ~V3dR_GLWidget()
+    //	friend class v3dr_surfaceDialog;
+    //	friend class v3dr_colormapDialog;
     struct segInfoUnit
     {
         segInfoUnit() { hierarchy = 0; }
@@ -92,24 +92,24 @@ public:
     virtual void deleteRenderer();  //090710 RZC: to delete renderer before ~V3dR_GLWidget()
     virtual void createRenderer();  //090710 RZC: to create renderer at any time
 
-	void handleKeyPressEvent(QKeyEvent * event); //for hook to MainWindow
-	void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
+    void handleKeyPressEvent(QKeyEvent * event); //for hook to MainWindow
+    void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
     static bool disableUndoRedo;
     static bool skipFormat;
-	QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset); //tool tip function for real dimension of image
+    QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset); //tool tip function for real dimension of image
 
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
     QWidget* getMainWindow() {return mainwindow;}
-	Renderer* getRenderer()   {return renderer;}
-        const Renderer* getRenderer() const {return renderer;} // const version CMB
-	QString getDataTitle()    {return data_title;}
-	void setDataTitle(QString newdt) {data_title = newdt;}
-	int getNumKeyHolding()    {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
+    Renderer* getRenderer()   {return renderer;}
+    const Renderer* getRenderer() const {return renderer;} // const version CMB
+    QString getDataTitle()    {return data_title;}
+    void setDataTitle(QString newdt) {data_title = newdt;}
+    int getNumKeyHolding()    {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
 
-	bool getStill() 		{return _still;} //used by Renderer::beStill()
-	void setStill(bool b) 	{_still = b;}    //used by V3dR_MainWindow::doSaveMovie()
+    bool getStill() 		{return _still;} //used by Renderer::beStill()
+    void setStill(bool b) 	{_still = b;}    //used by V3dR_MainWindow::doSaveMovie()
     bool needStillPaint();
-	void clearColormapDialog() {colormapDlg = 0;}
+    void clearColormapDialog() {colormapDlg = 0;}
     void clearSurfaceDialog()  {surfaceDlg = 0;}
     bool screenShot(QString filename);
     void triggerNeuronShown(QList<int> overlayList)    {emit neuronShown(overlayList);}
@@ -122,28 +122,30 @@ public:
     virtual void preparingRenderer();
 #ifdef __ALLOW_VR_FUNCS__
     void UpdateVRcollaInfo();
-	bool VRClientON;
-	VR_MainWindow * myvrwin;
+    bool VRClientON;
+    VR_MainWindow * myvrwin;
     static V3dR_Communicator * TeraflyCommunicator;
-	XYZ teraflyZoomInPOS;
-	XYZ CollaborationCreatorPos;
-	XYZ collaborationMaxResolution;
-	int CollaborationCreatorRes;
-	int Resindex;
+    XYZ teraflyZoomInPOS;
+    XYZ CollaborationCreatorPos;
+    XYZ collaborationMaxResolution;
+    int CollaborationCreatorRes;
+    int Resindex;
 
-	static bool resumeCollaborationVR;
+    static bool resumeCollaborationVR;
 #endif
-	//Collaboration mode
-	void SetupCollaborateInfo();
+    //Collaboration mode
+    void SetupCollaborateInfo();
+    vector<XYZ> getImageCurResAndStartPoint();
+    XYZ ImageMaxRes;
 public slots:
-//	void CallAddCurveSWC(vector<XYZ>loc_list,int chno,double createmode);
-//    void CallAddMarker(XYZ);
+              //	void CallAddCurveSWC(vector<XYZ>loc_list,int chno,double createmode);
+              //    void CallAddMarker(XYZ);
 public:
-//protected:
-	virtual void choiceRenderer();
-	virtual void settingRenderer(); // for setting the default renderer state when initialize
-     virtual void initializeGL();
-	virtual void resizeGL(int width, int height);
+    //protected:
+    virtual void choiceRenderer();
+    virtual void settingRenderer(); // for setting the default renderer state when initialize
+    virtual void initializeGL();
+    virtual void resizeGL(int width, int height);
     virtual void paintGL();
 
     virtual void paintEvent(QPaintEvent *event);
@@ -156,10 +158,10 @@ public:
     virtual void mouseReleaseEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void wheelEvent(QWheelEvent *event);
-	virtual void mouseDoubleClickEvent ( QMouseEvent * event ) {};
+    virtual void mouseDoubleClickEvent ( QMouseEvent * event ) {};
 
-        virtual void keyPressEvent(QKeyEvent * e) {handleKeyPressEvent(e);}
-        virtual void keyReleaseEvent(QKeyEvent * e) {handleKeyReleaseEvent(e);}
+    virtual void keyPressEvent(QKeyEvent * e) {handleKeyPressEvent(e);}
+    virtual void keyReleaseEvent(QKeyEvent * e) {handleKeyReleaseEvent(e);}
 
     virtual void closeEvent(QCloseEvent* e); //for self closing
     virtual bool event(QEvent* e);       //090427 RZC:  for QHelpEvent of ToolTip
@@ -167,12 +169,12 @@ public:
 
     iDrawExternalParameter* _idep;
     QWidget *mainwindow;
-	Renderer* renderer;
+    Renderer* renderer;
     QString data_title;
-	QString dropUrl;
+    QString dropUrl;
     static V3dr_colormapDialog* colormapDlg;
     static V3dr_surfaceDialog*  surfaceDlg;
-	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
+    //static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
     int neuronIndex;
 
     // @ADDED by Alessandro on 2015-09-30.
@@ -181,22 +183,22 @@ public:
     // Be sure to set to 'true' by default when you subclass (or, simplier, just call the base-constructor).
     bool show_progress_bar;
 
-	QProgressBar* progressBarPtr; 
+    QProgressBar* progressBarPtr;
 
-	int currentPluginState;                              // May 29, 2012 by Hang
-	map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
+    int currentPluginState;                              // May 29, 2012 by Hang
+    map<int, void(*)(void*)> pluginLeftMouseFuncs;     // May 29, 2012 by Hang
 
 public slots:
-   	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
-	
+    virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
+
 #define __view3dcontrol_interface__
 public:
-	View3DControl * getView3DControl() {return dynamic_cast<View3DControl *>(this);}
-	QDialog* setVoxSizeDlg;
-	Ui::setVoxSizeDialog* setVoxDlgPtr;
-//----------------------------------------------------------------------------------------
-// begin View3DControl interface
-//----------------------------------------------------------------------------------------
+    View3DControl * getView3DControl() {return dynamic_cast<View3DControl *>(this);}
+    QDialog* setVoxSizeDlg;
+    Ui::setVoxSizeDialog* setVoxDlgPtr;
+    //----------------------------------------------------------------------------------------
+    // begin View3DControl interface
+    //----------------------------------------------------------------------------------------
 public:
     // Expose marker size, Nov. 08, 2016 by Zhi Zhou
     virtual int getMarkerSize() const { return _markerSize; }
@@ -212,26 +214,26 @@ public:
     virtual int isShowSurfObjects() const { return renderer->sShowSurfObjects;} // Nov. 27, 2013 by Zhi Zhou
 
     virtual void setState(int state, bool is_enable){ if(is_enable) currentPluginState = state; else currentPluginState = -1;}             // May 29, 2012 by Hang
-	virtual void addStateFunc(int state, void(*mouse_func)(void *)){pluginLeftMouseFuncs[state] = mouse_func;} // May 29, 2012 by Hang
-	virtual void deleteStateFunc(int state){pluginLeftMouseFuncs.erase(state);} // May 29, 2012 by Hang
+    virtual void addStateFunc(int state, void(*mouse_func)(void *)){pluginLeftMouseFuncs[state] = mouse_func;} // May 29, 2012 by Hang
+    virtual void deleteStateFunc(int state){pluginLeftMouseFuncs.erase(state);} // May 29, 2012 by Hang
 
-	virtual int renderMode() const { return _renderMode; }
-	virtual int dataDim1() const { return _data_size[0]; }
-	virtual int dataDim2() const { return _data_size[1]; }
-	virtual int dataDim3() const { return _data_size[2]; }
-	virtual int dataDim4() const { return _data_size[3]; }
-	virtual int dataDim5() const { return _data_size[4]; }
+    virtual int renderMode() const { return _renderMode; }
+    virtual int dataDim1() const { return _data_size[0]; }
+    virtual int dataDim2() const { return _data_size[1]; }
+    virtual int dataDim3() const { return _data_size[2]; }
+    virtual int dataDim4() const { return _data_size[3]; }
+    virtual int dataDim5() const { return _data_size[4]; }
 
-	virtual int xRot() const { return _xRot; }
-	virtual int yRot() const { return _yRot; }
-	virtual int zRot() const { return _zRot; }
-	virtual int zoom() const { return _zoom; }
-	virtual int xShift() const { return _xShift; }
-	virtual int yShift() const { return _yShift; }
-	virtual int zShift() const { return _zShift; }
-	virtual bool isAbsoluteRot()	const { return _absRot; }
+    virtual int xRot() const { return _xRot; }
+    virtual int yRot() const { return _yRot; }
+    virtual int zRot() const { return _zRot; }
+    virtual int zoom() const { return _zoom; }
+    virtual int xShift() const { return _xShift; }
+    virtual int yShift() const { return _yShift; }
+    virtual int zShift() const { return _zShift; }
+    virtual bool isAbsoluteRot()	const { return _absRot; }
 
-	// Expose cut getters, 2011 Feb 09 CMB
+    // Expose cut getters, 2011 Feb 09 CMB
     virtual int xCut0() const { return _xCut0; }
     virtual int xCut1() const { return _xCut1; }
     virtual int yCut0() const { return _yCut0; }
@@ -247,82 +249,82 @@ public:
     virtual bool channelB() {return renderer->color_proxy.b != 0;}
     virtual int volumeTimePoint() const {return _volumeTimePoint;}
 
-	virtual bool isVolCompress() const { return (renderer)? renderer->tryTexCompress :false; }
-	virtual bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }
-	virtual bool isShowAxes() 		const { return (renderer)? renderer->bShowAxes :false; }
+    virtual bool isVolCompress() const { return (renderer)? renderer->tryTexCompress :false; }
+    virtual bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }
+    virtual bool isShowAxes() 		const { return (renderer)? renderer->bShowAxes :false; }
 
-	virtual void hideTool();
-	virtual void showTool();
-	virtual void updateTool();
-	virtual void updateControl();
+    virtual void hideTool();
+    virtual void showTool();
+    virtual void updateTool();
+    virtual void updateControl();
 
     // @ADDED by Alessandro on 2015-09-30. See 'show_progress_bar'.
     bool         getShowProgressBar(){return show_progress_bar;}
     void         setShowProgressBar(bool val){show_progress_bar = val;}
 
 public slots:
-// most of format: set***(type) related to a change***(type)
+    // most of format: set***(type) related to a change***(type)
 
-	virtual int setVolumeTimePoint(int t);
-	virtual void incVolumeTimePoint(float step);
+    virtual int setVolumeTimePoint(int t);
+    virtual void incVolumeTimePoint(float step);
 
-	/** if useMin == false => minimum intensity projection **/
-	virtual void setRenderMode_Mip(bool b, bool useMin = false);
+    /** if useMin == false => minimum intensity projection **/
+    virtual void setRenderMode_Mip(bool b, bool useMin = false);
 
-	virtual void setRenderMode_Maxip(bool b) {
-		setRenderMode_Mip(b, false);
-	}
-	virtual void setRenderMode_Minip(bool b) {
-		setRenderMode_Mip(b, true);
-	}
+    virtual void setRenderMode_Maxip(bool b) {
+        setRenderMode_Mip(b, false);
+    }
+    virtual void setRenderMode_Minip(bool b) {
+        setRenderMode_Mip(b, true);
+    }
 
-	virtual void setRenderMode_Alpha(bool b);
-	virtual void setRenderMode_Cs3d(bool b);
+    virtual void setRenderMode_Alpha(bool b);
+    virtual void setRenderMode_Cs3d(bool b);
 
-	virtual void setCSTransparent(int);
+    virtual void setCSTransparent(int);
     virtual void setContrast(int);
-	virtual void setThickness(double);
-	virtual void setCurChannel(int);
+    virtual void setThickness(double);
+    virtual void setCurChannel(int);
 
-	virtual void setChannelR(bool b);
-	virtual void setChannelG(bool b);
-	virtual void setChannelB(bool b);
-	virtual void setVolCompress(bool b);
+    virtual void setChannelR(bool b);
+    virtual void setChannelG(bool b);
+    virtual void setChannelB(bool b);
+    virtual void setVolCompress(bool b);
 
-	virtual void volumeColormapDialog();
-	virtual void surfaceSelectDialog(int curTab=-1); // 090505 RZC: add curTab.  110713 RZC: change curTab=-1 from 0
-	virtual void surfaceSelectTab(int curTab=-1); // 090522 RZC: just switch to curTab, no creating
-	virtual void surfaceDialogHide(); //added 090220, by PHC for convenience
-	virtual void annotationDialog(int dataClass, int surfaceType, int index);
+    virtual void volumeColormapDialog();
+    virtual void surfaceSelectDialog(int curTab=-1); // 090505 RZC: add curTab.  110713 RZC: change curTab=-1 from 0
+    virtual void surfaceSelectTab(int curTab=-1); // 090522 RZC: just switch to curTab, no creating
+    virtual void surfaceDialogHide(); //added 090220, by PHC for convenience
+    virtual void annotationDialog(int dataClass, int surfaceType, int index);
 
 #ifdef __ALLOW_VR_FUNCS__
-	virtual void doimage3DVRView(bool bCanCoMode = false);
-	void process3Dwindow(bool show);
-	
+    virtual void doimage3DVRView(bool bCanCoMode = false);
+    void process3Dwindow(bool show);
+
     virtual void doimageVRView(bool bCanCoMode = false);
-	virtual void doclientView(bool check_flag=false);
-	virtual void OnVRSocketDisConnected();
+    virtual void doclientView(bool check_flag=false);
+    virtual void OnVRSocketDisConnected();
 #endif
 
-	virtual void setXRotation(int angle);
-	virtual void setYRotation(int angle);
-	virtual void setZRotation(int angle);
-	virtual void resetRotation(bool b_emit=true);
-	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep);
-	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
-	virtual void absoluteRotPose();
-	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
-	virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
-	virtual void resetAltCenter(); 								//180702 RZC
-	virtual void setAltCenter(float xC, float yC, float zC);	//180702 RZC
+    virtual void setXRotation(int angle);
+    virtual void setYRotation(int angle);
+    virtual void setZRotation(int angle);
+    virtual void resetRotation(bool b_emit=true);
+    virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep);
+    virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
+    virtual void absoluteRotPose();
+    virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
+    virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
+    virtual void resetAltCenter(); 								//180702 RZC
+    virtual void setAltCenter(float xC, float yC, float zC);	//180702 RZC
 
-	virtual void setZoom(int r);
-	virtual void setXShift(int s);
-	virtual void setYShift(int s);
-	virtual void setZShift(int s);
-	virtual void resetZoomShift();
+    virtual void setZoom(int r);
+    virtual void setXShift(int s);
+    virtual void setYShift(int s);
+    virtual void setZShift(int s);
+    virtual void resetZoomShift();
 
-	// Float methods for smoother animation 2011 Feb 07 CMB
+    // Float methods for smoother animation 2011 Feb 07 CMB
     virtual void setXShift(float s);
     virtual void setYShift(float s);
     virtual void setZShift(float s);
@@ -332,62 +334,62 @@ public slots:
     virtual void setYRotation(float angle);
     virtual void setZRotation(float angle);
 
-	virtual void enableFrontSlice(bool);
-	virtual void enableXSlice(bool);
-	virtual void enableYSlice(bool);
-	virtual void enableZSlice(bool);
+    virtual void enableFrontSlice(bool);
+    virtual void enableXSlice(bool);
+    virtual void enableYSlice(bool);
+    virtual void enableZSlice(bool);
 
-	virtual void setFrontCut(int s);
-	virtual void setXCut0(int s);
-	virtual void setYCut0(int s);
-	virtual void setZCut0(int s);
-	virtual void setXCut1(int s);
-	virtual void setYCut1(int s);
-	virtual void setZCut1(int s);
-	virtual void setXCS(int s);
-	virtual void setYCS(int s);
-	virtual void setZCS(int s);
-	virtual void setXClip0(int s);
-	virtual void setYClip0(int s);
-	virtual void setZClip0(int s);
-	virtual void setXClip1(int s);
-	virtual void setYClip1(int s);
-	virtual void setZClip1(int s);
+    virtual void setFrontCut(int s);
+    virtual void setXCut0(int s);
+    virtual void setYCut0(int s);
+    virtual void setZCut0(int s);
+    virtual void setXCut1(int s);
+    virtual void setYCut1(int s);
+    virtual void setZCut1(int s);
+    virtual void setXCS(int s);
+    virtual void setYCS(int s);
+    virtual void setZCS(int s);
+    virtual void setXClip0(int s);
+    virtual void setYClip0(int s);
+    virtual void setZClip0(int s);
+    virtual void setXClip1(int s);
+    virtual void setYClip1(int s);
+    virtual void setZClip1(int s);
 
-	virtual void setXCutLock(bool);
-	virtual void setYCutLock(bool);
-	virtual void setZCutLock(bool);
+    virtual void setXCutLock(bool);
+    virtual void setYCutLock(bool);
+    virtual void setZCutLock(bool);
     virtual void setConfCut(int s);
     virtual void confidenceDialog();
 
-	virtual void enableShowAxes(bool b);
+    virtual void enableShowAxes(bool b);
     virtual void enableShowBoundingBox(bool b);
     virtual void enableClipBoundingBox(bool b);  //141013 Hanbo Chen
-	virtual void enableOrthoView(bool b);
-	virtual void setBackgroundColor();
+    virtual void enableOrthoView(bool b);
+    virtual void setBackgroundColor();
     virtual void switchBackgroundColor();
-	virtual void setBright();
+    virtual void setBright();
 
-	virtual void setShowMarkers(int s);
-	virtual void setShowSurfObjects(int s);
+    virtual void setShowMarkers(int s);
+    virtual void setShowSurfObjects(int s);
     virtual void setXYZSurfure(bool);
-	virtual void enableMarkerLabel(bool);
-	virtual void setMarkerSize(int s);
-	virtual void enableSurfStretch(bool);
+    virtual void enableMarkerLabel(bool);
+    virtual void setMarkerSize(int s);
+    virtual void enableSurfStretch(bool);
     virtual void enableSurfZLock(bool);
-	virtual void toggleCellName();
-	virtual void toggleMarkerName();// by Lei Qu, 110425
+    virtual void toggleCellName();
+    virtual void toggleMarkerName();// by Lei Qu, 110425
 
-	virtual void createSurfCurrentR();
-	virtual void createSurfCurrentG();
-	virtual void createSurfCurrentB();
-	virtual void loadObjectFromFile(QString url="");
-	virtual void loadObjectListFromFile();
-	virtual void saveSurfFile();
+    virtual void createSurfCurrentR();
+    virtual void createSurfCurrentG();
+    virtual void createSurfCurrentB();
+    virtual void loadObjectFromFile(QString url="");
+    virtual void loadObjectListFromFile();
+    virtual void saveSurfFile();
 
-	virtual void togglePolygonMode();
-	virtual void toggleLineType();
-	virtual void toggleObjShader();
+    virtual void togglePolygonMode();
+    virtual void toggleLineType();
+    virtual void toggleObjShader();
 
     //defined for Katie's need to export the local 3D viewer starting and local locations //140811
     virtual int getLocalStartPosX();
@@ -406,28 +408,28 @@ public slots:
     virtual void callcheckmode();//for caalling check mode in terafly, by OY,26102018
     virtual void returncheckmode();//for caalling check mode in terafly, by OY,26102018
 
-     virtual void setDragWinSize(int csize); // ZJL 110927
+    virtual void setDragWinSize(int csize); // ZJL 110927
 
-	virtual void changeLineOption();
-	virtual void changeVolShadingOption();
-	virtual void changeObjShadingOption();
+    virtual void changeLineOption();
+    virtual void changeVolShadingOption();
+    virtual void changeObjShadingOption();
 
-	virtual void toggleTexFilter();
-	virtual void toggleTex2D3D();
-	virtual void toggleTexCompression();
-	virtual void toggleTexStream();
-	virtual void toggleShader();
-	virtual void showGLinfo();
+    virtual void toggleTexFilter();
+    virtual void toggleTex2D3D();
+    virtual void toggleTexCompression();
+    virtual void toggleTexStream();
+    virtual void toggleShader();
+    virtual void showGLinfo();
 
-	void testgetswc();
-	void CollabolateSetSWC(vector<XYZ> Loc_list, int chno, double createmode);
-	virtual void updateWithTriView();
+    void testgetswc();
+    void CollabolateSetSWC(vector<XYZ> Loc_list, int chno, double createmode);
+    virtual void updateWithTriView();
     virtual void updateLandmark();
     virtual void updateImageData();
-	virtual void reloadData();
-	virtual void cancelSelect();
-	
-	virtual void setVoxSize();
+    virtual void reloadData();
+    virtual void cancelSelect();
+
+    virtual void setVoxSize();
 
     //added a number of shortcuts for whole mouse brain data tracing, by ZZ, 20212018
     virtual void callStrokeCurveDrawingBBoxes(); // call serial BBoxes curve drawing
@@ -435,52 +437,52 @@ public slots:
     virtual void callStrokeDeleteMultiNeurons();//  call multiple segments deleting
     virtual void callStrokeSplitMultiNeurons();//  call multiple segments splitting
     virtual void callStrokeConnectMultiNeurons();//  call multiple segments connection
-	virtual void callShowSubtree();
-	virtual void callShowConnectedSegs();
-	virtual void callShowBreakPoints();//add by wp
+    virtual void callShowSubtree();
+    virtual void callShowConnectedSegs();
+    virtual void callShowBreakPoints();//add by wp
     virtual void callStrokeCurveDrawingGlobal(); // call Global optimal curve drawing
     virtual void callDefine3DPolyline(); // call 3D polyline defining
     virtual void callCreateMarkerNearestNode();
     virtual void callCreateSpecialMarkerNearestNode(); //add special marker, by XZ, 20190720
     virtual void callGDTracing();
 
-	// Brain atlas app, MK, July 2019
-	virtual void callUpBrainAtlas();
+    // Brain atlas app, MK, July 2019
+    virtual void callUpBrainAtlas();
 
     virtual void toggleEditMode();
     virtual void setEditMode();
     virtual void updateColorMode(int mode);
 
 
-//----------------------------------------------------------------------------------------
-// end View3DControl interface
-//----------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------
+    // end View3DControl interface
+    //----------------------------------------------------------------------------------------
 
 signals:
-// most of format: change***(type)
-// most of format: changeEnable***(bool)
-// most of format: signal***()
+    // most of format: change***(type)
+    // most of format: changeEnable***(bool)
+    // most of format: signal***()
 
-	void signalInitControlValue();
-	void signalVolumeCutRange();
-	void signalOnlySurfaceObj();
+    void signalInitControlValue();
+    void signalVolumeCutRange();
+    void signalOnlySurfaceObj();
 
-	void changeVolumeTimePoint(int);
+    void changeVolumeTimePoint(int);
 
-	void changeDispType_maxip(bool);
-	void changeDispType_minip(bool);
-	void changeDispType_alpha(bool);
-	void changeDispType_cs3d(bool);
+    void changeDispType_maxip(bool);
+    void changeDispType_minip(bool);
+    void changeDispType_alpha(bool);
+    void changeDispType_cs3d(bool);
 
-	void changeVolCompress(bool);
-	void changeEnableVolCompress(bool);
-	void changeEnableVolColormap(bool);
+    void changeVolCompress(bool);
+    void changeEnableVolCompress(bool);
+    void changeEnableVolColormap(bool);
 
-	void changeTransparentSliderLabel(const QString&);
-	void changeEnableTransparentSlider(bool);
-	void changeMarkerSize(int);
+    void changeTransparentSliderLabel(const QString&);
+    void changeEnableTransparentSlider(bool);
+    void changeMarkerSize(int);
 
-	void xRotationChanged(int);
+    void xRotationChanged(int);
     void yRotationChanged(int);
     void zRotationChanged(int);
 
@@ -489,7 +491,7 @@ signals:
     void yShiftChanged(int);
     void zShiftChanged(int);
 
-	void changeEnableCut0Slider(bool);
+    void changeEnableCut0Slider(bool);
     void changeEnableCut1Slider(bool);
     void changeCurrentTabCutPlane(int);
     void changeEnableTabCutPlane(int,bool);
@@ -500,121 +502,121 @@ signals:
     void changeFrontCut(int s);
 
     void changeXCut0(int s);
-	void changeXCut1(int s);
+    void changeXCut1(int s);
     void changeYCut0(int s);
-	void changeYCut1(int s);
+    void changeYCut1(int s);
     void changeZCut0(int s);
-	void changeZCut1(int s);
+    void changeZCut1(int s);
 
     void changeXClip0(int s);
-	void changeXClip1(int s);
+    void changeXClip1(int s);
     void changeYClip0(int s);
-	void changeYClip1(int s);
+    void changeYClip1(int s);
     void changeZClip0(int s);
-	void changeZClip1(int s);
+    void changeZClip1(int s);
     void changeConfCut(int s);
 
-	void changeOrthoView(bool b);
-        void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
-        void neuronShownAll(const QList<int> overlayList);
-        void neuronClearAll();
-        void neuronIndexChanged(int index);
-        void neuronClearAllSelections();
-		void signalCallTerafly(int nDirect);
+    void changeOrthoView(bool b);
+    void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
+    void neuronShownAll(const QList<int> overlayList);
+    void neuronClearAll();
+    void neuronIndexChanged(int index);
+    void neuronClearAllSelections();
+    void signalCallTerafly(int nDirect);
 
 public slots:
     void subtreeHighlightModeMonitor();
 
 public:
-	bool _still, _stillpaint_need, _stillpaint_pending;
+    bool _still, _stillpaint_need, _stillpaint_pending;
     QTimer still_timer;
     static const int still_timer_interval = 1000; //1000 is safe enough
 
-	int t_mouseclick_left, mouse_held, mouse_in_view;
+    int t_mouseclick_left, mouse_held, mouse_in_view;
 
     bool _in_destructor; //for makeCurrent when valid context
     bool _isSoftwareGL; //for choiceRenderer
 
-	int _renderMode;
-	//unsigned char * data;
-	int _data_size[5];
+    int _renderMode;
+    //unsigned char * data;
+    int _data_size[5];
 
-	char tipBuf[1000];
-	bool _holding_num[10];
+    char tipBuf[1000];
+    bool _holding_num[10];
 
-	int viewW, viewH;
-	GLdouble mRot[16];
-	GLdouble mAltC[4]; //0806 RZC: alternate rotation center (for non-center rotation)
-	int alt_rotation;
-	static const int flip_X= +1, flip_Y= -1, flip_Z= -1; // make y-axis downward conformed with image coordinate
-	QPoint lastPos;
+    int viewW, viewH;
+    GLdouble mRot[16];
+    GLdouble mAltC[4]; //0806 RZC: alternate rotation center (for non-center rotation)
+    int alt_rotation;
+    static const int flip_X= +1, flip_Y= -1, flip_Z= -1; // make y-axis downward conformed with image coordinate
+    QPoint lastPos;
 
-	float _xRot, _yRot, _zRot, dxRot, dyRot, dzRot;
-	// int _zoom, _xShift, _yShift, _zShift, dxShift, dyShift, dzShift;
+    float _xRot, _yRot, _zRot, dxRot, dyRot, dzRot;
+    // int _zoom, _xShift, _yShift, _zShift, dxShift, dyShift, dzShift;
     float _zoom, _xShift, _yShift, _zShift, dxShift, dyShift, dzShift; // CMB 2011 Feb 07
-	int _xCut0, _xCut1, _yCut0, _yCut1, _zCut0, _zCut1, _fCut;
-	int dxCut, dyCut, dzCut, lockX, lockY, lockZ;
-	int _xCS, _yCS, _zCS;
-	int _xClip0, _xClip1, _yClip0, _yClip1, _zClip0, _zClip1;
-	int _CStransparency, _markerSize, _curChannel;
-	float _thickness;
-	int _Bright, _Contrast, sUpdate_bright, sUpdate_track;
+    int _xCut0, _xCut1, _yCut0, _yCut1, _zCut0, _zCut1, _fCut;
+    int dxCut, dyCut, dzCut, lockX, lockY, lockZ;
+    int _xCS, _yCS, _zCS;
+    int _xClip0, _xClip1, _yClip0, _yClip1, _zClip0, _zClip1;
+    int _CStransparency, _markerSize, _curChannel;
+    float _thickness;
+    int _Bright, _Contrast, sUpdate_bright, sUpdate_track;
     bool _showAxes, _showBoundingBox, _absRot, _orthoView, _clipBoxEnable;
-	bool _volCompress, _volFilter;
+    bool _volCompress, _volFilter;
 
     RGBA8 backgroundColor; // record current non-black backgroundColor
 
-	int _volumeTimePoint; float volumeTimPoint_fraction;
+    int _volumeTimePoint; float volumeTimPoint_fraction;
     int neuronColorMode;
 
-	void init_members()
-	{
-		_still = _stillpaint_need = _stillpaint_pending = false;
-	    connect(&still_timer, SIGNAL(timeout()), this, SLOT(stillPaint())); //only connect once
-	    still_timer.start(still_timer_interval);
+    void init_members()
+    {
+        _still = _stillpaint_need = _stillpaint_pending = false;
+        connect(&still_timer, SIGNAL(timeout()), this, SLOT(stillPaint())); //only connect once
+        still_timer.start(still_timer_interval);
 
-	    t_mouseclick_left = mouse_held = mouse_in_view = 0;
+        t_mouseclick_left = mouse_held = mouse_in_view = 0;
 
-	    _in_destructor =false;
-		_isSoftwareGL =false;
+        _in_destructor =false;
+        _isSoftwareGL =false;
 
-		_renderMode = 0;
-		for (int i=0; i<5; i++)	_data_size[i] = 0;
+        _renderMode = 0;
+        for (int i=0; i<5; i++)	_data_size[i] = 0;
 
-		for (int i=0; i<10; i++) _holding_num[i] = false;
+        for (int i=0; i<10; i++) _holding_num[i] = false;
 
-		viewW=viewH=0;
-		for (int i=0; i<4; i++)
-			for (int j=0; j<4; j++)
-				mRot[i*4 +j] = ((i==j)? 1 : 0); // Identity matrix
-		for (int i=0; i<4; i++)
-				mAltC[i] = ((i==3)? 1 : 0);		// Original point
-		alt_rotation =0;
+        viewW=viewH=0;
+        for (int i=0; i<4; i++)
+            for (int j=0; j<4; j++)
+                mRot[i*4 +j] = ((i==j)? 1 : 0); // Identity matrix
+        for (int i=0; i<4; i++)
+            mAltC[i] = ((i==3)? 1 : 0);		// Original point
+        alt_rotation =0;
 
-		_xRot=_yRot=_zRot= dxRot=dyRot=dzRot=
-		_zoom=_xShift=_yShift=_zShift= dxShift=dyShift=dzShift=
-		_xCut0=_xCut1=_yCut0=_yCut1=_zCut0=_zCut1=_fCut=
-		dxCut=dyCut=dzCut= lockX=lockY=lockZ=
-		_xCS=_yCS=_zCS=
-		_xClip0=_xClip1=_yClip0=_yClip1=_zClip0=_zClip1 =0;
-		_thickness =1;
-		_CStransparency=0; _markerSize=1, _curChannel=-1;
+        _xRot=_yRot=_zRot= dxRot=dyRot=dzRot=
+            _zoom=_xShift=_yShift=_zShift= dxShift=dyShift=dzShift=
+            _xCut0=_xCut1=_yCut0=_yCut1=_zCut0=_zCut1=_fCut=
+            dxCut=dyCut=dzCut= lockX=lockY=lockZ=
+            _xCS=_yCS=_zCS=
+            _xClip0=_xClip1=_yClip0=_yClip1=_zClip0=_zClip1 =0;
+        _thickness =1;
+        _CStransparency=0; _markerSize=1, _curChannel=-1;
 
-		_Bright=_Contrast=sUpdate_bright=sUpdate_track=0;
-		_showAxes = _showBoundingBox = _absRot = _orthoView =false;
+        _Bright=_Contrast=sUpdate_bright=sUpdate_track=0;
+        _showAxes = _showBoundingBox = _absRot = _orthoView =false;
         _clipBoxEnable = _volCompress = _volFilter =true;
 
-		_volumeTimePoint=0;
-		volumeTimPoint_fraction=0;
+        _volumeTimePoint=0;
+        volumeTimPoint_fraction=0;
 
         neuronColorMode=0;
 #ifdef __ALLOW_VR_FUNCS__
-		VRClientON=false;
-		myvrwin = 0;
-		//myclient = 0;
-		teraflyZoomInPOS = 0;
-		CollaborationCreatorPos = 0;
-		Resindex = 1;
+        VRClientON=false;
+        myvrwin = 0;
+        //myclient = 0;
+        teraflyZoomInPOS = 0;
+        CollaborationCreatorPos = 0;
+        Resindex = 1;
 #endif
     }
 #ifdef __ALLOW_VR_FUNCS__
@@ -622,9 +624,9 @@ public:
 public slots:
     void CollaAddSeg(QString segInfo, int isBegin);
     void CollaDelSeg(QString segInfo, int isMany);
-    void CollaAddMarker(QString markerPOS);
-    void CollaAddManyMarkers(QString markersPOS);
-    void CollaDelMarker(QString markerPOS);
+    void CollaAddMarker(QString markerPOS, QString comment);
+    void CollaAddManyMarkers(QString markersPOS, QString comment);
+    void CollaDelMarkers(QString markersPOS);
     void CollaRetypeMarker(QString markerPos);
     void CollaRetypeSeg(QString segInfo,int type, int isMany);
     void CollaConnectSeg(QString segInfo);
@@ -633,8 +635,8 @@ public slots:
 
     void newThreadAddSeg(QString segInfo, int isBegin);
     void newThreadDelSeg(QString segInfo, int isMany);
-    void newThreadAddMarker(QString markerPOS);
-    void newThreadAddManyMarkers(QString markersPOS);
+    void newThreadAddMarker(QString markerPOS, QString comment);
+    void newThreadAddManyMarkers(QString markersPOS, QString comment);
     void newThreadDelMarker(QString markerPOS);
     void newThreadRetypeMarker(QString markerPos);
     void newThreadRetypeSeg(QString segInfo,int type,int isMany);

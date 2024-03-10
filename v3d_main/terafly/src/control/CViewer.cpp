@@ -67,7 +67,7 @@ int CViewer::newViewerOperationID = 0;
 //QMutex CViewer::mutex(QMutex::NonRecursive);
 
 void CViewer::show()
-{ 
+{
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
     PMain* pMain = PMain::getInstance();
@@ -130,8 +130,8 @@ void CViewer::show()
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
 
         // also reset undo/redo (which are referred to this viewer)
-//        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-//        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+        //        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
+        //        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
         PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         PAnoToolBar::instance()->buttonRedo->setEnabled(true);
 
@@ -144,7 +144,7 @@ void CViewer::show()
 
 
         // set fixed size that fills available screen space
-       // window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
+        // window3D->resize(qApp->desktop()->availableGeometry().width()-PMain::getInstance()->width(), PMain::getInstance()->height());
 
         // resize according to persistent settings
         window3D->resize(CSettings::instance()->getViewerWidth(), CSettings::instance()->getViewerWidth());
@@ -168,7 +168,7 @@ void CViewer::show()
 
         // if the previous explorer window exists
         if(prev)
-        {           
+        {
             // apply the same color map only if it differs from the previous one
             Renderer_gl2* prev_renderer = (Renderer_gl2*)(prev->view3DWidget->getRenderer());
             Renderer_gl2* curr_renderer = (Renderer_gl2*)(view3DWidget->getRenderer());
@@ -190,8 +190,8 @@ void CViewer::show()
                 }
             }
 
-//            if(changed_cmap)
-//                curr_renderer->applyColormapToImage();
+            //            if(changed_cmap)
+            //                curr_renderer->applyColormapToImage();
 
             //positioning the current 3D window exactly at the previous window position
             QPoint location = prev->pos();
@@ -224,9 +224,9 @@ void CViewer::show()
             syncWindows(prev->window3D, window3D);
 
             //storing annotations done in the previous view and loading annotations of the current view
-			prev->storeAnnotations();
-			prev->clearAnnotations();
-			this->loadAnnotations();
+            prev->storeAnnotations();
+            prev->clearAnnotations();
+            this->loadAnnotations();
         }
         //otherwise this is the lowest resolution window
         else
@@ -234,8 +234,8 @@ void CViewer::show()
             //registrating the current window as the first window of the multiresolution explorer windows chain
             CViewer::first = this;
 
-			// update annotation space
-			updateAnnotationSpace();
+            // update annotation space
+            updateAnnotationSpace();
 
             //centering the current 3D window and the plugin's window
             int screen_height = qApp->desktop()->availableGeometry().height();
@@ -243,7 +243,7 @@ void CViewer::show()
             int window_x = (screen_width - (window3D->width() + pMain->width()))/2;
             int window_y = (screen_height - window3D->height()) / 2;
             window3D->move(window_x, window_y);
-		}
+        }
 
         //registrating the current window as the last and current window of the multiresolution explorer windows chain
         CViewer::last = this;
@@ -284,9 +284,9 @@ void CViewer::show()
 
         //setting min, max and value of PMain GUI VOI's widgets
         /**/tf::debug(tf::LEV2, tf::strprintf("Vaa3D cut is set to V[%d,%d], H[%d,%d], D[%d,%d]",
-                                                 view3DWidget->yCut0(), view3DWidget->yCut1(),
-                                                 view3DWidget->xCut0(), view3DWidget->xCut1(),
-                                                 view3DWidget->zCut0(), view3DWidget->zCut1()).c_str(), __itm__current__function__);
+                                               view3DWidget->yCut0(), view3DWidget->yCut1(),
+                                               view3DWidget->xCut0(), view3DWidget->xCut1(),
+                                               view3DWidget->zCut0(), view3DWidget->zCut1()).c_str(), __itm__current__function__);
         pMain->V0_sbox->setMinimum(coord2global<int>(view3DWidget->yCut0(),     iim::vertical,  true,   -1, true, false, __itm__current__function__) +1);
         pMain->V0_sbox->setValue(pMain->V0_sbox->minimum());
         pMain->V1_sbox->setMaximum(coord2global<int>(view3DWidget->yCut1()+1,   iim::vertical,  true,   -1, true, false, __itm__current__function__));
@@ -300,9 +300,9 @@ void CViewer::show()
         pMain->D1_sbox->setMaximum(coord2global<int>(view3DWidget->zCut1()+1,   iim::depth,     true,   -1, true, false, __itm__current__function__));
         pMain->D1_sbox->setValue(pMain->D1_sbox->maximum());
         /**/tf::debug(tf::LEV2, tf::strprintf("sbox set to V[%d,%d], H[%d,%d], D[%d,%d]",
-                                                 pMain->V0_sbox->minimum(), pMain->V1_sbox->maximum(),
-                                                 pMain->H0_sbox->minimum(), pMain->H1_sbox->maximum(),
-                                                 pMain->D0_sbox->minimum(), pMain->D1_sbox->maximum()).c_str(), __itm__current__function__);
+                                               pMain->V0_sbox->minimum(), pMain->V1_sbox->maximum(),
+                                               pMain->H0_sbox->minimum(), pMain->H1_sbox->maximum(),
+                                               pMain->D0_sbox->minimum(), pMain->D1_sbox->maximum()).c_str(), __itm__current__function__);
 
         if(pMain->frameCoord->isEnabled())
         {
@@ -337,9 +337,9 @@ void CViewer::show()
 
         //changing window flags (disabling minimize/maximize buttons)
         // ---- Alessandro 2013-04-22 fixed: this causes (somehow) window3D not to respond correctly to the move() method
-//        window3D->setWindowFlags(Qt::Tool
-//                                 | Qt::WindowTitleHint
-//                                 | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint);
+        //        window3D->setWindowFlags(Qt::Tool
+        //                                 | Qt::WindowTitleHint
+        //                                 | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowCloseButtonHint);
 
         this->window3D->raise();
         this->window3D->activateWindow();
@@ -381,7 +381,7 @@ void CViewer::show()
     }
     catch(RuntimeException &ex)
     {
-		QMessageBox::critical(pMain,QObject::tr("Error"), (std::string(ex.what())+"\nsource: " + ex.getSource()).c_str(),QObject::tr("Ok"));
+        QMessageBox::critical(pMain,QObject::tr("Error"), (std::string(ex.what())+"\nsource: " + ex.getSource()).c_str(),QObject::tr("Ok"));
         pMain->closeVolume();
     }
     catch(const char* error)
@@ -402,11 +402,11 @@ void CViewer::show()
 }
 
 CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgData, int _volV0, int _volV1,
-                                 int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID /* = -1 */): QWidget()
+                 int _volH0, int _volH1, int _volD0, int _volD1, int _volT0, int _volT1, int _nchannels, CViewer *_prev, int _slidingViewerBlockID /* = -1 */): QWidget()
 {
     /**/tf::debug(tf::LEV1, strprintf("_resIndex = %d, _V0 = %d, _V1 = %d, _H0 = %d, _H1 = %d, _D0 = %d, _D1 = %d, _T0 = %d, _T1 = %d, _nchannels = %d",
-                                        _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels).c_str(), __itm__current__function__);
-	qDebug() << "SYL TEST CViewer::CViewer";
+                                       _resIndex, _volV0, _volV1, _volH0, _volH1, _volD0, _volD1, _volT0, _volT1, _nchannels).c_str(), __itm__current__function__);
+    qDebug() << "SYL TEST CViewer::CViewer";
     //initializations
     ID = nTotalInstances++;
     resetZoomHistory();
@@ -438,9 +438,9 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     sprintf(ctitle, "ID(%d), Res{%d}, Vol{[%d,%d) [%d,%d) [%d,%d) [%d,%d]}", ID, volResIndex, volH0, volH1, volV0, volV1, volD0, volD1, volT0, volT1);
     this->titleShort = ctitle;
     V0_sbox_min = V0_sbox_val = V1_sbox_max = V1_sbox_val =
-    H0_sbox_min = H0_sbox_val = H1_sbox_max = H1_sbox_val =
-    D0_sbox_min = D0_sbox_val = D1_sbox_max = D1_sbox_val =
-    T0_sbox_min = T0_sbox_val = T1_sbox_max = T1_sbox_val = -1;
+        H0_sbox_min = H0_sbox_val = H1_sbox_max = H1_sbox_val =
+        D0_sbox_min = D0_sbox_val = D1_sbox_max = D1_sbox_val =
+        T0_sbox_min = T0_sbox_val = T1_sbox_max = T1_sbox_val = -1;
     slidingViewerBlockID = _slidingViewerBlockID;
     forceZoomIn = false;
     insituZoomOut = PMain::getInstance()->zoomOutMethod->currentIndex()==0?false:true;
@@ -450,8 +450,8 @@ CViewer::CViewer(V3DPluginCallback2 *_V3D_env, int _resIndex, tf::uint8 *_imgDat
     insituZoomOut_z = 0;
     isTranslate = false;
     toRetrieveData = false;
-	volumeCutSbAdjusted = false;
-	xMinAdjusted = false, xMaxAdjusted = false, yMinAdjusted = false, yMaxAdjusted = false, zMinAdjusted = false, zMaxAdjusted = false;
+    volumeCutSbAdjusted = false;
+    xMinAdjusted = false, xMaxAdjusted = false, yMinAdjusted = false, yMaxAdjusted = false, zMinAdjusted = false, zMaxAdjusted = false;
 
     try
     {
@@ -520,7 +520,7 @@ CViewer::~CViewer()
     // CLOSE 3D window (solution #1)
     //QMessageBox::information(0, "info", strprintf("calling close3Dwindow").c_str());
     //if(!CImport::instance()->is5D())
-        //V3D_env->close3DWindow(window); //this causes crash on 5D data when scrolling time slider, but is OK in all the other cases
+    //V3D_env->close3DWindow(window); //this causes crash on 5D data when scrolling time slider, but is OK in all the other cases
 
 
     // CLOSE 3D window (solution #2)
@@ -576,22 +576,22 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         //---- Alessandro 2013-04-25: triggering zoom-in is now Vaa3D responsibility
         //if (object == view3DWidget && event->type() == QEvent::Wheel)
         {
-//            if(next                                                                         &&  //the next resolution exists
-//               isZoomDerivativePos()                                                        &&  //zoom derivative is positive
-//               view3DWidget->zoom() > 130 -PMain::instance()->zoomSensitivity->value())         //zoom-in threshold reached
-//            {
-//                //printf("Switching to the next view zoom={%d, %d, %d, %d}\n", zoomHistory[0], zoomHistory[1], zoomHistory[2], zoomHistory[3]);
-//                setActive(false);
-//                resetZoomHistory();
-//                next->restoreViewerFrom(this);
-//                event->ignore();
-//                return true;
-//            }
-//            else
+            //            if(next                                                                         &&  //the next resolution exists
+            //               isZoomDerivativePos()                                                        &&  //zoom derivative is positive
+            //               view3DWidget->zoom() > 130 -PMain::instance()->zoomSensitivity->value())         //zoom-in threshold reached
+            //            {
+            //                //printf("Switching to the next view zoom={%d, %d, %d, %d}\n", zoomHistory[0], zoomHistory[1], zoomHistory[2], zoomHistory[3]);
+            //                setActive(false);
+            //                resetZoomHistory();
+            //                next->restoreViewerFrom(this);
+            //                event->ignore();
+            //                return true;
+            //            }
+            //            else
             if(prev                                                                    &&  //the previous resolution exists
-               !toBeClosed                                                             &&  //the current resolution does not have to be closed
-               isZoomDerivativeNeg()                                                   &&  //zoom derivative is negative
-               view3DWidget->zoom() < PMain::getInstance()->zoomOutSens->value())          //zoom-out threshold reached
+                !toBeClosed                                                             &&  //the current resolution does not have to be closed
+                isZoomDerivativeNeg()                                                   &&  //zoom derivative is negative
+                view3DWidget->zoom() < PMain::getInstance()->zoomOutSens->value())          //zoom-out threshold reached
             {
                 // if window is not ready for "switch view" events, reset zoom-out and ignore this event
                 if(!_isReady)
@@ -656,12 +656,12 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 bool addMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_addthismarker;
 
                 if((mode == Renderer::smMarkerCreate1 && addMarker) ||
-                   (mode == Renderer::smMarkerCreate2 && addMarker) ||
-                   (mode == Renderer::smMarkerCreate3 && addMarker) ||
+                    (mode == Renderer::smMarkerCreate2 && addMarker) ||
+                    (mode == Renderer::smMarkerCreate3 && addMarker) ||
                     mode == Renderer::smMarkerCreate1Curve)
                 {
                     QMessageBox::information(0, "This feature has been disabled", "This feature has been disabled by the developers of TeraFly.\n\n"
-                                             "Please use the TeraFly's annotation toolbar to perform this action.");
+                                                                                  "Please use the TeraFly's annotation toolbar to perform this action.");
                     PAnoToolBar::instance()->buttonMarkerCreateChecked(false);
                     PAnoToolBar::instance()->buttonMarkerCreate2Checked(false);
                 }
@@ -669,25 +669,25 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 event->ignore();
                 return true;
             }
-			else if (mouseEvt->button() == Qt::LeftButton)
-			{
-				view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
-				QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;				
-				this->selectedMarkerList.clear();
-				this->selectedLocalMarkerList.clear();
-				for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
-				{
-					if (markerIt->selected)
-					{
-						this->selectedLocalMarkerList.push_back(*markerIt);
-						ImageMarker currMarker = *markerIt;
-						currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
-						currMarker.y = coord2global<float>(markerIt->y, iim::vertical,   false, -1, false, false, __itm__current__function__);
-						currMarker.z = coord2global<float>(markerIt->z, iim::depth,      false, -1, false, false, __itm__current__function__);
-						this->selectedMarkerList.push_back(currMarker);
-					}
-				}
-			}
+            else if (mouseEvt->button() == Qt::LeftButton)
+            {
+                view3DWidget->getRenderer()->selectObj(mouseEvt->x(), mouseEvt->y(), false);
+                QList<ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+                this->selectedMarkerList.clear();
+                this->selectedLocalMarkerList.clear();
+                for (QList<ImageMarker>::iterator markerIt = imageMarkers.begin(); markerIt != imageMarkers.end(); ++markerIt)
+                {
+                    if (markerIt->selected)
+                    {
+                        this->selectedLocalMarkerList.push_back(*markerIt);
+                        ImageMarker currMarker = *markerIt;
+                        currMarker.x = coord2global<float>(markerIt->x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+                        currMarker.y = coord2global<float>(markerIt->y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+                        currMarker.z = coord2global<float>(markerIt->z, iim::depth,      false, -1, false, false, __itm__current__function__);
+                        this->selectedMarkerList.push_back(currMarker);
+                    }
+                }
+            }
 
             return false;
         }
@@ -709,19 +709,19 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         if (object == view3DWidget && event->type() == QEvent::MouseButtonDblClick)
         {
 
-//            if(current == this)
-//                qDebug()<<"current == this!";
-//            else if(current == prev)
-//                qDebug()<<"current == prev!";
-//            else if(current == next)
-//                qDebug()<<"current == next!";
-//            else
-//                qDebug()<<"current ?";
+            //            if(current == this)
+            //                qDebug()<<"current == this!";
+            //            else if(current == prev)
+            //                qDebug()<<"current == prev!";
+            //            else if(current == next)
+            //                qDebug()<<"current == next!";
+            //            else
+            //                qDebug()<<"current ?";
 
             if(PMain::getInstance()->isPRactive())
             {
                 QMessageBox::information(this->window3D, "Warning", "TeraFly is running in \"Proofreading\" mode. All TeraFly's' navigation features are disabled. "
-                                         "Please terminate the \"Proofreading\" mode and try again.");
+                                                                    "Please terminate the \"Proofreading\" mode and try again.");
                 return true;
             }
 
@@ -729,8 +729,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             has_double_clicked = true;
 
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
-			
-			myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+
+            myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
 
             if (thisRenderer->listNeuronTree.isEmpty()) // If no SWC presenting, go on the normal route.
             {
@@ -756,15 +756,15 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             // --------- If there is an SWC presenting, search the nearest node to zoom in when double clicking, MK, April, 2018 ---------
             else
             {
-				// ----------------- The following is intended to solve erroneous zoomed-in block when mouse is clicked outside the image cube. ---------------------------
-				// ----------------- The original approach has been disabled. (Ln 739 - Ln 775), only used when double-click event is far from the nearest SWC node ------- 
-				// ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
-				NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
-				double dist;
-				V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
-				cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
-				cout << " === distance: " << dist << endl;
-				// --------------------------------------------------------------------------------------------------------------------------------------------------------
+                // ----------------- The following is intended to solve erroneous zoomed-in block when mouse is clicked outside the image cube. ---------------------------
+                // ----------------- The original approach has been disabled. (Ln 739 - Ln 775), only used when double-click event is far from the nearest SWC node -------
+                // ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
+                NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
+                double dist;
+                V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
+                cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
+                cout << " === distance: " << dist << endl;
+                // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
                 /*
                 {XYZ localMouse = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
@@ -786,8 +786,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                     {
                         //cout << "x:" << it->x << " " << localMouse.x << "   y:" << it->y << " " << localMouse.y << endl;
                         //cout << "global SWC coodrs: " << globalSWCIt->x << " " << globalSWCIt->y << endl << endl;
-                        
-						distSqr = currDistSqr;
+
+                        distSqr = currDistSqr;
                         convertedSWC.x = it->x;
                         convertedSWC.y = it->y;
                         convertedSWC.z = it->z;
@@ -799,17 +799,17 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                     ++globalSWCIt;
                 }
                 cout << endl << "  SWC node examination done." << endl;
-				cout << " === original mouse event x: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
+                cout << " === original mouse event x: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
                 cout << " === local mouse coords x:" << localMouse.x << " y:" << localMouse.y << endl;
                 cout << " === selected SWC node x:" << selectedSWCX << " y:" << selectedSWCY << endl;
-				cout << " === converted SWC node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
+                cout << " === converted SWC node x:" << convertedSWC.x << " y:" << convertedSWC.y << endl;
                 cout << " === nearest distance to mouse click: " << distSqr << endl;
 }*/
-		
+
                 if (dist > 100)
                 {
                     cout << "out of nearest SWC search range" << endl;
-					XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+                    XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
                     if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                     {
                         float xsign = point.x - (volH1-volH0)/2;
@@ -826,18 +826,18 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                                   point.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                                   volResIndex, volT0, volT1);
                     }
-					else
-					{
-						//cout << point.x << " " << point.y << " " << point.z << endl;
-						newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
-					}
+                    else
+                    {
+                        //cout << point.x << " " << point.y << " " << point.z << endl;
+                        newViewer(point.x, point.y, point.z, volResIndex + 1, volT0, volT1);
+                    }
                 }
                 else
                 {
                     cout << "using nearest SWC node:" << endl;
                     //cout << "  ====> " << convertedSWC.x << " " << convertedSWC.y << " " << convertedSWC.z << endl << endl;
                     XYZ loc;
-					loc.x = treePtr->listNeuron.at(index).x; loc.y = treePtr->listNeuron.at(index).y; loc.z = treePtr->listNeuron.at(index).z;
+                    loc.x = treePtr->listNeuron.at(index).x; loc.y = treePtr->listNeuron.at(index).y; loc.z = treePtr->listNeuron.at(index).z;
                     if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                     {
                         float xsign = loc.x - (volH1-volH0)/2;
@@ -854,7 +854,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                                   loc.z + zsign*(volD1-volD0)*(100-CSettings::instance()->getTraslZ())/100.0f,
                                   volResIndex, volT0, volT1);
                     }
-					else newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
+                    else newViewer(loc.x, loc.y, loc.z, volResIndex + 1, volT0, volT1);
                 }
             }
             // --------- END of [If there is an SWC presenting, search the nearest node to zoom in when double clicking] ---------
@@ -878,8 +878,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         Time slider events are intercepted to navigate through the entire time range
         ***************************************************************************/
         if (object == window3D->timeSlider &&                       // event from Vaa3D time slider
-                ( event->type() == QEvent::MouseButtonRelease ||    // mouse release event
-                  event->type() == QEvent::Wheel))                  // mouse scroll event
+            ( event->type() == QEvent::MouseButtonRelease ||    // mouse release event
+             event->type() == QEvent::Wheel))                  // mouse scroll event
         {
             Vaa3D_changeTSlider(window3D->timeSlider->value(), true);
             return false;
@@ -905,8 +905,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         else if(object == window3D && (event->type() == QEvent::Move || event->type() == QEvent::Resize))
         {
-           alignToRight(PMain::getInstance(), event);
-           return true;
+            alignToRight(PMain::getInstance(), event);
+            return true;
         }
 
         /************* INTERCEPTING WINDOW STATE CHANGES EVENTS *******************
@@ -932,21 +932,21 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
 * Receive data (and metadata) from <CVolume> throughout the loading process
 **********************************************************************************/
 void CViewer::receiveData(
-        tf::uint8* data,                               // data (any dimension)
-        integer_array data_s,                           // data start coordinates along X, Y, Z, C, t
-        integer_array data_c,                           // data count along X, Y, Z, C, t
-        QWidget *dest,                                  // address of the listener
-        bool finished,                                  // whether the loading operation is terminated
-        tf::RuntimeException* ex /* = 0*/,             // exception (optional)
-        qint64 elapsed_time       /* = 0 */,            // elapsed time (optional)
-        QString op_dsc            /* = ""*/,            // operation descriptor (optional)
-        int step                  /* = 0 */)            // step number (optional)
+    tf::uint8* data,                               // data (any dimension)
+    integer_array data_s,                           // data start coordinates along X, Y, Z, C, t
+    integer_array data_c,                           // data count along X, Y, Z, C, t
+    QWidget *dest,                                  // address of the listener
+    bool finished,                                  // whether the loading operation is terminated
+    tf::RuntimeException* ex /* = 0*/,             // exception (optional)
+    qint64 elapsed_time       /* = 0 */,            // elapsed time (optional)
+    QString op_dsc            /* = ""*/,            // operation descriptor (optional)
+    int step                  /* = 0 */)            // step number (optional)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, data_s = {%s}, data_c = {%s}, finished = %s",
-                                        titleShort.c_str(),
-                                        !data_s.empty() ? strprintf("%d,%d,%d,%d,%d", data_s[0], data_s[1], data_s[2], data_s[3], data_s[4]).c_str() : "",
-                                        !data_c.empty() ? strprintf("%d,%d,%d,%d,%d", data_c[0], data_c[1], data_c[2], data_c[3], data_c[4]).c_str() : "",
-                                        finished ? "true" : "false").c_str(), __itm__current__function__);
+                                       titleShort.c_str(),
+                                       !data_s.empty() ? strprintf("%d,%d,%d,%d,%d", data_s[0], data_s[1], data_s[2], data_s[3], data_s[4]).c_str() : "",
+                                       !data_c.empty() ? strprintf("%d,%d,%d,%d,%d", data_c[0], data_c[1], data_c[2], data_c[3], data_c[4]).c_str() : "",
+                                       finished ? "true" : "false").c_str(), __itm__current__function__);
 
     char message[1000];
     CVolume* cVolume = CVolume::instance();
@@ -974,7 +974,7 @@ void CViewer::receiveData(
                 uint32 new_img_offset[5] = {static_cast<uint32>(0),                  static_cast<uint32>(0),                  static_cast<uint32>(0),                  static_cast<uint32>(0),          static_cast<uint32>(0)               };
                 uint32 new_img_count[5]  = {static_cast<uint32>(data_c[0]),          static_cast<uint32>(data_c[1]),          static_cast<uint32>(data_c[2]),          static_cast<uint32>(data_c[3]),  static_cast<uint32>(data_c[4])       };
                 CImageUtils::upscaleVOI(data, new_img_dims, new_img_offset, new_img_count,
-                        view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset);
+                                        view3DWidget->getiDrawExternalParameter()->image4d->getRawData(), img_dims, img_offset);
                 qint64 elapsedTime = timer.elapsed();
 
                 // release memory
@@ -982,8 +982,8 @@ void CViewer::receiveData(
 
                 // update log
                 sprintf(message, "Streaming %d/%d: Copied block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T=[%d, %d]  to resolution %d",
-                                  step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiV0(), cVolume->getVoiV1(),
-                                  cVolume->getVoiD0(), cVolume->getVoiD1(), cVolume->getVoiT0(), cVolume->getVoiT1(), cVolume->getVoiResIndex());
+                        step, cVolume->getStreamingSteps(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiV0(), cVolume->getVoiV1(),
+                        cVolume->getVoiD0(), cVolume->getVoiD1(), cVolume->getVoiT0(), cVolume->getVoiT1(), cVolume->getVoiResIndex());
                 PLog::instance()->appendOperation(new NewViewerOperation(message, tf::CPU, elapsedTime));
             }
 
@@ -1053,15 +1053,15 @@ void CViewer::receiveData(
                 // refresh annotation toolbar
                 PAnoToolBar::instance()->refreshTools();
 
-				// back to VR, if desired.
-				if (PMain::getInstance()->resumeVR)
-				{
-					PMain::getInstance()->resumeVR = false;
+                // back to VR, if desired.
+                if (PMain::getInstance()->resumeVR)
+                {
+                    PMain::getInstance()->resumeVR = false;
                     if(PMain::getInstance()->Communicator)
                         QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
                     else
                         QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
-				}
+                }
             }
         }
         catch(RuntimeException &ex)
@@ -1072,7 +1072,7 @@ void CViewer::receiveData(
         }
     }
 
-//    QMessageBox::information(0, "Stop", "Wait...");
+    //    QMessageBox::information(0, "Stop", "Wait...");
     /**/tf::debug(tf::LEV3, "method terminated", __itm__current__function__);
 }
 
@@ -1083,20 +1083,20 @@ void CViewer::receiveData(
 ***********************************************************************************/
 void
 CViewer::newViewer(int x, int y, int z,             //can be either the VOI's center (default) or the VOI's ending point (see x0,y0,z0)
-    int resolution,                                 //resolution index of the view requested
-    int t0, int t1,                                 //time frames selection
-    int dx/*=-1*/, int dy/*=-1*/, int dz/*=-1*/,    //VOI [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
-    int x0/*=-1*/, int y0/*=-1*/, int z0/*=-1*/,    //VOI [x0, x), [y0, y), [z0, z), [t0, t1]
-    bool auto_crop /* = true */,                    //whether to crop the VOI to the max dims
-    bool scale_coords /* = true */,                 //whether to scale VOI coords to the target res
-    int sliding_viewer_block_ID /* = -1 */)         //block ID in "Sliding viewer" mode
+                   int resolution,                                 //resolution index of the view requested
+                   int t0, int t1,                                 //time frames selection
+                   int dx/*=-1*/, int dy/*=-1*/, int dz/*=-1*/,    //VOI [x-dx,x+dx), [y-dy,y+dy), [z-dz,z+dz), [t0, t1]
+                   int x0/*=-1*/, int y0/*=-1*/, int z0/*=-1*/,    //VOI [x0, x), [y0, y), [z0, z), [t0, t1]
+                   bool auto_crop /* = true */,                    //whether to crop the VOI to the max dims
+                   bool scale_coords /* = true */,                 //whether to scale VOI coords to the target res
+                   int sliding_viewer_block_ID /* = -1 */)         //block ID in "Sliding viewer" mode
 
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x = %d, y = %d, z = %d, res = %d, dx = %d, dy = %d, dz = %d, x0 = %d, y0 = %d, z0 = %d, t0 = %d, t1 = %d, auto_crop = %s, scale_coords = %s, sliding_viewer_block_ID = %d",
-                                        titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
-	
-//    CViewer::mutex.lock();//add by huanglei for multiply UI
-	qDebug() << "SYL TEST Viewer::newViewer";
+                                       titleShort.c_str(),  x, y, z, resolution, dx, dy, dz, x0, y0, z0, t0, t1, auto_crop ? "true" : "false", scale_coords ? "true" : "false", sliding_viewer_block_ID).c_str(), __itm__current__function__);
+
+    //    CViewer::mutex.lock();//add by huanglei for multiply UI
+    qDebug() << "SYL TEST Viewer::newViewer";
     qDebug()<<"call newViewer ... ... ";
 
     // check precondition #1: active window
@@ -1213,24 +1213,24 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                 z  = round(z  - marginz);
                 z0 = round(z0 + marginz);
 
-//                if(x - x0 >= pMain.Hdim_sbox->value())
-//                {
-//                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
-//                    x  = round(x  - margin);
-//                    x0 = round(x0 + margin);
-//                }
-//                if(y - y0 >= pMain.Vdim_sbox->value())
-//                {
-//                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
-//                    y  = round(y  - margin);
-//                    y0 = round(y0 + margin);
-//                }
-//                if(z - z0 > pMain.Ddim_sbox->value())
-//                {
-//                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
-//                    z  = round(z  - margin);
-//                    z0 = round(z0 + margin);
-//                }
+                //                if(x - x0 >= pMain.Hdim_sbox->value())
+                //                {
+                //                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
+                //                    x  = round(x  - margin);
+                //                    x0 = round(x0 + margin);
+                //                }
+                //                if(y - y0 >= pMain.Vdim_sbox->value())
+                //                {
+                //                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
+                //                    y  = round(y  - margin);
+                //                    y0 = round(y0 + margin);
+                //                }
+                //                if(z - z0 > pMain.Ddim_sbox->value())
+                //                {
+                //                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
+                //                    z  = round(z  - margin);
+                //                    z0 = round(z0 + margin);
+                //                }
                 t0 = std::max(0, std::min(t0,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 if(CImport::instance()->is5D() && (t1-t0+1 > pMain.Tdim_sbox->value()))
@@ -1247,10 +1247,10 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-			if (dx != -1 && dy != -1 && dz != -1)
-				cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
-			else
-				cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
+            if (dx != -1 && dy != -1 && dz != -1)
+                cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
+            else
+                cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
         }
         catch(RuntimeException &ex)
         {
@@ -1308,15 +1308,15 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                                        cVolume->getVoiD1()-cVolume->getVoiD0(),
                                        voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
             std::string message = tf::strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d] loaded from view %s, black-filled region is "
-                                   "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
-                    rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
-                    voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
+                                                "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
+                                                rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
+                                                voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
             PLog::instance()->appendOperation(new NewViewerOperation(message, tf::CPU, timer.elapsed()));
 
             // create new window
             this->next = new CViewer(V3D_env, resolution, lowresData,
-                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
-                                             cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+                                     cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+                                     cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
             // update CVolume with the request of the actual missing VOI along t and the current selected frame
             cVolume->setVoiT(voiT0m, voiT1m, window3D->timeSlider->value());
@@ -1328,10 +1328,10 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             cVolume->setSource(next);
             connect(CVolume::instance(), SIGNAL(sendData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), next, SLOT(receiveData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
 
-// lock updateGraphicsInProgress mutex on this thread (i.e. the GUI thread or main queue event thread)
-/**/tf::debug(tf::LEV3, strprintf("Waiting for updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
-/**/ updateGraphicsInProgress.lock();
-/**/tf::debug(tf::LEV3, strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
+            // lock updateGraphicsInProgress mutex on this thread (i.e. the GUI thread or main queue event thread)
+            /**/tf::debug(tf::LEV3, strprintf("Waiting for updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
+            /**/ updateGraphicsInProgress.lock();
+            /**/tf::debug(tf::LEV3, strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
 
             // update status bar message
             pMain.statusBar->showMessage("Loading image data...");
@@ -1349,9 +1349,9 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             if(resolution == volResIndex)
                 this->close();
 
-// unlock updateGraphicsInProgress mutex
-/**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
-/**/ updateGraphicsInProgress.unlock();
+            // unlock updateGraphicsInProgress mutex
+            /**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
+            /**/ updateGraphicsInProgress.unlock();
 
 
         }
@@ -1363,11 +1363,11 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 
             // load data and instance new viewer
             this->next = new CViewer(V3D_env, resolution, CVolume::instance()->loadData(),
-                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
-                                             cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+                                     cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+                                     cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
             //
-            toRetrieveData = true; 
+            toRetrieveData = true;
 
             // show new viewer
             next->show();
@@ -1388,7 +1388,7 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
         PMain::getInstance()->resetGUI();
     }
-//    CViewer::mutex.unlock();
+    //    CViewer::mutex.unlock();
 }
 
 //safely close this viewer
@@ -1427,14 +1427,14 @@ tf::uint8* CViewer::getVOI(int x0, int x1,              // VOI [x0, x1) in the l
                            int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
                            int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
                            int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
-throw (RuntimeException)
+    throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, xDim = %d, yDim = %d, zDim = %d",
-                                        titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp).c_str(), __itm__current__function__);
+                                       titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp).c_str(), __itm__current__function__);
 
 
     printf("\n getVOI: title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, xDim = %d, yDim = %d, zDim = %d",
-                                            titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp);
+           titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, xDimInterp, yDimInterp, zDimInterp);
 
     // allocate image data and initializing to zero (black)
     /**/tf::debug(tf::LEV3, "Allocate image data", __itm__current__function__);
@@ -1466,7 +1466,7 @@ throw (RuntimeException)
     int t0a = TRectIntersect.left();
     int t1a = TRectIntersect.right();
     /**/tf::debug(tf::LEV3, strprintf("title = %s, available voi is [%d, %d) [%d, %d) [%d, %d) [%d, %d]",
-                                        titleShort.c_str(), x0a, x1a, y0a, y1a, z0a, z1a, t0a, t1a).c_str(), __itm__current__function__);
+                                       titleShort.c_str(), x0a, x1a, y0a, y1a, z0a, z1a, t0a, t1a).c_str(), __itm__current__function__);
 
 
 
@@ -1499,7 +1499,7 @@ throw (RuntimeException)
         {
             // check for intersection contained in the VOI (if it does, optimized VOI loading is disabled)
             if(t0 == t0a &&
-               t1 == t1a)        // missing piece is along X,Y,Z
+                t1 == t1a)        // missing piece is along X,Y,Z
             {
                 t0m = t0;
                 t1m = t1;
@@ -1541,9 +1541,9 @@ throw (RuntimeException)
     if( tf::absint(xDimInterp - (x1-x0)*scalx) < scalx &&
         tf::absint(yDimInterp - (y1-y0)*scaly) < scaly &&
         tf::absint(zDimInterp - (z1-z0)*scalz) < scalz)
-//    if( ( (xDimInterp % (x1-x0) <= 1) || (xDimInterp % (x1-x0+1) <= 1) || (xDimInterp % (x1-x0-1) <= 1)) &&
-//        ( (yDimInterp % (y1-y0) <= 1) || (yDimInterp % (y1-y0+1) <= 1) || (yDimInterp % (y1-y0-1) <= 1)) &&
-//        ( (zDimInterp % (z1-z0) <= 1) || (zDimInterp % (z1-z0+1) <= 1) || (zDimInterp % (z1-z0-1) <= 1)))
+    //    if( ( (xDimInterp % (x1-x0) <= 1) || (xDimInterp % (x1-x0+1) <= 1) || (xDimInterp % (x1-x0-1) <= 1)) &&
+    //        ( (yDimInterp % (y1-y0) <= 1) || (yDimInterp % (y1-y0+1) <= 1) || (yDimInterp % (y1-y0-1) <= 1)) &&
+    //        ( (zDimInterp % (z1-z0) <= 1) || (zDimInterp % (z1-z0+1) <= 1) || (zDimInterp % (z1-z0-1) <= 1)))
     {
         //checking for uniform scaling along the three axes
         if(scalx != scaly || scaly != scalz || scalx != scalz)
@@ -1577,17 +1577,17 @@ throw (RuntimeException)
 * array. Data is taken from the currently displayed image.
 ***********************************************************************************/
 tf::uint8*
-    CViewer::getMIP(int x0, int x1,                         // VOI [x0, x1) in the local reference sys
-                            int y0, int y1,                         // VOI [y0, y1) in the local reference sys
-                            int z0, int z1,                         // VOI [z0, z1) in the local reference sys
-                            int t0 /* = -1 */, int t1 /* = -1 */,   // VOI [t0, t1] in the local reference sys
-                            tf::direction dir /* = z */,
-                            bool to_BGRA /* = false */,             //true if mip data must be stored into BGRA format
-                            tf::uint8 alpha /* = 255 */)           //alpha transparency used if to_BGRA is true
-throw (tf::RuntimeException)
+CViewer::getMIP(int x0, int x1,                         // VOI [x0, x1) in the local reference sys
+                int y0, int y1,                         // VOI [y0, y1) in the local reference sys
+                int z0, int z1,                         // VOI [z0, z1) in the local reference sys
+                int t0 /* = -1 */, int t1 /* = -1 */,   // VOI [t0, t1] in the local reference sys
+                tf::direction dir /* = z */,
+                bool to_BGRA /* = false */,             //true if mip data must be stored into BGRA format
+                tf::uint8 alpha /* = 255 */)           //alpha transparency used if to_BGRA is true
+    throw (tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, x0 = %d, x1 = %d, y0 = %d, y1 = %d, z0 = %d, z1 = %d, t0 = %d, t1 = %d, dir = %d, to_BGRA = %s, alpha = %d",
-                                        titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, dir, to_BGRA ? "true" : "false", alpha).c_str(), __itm__current__function__);
+                                       titleShort.c_str(), x0, x1, y0, y1, z0, z1, t0, t1, dir, to_BGRA ? "true" : "false", alpha).c_str(), __itm__current__function__);
 
     if(t0 == -1)
         t0 = volT0;
@@ -1635,8 +1635,8 @@ void CViewer::saveSubvolSpinboxState()
     H1_sbox_max = pMain.H1_sbox->maximum();
     D0_sbox_min = pMain.D0_sbox->minimum();
     D1_sbox_max = pMain.D1_sbox->maximum();
-//    T0_sbox_min = pMain.T0_sbox->minimum();
-//    T1_sbox_max = pMain.T1_sbox->maximum();
+    //    T0_sbox_min = pMain.T0_sbox->minimum();
+    //    T1_sbox_max = pMain.T1_sbox->maximum();
     V0_sbox_val = pMain.V0_sbox->value();
     V1_sbox_val = pMain.V1_sbox->value();
     H0_sbox_val = pMain.H0_sbox->value();
@@ -1651,7 +1651,7 @@ void CViewer::saveSubvolSpinboxState()
 }
 
 void CViewer::restoreSubvolSpinboxState()
-{  
+{
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
     PMain& pMain = *(PMain::getInstance());
@@ -1661,8 +1661,8 @@ void CViewer::restoreSubvolSpinboxState()
     pMain.H1_sbox->setMaximum(H1_sbox_max);
     pMain.D0_sbox->setMinimum(D0_sbox_min);
     pMain.D1_sbox->setMaximum(D1_sbox_max);
-//    pMain.T0_sbox->setMinimum(T0_sbox_min);
-//    pMain.T1_sbox->setMaximum(T1_sbox_max);
+    //    pMain.T0_sbox->setMinimum(T0_sbox_min);
+    //    pMain.T1_sbox->setMaximum(T1_sbox_max);
     pMain.V0_sbox->setValue(V0_sbox_val);
     pMain.V1_sbox->setValue(V1_sbox_val);
     pMain.H0_sbox->setValue(H0_sbox_val);
@@ -1683,10 +1683,10 @@ void CViewer::storeAnnotations() throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-	// MK, June, 2018, Restore neuron display color if highlighting subtree has been triggered
-	myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
-	if (thisRenderer->pressedShowSubTree) thisRenderer->escPressed_subtree();
-	//////////////////////////////////////////////////////////////////////////////////////////
+    // MK, June, 2018, Restore neuron display color if highlighting subtree has been triggered
+    myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
+    if (thisRenderer->pressedShowSubTree) thisRenderer->escPressed_subtree();
+    //////////////////////////////////////////////////////////////////////////////////////////
 
     QElapsedTimer timer;
 
@@ -1700,7 +1700,7 @@ void CViewer::storeAnnotations() throw (RuntimeException)
 
     // begin new macro group of AnnotationOperation
     //if(triViewWidget->getImageData()->listLandmarks.empty() == false || V3D_env->getSWC(this->window).listNeuron.empty() == false)
-        tf::AnnotationOperation::newGroup();
+    tf::AnnotationOperation::newGroup();
 
     /**********************************************************************************
     * MARKERS
@@ -1709,25 +1709,25 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("triViewWidget->getImageData()->listLandmarks.size() = %d", triViewWidget->getImageData()->listLandmarks.size()).c_str(), __itm__current__function__);
     QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
     //if(!markers.empty())  // 2017-10-05. Alessandro. @FIXED: markers set should be saved also when it's empty to deal with the special case when all markers in this VOI have been deleted
-    {       
+    {
         // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
         // load/store annotation VOIs are now the same (see fix of 2014-11-17).
         // @fixed by Alessandro on 2014-07-21: excluding hidden markers from store operation
         timer.start();
-//        QList<LocationSimple>::iterator it = markers.begin();
-//        while (it != markers.end())
-//        {
-//            if (is_outside((*it).x, (*it).y, (*it).z))
-//            {
-//                #ifdef terafly_enable_debug_annotations
-//                tf::debug(tf::LEV3, strprintf("(%.0f, %.0f, %.0f) excluded from store operation because it is a hidden marker", it->x, it->y, it->z).c_str(), 0, true);
-//                #endif
-//                it = markers.erase(it);
-//            }
-//            else
-//                ++it;
-//        }
-//        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: exclude hidden landmarks, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+        //        QList<LocationSimple>::iterator it = markers.begin();
+        //        while (it != markers.end())
+        //        {
+        //            if (is_outside((*it).x, (*it).y, (*it).z))
+        //            {
+        //                #ifdef terafly_enable_debug_annotations
+        //                tf::debug(tf::LEV3, strprintf("(%.0f, %.0f, %.0f) excluded from store operation because it is a hidden marker", it->x, it->y, it->z).c_str(), 0, true);
+        //                #endif
+        //                it = markers.erase(it);
+        //            }
+        //            else
+        //                ++it;
+        //        }
+        //        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: exclude hidden landmarks, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
 
         //converting local coordinates into global coordinates
         timer.restart();
@@ -1797,6 +1797,50 @@ void CViewer::storeAnnotations() throw (RuntimeException)
     }
 }
 
+void CViewer::storeMarkers() throw (RuntimeException){
+    QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
+    //if(!markers.empty())  // 2017-10-05. Alessandro. @FIXED: markers set should be saved also when it's empty to deal with the special case when all markers in this VOI have been deleted
+    {
+        // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
+        // load/store annotation VOIs are now the same (see fix of 2014-11-17).
+        // @fixed by Alessandro on 2014-07-21: excluding hidden markers from store operation
+        QElapsedTimer timer;
+        interval_t x_range(anoH0, anoH1);
+        interval_t y_range(anoV0, anoV1);
+        interval_t z_range(anoD0, anoD1);
+        timer.start();
+        //        QList<LocationSimple>::iterator it = markers.begin();
+        //        while (it != markers.end())
+        //        {
+        //            if (is_outside((*it).x, (*it).y, (*it).z))
+        //            {
+        //                #ifdef terafly_enable_debug_annotations
+        //                tf::debug(tf::LEV3, strprintf("(%.0f, %.0f, %.0f) excluded from store operation because it is a hidden marker", it->x, it->y, it->z).c_str(), 0, true);
+        //                #endif
+        //                it = markers.erase(it);
+        //            }
+        //            else
+        //                ++it;
+        //        }
+        //        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: exclude hidden landmarks, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+
+        //converting local coordinates into global coordinates
+        timer.restart();
+        for(int i=0; i<markers.size(); i++)
+        {
+            markers[i].x = coord2global<float>(markers[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+            markers[i].y = coord2global<float>(markers[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+            markers[i].z = coord2global<float>(markers[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
+        }
+        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert landmark coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+
+        //storing markers
+        timer.restart();
+        CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, markers);
+        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: store landmarks in the octree, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+    }
+}
+
 void CViewer::clearAnnotations() throw (RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
@@ -1806,7 +1850,7 @@ void CViewer::clearAnnotations() throw (RuntimeException)
 
     QList<LocationSimple> vaa3dMarkers;
     V3D_env->setLandmark(window, vaa3dMarkers);
-//    V3D_env->setSWC(window, vaa3dCurves);
+    //    V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
     view3DWidget->getRenderer()->endSelectMode();
@@ -1824,6 +1868,8 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
         QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
         QList<LocationSimple> deletedMarkers;
         QList<ImageMarker> &listMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+
+        vector<CellAPO> tobeSendMarkers;
         for (QList<ImageMarker>::iterator it = listMarker.begin(); it!= listMarker.end(); it++)
         {
             if (it->selected && !CAnnotations::isMarkerOutOfRendererBounds(*it, *this))
@@ -1837,14 +1883,19 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
                         jt = vaa3dMarkers.erase(jt);
 
                         if(view3DWidget->TeraflyCommunicator!=nullptr
-                                &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+                            &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
                         {
                             view3DWidget->SetupCollaborateInfo();
-                            view3DWidget->TeraflyCommunicator->UpdateDelMarkerMsg(it->x,it->y,it->z,color,"TeraFly");
-//                            if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
-//                                view3DWidget->TeraflyCommunicator->timer_exit->stop();
-//                            }
-//                            view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                            CellAPO marker;
+                            marker.x = it->x;
+                            marker.y = it->y;
+                            marker.z = it->z;
+                            marker.color = it->color;
+                            tobeSendMarkers.push_back(marker);
+                            //                            if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
+                            //                                view3DWidget->TeraflyCommunicator->timer_exit->stop();
+                            //                            }
+                            //                            view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
                         }
 
                         break;
@@ -1857,11 +1908,14 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
             }
 
         }
+        if(view3DWidget->TeraflyCommunicator!=nullptr
+            &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+            view3DWidget->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
 
         // set new markers
         V3D_env->setLandmark(window, vaa3dMarkers);
         V3D_env->pushObjectIn3DWindow(window);
-
+        terafly::CViewer::getCurrent()->storeAnnotations();
 
         // update visible markers
         PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
@@ -1884,6 +1938,7 @@ void CViewer::createMarkerAt(int x, int y) throw (tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
+    terafly::CViewer::getCurrent()->storeAnnotations();
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
     if(vaa3dMarkers.empty())
         return;
@@ -1904,6 +1959,7 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
     view3DWidget->getRenderer()->hitPen(x, y);
+    terafly::CViewer::getCurrent()->storeAnnotations();
 
     static bool every_two_clicks_flag = true;
     every_two_clicks_flag = !every_two_clicks_flag;
@@ -1922,7 +1978,7 @@ void CViewer::createMarker2At(int x, int y) throw (tf::RuntimeException)
         qDebug()<<"createMarker2At setLandmark";
         V3D_env->setLandmark(window, vaa3dMarkers);
         V3D_env->pushObjectIn3DWindow(window);
-//        qDebug()<<"sadasdfjklas";
+        //        qDebug()<<"sadasdfjklas";
 
         //update visible markers
         PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
@@ -1945,6 +2001,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     vector<int> vaa3dMarkers_tbd;
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
     QList <ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+    vector<CellAPO> tobeSendMarkers;
 
     for(int i=0; i<imageMarkers.size(); i++)
     {
@@ -1953,24 +2010,29 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
 
             for(int j=0; j<vaa3dMarkers.size(); j++)
                 if(vaa3dMarkers[j].x == imageMarkers[i].x &&
-                   vaa3dMarkers[j].y == imageMarkers[i].y &&
-                   vaa3dMarkers[j].z == imageMarkers[i].z &&
-                   !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this)){
-                      vaa3dMarkers_tbd.push_back(j);
+                    vaa3dMarkers[j].y == imageMarkers[i].y &&
+                    vaa3dMarkers[j].z == imageMarkers[i].z &&
+                    !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this)){
+                    vaa3dMarkers_tbd.push_back(j);
                 }
 
             qDebug()<<"imageMarkers[i].color: "<<imageMarkers[i].color.r<<" "<<imageMarkers[i].color.g<<" "<<imageMarkers[i].color.b;
 
             if(view3DWidget->TeraflyCommunicator!=nullptr
-				&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+                &&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
             {
                 view3DWidget->SetupCollaborateInfo();
-                view3DWidget->TeraflyCommunicator->UpdateDelMarkerMsg(imageMarkers[i].x,
-                               imageMarkers[i].y,imageMarkers[i].z,imageMarkers[i].color,"TeraFly");
-//                if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
-//                    view3DWidget->TeraflyCommunicator->timer_exit->stop();
-//                }
-//                view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                CellAPO marker;
+                marker.x = imageMarkers[i].x;
+                marker.y = imageMarkers[i].y;
+                marker.z = imageMarkers[i].z;
+                marker.color = imageMarkers[i].color;
+                tobeSendMarkers.push_back(marker);
+
+                //                if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
+                //                    view3DWidget->TeraflyCommunicator->timer_exit->stop();
+                //                }
+                //                view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
             }/*else
             {
                 QMessageBox::information(0,tr("Message "),
@@ -1979,6 +2041,10 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
             }*/
         }
     }
+
+    if(view3DWidget->TeraflyCommunicator!=nullptr
+        &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+        view3DWidget->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
 
     // remove selected markers
     for(int i=0; i<vaa3dMarkers_tbd.size(); i++)
@@ -1999,7 +2065,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     // set new markers
     V3D_env->setLandmark(window, vaa3dMarkers);
     V3D_env->pushObjectIn3DWindow(window);
-
+    terafly::CViewer::getCurrent()->storeAnnotations();
     // end select mode
     view3DWidget->getRenderer()->endSelectMode();
 
@@ -2009,61 +2075,61 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
 
 void CViewer::updateAnnotationSpace() throw (tf::RuntimeException)
 {
-     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+    /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
-	 //computing the current volume range in the highest resolution image space
-     /**/tf::debug(tf::LEV3, strprintf("computing the current volume range in the highest resolution image space").c_str(), __itm__current__function__);
-	 int highestResIndex = CImport::instance()->getResolutions()-1;
-     int voiV0 = CVolume::scaleCoord<int>(volV0, volResIndex, highestResIndex, iim::vertical, true);
-     int voiV1 = CVolume::scaleCoord<int>(volV1, volResIndex, highestResIndex, iim::vertical, true);
-     int voiH0 = CVolume::scaleCoord<int>(volH0, volResIndex, highestResIndex, iim::horizontal, true);
-     int voiH1 = CVolume::scaleCoord<int>(volH1, volResIndex, highestResIndex, iim::horizontal, true);
-     int voiD0 = CVolume::scaleCoord<int>(volD0, volResIndex, highestResIndex, iim::depth, true);
-     int voiD1 = CVolume::scaleCoord<int>(volD1, volResIndex, highestResIndex, iim::depth, true);
-	 interval_t x_range(voiH0, voiH1);
-	 interval_t y_range(voiV0, voiV1);
-	 interval_t z_range(voiD0, voiD1);
+    //computing the current volume range in the highest resolution image space
+    /**/tf::debug(tf::LEV3, strprintf("computing the current volume range in the highest resolution image space").c_str(), __itm__current__function__);
+    int highestResIndex = CImport::instance()->getResolutions()-1;
+    int voiV0 = CVolume::scaleCoord<int>(volV0, volResIndex, highestResIndex, iim::vertical, true);
+    int voiV1 = CVolume::scaleCoord<int>(volV1, volResIndex, highestResIndex, iim::vertical, true);
+    int voiH0 = CVolume::scaleCoord<int>(volH0, volResIndex, highestResIndex, iim::horizontal, true);
+    int voiH1 = CVolume::scaleCoord<int>(volH1, volResIndex, highestResIndex, iim::horizontal, true);
+    int voiD0 = CVolume::scaleCoord<int>(volD0, volResIndex, highestResIndex, iim::depth, true);
+    int voiD1 = CVolume::scaleCoord<int>(volD1, volResIndex, highestResIndex, iim::depth, true);
+    interval_t x_range(voiH0, voiH1);
+    interval_t y_range(voiV0, voiV1);
+    interval_t z_range(voiD0, voiD1);
 
-	 // set volume range to infinite if unlimited space annotation option is active
-	 if(PMain::getInstance()->spaceSizeUnlimited->isChecked() && this == CViewer::first)
-	 {
-		 // unlimited annotation VOI is used only in the first view (whole image) so as to include out-of-bounds annotation objects
-		 x_range.start = y_range.start = z_range.start = 0;
-		 x_range.end = y_range.end = z_range.end = std::numeric_limits<int>::max();
-	 }
-	 else if(this != CViewer::first)
-	 {
-		 // for subsequent views (i.e., higher resolutions at certain VOIs), the actual annotation VOI is enlarged by 100%
-		 // to enable the "Show/hide markers around the displayed ROI" function in the annotation toolbar
-		 int vmPerc = 100;
-		 int vmX = (x_range.end - x_range.start)*(vmPerc/100.0f)/2;
-		 int vmY = (y_range.end - y_range.start)*(vmPerc/100.0f)/2;
-		 int vmZ = (z_range.end - z_range.start)*(vmPerc/100.0f)/2;
-		 x_range.start  = std::max(0, x_range.start - vmX);
-		 x_range.end   += vmX;
-		 y_range.start  = std::max(0, y_range.start - vmY);
-		 y_range.end   += vmY;
-		 z_range.start  = std::max(0, z_range.start - vmZ);
-		 z_range.end   += vmZ;
-	 }
+    // set volume range to infinite if unlimited space annotation option is active
+    if(PMain::getInstance()->spaceSizeUnlimited->isChecked() && this == CViewer::first)
+    {
+        // unlimited annotation VOI is used only in the first view (whole image) so as to include out-of-bounds annotation objects
+        x_range.start = y_range.start = z_range.start = 0;
+        x_range.end = y_range.end = z_range.end = std::numeric_limits<int>::max();
+    }
+    else if(this != CViewer::first)
+    {
+        // for subsequent views (i.e., higher resolutions at certain VOIs), the actual annotation VOI is enlarged by 100%
+        // to enable the "Show/hide markers around the displayed ROI" function in the annotation toolbar
+        int vmPerc = 100;
+        int vmX = (x_range.end - x_range.start)*(vmPerc/100.0f)/2;
+        int vmY = (y_range.end - y_range.start)*(vmPerc/100.0f)/2;
+        int vmZ = (z_range.end - z_range.start)*(vmPerc/100.0f)/2;
+        x_range.start  = std::max(0, x_range.start - vmX);
+        x_range.end   += vmX;
+        y_range.start  = std::max(0, y_range.start - vmY);
+        y_range.end   += vmY;
+        z_range.start  = std::max(0, z_range.start - vmZ);
+        z_range.end   += vmZ;
+    }
 
-	 // @FIXED "duplicated annotations" bug by Alessandro on 2014-17-11. Annotation VOI +100% enlargment is the source of "duplicated annotations" bug because
-	 // this creates an asymmetry between loading annotations in the displayed VOI (which is done with +100% enlargment) and saving annotations
-	 // from the displayed VOI (which is done w/o +100% enlargment !!!)
-	 // Then, we save the actual annotation VOI in object members and use those at saving time.
-	 anoV0 = y_range.start;
-	 anoV1 = y_range.end;
-	 anoH0 = x_range.start;
-	 anoH1 = x_range.end;
-	 anoD0 = z_range.start;
-	 anoD1 = z_range.end;
-     /**/tf::debug(tf::LEV3, strprintf("store annotation VOI X[%d,%d), Y[%d,%d), Z[%d,%d)", anoH0, anoH1, anoV0, anoV1, anoD0, anoD1).c_str(), __itm__current__function__);
+    // @FIXED "duplicated annotations" bug by Alessandro on 2014-17-11. Annotation VOI +100% enlargment is the source of "duplicated annotations" bug because
+    // this creates an asymmetry between loading annotations in the displayed VOI (which is done with +100% enlargment) and saving annotations
+    // from the displayed VOI (which is done w/o +100% enlargment !!!)
+    // Then, we save the actual annotation VOI in object members and use those at saving time.
+    anoV0 = y_range.start;
+    anoV1 = y_range.end;
+    anoH0 = x_range.start;
+    anoH1 = x_range.end;
+    anoD0 = z_range.start;
+    anoD1 = z_range.end;
+    /**/tf::debug(tf::LEV3, strprintf("store annotation VOI X[%d,%d), Y[%d,%d), Z[%d,%d)", anoH0, anoH1, anoV0, anoV1, anoD0, anoD1).c_str(), __itm__current__function__);
 
 }
 
 void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
 {
-	myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
+    myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
 
@@ -2078,22 +2144,22 @@ void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("clearing previous annotations").c_str(), __itm__current__function__);
     V3D_env->getHandleNeuronTrees_Any3DViewer(window3D)->clear();
 
-  
-    //obtaining the annotations within the current window
-	updateAnnotationSpace();
 
-	interval_t x_range(anoH0, anoH1);
-	interval_t y_range(anoV0, anoV1);
-	interval_t z_range(anoD0, anoD1);
+    //obtaining the annotations within the current window
+    updateAnnotationSpace();
+
+    interval_t x_range(anoH0, anoH1);
+    interval_t y_range(anoV0, anoV1);
+    interval_t z_range(anoD0, anoD1);
     /**/tf::debug(tf::LEV3, strprintf("obtaining the annotations within the current window").c_str(), __itm__current__function__);
     CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, vaa3dMarkers);
     CAnnotations::getInstance()->findCurves(x_range, y_range, z_range, vaa3dCurves.listNeuron);
-//    qDebug()<<"dasd";
-	// MK, April, 25, 2018 /////////////////////////////////////
-	this->treeGlobalCoords.listNeuron.clear();
-	this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;
-	//cout << "Node number: " << this->treeGlobalCoords.listNeuron.size() << endl;
-	////////////////////////////////////////////////////////////
+    //    qDebug()<<"dasd";
+    // MK, April, 25, 2018 /////////////////////////////////////
+    this->treeGlobalCoords.listNeuron.clear();
+    this->treeGlobalCoords.listNeuron = vaa3dCurves.listNeuron;
+    //cout << "Node number: " << this->treeGlobalCoords.listNeuron.size() << endl;
+    ////////////////////////////////////////////////////////////
 
     //converting global coordinates to local coordinates
     timer.restart();
@@ -2117,7 +2183,7 @@ void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
     vaa3dCurves.color.g = 0;
     vaa3dCurves.color.b = 0;
     vaa3dCurves.color.a = 0;
-	this->convertedTreeCoords.listNeuron = vaa3dCurves.listNeuron;
+    this->convertedTreeCoords.listNeuron = vaa3dCurves.listNeuron;
 
     PLog::instance()->appendOperation(new AnnotationOperation(QString("load annotations: convert coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
     /* @debug */ //printf("\n\n");
@@ -2127,12 +2193,12 @@ void CViewer::loadAnnotations(bool collaborate) throw (RuntimeException)
     /**/tf::debug(tf::LEV3, strprintf("assigning annotations").c_str(), __itm__current__function__);
     timer.restart();
     V3D_env->setLandmark(window, vaa3dMarkers);
-    V3D_env->setSWC(window, vaa3dCurves);
+    V3D_env->setSWC(window, vaa3dCurves, collaborate);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
 
     if(!collaborate)
-         view3DWidget->getRenderer()->endSelectMode();
+        view3DWidget->getRenderer()->endSelectMode();
 
     //end curve editing mode
     QList<NeuronTree>* listNeuronTree = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->getHandleNeuronTrees();
@@ -2210,7 +2276,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
 
             //
             if(abs(centx-insituZoomOut_x)>thresh || abs(centy-insituZoomOut_y)>thresh || abs(centz-insituZoomOut_z)>thresh
-                    || abs(zoomOutSize_x - curr_width)>thresh || abs(zoomOutSize_y - curr_height)>thresh || abs(zoomOutSize_z - curr_depth)>thresh )
+                || abs(zoomOutSize_x - curr_width)>thresh || abs(zoomOutSize_y - curr_height)>thresh || abs(zoomOutSize_z - curr_depth)>thresh )
             {
                 isTranslate = true;
             }
@@ -2309,7 +2375,7 @@ void CViewer::restoreViewerFrom(CViewer* source) throw (RuntimeException)
         CViewer::current = this;
 
         //selecting the current resolution in the PMain GUI and disabling previous resolutions
-//        PMain* pMain = PMain::getInstance();
+        //        PMain* pMain = PMain::getInstance();
 
         pMain->resolution_cbox->setCurrentIndex(volResIndex);
         for(int i=0; i<pMain->resolution_cbox->count(); i++)
@@ -2463,14 +2529,14 @@ XYZ CViewer::getRenderer3DPoint(int x, int y)  throw (RuntimeException)
 
 
     //view3DWidget->getRenderer()->selectObj(x,y, false);
-    
-	return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
 
-//    Renderer_gl1* rend = static_cast<Renderer_gl1*>(view3DWidget->getRenderer());
+    return myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->get3DPoint(x, y);
 
-//    XYZ p =  rend->selectPosition(x, y);
-//    printf("\n\npoint = (%.0f, %.0f, %.0f)\n\n", p.x, p.y, p.z);
-//    return p;
+    //    Renderer_gl1* rend = static_cast<Renderer_gl1*>(view3DWidget->getRenderer());
+
+    //    XYZ p =  rend->selectPosition(x, y);
+    //    printf("\n\npoint = (%.0f, %.0f, %.0f)\n\n", p.x, p.y, p.z);
+    //    return p;
 }
 
 /**********************************************************************************
@@ -2496,8 +2562,8 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     if(params)
         roi = params;
     else if(view3DWidget->getiDrawExternalParameter()           &&
-            view3DWidget->getiDrawExternalParameter()->image4d  &&
-            view3DWidget->getiDrawExternalParameter()->image4d->getCustomStructPointer() )
+             view3DWidget->getiDrawExternalParameter()->image4d  &&
+             view3DWidget->getiDrawExternalParameter()->image4d->getCustomStructPointer() )
         roi = static_cast<v3d_imaging_paras*>(view3DWidget->getiDrawExternalParameter()->image4d->getCustomStructPointer());
 
     if(!roi)
@@ -2513,11 +2579,11 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     //--- Alessandro 23/04/2014: after several bug fixes, it seems this bug does not occur anymore
     //--- Alessandro 24/08/2013: to prevent the plugin to crash at the deepest resolution when the plugin is invoked by Vaa3D
     //    if(volResIndex == CImport::instance()->getResolutions()-1)
-//    {
-//        QMessageBox::warning(this, "Warning", "Vaa3D-invoked actions at the highest resolution have been temporarily removed. "
-//                             "Please use different operations such as \"Double-click zoom-in\" or \"Traslate\".");
-//        return;
-//    }
+    //    {
+    //        QMessageBox::warning(this, "Warning", "Vaa3D-invoked actions at the highest resolution have been temporarily removed. "
+    //                             "Please use different operations such as \"Double-click zoom-in\" or \"Traslate\".");
+    //        return;
+    //    }
 
     //retrieving ROI infos propagated by Vaa3D
     int roiCenterX = roi->xe-(roi->xe-roi->xs)/2;
@@ -2529,7 +2595,7 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
     if(PMain::getInstance()->isPRactive())
     {
         QMessageBox::information(this->window3D, "Warning", "TeraFly is running in \"Proofreading\" mode. All TeraFly's' navigation features are disabled. "
-                                 "Please terminate the \"Proofreading\" mode and try again.");
+                                                            "Please terminate the \"Proofreading\" mode and try again.");
         return;
     }
 
@@ -2540,89 +2606,89 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
         int zoomInRes = volResIndex + 1;
         int highestRes = CImport::instance()->getResolutions()-1;
 
-//        int centx = (volH1 - volH0)/2;
-//        int centy = (volV1 - volV0)/2;
-//        int centz = (volD1 - volD0)/2;
+        //        int centx = (volH1 - volH0)/2;
+        //        int centy = (volV1 - volV0)/2;
+        //        int centz = (volD1 - volD0)/2;
 
-//        while(zoomInRes<highestRes)
-//        {
-//            qDebug()<<"zoom in to res: #"<<zoomInRes<<highestRes<<roiCenterX<<roiCenterY<<roiCenterZ<<view3DWidget->zoom();
+        //        while(zoomInRes<highestRes)
+        //        {
+        //            qDebug()<<"zoom in to res: #"<<zoomInRes<<highestRes<<roiCenterX<<roiCenterY<<roiCenterZ<<view3DWidget->zoom();
 
-//            QApplication::sendEvent( this, new QMouseEvent( QEvent::MouseButtonDblClick, pos(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
-//            QApplication::processEvents();
-
-
-//            if(next)
-//            {
-//                qDebug()<<"next viewer ... ..."<<next->volH0;
-
-////                next->prev = prev;
-////                prev = next;
-
-//                if(next->toBeClosed)
-//                    qDebug()<<"toBeClosed is true";
-//                else
-//                    qDebug()<<"toBeClosed is false";
-
-//                if(next->_isActive)
-//                    qDebug()<<"_isActive is true";
-//                else
-//                    qDebug()<<"_isActive is false";
-
-//                if(next->_isReady)
-//                    qDebug()<<"_isReady is true";
-//                else
-//                    qDebug()<<"_isReady is false";
+        //            QApplication::sendEvent( this, new QMouseEvent( QEvent::MouseButtonDblClick, pos(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
+        //            QApplication::processEvents();
 
 
-//                if(current == this)
-//                    qDebug()<<"current == this!";
-//                else if(current == prev)
-//                    qDebug()<<"current == prev!";
-//                else if(current == next)
-//                    qDebug()<<"current == next!";
-//                else
-//                    qDebug()<<"current ?";
+        //            if(next)
+        //            {
+        //                qDebug()<<"next viewer ... ..."<<next->volH0;
+
+        ////                next->prev = prev;
+        ////                prev = next;
+
+        //                if(next->toBeClosed)
+        //                    qDebug()<<"toBeClosed is true";
+        //                else
+        //                    qDebug()<<"toBeClosed is false";
+
+        //                if(next->_isActive)
+        //                    qDebug()<<"_isActive is true";
+        //                else
+        //                    qDebug()<<"_isActive is false";
+
+        //                if(next->_isReady)
+        //                    qDebug()<<"_isReady is true";
+        //                else
+        //                    qDebug()<<"_isReady is false";
 
 
-
-////                setActive(true);
-////                _isReady = true;
-
-//                this = next;
-//                next = NULL;
-//            }
-//            else
-//            {
-//                zoomHistoryPushBack(view3DWidget->zoom());
-//                newViewer(roiCenterX, roiCenterY, roiCenterZ, zoomInRes++, volT0, volT1);
-//                V3dApplication::getInstance()->exec();
-//            }
-
-//            qDebug()<<"this viewer ... ...";
-
-//            if(toBeClosed)
-//                qDebug()<<"toBeClosed is true";
-//            else
-//                qDebug()<<"toBeClosed is false";
-
-//            if(_isActive)
-//                qDebug()<<"_isActive is true";
-//            else
-//                qDebug()<<"_isActive is false";
-
-//            if(_isReady)
-//                qDebug()<<"_isReady is true";
-//            else
-//                qDebug()<<"_isReady is false";
+        //                if(current == this)
+        //                    qDebug()<<"current == this!";
+        //                else if(current == prev)
+        //                    qDebug()<<"current == prev!";
+        //                else if(current == next)
+        //                    qDebug()<<"current == next!";
+        //                else
+        //                    qDebug()<<"current ?";
 
 
 
+        ////                setActive(true);
+        ////                _isReady = true;
 
-//            toBeClosed = false;
-//            _isActive = true;
-//            _isReady = true;
-//        }
+        //                this = next;
+        //                next = NULL;
+        //            }
+        //            else
+        //            {
+        //                zoomHistoryPushBack(view3DWidget->zoom());
+        //                newViewer(roiCenterX, roiCenterY, roiCenterZ, zoomInRes++, volT0, volT1);
+        //                V3dApplication::getInstance()->exec();
+        //            }
+
+        //            qDebug()<<"this viewer ... ...";
+
+        //            if(toBeClosed)
+        //                qDebug()<<"toBeClosed is true";
+        //            else
+        //                qDebug()<<"toBeClosed is false";
+
+        //            if(_isActive)
+        //                qDebug()<<"_isActive is true";
+        //            else
+        //                qDebug()<<"_isActive is false";
+
+        //            if(_isReady)
+        //                qDebug()<<"_isReady is true";
+        //            else
+        //                qDebug()<<"_isReady is false";
+
+
+
+
+        //            toBeClosed = false;
+        //            _isActive = true;
+        //            _isReady = true;
+        //        }
 
         //
         newViewer(roi->xe, roi->ye, roi->ze, highestRes, volT0, volT1, -1, -1, -1, roi->xs, roi->ys, roi->zs);
@@ -2640,7 +2706,7 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
             forceZoomIn = false;
 
         if(volResIndex != CImport::instance()->getResolutions()-1 &&   // do nothing if highest resolution has been reached
-           ( isZoomDerivativePos() || has_double_clicked))             // accept zoom-in only when zoom factor derivative is positive or user has double clicked
+            ( isZoomDerivativePos() || has_double_clicked))             // accept zoom-in only when zoom factor derivative is positive or user has double clicked
         {
             // reset double click status
             has_double_clicked = false;
@@ -2661,7 +2727,7 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 
                 //obtaining the actual requested VOI under the existing constraints (i.e., maximum view dimensions)
                 /**/tf::debug(tf::LEV3, strprintf("title = %s, requested voi is [%.0f, %.0f] x [%.0f, %.0f] x [%.0f, %.0f]...BUT",
-                                                       titleShort.c_str(), gXS, gXE, gYS, gYE, gZS, gZE).c_str(), __itm__current__function__);
+                                                   titleShort.c_str(), gXS, gXE, gYS, gYE, gZS, gZE).c_str(), __itm__current__function__);
 
                 if(gXE-gXS > PMain::getInstance()->Hdim_sbox->value())
                 {
@@ -2682,7 +2748,7 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
                     gZE = center + PMain::getInstance()->Ddim_sbox->value()/2;
                 }
                 /**/tf::debug(tf::LEV3, strprintf("title = %s, ...BUT actual requested VOI became [%.0f, %.0f] x [%.0f, %.0f] x [%.0f, %.0f]",
-                                                       titleShort.c_str(), gXS, gXE, gYS, gYE, gZS, gZE).c_str(), __itm__current__function__);
+                                                   titleShort.c_str(), gXS, gXE, gYS, gYE, gZS, gZE).c_str(), __itm__current__function__);
 
                 //obtaining coordinates of the cached resolution
                 float gXScached = static_cast<float>(next->volH0);
@@ -2705,10 +2771,10 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
                 float coverageFactor = voiVol != 0 ? intersectionVol/voiVol : 0;
 
                 /**/tf::debug(tf::LEV3, strprintf("title = %s, actual requested voi is [%.0f, %.0f] x [%.0f, %.0f] x [%.0f, %.0f] and cached is [%.0f, %.0f] x [%.0f, %.0f] x [%.0f, %.0f]",
-                                                       titleShort.c_str(), gXS, gXE, gYS, gYE, gZS, gZE, gXScached, gXEcached, gYScached, gYEcached, gZScached, gZEcached).c_str(), __itm__current__function__);
+                                                   titleShort.c_str(), gXS, gXE, gYS, gYE, gZS, gZE, gXScached, gXEcached, gYScached, gYEcached, gZScached, gZEcached).c_str(), __itm__current__function__);
 
                 /**/tf::debug(tf::LEV3, strprintf("title = %s,intersection is %.0f x %.0f x %.0f with coverage factor = %.2f ", titleShort.c_str(),
-                                                       intersectionX, intersectionY, intersectionZ, coverageFactor).c_str(), __itm__current__function__);
+                                                   intersectionX, intersectionY, intersectionZ, coverageFactor).c_str(), __itm__current__function__);
 
                 //if Vaa3D VOI is covered for the selected percentage by the existing cached volume, just restoring its view
                 if((coverageFactor >= PMain::getInstance()->cacheSens->value()/100.0f) && _isReady)
@@ -2738,57 +2804,57 @@ void CViewer::invokedFromVaa3D(v3d_imaging_paras* params /* = 0 */)
 ***********************************************************************************/
 void CViewer::Vaa3D_changeYCut0(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
-	
+#endif
+
     disconnect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
     PMain::getInstance()->V0_sbox->setValue(coord2global<int>(s, iim::vertical, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbYlb = s + 1;
-	this->volumeCutSbAdjusted = true;
-	this->yMinAdjusted = true;
+    PDialogProofreading::instance()->sbYlb = s + 1;
+    this->volumeCutSbAdjusted = true;
+    this->yMinAdjusted = true;
     connect(PMain::getInstance()->V0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV0sbox(int)));
 }
 void CViewer::Vaa3D_changeYCut1(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
-	
+#endif
+
     disconnect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
     PMain::getInstance()->V1_sbox->setValue(coord2global<int>(s+1, iim::vertical, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbYhb = s + 1;
-	this->volumeCutSbAdjusted = true;
-	this->yMaxAdjusted = true;
+    PDialogProofreading::instance()->sbYhb = s + 1;
+    this->volumeCutSbAdjusted = true;
+    this->yMaxAdjusted = true;
     connect(PMain::getInstance()->V1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeV1sbox(int)));
 }
 void CViewer::Vaa3D_changeXCut0(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
     PMain::getInstance()->H0_sbox->setValue(coord2global<int>(s, iim::horizontal, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbXlb = s + 1;
-	this->volumeCutSbAdjusted = true;
-	this->xMinAdjusted = true;
+    PDialogProofreading::instance()->sbXlb = s + 1;
+    this->volumeCutSbAdjusted = true;
+    this->xMinAdjusted = true;
     connect(PMain::getInstance()->H0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH0sbox(int)));
 }
 void CViewer::ShiftToAnotherDirection(int _direction)
 {
 #ifdef __ALLOW_VR_FUNCS__
     // slot func related to VR shift signal
-	if (volResIndex == 0 &&(_direction<7 || _direction == 8) )//at lowerest level, do not allow shift and zoom-out.
-	{
-		QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
-		return;
-	}
+    if (volResIndex == 0 &&(_direction<7 || _direction == 8) )//at lowerest level, do not allow shift and zoom-out.
+    {
+        QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+        return;
+    }
     if(_direction<7)
-       // PMain::getInstance()->teraflyShiftClickedinVR(_direction);
+    // PMain::getInstance()->teraflyShiftClickedinVR(_direction);
     {
         if (view3DWidget)
         {
@@ -2817,14 +2883,14 @@ void CViewer::ShiftToAnotherDirection(int _direction)
             PMain::getInstance()->resumeVR = true;
             XYZ point = view3DWidget->teraflyZoomInPOS;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
-			newViewer(point.x, point.y, point.z,  volResIndex+1, volT0, volT1);    
-        }    
+            newViewer(point.x, point.y, point.z,  volResIndex+1, volT0, volT1);
+        }
     }
     else if(_direction == 8)
     {
         // auto zoom out
         if(prev                                                                    &&  //the previous resolution exists
-        !toBeClosed)                                                         //the current resolution does not have to be closed
+            !toBeClosed)                                                         //the current resolution does not have to be closed
         // isZoomDerivativeNeg())                                                     //zoom derivative is negative
         {
             // if window is not ready for "switch view" events, reset zoom-out and ignore this event
@@ -2839,76 +2905,76 @@ void CViewer::ShiftToAnotherDirection(int _direction)
                 resetZoomHistory();
                 prev->restoreViewerFrom(this);
             }
-        }       
+        }
     }
-	else if(_direction == 9)
+    else if(_direction == 9)
     {
         // forcezoomin
         if(view3DWidget)
         {
             PMain::getInstance()->resumeVR = true;
-			XYZ point = view3DWidget->CollaborationCreatorPos;
+            XYZ point = view3DWidget->CollaborationCreatorPos;
             qDebug()<<"In terafly,X is "<<point.x<<" && Y is "<<point.y<<" && Z is "<<point.z;
-            newViewer(point.x, point.y, point.z,view3DWidget->CollaborationCreatorRes, volT0, volT1);    
-        }    
+            newViewer(point.x, point.y, point.z,view3DWidget->CollaborationCreatorRes, volT0, volT1);
+        }
     }
 #endif
 }
 
 void CViewer::Vaa3D_changeXCut1(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
     PMain::getInstance()->H1_sbox->setValue(coord2global<int>(s+1, iim::horizontal, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbXhb = s + 1;
-	this->volumeCutSbAdjusted = true;
-	this->xMaxAdjusted = true;
+    PDialogProofreading::instance()->sbXhb = s + 1;
+    this->volumeCutSbAdjusted = true;
+    this->xMaxAdjusted = true;
     connect(PMain::getInstance()->H1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeH1sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut0(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
     PMain::getInstance()->D0_sbox->setValue(coord2global<int>(s, iim::depth, true, -1, true, false, __itm__current__function__)+1);
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbZlb = s + 1;
-	this->volumeCutSbAdjusted = true;
-	this->zMinAdjusted = true;
+    PDialogProofreading::instance()->sbZlb = s + 1;
+    this->volumeCutSbAdjusted = true;
+    this->zMinAdjusted = true;
     connect(PMain::getInstance()->D0_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD0sbox(int)));
 }
 void CViewer::Vaa3D_changeZCut1(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
     PMain::getInstance()->D1_sbox->setValue(coord2global<int>(s+1, iim::depth, true, -1, true, false, __itm__current__function__));
     PDialogProofreading::instance()->updateBlocks(0);
-	PDialogProofreading::instance()->sbZhb = s + 1;
-	this->volumeCutSbAdjusted = true;
-	this->zMaxAdjusted = true;
+    PDialogProofreading::instance()->sbZhb = s + 1;
+    this->volumeCutSbAdjusted = true;
+    this->zMaxAdjusted = true;
     connect(PMain::getInstance()->D1_sbox, SIGNAL(valueChanged(int)), this, SLOT(PMain_changeD1sbox(int)));
 }
 
 void CViewer::Vaa3D_changeTSlider(int s, bool editingFinished /* = false */)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV3, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     if(_isActive     &&              // window is visible
-       _isReady      &&              // window is ready for user input
-       !toBeClosed  &&              // window is not going to be destroyed
-       view3DWidget &&              // Vaa3D renderer has been instantiated
-       CImport::instance()->is5D()) // data is 5D type
+        _isReady      &&              // window is ready for user input
+        !toBeClosed  &&              // window is not going to be destroyed
+        view3DWidget &&              // Vaa3D renderer has been instantiated
+        CImport::instance()->is5D()) // data is 5D type
     {
         // change current frame coordinate
         PMain::getInstance()->frameCoord->setText(strprintf("t = %d/%d", s+1, CImport::instance()->getTDim()).c_str());
@@ -2951,10 +3017,10 @@ void CViewer::Vaa3D_changeTSlider(int s, bool editingFinished /* = false */)
 ***********************************************************************************/
 void CViewer::PMain_changeV0sbox(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
-	
+#endif
+
     disconnect(view3DWidget, SIGNAL(changeYCut0(int)), this, SLOT(Vaa3D_changeYCut0(int)));
     view3DWidget->setYCut0(coord2local<int>(s, iim::vertical, true, true));
     PDialogProofreading::instance()->updateBlocks(0);
@@ -2962,9 +3028,9 @@ void CViewer::PMain_changeV0sbox(int s)
 }
 void CViewer::PMain_changeV1sbox(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(view3DWidget, SIGNAL(changeYCut1(int)), this, SLOT(Vaa3D_changeYCut1(int)));
     view3DWidget->setYCut1(coord2local<int>(s+1, iim::vertical, true, true)-1);
@@ -2973,9 +3039,9 @@ void CViewer::PMain_changeV1sbox(int s)
 }
 void CViewer::PMain_changeH0sbox(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(view3DWidget, SIGNAL(changeXCut0(int)), this, SLOT(Vaa3D_changeXCut0(int)));
     view3DWidget->setXCut0(coord2local<int>(s, iim::horizontal, true, true));
@@ -2984,9 +3050,9 @@ void CViewer::PMain_changeH0sbox(int s)
 }
 void CViewer::PMain_changeH1sbox(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(view3DWidget, SIGNAL(changeXCut1(int)), this, SLOT(Vaa3D_changeXCut1(int)));
     view3DWidget->setXCut1(coord2local<int>(s+1, iim::horizontal, true, true)-1);
@@ -2995,9 +3061,9 @@ void CViewer::PMain_changeH1sbox(int s)
 }
 void CViewer::PMain_changeD0sbox(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(view3DWidget, SIGNAL(changeZCut0(int)), this, SLOT(Vaa3D_changeZCut0(int)));
     view3DWidget->setZCut0(coord2local<int>(s, iim::depth, true, true));
@@ -3006,9 +3072,9 @@ void CViewer::PMain_changeD0sbox(int s)
 }
 void CViewer::PMain_changeD1sbox(int s)
 {
-    #ifdef terafly_enable_debug_max_level
+#ifdef terafly_enable_debug_max_level
     /**/tf::debug(tf::LEV_MAX, strprintf("title = %s, s = %d", title.c_str(), s).c_str(), __itm__current__function__);
-    #endif
+#endif
 
     disconnect(view3DWidget, SIGNAL(changeZCut1(int)), this, SLOT(Vaa3D_changeZCut1(int)));
     view3DWidget->setZCut1(coord2local<int>(s+1, iim::depth, true, true)-1);
@@ -3043,10 +3109,10 @@ void CViewer::Vaa3D_rotationchanged(int s)
 {
     if(_isActive && !toBeClosed)
     {
-//        printf("disconnect\n");
-//        disconnect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-//        disconnect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-//        disconnect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+        //        printf("disconnect\n");
+        //        disconnect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+        //        disconnect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+        //        disconnect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
 
         //printf("view3DWidget->absoluteRotPose()\n");
         //QMessageBox::information(0, "Test", "view3DWidget->absoluteRotPose()");
@@ -3063,10 +3129,10 @@ void CViewer::Vaa3D_rotationchanged(int s)
 
         //view3DWidget->doAbsoluteRot(view3DWidget->xRot(), view3DWidget->yRot(), view3DWidget->zRot());
 
-//        printf("connect\n");
-//        connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-//        connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
-//        connect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+        //        printf("connect\n");
+        //        connect(view3DWidget, SIGNAL(xRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+        //        connect(view3DWidget, SIGNAL(yRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
+        //        connect(view3DWidget, SIGNAL(zRotationChanged(int)), this, SLOT(Vaa3D_rotationchanged(int)));
     }
 }
 void CViewer::PMain_rotationchanged()
@@ -3097,7 +3163,7 @@ void CViewer::setZoom(int z)
 void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
 {
     /**/tf::debug(tf::LEV1, strprintf("src->title = %s, dst->title = %s",
-                                        src->getDataTitle().toStdString().c_str(), dst->getDataTitle().toStdString().c_str()).c_str(), __itm__current__function__);
+                                       src->getDataTitle().toStdString().c_str(), dst->getDataTitle().toStdString().c_str()).c_str(), __itm__current__function__);
 
     //syncronizing volume display controls
     dst->checkBox_channelR->setChecked(src->checkBox_channelR->isChecked());
@@ -3155,7 +3221,7 @@ void CViewer::syncWindows(V3dR_MainWindow* src, V3dR_MainWindow* dst)
 void CViewer::setWaitingForData(bool wait, bool pre_wait /* = false */)
 {
     /**/tf::debug(tf::LEV3, strprintf("title = %s, wait = %s, pre_wait = %s, this->waitingForData = %s",
-                                           title.c_str(), wait ? "true" : "false", pre_wait ? "true" : "false", waitingForData ? "true" : "false").c_str(), __itm__current__function__);
+                                       title.c_str(), wait ? "true" : "false", pre_wait ? "true" : "false", waitingForData ? "true" : "false").c_str(), __itm__current__function__);
 
     if(wait != this->waitingForData)
     {

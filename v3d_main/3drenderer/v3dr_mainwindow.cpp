@@ -758,8 +758,8 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                 disconnect(glWidget->TeraflyCommunicator, SIGNAL(addManySegs(QString)), 0, 0);
                 disconnect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), 0, 0);
                 disconnect(glWidget->TeraflyCommunicator, SIGNAL(splitSeg(QString)), 0, 0);
-                disconnect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), 0, 0);
-                disconnect(glWidget->TeraflyCommunicator, SIGNAL(addManyMarkers(QString)), 0, 0);
+                disconnect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString,QString)), 0, 0);
+                disconnect(glWidget->TeraflyCommunicator, SIGNAL(addManyMarkers(QString,QString)), 0, 0);
                 disconnect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0);
                 disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), 0, 0);
                 disconnect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int,int)), 0, 0);
@@ -769,8 +769,8 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
                 connect(glWidget->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), glWidget, SLOT(newThreadDelSeg(QString,int)));
                 connect(glWidget->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int,int)), glWidget, SLOT(newThreadRetypeSeg(QString,int,int)));
                 connect(glWidget->TeraflyCommunicator, SIGNAL(splitSeg(QString)), glWidget, SLOT(newThreadSplitSeg(QString)));
-                connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString)), glWidget, SLOT(newThreadAddMarker(QString)));
-                connect(glWidget->TeraflyCommunicator, SIGNAL(addManyMarkers(QString)), glWidget, SLOT(newThreadAddManyMarkers(QString)));
+                connect(glWidget->TeraflyCommunicator, SIGNAL(addMarker(QString,QString)), glWidget, SLOT(newThreadAddMarker(QString,QString)));
+                connect(glWidget->TeraflyCommunicator, SIGNAL(addManyMarkers(QString,QString)), glWidget, SLOT(newThreadAddManyMarkers(QString,QString)));
                 connect(glWidget->TeraflyCommunicator, SIGNAL(delMarker(QString)), glWidget, SLOT(newThreadDelMarker(QString)));
                 connect(glWidget->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), glWidget, SLOT(newThreadRetypeMarker(QString)));
                 connect(glWidget->TeraflyCommunicator, SIGNAL(connectSeg(QString)), glWidget, SLOT(newThreadConnectSeg(QString)));

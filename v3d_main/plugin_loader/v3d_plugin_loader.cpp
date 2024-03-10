@@ -1053,11 +1053,11 @@ NeuronTree V3d_PluginLoader::getSWC(v3dhandle image_window)
 	}
 	return NeuronTree();
 }
-bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt)
+bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt, bool collaborate)
 {
 	if (v3d_mainwindow)
 	{
-		return v3d_mainwindow->setSWC(image_window, nt);
+        return v3d_mainwindow->setSWC(image_window, nt, collaborate);
 	}
 	return false;
 }

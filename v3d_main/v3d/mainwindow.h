@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -526,8 +526,8 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	bool setLandmark(void* window, QList<LocationSimple>& landmark_list);
 	QList<QPolygon> getROI(void* window);
 	bool setROI(void* window, QList<QPolygon>& roi_list);
-	NeuronTree getSWC(void* window);
-	bool setSWC(void* window, NeuronTree & nt);
+    NeuronTree getSWC(void* window);
+    bool setSWC(void* window, NeuronTree & nt, bool isCollaborateUpdate=false);
 	V3D_GlobalSetting getGlobalSetting();
 	bool setGlobalSetting( V3D_GlobalSetting &gs );
 

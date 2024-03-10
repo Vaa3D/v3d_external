@@ -69,7 +69,7 @@ public:
      * @param z
      * 发送减点
      */
-    void UpdateDelMarkerMsg(float x,float y,float z,RGBA8 color,QString clienttype);
+    void UpdateDelMarkersMsg(vector<CellAPO> markers,QString clienttype);
     void UpdateDelMarkerMsg(QString TVdelMarkerMSG);
     /**
      * @brief UpdateSendDelMarkerInfo
@@ -177,8 +177,8 @@ signals:
     void addManySegs(QString);//加很多线信号
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
     void splitSeg(QString);//break seg信号
-    void addMarker(QString);//加marker信号 (type x y z)
-    void addManyMarkers(QString);//增加很多marker信号 (type x y z;type x y z;...)
+    void addMarker(QString,QString);//加marker信号 (type x y z)
+    void addManyMarkers(QString,QString);//增加很多marker信号 (type x y z;type x y z;...)
     void delMarker(QString);//减marker信号 (type x y z)
     void retypeMarker(QString);//改marker颜色信号(r,g,b,x,y,z)
     void retypeSeg(QString,int,int);//改线的颜色信号（type x y z;type x y z;...）
@@ -191,9 +191,9 @@ signals:
 public:
     void emitAddSeg(QString segInfo, int isBegin) {emit addSeg(segInfo, isBegin);}
     void emitAddManySegs(QString segsInfo) {emit addManySegs(segsInfo);}
-    void emitAddManyMarkers(QString segInfo) {emit addManyMarkers(segInfo);}
+    void emitAddManyMarkers(QString markerInfos, QString comment) {emit addManyMarkers(markerInfos, comment);}
     void emitDelSeg(QString segInfo, int isMany) {emit delSeg(segInfo,isMany);}
-    void emitAddMarker(QString markerInfo) {emit addMarker(markerInfo);}
+    void emitAddMarker(QString markerInfo, QString comment) {emit addMarker(markerInfo, comment);}
     void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
     void emitRetypeSeg(QString segInfo,int type, int isMany) {emit retypeSeg(segInfo,type,isMany);}
     void emitConnectSeg(QString segInfo){emit connectSeg(segInfo);}

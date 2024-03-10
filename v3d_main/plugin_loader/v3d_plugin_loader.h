@@ -138,7 +138,7 @@ public:
 	virtual bool setROI(v3dhandle image_window, ROIList & roi_list);
 
 	virtual NeuronTree getSWC(v3dhandle image_window);
-	virtual bool setSWC(v3dhandle image_window, NeuronTree & nt);
+    virtual bool setSWC(v3dhandle image_window, NeuronTree & nt, bool collaborate=false);
 
     virtual Image4DSimple * loadImage(char *filename);  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
     virtual Image4DSimple * loadImage(char *filename, V3DLONG zsliceno);  //2013-11-02
