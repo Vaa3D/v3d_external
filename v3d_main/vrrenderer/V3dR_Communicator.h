@@ -15,6 +15,8 @@
 #include "../basic_c_fun/v3d_interface.h"
 #include "fileserver.h"
 #include <deque>
+
+class V3dr_qualitycontrolDialog;
 class V3dR_Communicator : public QObject
 {
     Q_OBJECT
@@ -29,7 +31,7 @@ class V3dR_Communicator : public QObject
 public:
     explicit V3dR_Communicator(QObject *partent=nullptr);
     ~V3dR_Communicator()=default;
-//    void onReadySend(QString send_MSG,bool flag=1);//use sendMSG;
+    //    void onReadySend(QString send_MSG,bool flag=1);//use sendMSG;
     /**
      * @brief sendMsg
      * @param msg
@@ -148,23 +150,16 @@ public slots:
      * @brief autoReconnect
      * 自动重连
      */
-//    void autoReconnect();
-//    /**
-//     * @brief initConnect
-//     * 初始连接
-//     */
-//    void initConnect();
+    //    void autoReconnect();
+    //    /**
+    //     * @brief initConnect
+    //     * 初始连接
+    //     */
+    //    void initConnect();
     void autoExit();
     void resetWarnMulBifurcationFlag();
     void resetWarnLoopFlag();
-//    /**
-//     * @brief onDisconnected
-//     * 服务器断开
-//     */
-//    void onDisconnected();
 
-//    void read_autotrace(QString,XYZ*);
-//    void undo();
 signals:
     void load(QString);
     //msg process
@@ -188,6 +183,14 @@ signals:
     //msg process end
 
     void exit();
+
+    void updateQcInfo();
+    void updateQcMarkersCounts();
+    void updateQcSegsCounts();
+
+    void addManyMarkersDone();
+    void addMarkerDone();
+
 public:
     void emitAddSeg(QString segInfo, int isBegin) {emit addSeg(segInfo, isBegin);}
     void emitAddManySegs(QString segsInfo) {emit addManySegs(segsInfo);}
@@ -197,6 +200,13 @@ public:
     void emitDelMarker(QString markerInfo) {emit delMarker(markerInfo);}
     void emitRetypeSeg(QString segInfo,int type, int isMany) {emit retypeSeg(segInfo,type,isMany);}
     void emitConnectSeg(QString segInfo){emit connectSeg(segInfo);}
+
+    void emitUpdateQcInfo() {emit updateQcInfo();}
+    void emitUpdateQcMarkersCounts() {emit updateQcMarkersCounts();}
+    void emitUpdateQcSegsCounts() {emit updateQcSegsCounts();}
+    void emitAddManyMarkersDone() {emit addManyMarkersDone();}
+    void emitAddMarkerDone() {emit addMarkerDone();}
+
     void setAddressIP(QString addressIp);
     void setPort(uint port);
     void resetdatatype();
@@ -219,21 +229,22 @@ private:
     }
 
 public:
-//	float VR_globalScale;//used to
+    //	float VR_globalScale;//used to
     static QString userId;//
     static QString userName;
     static QString password;
     QString m_strAddressIP;
     uint m_iPort;
     static QTcpSocket* socket;//
+    static V3dr_qualitycontrolDialog* qcDialog;
     //连接状态
     bool b_isConnectedState;
     bool b_isWarnMulBifurcationHandled;
     bool b_isWarnLoopHandled;
-//    //重连定时器
-//    QTimer *m_timerConnect;
-//    //初始化连接定时器
-//    QTimer *timer_iniconn;
+    //    //重连定时器
+    //    QTimer *m_timerConnect;
+    //    //初始化连接定时器
+    //    QTimer *timer_iniconn;
     QTimer *timer_exit;
 
     int initConnectCnt;
@@ -250,19 +261,24 @@ public:
     int CreatorMarkerRes;
 
 
-//    XYZ AutoTraceNode;
-//    int flag_x,flag_y,flag_z;
+    //    XYZ AutoTraceNode;
+    //    int flag_x,flag_y,flag_z;
 
-//    QStringList undoStack;
-//    QStringList undo_delcure;
+    //    QStringList undoStack;
+    //    QStringList undo_delcure;
     std::deque<QString> undoDeque;
     std::deque<QString> redoDeque;
+
+    vector<CellAPO> checkedQcMarkers;
+    int removedOverlapSegNum = 0;
+    int removedErrSegNum = 0;
+
 private:
     DataType datatype;
     const int dequeszie=15;
 
 
-//    int receiveCNT=0;
+    //    int receiveCNT=0;
 };
 
 

@@ -137,6 +137,7 @@ public:
     void SetupCollaborateInfo();
     vector<XYZ> getImageCurResAndStartPoint();
     XYZ ImageMaxRes;
+    const static vector<QString> quality_control_types;
 public slots:
               //	void CallAddCurveSWC(vector<XYZ>loc_list,int chno,double createmode);
               //    void CallAddMarker(XYZ);

@@ -74,6 +74,17 @@ bool V3dR_GLWidget::resumeCollaborationVR=false;
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
 V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
 
+const vector<QString> V3dR_GLWidget::quality_control_types = {
+    "Multifurcation",
+    "Approaching bifurcation",
+    "Loop",
+    "Missing",
+    "Crossing error",
+    "Color mutation",
+    "Dissociative seg",
+    "Angle error"
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(USE_Qt5)
 #define POST_updateGL update  // prevent direct updateGL when rotation which causes re-entering shack problems, by RZC 080925
@@ -4346,6 +4357,7 @@ void V3dR_GLWidget::CollaAddManyMarkers(QString markersPOS, QString comment){
     }
 
 L: terafly::PluginInterface::setLandmark(markers,true);
+    //    TeraflyCommunicator->emitAddManyMarkersDone();
 
 }
 
@@ -4360,7 +4372,7 @@ void V3dR_GLWidget::CollaDelMarkers(QString markersPOS)
 
     QStringList tobeDelMarkers=markersPOS.split(",",QString::SkipEmptyParts);
     LandmarkList markers=terafly::PluginInterface::getLandmark();
-
+    bool flag = false;
     for(int i=0; i<tobeDelMarkers.size(); i++){
         QStringList markerInfo=tobeDelMarkers[i].split(" ",QString::SkipEmptyParts);
         LocationSimple marker/*=markers.at(0)*/;
@@ -4383,13 +4395,28 @@ void V3dR_GLWidget::CollaDelMarkers(QString markersPOS)
                 index=i;
             }
         }
-        if(index>=0)
+        if(index>=0){
+            if(std::find(quality_control_types.begin(), quality_control_types.end(), QString::fromStdString(markers.at(index).comments)) != quality_control_types.end()){
+                flag = true;
+                CellAPO cellApo;
+                cellApo.x = markers.at(index).x;
+                cellApo.y = markers.at(index).y;
+                cellApo.z = markers.at(index).z;
+                cellApo.color = markers.at(index).color;
+                cellApo.comment = QString::fromStdString(markers.at(index).comments);
+                TeraflyCommunicator->checkedQcMarkers.push_back(cellApo);
+            }
             markers.removeAt(index);
+        }
         else
             qDebug()<<"Error:cannot find marker <1 " + tobeDelMarkers[i];
     }
 
     terafly::PluginInterface::setLandmark(markers,true);
+    if(flag){
+        TeraflyCommunicator->emitUpdateQcInfo();
+        TeraflyCommunicator->emitUpdateQcMarkersCounts();
+    }
 }
 
 void V3dR_GLWidget::newThreadDelMarker(QString markerPOS){
@@ -4406,6 +4433,7 @@ void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
     LandmarkList markers=terafly::PluginInterface::getLandmark();
 
     LocationSimple marker;
+    bool flag = false;
 
     marker.x=markerInfo.at(3).toFloat();
     marker.y=markerInfo.at(4).toFloat();
@@ -4428,6 +4456,8 @@ void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
     }
     if(index>=0)
     {
+        if(std::find(quality_control_types.begin(), quality_control_types.end(), QString::fromStdString(markers.at(index).comments)) != quality_control_types.end())
+            flag = true;
         markers[index].color.r=markerInfo.at(0).toUInt();
         markers[index].color.g=markerInfo.at(1).toUInt();
         markers[index].color.b=markerInfo.at(2).toUInt();
@@ -4435,6 +4465,10 @@ void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
     else
         qDebug()<<"Error:cannot find marker <1 " + markerPOS;
     terafly::PluginInterface::setLandmark(markers,true);
+
+    if(flag){
+        TeraflyCommunicator->emitUpdateQcInfo();
+    }
 }
 
 void V3dR_GLWidget::newThreadRetypeMarker(QString markerPOS){

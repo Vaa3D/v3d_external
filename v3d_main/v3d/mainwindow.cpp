@@ -42,9 +42,9 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 ****************************************************************************/
 #include "../3drenderer/v3dr_common.h"
 #if defined(USE_Qt5)
-  #include <QtWidgets>
+#include <QtWidgets>
 #else
-  #include <QtGui>
+#include <QtGui>
 #endif
 #include "mainwindow.h"
 #include "v3d_application.h"
@@ -268,7 +268,7 @@ MainWindow::MainWindow()
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
 
 #define __AUTOLAUNCH_OPEN_NEURON_GAME___
-	/// RZC 20170620: disable auto launch
+    /// RZC 20170620: disable auto launch
     // func_open_neuron_game(); // 2017.03.28 automatically open Mozak for Morphology Annotators
 }
 //void MainWindow::postClose() //090812 RZC
@@ -471,19 +471,19 @@ void MainWindow::updateRunPlugin() //20110426 YuY
             qint64 etime_plugin = timer_plugin.elapsed();
             qDebug() << " **** the plugin preprocessing takes [" << etime_plugin <<" milliseconds]";
             //uncommented version is only used for bench testing by Zhi Z, 20151103
-//            if(v3dclp.fileList.size()>0)
-//            {
-//                QString timer_log = QString(v3dclp.fileList.at(0)) + "_" + QFileInfo(pluginname).baseName() + "_" + pluginfunc +"_time.log";
-//                QFile file(timer_log);
-//                if (!file.open(QFile::WriteOnly|QFile::Truncate))
-//                {
-//                    cout <<"Error opening the log file "<<timer_log.toStdString().c_str() << endl;
-//                }
+            //            if(v3dclp.fileList.size()>0)
+            //            {
+            //                QString timer_log = QString(v3dclp.fileList.at(0)) + "_" + QFileInfo(pluginname).baseName() + "_" + pluginfunc +"_time.log";
+            //                QFile file(timer_log);
+            //                if (!file.open(QFile::WriteOnly|QFile::Truncate))
+            //                {
+            //                    cout <<"Error opening the log file "<<timer_log.toStdString().c_str() << endl;
+            //                }
 
-//                QTextStream stream (&file);
-//                stream << "the plugin preprocessing takes\t"<< etime_plugin <<" milliseconds"<<"\n";
-//                file.close();
-//            }
+            //                QTextStream stream (&file);
+            //                stream << "the plugin preprocessing takes\t"<< etime_plugin <<" milliseconds"<<"\n";
+            //                file.close();
+            //            }
         }
         else
         {
@@ -532,15 +532,15 @@ void MainWindow::handleCoordinatedCloseEvent_real() {
         if (p3DView)
         {
             p3DView->postClose(); //151117. PHC
-//        v3d_msg("haha");
+            //        v3d_msg("haha");
         }
     }
     //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
 
 #if defined(USE_Qt5)
-    workspace->closeAllSubWindows();
+        workspace->closeAllSubWindows();
 #else
-    workspace->closeAllWindows();
+        workspace->closeAllWindows();
 #endif
 }
 void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event)
@@ -620,14 +620,14 @@ void MainWindow::dropEvent(QDropEvent *event)
             }
 #ifdef __TEST_DROP_QT5_MAC_
             if (urlList.at(i).path().startsWith("file:///.file/id=")) {
-                    QUrl url(urlList.at(i).path());
-                    CFURLRef cfurl = url.toCFURL();
-                    CFErrorRef error = 0;
-                    CFURLRef absurl = CFURLCreateFilePathURL(kCFAllocatorDefault, cfurl, &error);
-                    url = QUrl::fromCFURL(absurl);
-                    CFRelease(cfurl);
-                    CFRelease(absurl);
-                }
+                QUrl url(urlList.at(i).path());
+                CFURLRef cfurl = url.toCFURL();
+                CFErrorRef error = 0;
+                CFURLRef absurl = CFURLCreateFilePathURL(kCFAllocatorDefault, cfurl, &error);
+                url = QUrl::fromCFURL(absurl);
+                CFRelease(cfurl);
+                CFRelease(absurl);
+            }
 #endif
 
 #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
@@ -879,8 +879,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
-#endif
-                            //setCurrentFile(fileName);
+#endif \
+    //setCurrentFile(fileName);
                         } else {
                             child_rawimg->close();
                         }
@@ -907,8 +907,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                             workspace->cascadeSubWindows();
 #else
                             workspace->cascade();
-#endif
-                            //setCurrentFile(fileName);
+#endif \
+    //setCurrentFile(fileName);
                         } else {
                             child_maskimg->close();
                         }
@@ -921,10 +921,10 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 }
             }
             if (cc.pointcloud_file_list.size()>0
-                    || cc.swc_file_list.size()>0
-                    || cc.surface_file_list.size()>0
-                    || cc.marker_file_list.size()>0 // Added by Peng Xie , 2019-06-05
-                    )
+                || cc.swc_file_list.size()>0
+                || cc.surface_file_list.size()>0
+                || cc.marker_file_list.size()>0 // Added by Peng Xie , 2019-06-05
+                )
             {
                 //directly open the 3D viewer
                 iDrawExternalParameter * mypara_3Dview = 0;
@@ -989,7 +989,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             }
         }
         else if (cur_suffix=="MARKER" ||  cur_suffix=="CSV")
-                 //added by PHC, 20130420.
+        //added by PHC, 20130420.
         {
             v3d_msg("Directly loading a marker or csv file into Vaa3D's main window is ambiguous. \n"
                     "You can either open it directly in a 3D viewer window of an image, or literally associate \n"
@@ -1079,8 +1079,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     workspace->cascadeSubWindows();
 #else
                     workspace->cascade();
-#endif
-                    //update the image data listAtlasFiles member
+#endif \
+    //update the image data listAtlasFiles member
                     cur_atlas_list[kk].on = true; //since this one has been opened
                     child->getImageData()->listAtlasFiles = cur_atlas_list;
                 } else {
@@ -1107,23 +1107,23 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             }
         }
         else if ( (cur_suffix=="LSM") ||
-                  (cur_suffix=="TIF") ||
-                  (cur_suffix=="TIFF") ||
-                  (cur_suffix=="RAW") ||
-                  (cur_suffix=="V3DRAW") ||
-                  (cur_suffix=="VAA3DRAW") ||
-                  (cur_suffix=="RAW5") ||
-                  (cur_suffix=="V3DRAW5") ||
-                  (cur_suffix=="VAA3DRAW5") ||
-                  (cur_suffix=="MRC") ||
-                  (cur_suffix=="V3DPBD") ||
-                  (cur_suffix=="NRRD") ||
-                  (cur_suffix=="NHDR") ||
-                  (cur_suffix=="VAA3DPBD") ||
-                  (cur_suffix=="MP4") ||
-                  (cur_suffix=="H5J") ||
-                  curfile_info.suffix().isEmpty() //then invoke raw reader in this case, 20120410. PHC
-                  )
+                 (cur_suffix=="TIF") ||
+                 (cur_suffix=="TIFF") ||
+                 (cur_suffix=="RAW") ||
+                 (cur_suffix=="V3DRAW") ||
+                 (cur_suffix=="VAA3DRAW") ||
+                 (cur_suffix=="RAW5") ||
+                 (cur_suffix=="V3DRAW5") ||
+                 (cur_suffix=="VAA3DRAW5") ||
+                 (cur_suffix=="MRC") ||
+                 (cur_suffix=="V3DPBD") ||
+                 (cur_suffix=="NRRD") ||
+                 (cur_suffix=="NHDR") ||
+                 (cur_suffix=="VAA3DPBD") ||
+                 (cur_suffix=="MP4") ||
+                 (cur_suffix=="H5J") ||
+                 curfile_info.suffix().isEmpty() //then invoke raw reader in this case, 20120410. PHC
+                 )
         {
             try
             {
@@ -1133,8 +1133,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
                 if (child->loadFile(fileName))
                 {
-//                    if(!child) return;
-//                    if(!child->getImageData()) return;
+                    //                    if(!child) return;
+                    //                    if(!child->getImageData()) return;
 
                     //if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
                     //bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operations unable to finish. should be disabled!!.
@@ -1179,8 +1179,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                     child->close();
                     if (QMessageBox::question(0, "File Open options",
                                               QString("Cannot open the specified image [%1] using Vaa3D's default file opener. "
-                                              "Do you want to try other file opener in Vaa3D plugins?").arg(fileName), QMessageBox::Yes, QMessageBox::No)
-                            == QMessageBox::Yes)
+                                                      "Do you want to try other file opener in Vaa3D plugins?").arg(fileName), QMessageBox::Yes, QMessageBox::No)
+                        == QMessageBox::Yes)
                     {
                         //call 3rd party file loader //20131125. by PHC
                         //(QString("").arg(fileName));
@@ -1204,152 +1204,152 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         }
         //the following is to use bioformats to load the file. NOTE THE FOLLOWING LIST HAS SOME REDUNDANCY. But the executation should be fine
         else if ( (cur_suffix=="BMP") ||
-                  (cur_suffix=="PNG") ||
-                  (cur_suffix=="JPG") ||
-                  (cur_suffix=="JPEG") ||
-                  (cur_suffix=="NRRD") ||
-                  (cur_suffix=="CZI") ||
-                  (cur_suffix=="LIF") ||
-                  (cur_suffix=="JP2") ||
+                 (cur_suffix=="PNG") ||
+                 (cur_suffix=="JPG") ||
+                 (cur_suffix=="JPEG") ||
+                 (cur_suffix=="NRRD") ||
+                 (cur_suffix=="CZI") ||
+                 (cur_suffix=="LIF") ||
+                 (cur_suffix=="JP2") ||
 
-                  (cur_suffix=="SLD") ||
-                  (cur_suffix=="AIM") ||
-                  (cur_suffix=="AL3D") ||
-                  (cur_suffix=="GEL") ||
-                  (cur_suffix=="AM") ||
-                  (cur_suffix=="AMIRAMESH") ||
-                  (cur_suffix=="GREY") ||
-                  (cur_suffix=="HX") ||
-                  (cur_suffix=="LABELS") ||
-                  (cur_suffix=="IMG") ||
-                  (cur_suffix=="HDR") ||
-                  (cur_suffix=="PNG") ||
-                  (cur_suffix=="SVS") ||
-                  (cur_suffix=="HTD") ||
-                  (cur_suffix=="PNL") ||
-                  (cur_suffix=="AVI") ||
-                  (cur_suffix=="ARF") ||
-                  (cur_suffix=="EXP") ||
-                  (cur_suffix=="SDT") ||
-                  (cur_suffix=="1SC") ||
-                  (cur_suffix=="PIC") ||
-                  (cur_suffix=="XML") ||
-                  (cur_suffix=="IMS") ||
-                  (cur_suffix=="CR2") ||
-                  (cur_suffix=="CRW") ||
-                  (cur_suffix=="C01") ||
-                  (cur_suffix=="VSI") ||
-                  (cur_suffix=="DV") ||
-                  (cur_suffix=="R3D") ||
-                  (cur_suffix=="DCM") ||
-                  (cur_suffix=="DICOM") ||
-                  (cur_suffix=="V") ||
-                  (cur_suffix=="EPS") ||
-                  (cur_suffix=="EPSI") ||
-                  (cur_suffix=="PS") ||
-                  (cur_suffix=="FLEX") ||
-                  (cur_suffix=="MEA") ||
-                  (cur_suffix=="RES") ||
-                  (cur_suffix=="FITS") ||
-                  (cur_suffix=="DM3") ||
-                  (cur_suffix=="DM2") ||
-                  (cur_suffix=="GIF") ||
-                  (cur_suffix=="NAF") ||
-                  (cur_suffix=="HIS") ||
-                  (cur_suffix=="NDPI") ||
-                  (cur_suffix=="VMS") ||
-                  (cur_suffix=="TXT") ||
-                  (cur_suffix=="BMP") ||
-                  (cur_suffix=="JPG") ||
-                  (cur_suffix=="JPEG") ||
-                  (cur_suffix=="ICS") ||
-                  (cur_suffix=="IDS") ||
-                  (cur_suffix=="FFF") ||
-                  (cur_suffix=="SEQ") ||
-                  (cur_suffix=="IPW") ||
-                  (cur_suffix=="HED") ||
-                  (cur_suffix=="MOD") ||
-                  (cur_suffix=="LIFF") ||
-                  (cur_suffix=="XDCE") ||
-                  (cur_suffix=="FRM") ||
-                  (cur_suffix=="INR") ||
-                  (cur_suffix=="IPL") ||
-                  (cur_suffix=="IPM") ||
-                  (cur_suffix=="DAT") ||
-                  (cur_suffix=="PAR") ||
-                  (cur_suffix=="JP2") ||
-                  (cur_suffix=="JPK") ||
-                  (cur_suffix=="JPX") ||
-                  (cur_suffix=="XV") ||
-                  (cur_suffix=="BIP") ||
-                  (cur_suffix=="FLI") ||
-                  (cur_suffix=="LEI") ||
-                  (cur_suffix=="LIF") ||
-                  (cur_suffix=="SCN") ||
-                  (cur_suffix=="SXM") ||
-                  (cur_suffix=="L2D") ||
-                  (cur_suffix=="LIM") ||
-                  (cur_suffix=="STK") ||
-                  (cur_suffix=="ND") ||
-                  (cur_suffix=="MNC") ||
-                  (cur_suffix=="MRW") ||
-                  (cur_suffix=="MNG") ||
-                  (cur_suffix=="STP") ||
-                  (cur_suffix=="MRC") ||
-                  (cur_suffix=="NEF") ||
-                  (cur_suffix=="ND2") ||
-                  (cur_suffix=="NRRD") ||
-                  (cur_suffix=="NHDR") ||
-                  (cur_suffix=="RAW") ||
-                  (cur_suffix=="APL") ||
-                  (cur_suffix=="MTB") ||
-                  (cur_suffix=="TNB") ||
-                  (cur_suffix=="OBSEP") ||
-                  (cur_suffix=="OIB") ||
-                  (cur_suffix=="OIF") ||
-                  (cur_suffix=="OME") ||
-                  (cur_suffix=="TOP") ||
-                  (cur_suffix=="PCX") ||
-                  (cur_suffix=="PDS") ||
-                  (cur_suffix=="2") ||
-                  (cur_suffix=="3") ||
-                  (cur_suffix=="4") ||
-                  (cur_suffix=="PGM") ||
-                  (cur_suffix=="PSD") ||
-                  (cur_suffix=="PICT") ||
-                  (cur_suffix=="PNG") ||
-                  (cur_suffix=="CFG") ||
-                  (cur_suffix=="AFM") ||
-                  (cur_suffix=="MOV") ||
-                  (cur_suffix=="SM2") ||
-                  (cur_suffix=="SM3") ||
-                  (cur_suffix=="XQD") ||
-                  (cur_suffix=="XQF") ||
-                  (cur_suffix=="CXD") ||
-                  (cur_suffix=="SPI") ||
-                  (cur_suffix=="STK") ||
-                  (cur_suffix=="TGA") ||
-                  (cur_suffix=="VWS") ||
-                  (cur_suffix=="TFR") ||
-                  (cur_suffix=="FFR") ||
-                  (cur_suffix=="ZFR") ||
-                  (cur_suffix=="ZFP") ||
-                  (cur_suffix=="2FL") ||
-                  (cur_suffix=="SLD") ||
-                  (cur_suffix=="PR3") ||
-                  (cur_suffix=="DAT") ||
-                  (cur_suffix=="FDF") ||
-                  (cur_suffix=="DTI") ||
-                  (cur_suffix=="XYS") ||
-                  (cur_suffix=="HTML") ||
-                  (cur_suffix=="MVD2") ||
-                  (cur_suffix=="ACFF") ||
-                  (cur_suffix=="WAT") ||
-                  (cur_suffix=="ZVI") ||
-                  (cur_suffix=="CZI") ||
-                  (cur_suffix=="LSM") ||
-                  (cur_suffix=="MDB")
-                  )
+                 (cur_suffix=="SLD") ||
+                 (cur_suffix=="AIM") ||
+                 (cur_suffix=="AL3D") ||
+                 (cur_suffix=="GEL") ||
+                 (cur_suffix=="AM") ||
+                 (cur_suffix=="AMIRAMESH") ||
+                 (cur_suffix=="GREY") ||
+                 (cur_suffix=="HX") ||
+                 (cur_suffix=="LABELS") ||
+                 (cur_suffix=="IMG") ||
+                 (cur_suffix=="HDR") ||
+                 (cur_suffix=="PNG") ||
+                 (cur_suffix=="SVS") ||
+                 (cur_suffix=="HTD") ||
+                 (cur_suffix=="PNL") ||
+                 (cur_suffix=="AVI") ||
+                 (cur_suffix=="ARF") ||
+                 (cur_suffix=="EXP") ||
+                 (cur_suffix=="SDT") ||
+                 (cur_suffix=="1SC") ||
+                 (cur_suffix=="PIC") ||
+                 (cur_suffix=="XML") ||
+                 (cur_suffix=="IMS") ||
+                 (cur_suffix=="CR2") ||
+                 (cur_suffix=="CRW") ||
+                 (cur_suffix=="C01") ||
+                 (cur_suffix=="VSI") ||
+                 (cur_suffix=="DV") ||
+                 (cur_suffix=="R3D") ||
+                 (cur_suffix=="DCM") ||
+                 (cur_suffix=="DICOM") ||
+                 (cur_suffix=="V") ||
+                 (cur_suffix=="EPS") ||
+                 (cur_suffix=="EPSI") ||
+                 (cur_suffix=="PS") ||
+                 (cur_suffix=="FLEX") ||
+                 (cur_suffix=="MEA") ||
+                 (cur_suffix=="RES") ||
+                 (cur_suffix=="FITS") ||
+                 (cur_suffix=="DM3") ||
+                 (cur_suffix=="DM2") ||
+                 (cur_suffix=="GIF") ||
+                 (cur_suffix=="NAF") ||
+                 (cur_suffix=="HIS") ||
+                 (cur_suffix=="NDPI") ||
+                 (cur_suffix=="VMS") ||
+                 (cur_suffix=="TXT") ||
+                 (cur_suffix=="BMP") ||
+                 (cur_suffix=="JPG") ||
+                 (cur_suffix=="JPEG") ||
+                 (cur_suffix=="ICS") ||
+                 (cur_suffix=="IDS") ||
+                 (cur_suffix=="FFF") ||
+                 (cur_suffix=="SEQ") ||
+                 (cur_suffix=="IPW") ||
+                 (cur_suffix=="HED") ||
+                 (cur_suffix=="MOD") ||
+                 (cur_suffix=="LIFF") ||
+                 (cur_suffix=="XDCE") ||
+                 (cur_suffix=="FRM") ||
+                 (cur_suffix=="INR") ||
+                 (cur_suffix=="IPL") ||
+                 (cur_suffix=="IPM") ||
+                 (cur_suffix=="DAT") ||
+                 (cur_suffix=="PAR") ||
+                 (cur_suffix=="JP2") ||
+                 (cur_suffix=="JPK") ||
+                 (cur_suffix=="JPX") ||
+                 (cur_suffix=="XV") ||
+                 (cur_suffix=="BIP") ||
+                 (cur_suffix=="FLI") ||
+                 (cur_suffix=="LEI") ||
+                 (cur_suffix=="LIF") ||
+                 (cur_suffix=="SCN") ||
+                 (cur_suffix=="SXM") ||
+                 (cur_suffix=="L2D") ||
+                 (cur_suffix=="LIM") ||
+                 (cur_suffix=="STK") ||
+                 (cur_suffix=="ND") ||
+                 (cur_suffix=="MNC") ||
+                 (cur_suffix=="MRW") ||
+                 (cur_suffix=="MNG") ||
+                 (cur_suffix=="STP") ||
+                 (cur_suffix=="MRC") ||
+                 (cur_suffix=="NEF") ||
+                 (cur_suffix=="ND2") ||
+                 (cur_suffix=="NRRD") ||
+                 (cur_suffix=="NHDR") ||
+                 (cur_suffix=="RAW") ||
+                 (cur_suffix=="APL") ||
+                 (cur_suffix=="MTB") ||
+                 (cur_suffix=="TNB") ||
+                 (cur_suffix=="OBSEP") ||
+                 (cur_suffix=="OIB") ||
+                 (cur_suffix=="OIF") ||
+                 (cur_suffix=="OME") ||
+                 (cur_suffix=="TOP") ||
+                 (cur_suffix=="PCX") ||
+                 (cur_suffix=="PDS") ||
+                 (cur_suffix=="2") ||
+                 (cur_suffix=="3") ||
+                 (cur_suffix=="4") ||
+                 (cur_suffix=="PGM") ||
+                 (cur_suffix=="PSD") ||
+                 (cur_suffix=="PICT") ||
+                 (cur_suffix=="PNG") ||
+                 (cur_suffix=="CFG") ||
+                 (cur_suffix=="AFM") ||
+                 (cur_suffix=="MOV") ||
+                 (cur_suffix=="SM2") ||
+                 (cur_suffix=="SM3") ||
+                 (cur_suffix=="XQD") ||
+                 (cur_suffix=="XQF") ||
+                 (cur_suffix=="CXD") ||
+                 (cur_suffix=="SPI") ||
+                 (cur_suffix=="STK") ||
+                 (cur_suffix=="TGA") ||
+                 (cur_suffix=="VWS") ||
+                 (cur_suffix=="TFR") ||
+                 (cur_suffix=="FFR") ||
+                 (cur_suffix=="ZFR") ||
+                 (cur_suffix=="ZFP") ||
+                 (cur_suffix=="2FL") ||
+                 (cur_suffix=="SLD") ||
+                 (cur_suffix=="PR3") ||
+                 (cur_suffix=="DAT") ||
+                 (cur_suffix=="FDF") ||
+                 (cur_suffix=="DTI") ||
+                 (cur_suffix=="XYS") ||
+                 (cur_suffix=="HTML") ||
+                 (cur_suffix=="MVD2") ||
+                 (cur_suffix=="ACFF") ||
+                 (cur_suffix=="WAT") ||
+                 (cur_suffix=="ZVI") ||
+                 (cur_suffix=="CZI") ||
+                 (cur_suffix=="LSM") ||
+                 (cur_suffix=="MDB")
+                 )
         {
             try
             {
@@ -1385,8 +1385,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                         }
                     }
                     if (global_setting.b_yaxis_up)
-                        //add 1 here so that this condition is always true. This is becasue it seems Bioformats has a different way to orient an image from vaa3d. So always flip. by PHC, 140128
-                        //remove 1 now because I use v3draw as tmp file right now.
+                    //add 1 here so that this condition is always true. This is becasue it seems Bioformats has a different way to orient an image from vaa3d. So always flip. by PHC, 140128
+                    //remove 1 now because I use v3draw as tmp file right now.
                     {
                         child->getImageData()->flip(axis_y);
                     }
@@ -1412,105 +1412,105 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                                 "The file may have certain problem - check the file format, or is simply too big but you don't have enough memory.").arg(fileName));
             }
         }
-//		else if (cur_suffix=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
-//        {
-//			QString basename = curfile_info.baseName();
-//
-//			QString hraw_prefix = "test";//""curfile_info.absolutePath()  + basename.left(basename.indexOf(".")); // before the first "."
-//
-//			string prefix = hraw_prefix.toStdString();
-//			//string prefix ="/Volumes/PengMapView/mapview_testdata/ananya/test";
-//
-//             try
-//             {
-//                  size_t start_t = clock();
-//
-//                  // contents of .hraw file
-//                  // L, M, N, l, m, n
-//                  // level : level nums
-//                  // outsz[3]
-//
-//                  int L = 14; //log(8)/log(2.0);
-//                  int M = 38; //log(8)/log(2.0);
-//                  int N = 3;  //log(8)/log(2.0);
-//                  int l = 512;//log(256)/log(2.0);
-//                  int m = 256;//log(128)/log(2.0);
-//                  int n = 64; //log(64)/log(2.0);
-//                  int level = 0;
-//
-//                  ImageMapView mapview;
-//                  mapview.setPara(prefix, L, M, N, l, m, n);
-//
-//                  unsigned char * outimg1d = 0;
-//                  V3DLONG origin[3] = {0, 0, 0};
-//                  V3DLONG outsz[4] = {512, 256, 64, 1};
-//
-//                  mapview.getImage(level, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
-//
-//                  XFormWidget *child = createMdiChild();
-//                  child->setImageData(outimg1d, outsz[0], outsz[1], outsz[2], outsz[3], V3D_UINT8);
-//                  child->mypara_3Dview.image4d = child->getImageData();
-//
-//                  // mapview control
-//                  Mapview_Paras mv_paras;
-//                  mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
-//                  mv_paras.l=l; mv_paras.m=m; mv_paras.n=n;
-//                  mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
-//                  mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[1] = outsz[1]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
-//                  mv_paras.hraw_prefix=hraw_prefix;
-//                  mv_paras.level = level;
-//
-//                  child->mapview_paras = mv_paras;
-//                  child->mapview = mapview;
-//
-//                  child->setWindowTitle_Prefix(hraw_prefix.toAscii());
-//                  child->setWindowTitle_Suffix("");
-//
-//                  child->reset();
-//
-//                  if (global_setting.b_autoConvert2_8bit)
-//                  {
-//                       if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
-//                       {
-//                            if (child->getImageData()->getDatatype()==V3D_UINT16)
-//                                 child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
-//                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
-//                                 child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
-//                       }
-//                       else //otherwise do the conversion directly
-//                       {
-//                            if (child->getImageData()->getDatatype()==V3D_UINT16)
-//                                 child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
-//                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
-//                                 child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
-//                       }
-//                  }
-//
-//                  if (global_setting.b_yaxis_up)
-//                  {
-//                       child->getImageData()->flip(axis_y);
-//                  }
-//
-//                  child->show();
-//
-//                  // create mapview control window
-//                  child->createMapviewControlWin();
-//
-//                  if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
-//                  {
-//                       child->doImage3DView();
-//                  }
-//
-//                  size_t end_t = clock();
-//                  qDebug()<<"time consume ..."<<end_t-start_t;
-//
-//             }
-//             catch(...)
-//             {
-//                  QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
-//                  v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
-//             }
-//        } // end hraw
+        //		else if (cur_suffix=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
+        //        {
+        //			QString basename = curfile_info.baseName();
+        //
+        //			QString hraw_prefix = "test";//""curfile_info.absolutePath()  + basename.left(basename.indexOf(".")); // before the first "."
+        //
+        //			string prefix = hraw_prefix.toStdString();
+        //			//string prefix ="/Volumes/PengMapView/mapview_testdata/ananya/test";
+        //
+        //             try
+        //             {
+        //                  size_t start_t = clock();
+        //
+        //                  // contents of .hraw file
+        //                  // L, M, N, l, m, n
+        //                  // level : level nums
+        //                  // outsz[3]
+        //
+        //                  int L = 14; //log(8)/log(2.0);
+        //                  int M = 38; //log(8)/log(2.0);
+        //                  int N = 3;  //log(8)/log(2.0);
+        //                  int l = 512;//log(256)/log(2.0);
+        //                  int m = 256;//log(128)/log(2.0);
+        //                  int n = 64; //log(64)/log(2.0);
+        //                  int level = 0;
+        //
+        //                  ImageMapView mapview;
+        //                  mapview.setPara(prefix, L, M, N, l, m, n);
+        //
+        //                  unsigned char * outimg1d = 0;
+        //                  V3DLONG origin[3] = {0, 0, 0};
+        //                  V3DLONG outsz[4] = {512, 256, 64, 1};
+        //
+        //                  mapview.getImage(level, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
+        //
+        //                  XFormWidget *child = createMdiChild();
+        //                  child->setImageData(outimg1d, outsz[0], outsz[1], outsz[2], outsz[3], V3D_UINT8);
+        //                  child->mypara_3Dview.image4d = child->getImageData();
+        //
+        //                  // mapview control
+        //                  Mapview_Paras mv_paras;
+        //                  mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
+        //                  mv_paras.l=l; mv_paras.m=m; mv_paras.n=n;
+        //                  mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
+        //                  mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[1] = outsz[1]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
+        //                  mv_paras.hraw_prefix=hraw_prefix;
+        //                  mv_paras.level = level;
+        //
+        //                  child->mapview_paras = mv_paras;
+        //                  child->mapview = mapview;
+        //
+        //                  child->setWindowTitle_Prefix(hraw_prefix.toAscii());
+        //                  child->setWindowTitle_Suffix("");
+        //
+        //                  child->reset();
+        //
+        //                  if (global_setting.b_autoConvert2_8bit)
+        //                  {
+        //                       if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
+        //                       {
+        //                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+        //                                 child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
+        //                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+        //                                 child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
+        //                       }
+        //                       else //otherwise do the conversion directly
+        //                       {
+        //                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+        //                                 child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
+        //                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+        //                                 child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
+        //                       }
+        //                  }
+        //
+        //                  if (global_setting.b_yaxis_up)
+        //                  {
+        //                       child->getImageData()->flip(axis_y);
+        //                  }
+        //
+        //                  child->show();
+        //
+        //                  // create mapview control window
+        //                  child->createMapviewControlWin();
+        //
+        //                  if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
+        //                  {
+        //                       child->doImage3DView();
+        //                  }
+        //
+        //                  size_t end_t = clock();
+        //                  qDebug()<<"time consume ..."<<end_t-start_t;
+        //
+        //             }
+        //             catch(...)
+        //             {
+        //                  QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
+        //                  v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
+        //             }
+        //        } // end hraw
         else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
         {
             v3d_msg(QString("The file [%1] has an unsupported file name extension and cannot be opened properly! "
@@ -1673,7 +1673,7 @@ void MainWindow::openRecentFile()
             // Only download ftp, http, https, etc.
             // not "file" nor empty "" URL scheme
             if ( (! url.isRelative())
-                 && (url.scheme() != "file") )
+                && (url.scheme() != "file") )
             {
                 // qDebug("Recent URL chosen");
                 loadV3DUrl(url);
@@ -1761,19 +1761,19 @@ void MainWindow::save()
 {
     if (activeMdiChild())
         if (activeMdiChild()->saveData())
-	{
+        {
             setCurrentFile(activeMdiChild()->userFriendlyCurrentFile());
             statusBar()->showMessage(tr("File saved [%1]").arg(activeMdiChild()->userFriendlyCurrentFile()), 2000);
-	}
+        }
 }
 void MainWindow::saveAs()
 {
     if (activeMdiChild())
         if (activeMdiChild()->saveData())
-	{
+        {
             setCurrentFile(activeMdiChild()->userFriendlyCurrentFile());
             statusBar()->showMessage(tr("File saved"), 2000);
-	}
+        }
 }
 void MainWindow::cut()
 {
@@ -1849,8 +1849,8 @@ void MainWindow::updateMenus()
     if (hasMdiChild)
     {
         procGeneral_toggle_landmark_label->setText( (activeMdiChild()->bDispMarkerLabel) ?
-                                                        "Turn OFF landmark label in the current active tri-view" :
-                                                        "Turn ON landmark label in the current active tri-view");
+                                                       "Turn OFF landmark label in the current active tri-view" :
+                                                       "Turn ON landmark label in the current active tri-view");
     }
     if (hasMdiChild)
     {
@@ -1929,16 +1929,16 @@ void MainWindow::updateMenus()
     procTracing_manualCorrect->setEnabled(hasMdiChild);
     if (hasMdiChild)
     {
-		QDir pluginsDir = QDir(qApp->applicationDirPath());
+        QDir pluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
-		if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
-			pluginsDir.cdUp();
+        if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+            pluginsDir.cdUp();
 #elif defined(Q_OS_MAC)
-		if (pluginsDir.dirName() == "MacOS") {
-			pluginsDir.cdUp();
-			pluginsDir.cdUp();
-			pluginsDir.cdUp();
-		}
+        if (pluginsDir.dirName() == "MacOS") {
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+        }
 #endif
         procTracing_APP2auto->setEnabled(pluginsDir.cd("plugins/neuron_tracing/Vaa3D_Neuron2"));
 
@@ -1989,7 +1989,7 @@ void MainWindow::updatePluginMenu()
 {
     v3d_msg("hello updatePluginMenu enter");
     if (pluginLoader)  // rescanPlugins() on 20130826 to ensure every time there is a refresh plugin list.
-                   //This may be a memory leak issue as the few menus might need to be created every time. by PHC
+    //This may be a memory leak issue as the few menus might need to be created every time. by PHC
     {
         v3d_msg("hello updatePluginMenu");
         pluginLoader->rescanPlugins(); //do nothing for now, as it seems rescanning every time is slowing down other menus and also is related to TeraFly zoom-out warning. by PHC 20130830
@@ -2037,10 +2037,10 @@ void MainWindow::updateWindowMenu()
         QString text;
         if (i < 9) {
             text = tr("tri-view: &%1 %2").arg(i + 1)
-                    .arg(child->userFriendlyCurrentFile());
+                       .arg(child->userFriendlyCurrentFile());
         } else {
             text = tr("tri-view: %1 %2").arg(i + 1)
-                    .arg(child->userFriendlyCurrentFile());
+                       .arg(child->userFriendlyCurrentFile());
         }
         QAction *action  = windowMenu->addAction(text);
         action->setCheckable(true);
@@ -2174,7 +2174,7 @@ void MainWindow::updateProcessingMenu()
 #endif
 #endif
 
-    //
+//
 #ifdef _ALLOW_IMGSTD_MENU_
     proc_standarization_menu->addAction(procElongated_randomSeeding);
     proc_standarization_menu->addSeparator();
@@ -2364,7 +2364,7 @@ void MainWindow::createActions()
     closeAllAct->setStatusTip(tr("Close all the windows"));
 
 
-//    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
+    //    connect(closeAllAct, SIGNAL(triggered()), workspace, SLOT(closeAllWindows()));
     connect(closeAllAct, SIGNAL(triggered()), this, SLOT(handleCoordinatedCloseEvent_real()));
 
 
@@ -2651,16 +2651,16 @@ void MainWindow::createMenus()
     //plugin menu
 
     pluginProcMenu = menuBar()->addMenu(tr("Plug-In"));
-//    //20130904, PHC
-//    pluginProcMenu = new Vaa3DPluginMenu(tr("Plug-In"));
-//    pluginProcMenu->setPluginLoader(pluginLoader);
-//    menuBar()->addMenu(pluginProcMenu);
-//    //menuBar()->addMenu((QMenu *)pluginProcMenu);
+    //    //20130904, PHC
+    //    pluginProcMenu = new Vaa3DPluginMenu(tr("Plug-In"));
+    //    pluginProcMenu->setPluginLoader(pluginLoader);
+    //    menuBar()->addMenu(pluginProcMenu);
+    //    //menuBar()->addMenu((QMenu *)pluginProcMenu);
 
     connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
-//    connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
+    //    connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
     connect(pluginProcMenu, SIGNAL(aboutToShow()), this, SLOT(updatePluginMenu()));
-//    connect(pluginProcMenu, SIGNAL(QAction::triggered()), this, SLOT(updatePluginMenu()));
+    //    connect(pluginProcMenu, SIGNAL(QAction::triggered()), this, SLOT(updatePluginMenu()));
 
     //others
     windowMenu = menuBar()->addMenu(tr("&Window"));
@@ -2784,7 +2784,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 #endif
         XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
         QString mdiChildPath = // CMB Oct-14-2010
-                QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
+            QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
         if (mdiChildPath.isEmpty()) //in this case, try to handle a plugin-opened/returned image window with a title but without a real meaningful path yet. by PHC, 20120720
         {
             mdiChildPath = mdiChild->getOpenFileNameLabel();
@@ -2806,7 +2806,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 #endif
             XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
             QString mdiChildPath = // CMB Oct-14-2010
-                    QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
+                QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
             if ( mdiChildPath.endsWith(canonicalFilePath) || QFileInfo(mdiChildPath).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
             {
                 mdiChildFind = mdiChild;
@@ -3017,10 +3017,10 @@ void MainWindow::func_open_teraconverter()
 
 void MainWindow::func_open_neuron_game()
 {
-	V3d_PluginLoader *pl = new V3d_PluginLoader(this);
+    V3d_PluginLoader *pl = new V3d_PluginLoader(this);
 #ifdef __ALLOW_VR_FUNCS__
     qRegisterMetaType<itm::integer_array>("itm::integer_array");
-	mozak::MozakUI::init(pl);
+    mozak::MozakUI::init(pl);
 #endif
 }
 #endif
@@ -3090,8 +3090,8 @@ void MainWindow::func_procPC_Atlas_view_atlas_computeVanoObjStat()
 
 #if defined(USE_Qt5)
     int ch_ind = QInputDialog::getInt(this, tr("channel"),
-                                          tr("The selected directory contains %1 .ano files. <br><br> which image channel to compute the image objects statistics?").arg(listRecompute.size()),
-                                          1, 1, 3, 1, &ok1) - 1;
+                                      tr("The selected directory contains %1 .ano files. <br><br> which image channel to compute the image objects statistics?").arg(listRecompute.size()),
+                                      1, 1, 3, 1, &ok1) - 1;
     //now do for every file
 #else
     int ch_ind = QInputDialog::getInteger(this, tr("channel"),
@@ -3169,7 +3169,7 @@ void MainWindow::func_procPC_Atlas_view_atlas_computeVanoObjStat()
                 return;
             }
             if (n_objects != aporecord.size()+1) //this indicates there are an incorrect number of image objects in the MASKIMG that are not recorded in the respective annotation spreadsheet. Thus the file may corrupt.
-                //note that +1 is because when I search how many objects, I always include 1 more for indexing convenience
+            //note that +1 is because when I search how many objects, I always include 1 more for indexing convenience
             {
                 v3d_msg(tr("The number of image objects = %1, diff from (1 + what recorded in the annotation file %2). Check your data!").arg(n_objects).arg(aporecord.size()));
                 return;

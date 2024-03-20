@@ -912,6 +912,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         RGBA8 cc = listMarker.at(names[2]-1).color;
                         LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
                         s->color = cc;
+                        terafly::CViewer::getCurrent()->storeAnnotations();
                         if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
                         {
                             w->SetupCollaborateInfo();
@@ -920,8 +921,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                             //                            w->TeraflyCommunicator->timer_exit->stop();
                             //                        }
                             //                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                            w->TeraflyCommunicator->emitUpdateQcInfo();
                         }
-                        terafly::CViewer::getCurrent()->storeAnnotations();
                     }
                 }
             }

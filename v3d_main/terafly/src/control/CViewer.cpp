@@ -1870,6 +1870,7 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
         QList<ImageMarker> &listMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
 
         vector<CellAPO> tobeSendMarkers;
+        bool flag = false;
         for (QList<ImageMarker>::iterator it = listMarker.begin(); it!= listMarker.end(); it++)
         {
             if (it->selected && !CAnnotations::isMarkerOutOfRendererBounds(*it, *this))
@@ -1891,11 +1892,16 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
                             marker.y = it->y;
                             marker.z = it->z;
                             marker.color = it->color;
+                            marker.comment = it->comment;
                             tobeSendMarkers.push_back(marker);
                             //                            if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
                             //                                view3DWidget->TeraflyCommunicator->timer_exit->stop();
                             //                            }
                             //                            view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                            if(std::find(view3DWidget->quality_control_types.begin(), view3DWidget->quality_control_types.end(), it->comment) != view3DWidget->quality_control_types.end()){
+                                flag = true;
+                                view3DWidget->TeraflyCommunicator->checkedQcMarkers.push_back(marker);
+                            }
                         }
 
                         break;
@@ -1908,14 +1914,20 @@ void CViewer::deleteSelectedMarkers() throw (RuntimeException)
             }
 
         }
+
+        terafly::CViewer::getCurrent()->storeAnnotations();
         if(view3DWidget->TeraflyCommunicator!=nullptr
-            &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+            &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState){
             view3DWidget->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
+            if(flag){
+                view3DWidget->TeraflyCommunicator->emitUpdateQcInfo();
+                view3DWidget->TeraflyCommunicator->emitUpdateQcMarkersCounts();
+            }
+        }
 
         // set new markers
         V3D_env->setLandmark(window, vaa3dMarkers);
         V3D_env->pushObjectIn3DWindow(window);
-        terafly::CViewer::getCurrent()->storeAnnotations();
 
         // update visible markers
         PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
@@ -2002,6 +2014,7 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
     QList <ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
     vector<CellAPO> tobeSendMarkers;
+    bool flag = false;
 
     for(int i=0; i<imageMarkers.size(); i++)
     {
@@ -2027,7 +2040,13 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
                 marker.y = imageMarkers[i].y;
                 marker.z = imageMarkers[i].z;
                 marker.color = imageMarkers[i].color;
+                marker.comment = imageMarkers[i].comment;
                 tobeSendMarkers.push_back(marker);
+
+                if(std::find(view3DWidget->quality_control_types.begin(), view3DWidget->quality_control_types.end(), marker.comment) != view3DWidget->quality_control_types.end()){
+                    flag = true;
+                    view3DWidget->TeraflyCommunicator->checkedQcMarkers.push_back(marker);
+                }
 
                 //                if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
                 //                    view3DWidget->TeraflyCommunicator->timer_exit->stop();
@@ -2041,10 +2060,6 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
             }*/
         }
     }
-
-    if(view3DWidget->TeraflyCommunicator!=nullptr
-        &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
-        view3DWidget->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
 
     // remove selected markers
     for(int i=0; i<vaa3dMarkers_tbd.size(); i++)
@@ -2066,6 +2081,17 @@ void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers
     V3D_env->setLandmark(window, vaa3dMarkers);
     V3D_env->pushObjectIn3DWindow(window);
     terafly::CViewer::getCurrent()->storeAnnotations();
+
+    if(view3DWidget->TeraflyCommunicator!=nullptr
+        &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState){
+        view3DWidget->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
+        if(flag){
+            view3DWidget->TeraflyCommunicator->emitUpdateQcInfo();
+            view3DWidget->TeraflyCommunicator->emitUpdateQcMarkersCounts();
+        }
+    }
+
+
     // end select mode
     view3DWidget->getRenderer()->endSelectMode();
 

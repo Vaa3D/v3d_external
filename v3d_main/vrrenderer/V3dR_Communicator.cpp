@@ -1,6 +1,7 @@
 ﻿#include "V3dR_Communicator.h"
 #include "../terafly/src/control/CPlugin.h"
 #include "../terafly/src/presentation/PMain.h"
+#include "3drenderer/v3dr_qualitycontroldialog.h"
 #include <QRegExp>
 #include <QtGui>
 #include <QListWidgetItem>
@@ -13,26 +14,27 @@
 //每个点使用‘’
 
 QTcpSocket* V3dR_Communicator::socket=0;
+V3dr_qualitycontrolDialog* V3dR_Communicator::qcDialog=0;
 QString V3dR_Communicator::userId="";
 QString V3dR_Communicator::userName = "";
 QString V3dR_Communicator::password = "";
 V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false), b_isWarnMulBifurcationHandled(false), b_isWarnLoopHandled(false), reconnectCnt(0), initConnectCnt(0), QObject(partent)
 {
-	CreatorMarkerPos = 0;
-	CreatorMarkerRes = 0;
+    CreatorMarkerPos = 0;
+    CreatorMarkerRes = 0;
     userId="";
     userName="";
-//    qDebug()<<"userName=\"\"";
+    //    qDebug()<<"userName=\"\"";
 
-//    socket = new QTcpSocket(this);
+    //    socket = new QTcpSocket(this);
     resetdatatype();
     connect(this,SIGNAL(msgtoprocess(QString)),this,SLOT(TFProcess(QString)));
     connect(this,SIGNAL(msgtowarn(QString)),this,SLOT(processWarnMsg(QString)));
     connect(this,SIGNAL(msgtoanalyze(QString)),this,SLOT(processAnalyzeMsg(QString)));
     connect(this,SIGNAL(msgtosend(QString)),this,SLOT(processSendMsg(QString)));
-//    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
-//    m_timerConnect = new QTimer(this);
-//    timer_iniconn=new QTimer(this);
+    //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
+    //    m_timerConnect = new QTimer(this);
+    //    timer_iniconn=new QTimer(this);
     timer_exit=new QTimer(this);
 }
 
@@ -48,8 +50,8 @@ void V3dR_Communicator::onReadyRead()
                 if(socket->canReadLine()){
                     QString msg=socket->readLine(1024).trimmed();
                     if(!msg.startsWith("DataTypeWithSize:")){
-//                        socket->write({"Socket Receive ERROR!"});
-//                        std::cerr<<userName.toStdString()+" receive not match format\n";
+                        //                        socket->write({"Socket Receive ERROR!"});
+                        //                        std::cerr<<userName.toStdString()+" receive not match format\n";
                         qDebug() << userId << " receive not match format\n";
                         socket->disconnectFromHost();
                     }
@@ -139,7 +141,7 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
         if(msg.size()<64)
             qDebug()<<"OnRead:"<<msg;
         if(msg.startsWith("STARTCOLLABORATE:")){
-//            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
+            //            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
         }else if(usersRex.indexIn(msg) != -1){
             emit updateuserview(usersRex.cap(1));
@@ -165,11 +167,11 @@ void V3dR_Communicator::processWarnMsg(QString line){
         QString operatorMsg=warnreg.cap(2).trimmed();
         QString msg = operatorMsg;
         QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
-//        if(listwithheader.size()<2)
-//        {
-//            qDebug()<<"msg only contains header:"<<msg;
-//            return;
-//        }
+        //        if(listwithheader.size()<2)
+        //        {
+        //            qDebug()<<"msg only contains header:"<<msg;
+        //            return;
+        //        }
 
         QString header = listwithheader[0];
         QString sender=header.split(" ").at(0).trimmed();
@@ -190,16 +192,25 @@ void V3dR_Communicator::processWarnMsg(QString line){
                     comment = "Branching error";
                 }
                 emit addManyMarkers(listwithheader.join(","), comment);
+
+                emit updateQcInfo();
+                emit updateQcMarkersCounts();
             }
             else if(reason=="Loop")
             {
                 int result = header.split(" ").at(1).trimmed().toUInt();
                 if(result == 1){
-    //                emit setDefineSomaActionState(true);
+                    //                emit setDefineSomaActionState(true);
                 }
                 if(result == 0){
-    //                emit setDefineSomaActionState(false);
+                    //                emit setDefineSomaActionState(false);
+                    //                    QEventLoop eventLoop;
+                    //                    connect(this, SIGNAL(addManyMarkersDone()), &eventLoop, SLOT(quit()));
                     emit addManyMarkers(listwithheader.join(","), "Loop");
+                    //                    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+
+                    emit updateQcInfo();
+                    emit updateQcMarkersCounts();
                 }
             }
             else if(reason=="DisconnectError"){
@@ -254,6 +265,9 @@ void V3dR_Communicator::processWarnMsg(QString line){
             }
             else {
                 emit addMarker(listwithheader[0], "Approaching bifurcation");
+
+                emit updateQcInfo();
+                emit updateQcMarkersCounts();
             }
         }
 
@@ -310,6 +324,9 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             else if(sender=="server" && result==0){
                 emit addManyMarkers(msgList.join(","), "Color mutation");
 
+                emit updateQcInfo();
+                emit updateQcMarkersCounts();
+
                 if( request_senderid==userId )
                     QMessageBox::information(0,tr("Infomation "),
                                              tr("error: color mutation exists! notice the soma nearby and the red markers!"),
@@ -338,6 +355,9 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             else if(sender=="server" && result==0){
                 emit addManyMarkers(msgList.join(","), "Dissociative seg");
 
+                emit updateQcInfo();
+                emit updateQcMarkersCounts();
+
                 if(request_senderid==userId)
                     QMessageBox::information(0,tr("Infomation "),
                                              tr("error: dissociative seg exists! notice the red markers!"),
@@ -361,6 +381,9 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
             }
             else if(sender=="server" && result==0){
                 emit addManyMarkers(msgList.join(","), "Angle error");
+
+                emit updateQcInfo();
+                emit updateQcMarkersCounts();
 
                 if(request_senderid==userId)
                     QMessageBox::information(0,tr("Infomation "),
@@ -487,6 +510,19 @@ void V3dR_Communicator::TFProcess(QString line) {
             unsigned int isMany=0;
             if(infos.size()>=6)
                 isMany=infos.at(5).trimmed().toInt();
+
+            if(user == "server"){
+                QString qcInfo = infos.at(2).trimmed();
+                int num = infos.at(3).trimmed().toInt();
+                if(qcInfo == "overlap"){
+                    removedOverlapSegNum += num;
+                }
+                else if(qcInfo == "error"){
+                    removedErrSegNum += num;
+                }
+                emit updateQcSegsCounts();
+            }
+
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userId" << userId;
             else
@@ -696,17 +732,17 @@ void V3dR_Communicator::UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_
         result+=V_NeuronSWCToSendMSG(seg2);
         result.push_back("$");
         qDebug()<<"connectline_sendMsg"<<result.count();
-//        qDebug()<<"/connectline_norm:"+result.join(",");
+        //        qDebug()<<"/connectline_norm:"+result.join(",");
         sendMsg(QString("/connectline_norm:"+result.join(",")));
-//        result+=V_NeuronSWCToSendMSG(seg);
-//        qDebug()<<"connectline_sendMsg"<<result.count();
-//        sendMsg(QString("/connectline_norm:"+result.join(",")));
-//        while(undoDeque.size()>=dequeszie)
-//        {
-//            undoDeque.pop_front();
-//        }
-//        undoDeque.push_back(QString("/delline_undo:"+result.join(",")));
-//        redoDeque.clear();
+        //        result+=V_NeuronSWCToSendMSG(seg);
+        //        qDebug()<<"connectline_sendMsg"<<result.count();
+        //        sendMsg(QString("/connectline_norm:"+result.join(",")));
+        //        while(undoDeque.size()>=dequeszie)
+        //        {
+        //            undoDeque.pop_front();
+        //        }
+        //        undoDeque.push_back(QString("/delline_undo:"+result.join(",")));
+        //        redoDeque.clear();
     }
 }
 
@@ -753,7 +789,7 @@ void V3dR_Communicator::UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString cl
             }
         }
 
-        qDebug()<<"delline_sendMsg"<<result.count()<<"!!!!!!!!";
+        qDebug()<<"delline_sendMsg"<<result.count()<<"!";
         sendMsg(QString("/delline_norm:"+result.join(",")));
         while(undoDeque.size()>=dequeszie)
         {
@@ -935,13 +971,13 @@ void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,Q
         sendMsg(QString("/splitline_norm:"+result.join(",")));
 
     }
-//    V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
-//    UpdateDelSegMsg(seg,clienttype);
+    //    V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
+    //    UpdateDelSegMsg(seg,clienttype);
 
-//    for(auto newseg:new_slist.seg)
-//    {
-//        UpdateAddSegMsg(newseg,clienttype);
-//    }
+    //    for(auto newseg:new_slist.seg)
+    //    {
+    //        UpdateAddSegMsg(newseg,clienttype);
+    //    }
 }
 
 void V3dR_Communicator::UpdateSplitSegMsg(QString deleteMsg,QString addMsg1,QString addMsg2)
@@ -1006,8 +1042,8 @@ void V3dR_Communicator::UpdateUndoDeque()
     }else
     {
         QMessageBox::information(0,tr("Warning "),
-                         tr("Action can not be implemented"),
-                         QMessageBox::Ok);
+                                 tr("Action can not be implemented"),
+                                 QMessageBox::Ok);
     }
 }
 
@@ -1044,7 +1080,7 @@ void V3dR_Communicator::UpdateRedoDeque()
                 msg="/"+operationType+"_redo:"+newMsg;
             }
 
-//            qDebug()<<msg;
+            //            qDebug()<<msg;
             sendMsg(msg);
             redoDeque.pop_back();
 
@@ -1066,8 +1102,8 @@ void V3dR_Communicator::UpdateRedoDeque()
     }else
     {
         QMessageBox::information(0,tr("Warning "),
-                         tr("Action can not be implemented"),
-                         QMessageBox::Ok);
+                                 tr("Action can not be implemented"),
+                                 QMessageBox::Ok);
     }
 }
 
@@ -1198,8 +1234,8 @@ QStringList V3dR_Communicator::V_NeuronSWCToSendMSG(V_NeuronSWC seg)
         V_NeuronSWC_unit curSWCunit = seg.row[i];
         XYZ GlobalCroods = ConvertLocalBlocktoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
         result.push_back(QString("%1 %2 %3 %4").arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
-//        if(i==seg.row.size()-1)
-//            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
+        //        if(i==seg.row.size()-1)
+        //            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
     }
     return result;
 }
@@ -1233,7 +1269,7 @@ XYZ V3dR_Communicator::ConvertMaxRes2CurrResCoords(double x,double y,double z)
 
 XYZ V3dR_Communicator::ConvertCurrRes2MaxResCoords(double x,double y,double z)
 {
-//    qDebug()<<ImageMaxRes.x/ImageCurRes.x;
+    //    qDebug()<<ImageMaxRes.x/ImageCurRes.x;
     x*=(ImageMaxRes.x/ImageCurRes.x);
     y*=(ImageMaxRes.y/ImageCurRes.y);
     z*=(ImageMaxRes.z/ImageCurRes.z);
