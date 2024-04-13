@@ -1,4 +1,4 @@
-#if defined(USE_Qt5)
+﻿#if defined(USE_Qt5)
 #include <QtCore>
 #include <QtGui>
 #endif

@@ -1,5 +1,5 @@
 {
-	"braintellServerAddress": "http://114.117.165.134:26000/release",
+	"braintellServerAddress": "http://114.117.165.134:26000/test",
 	"dbmsServerAddress": "http://114.117.165.134:14252/proto.DBMS",
 	"apiVersion": "2024.01.19"
 }

@@ -761,6 +761,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     to_label_4 = new QLabel("to");
     to_label_4->setAlignment(Qt::AlignCenter);
     refSys = new QGLRefSys(tabs);
+    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!";
     refSys->installEventFilter(this);
     frameCoord = new QLineEdit();
     frameCoord->setReadOnly(true);
