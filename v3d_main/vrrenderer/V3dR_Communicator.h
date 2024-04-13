@@ -52,6 +52,7 @@ public:
      * 发送减线segment到服务器
      */
     void UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vector<V_NeuronSWC> connectedSegs, bool isBegin);
+    void UpdateDelManySegMsg(vector<V_NeuronSWC> segs, QString clienttype, vector<vector<V_NeuronSWC>> connectedSegs, vector<bool> isBeginVec);
     void UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString clienttype);
     void UpdateDelSegMsg(QString TVdelSegMSG);//this node is second node of seg,because this is esay to delete correct seg
     /**

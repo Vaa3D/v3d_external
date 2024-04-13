@@ -99,6 +99,7 @@ PMain* PMain::uniqueInstance = 0;
 
 LoadManageWidget* PMain::managewidget=0;
 V3dR_Communicator* PMain::Communicator=0;
+string PMain::hostIp;
 string PMain::braintellServerAddress;
 string PMain::dbmsServerAddress;
 string PMain::apiVersion;
@@ -761,7 +762,6 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     to_label_4 = new QLabel("to");
     to_label_4->setAlignment(Qt::AlignCenter);
     refSys = new QGLRefSys(tabs);
-    qDebug()<<"!!!!!!!!!!!!!!!!!!!!!!!!!!";
     refSys->installEventFilter(this);
     frameCoord = new QLineEdit();
     frameCoord->setReadOnly(true);
@@ -1507,7 +1507,6 @@ void PMain::openImage(std::string path /*= ""*/)
                 return;
         }
 
-
         // from now on, "path" comes either from a file/folder selection dialog, or from the "Open Recent Image" menu
         // check if path exists
         if(!QFile::exists(path.c_str()))
@@ -1594,7 +1593,6 @@ void PMain::openImage(std::string path /*= ""*/)
             }
         }
 
-
         // store the path permanently into the system
         CSettings::instance()->setVolumePathLRU(path);
         CSettings::instance()->addRecentImage(path, image_format.toString());
@@ -1620,7 +1618,6 @@ void PMain::openImage(std::string path /*= ""*/)
         progressBar->setMinimum(0);
         progressBar->setMaximum(0);
         statusBar->showMessage("Import volume...");
-
 
         // start import
         CImport::instance()->setRegenerateVolumeMap(regenVMap_cAction->isChecked());
@@ -4061,6 +4058,10 @@ void PMain::LoadFromServer()
     }
 
     // 读取配置项
+    if(document.HasMember("hostIp") && document["hostIp"].IsString()) {
+        PMain::hostIp = document["hostIp"].GetString();
+        std::cout << "hostIp: " << hostIp << std::endl;
+    }
     if (document.HasMember("braintellServerAddress") && document["braintellServerAddress"].IsString()) {
         PMain::braintellServerAddress = document["braintellServerAddress"].GetString();
         std::cout << "braintellServerAddress: " << braintellServerAddress << std::endl;
@@ -4215,17 +4216,14 @@ void PMain::startCollaborate(QString ano,QString port)
     disconnect(Communicator,SIGNAL(setDefineSomaActionState(bool)), 0, 0);
     connect(Communicator,SIGNAL(setDefineSomaActionState(bool)),this,SLOT(setDefineSomaState(bool)));
 
-    QSettings settings("HHMI", "Vaa3D");
-    Communicator->setAddressIP(settings.value("HostIP").toString());
-
-
+    Communicator->setAddressIP(QString::fromStdString(hostIp));
 
     Communicator->setPort(port.toUInt());
 
     qDebug()<<Communicator->userId;
 
-    Communicator->socket->connectToHost(settings.value("HostIP").toString(),port.toUInt());
-    qDebug() << "---------" << settings.value("HostIP").toString() << " " << port.toUInt() << "\n";
+    Communicator->socket->connectToHost(QString::fromStdString(hostIp), port.toUInt());
+    qDebug() << "---------" << QString::fromStdString(hostIp) << " " << port.toUInt() << "\n";
 //    Communicator->timer_iniconn->start(5000);
 
     if(!Communicator->socket->waitForConnected(1000*5))

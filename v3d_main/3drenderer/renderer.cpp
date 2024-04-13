@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -682,7 +682,9 @@ void Renderer::drawEditInfo()
 
         }
 
-        sprintf(str, "%s", editdisplay.c_str());
+        if("Highlight Connected Segments" != editdisplay){
+            sprintf(str, "%s", editdisplay.c_str());
+        }
 
         drawString(A0.x + td, A0.y, A0.z, str, 0, 18);
 //        drawString(A0.x + td, A0.y + td, A0.z, "bigneuron.org", 0, fontsize);

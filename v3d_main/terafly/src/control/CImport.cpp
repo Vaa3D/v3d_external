@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -189,7 +189,6 @@ void CImport::vpInstanceHighResVolume() throw (tf::RuntimeException)
 void CImport::run()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-
     try
     {
         timerIO.start();
@@ -229,7 +228,6 @@ void CImport::run()
 
             // emit "import successful" signal
             emit sendOperationOutcome(0, timerIO.elapsed());
-
             // unconverted image import ends here (no volume map file generation)
             return;
         }
@@ -254,7 +252,6 @@ void CImport::run()
         // TeraFly pyramid image (a hierarchy of nested folders)
         else if (iim::isDirectory(path) )
         {
-		
             /********************* 1) IMPORTING CURRENT VOLUME ***********************
             PRECONDITIONS:
             reimport = true  ==> the volume cannot be directly imported (i.e., w/o the
@@ -262,12 +259,13 @@ void CImport::run()
             importing the volume.
             reimport = false ==> the volume is directly importable
             *************************************************************************/
-
             // skip nonmatching entries
             QDir dir(path.c_str());
-            if( dir.dirName().toStdString().substr(0,3).compare(tf::RESOLUTION_PREFIX) != 0)
+            if( dir.dirName().toStdString().substr(0,3).compare(tf::RESOLUTION_PREFIX) != 0){
+                                        qDebug() << "2222";
                 throw RuntimeException(strprintf("\"%s\" is not a valid resolution: the name of the folder does not start with \"%s\"",
                                                  path.c_str(), tf::RESOLUTION_PREFIX.c_str() ).c_str());
+            }
 
             if(reimport)
                 volumes.push_back(VirtualVolume::instance(path.c_str(), format, AXS_1, AXS_2, AXS_3, VXL_1, VXL_2, VXL_3));
@@ -284,6 +282,7 @@ void CImport::run()
             /**/tf::debug(tf::LEV_MAX, "Importing other volumes of the multiresolution octree", __itm__current__function__);
             /* -------------------- detect candidate volumes -----------------------*/
             /**/tf::debug(tf::LEV_MAX, "Detecting volumes that CAN be loaded (let us call them CANDIDATE volumes: the correspondent structures will be destroyed after this step)", __itm__current__function__);
+
             vector<VirtualVolume*> candidateVols;
             QDir curParentDir(path.c_str());
             curParentDir.cdUp();
@@ -311,6 +310,7 @@ void CImport::run()
             }
             /* -------------------- import candidate volumes ------------------------*/
             /**/tf::debug(tf::LEV_MAX, "Importing loadable volumes (previously checked)", __itm__current__function__);
+                                    qDebug()<<"-2-2-2";
             for(int k=0; k<candidateVols.size(); k++)
             {
                 int ratio = iim::round(  pow((volumes[0]->getMVoxels() / candidateVols[k]->getMVoxels()),(1/3.0f))  );
@@ -325,6 +325,7 @@ void CImport::run()
             }
             /* -------------------- destroy candidate volumes -----------------------*/
             /**/tf::debug(tf::LEV_MAX, "Destroying candidate volumes", __itm__current__function__);
+                                    qDebug()<<"-1-1-1";
             for(int k=0; k<candidateVols.size(); k++)
                 delete candidateVols[k];
             /* ------------- sort imported volumes by ascending size ---------------*/
@@ -349,16 +350,16 @@ void CImport::run()
         setBitsRemap(CSettings::instance()->getBitsRemap());
         setBitsConversion(CSettings::instance()->getBitsConversion());
 
-
         /**************** 3) GENERATING / LOADING VOLUME 3D MAP *****************
         We generate once for all a volume map from lowest-resolution volume.
         *************************************************************************/
 //        string volMapPath = tf::cdUp(path) + "/" + VMAP_BIN_FILE_NAME;
+                    qDebug()<<QDir::currentPath();
         string volMapPath=QDir::currentPath().toStdString()+'/'+VMAP_BIN_FILE_NAME;
+
         if(hasVolumeMapToBeRegenerated(volMapPath.c_str(), "0.9.42") || reimport || regenerateVMap)
         {
             /**/tf::debug(tf::LEV_MAX, "Entering volume's map generation section", __itm__current__function__);
-
             // select the highest possible resolution that fits into the 3D viewer
             VirtualVolume* selectedResolution = volumes[0];
             for(int l=0; l<volumes.size(); l++)
@@ -384,8 +385,10 @@ void CImport::run()
             selectedResolution->setActiveFrames(0, vmapTDimMax -1);
             vmapData = selectedResolution->loadSubvolume_to_UINT8();
             FILE *volMapBin = fopen(volMapPath.c_str(), "wb");
+             qDebug()<<"22222";
             if(!volMapBin)
                 throw RuntimeException(strprintf("Cannot write volume map at \"%s\". Please check your write permissions.", volMapPath.c_str()).c_str());
+             qDebug()<<"33333";
             uint16 verstr_size = static_cast<uint16>(strlen(tf::version.c_str()) + 1);
             fwrite(&verstr_size, sizeof(uint16), 1, volMapBin);
             fwrite(tf::version.c_str(), verstr_size, 1, volMapBin);
@@ -401,7 +404,7 @@ void CImport::run()
         else
         {
             /**/tf::debug(tf::LEV_MAX, "Entering volume's map loading section", __itm__current__function__);
-
+             qDebug()<<"44444";
             // load volume map
             FILE *volMapBin = fopen(volMapPath.c_str(), "rb");
             uint16 verstr_size;
@@ -424,6 +427,7 @@ void CImport::run()
                 throw RuntimeException("Unable to read volume map file (<vmapZDim> field). Please delete the volume map and re-open the volume.");
             size_t vmapSize = ((size_t)vmapYDim)*vmapXDim*vmapZDim*vmapCDim*vmapTDim;
             vmapData = new uint8[vmapSize];
+             qDebug()<<"66666";
             if(fread(vmapData, vmapSize, 1, volMapBin) != 1)
                 throw RuntimeException("Unable to read volume map file (<vmapData> field). Please delete the volume map and re-open the volume.");
             fclose(volMapBin);
@@ -483,26 +487,33 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
         tf::warning("volume map needs to be (re-)generated: cannot read T dim from vmap.bin", __itm__current__function__);
         return true;
     }
+
     if(!fread(&C, sizeof(int), 1, vmapFile))
     {
         fclose(vmapFile);
         tf::warning("volume map needs to be (re-)generated: cannot read C dim from vmap.bin", __itm__current__function__);
         return true;
     }
+
     if(!fread(&Y, sizeof(int), 1, vmapFile))
     {
+
         fclose(vmapFile);
         tf::warning("volume map needs to be (re-)generated: cannot read Y dim from vmap.bin", __itm__current__function__);
         return true;
     }
+
     if(!fread(&X, sizeof(int), 1, vmapFile))
     {
+
         fclose(vmapFile);
         tf::warning("volume map needs to be (re-)generated: cannot read X dim from vmap.bin", __itm__current__function__);
         return true;
     }
+
     if(!fread(&Z, sizeof(int), 1, vmapFile))
     {
+
         fclose(vmapFile);
         tf::warning("volume map needs to be (re-)generated: cannot read Z dim from vmap.bin", __itm__current__function__);
         return true;
@@ -543,7 +554,7 @@ bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
             volume_found = true;
 
             // can we load a larger map?
-            if(volumes.size() > l                       &&  // l+1 resolution exists
+            if(volumes.size() - 1 > l                       &&  // l+1 resolution exists
                volumes[l+1]->getDIM_V() <= vmapYDimMax  &&  // l+1 resolution can fit into the 3D viewer (along y)
                volumes[l+1]->getDIM_H() <= vmapXDimMax  &&  // l+1 resolution can fit into the 3D viewer (along x)
                volumes[l+1]->getDIM_D() <= vmapZDimMax)     // l+1 resolution can fit into the 3D viewer (along z)

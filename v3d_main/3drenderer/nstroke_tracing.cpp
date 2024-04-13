@@ -3325,6 +3325,9 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
         //               w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
         //            }
         //        }
+        vector<V_NeuronSWC> tobeRemovedSegs;
+        vector<vector<V_NeuronSWC>> connectedSegsVec;
+        vector<bool> isBeginVec;
         QVector<XYZ> coords;
         for(int i=0;i<vector_VSWC_ON.size();i++){
             int firstSegID=-1;
@@ -3365,9 +3368,14 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
                 isBegin=true;
             else if(secondSegID!=-1&&connectedSegs.size()==1)
                 isBegin=false;
-            w->TeraflyCommunicator->UpdateDelSegMsg(tempseg,"TeraFly",connectedSegs, isBegin);
+            tobeRemovedSegs.push_back(tempseg);
+            connectedSegsVec.push_back(connectedSegs);
+            isBeginVec.push_back(isBegin);
+//            w->TeraflyCommunicator->UpdateDelSegMsg(tempseg,"TeraFly",connectedSegs, isBegin);
             coords.clear();
         }
+
+        w->TeraflyCommunicator->UpdateDelManySegMsg(tobeRemovedSegs,"TeraFly",connectedSegsVec, isBeginVec);
 
         //        if(w->TeraflyCommunicator->timer_exit->isActive()){
         //            w->TeraflyCommunicator->timer_exit->stop();

@@ -1345,7 +1345,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         }
         else if (IS_ALT_MODIFIER)
         {
-            callShowConnectedSegs();
+//            callShowConnectedSegs();
         }
         else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)
         {
@@ -4561,7 +4561,7 @@ void V3dR_GLWidget::CollaRetypeSeg(QString segInfo,int type,int isMany)
             }else
             {
                 //        qDebug()<<"zll______________retype5";
-                qDebug()<<"Error:cannot find segment to retype " + segInfo;
+//                qDebug()<<"Error:cannot find segment to retype " + segInfo;
             }
             coords.clear();
         }
@@ -4580,7 +4580,7 @@ void V3dR_GLWidget::CollaRetypeSeg(QString segInfo,int type,int isMany)
         }else
         {
             //        qDebug()<<"zll______________retype5";
-            qDebug()<<"Error:cannot find segment to retype " + segInfo;
+//            qDebug()<<"Error:cannot find segment to retype " + segInfo;
         }
     }
     //    qDebug()<<"zll______________retype1";
@@ -4901,7 +4901,7 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
                 v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
             }else
             {
-                qDebug()<<"ERROR:cannot delete curve " + segInfo;
+//                qDebug()<<"ERROR:cannot delete curve " + segInfo;
             }
             coords.clear();
         }
@@ -4914,7 +4914,7 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
             v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
         }else
         {
-            qDebug()<<"ERROR:cannot delete curve " + segInfo;
+//            qDebug()<<"ERROR:cannot delete curve " + segInfo;
         }
     }
     //    qDebug()<<"ZLL________________2";

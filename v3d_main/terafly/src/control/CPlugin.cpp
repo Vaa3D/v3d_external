@@ -200,7 +200,8 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 
     return nt;
@@ -234,7 +235,8 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate,int resolutio
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 }
 
@@ -266,7 +268,8 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 
     return markers;
@@ -300,7 +303,8 @@ LandmarkList tf::PluginInterface::getLandmarkDirectly(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 
     return markers;
@@ -335,7 +339,8 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collabo
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
     //    CViewer::mutex.unlock();
 }
@@ -368,15 +373,16 @@ const Image4DSimple* tf::PluginInterface::getImage()
     try
     {
         // check preconditions
-        if(CViewer::getCurrent() == 0)
+        if(CViewer::getCurrent() == 0){
             throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
-
+        }
         // get and return image
         return CViewer::getCurrent()->getImage();
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -390,13 +396,13 @@ int tf::PluginInterface::getRes()
         // check preconditions
         if(CViewer::getCurrent() == 0)
             throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
-
         // get and return resolution index
         return CViewer::getCurrent()->getResIndex();
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
     }
     return NULL;
 }
@@ -407,13 +413,13 @@ int tf::PluginInterface::getallRes()
         // check preconditions
         if(CImport::instance() == 0)
             throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
-
         // get and return resolution index
         return CImport::instance()->getResolutions() -1;
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
     }
     return NULL;
 }
@@ -579,7 +585,8 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+//        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 }
 

@@ -707,6 +707,18 @@ void V3dR_Communicator::UpdateAddManySegsMsg(vector<V_NeuronSWC> segs, QString c
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         for(int i=0;i<segs.size();i++){
+            bool flag = true;
+//            for(int j=0;j<segs[i].row.size();j++){
+//                if(segs[i].row[j].x >= ImageMaxRes.x ||
+//                    segs[i].row[j].y >= ImageMaxRes.y ||
+//                    segs[i].row[j].z >= ImageMaxRes.z){
+//                    flag = false;
+//                    break;
+//                }
+//            }
+//            if(!flag){
+//                continue;
+//            }
             if(segs[i].on){
                 result+=V_NeuronSWCToSendMSG(segs[i]);
                 result.push_back("$");
@@ -773,6 +785,37 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vecto
         undoDeque.push_back(QString("/drawline_undo:"+undoMsg.join(",")));
         redoDeque.clear();
 
+    }
+}
+
+void V3dR_Communicator::UpdateDelManySegMsg(vector<V_NeuronSWC> segs, QString clienttype, vector<vector<V_NeuronSWC>> connectedSegs, vector<bool> isBeginVec){
+    QStringList result;
+    result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
+    for(int i = 0; i < segs.size(); i++){
+        if(clienttype=="TeraFly")
+        {
+            result+=V_NeuronSWCToSendMSG(segs[i]);
+            result+="$";
+
+            while(undoDeque.size()>=dequeszie)
+            {
+                undoDeque.pop_front();
+            }
+            QString undoMsgHeader=QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(int(isBeginVec[i])).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z);
+            QStringList undoMsg;
+            undoMsg.push_back(undoMsgHeader);
+            undoMsg+=V_NeuronSWCToSendMSG(segs[i]);
+            undoMsg+="$";
+            for(auto connectedseg:connectedSegs[i]){
+                undoMsg+=V_NeuronSWCToSendMSG(connectedseg);
+                undoMsg+="$";
+            }
+            undoDeque.push_back(QString("/drawline_undo:"+undoMsg.join(",")));
+            redoDeque.clear();
+        }
+    }
+    if(clienttype=="TeraFly"){
+        sendMsg(QString("/delline_norm:"+result.join(",")));
     }
 }
 

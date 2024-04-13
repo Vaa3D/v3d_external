@@ -602,6 +602,7 @@ public:
     QListWidget *userView;
     static UserInfo userinfo;
     static LoadManageWidget *managewidget;
+    static string hostIp;
     static string braintellServerAddress;
     static string dbmsServerAddress;
     static string apiVersion;
