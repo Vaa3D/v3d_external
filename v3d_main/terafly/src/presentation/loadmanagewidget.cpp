@@ -423,6 +423,7 @@ void LoadManageWidget::getAnos(){
             int removedLen = QString(".ano.eswc").length();
             int len = item["Name"].toString().size();
             QString anoName = item["Name"].toString().remove(len-removedLen, removedLen);
+//            QString anoName = item["Name"].toString();
             anoWidget->addItem(anoName);
         }
     }

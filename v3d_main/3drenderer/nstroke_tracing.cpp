@@ -3357,7 +3357,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
                 if(firstSegID!=-1&&secondSegID!=-1)
                     break;
             }
-            qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
+//            qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
             vector<V_NeuronSWC> connectedSegs;
             if(firstSegID!=-1)
                 connectedSegs.push_back(curImg->tracedNeuron.seg[firstSegID]);
@@ -3564,6 +3564,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     //    qDebug()<<"deleteMultiNeuronsByStroke-2";
     // contour 2 polygon
     QPolygon poly;
+    qDebug() << "list_listCurvePos.size: " << list_listCurvePos.size();
     for (V3DLONG i=0; i<list_listCurvePos.at(0).size(); i++)
         poly.append(QPoint(list_listCurvePos.at(0).at(i).x, list_listCurvePos.at(0).at(i).y));
     // 把划线的点全都放到多边形中去
@@ -3590,7 +3591,6 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
         bool allUnitsOutsideZCut = false;
         for (V3DLONG i=0;i<nrows;i++)
         {
-
             GLdouble px, py, pz, ix, iy, iz;
             V_NeuronSWC_unit this_unit = this_seg.row.at(i);
             ix = this_unit.x;
@@ -3650,6 +3650,7 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     vector <XYZ> specialmarkerloc;
     vector <V3DLONG> specialmarkerslocindex;
     QList <LocationSimple> &listloc = curImg->listLandmarks;
+
     for(V3DLONG i=0; i<listloc.size(); ++i)
     {
         if(listloc[i].category==77)
@@ -3663,6 +3664,9 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     //    qDebug()<<"deleteMultiNeuronsByStroke-5";
     V3DLONG specialmarkersegindex = -1;
     V3DLONG specialmarkerlocindex = -1;
+
+    qDebug() << "specialmarkerloc.size: " << specialmarkerloc.size();
+    qDebug() << "specialmarkerslocindex.size: " << specialmarkerslocindex.size();
     for(V3DLONG i=0; i<nsegs; ++i)
     {
         V_NeuronSWC this_seg = curImg->tracedNeuron.seg.at(i);
@@ -3670,6 +3674,10 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
         if(curImg->tracedNeuron.seg[i].to_be_deleted==true)
         {
             //取当前seg的最后一个点 如果这个位置和之前的special marker的位置相同  记录下当前的seg的索引
+//            qDebug()<<"this_seg.row.size: " << this_seg.row.size();
+            if(this_seg.row.size() <= 0){
+                continue;
+            }
             XYZ segloclast(this_seg.row.at(nrows-1).x+1,this_seg.row.at(nrows-1).y+1,this_seg.row.at(nrows-1).z+1);
             for(V3DLONG j=0; j<specialmarkerloc.size(); ++j)
             {
@@ -3705,6 +3713,9 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
                     //把i设置成这条线 changed为true
                     //从seg index开始 一直往前删除
                     //直到没的删除为止
+                    if(curImg->tracedNeuron.seg[i].row.size() <= 0 || curImg->tracedNeuron.seg[specialmarkersegindex].row.size() <= 0){
+                        continue;
+                    }
                     XYZ parent(curImg->tracedNeuron.seg[i].row.back().x,curImg->tracedNeuron.seg[i].row.back().y,curImg->tracedNeuron.seg[i].row.back().z);
                     XYZ child(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
                     if(parent==child)
@@ -3723,8 +3734,10 @@ void Renderer_gl1::deleteMultiNeuronsByStroke()
     }
     if(specialmarkerlocindex!=-1 && specialmarkersegindex!=-1)
     {
-        XYZ markerloc(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
-        addSpecialMarker(markerloc);
+        if(curImg->tracedNeuron.seg[specialmarkersegindex].row.size() > 0){
+            XYZ markerloc(curImg->tracedNeuron.seg[specialmarkersegindex].row.front().x,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().y,curImg->tracedNeuron.seg[specialmarkersegindex].row.front().z);
+            addSpecialMarker(markerloc);
+        }
     } // by XZ, 20190726
     //    qDebug()<<"deleteMultiNeuronsByStroke-11";
     curImg->update_3drenderer_neuron_view(w, this);
@@ -3919,7 +3932,10 @@ void Renderer_gl1::simpleConnect()
             if (segInfo.size() < 2) return;
             /* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
 
-            simpleConnectExecutor(curImg, segInfo);
+            bool res = simpleConnectExecutor(curImg, segInfo);
+            if(!res){
+                return;
+            }
             this->hierarchyRelabel = false; // Editing neuron structure rarely starts with a sorted swc. Thus this switch is disabled for now.
                 //  -- MK, July, 2018
             if (this->hierarchyRelabel)
@@ -3990,10 +4006,13 @@ void Renderer_gl1::simpleConnect()
     return;
 }
 
-void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo)
+bool Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo)
 {
 
     qDebug()<<"begin to simpleConnectExecutor";
+    if(segInfo.size() < 2){
+        return false;
+    }
     // This method is the "executor" of Renderer_gl1::simpleConnect(), MK, May, 2018
 
     //////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
@@ -4173,7 +4192,7 @@ void Renderer_gl1::simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>&
     }
     //////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
 
-    return;
+    return true;
 }
 
 void Renderer_gl1::connectSameTypeSegs(map<int, vector<int> >& inputSegMap, My4DImage*& curImgPtr)
@@ -4622,6 +4641,11 @@ void Renderer_gl1::showConnectedSegs()
             map<size_t, int> segIDCountMap;
             for (vector<size_t>::iterator segIt = involvedSegs.begin(); segIt != involvedSegs.end(); ++segIt)
                 ++segIDCountMap.insert(pair<size_t, int>(*segIt, 0)).first->second;
+
+            if(segIDCountMap.size() == 0){
+                return;
+            }
+
             int segCount = segIDCountMap.begin()->second;
             size_t startingSegID = segIDCountMap.begin()->first;
             for (map<size_t, int>::iterator mapIt = segIDCountMap.begin(); mapIt != segIDCountMap.end(); ++mapIt)

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -289,12 +289,18 @@ int main(int argc, char **argv)
                     return app->exec();
                 else
                     return false;
-			}
-			catch (...)
+            }
+            catch (std::exception& e)
 			{
+                v3d_msg(e.what());
 				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the Vaa3D developers to figure out the problem.");
 				return false;
-			}
+            }
+            catch(...) {
+                v3d_msg("Unknown exception");
+                v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the Vaa3D developers to figure out the problem.");
+                return false;
+            }
 			// -------------------------------------------------------
 
 		}

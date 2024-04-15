@@ -4450,6 +4450,7 @@ void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
             S.radius = V3Dmainwindow->global_setting.default_marker_radius;
         S.on = true;
         qDebug()<<"Marker:"<<S.x<<","<<S.y<<","<<S.z<<","<<S.color.r<<","<<S.color.g<<","<<S.color.b;
+
         listLoc.append(S);
 
         if(!fromserver&&w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)

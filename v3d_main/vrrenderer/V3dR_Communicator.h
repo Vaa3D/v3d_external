@@ -17,6 +17,7 @@
 #include <deque>
 
 class V3dr_qualitycontrolDialog;
+class V3dr_onlineusersDialog;
 class V3dR_Communicator : public QObject
 {
     Q_OBJECT
@@ -179,7 +180,8 @@ signals:
     void retypeMarker(QString);//改marker颜色信号(r,g,b,x,y,z)
     void retypeSeg(QString,int,int);//改线的颜色信号（type x y z;type x y z;...）
     void connectSeg(QString);
-    void updateuserview(QString);
+//    void updateuserview(QString);
+    void updateOnlineUsers(QString);
     void setDefineSomaActionState(bool);
     //msg process end
 
@@ -238,6 +240,7 @@ public:
     uint m_iPort;
     static QTcpSocket* socket;//
     static V3dr_qualitycontrolDialog* qcDialog;
+    static V3dr_onlineusersDialog* onlineUserDialog;
     //连接状态
     bool b_isConnectedState;
     bool b_isWarnMulBifurcationHandled;

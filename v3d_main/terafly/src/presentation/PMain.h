@@ -600,6 +600,7 @@ public:
     QAction *openSwcManagerClientAction;
     QAction *qcManagerAction;
     QListWidget *userView;
+    QAction *onlineUsersAction;
     static UserInfo userinfo;
     static LoadManageWidget *managewidget;
     static string hostIp;
@@ -618,6 +619,7 @@ public slots:
     void onMessageDisConnect();
     void onMessageError(QAbstractSocket::SocketError);
     void updateuserview(QString userlist);
+    void updateOnlineUserList(QString userList);
     void handleExit();
 
     void analyzeSomaNearBy();
@@ -629,6 +631,7 @@ public slots:
     void setDefineSomaState(bool);
     void openSwcManagerClient();
     void openQcManager();
+    void openOnlineUserDialog();
     //        void startAutoTrace();//自动算法
 signals:
 

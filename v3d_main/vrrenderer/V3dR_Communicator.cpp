@@ -15,6 +15,7 @@
 
 QTcpSocket* V3dR_Communicator::socket=0;
 V3dr_qualitycontrolDialog* V3dR_Communicator::qcDialog=0;
+V3dr_onlineusersDialog* V3dR_Communicator::onlineUserDialog=0;
 QString V3dR_Communicator::userId="";
 QString V3dR_Communicator::userName = "";
 QString V3dR_Communicator::password = "";
@@ -130,7 +131,8 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     //3. 处理协作指令
     qDebug()<<"begin to preprocessmsgs";
 
-    QRegExp usersRex("^/activeusers:(.*)$");
+//    QRegExp usersRex("^/activeusers:(.*)$");
+    QRegExp onlineUsersRex("^/onlineusers:(.*)$");
     QRegExp warnRex("^/WARN_(.*):.*$");
     QRegExp analyzeRex("^/FEEDBACK_ANALYZE_(.*):.*$");
     QRegExp defineRex("^/FEEDBACK_DEFINE_(.*):.*$");
@@ -143,8 +145,9 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
         if(msg.startsWith("STARTCOLLABORATE:")){
             //            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
-        }else if(usersRex.indexIn(msg) != -1){
-            emit updateuserview(usersRex.cap(1));
+        }else if(onlineUsersRex.indexIn(msg) != -1){
+//            emit updateuserview(usersRex.cap(1));
+            emit updateOnlineUsers(onlineUsersRex.cap(1));
         }else if(warnRex.indexIn(msg) != -1){
             emit msgtowarn(msg);
         }else if(analyzeRex.indexIn(msg) != -1 || defineRex.indexIn(msg) != -1){
@@ -164,8 +167,27 @@ void V3dR_Communicator::processWarnMsg(QString line){
     if(warnreg.indexIn(line)!=-1)
     {
         QString reason=warnreg.cap(1).trimmed();
-        QString operatorMsg=warnreg.cap(2).trimmed();
-        QString msg = operatorMsg;
+        QString msg=warnreg.cap(2).trimmed();
+
+        if(reason=="ReloadFile"){
+            if(msg=="outbound marker"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("Points out of the image boundary have occurred. Please reload the annotation file from the server to ensure synchronization."),
+                                         QMessageBox::Ok);
+            }
+            if(msg=="outbound swcnode"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("Points out of the image boundary have occurred. Please reload the annotation file from the server."),
+                                         QMessageBox::Ok);
+            }
+            if(msg=="cannot find connect seg"){
+                QMessageBox::information(0,tr("Infomation "),
+                                         tr("The server has detected an error. Please reload the annotation file from the server to ensure synchronization."),
+                                         QMessageBox::Ok);
+            }
+            return;
+        }
+
         QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
         //        if(listwithheader.size()<2)
         //        {
@@ -720,6 +742,15 @@ void V3dR_Communicator::UpdateAddManySegsMsg(vector<V_NeuronSWC> segs, QString c
 //                continue;
 //            }
             if(segs[i].on){
+//                QStringList coorResult;
+//                for(int j=0;j<segs[i].row.size();j++)   //why  i need  < 120, does msg has length limitation? liqi 2019/10/7
+//                {
+//                    V_NeuronSWC_unit curSWCunit = segs[i].row[j];
+//                    XYZ GlobalCroods = ConvertLocalBlocktoGlobalCroods(curSWCunit.x,curSWCunit.y,curSWCunit.z);
+//                    result.push_back(QString("%1 %2 %3 %4").arg(curSWCunit.type).arg(GlobalCroods.x).arg(GlobalCroods.y).arg(GlobalCroods.z));
+//                    //        if(i==seg.row.size()-1)
+//                    //            AutoTraceNode=XYZ(GlobalCroods.x,GlobalCroods.y,GlobalCroods.z);
+//                }
                 result+=V_NeuronSWCToSendMSG(segs[i]);
                 result.push_back("$");
             }

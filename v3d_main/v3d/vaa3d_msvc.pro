@@ -139,3 +139,5 @@ else:unix: LIBS += -LC:/local/boost_1_61_0/lib64-msvc-12.0/ -llibboost_regex-vc1
 
 INCLUDEPATH += C:/local/boost_1_61_0/lib64-msvc-12.0
 DEPENDPATH += C:/local/boost_1_61_0/lib64-msvc-12.0
+
+QT += widgets

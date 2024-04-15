@@ -1345,7 +1345,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
         }
         else if (IS_ALT_MODIFIER)
         {
-//            callShowConnectedSegs();
+            callShowConnectedSegs();
         }
         else if (WITH_ALT_MODIFIER && WITH_CTRL_MODIFIER)
         {
@@ -4803,7 +4803,15 @@ void V3dR_GLWidget::newThreadSplitSeg(QString segInfo){
 
 int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
 {
-    float mindist=1.5/**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
+    /**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
+    double length = getSegLength(coords);
+    double mindist = 1;
+
+    mindist = 1 + 1 * length/((length + 1) * (length + 1));
+    if(coords.size() <= 2){
+        mindist = 1;
+    }
+
     int index=-1;
 
     //    for(int j=0;j<coords.size();j++)
@@ -4842,8 +4850,17 @@ int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
             index=i;
         }
     }
-    if(index<0) qDebug()<<"fail to findseg";
+//    if(index<0) qDebug()<<"fail to findseg";
     return index;
+}
+
+float V3dR_GLWidget::getSegLength(QVector<XYZ> coords){
+    float length = 0;
+    int size = coords.size();
+    for(int i = 0; i < size - 1; i++){
+        length += distance(coords[i].x, coords[i+1].x, coords[i].y, coords[i+1].y, coords[i].z, coords[i+1].z);
+    }
+    return length;
 }
 
 map<string, set<size_t>> V3dR_GLWidget::getWholeGrid2SegIDMap(V_NeuronSWC_list& inputSegments){
@@ -5322,7 +5339,10 @@ void V3dR_GLWidget::connectCurveInAllSapce(QString info){
         }
     }
 
-    simpleConnectExecutor(v_ns_list, segInfo);
+    bool res = simpleConnectExecutor(v_ns_list, segInfo);
+    if(!res){
+        return;
+    }
 
     if (v_ns_list.seg[segInfo[0].segID].to_be_deleted)
     {
@@ -5351,9 +5371,13 @@ void V3dR_GLWidget::connectCurveInAllSapce(QString info){
 
 }
 
-void V3dR_GLWidget::simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo){
+bool V3dR_GLWidget::simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo){
     qDebug()<<"begin to simpleConnectExecutor";
     // This method is the "executor" of Renderer_gl1::simpleConnect(), MK, May, 2018
+
+    if(segInfo.size() < 2){
+        return false;
+    }
 
     //////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
     if ((segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2) && (segInfo.at(1).head_tail == -1 || segInfo.at(1).head_tail == 2))
@@ -5532,7 +5556,7 @@ void V3dR_GLWidget::simpleConnectExecutor(V_NeuronSWC_list& segments, vector<seg
     }
     //////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
 
-    return;
+    return true;
 }
 
 double V3dR_GLWidget::distance(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2){

@@ -1057,9 +1057,60 @@ bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt, bool coll
 {
 	if (v3d_mainwindow)
 	{
+//        if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+//            auto segments = NeuronTree__2__V_NeuronSWC_list(nt);
+//            for(auto it = segments.seg.begin(); it != segments.seg.end();){
+//                bool flag = true;
+//                for(auto row_it = it->row.begin(); row_it != it->row.end(); row_it++){
+//                    if(row_it->x < 0 || row_it->x >= TeraflyCommunicator->ImageMaxRes.x ||
+//                        row_it->y < 0 || row_it->y >= TeraflyCommunicator->ImageMaxRes.y ||
+//                        row_it->z < 0 || row_it->z >= TeraflyCommunicator->ImageMaxRes.z){
+//                        it = segments.seg.erase(it);
+//                        flag = false;
+//                        break;
+//                    }
+//                }
+//                if(flag)
+//                    it++;
+//            }
+//            NeuronTree newNt = V_NeuronSWC_list__2__NeuronTree(segments);
+//            return v3d_mainwindow->setSWC(image_window, newNt, collaborate);
+//        }
+//        else{
         return v3d_mainwindow->setSWC(image_window, nt, collaborate);
+
 	}
 	return false;
+}
+
+bool V3d_PluginLoader::setSWC(v3dhandle image_window, V_NeuronSWC_list segments, bool collaborate)
+{
+    if (v3d_mainwindow)
+    {
+        if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+            for(auto it = segments.seg.begin(); it != segments.seg.end();){
+                bool flag = true;
+                for(auto row_it = it->row.begin(); row_it != it->row.end(); row_it++){
+                    if(row_it->x < 0 || row_it->x >= TeraflyCommunicator->ImageMaxRes.x ||
+                        row_it->y < 0 || row_it->y >= TeraflyCommunicator->ImageMaxRes.y ||
+                        row_it->z < 0 || row_it->z >= TeraflyCommunicator->ImageMaxRes.z){
+                        it = segments.seg.erase(it);
+                        flag = false;
+                        break;
+                    }
+                }
+                if(flag)
+                    it++;
+            }
+            NeuronTree newNt = V_NeuronSWC_list__2__NeuronTree(segments);
+            return v3d_mainwindow->setSWC(image_window, newNt, collaborate);
+        }
+        else{
+            auto nt = V_NeuronSWC_list__2__NeuronTree(segments);
+            return v3d_mainwindow->setSWC(image_window, nt, collaborate);
+        }
+    }
+    return false;
 }
 
 int V3d_PluginLoader::setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName)
@@ -1105,9 +1156,25 @@ v3dhandle V3d_PluginLoader::getTeraflyCommunicator(){
 }
 
 void V3d_PluginLoader::syncAddManySegs(std::vector<V_NeuronSWC> segs){
-    for(auto &seg:segs){
-        std::reverse(seg.row.begin(), seg.row.end());
+    if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+        for(auto it = segs.begin(); it != segs.end();){
+            bool flag = true;
+//            for(auto row_it = it->row.begin(); row_it != it->row.end(); row_it++){
+//                if(row_it->x < 0 || row_it->x >= TeraflyCommunicator->ImageMaxRes.x ||
+//                    row_it->y < 0 || row_it->y >= TeraflyCommunicator->ImageMaxRes.y ||
+//                    row_it->z < 0 || row_it->z >= TeraflyCommunicator->ImageMaxRes.z){
+//                    it = segs.erase(it);
+//                    flag = false;
+//                    break;
+//                }
+//            }
+            if(flag){
+                std::reverse(it->row.begin(), it->row.end());
+                it++;
+            }
+        }
     }
+
     if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
     {
         TeraflyCommunicator->UpdateAddManySegsMsg(segs, "TeraFly");

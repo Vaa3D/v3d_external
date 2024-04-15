@@ -70,6 +70,7 @@
 #include <future>
 #include "../../v3d/CustomDefine.h"
 #include "../3drenderer/v3dr_qualitycontrolDialog.h"
+#include "../3drenderer/v3dr_onlineusersdialog.h"
 
 using namespace terafly;
 using namespace iim;
@@ -99,6 +100,7 @@ PMain* PMain::uniqueInstance = 0;
 
 LoadManageWidget* PMain::managewidget=0;
 V3dR_Communicator* PMain::Communicator=0;
+
 string PMain::hostIp;
 string PMain::braintellServerAddress;
 string PMain::dbmsServerAddress;
@@ -297,6 +299,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     qcManagerAction=new QAction("Quality Control Manager", collaborateMenu);
     collaborateMenu->addAction(qcManagerAction);
     connect(qcManagerAction,SIGNAL(triggered()),this,SLOT(openQcManager()));
+
+    onlineUsersAction=new QAction("Check Online Users", collaborateMenu);
+    collaborateMenu->addAction(onlineUsersAction);
+    connect(onlineUsersAction,SIGNAL(triggered()),this,SLOT(openOnlineUserDialog()));
 
 //    defineSomaAction->setEnabled(false);
 
@@ -4137,6 +4143,10 @@ void PMain::startCollaborate(QString ano,QString port)
         delete Communicator->qcDialog;
         Communicator->qcDialog=0;
     }
+    if(Communicator->onlineUserDialog){
+        delete Communicator->onlineUserDialog;
+        Communicator->onlineUserDialog=0;
+    }
 
     int maxresindex = terafly::CImport::instance()->getResolutions()-1;
     IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
@@ -4152,6 +4162,7 @@ void PMain::startCollaborate(QString ano,QString port)
 
 
     terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+
     cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
     Communicator->userId=QString::number(userinfo.id);
     Communicator->userName=userinfo.name;
@@ -4210,8 +4221,14 @@ void PMain::startCollaborate(QString ano,QString port)
     disconnect(Communicator,SIGNAL(exit()), 0, 0);
     connect(Communicator,SIGNAL(exit()), this, SLOT(handleExit()));
 
-    disconnect(Communicator,SIGNAL(updateuserview(QString)), 0, 0);
-    connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
+//    disconnect(Communicator,SIGNAL(updateuserview(QString)), 0, 0);
+//    connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
+    disconnect(Communicator,SIGNAL(updateOnlineUsers(QString)), 0, 0);
+    connect(Communicator,SIGNAL(updateOnlineUsers(QString)),this,SLOT(updateOnlineUserList(QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString, int)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString, int)),
+            cur_win->getGLWidget(),SLOT(newThreadAddSeg(QString, int)));
 
     disconnect(Communicator,SIGNAL(setDefineSomaActionState(bool)), 0, 0);
     connect(Communicator,SIGNAL(setDefineSomaActionState(bool)),this,SLOT(setDefineSomaState(bool)));
@@ -4235,6 +4252,10 @@ void PMain::startCollaborate(QString ano,QString port)
         Communicator->socket=nullptr;
         Communicator->qcDialog->deleteLater();
         Communicator->qcDialog=nullptr;
+        if(Communicator->onlineUserDialog){
+            Communicator->onlineUserDialog->deleteLater();
+            Communicator->onlineUserDialog=nullptr;
+        }
         Communicator->deleteLater();
         Communicator=nullptr;
         return;
@@ -4364,6 +4385,9 @@ void PMain::ColLoadANO(QString ANOfile)
     connect(Communicator,SIGNAL(updateQcInfo()),Communicator->qcDialog,SLOT(updateInfo()));
     connect(Communicator,SIGNAL(updateQcSegsCounts()),Communicator->qcDialog,SLOT(updateSegsCounts()));
     connect(Communicator,SIGNAL(updateQcMarkersCounts()),Communicator->qcDialog,SLOT(updateMarkersCounts()));
+    // 获取窗口的左上角坐标
+    QPoint topLeftPoint = cur_win->getGLWidget()->geometry().topLeft();
+    Communicator->onlineUserDialog=new V3dr_onlineusersDialog(topLeftPoint);
 
     V3dR_GLWidget::noTerafly=false;
     return;
@@ -4380,6 +4404,69 @@ void PMain::updateuserview(QString userlist)
     userView->clear();
     userView->addItems(userlist.split(";"));
 
+}
+
+void PMain::updateOnlineUserList(QString userList){
+    vector<QString> users;
+    QStringList list = userList.split(",");
+    for(auto it = list.begin(); it != list.end(); it++){
+        users.push_back(*it);
+    }
+    if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog){
+        vector<QString> oldUsers = this->Communicator->onlineUserDialog->getUserList();
+        this->Communicator->onlineUserDialog->setUserList(users);
+        QString specialUser = "";
+
+        if(users.size() > oldUsers.size()){
+            for(auto it = users.begin(); it != users.end(); it++){
+                if(std::find(oldUsers.begin(), oldUsers.end(), *it) != oldUsers.end()){
+                    continue;
+                }
+                else{
+                    specialUser = *it;
+                    break;
+                }
+            }
+            if(specialUser != "" && specialUser != this->Communicator->userName){
+                QString msg = specialUser + " entered the room";
+                QMessageBox messageBox;
+                messageBox.setWindowTitle(tr("Information"));
+                messageBox.setText(tr(msg.toStdString().c_str()));
+                messageBox.setIcon(QMessageBox::Information);
+                QTimer::singleShot(1000, &messageBox, SLOT(accept()));
+                messageBox.exec();
+//                QString msg = specialUser + " entered the room";
+//                QMessageBox::information(0,tr("Message "),
+//                                         tr(msg.toStdString().c_str()),
+//                                         QMessageBox::Ok);
+            }
+        }
+
+        if(users.size() < oldUsers.size()){
+            for(auto it = oldUsers.begin(); it != oldUsers.end(); it++){
+                if(std::find(users.begin(), users.end(), *it) != users.end()){
+                    continue;
+                }
+                else{
+                    specialUser = *it;
+                    break;
+                }
+            }
+            if(specialUser != "" && specialUser != this->Communicator->userName){
+                QString msg = specialUser + " left the room";
+                QMessageBox messageBox;
+                messageBox.setWindowTitle(tr("Information"));
+                messageBox.setText(tr(msg.toStdString().c_str()));
+                messageBox.setIcon(QMessageBox::Information);
+                QTimer::singleShot(2000, &messageBox, SLOT(accept()));
+                messageBox.exec();
+
+//                QMessageBox::information(0,tr("Message "),
+//                                         tr(msg.toStdString().c_str()),
+//                                         QMessageBox::Ok);
+            }
+        }
+    }
 }
 
 void PMain::onMessageDisConnect()
@@ -4405,6 +4492,8 @@ void PMain::onMessageDisConnect()
         Communicator->socket=0;
         Communicator->qcDialog->deleteLater();
         Communicator->qcDialog=nullptr;
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
     }
     //    this->Communicator ->deleteLater();
     //    this->Communicator = nullptr;
@@ -4488,6 +4577,8 @@ void PMain::handleExit(){
         this->Communicator->socket=0;
         Communicator->qcDialog->deleteLater();
         Communicator->qcDialog=0;
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
     }
     //    this->Communicator ->deleteLater();
     //    this->Communicator = nullptr;
@@ -4571,6 +4662,12 @@ void PMain::openQcManager(){
     if(this->Communicator && this->Communicator->socket && this->Communicator->qcDialog){
         this->Communicator->qcDialog->show();
         this->Communicator->qcDialog->raise();
+    }
+}
+
+void PMain::openOnlineUserDialog(){
+    if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog){
+        this->Communicator->onlineUserDialog->show();
     }
 }
 

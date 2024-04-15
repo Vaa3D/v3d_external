@@ -488,7 +488,7 @@ public:
     bool hierarchyRelabel;
 
     void simpleConnect();
-    void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
+    bool simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
     void showSubtree();
     void showConnectedSegs();
     void sort_tracedNeuron(My4DImage* curImg, size_t rootID);  // Sort swc, Peng Xie, June 2019
