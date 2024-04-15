@@ -48,6 +48,7 @@ last update: 060903
 #include "v3dr_glwidget.h"
 
 #include "v3dr_control_signal.cpp" // create control widgets and connect signals
+#include "v3dr_onlineusersDialog.h"
 
 ///QTimer V3dR_MainWindow::animate_timer;// for static
 
@@ -92,8 +93,11 @@ void V3dR_MainWindow::closeEvent(QCloseEvent* e)
 
 //        glWidget->TeraflyCommunicator->socket->disconnect();
 //        glWidget->OnVRSocketDisConnected();
-		//DELETE_AND_ZERO(glWidget->renderer); //090710
-		glWidget->deleteRenderer(); //090711 RZC: fixed the problem of Over delete OpenGL resource cross different glWidget
+        //DELETE_AND_ZERO(glWidget->renderer); //090710
+        if(glWidget->TeraflyCommunicator && glWidget->TeraflyCommunicator->socket && glWidget->TeraflyCommunicator->onlineUserDialog){
+            glWidget->TeraflyCommunicator->onlineUserDialog->hide();
+        }
+        glWidget->deleteRenderer(); //090711 RZC: fixed the problem of Over delete OpenGL resource cross different glWidget
 
 		if (glWidgetArea) glWidgetArea->takeWidget();
 		glWidget->deleteLater();
