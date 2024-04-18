@@ -15,6 +15,8 @@ CONFIG += CONSOLE   # make a console application instead of a windows GUI only a
 CONFIG += warn_on debug console
 CONFIG+=debug
 
+QMAKE_CFLAGS_DEBUG=-MD -Zi
+
 QMAKE_CXXFLAGS += /MP
 QMAKE_LFLAGS   += /STACK:104857600
 

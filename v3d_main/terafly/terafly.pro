@@ -84,7 +84,8 @@ DEFINES += TERACONVERTER_PATCH
 
 #setup iomanager
 INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
-HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h #\
+HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h \
+    ../../../../../../libs/C++_libs/backward.hpp
 #    src/presentation/fileserver.h \
 #    src/presentation/fileserver.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/ioplugins.h
@@ -95,7 +96,8 @@ HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/dcimg/dcimg.h
 #HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/opencv2D/opencv2D.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff2D/tiff2D.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff3D/tiff3D.h
-SOURCES += ../terafly/src/terarepo/src/iomanager/iomanager.config.cpp
+SOURCES += ../terafly/src/terarepo/src/iomanager/iomanager.config.cpp \
+    ../../../../../../libs/C++_libs/backward.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/exampleplugin2D/exampleplugin2D.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/IMS_HDF5/IMS_HDF5.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/dcimg/dcimg.cpp

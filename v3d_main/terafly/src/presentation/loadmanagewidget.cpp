@@ -17,6 +17,8 @@ QNetworkAccessManager* LoadManageWidget::accessManager= new QNetworkAccessManage
 QString LoadManageWidget::HostAddress="";
 QString LoadManageWidget::DBMSAddress="";
 QString LoadManageWidget::ApiVersion="";
+QString LoadManageWidget::m_ano="";
+QString LoadManageWidget::m_port="";
 LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
 {
 //    this->setAttribute(Qt::WA_DeleteOnClose);
@@ -481,6 +483,8 @@ void LoadManageWidget::loadAno()
         auto ano=result["ano"].toString();
         auto port=result["port"].toString();
         qDebug()<<ano<<"\n"<<port;
+        m_ano = ano;
+        m_port = port;
         emit Load(ano,port);
     }
     else if(code==400||code==401)
@@ -490,6 +494,7 @@ void LoadManageWidget::loadAno()
                                  tr("Login error! Please check the username and the password."),
                                  QMessageBox::Ok);
     }
+
     else if(code==502||code==503||code==504)
     {
         //错误警告

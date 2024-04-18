@@ -3911,17 +3911,6 @@ void Renderer_gl1::simpleConnect()
                     }
                 }
                 if (segInfo.size() == 2){
-                    if (w->TeraflyCommunicator
-                        &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-                    {
-                        w->SetupCollaborateInfo();
-                        w->TeraflyCommunicator->UpdateConnectSegMsg(specPoints[0], specPoints[1], curImg->tracedNeuron.seg[segInfo[0].segID],curImg->tracedNeuron.seg[segInfo[1].segID],"TeraFly");
-                        //                            if(w->TeraflyCommunicator->timer_exit->isActive()){
-                        //                                w->TeraflyCommunicator->timer_exit->stop();
-                        //                            }
-                        //                            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
-                    }
-
                     break; // simple connection only allows 2 segments involved
                 }
             }
@@ -3999,6 +3988,16 @@ void Renderer_gl1::simpleConnect()
             //                for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
             //                    curImg->tracedNeuron.seg[i].printInfo();
             //                }
+            if (w->TeraflyCommunicator
+                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+            {
+                w->SetupCollaborateInfo();
+                w->TeraflyCommunicator->UpdateConnectSegMsg(specPoints[0], specPoints[1], curImg->tracedNeuron.seg[segInfo[0].segID],curImg->tracedNeuron.seg[segInfo[1].segID],"TeraFly");
+                //                            if(w->TeraflyCommunicator->timer_exit->isActive()){
+                //                                w->TeraflyCommunicator->timer_exit->stop();
+                //                            }
+                //                            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+            }
         }
     }
     //}

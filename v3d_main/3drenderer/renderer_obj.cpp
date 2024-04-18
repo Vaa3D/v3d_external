@@ -1293,6 +1293,7 @@ void Renderer_gl1::updateLandmark()
 			S.x = listLoc[i].x;
 			S.y = listLoc[i].y;
 			S.z = listLoc[i].z;
+//            qDebug()<<"S.color: "<<listLoc[i].color.r<<" "<<listLoc[i].color.g<<" "<<listLoc[i].color.b;
 			S.color = listLoc[i].color;  //random_rgba8(255);
 			S.on = true; //listLoc[i].on;        //090713 RZC: the state synchronization is hard
 			S.selected = false; //added because the memset() is got commented

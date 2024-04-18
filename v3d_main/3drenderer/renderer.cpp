@@ -171,6 +171,7 @@ void Renderer::setProjection()
 
 int Renderer::selectObj(int x, int y, bool b_menu, char* pTip)
 {
+    qDebug()<<"selecOBJ....";
 	makeCurrent(); //090715 make sure in correct OpenGL context
 
 	//qDebug(" Renderer::selectObj");

@@ -4226,9 +4226,8 @@ void PMain::startCollaborate(QString ano,QString port)
     disconnect(Communicator,SIGNAL(updateOnlineUsers(QString)), 0, 0);
     connect(Communicator,SIGNAL(updateOnlineUsers(QString)),this,SLOT(updateOnlineUserList(QString)));
 
-    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString, int)), 0, 0);
-    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString, int)),
-            cur_win->getGLWidget(),SLOT(newThreadAddSeg(QString, int)));
+    disconnect(Communicator,SIGNAL(reloadFile(QString, QString)), 0, 0);
+    connect(Communicator,SIGNAL(reloadFile(QString, QString)),this,SLOT(startCollaborate(QString,QString)));
 
     disconnect(Communicator,SIGNAL(setDefineSomaActionState(bool)), 0, 0);
     connect(Communicator,SIGNAL(setDefineSomaActionState(bool)),this,SLOT(setDefineSomaState(bool)));
@@ -4245,9 +4244,18 @@ void PMain::startCollaborate(QString ano,QString port)
 
     if(!Communicator->socket->waitForConnected(1000*5))
     {
-        QMessageBox::information(0,tr("Message "),
-                         tr("connect failed"),
-                         QMessageBox::Ok);
+        QString msg = "connect failed";
+        QMessageBox messageBox;
+        messageBox.setWindowTitle(tr("Information"));
+        messageBox.setText(tr(msg.toStdString().c_str()));
+        messageBox.setIcon(QMessageBox::Information);
+        QTimer::singleShot(1500, &messageBox, SLOT(accept()));
+        messageBox.exec();
+
+//        QMessageBox::information(0,tr("Message "),
+//                         tr("connect failed"),
+//                         QMessageBox::Ok);
+
         Communicator->socket->deleteLater();
         Communicator->socket=nullptr;
         Communicator->qcDialog->deleteLater();
@@ -4433,7 +4441,7 @@ void PMain::updateOnlineUserList(QString userList){
                 messageBox.setWindowTitle(tr("Information"));
                 messageBox.setText(tr(msg.toStdString().c_str()));
                 messageBox.setIcon(QMessageBox::Information);
-                QTimer::singleShot(1000, &messageBox, SLOT(accept()));
+                QTimer::singleShot(800, &messageBox, SLOT(accept()));
                 messageBox.exec();
 //                QString msg = specialUser + " entered the room";
 //                QMessageBox::information(0,tr("Message "),
@@ -4458,7 +4466,7 @@ void PMain::updateOnlineUserList(QString userList){
                 messageBox.setWindowTitle(tr("Information"));
                 messageBox.setText(tr(msg.toStdString().c_str()));
                 messageBox.setIcon(QMessageBox::Information);
-                QTimer::singleShot(2000, &messageBox, SLOT(accept()));
+                QTimer::singleShot(800, &messageBox, SLOT(accept()));
                 messageBox.exec();
 
 //                QMessageBox::information(0,tr("Message "),

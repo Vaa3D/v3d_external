@@ -435,13 +435,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                         pluginsDir1 = pluginsDir;
                         if (pluginsDir1.cd("plugins/Retrace")==true){
                             listAct.append(act = new QAction("", w)); act->setSeparator(true);
-                            listAct.append(actRetrace = new QAction("Retrace", w));
+//                            listAct.append(actRetrace = new QAction("Retrace", w));
                             listAct.append(app2Convenient = new QAction("app2Convenient", w));
 
-                            listAct.append(app2Terafly = new QAction("app2Terafly", w));
-                            listAct.append(app2MultiTerafly = new QAction("app2MultiTerafly", w));
-                            listAct.append(app2TeraflyWithPara = new QAction("app2TeraflyWithPara", w));
-                            listAct.append(app2MultiTeraflyWithPara = new QAction("app2MultiTeraflyWithPara", w));
+//                            listAct.append(app2Terafly = new QAction("app2Terafly", w));
+//                            listAct.append(app2MultiTerafly = new QAction("app2MultiTerafly", w));
+//                            listAct.append(app2TeraflyWithPara = new QAction("app2TeraflyWithPara", w));
+//                            listAct.append(app2MultiTeraflyWithPara = new QAction("app2MultiTeraflyWithPara", w));
                         }
                     }
 
@@ -611,7 +611,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
                 listAct.append(actMarkerRefineT = new QAction("translate marker position by 1 right-click", w));
                 listAct.append(actMarkerConnect = new QAction("create segments by connecting markers", w)); // MK, 2017 April
-                listAct.append(actMarkerDelete = new QAction("delete this marker", w));
+//                listAct.append(actMarkerDelete = new QAction("delete this marker", w));
                 listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
                 listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
 #ifdef _IMAGING_MENU_
@@ -1410,24 +1410,24 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
         }
     }
 
-    else if(act == actRetrace){
-        if (w && curImg)
-        {
-            v3d_msg("Enter the neuron tracing module APP2.", 0);
-            v3d_imaging_paras myimagingp;
-            myimagingp.OPS = "Retrace";
-            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-            //set the hiddenSelectWidget for the V3D mainwindow
-            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-            {
-                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-            }
-            else
-            {
-                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-            }
-        }
-    }
+//    else if(act == actRetrace){
+//        if (w && curImg)
+//        {
+//            v3d_msg("Enter the neuron tracing module APP2.", 0);
+//            v3d_imaging_paras myimagingp;
+//            myimagingp.OPS = "Retrace";
+//            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//            //set the hiddenSelectWidget for the V3D mainwindow
+//            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//            {
+//                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//            }
+//            else
+//            {
+//                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//            }
+//        }
+//    }
 
     else if (act == app2Convenient)
     {
@@ -1454,88 +1454,88 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
         }
     }
 
-    else if (act == app2MultiTerafly)
-    {
-        if (w && curImg)
-        {
-            v3d_msg("app2MultiTerafly", 0);
-            v3d_imaging_paras myimagingp;
-            myimagingp.OPS = "app2MultiTerafly";
-            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//    else if (act == app2MultiTerafly)
+//    {
+//        if (w && curImg)
+//        {
+//            v3d_msg("app2MultiTerafly", 0);
+//            v3d_imaging_paras myimagingp;
+//            myimagingp.OPS = "app2MultiTerafly";
+//            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-            //set the hiddenSelectWidget for the V3D mainwindow
-            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-            {
-                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-            }
-            else
-            {
-                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-            }
-        }
-    }
+//            //set the hiddenSelectWidget for the V3D mainwindow
+//            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//            {
+//                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//            }
+//            else
+//            {
+//                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//            }
+//        }
+//    }
 
-    else if (act == app2MultiTeraflyWithPara)
-    {
-        if (w && curImg)
-        {
-            v3d_msg("app2MultiTeraflyWithPara", 0);
-            v3d_imaging_paras myimagingp;
-            myimagingp.OPS = "app2MultiTeraflyWithPara";
-            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//    else if (act == app2MultiTeraflyWithPara)
+//    {
+//        if (w && curImg)
+//        {
+//            v3d_msg("app2MultiTeraflyWithPara", 0);
+//            v3d_imaging_paras myimagingp;
+//            myimagingp.OPS = "app2MultiTeraflyWithPara";
+//            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-            //set the hiddenSelectWidget for the V3D mainwindow
-            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-            {
-                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-            }
-            else
-            {
-                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-            }
-        }
-    }
+//            //set the hiddenSelectWidget for the V3D mainwindow
+//            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//            {
+//                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//            }
+//            else
+//            {
+//                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//            }
+//        }
+//    }
 
-    else if (act == app2Terafly)
-    {
-        if (w && curImg)
-        {
-            v3d_msg("app2Terafly", 0);
-            v3d_imaging_paras myimagingp;
-            myimagingp.OPS = "app2Terafly";
-            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//    else if (act == app2Terafly)
+//    {
+//        if (w && curImg)
+//        {
+//            v3d_msg("app2Terafly", 0);
+//            v3d_imaging_paras myimagingp;
+//            myimagingp.OPS = "app2Terafly";
+//            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-            //set the hiddenSelectWidget for the V3D mainwindow
-            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-            {
-                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-            }
-            else
-            {
-                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-            }
-        }
-    }
-    else if (act == app2TeraflyWithPara)
-    {
-        if (w && curImg)
-        {
-            v3d_msg("app2TeraflyWithPara", 0);
-            v3d_imaging_paras myimagingp;
-            myimagingp.OPS = "app2TeraflyWithPara";
-            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//            //set the hiddenSelectWidget for the V3D mainwindow
+//            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//            {
+//                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//            }
+//            else
+//            {
+//                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//            }
+//        }
+//    }
+//    else if (act == app2TeraflyWithPara)
+//    {
+//        if (w && curImg)
+//        {
+//            v3d_msg("app2TeraflyWithPara", 0);
+//            v3d_imaging_paras myimagingp;
+//            myimagingp.OPS = "app2TeraflyWithPara";
+//            myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-            //set the hiddenSelectWidget for the V3D mainwindow
-            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-            {
-                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-            }
-            else
-            {
-                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-            }
-        }
-    }
+//            //set the hiddenSelectWidget for the V3D mainwindow
+//            if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//            {
+//                v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//            }
+//            else
+//            {
+//                v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//            }
+//        }
+//    }
 
 #define __vaa3d_gd_curveline_tracing__ // dummy, just for easy locating //by PHC 20170529
     else if (act == actGDCurveline)
@@ -1603,26 +1603,26 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
         }
     }
-    else if (act == actMarkerDelete)
-    {
-        if (w && curImg)
-        {
-            bool ok = true; //QMessageBox::warning(0, QObject::tr("3D View"), QObject::tr("Are you sure to delete this marker?"),
-            //                     QMessageBox::Yes | QMessageBox::Cancel,   QMessageBox::Yes)	== QMessageBox::Yes;
-            int tmpind = names[2]-1;
-            if (tmpind>=0 && ok)
-            {
-                if (tmpind<curImg->last_hit_landmark) //in this case shift the last hit forward
-                    curImg->last_hit_landmark--;
-                else if (tmpind==curImg->last_hit_landmark) //in this case remove the last hit
-                    curImg->last_hit_landmark = -1;
-                // otherwise do nothing, - the last hit pos will not change
-                curImg->listLandmarks.removeAt(tmpind); //remove the specified landmark
-                //updateLandmark(); //update the landmark list in 3D viewer. Commented as this is too expensive, use the following cheap way
-                listMarker.removeAt(tmpind);
-            }
-        }
-    }
+//    else if (act == actMarkerDelete)
+//    {
+//        if (w && curImg)
+//        {
+//            bool ok = true; //QMessageBox::warning(0, QObject::tr("3D View"), QObject::tr("Are you sure to delete this marker?"),
+//            //                     QMessageBox::Yes | QMessageBox::Cancel,   QMessageBox::Yes)	== QMessageBox::Yes;
+//            int tmpind = names[2]-1;
+//            if (tmpind>=0 && ok)
+//            {
+//                if (tmpind<curImg->last_hit_landmark) //in this case shift the last hit forward
+//                    curImg->last_hit_landmark--;
+//                else if (tmpind==curImg->last_hit_landmark) //in this case remove the last hit
+//                    curImg->last_hit_landmark = -1;
+//                // otherwise do nothing, - the last hit pos will not change
+//                curImg->listLandmarks.removeAt(tmpind); //remove the specified landmark
+//                //updateLandmark(); //update the landmark list in 3D viewer. Commented as this is too expensive, use the following cheap way
+//                listMarker.removeAt(tmpind);
+//            }
+//        }
+//    }
     else if (act == actMarkerClearAll)
     {
         if (w && curImg)
@@ -2479,10 +2479,12 @@ void Renderer_gl1::endSelectMode()
 
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
+//    qDebug("enter _appendMarkerPos");
     MarkerPos pos;
     pos.x = x;
     pos.y = y;
     pos.drawn = false;
+
     for (int i=0; i<4; i++)
         pos.view[i] = viewport[i];
     for (int i=0; i<16; i++)
@@ -2491,7 +2493,7 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
         pos.MV[i] = markerViewMatrix[i];
     }
     listMarkerPos.append(pos);
-    //qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
+//    qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
 }
 int Renderer_gl1::movePen(int x, int y, bool b_move)
 {

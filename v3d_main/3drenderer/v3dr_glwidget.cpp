@@ -1779,7 +1779,7 @@ void V3dR_GLWidget::hideTool()
 }
 void V3dR_GLWidget::updateTool()
 {
-    //qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
+//    qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
 
     if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
     {

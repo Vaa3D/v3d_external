@@ -23,6 +23,8 @@ public:
 //    QPushButton *getImageBtn,*getNeuronBtn,*getAnoBtn,*loadBtn;
 //    QListWidget *imageWidget,*neuronWidget,*anoWidget;
     static QNetworkAccessManager *accessManager;
+    static QString m_ano;
+    static QString m_port;
     UserInfo *userinfo;
     static QString HostAddress;
     static QString DBMSAddress;

@@ -172,19 +172,20 @@ void V3dR_Communicator::processWarnMsg(QString line){
         if(reason=="ReloadFile"){
             if(msg=="outbound marker"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("Points out of the image boundary have occurred. Please reload the annotation file from the server to ensure synchronization."),
+                                         tr("Points out of the image boundary have occurred. The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
             }
             if(msg=="outbound swcnode"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("Points out of the image boundary have occurred. Please reload the annotation file from the server."),
+                                         tr("Points out of the image boundary have occurred. The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
             }
             if(msg=="cannot find connect seg"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("The server has detected an error. Please reload the annotation file from the server to ensure synchronization."),
+                                         tr("The server has detected an error. The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
             }
+            emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             return;
         }
 
@@ -1198,9 +1199,17 @@ void V3dR_Communicator::onConnected() {
 
     sendMsg(QString("/login:%1 %2 %3 %4 %5").arg(userId).arg(userName).arg(password).arg(RES).arg(0));
 //    sendMsg(QString("/login:%1 %2 %3").arg(userId).arg(RES).arg(0));
-    QMessageBox::information(0,tr("Message "),
-                             tr("Connect success! Ready to start collaborating"),
-                             QMessageBox::Ok);
+    QString msg = "Connect success! Ready to start collaborating";
+    QMessageBox messageBox;
+    messageBox.setWindowTitle(tr("Information"));
+    messageBox.setText(tr(msg.toStdString().c_str()));
+    messageBox.setIcon(QMessageBox::Information);
+    QTimer::singleShot(1500, &messageBox, SLOT(accept()));
+    messageBox.exec();
+
+//    QMessageBox::information(0,tr("Message "),
+//                             tr("Connect success! Ready to start collaborating"),
+//                             QMessageBox::Ok);
 
 }
 
