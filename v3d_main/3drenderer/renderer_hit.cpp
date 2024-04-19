@@ -611,7 +611,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 listAct.append(actMarkerRefineC = new QAction("re-define marker on intense position by 1 right-click", w));
                 listAct.append(actMarkerRefineT = new QAction("translate marker position by 1 right-click", w));
                 listAct.append(actMarkerConnect = new QAction("create segments by connecting markers", w)); // MK, 2017 April
-//                listAct.append(actMarkerDelete = new QAction("delete this marker", w));
+                listAct.append(actMarkerDelete = new QAction("delete this marker", w));
                 listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
                 listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
 #ifdef _IMAGING_MENU_
@@ -1603,26 +1603,62 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
             }
         }
     }
-//    else if (act == actMarkerDelete)
-//    {
-//        if (w && curImg)
-//        {
-//            bool ok = true; //QMessageBox::warning(0, QObject::tr("3D View"), QObject::tr("Are you sure to delete this marker?"),
-//            //                     QMessageBox::Yes | QMessageBox::Cancel,   QMessageBox::Yes)	== QMessageBox::Yes;
-//            int tmpind = names[2]-1;
-//            if (tmpind>=0 && ok)
-//            {
-//                if (tmpind<curImg->last_hit_landmark) //in this case shift the last hit forward
-//                    curImg->last_hit_landmark--;
-//                else if (tmpind==curImg->last_hit_landmark) //in this case remove the last hit
-//                    curImg->last_hit_landmark = -1;
-//                // otherwise do nothing, - the last hit pos will not change
-//                curImg->listLandmarks.removeAt(tmpind); //remove the specified landmark
-//                //updateLandmark(); //update the landmark list in 3D viewer. Commented as this is too expensive, use the following cheap way
-//                listMarker.removeAt(tmpind);
-//            }
-//        }
-//    }
+    else if (act == actMarkerDelete)
+    {
+        if (w && curImg)
+        {
+            bool ok = true; //QMessageBox::warning(0, QObject::tr("3D View"), QObject::tr("Are you sure to delete this marker?"),
+            //                     QMessageBox::Yes | QMessageBox::Cancel,   QMessageBox::Yes)	== QMessageBox::Yes;
+            int tmpind = names[2]-1;
+            if (tmpind>=0 && ok)
+            {
+                if (tmpind<curImg->last_hit_landmark) //in this case shift the last hit forward
+                    curImg->last_hit_landmark--;
+                else if (tmpind==curImg->last_hit_landmark) //in this case remove the last hit
+                    curImg->last_hit_landmark = -1;
+                // otherwise do nothing, - the last hit pos will not change
+
+                My4DImage* image4d = v3dr_getImage4d(_idep);
+                if (image4d)
+                {
+                    if (tmpind>=0 && tmpind<image4d->listLandmarks.size())
+                    {
+                        LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(tmpind)));
+                        terafly::CViewer::getCurrent()->storeAnnotations();
+                        if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                        {
+                            bool flag = false;
+                            vector<CellAPO> tobeSendMarkers;
+                            CellAPO imageMarker;
+                            imageMarker.x = s->x;
+                            imageMarker.y = s->y;
+                            imageMarker.z = s->z;
+                            imageMarker.color = s->color;
+                            imageMarker.comment = QString::fromStdString(s->comments);
+                            tobeSendMarkers.push_back(imageMarker);
+
+                            w->SetupCollaborateInfo();
+                            w->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
+
+                            if(std::find(w->quality_control_types.begin(), w->quality_control_types.end(), imageMarker.comment) != w->quality_control_types.end()){
+                                flag = true;
+                                w->TeraflyCommunicator->checkedQcMarkers.push_back(imageMarker);
+                            }
+                            if(flag){
+                                w->TeraflyCommunicator->emitUpdateQcInfo();
+                                w->TeraflyCommunicator->emitUpdateQcMarkersCounts();
+                            }
+
+                        }
+                    }
+                }
+
+                curImg->listLandmarks.removeAt(tmpind); //remove the specified landmark
+                //updateLandmark(); //update the landmark list in 3D viewer. Commented as this is too expensive, use the following cheap way
+                listMarker.removeAt(tmpind);
+            }
+        }
+    }
     else if (act == actMarkerClearAll)
     {
         if (w && curImg)

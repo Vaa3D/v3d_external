@@ -112,8 +112,8 @@ void printHelp_v3d()
 
 int main(int argc, char **argv)
 {
-    vector<int> temp;
-    temp.at(1);
+//    vector<int> temp;
+//    temp.at(1);
     qInstallMsgHandler(customMessageHandler);
  for (int myii=0; myii<argc;myii++)
  {

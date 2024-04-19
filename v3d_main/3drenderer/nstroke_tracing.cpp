@@ -3357,7 +3357,7 @@ void Renderer_gl1::deleteMultiNeuronsByStrokeCommit()
                 if(firstSegID!=-1&&secondSegID!=-1)
                     break;
             }
-//            qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
+            qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
             vector<V_NeuronSWC> connectedSegs;
             if(firstSegID!=-1)
                 connectedSegs.push_back(curImg->tracedNeuron.seg[firstSegID]);
@@ -3919,6 +3919,18 @@ void Renderer_gl1::simpleConnect()
                 cout << "seg ID:" << segInfoIt->segID << " head tail:" << segInfoIt->head_tail << endl; //<< " || branching ID:" << segInfoIt->branchID << " parent branch ID:" << segInfoIt->paBranchID << " hierarchy:" << segInfoIt->hierarchy << endl;
 
             if (segInfo.size() < 2) return;
+
+            if (w->TeraflyCommunicator
+                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+            {
+                w->SetupCollaborateInfo();
+                w->TeraflyCommunicator->UpdateConnectSegMsg(specPoints[0], specPoints[1], curImg->tracedNeuron.seg[segInfo[0].segID],curImg->tracedNeuron.seg[segInfo[1].segID],"TeraFly");
+                //                            if(w->TeraflyCommunicator->timer_exit->isActive()){
+                //                                w->TeraflyCommunicator->timer_exit->stop();
+                //                            }
+                //                            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+            }
+
             /* ========= END of [Acquire the 1st 2 and only the 1st 2 segments touched by stroke] ========= */
 
             bool res = simpleConnectExecutor(curImg, segInfo);
@@ -3988,16 +4000,6 @@ void Renderer_gl1::simpleConnect()
             //                for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
             //                    curImg->tracedNeuron.seg[i].printInfo();
             //                }
-            if (w->TeraflyCommunicator
-                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
-            {
-                w->SetupCollaborateInfo();
-                w->TeraflyCommunicator->UpdateConnectSegMsg(specPoints[0], specPoints[1], curImg->tracedNeuron.seg[segInfo[0].segID],curImg->tracedNeuron.seg[segInfo[1].segID],"TeraFly");
-                //                            if(w->TeraflyCommunicator->timer_exit->isActive()){
-                //                                w->TeraflyCommunicator->timer_exit->stop();
-                //                            }
-                //                            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
-            }
         }
     }
     //}
