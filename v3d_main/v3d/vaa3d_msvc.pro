@@ -12,10 +12,11 @@ message(CONFIG=$$unique(CONFIG))
 
 CONFIG += warn_off  # should turn off later to view all warning during compilation
 CONFIG += CONSOLE   # make a console application instead of a windows GUI only application
-CONFIG += warn_on debug console
-CONFIG+=debug
+CONFIG += warn_on console
+#CONFIG += debug
+#CONFIG += debug_and_release_target
 
-QMAKE_CFLAGS_DEBUG=-MD -Zi
+QMAKE_CXXFLAGS += /MD /Zi
 
 QMAKE_CXXFLAGS += /MP
 QMAKE_LFLAGS   += /STACK:104857600
@@ -31,38 +32,9 @@ win32 {
 	SOURCES += ../basic_c_fun/vcdiff.cpp
 	
 	# re-define LIBS under windows os
-	LIBS  = -L$$SHARED_FOLDER \ # for arthurwidgets
-			-L$$SHARED_FOLDER/release # for Qt windows which only has release install(no debug)
-		   
+        LIBS  = -L../common_lib
 	LIBS += -ldemo_shared
  
-    !contains(QMAKE_HOST.arch, x86_64) { 
-        message("x86 build") 
- 
-        ## Windows x86 (32bit) specific build here 
-        
-        MSVC_DIR = "C:\\Program Files\\Microsoft Visual Studio 9.0\\VC"
-		MSSDK_DIR = "C:\\Program Files\\Microsoft SDKs\\Windows\\v6.0A\\"
-		LOCAL_DIR = ..\ 
-
-		LIBS += -L$$MSVC_DIR\\lib
-		LIBS += -L$$MSSDK_DIR\\Lib
-		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib
-		
-		LIBS += \ #-lm
-				-llibtiff \
-        -lteem \
-				-llibnewmat \ #libnewmat.lib also works, 2010-05-21. PHC
-				-llibjba \    #libjba.lib also works
-				-llibFL_cellseg \
-				-llibFL_brainseg 
-        DEFINES *= TEEM_STATIC
-        QMAKE_CXXFLAGS += -DTEEMSTATIC
-	
-		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
-		               $$LOCAL_DIR\\common_lib\\include
- 
-    } else { 
         message("x86_64 build") 
  
         ## Windows x64 (64bit) specific build here 
@@ -77,6 +49,7 @@ win32 {
 
 		MSVCVERSION = $$(QMAKESPEC)
 		BOOSTPATH = $$(BOOST_PATH)
+                LIBS += -L$$BOOSTPATH\\lib64-msvc-12.0
 		equals(MSVCVERSION, "win32-msvc2013") {
 			LIBS += -L$$BOOSTPATH\\lib64-msvc-12.0
 		}
@@ -107,7 +80,6 @@ win32 {
 		LIBS += \
 				-llibtiff \
 				-lteem \
-				-llibnewmat \ 
 				-llibjba \ 
 				-llibFL_cellseg \
                                 -llibFL_brainseg \
@@ -120,6 +92,11 @@ win32 {
                                 -llibzlib \
                                 -lqjson
 
+CONFIG(release, debug|release): LIBS += -L..\\common_lib
+CONFIG(debug, debug|release): LIBS += -L..\\common_lib
+
+CONFIG(release, debug|release): LIBS += -lnewmat11d
+CONFIG(debug, debug|release): LIBS += -lnewmat11d
 
         DEFINES *= TEEM_STATIC
         QMAKE_CXXFLAGS += -DTEEMSTATIC
@@ -127,7 +104,7 @@ win32 {
 		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
 		               $$LOCAL_DIR\\common_lib\\include \
 					   $$BOOSTPATH \ 
-    } 
+
     
     INCLUDEPATH = $$unique(INCLUDEPATH)
     BOOSTPATH = $$(BOOST_PATH)

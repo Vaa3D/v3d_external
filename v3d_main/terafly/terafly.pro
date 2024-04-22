@@ -85,7 +85,7 @@ DEFINES += TERACONVERTER_PATCH
 #setup iomanager
 INCLUDEPATH += ../terafly/src/terarepo/src/iomanager
 HEADERS += ../terafly/src/terarepo/src/iomanager/iomanager.config.h \
-    ../../../../../../libs/C++_libs/backward.hpp
+    ../../common_lib/backward/backward.hpp
 #    src/presentation/fileserver.h \
 #    src/presentation/fileserver.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/ioplugins.h
@@ -97,7 +97,7 @@ HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/dcimg/dcimg.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff2D/tiff2D.h
 HEADERS += ../terafly/src/terarepo/src/iomanager/plugins/tiff3D/tiff3D.h
 SOURCES += ../terafly/src/terarepo/src/iomanager/iomanager.config.cpp \
-    ../../../../../../libs/C++_libs/backward.cpp
+    ../../common_lib/backward/backward.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/exampleplugin2D/exampleplugin2D.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/IMS_HDF5/IMS_HDF5.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/dcimg/dcimg.cpp
@@ -106,7 +106,8 @@ SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/tiff2D/tiff2D.cpp
 SOURCES += ../terafly/src/terarepo/src/iomanager/plugins/tiff3D/tiff3D.cpp
 
 #setup imagemanager
-INCLUDEPATH += ../terafly/src/terarepo/src/imagemanager
+INCLUDEPATH += ../terafly/src/terarepo/src/imagemanager \
+        ../common_lib/rapidjson/include
 HEADERS += ../terafly/src/terarepo/src/imagemanager/BDVVolume.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/HDF5Mngr.h
 HEADERS += ../terafly/src/terarepo/src/imagemanager/imBlock.h

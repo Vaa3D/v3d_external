@@ -110,7 +110,7 @@ win32 { # platform: win32-command-mingw
 	MINGW_DIR = c:/mingw
 	LOCAL_DIR = ../common_lib/      # c:/msys/local
 	CONFIG = $$unique(CONFIG)
-	CONFIG -= debug # for Qt-win32 which only has release install(no debug)
+#	CONFIG -= debug # for Qt-win32 which only has release install(no debug)
     CONFIG += console
 LIBS += -L$$MINGW_DIR/lib \
 	-L$$LOCAL_DIR/lib_win32
@@ -130,13 +130,12 @@ USE_Qt5 {
   INCLUDEPATH += $$SHARED_FOLDER
   LIBS += -L$$SHARED_FOLDER
 } else {
-  SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
-  include($$SHARED_FOLDER/shared.pri)
-  INCLUDEPATH += $$SHARED_FOLDER
-  LIBS += -L$$SHARED_FOLDER
+        LIBS  = -L../common_lib
+        LIBS += -ldemo_shared
 }
 
-win32:LIBS += -L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
+CONFIG(release, debug|release): LIBS += -L$$SHARED_FOLDER/debug
+CONFIG(debug, debug|release): LIBS += -L$$SHARED_FOLDER/debug
 
 macx {
     # Mac possible location of arthurwidgets.h with official Qt 4.7 installer

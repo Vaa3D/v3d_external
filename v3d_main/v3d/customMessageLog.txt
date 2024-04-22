@@ -113,3 +113,6 @@
 2023/04/07 21:03:04:Debug: 200 Ok 
 2023/04/07 21:03:06:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
 2023/04/07 21:03:06:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/04/22 16:11:32:Debug: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d" 
+2024/04/22 16:11:32:Debug: Cannot find ./plugins directory!
+2024/04/22 16:11:32:Debug: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d" 

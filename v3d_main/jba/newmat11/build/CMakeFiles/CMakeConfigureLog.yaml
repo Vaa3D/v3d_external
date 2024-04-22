@@ -1,0 +1,284 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineSystem.cmake:205 (message)"
+      - "CMakeLists.txt"
+    message: |
+      The system is: Windows - 10.0.19045 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: C:/Program Files (x86)/Microsoft Visual Studio 12.0/VC/bin/amd64/cl.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Microsoft (R) C/C++ Optimizing Compiler Version 18.00.40629 for x64
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+      
+      CMakeCCompilerId.c
+      Microsoft (R) Incremental Linker Version 12.00.40629.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+      
+      /out:CMakeCCompilerId.exe 
+      CMakeCCompilerId.obj 
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.exe"
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.obj"
+      
+      The C compiler identification is MSVC, found in:
+        C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/3.29.2/CompilerIdC/CMakeCCompilerId.exe
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:1216 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:250 (CMAKE_DETERMINE_MSVC_SHOWINCLUDES_PREFIX)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Detecting C compiler /showIncludes prefix:
+        main.c
+        Note: including file: c:\\users\\penglab\\documents\\github\\v3d_external\\v3d_main\\jba\\newmat11\\build\\cmakefiles\\showincludes\\foo.h
+        
+      Found prefix "Note: including file: "
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: C:/Program Files (x86)/Microsoft Visual Studio 12.0/VC/bin/amd64/cl.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Microsoft (R) C/C++ Optimizing Compiler Version 18.00.40629 for x64
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+      
+      CMakeCXXCompilerId.cpp
+      Microsoft (R) Incremental Linker Version 12.00.40629.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+      
+      /out:CMakeCXXCompilerId.exe 
+      CMakeCXXCompilerId.obj 
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.obj"
+      
+      The CXX compiler identification is MSVC, found in:
+        C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/3.29.2/CompilerIdCXX/CMakeCXXCompilerId.exe
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:1216 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:250 (CMAKE_DETERMINE_MSVC_SHOWINCLUDES_PREFIX)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt"
+    message: |
+      Detecting CXX compiler /showIncludes prefix:
+        main.c
+        Note: including file: c:\\users\\penglab\\documents\\github\\v3d_external\\v3d_main\\jba\\newmat11\\build\\cmakefiles\\showincludes\\foo.h
+        
+      Found prefix "Note: including file: "
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:64 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-i9czty"
+      binary: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-i9czty"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-i9czty'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_e1c92\\fast
+        	"C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\BIN\\amd64\\nmake.exe"  -f CMakeFiles\\cmTC_e1c92.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_e1c92.dir\\build
+        Building C object CMakeFiles/cmTC_e1c92.dir/CMakeCCompilerABI.c.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_e1c92.dir\\CMakeCCompilerABI.c.obj.d --working-dir=C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-i9czty --filter-prefix="Note: including file: " -- C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\cl.exe @C:\\Users\\penglab\\AppData\\Local\\Temp\\nm57F9.tmp
+        CMakeCCompilerABI.c
+        Linking C executable cmTC_e1c92.exe
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\\cmTC_e1c92.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\mt.exe --manifests -- C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_e1c92.dir\\objects1.rsp @C:\\Users\\penglab\\AppData\\Local\\Temp\\nm59A0.tmp
+        Visual Studio Incremental Link with embedded manifests
+        Create CMakeFiles\\cmTC_e1c92.dir/manifest.rc
+        Create empty: CMakeFiles\\cmTC_e1c92.dir/embed.manifest
+        RC Pass 1:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe /fo CMakeFiles\\cmTC_e1c92.dir/manifest.res CMakeFiles\\cmTC_e1c92.dir/manifest.rc
+        LINK Pass 1:
+        C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_e1c92.dir\\objects1.rsp /out:cmTC_e1c92.exe /implib:cmTC_e1c92.lib /pdb:C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-i9czty\\cmTC_e1c92.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_e1c92.dir/intermediate.manifest CMakeFiles\\cmTC_e1c92.dir/manifest.res
+        MT:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\mt.exe /nologo /manifest CMakeFiles\\cmTC_e1c92.dir/intermediate.manifest /out:CMakeFiles\\cmTC_e1c92.dir/embed.manifest /notify_update
+        RC Pass 2:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe /fo CMakeFiles\\cmTC_e1c92.dir/manifest.res CMakeFiles\\cmTC_e1c92.dir/manifest.rc
+        FINAL LINK:
+        C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_e1c92.dir\\objects1.rsp /out:cmTC_e1c92.exe /implib:cmTC_e1c92.lib /pdb:C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-i9czty\\cmTC_e1c92.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_e1c92.dir/intermediate.manifest CMakeFiles\\cmTC_e1c92.dir/manifest.res
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:170 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'C': C:/PROGRA~2/MICROS~1.0/VC/bin/amd64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:207 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Running the C compiler's linker: "C:/PROGRA~2/MICROS~1.0/VC/bin/amd64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 12.00.40629.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:64 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-wrff4i"
+      binary: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-wrff4i"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-wrff4i'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_12b72\\fast
+        	"C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\BIN\\amd64\\nmake.exe"  -f CMakeFiles\\cmTC_12b72.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_12b72.dir\\build
+        Building CXX object CMakeFiles/cmTC_12b72.dir/CMakeCXXCompilerABI.cpp.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_12b72.dir\\CMakeCXXCompilerABI.cpp.obj.d --working-dir=C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wrff4i --filter-prefix="Note: including file: " -- C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\cl.exe @C:\\Users\\penglab\\AppData\\Local\\Temp\\nm5CEA.tmp
+        CMakeCXXCompilerABI.cpp
+        Linking CXX executable cmTC_12b72.exe
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\\cmTC_12b72.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\mt.exe --manifests -- C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_12b72.dir\\objects1.rsp @C:\\Users\\penglab\\AppData\\Local\\Temp\\nm5D88.tmp
+        Visual Studio Incremental Link with embedded manifests
+        Create CMakeFiles\\cmTC_12b72.dir/manifest.rc
+        Create empty: CMakeFiles\\cmTC_12b72.dir/embed.manifest
+        RC Pass 1:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe /fo CMakeFiles\\cmTC_12b72.dir/manifest.res CMakeFiles\\cmTC_12b72.dir/manifest.rc
+        LINK Pass 1:
+        C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_12b72.dir\\objects1.rsp /out:cmTC_12b72.exe /implib:cmTC_12b72.lib /pdb:C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wrff4i\\cmTC_12b72.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_12b72.dir/intermediate.manifest CMakeFiles\\cmTC_12b72.dir/manifest.res
+        MT:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\mt.exe /nologo /manifest CMakeFiles\\cmTC_12b72.dir/intermediate.manifest /out:CMakeFiles\\cmTC_12b72.dir/embed.manifest /notify_update
+        RC Pass 2:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe /fo CMakeFiles\\cmTC_12b72.dir/manifest.res CMakeFiles\\cmTC_12b72.dir/manifest.rc
+        FINAL LINK:
+        C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_12b72.dir\\objects1.rsp /out:cmTC_12b72.exe /implib:cmTC_12b72.lib /pdb:C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wrff4i\\cmTC_12b72.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_12b72.dir/intermediate.manifest CMakeFiles\\cmTC_12b72.dir/manifest.res
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:170 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'CXX': C:/PROGRA~2/MICROS~1.0/VC/bin/amd64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:207 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt"
+    message: |
+      Running the CXX compiler's linker: "C:/PROGRA~2/MICROS~1.0/VC/bin/amd64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 12.00.40629.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/Internal/FeatureTesting.cmake:34 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/Compiler/MSVC-CXX.cmake:77 (_record_compiler_features)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeDetermineCompileFeatures.cmake:70 (cmake_record_cxx_compile_features)"
+      - "C:/Program Files/CMake/share/cmake-3.29/Modules/CMakeTestCXXCompiler.cmake:70 (CMAKE_DETERMINE_COMPILE_FEATURES)"
+      - "CMakeLists.txt"
+    checks:
+      - "Detecting CXX compile features"
+    directories:
+      source: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-59sftx"
+      binary: "C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-59sftx"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+    buildResult:
+      variable: "CMAKE_CXX_FEATURE_TEST"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/jba/newmat11/build/CMakeFiles/CMakeScratch/TryCompile-59sftx'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 nmake -f Makefile /nologo cmTC_61504\\fast
+        	"C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\BIN\\amd64\\nmake.exe"  -f CMakeFiles\\cmTC_61504.dir\\build.make /nologo -L                  CMakeFiles\\cmTC_61504.dir\\build
+        Building CXX object CMakeFiles/cmTC_61504.dir/feature_tests.cxx.obj
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_cl_compile_depends --dep-file=CMakeFiles\\cmTC_61504.dir\\feature_tests.cxx.obj.d --working-dir=C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-59sftx --filter-prefix="Note: including file: " -- C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\cl.exe @C:\\Users\\penglab\\AppData\\Local\\Temp\\nm60C3.tmp
+        feature_tests.cxx
+        Linking CXX executable cmTC_61504.exe
+        	"C:\\Program Files\\CMake\\bin\\cmake.exe" -E vs_link_exe --intdir=CMakeFiles\\cmTC_61504.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\mt.exe --manifests -- C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_61504.dir\\objects1.rsp @C:\\Users\\penglab\\AppData\\Local\\Temp\\nm6150.tmp
+        Visual Studio Incremental Link with embedded manifests
+        Create CMakeFiles\\cmTC_61504.dir/manifest.rc
+        Create empty: CMakeFiles\\cmTC_61504.dir/embed.manifest
+        RC Pass 1:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe /fo CMakeFiles\\cmTC_61504.dir/manifest.res CMakeFiles\\cmTC_61504.dir/manifest.rc
+        LINK Pass 1:
+        C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_61504.dir\\objects1.rsp /out:cmTC_61504.exe /implib:cmTC_61504.lib /pdb:C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-59sftx\\cmTC_61504.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_61504.dir/intermediate.manifest CMakeFiles\\cmTC_61504.dir/manifest.res
+        MT:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\mt.exe /nologo /manifest CMakeFiles\\cmTC_61504.dir/intermediate.manifest /out:CMakeFiles\\cmTC_61504.dir/embed.manifest /notify_update
+        RC Pass 2:
+        C:\\PROGRA~2\\WI3CF2~1\\8.1\\bin\\x64\\rc.exe /fo CMakeFiles\\cmTC_61504.dir/manifest.res CMakeFiles\\cmTC_61504.dir/manifest.rc
+        FINAL LINK:
+        C:\\PROGRA~2\\MICROS~1.0\\VC\\bin\\amd64\\link.exe /nologo @CMakeFiles\\cmTC_61504.dir\\objects1.rsp /out:cmTC_61504.exe /implib:cmTC_61504.lib /pdb:C:\\Users\\penglab\\Documents\\GitHub\\v3d_external\\v3d_main\\jba\\newmat11\\build\\CMakeFiles\\CMakeScratch\\TryCompile-59sftx\\cmTC_61504.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_61504.dir/intermediate.manifest CMakeFiles\\cmTC_61504.dir/manifest.res
+        
+      exitCode: 0
+...
