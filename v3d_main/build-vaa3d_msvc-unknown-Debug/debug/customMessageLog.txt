@@ -1,0 +1,19 @@
+2024/04/23 20:33:48:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:33:48:Debug: Cannot find ./plugins directory!
+2024/04/23 20:33:48:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:36:11:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:36:11:Debug: Cannot find ./plugins directory!
+2024/04/23 20:36:11:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:36:16:Debug: transparency true 
+2024/04/23 20:38:04:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:38:04:Debug: Cannot find ./plugins directory!
+2024/04/23 20:38:04:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:38:09:Debug: transparency true 
+2024/04/23 20:41:29:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:41:29:Debug: Cannot find ./plugins directory!
+2024/04/23 20:41:29:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:41:36:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:41:36:Debug: Cannot find ./plugins directory!
+2024/04/23 20:41:37:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/build-vaa3d_msvc-unknown-Debug" 
+2024/04/23 20:41:39:Debug: transparency true 
+2024/04/23 20:41:41:Warning: QObject::killTimers: timers cannot be stopped from another thread
