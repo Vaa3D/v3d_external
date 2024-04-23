@@ -71,6 +71,7 @@
 #include "../../v3d/CustomDefine.h"
 #include "../3drenderer/v3dr_qualitycontrolDialog.h"
 #include "../3drenderer/v3dr_onlineusersdialog.h"
+#include "v3d_application.h"
 
 using namespace terafly;
 using namespace iim;
@@ -146,6 +147,19 @@ void PMain::uninstance()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
+    if(managewidget){
+        delete managewidget;
+        managewidget = 0;
+    }
+    if(Communicator->socket)
+    {
+        Communicator->socket->deleteLater();
+        Communicator->socket=0;
+        Communicator->qcDialog->deleteLater();
+        Communicator->qcDialog=0;
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
+    }
     CImport::uninstance();
     PDialogImport::uninstance();
     PAbout::uninstance();
@@ -258,9 +272,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     /*----------------collaborate mdoe-------------------*/
     collaborateMenu=menuBar->addMenu("Collaborate");
 
-    configAction=new QAction("Config",collaborateMenu);
-    collaborateMenu->addAction(configAction);
-    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
+//    configAction=new QAction("Config",collaborateMenu);
+//    collaborateMenu->addAction(configAction);
+//    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
 
     loadAction=new QAction("Load Reconstruction From Server",collaborateMenu);
     collaborateMenu->addAction(loadAction);
@@ -291,10 +305,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborateMenu->addAction(defineSomaAction);
     connect(defineSomaAction,SIGNAL(triggered()),this,SLOT(defineSoma()));
 
-    openSwcManagerClientAction=new QAction("Data Management Client", collaborateMenu);
-    collaborateMenu->addAction(openSwcManagerClientAction);
-    connect(openSwcManagerClientAction,SIGNAL(triggered()),this,SLOT(openSwcManagerClient()));
-    openSwcManagerClientAction->setDisabled(false);
+//    openSwcManagerClientAction=new QAction("Data Management Client", collaborateMenu);
+//    collaborateMenu->addAction(openSwcManagerClientAction);
+//    connect(openSwcManagerClientAction,SIGNAL(triggered()),this,SLOT(openSwcManagerClient()));
+//    openSwcManagerClientAction->setDisabled(false);
 
     qcManagerAction=new QAction("Quality Control Manager", collaborateMenu);
     collaborateMenu->addAction(qcManagerAction);
@@ -2484,8 +2498,14 @@ void PMain::closeEvent(QCloseEvent *evt)
         }
         else
         {
-            evt->accept();
             PMain::uninstance();
+            V3dApplication::getMainWindow()->close();
+//            QApplication::exit(0);
+            evt->accept();
+//            qApp->exit();
+//            return;
+//            V3dApplication::handleCloseEvent(evt);
+//            evt->accept();
         }
     }
 }
@@ -4014,7 +4034,6 @@ void PMain::setLockMagnification(bool locked)
 /*----------------collaborate mdoe-------------------*/
 #ifdef __ALLOW_VR_FUNCS__
 
-//注意HostAddress更改时一定要用config
 void PMain::configApp()
 {
     QSettings settings("HHMI", "Vaa3D");
@@ -4038,7 +4057,14 @@ void PMain::LoadFromServer()
         QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
         return;
     }
-    QSettings settings("HHMI", "Vaa3D");
+    QSettings settings("HHMI", "CAR");
+    if(!settings.contains("UserName") || !settings.contains("UserPasswd")){
+        QMessageBox::information(0,tr("Message "),
+                        tr("Please enter from the main screen of CAR"),
+                        QMessageBox::Ok);
+        return;
+    }
+
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
 //    userinfo.colorid = settings.value("UserID").toInt();

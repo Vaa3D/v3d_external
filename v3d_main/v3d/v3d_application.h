@@ -1,4 +1,4 @@
-//last change: by Hanchuan Peng, 110828. add conditional compilation of mode menu
+﻿//last change: by Hanchuan Peng, 110828. add conditional compilation of mode menu
 //last change: by Hanchuan Peng, 120217. add a new constructor V3dApplication()
 
 #ifndef V3D_APPLICATION_H
@@ -80,8 +80,10 @@ public:
             naMainWindow->handleCoordinatedCloseEvent(event);
         }
 #endif
-
+//        mainWindow->close();
+//        theApp->exit();
         QCoreApplication::postEvent(theApp, new QEvent(QEvent::Quit)); // this more OK
+        //        QCoreApplication::exit();
     }
 
     static MainWindow* getMainWindow() {
@@ -96,7 +98,20 @@ public:
 
     static void activateMainWindow() {
         if (mainWindowIsActive==false) {
-            activateMainWindowHelper(mainWindow);
+//            activateMainWindowHelper(mainWindow);
+            if (mainWindow!=0) {
+#ifdef CGS_AUTOLAUNCH
+                mainWindow->resize(QSize(0, 0));
+                mainWindow->hide();
+#endif
+                theApp->installEventFilter(mainWindow);
+                QSettings settings("HHMI", "Vaa3D");
+                QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
+                QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
+                mainWindow->move(windowPosition);
+                mainWindow->resize(windowSize);
+                mainWindow->hide();
+            }
             mainWindowIsActive=true;
         }
 

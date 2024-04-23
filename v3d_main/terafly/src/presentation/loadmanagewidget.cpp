@@ -126,6 +126,7 @@ void LoadManageWidget::getUserId(){
         json=reply->readAll();
 
         QJson::Parser parser;
+
         auto result = parser.parse(json,&ok).toMap();
         auto metaInfo = result["metaInfo"].toMap();
         bool status = metaInfo["Status"].toBool();
@@ -150,202 +151,6 @@ void LoadManageWidget::getUserId(){
                                  QMessageBox::Ok);
     }
 }
-
-//void LoadManageWidget::getImages()
-//{
-//    qDebug()<<"enter getImages";
-//    QNetworkRequest request;
-//    request.setUrl(QUrl(HostAddress+"/collaborate/getanoimage"));
-//    qDebug()<<HostAddress;
-//    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
-//    QVariantMap userVerify;
-//    userVerify.insert("name",userinfo->name);
-//    userVerify.insert("passwd",userinfo->passwd);
-//    QVariantMap param;
-//    param.insert("user",userVerify);
-//    QJson::Serializer serializer;
-//    bool ok;
-//    QByteArray json=serializer.serialize(param,&ok);
-//    qDebug()<<json;
-//    QNetworkReply* reply = accessManager->post(request, json);
-//    if(!reply)
-//        qDebug()<<"reply = nullptr";
-
-//    QEventLoop eventLoop;
-//    connect(reply, SIGNAL(finished()),&eventLoop,SLOT(quit()));
-//    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-//    imageWidget->clear();
-//    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//    qDebug()<<"getImages"<<code;
-//    if(code==200)
-//    {
-//        //qDebug()<<"200 Ok";
-//        QStringList imageList;
-//        for(auto &image: QString(reply->readAll()).split(','))
-//        {
-////            if(image.startsWith("18454"))
-////                imageList.append(image);
-//            imageList.append(image);
-//        }
-//        imageList.removeDuplicates();
-//        imageList.removeAll("182722,191797,191798,191799,192346,192348,194060,18454");
-//        imageWidget->addItems(imageList);
-//    }
-//    else if(code==400||code==401)
-//    {
-//        //qDebug()<<code;
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr("Login error! Please check the username and the password."),
-//                                 QMessageBox::Ok);
-//    }
-//    else if(code==500)
-//    {
-//        //错误警告
-//        //qDebug()<<request.url()<<" 1\n"<<json<<" "<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr("Database error!"),
-//                                 QMessageBox::Ok);
-//    }
-//    else{
-//        QString reason=reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr(reason.toStdString().c_str()),
-//                                 QMessageBox::Ok);
-//        emit signal(1);
-//    }
-//}
-//void LoadManageWidget::getNeurons()
-//{
-//    if(!imageWidget->currentItem()) return;
-
-//    QNetworkRequest request;
-//    request.setUrl(QUrl(HostAddress+"/collaborate/getanoneuron"));
-//    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
-
-//    QVariantMap userVerify;
-//    userVerify.insert("name",userinfo->name);
-//    userVerify.insert("passwd",userinfo->passwd);
-
-//    QVariantMap param;
-
-//    param.insert("image",imageWidget->currentItem()->text().trimmed());
-
-//    param.insert("user",userVerify);
-
-//    QJson::Serializer serializer;
-//    bool ok;
-//    QByteArray json=serializer.serialize(param,&ok);
-
-//    QNetworkReply* reply = accessManager->post(request, json);
-//    QEventLoop eventLoop;
-//    connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
-//    //connect(accessManager, SIGNAL(finished(QNetworkReply*)),&eventLoop,SLOT(quit()));
-//    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-//    neuronWidget->clear();
-
-//    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//    qDebug()<<"getNeurons"<<code;
-//    if(code==200)
-//    {
-//        json=reply->readAll();
-//        qDebug()<<"getNeuronsjson"<<json;
-
-//        QJson::Parser parser;
-//        auto neurons=parser.parse(json,&ok).toList();
-//        for(auto &neuron:neurons){
-//            auto item=neuron.toMap();
-////            if(item["name"].toString()=="18454_00019")
-////                neuronWidget->addItem(item["name"].toString());
-//            neuronWidget->addItem(item["name"].toString());
-//        }
-
-//    }
-//    else if(code==400||code==401)
-//    {
-//        //qDebug()<<code;
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr("Login error! Please check the username and the password."),
-//                                 QMessageBox::Ok);
-//    }
-//    else if(code==500)
-//    {
-//        //错误警告
-//        //qDebug()<<request.url()<<" 1\n"<<json<<" "<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr("Database error!"),
-//                                 QMessageBox::Ok);
-//    }
-//    else{
-//        QString reason=reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr(reason.toStdString().c_str()),
-//                                 QMessageBox::Ok);
-//        emit signal(2);
-//    }
-//}
-
-//void LoadManageWidget::getAnos()
-//{
-//    if(!neuronWidget->currentItem()) return;
-//    QNetworkRequest request;
-//    request.setUrl(QUrl(HostAddress+"/collaborate/getano"));
-//    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
-//    QVariantMap userVerify;
-//    userVerify.insert("name",userinfo->name);
-//    userVerify.insert("passwd",userinfo->passwd);
-//    QVariantMap param;
-//    param.insert("neuron",neuronWidget->currentItem()->text().trimmed());
-//    param.insert("user",userVerify);
-//    QJson::Serializer serializer;
-//    bool ok;
-//    QByteArray json=serializer.serialize(param,&ok);
-
-//    QNetworkReply* reply = accessManager->post(request, json);
-//    QEventLoop eventLoop;
-//    connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
-//    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-//    anoWidget->clear();
-
-//    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//    qDebug()<<"getAnos"<<code;
-//    if(code==200)
-//    {
-//        // id是数据库TUserinfo表的自增主键Id
-//        userinfo->id=reply->rawHeader("Set-Cookie").toInt();
-//        qDebug()<<"user info "<<reply->rawHeader("Set-Cookie")<<" "<<userinfo->id;
-//        json=reply->readAll();
-//        qDebug()<<json<<"getAnos";
-//        QJson::Parser parser;
-//        auto neurons=parser.parse(json,&ok).toList();
-//        for(auto &neuron:neurons){
-//            auto item=neuron.toMap();
-//            anoWidget->addItem(item["name"].toString());
-//        }
-
-//    }
-//    else if(code==400||code==401)
-//    {
-//        //qDebug()<<code;
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr("Login error! Please check the username and the password."),
-//                                 QMessageBox::Ok);
-//    }
-//    else if(code==500)
-//    {
-//        //错误警告
-//        //qDebug()<<request.url()<<" 1\n"<<json<<" "<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr("Database error!"),
-//                                 QMessageBox::Ok);
-//    }
-//    else{
-//        QString reason=reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-//        QMessageBox::information(0,tr("Message "),
-//                                 tr(reason.toStdString().c_str()),
-//                                 QMessageBox::Ok);
-//        emit signal(3);
-//    }
-//}
 
 void LoadManageWidget::getAnos(){
     QNetworkRequest request;
@@ -454,6 +259,7 @@ void LoadManageWidget::loadAno()
     QVariantMap userVerify;
     userVerify.insert("name",userinfo->name);
     userVerify.insert("passwd",userinfo->passwd);
+    qDebug()<<"userinfo->passwd: "<<userinfo->passwd;
     QVariantMap param;
     param.insert("image",image);
     param.insert("neuron",neuron);

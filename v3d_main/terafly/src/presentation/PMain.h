@@ -594,10 +594,11 @@ public:
     static V3dR_Communicator *Communicator;
     QMenu *collaborateMenu,*userMenu;
     QMenu *analyzeMenu;
-    QAction *loadAction,*configAction;
+//    QAction *loadAction,*configAction;
+    QAction *loadAction;
     QAction *somaNearByAction,*colorMutationAction,*dissociativeAction,*angleAction;
     QAction *defineSomaAction,*sendSomaPosAction;
-    QAction *openSwcManagerClientAction;
+//    QAction *openSwcManagerClientAction;
     QAction *qcManagerAction;
     QListWidget *userView;
     QAction *onlineUsersAction;

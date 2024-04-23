@@ -36,7 +36,7 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false)
     //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
     //    m_timerConnect = new QTimer(this);
     //    timer_iniconn=new QTimer(this);
-    timer_exit=new QTimer(this);
+//    timer_exit=new QTimer(this);
 }
 
 void V3dR_Communicator::onReadyRead()
@@ -1298,7 +1298,7 @@ void V3dR_Communicator::autoExit(){
     QMessageBox::information(0,tr("Message "),
                              tr("Long time no operation, please try to reload the anofile!"),
                              QMessageBox::Ok);
-    timer_exit->stop();
+//    timer_exit->stop();
 }
 
 void V3dR_Communicator::resetWarnMulBifurcationFlag(){
