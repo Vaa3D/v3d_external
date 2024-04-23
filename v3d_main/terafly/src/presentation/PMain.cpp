@@ -151,7 +151,7 @@ void PMain::uninstance()
         delete managewidget;
         managewidget = 0;
     }
-    if(Communicator->socket)
+    if(Communicator && Communicator->socket)
     {
         Communicator->socket->deleteLater();
         Communicator->socket=0;
@@ -159,6 +159,10 @@ void PMain::uninstance()
         Communicator->qcDialog=0;
         Communicator->onlineUserDialog->deleteLater();
         Communicator->onlineUserDialog=nullptr;
+    }
+    if(Communicator){
+        delete Communicator;
+        Communicator = 0;
     }
     CImport::uninstance();
     PDialogImport::uninstance();
@@ -2499,9 +2503,14 @@ void PMain::closeEvent(QCloseEvent *evt)
         else
         {
             PMain::uninstance();
-            V3dApplication::getMainWindow()->close();
+//            V3dApplication::getMainWindow()->close();
+//            this->deleteLater();
 //            QApplication::exit(0);
             evt->accept();
+//            this->deleteLater();
+            V3dApplication::getMainWindow()->close();
+            V3dApplication::getInstance()->deleteLater();
+//            this->deleteLater();
 //            qApp->exit();
 //            return;
 //            V3dApplication::handleCloseEvent(evt);

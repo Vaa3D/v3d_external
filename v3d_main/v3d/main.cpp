@@ -285,7 +285,7 @@ int main(int argc, char **argv)
 #ifndef V3D_SKIP_AUTO_VERSION_CHECK
             {
                 // This is the automatic check for latest version
-                v3d_msg("Starting Vaa3D version checker...", 0);
+//                v3d_msg("Starting Vaa3D version checker...", 0);
 //                v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(mainWin);
                 //if (versionChecker->shouldCheckNow()) {
                     // v3d_msg("It is time to check for software updates...",0);

@@ -82,6 +82,15 @@ public:
 #endif
 //        mainWindow->close();
 //        theApp->exit();
+//        closeAllWindows();
+//        if(mainWindow){
+//            delete mainWindow;
+//            mainWindow = 0;
+//        }
+//        if(naMainWindow){
+//            delete naMainWindow;
+//            naMainWindow = 0;
+//        }
         QCoreApplication::postEvent(theApp, new QEvent(QEvent::Quit)); // this more OK
         //        QCoreApplication::exit();
     }

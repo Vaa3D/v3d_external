@@ -301,6 +301,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     //if (workspace)  workspace->deleteLater(); //110802 RZC //will call ~XFormView to raise BAD_ACCESS
     disconnect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus())); //instead of above line
     V3dApplication::handleCloseEvent(event);
+//    QMainWindow::closeEvent(event);
+//    qApp->quit();
 }
 void MainWindow::transactionStart()
 {
