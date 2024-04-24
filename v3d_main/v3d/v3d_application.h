@@ -107,20 +107,21 @@ public:
 
     static void activateMainWindow() {
         if (mainWindowIsActive==false) {
-//            activateMainWindowHelper(mainWindow);
-            if (mainWindow!=0) {
-#ifdef CGS_AUTOLAUNCH
-                mainWindow->resize(QSize(0, 0));
-                mainWindow->hide();
-#endif
-                theApp->installEventFilter(mainWindow);
-                QSettings settings("HHMI", "Vaa3D");
-                QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
-                QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
-                mainWindow->move(windowPosition);
-                mainWindow->resize(windowSize);
-                mainWindow->hide();
-            }
+            activateMainWindowHelper(mainWindow);
+//            if (mainWindow!=0) {
+//#ifdef CGS_AUTOLAUNCH
+//                mainWindow->resize(QSize(0, 0));
+//                mainWindow->hide();
+//#endif
+//                theApp->installEventFilter(mainWindow);
+//                QSettings settings("HHMI", "Vaa3D");
+//                QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
+//                QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
+//                mainWindow->move(windowPosition);
+//                mainWindow->resize(windowSize);
+//                mainWindow->hide();
+//            }
+//            mainWindow->hide();
             mainWindowIsActive=true;
         }
 

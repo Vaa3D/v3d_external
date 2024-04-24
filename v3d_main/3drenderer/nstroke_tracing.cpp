@@ -3878,7 +3878,7 @@ void Renderer_gl1::simpleConnect()
                                     curSeg.branchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.ID;
                                     curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.paID;
                                     curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.hierarchy;
-                                    vector<segInfoUnit>::iterator chkIt = segInfo.end()-1;
+
                                     if (segInfo.begin() == segInfo.end())
                                     {
                                         segInfo.push_back(curSeg);
@@ -3887,6 +3887,7 @@ void Renderer_gl1::simpleConnect()
                                     }
                                     else
                                     {
+                                        vector<segInfoUnit>::iterator chkIt = segInfo.end()-1;
                                         bool repeat = false;
                                         while (chkIt >= segInfo.begin())
                                         {
@@ -3895,7 +3896,12 @@ void Renderer_gl1::simpleConnect()
                                                 repeat = true;
                                                 break;
                                             }
-                                            else --chkIt;
+                                            else{ 
+                                                if(chkIt == segInfo.begin()){
+                                                    break;
+                                                }
+                                                --chkIt;
+                                            }
                                         }
                                         if (repeat == false)
                                         {
@@ -4800,7 +4806,8 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
     //cout << " Head region segs:";
     for (set<size_t>::iterator headIt = headRegionSegs.begin(); headIt != headRegionSegs.end(); ++headIt)
     {
-        if(curImg->tracedNeuron.seg.size() <= *headIt){
+        if(*headIt < 0 || *headIt >= curImg->tracedNeuron.seg.size())
+        {
             continue;
         }
         if (*headIt == inputSegID || curImg->tracedNeuron.seg[*headIt].to_be_deleted) continue;
@@ -4814,6 +4821,10 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
     //cout << endl << " Tail region segs:";
     for (set<size_t>::iterator tailIt = tailRegionSegs.begin(); tailIt != tailRegionSegs.end(); ++tailIt)
     {
+        if(*tailIt < 0 || *tailIt >= curImg->tracedNeuron.seg.size())
+        {
+            continue;
+        }
         if (*tailIt == inputSegID || curImg->tracedNeuron.seg[*tailIt].to_be_deleted) continue;
         //cout << *tailIt << " ";
         for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*tailIt].row.begin(); nodeIt != curImg->tracedNeuron.seg[*tailIt].row.end(); ++nodeIt)

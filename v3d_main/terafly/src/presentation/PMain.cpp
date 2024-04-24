@@ -4458,6 +4458,11 @@ void PMain::updateOnlineUserList(QString userList){
     if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog){
         vector<QString> oldUsers = this->Communicator->onlineUserDialog->getUserList();
         this->Communicator->onlineUserDialog->setUserList(users);
+
+        if(oldUsers.size() == 0){
+            return;
+        }
+
         QString specialUser = "";
 
         if(users.size() > oldUsers.size()){
