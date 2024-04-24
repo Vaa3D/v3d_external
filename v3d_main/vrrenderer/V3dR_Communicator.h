@@ -251,7 +251,7 @@ public:
     //    QTimer *m_timerConnect;
     //    //初始化连接定时器
     //    QTimer *timer_iniconn;
-    QTimer *timer_exit;
+//    QTimer *timer_exit;
 
     int initConnectCnt;
     int reconnectCnt;

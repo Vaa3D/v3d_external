@@ -114,18 +114,33 @@ int main(int argc, char **argv)
 {
 //    vector<int> temp;
 //    temp.at(1);
+//    if(argc < 3){
+//        qDebug()<<"Please enter from the main screen";
+//        return -1;
+//    }
+//    QString programName = argv[0];
+//    QString UserName = argv[1];
+//    QString UserPassword = argv[2];
+
+//    QSettings settings("HHMI", "Vaa3D");
+//    settings.setValue("UserName", UserName);
+//    settings.setValue("UserPasswd", UserPassword);
+
+//    argc -= 2;
+//    argv += 2;
+
     qInstallMsgHandler(customMessageHandler);
- for (int myii=0; myii<argc;myii++)
- {
-     v3d_msg(QString("[%1]").arg(argv[myii]));
- }
+    for (int myii=0; myii<argc;myii++)
+    {
+        v3d_msg(QString("[%1]").arg(argv[myii]));
+    }
 
 
 #ifdef COMPILE_TO_COMMANDLINE
 
 	CLP parser;
 
-	parser.parse(argc, argv, printHelp_v3d); // parse command lines to v3d_cl_interface Nov. 23, 2010 by YuY
+    parser.parse(argc, argv, printHelp_v3d); // parse command lines to v3d_cl_interface Nov. 23, 2010 by YuY
 
 	if(parser.i_v3d.clp_finished)
 	{
@@ -160,7 +175,7 @@ int main(int argc, char **argv)
 
                 if(!parser.i_v3d.hideV3D)
                 {
-                    mainWin->show();
+//                    mainWin->show();
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
 #ifdef _ALLOW_WORKMODE_MENU_
@@ -270,8 +285,8 @@ int main(int argc, char **argv)
 #ifndef V3D_SKIP_AUTO_VERSION_CHECK
             {
                 // This is the automatic check for latest version
-                v3d_msg("Starting Vaa3D version checker...", 0);
-                v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(mainWin);
+//                v3d_msg("Starting Vaa3D version checker...", 0);
+//                v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(mainWin);
                 //if (versionChecker->shouldCheckNow()) {
                     // v3d_msg("It is time to check for software updates...",0);
                     //versionChecker->checkForLatestVersion(false); // turn on 20130831. PHC  turn OFF 2017.03.28 BRL
@@ -287,8 +302,10 @@ int main(int argc, char **argv)
 			// launch v3d
 			try
 			{
-                if(!parser.i_v3d.hideV3D)
+                if(!parser.i_v3d.hideV3D){
+//                    app->getMainWindow()->hide();
                     return app->exec();
+                }
                 else
                     return false;
             }
