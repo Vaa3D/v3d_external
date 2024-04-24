@@ -21,6 +21,14 @@
 **/*.tlog
 **/*.manifest
 bin/*
+bin_msvc/*
+bin_old/*
+v3d_main/v3d/release/*
+v3d_main/v3d/debug/*
+.project
+.cproject
+.settings
+CMakeFiles/*
 
 #ignore MacOS system files
 .DS_Store
@@ -40,7 +48,8 @@ v3d_main/v3d/vaa3d
 build_linux-*/
 build_macosx-*/
 build_windows-*/
-v3d_main/v3d/release/autosave/
-v3d_main/build-vaa3d_msvc-unknown-Debug/
+v3d_main/v3d/release/
+
 v3d_main/build-vaa3d_msvc-unknown-Release/
+v3d_main/build-vaa3d_msvc-unknown-Debug/
 v3d_main/v3d/.qtc_clangd/
