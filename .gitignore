@@ -23,6 +23,7 @@
 bin/*
 bin_msvc/*
 bin_old/*
+v3d_main/v3d/release/*
 v3d_main/v3d/debug/*
 .project
 .cproject
