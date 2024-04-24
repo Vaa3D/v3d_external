@@ -3897,6 +3897,9 @@ void Renderer_gl1::simpleConnect()
                                                 repeat = true;
                                                 break;
                                             }
+                                            if(chkIt == segInfo.begin()){
+                                                break;
+                                            }
                                             else --chkIt;
                                         }
                                         if (repeat == false)
