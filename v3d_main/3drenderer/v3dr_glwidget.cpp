@@ -5443,9 +5443,8 @@ bool V3dR_GLWidget::simpleConnectExecutor(V_NeuronSWC_list& segments, vector<seg
             //            qDebug()<<"zll___debug__2_branchSeg.head_tail"<<branchSeg.head_tail;
             if (branchSeg.head_tail == -1) // tail to head
             {
-                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.end() - 1;
-                     itNextSeg >= segments.seg[branchSeg.segID].row.begin(); itNextSeg--)
-                {
+                for(auto& itNextSeg = segments.seg[branchSeg.segID].row.rbegin(); 
+                            itNextSeg != segments.seg[branchSeg.segID].row.rend();itNextSeg++){
                     itNextSeg->seg_id = branchSeg.segID;
                     segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
                 }
