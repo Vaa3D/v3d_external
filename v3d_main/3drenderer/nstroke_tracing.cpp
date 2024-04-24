@@ -3879,8 +3879,6 @@ void Renderer_gl1::simpleConnect()
                                     curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.paID;
                                     curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.hierarchy;
 
-                                    vector<segInfoUnit>::iterator chkIt = segInfo.end() - 1;
-
                                     if (segInfo.begin() == segInfo.end())
                                     {
                                         segInfo.push_back(curSeg);
@@ -3889,6 +3887,7 @@ void Renderer_gl1::simpleConnect()
                                     }
                                     else
                                     {
+                                        vector<segInfoUnit>::iterator chkIt = segInfo.end()-1;
                                         bool repeat = false;
                                         while (chkIt >= segInfo.begin())
                                         {
@@ -3897,7 +3896,12 @@ void Renderer_gl1::simpleConnect()
                                                 repeat = true;
                                                 break;
                                             }
-                                            else --chkIt;
+                                            else{ 
+                                                if(chkIt == segInfo.begin()){
+                                                    break;
+                                                }
+                                                --chkIt;
+                                            }
                                         }
                                         if (repeat == false)
                                         {
