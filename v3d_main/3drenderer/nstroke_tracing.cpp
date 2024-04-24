@@ -3878,7 +3878,9 @@ void Renderer_gl1::simpleConnect()
                                     curSeg.branchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.ID;
                                     curSeg.paBranchID = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.paID;
                                     curSeg.hierarchy = curImg->tracedNeuron.seg[nodeOnStroke.at(j).seg_id].branchingProfile.hierarchy;
+
                                     vector<segInfoUnit>::iterator chkIt = segInfo.end() - 1;
+
                                     if (segInfo.begin() == segInfo.end())
                                     {
                                         segInfo.push_back(curSeg);
