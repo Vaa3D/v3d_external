@@ -4172,6 +4172,7 @@ void PMain::startCollaborate(QString ano,QString port)
     if(Communicator->socket){
         delete Communicator->socket;
         Communicator->socket=0;
+        Communicator->resetdatatype();
     }
     Communicator->socket=new QTcpSocket();
     if(Communicator->qcDialog){
@@ -4542,6 +4543,7 @@ void PMain::onMessageDisConnect()
         Communicator->qcDialog=nullptr;
         Communicator->onlineUserDialog->deleteLater();
         Communicator->onlineUserDialog=nullptr;
+        Communicator->resetdatatype();
     }
     //    this->Communicator ->deleteLater();
     //    this->Communicator = nullptr;
@@ -4627,6 +4629,7 @@ void PMain::handleExit(){
         Communicator->qcDialog=0;
         Communicator->onlineUserDialog->deleteLater();
         Communicator->onlineUserDialog=nullptr;
+        Communicator->resetdatatype();
     }
     //    this->Communicator ->deleteLater();
     //    this->Communicator = nullptr;
@@ -4716,6 +4719,12 @@ void PMain::openQcManager(){
 void PMain::openOnlineUserDialog(){
     if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog){
         this->Communicator->onlineUserDialog->show();
+    }
+    if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog==nullptr){
+        CViewer *cur_win = CViewer::getCurrent();
+        // 获取窗口的左上角坐标
+        QPoint topLeftPoint = cur_win->getGLWidget()->geometry().topLeft();
+        this->Communicator->onlineUserDialog=new V3dr_onlineusersDialog(topLeftPoint);
     }
 }
 
