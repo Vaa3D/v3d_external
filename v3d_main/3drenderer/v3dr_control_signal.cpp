@@ -1270,6 +1270,20 @@ void V3dR_MainWindow::initVolumeCutRange()
 {
 	if (! glWidget) return;
 
+		// disable the connections before initialization, otherwise may crash --ZZH 2020/3/27
+	if (xcmaxSlider) {
+			disconnect(glWidget, SIGNAL(changeXCut1(int)), xcmaxSlider, SLOT(setValue(int)));
+			disconnect(xcmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setXCut1(int)));
+	}
+	if (ycmaxSlider) {
+			disconnect(glWidget, SIGNAL(changeYCut1(int)), ycmaxSlider, SLOT(setValue(int)));
+			disconnect(ycmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setYCut1(int)));
+	}
+	if (zcmaxSlider) {
+			disconnect(glWidget, SIGNAL(changeZCut1(int)), zcmaxSlider, SLOT(setValue(int)));
+			disconnect(zcmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setZCut1(int)));
+	}
+
 	int d1, d2, d3;
 	d1 = MAX(0, glWidget->dataDim1()-1);
 	d2 = MAX(0, glWidget->dataDim2()-1);
@@ -1330,6 +1344,20 @@ void V3dR_MainWindow::initVolumeCutRange()
 	if (zCSSlider) {
 		zCSSlider->setMaximum(d3);
 		zCSSlider->setValue((zCSSlider->minimum()+zCSSlider->maximum())/2);
+	}
+		// reenable the connections --ZZH 2020/3/27
+	if (xcmaxSlider) {
+			connect(glWidget, SIGNAL(changeXCut1(int)), xcmaxSlider, SLOT(setValue(int)));
+			connect(xcmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setXCut1(int)));
+	}
+	if (ycmaxSlider) {
+			connect(glWidget, SIGNAL(changeYCut1(int)), ycmaxSlider, SLOT(setValue(int)));
+			connect(ycmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setYCut1(int)));
+	}
+
+	if (zcmaxSlider) {
+			connect(glWidget, SIGNAL(changeZCut1(int)), zcmaxSlider, SLOT(setValue(int)));
+			connect(zcmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setZCut1(int)));
 	}
 }
 
