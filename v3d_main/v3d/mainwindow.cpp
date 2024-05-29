@@ -65,15 +65,17 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #endif
 
 #ifdef _ALLOW_TERAFLY_MENU_
-#include "../terafly/src/control/CPlugin.h"
+#include "../control/CPlugin.h"
 #endif
 
 #ifdef __ALLOW_VR_FUNCS__
 #include "../mozak/MozakUI.h";
 #endif
+#include <cstdlib>
 
 //#include "dialog_pointcloudatlas_linkerloader.h"
 //#include "atlas_window.h"
+
 MainWindow::MainWindow()
 {
     //initialize every pointer to 0. added on 080612
@@ -300,9 +302,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     //if (workspace)  workspace->deleteLater(); //110802 RZC //will call ~XFormView to raise BAD_ACCESS
     disconnect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus())); //instead of above line
+    terafly::TeraFly::closePMain();
     V3dApplication::handleCloseEvent(event);
+//    event->accept();
+//    this->deleteLater();
 //    QMainWindow::closeEvent(event);
 //    qApp->quit();
+    return;
 }
 void MainWindow::transactionStart()
 {

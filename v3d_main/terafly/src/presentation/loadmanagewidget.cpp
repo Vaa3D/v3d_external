@@ -12,6 +12,8 @@
 #include <qjson/serializer.h>
 #include <qjson/parser.h>
 #include <qjson/qobjecthelper.h>
+#include <chrono>
+#include "../control/CViewer.h"
 
 QNetworkAccessManager* LoadManageWidget::accessManager= new QNetworkAccessManager();
 QString LoadManageWidget::HostAddress="";
@@ -33,7 +35,7 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     // 创建字体对象
     QFont font;
     // 设置字体大小
-    font.setPointSize(12); // 设置字体大小为16点
+    font.setPointSize(12); // 设置字体大小为12点
     anoWidget->setFont(font);
 
     // 获取桌面信息
@@ -97,13 +99,13 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
 
 void LoadManageWidget::getUserId(){
     QNetworkRequest request;
-    QString urlForGetUser = DBMSAddress + "/GetUser";
+    QString urlForGetUser = DBMSAddress + "/GetUserByName";
     request.setUrl(QUrl(urlForGetUser));
 //    request.setUrl(QUrl("http://114.117.165.134:14252/proto.DBMS/GetUser"));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QVariantMap userVerify;
     userVerify.insert("UserName",userinfo->name);
-    userVerify.insert("UserToken","");
+    userVerify.insert("UserPassword",userinfo->passwd);
     QVariantMap metaInfo;
     metaInfo.insert("ApiVersion",ApiVersion);
     QVariantMap param;
@@ -159,7 +161,7 @@ void LoadManageWidget::getAnos(){
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QVariantMap userVerify;
     userVerify.insert("UserName",userinfo->name);
-    userVerify.insert("UserToken","");
+    userVerify.insert("UserPassword",userinfo->passwd);
     QVariantMap metaInfo;
     metaInfo.insert("ApiVersion",ApiVersion);
     QVariantMap param;
@@ -204,9 +206,11 @@ void LoadManageWidget::getAnos(){
         for(auto &swcInfo:swcInfos){
             auto item = swcInfo.toMap();
             QStringList parts = item["Name"].toString().split("_");
-            QString image = parts[0];
-            imageList.push_back(image.toInt());
+            //只根据image前缀进行排序
+            QString image_pre = parts[0];
+            imageList.push_back(image_pre.toInt());
         }
+
         if(indexs.size()>=2){
             for(int i=1; i<indexs.size(); i++) {
                 int temp = imageList[i];
@@ -244,13 +248,30 @@ void LoadManageWidget::getAnos(){
 
 void LoadManageWidget::loadAno()
 {
+    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    if(!cur_win)
+    {
+        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+        return;
+    }
+
     qDebug()<<"begin to load Ano";
     if(!anoWidget->currentItem()) return;
 
     QString anoName = anoWidget->currentItem()->text().trimmed();
     QStringList parts = anoName.split("_");
-    QString image = parts[0];
-    QString neuron = parts[0] + "_" + parts[1];
+    QString image_pre = parts[0];
+    QString image_suf = parts[1];
+    QString image, neuron;
+    //image是否带后缀
+    if(image_suf.size() == 1){
+        image = image_pre + "_" + image_suf;
+        neuron = image + "_" + parts[2];
+    }
+    else{
+        image = parts[0];
+        neuron = parts[0] + "_" + parts[1];
+    }
 
     QNetworkRequest request;
     request.setUrl(QUrl(HostAddress+"/collaborate/inheritother"));

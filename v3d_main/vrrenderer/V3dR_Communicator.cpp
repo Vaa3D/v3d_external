@@ -236,6 +236,12 @@ void V3dR_Communicator::processWarnMsg(QString line){
                     emit updateQcMarkersCounts();
                 }
             }
+            else if(reason=="Approaching bifurcation"){
+                emit addMarker(listwithheader[0], "Approaching bifurcation");
+
+                emit updateQcInfo();
+                emit updateQcMarkersCounts();
+            }
             else if(reason=="DisconnectError"){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("Disconnect from DBMS!"),
@@ -243,54 +249,56 @@ void V3dR_Communicator::processWarnMsg(QString line){
             }
             else if(reason=="GetSwcMetaInfoError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("GetSwcMetaInfoError from DBMS!"),
+                                         tr("GetSwcMetaInfoError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="ApoFileNotFoundError"){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("ApoFileNotFoundError!"),
                                          QMessageBox::Ok);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="GetApoDataError"){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("GetApoDataError from DBMS!"),
                                          QMessageBox::Ok);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="GetSwcFullNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("GetSwcFullNodeDataError from DBMS!"),
                                          QMessageBox::Ok);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="AddSwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("AddSwcNodeDataError from DBMS!"),
+                                         tr("AddSwcNodeDataError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
+                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="DeleteSwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("DeleteSwcNodeDataError from DBMS!"),
+                                         tr("DeleteSwcNodeDataError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
+                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="ModifySwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("ModifySwcNodeDataError from DBMS!"),
+                                         tr("ModifySwcNodeDataError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
+                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="UpdateSwcAttachmentApoError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("UpdateSwcAttachmentApoError from DBMS!"),
+                                         tr("UpdateSwcAttachmentApoError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
+                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="FullNumberError"){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("The number of collaborating users has been full about this swc!"),
                                          QMessageBox::Ok);
-            }
-            else {
-                emit addMarker(listwithheader[0], "Approaching bifurcation");
-
-                emit updateQcInfo();
-                emit updateQcMarkersCounts();
             }
         }
 
@@ -794,7 +802,9 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vecto
 {
     if(clienttype=="TeraFly")
     {
-
+        if(seg.row.size() == 0){
+            return;
+        }
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -821,11 +831,18 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vecto
 }
 
 void V3dR_Communicator::UpdateDelManySegMsg(vector<V_NeuronSWC> segs, QString clienttype, vector<vector<V_NeuronSWC>> connectedSegs, vector<bool> isBeginVec){
+    if(segs.size() == 0){
+        return;
+    }
+
     QStringList result;
     result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
     for(int i = 0; i < segs.size(); i++){
         if(clienttype=="TeraFly")
         {
+            if(segs[i].row.size() == 0){
+                continue;
+            }
             result+=V_NeuronSWCToSendMSG(segs[i]);
             result+="$";
 
@@ -851,7 +868,7 @@ void V3dR_Communicator::UpdateDelManySegMsg(vector<V_NeuronSWC> segs, QString cl
     }
 }
 
-void V3dR_Communicator::UpdateDelManySegsMsg(vector<V_NeuronSWC> segs,QString clienttype){
+void V3dR_Communicator::UpdateDelManyConnectedSegsMsg(vector<V_NeuronSWC> segs,QString clienttype){
     if(clienttype=="TeraFly")
     {
 
@@ -960,6 +977,9 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
 {
     if(clienttype=="TeraFly")
     {
+        if(seg.row.size() == 0){
+            return;
+        }
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -977,6 +997,9 @@ void V3dR_Communicator::UpdateRetypeManySegsMsg(vector<V_NeuronSWC> segs,int typ
         result.push_back(QString("%1 %2 %3 %4 %5 %6 %7").arg(0).arg(userId).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
 
         for(int i=0;i<segs.size();i++){
+            if(segs[i].row.size() == 0){
+                continue;
+            }
             result+=V_NeuronSWCToSendMSG(segs[i]);
             result.push_back("$");
         }

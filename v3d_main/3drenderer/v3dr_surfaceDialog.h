@@ -80,9 +80,9 @@ public:
     void setCurTab(int i)  {if(i<0) i=iLastTab;  if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504, 110713
     int  getCurTab()       {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622
     int meshDensity;
-    XYZ ImageMaxRes;//
-    XYZ ImageCurRes;
-    XYZ ImageStartPoint;
+//    XYZ ImageMaxRes;//
+//    XYZ ImageCurRes;
+//    XYZ ImageStartPoint;
 
 protected:
     V3dR_GLWidget *glwidget, *tolink_widget;
@@ -171,13 +171,6 @@ protected:
     QTableWidget* createTableAPO_Set();
 
     QTableWidget* currentTableWidget();
-
-    //Coordinate transform
-    XYZ ConvertGlobaltoLocalBlockCroods(double x,double y,double z);
-    XYZ ConvertLocalBlocktoGlobalCroods(double x,double y,double z);
-    XYZ ConvertMaxRes2CurrResCoords(double x,double y,double z);
-    XYZ ConvertCurrRes2MaxResCoords(double x,double y,double z);
-
     QVector<bool> in_batch_stack;
     void begin_batch() {in_batch_stack.push_back(true);}
     void end_batch()   {in_batch_stack.pop_back();}
@@ -233,9 +226,9 @@ protected:
         searchTextEditLabel=searchTextResultLabel = 0;
         searchTextEdit =0;
         doSearchTextNext=doSearchTextPrev=doSearchTextHighlightAllHits =0;
-        int maxresindex = terafly::CImport::instance()->getResolutions()-1;
-        IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
-        ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
+//        int maxresindex = terafly::CImport::instance()->getResolutions()-1;
+//        IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
+//        ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
     }
 };
 

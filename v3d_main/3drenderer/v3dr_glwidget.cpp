@@ -1168,7 +1168,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                     w->SetupCollaborateInfo();
                         //                        for(auto seg:vector_VSWC)
                         //                            w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
-                    w->TeraflyCommunicator->UpdateDelManySegsMsg(vector_VSWC,"TeraFly");
+                    w->TeraflyCommunicator->UpdateDelManyConnectedSegsMsg(vector_VSWC,"TeraFly");
                 }
                 //                        while(!future.isFinished())
                 //                        {
@@ -4807,7 +4807,7 @@ int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
     double length = getSegLength(coords);
     double mindist = 1;
 
-    mindist = 1 + 1 * length/((length + 1) * (length + 1));
+    mindist = 1 + 1 * sqrt(length)/(sqrt(length) + 1);
     if(coords.size() <= 2){
         mindist = 1;
     }

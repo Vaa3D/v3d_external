@@ -91,8 +91,8 @@ public:
 //            delete naMainWindow;
 //            naMainWindow = 0;
 //        }
-        QCoreApplication::postEvent(theApp, new QEvent(QEvent::Quit)); // this more OK
-        //        QCoreApplication::exit();
+        QCoreApplication::postEvent(theApp, new QEvent(QEvent::Quit));
+//        qApp->quit();
     }
 
     static MainWindow* getMainWindow() {

@@ -72,7 +72,11 @@ V3dr_surfaceDialog::V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent)
 V3dr_surfaceDialog::~V3dr_surfaceDialog()
 {
     qDebug("V3dr_surfaceDialog::~V3dr_surfaceDialog");
-    if (glwidget) glwidget->clearSurfaceDialog();
+    if (glwidget)
+    {
+        glwidget->clearSurfaceDialog();
+    }
+    this->deleteLater();
 }
 
 
@@ -698,8 +702,9 @@ void V3dr_surfaceDialog::doubleClickHandler(int i, int j)
 
             v3d_msg("Invoke terafly local-zoomin based on an existing marker.", 0);
             vector <XYZ> loc_vec;
-            XYZ loc = ConvertGlobaltoLocalBlockCroods(mk.x, mk.y, mk.z);
-            //            loc.x = mk.x; loc.y = mk.y; loc.z = mk.z;
+//            XYZ loc = ConvertGlobaltoLocalBlockCroods(mk.x, mk.y, mk.z);
+            XYZ loc;
+            loc.x = mk.x; loc.y = mk.y; loc.z = mk.z;
             loc_vec.push_back(loc);
 
             r->b_grabhighrez = true;
@@ -921,45 +926,45 @@ QTableWidget* V3dr_surfaceDialog::createTableMarker()
     QStringList qsl;
     qsl <<"on/off" << "color" << "type" << "x"<<"y"<<"z" << "name" << "comment";
     //    terafly::CViewer::getCurrent()->storeMarkers();
-    auto markers=terafly::PluginInterface::getLandmarkDirectly();
-    if(glwidget){
-        vector<XYZ> results = glwidget->getImageCurResAndStartPoint();
-        if(results.size()==2){
-            ImageCurRes = results[0];
-            ImageStartPoint = results[1];
-            int row = markers.size();
-            int col = qsl.size();
+//    auto markers=terafly::PluginInterface::getLandmarkDirectly();
+//    if(glwidget){
+//        vector<XYZ> results = glwidget->getImageCurResAndStartPoint();
+//        if(results.size()==2){
+//            ImageCurRes = results[0];
+//            ImageStartPoint = results[1];
+//            int row = markers.size();
+//            int col = qsl.size();
 
-            QTableWidget* t = new QTableWidget(row,col, this);
-            t->setHorizontalHeaderLabels(qsl);
+//            QTableWidget* t = new QTableWidget(row,col, this);
+//            t->setHorizontalHeaderLabels(qsl);
 
-            //qDebug("  create begin t->rowCount = %d", t->rowCount());
-            for (int i=0; i<row; i++)
-            {
-                int j=0;
-                QTableWidgetItem *curItem;
+//            //qDebug("  create begin t->rowCount = %d", t->rowCount());
+//            for (int i=0; i<row; i++)
+//            {
+//                int j=0;
+//                QTableWidgetItem *curItem;
 
-                ADD_ONOFF(markers[i].on);
+//                ADD_ONOFF(markers[i].on);
 
-                ADD_QCOLOR(markers[i].color);
+//                ADD_QCOLOR(markers[i].color);
 
-                ADD_STRING( tr("%1").arg(2) );
+//                ADD_STRING( tr("%1").arg(2) );
 
-                XYZ coor = ConvertGlobaltoLocalBlockCroods(markers[i].x, markers[i].y, markers[i].z);
-                ADD_STRING( tr("%1").arg(coor.x) );
-                ADD_STRING( tr("%1").arg(coor.y) );
-                ADD_STRING( tr("%1").arg(coor.z) );
+//                XYZ coor = ConvertGlobaltoLocalBlockCroods(markers[i].x, markers[i].y, markers[i].z);
+//                ADD_STRING( tr("%1").arg(coor.x) );
+//                ADD_STRING( tr("%1").arg(coor.y) );
+//                ADD_STRING( tr("%1").arg(coor.z) );
 
-                ADD_STRING( QString::fromStdString(markers[i].name) );
+//                ADD_STRING( QString::fromStdString(markers[i].name) );
 
-                ADD_STRING( QString::fromStdString(markers[i].comments) );
+//                ADD_STRING( QString::fromStdString(markers[i].comments) );
 
-                MESSAGE_ASSERT(j==col);
-            }
-            t->resizeColumnsToContents();
-            return t;
-        }
-    }
+//                MESSAGE_ASSERT(j==col);
+//            }
+//            t->resizeColumnsToContents();
+//            return t;
+//        }
+//    }
 
     int row = r->listMarker.size();
     int col = qsl.size();
@@ -1888,40 +1893,3 @@ void V3dr_surfaceDialog::sortNeuronSegmentByType(QTableWidgetItem* item)
     if (!isBatchOperation)
         curImg->update_3drenderer_neuron_view(w, r);
 }
-
-XYZ V3dr_surfaceDialog::ConvertGlobaltoLocalBlockCroods(double x,double y,double z)
-{
-    auto node=ConvertMaxRes2CurrResCoords(x,y,z);
-    node.x-=(ImageStartPoint.x-1);
-    node.y-=(ImageStartPoint.y-1);
-    node.z-=(ImageStartPoint.z-1);
-    return node;
-}
-
-XYZ V3dr_surfaceDialog::ConvertLocalBlocktoGlobalCroods(double x,double y,double z)
-{
-    x+=(ImageStartPoint.x-1);
-    y+=(ImageStartPoint.y-1);
-    z+=(ImageStartPoint.z-1);
-
-    XYZ node=ConvertCurrRes2MaxResCoords(x,y,z);
-    return node;
-}
-
-XYZ V3dr_surfaceDialog::ConvertMaxRes2CurrResCoords(double x,double y,double z)
-{
-    x/=(ImageMaxRes.x/ImageCurRes.x);
-    y/=(ImageMaxRes.y/ImageCurRes.y);
-    z/=(ImageMaxRes.z/ImageCurRes.z);
-    return XYZ(x,y,z);
-}
-
-XYZ V3dr_surfaceDialog::ConvertCurrRes2MaxResCoords(double x,double y,double z)
-{
-    //    qDebug()<<ImageMaxRes.x/ImageCurRes.x;
-    x*=(ImageMaxRes.x/ImageCurRes.x);
-    y*=(ImageMaxRes.y/ImageCurRes.y);
-    z*=(ImageMaxRes.z/ImageCurRes.z);
-    return XYZ(x,y,z);
-}
-

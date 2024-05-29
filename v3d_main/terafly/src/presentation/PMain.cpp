@@ -99,7 +99,7 @@ string PMain::HTquickscan = "<i>QuickScan</i>: a scrollable maximum-intensity-pr
 
 PMain* PMain::uniqueInstance = 0;
 
-LoadManageWidget* PMain::managewidget=0;
+std::unique_ptr<LoadManageWidget> PMain::managewidget_ptr=nullptr;
 V3dR_Communicator* PMain::Communicator=0;
 
 string PMain::hostIp;
@@ -146,17 +146,16 @@ PMain* PMain::getInstance()
 void PMain::uninstance()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
-
-    if(managewidget){
-        delete managewidget;
-        managewidget = 0;
-    }
     if(Communicator && Communicator->socket)
     {
         Communicator->socket->deleteLater();
         Communicator->socket=0;
+    }
+    if(Communicator && Communicator->qcDialog){
         Communicator->qcDialog->deleteLater();
         Communicator->qcDialog=0;
+    }
+    if(Communicator && Communicator->onlineUserDialog){
         Communicator->onlineUserDialog->deleteLater();
         Communicator->onlineUserDialog=nullptr;
     }
@@ -4126,24 +4125,27 @@ void PMain::LoadFromServer()
     LoadManageWidget::DBMSAddress=QString::fromStdString(dbmsServerAddress);
     LoadManageWidget::ApiVersion=QString::fromStdString(apiVersion);
 
-    if(managewidget){
-        qDebug()<<"delete managewidget";
-        delete managewidget;
-        managewidget=0;
+//    if(managewidget){
+//        qDebug()<<"delete managewidget";
+//        delete managewidget;
+//        managewidget=0;
+//    }
+
+    if(managewidget_ptr == nullptr){
+        //更新一下用户信息
+        managewidget_ptr = std::make_unique<LoadManageWidget>(&userinfo);
+        connect(managewidget_ptr.get(),SIGNAL(Load(QString,QString)),this,SLOT(startCollaborate(QString,QString)));
     }
 
-    //更新一下用户信息
-    managewidget=new LoadManageWidget(&userinfo);
-    connect(managewidget,SIGNAL(Load(QString,QString)),this,SLOT(
-                startCollaborate(QString,QString)));
-    managewidget->show();
+    managewidget_ptr->raise();
+    managewidget_ptr->show();
     qDebug()<<userinfo.id;
 }
 
 void PMain::startCollaborate(QString ano,QString port)
 {
     qDebug()<<"enter startCollaborate========================================";
-    managewidget->hide();
+    managewidget_ptr->hide();
 
     if(!Communicator)
     {

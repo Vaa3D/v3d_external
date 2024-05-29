@@ -30,6 +30,7 @@
 #define PMAIN_GUI_H
 
 #include <QtGui>
+#include <memory>
 #include <v3d_interface.h>
 #include "../control/CPlugin.h"
 #include "../control/CVolume.h"
@@ -603,7 +604,7 @@ public:
     QListWidget *userView;
     QAction *onlineUsersAction;
     static UserInfo userinfo;
-    static LoadManageWidget *managewidget;
+    static std::unique_ptr<LoadManageWidget> managewidget_ptr;
     static string hostIp;
     static string braintellServerAddress;
     static string dbmsServerAddress;
