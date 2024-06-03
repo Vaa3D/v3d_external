@@ -23,20 +23,34 @@ QString LoadManageWidget::m_ano="";
 QString LoadManageWidget::m_port="";
 LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
 {
-//    this->setAttribute(Qt::WA_DeleteOnClose);
-//    getImageBtn=new QPushButton("GetImage",this);
-//    getNeuronBtn=new QPushButton("GetNeuron",this);
-//    getAnoBtn=new QPushButton("GetAno",this);
-    loadBtn=new QPushButton("LoadAno",this);
-
-//    imageWidget=new QListWidget(this);
-//    neuronWidget=new QListWidget(this);
-    anoWidget=new QListWidget(this);
     // 创建字体对象
     QFont font;
     // 设置字体大小
-    font.setPointSize(12); // 设置字体大小为12点
-    anoWidget->setFont(font);
+    font.setPointSize(11); // 设置字体大小为11点
+    // 创建主布局
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    // 创建 QSplitter
+    QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
+
+    // 创建项目的 QListWidget
+    projectWidget = new QListWidget(this);
+    projectWidget->addItems(QStringList() << "Project 1" << "Project 2" << "Project 3");
+    connect(projectWidget, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(displayItems(QListWidgetItem*, QListWidgetItem*)));
+    projectWidget->setFont(font);
+
+    // 创建swc的 QListWidget
+    swcWidget = new QListWidget(this);
+    swcWidget->setFont(font);
+
+    // 将两个 QListWidget 添加到 QSplitter
+    splitter->addWidget(projectWidget);
+    splitter->addWidget(swcWidget);
+
+    // 设置初始尺寸比例
+    splitter->setStretchFactor(0, 1);
+    splitter->setStretchFactor(1, 3);
+
+    loadBtn=new QPushButton("LoadAno",this);
 
     // 获取桌面信息
     QDesktopWidget desktopWidget;
@@ -49,31 +63,7 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     int centerX = screenWidth / 2 - 50;
     int centerY = screenHeight / 2;
 
-//    int currentScreen = qApp->desktop()->screenNumber(this);//程序所在的屏幕编号
-//    QRect rect = qApp->desktop()->screenGeometry(currentScreen);//程序所在屏幕尺寸
-//    anoWidget->move((rect.width() - anoWidget->width()) / 2, (rect.height() - anoWidget->height()) / 2);//移动到所在屏幕中间
-
-    // 设置子部件的位置
-//    anoWidget->setGeometry(centerX-anoWidget->minimumWidth()/2, centerY-anoWidget->minimumHeight()/2, anoWidget->minimumWidth(), anoWidget->minimumHeight());
-
-//    QVBoxLayout *imageLayout,*neuronLayout,*anoLayout;
-
-//    imageLayout=new QVBoxLayout;
-//    imageLayout->addWidget(getImageBtn);
-//    imageLayout->addWidget(imageWidget);
-
-//    neuronLayout=new QVBoxLayout();
-//    neuronLayout->addWidget(getNeuronBtn);
-//    neuronLayout->addWidget(neuronWidget);
-
-
-//    QHBoxLayout *listLayout=new QHBoxLayout();
-//    listLayout->addLayout(imageLayout);
-//    listLayout->addLayout(neuronLayout);
-//    listLayout->addLayout(anoLayout);
-
-    QVBoxLayout *mainLayout=new QVBoxLayout(this);
-    mainLayout->addWidget(anoWidget);
+    mainLayout->addWidget(splitter);
     mainLayout->addWidget(loadBtn);
 
     setLayout(mainLayout);
@@ -81,20 +71,12 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     int currentScreen = qApp->desktop()->screenNumber(this);//程序所在的屏幕编号
     QRect rect = qApp->desktop()->screenGeometry(currentScreen);//程序所在屏幕尺寸
 
-    this->setFixedSize(900, 380);
+    this->setMinimumSize(900, 380);
     this->move((rect.width() - this->width()) / 2 - 50, (rect.height() - this->height()) / 2);//移动到所在屏幕中间
-//    // 让父部件居中
-//    this->setGeometry(centerX - this->width() / 2,
-//                      centerY - this->height() / 2,
-//                      this->width(),
-//                      this->height());
 
-//    connect(getImageBtn,SIGNAL(clicked()),this,SLOT(getImages()));
-//    connect(getNeuronBtn,SIGNAL(clicked()),this,SLOT(getNeurons()));
-//    connect(getAnoBtn,SIGNAL(clicked()),this,SLOT(getAnos()));
     connect(loadBtn,SIGNAL(clicked()),this,SLOT(loadAno()));
     getUserId();
-    getAnos();
+    getAllProjectSwcList();
 }
 
 void LoadManageWidget::getUserId(){
@@ -154,10 +136,10 @@ void LoadManageWidget::getUserId(){
     }
 }
 
-void LoadManageWidget::getAnos(){
+void LoadManageWidget::getAllProjectSwcList(){
     QNetworkRequest request;
-    QString urlForGetAllSwcMetaInfo = DBMSAddress + "/GetAllSwcMetaInfo";
-    request.setUrl(QUrl(urlForGetAllSwcMetaInfo));
+    QString urlForGetAllProject = DBMSAddress + "/GetAllProject";
+    request.setUrl(QUrl(urlForGetAllProject));
     request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
     QVariantMap userVerify;
     userVerify.insert("UserName",userinfo->name);
@@ -175,10 +157,13 @@ void LoadManageWidget::getAnos(){
     QEventLoop eventLoop;
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-    anoWidget->clear();
+
+    projectWidget->clear();
+    swcWidget->clear();
+    proName2SwcListMap.clear();
 
     int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    qDebug()<<"getAnos"<<code;
+    qDebug()<<"getAllProject: "<<code;
     if(code==200)
     {
         json=reply->readAll();
@@ -189,7 +174,7 @@ void LoadManageWidget::getAnos(){
         bool status = metaInfo["Status"].toBool();
         QString message = metaInfo["Message"].toString();
         if(!status){
-            QString msg = "GetUser Failed! " + message;
+            QString msg = "GetAllProject Failed! " + message;
             qDebug()<<msg;
             QMessageBox::information(0,tr("Message "),
                                      tr(msg.toStdString().c_str()),
@@ -197,45 +182,56 @@ void LoadManageWidget::getAnos(){
             return;
         }
 
-        auto swcInfos = result["SwcInfo"].toList();
-        std::vector<int> imageList;
-        std::vector<int> indexs;
-        for(int i=0; i<swcInfos.size(); i++){
-            indexs.push_back(i);
-        }
-        for(auto &swcInfo:swcInfos){
-            auto item = swcInfo.toMap();
-            QStringList parts = item["Name"].toString().split("_");
-            //只根据image前缀进行排序
-            QString image_pre = parts[0];
-            imageList.push_back(image_pre.toInt());
-        }
+        auto projectInfos = result["ProjectInfo"].toList();
+        for(int i = 0; i < projectInfos.size(); ++i){
+            auto projectInfo = projectInfos.at(i).toMap();
+            QString projectName = projectInfo["Name"].toString();
+            projectWidget->addItem(projectName);
 
-        if(indexs.size()>=2){
-            for(int i=1; i<indexs.size(); i++) {
-                int temp = imageList[i];
-                int tempIndex = indexs[i];
-                int k = i-1;
-                for(; k >= 0 && imageList[k] > temp; ) {
-                    k--;
-                }
-
-                for(int j=i; j>k+1; j--) {
-                    imageList[j] = imageList[j-1];
-                    indexs[j] = indexs[j-1];
-                }
-                imageList[k+1] = temp;
-                indexs[k+1] = tempIndex;
+            auto swcList = projectInfo["SwcList"].toList();
+            std::vector<int> imageList;
+            std::vector<int> indexs;
+            QList<QString> sortedSwcNameList;
+            for(int j = 0; j < swcList.size(); ++j){
+                indexs.push_back(j);
             }
-        }
+            for(auto &swcName : swcList){
+                QStringList parts = swcName.toString().split("_");
+                //只根据image前缀进行排序
+                QString image_pre = parts[0];
+                imageList.push_back(image_pre.toInt());
+            }
 
-        for(int i=0; i<indexs.size(); i++){
-            auto item = swcInfos.at(indexs[i]).toMap();
-            int removedLen = QString(".ano.eswc").length();
-            int len = item["Name"].toString().size();
-            QString anoName = item["Name"].toString().remove(len-removedLen, removedLen);
-//            QString anoName = item["Name"].toString();
-            anoWidget->addItem(anoName);
+            if(indexs.size()>=2){
+                for(int j = 1; j < indexs.size(); ++j) {
+                    int temp = imageList[j];
+                    int tempIndex = indexs[j];
+                    int k = j - 1;
+                    for(; k >= 0 && imageList[k] > temp; ) {
+                        k--;
+                    }
+
+                    for(int l = j; l > k+1; --l) {
+                        imageList[l] = imageList[l-1];
+                        indexs[l] = indexs[l-1];
+                    }
+                    imageList[k+1] = temp;
+                    indexs[k+1] = tempIndex;
+                }
+            }
+
+            for(int j = 0; j < indexs.size(); ++j){
+                int removedLen = QString(".ano.eswc").length();
+                QString swcName = swcList.at(indexs[j]).toString();
+                int len = swcName.size();
+                swcName = swcName.remove(len-removedLen, removedLen);
+                //            QString anoName = item["Name"].toString();
+                sortedSwcNameList.append(swcName);
+            }
+            proName2SwcListMap[projectName] = sortedSwcNameList;
+        }
+        if(projectWidget->count() > 0){
+            projectWidget->setCurrentRow(0);
         }
     }
     else{
@@ -243,6 +239,21 @@ void LoadManageWidget::getAnos(){
         QMessageBox::information(0,tr("Message "),
                                  tr(reason.toStdString().c_str()),
                                  QMessageBox::Ok);
+    }
+}
+
+void LoadManageWidget::displayItems(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    if(current == nullptr || current->text() == ""){
+        return;
+    }
+    swcWidget->clear();
+    if(proName2SwcListMap.find(current->text()) == proName2SwcListMap.end()){
+        return;
+    }
+    QList<QString> swcList = proName2SwcListMap.at(current->text());
+    for(auto swcName : swcList){
+        swcWidget->addItem(swcName);
     }
 }
 
@@ -256,10 +267,10 @@ void LoadManageWidget::loadAno()
     }
 
     qDebug()<<"begin to load Ano";
-    if(!anoWidget->currentItem()) return;
+    if(!swcWidget->currentItem()) return;
 
-    QString anoName = anoWidget->currentItem()->text().trimmed();
-    QStringList parts = anoName.split("_");
+    QString swcName = swcWidget->currentItem()->text().trimmed();
+    QStringList parts = swcName.split("_");
     QString image_pre = parts[0];
     QString image_suf = parts[1];
     QString image, neuron;
@@ -284,7 +295,7 @@ void LoadManageWidget::loadAno()
     QVariantMap param;
     param.insert("image",image);
     param.insert("neuron",neuron);
-    param.insert("ano",anoName);
+    param.insert("ano",swcName);
     param.insert("user",userVerify);
 
     QJson::Serializer serializer;

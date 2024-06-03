@@ -4125,11 +4125,11 @@ void PMain::LoadFromServer()
     LoadManageWidget::DBMSAddress=QString::fromStdString(dbmsServerAddress);
     LoadManageWidget::ApiVersion=QString::fromStdString(apiVersion);
 
-//    if(managewidget){
-//        qDebug()<<"delete managewidget";
-//        delete managewidget;
-//        managewidget=0;
-//    }
+    if(managewidget_ptr){
+        qDebug()<<"delete managewidget";
+        managewidget_ptr.reset();
+        managewidget_ptr=nullptr;
+    }
 
     if(managewidget_ptr == nullptr){
         //更新一下用户信息
@@ -4414,7 +4414,7 @@ void PMain::ColLoadANO(QString ANOfile)
 
     // load
     cur_win->loadAnnotations();
-    saveAnnotationsAction->setEnabled(true);
+    saveAnnotationsAction->setEnabled(false);
     //saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
     virtualSpaceSizeMenu->setEnabled(false);
 
