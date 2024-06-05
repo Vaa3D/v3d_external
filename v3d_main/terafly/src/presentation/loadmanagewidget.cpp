@@ -19,8 +19,8 @@ QNetworkAccessManager* LoadManageWidget::accessManager= new QNetworkAccessManage
 QString LoadManageWidget::HostAddress="";
 QString LoadManageWidget::DBMSAddress="";
 QString LoadManageWidget::ApiVersion="";
-QString LoadManageWidget::m_ano="";
 QString LoadManageWidget::m_port="";
+QString LoadManageWidget::curSwcUuid="";
 LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
 {
     // 创建字体对象
@@ -161,6 +161,8 @@ void LoadManageWidget::getAllProjectSwcList(){
     projectWidget->clear();
     swcWidget->clear();
     proName2SwcListMap.clear();
+    proName2IdMap.clear();
+    proAndSwcName2SwcIdMap.clear();
 
     int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     qDebug()<<"getAllProject: "<<code;
@@ -186,53 +188,117 @@ void LoadManageWidget::getAllProjectSwcList(){
         for(int i = 0; i < projectInfos.size(); ++i){
             auto projectInfo = projectInfos.at(i).toMap();
             QString projectName = projectInfo["Name"].toString();
+            QString proUuid = projectInfo["Base"].toMap()["Uuid"].toString();
+            proName2IdMap[projectName] = proUuid;
             projectWidget->addItem(projectName);
-
-            auto swcList = projectInfo["SwcList"].toList();
-            std::vector<int> imageList;
-            std::vector<int> indexs;
-            QList<QString> sortedSwcNameList;
-            for(int j = 0; j < swcList.size(); ++j){
-                indexs.push_back(j);
-            }
-            for(auto &swcName : swcList){
-                QStringList parts = swcName.toString().split("_");
-                //只根据image前缀进行排序
-                QString image_pre = parts[0];
-                imageList.push_back(image_pre.toInt());
-            }
-
-            if(indexs.size()>=2){
-                for(int j = 1; j < indexs.size(); ++j) {
-                    int temp = imageList[j];
-                    int tempIndex = indexs[j];
-                    int k = j - 1;
-                    for(; k >= 0 && imageList[k] > temp; ) {
-                        k--;
-                    }
-
-                    for(int l = j; l > k+1; --l) {
-                        imageList[l] = imageList[l-1];
-                        indexs[l] = indexs[l-1];
-                    }
-                    imageList[k+1] = temp;
-                    indexs[k+1] = tempIndex;
-                }
-            }
-
-            for(int j = 0; j < indexs.size(); ++j){
-                int removedLen = QString(".ano.eswc").length();
-                QString swcName = swcList.at(indexs[j]).toString();
-                int len = swcName.size();
-                swcName = swcName.remove(len-removedLen, removedLen);
-                //            QString anoName = item["Name"].toString();
-                sortedSwcNameList.append(swcName);
-            }
-            proName2SwcListMap[projectName] = sortedSwcNameList;
+            getAllSwcUuidAndNameByProId(projectName, proUuid);
         }
+
         if(projectWidget->count() > 0){
             projectWidget->setCurrentRow(0);
         }
+    }
+    else{
+        QString reason=reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+        QMessageBox::information(0,tr("Message "),
+                                 tr(reason.toStdString().c_str()),
+                                 QMessageBox::Ok);
+    }
+}
+
+void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proUuid){
+    QNetworkRequest request;
+    QString urlForGetAllProject = DBMSAddress + "/GetProjectSwcNamesByProjectUuid";
+    request.setUrl(QUrl(urlForGetAllProject));
+    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+    QVariantMap userVerify;
+    userVerify.insert("UserName",userinfo->name);
+    userVerify.insert("UserPassword",userinfo->passwd);
+    QVariantMap metaInfo;
+    metaInfo.insert("ApiVersion",ApiVersion);
+    QVariantMap param;
+    param.insert("metaInfo",metaInfo);
+    param.insert("UserVerifyInfo",userVerify);
+    param.insert("ProjectUuid",proUuid);
+    QJson::Serializer serializer;
+    bool ok;
+    QByteArray json=serializer.serialize(param,&ok);
+
+    QNetworkReply* reply = accessManager->post(request, json);
+    QEventLoop eventLoop;
+    connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
+    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+
+    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    qDebug()<<"getProjectSwcNamesByProjectUuid: "<<code;
+    if(code==200)
+    {
+        json=reply->readAll();
+
+        QJson::Parser parser;
+        auto result = parser.parse(json,&ok).toMap();
+        auto metaInfo = result["metaInfo"].toMap();
+        bool status = metaInfo["Status"].toBool();
+        QString message = metaInfo["Message"].toString();
+        if(!status){
+            QString msg = "GetProjectSwcNamesByProjectUuid Failed! " + message;
+            qDebug()<<msg;
+            QMessageBox::information(0,tr("Message "),
+                                     tr(msg.toStdString().c_str()),
+                                     QMessageBox::Ok);
+            return;
+        }
+
+        auto swcUuidNameList = result["swcUuidName"].toList();
+        std::vector<int> imageList;
+        std::vector<int> indexs;
+        QList<QString> swcNameList;
+        QList<QString> sortedSwcNameList;
+
+        for(int j = 0; j < swcUuidNameList.size(); ++j){
+            indexs.push_back(j);
+            QString swcName = swcUuidNameList.at(j).toMap()["SwcName"].toString();
+            QString swcUuid = swcUuidNameList.at(j).toMap()["SwcUuid"].toString();
+
+            int removedLen = QString(".ano.eswc").length();
+            int len = swcName.size();
+            swcName = swcName.remove(len-removedLen, removedLen);
+            swcNameList.append(swcName);
+
+            QString proAndSwcName = proName + "_" + swcName;
+            proAndSwcName2SwcIdMap[proAndSwcName] = swcUuid;
+        }
+
+        for(auto &swcName : swcNameList){
+            QStringList parts = swcName.split("_");
+            //只根据image前缀进行排序
+            QString image_pre = parts[0];
+            imageList.push_back(image_pre.toInt());
+        }
+
+        if(indexs.size()>=2){
+            for(int j = 1; j < indexs.size(); ++j) {
+                int temp = imageList[j];
+                int tempIndex = indexs[j];
+                int k = j - 1;
+                for(; k >= 0 && imageList[k] > temp; ) {
+                    k--;
+                }
+
+                for(int l = j; l > k+1; --l) {
+                    imageList[l] = imageList[l-1];
+                    indexs[l] = indexs[l-1];
+                }
+                imageList[k+1] = temp;
+                indexs[k+1] = tempIndex;
+            }
+        }
+
+        for(int j = 0; j < indexs.size(); ++j){
+            QString swcName = swcNameList.at(indexs[j]);
+            sortedSwcNameList.append(swcName);
+        }
+        proName2SwcListMap[proName] = sortedSwcNameList;
     }
     else{
         QString reason=reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
@@ -267,9 +333,13 @@ void LoadManageWidget::loadAno()
     }
 
     qDebug()<<"begin to load Ano";
-    if(!swcWidget->currentItem()) return;
+    if(!projectWidget->currentItem() || !swcWidget->currentItem()) return;
 
+    QString projectName = projectWidget->currentItem()->text().trimmed();
     QString swcName = swcWidget->currentItem()->text().trimmed();
+    QString proAndSwcName = projectName + "_" + swcName;
+    curSwcUuid = proAndSwcName2SwcIdMap[proAndSwcName];
+
     QStringList parts = swcName.split("_");
     QString image_pre = parts[0];
     QString image_suf = parts[1];
@@ -293,6 +363,7 @@ void LoadManageWidget::loadAno()
     userVerify.insert("passwd",userinfo->passwd);
     qDebug()<<"userinfo->passwd: "<<userinfo->passwd;
     QVariantMap param;
+    param.insert("project",projectName);
     param.insert("image",image);
     param.insert("neuron",neuron);
     param.insert("ano",swcName);
@@ -321,9 +392,8 @@ void LoadManageWidget::loadAno()
         auto ano=result["ano"].toString();
         auto port=result["port"].toString();
         qDebug()<<ano<<"\n"<<port;
-        m_ano = ano;
         m_port = port;
-        emit Load(ano,port);
+        emit triggerStartCollaborate(port);
     }
     else if(code==400||code==401)
     {

@@ -615,7 +615,7 @@ public:
 public slots:
     void configApp();
     void LoadFromServer();
-    void startCollaborate(QString ano,QString port);
+    void startCollaborate(QString port);
     void getAndLoadAno(QString anoFile);
     void ColLoadANO(QString ANOfile);
     void onMessageDisConnect();

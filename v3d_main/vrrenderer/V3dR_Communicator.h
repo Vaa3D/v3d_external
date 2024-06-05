@@ -164,7 +164,7 @@ public slots:
 
 signals:
     void load(QString);
-    void reloadFile(QString, QString);
+    void reloadFile(QString);
     //msg process
     void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
     void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
@@ -210,7 +210,7 @@ public:
     void emitUpdateQcSegsCounts() {emit updateQcSegsCounts();}
     void emitAddManyMarkersDone() {emit addManyMarkersDone();}
     void emitAddMarkerDone() {emit addMarkerDone();}
-    void emitReloadFile(QString ano, QString port) {emit reloadFile(ano, port);}
+    void emitReloadFile(QString port) {emit reloadFile(port);}
 
     void setAddressIP(QString addressIp);
     void setPort(uint port);

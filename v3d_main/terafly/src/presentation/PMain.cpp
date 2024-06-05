@@ -4134,7 +4134,7 @@ void PMain::LoadFromServer()
     if(managewidget_ptr == nullptr){
         //更新一下用户信息
         managewidget_ptr = std::make_unique<LoadManageWidget>(&userinfo);
-        connect(managewidget_ptr.get(),SIGNAL(Load(QString,QString)),this,SLOT(startCollaborate(QString,QString)));
+        connect(managewidget_ptr.get(),SIGNAL(triggerStartCollaborate(QString)),this,SLOT(startCollaborate(QString)));
     }
 
     managewidget_ptr->raise();
@@ -4142,7 +4142,7 @@ void PMain::LoadFromServer()
     qDebug()<<userinfo.id;
 }
 
-void PMain::startCollaborate(QString ano,QString port)
+void PMain::startCollaborate(QString port)
 {
     qDebug()<<"enter startCollaborate========================================";
     managewidget_ptr->hide();
@@ -4264,8 +4264,8 @@ void PMain::startCollaborate(QString ano,QString port)
     disconnect(Communicator,SIGNAL(updateOnlineUsers(QString)), 0, 0);
     connect(Communicator,SIGNAL(updateOnlineUsers(QString)),this,SLOT(updateOnlineUserList(QString)));
 
-    disconnect(Communicator,SIGNAL(reloadFile(QString, QString)), 0, 0);
-    connect(Communicator,SIGNAL(reloadFile(QString, QString)),this,SLOT(startCollaborate(QString,QString)));
+    disconnect(Communicator,SIGNAL(reloadFile(QString)), 0, 0);
+    connect(Communicator,SIGNAL(reloadFile(QString)),this,SLOT(startCollaborate(QString)));
 
     disconnect(Communicator,SIGNAL(setDefineSomaActionState(bool)), 0, 0);
     connect(Communicator,SIGNAL(setDefineSomaActionState(bool)),this,SLOT(setDefineSomaState(bool)));
@@ -4603,7 +4603,7 @@ void PMain::onMessageError(QAbstractSocket::SocketError socketError)
     //                                 QMessageBox::Ok);
     //    }
     QMessageBox::information(0,tr("Message "),
-                             tr("Disconnection! Further operations won't be synced! Please try to reload the anofile."),
+                             tr("Disconnection! Further operations won't be synced! Please try to reload the swcfile."),
                              QMessageBox::Ok);
 
     //    this->Communicator->socket->deleteLater();

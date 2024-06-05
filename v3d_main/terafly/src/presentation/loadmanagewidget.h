@@ -24,10 +24,12 @@ public:
 //    QPushButton *getImageBtn,*getNeuronBtn,*getAnoBtn,*loadBtn;
 //    QListWidget *imageWidget,*neuronWidget,*anoWidget;
     static QNetworkAccessManager *accessManager;
-    static QString m_ano;
     static QString m_port;
     UserInfo *userinfo;
+    std::map<QString, QString> proName2IdMap;
     std::map<QString, QList<QString>> proName2SwcListMap;
+    std::map<QString, QString> proAndSwcName2SwcIdMap;
+    static QString curSwcUuid;
     static QString HostAddress;
     static QString DBMSAddress;
     static QString ApiVersion;
@@ -36,10 +38,11 @@ public slots:
 //    void getNeurons();
     void getUserId();
     void getAllProjectSwcList();
+    void getAllSwcUuidAndNameByProId(QString proName, QString proUuid);
     void loadAno();
     void displayItems(QListWidgetItem *current, QListWidgetItem *previous);
 signals:
-    void Load(QString ano,QString port);
+    void triggerStartCollaborate(QString port);
     void signal(int);
 };
 

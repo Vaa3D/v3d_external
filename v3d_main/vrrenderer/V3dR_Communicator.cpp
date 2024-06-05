@@ -185,7 +185,7 @@ void V3dR_Communicator::processWarnMsg(QString line){
                                          tr("The server has detected an error. The annotation file will be reload from the server to ensure synchronization."),
                                          QMessageBox::Ok);
             }
-            emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+            emit reloadFile(LoadManageWidget::m_port);
             return;
         }
 
@@ -249,7 +249,7 @@ void V3dR_Communicator::processWarnMsg(QString line){
             }
             else if(reason=="GetSwcMetaInfoError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("GetSwcMetaInfoError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
+                                         tr("GetSwcMetaInfoError from DBMS!"),
                                          QMessageBox::Ok);
 //                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
@@ -273,27 +273,27 @@ void V3dR_Communicator::processWarnMsg(QString line){
             }
             else if(reason=="AddSwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("AddSwcNodeDataError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
+                                         tr("AddSwcNodeDataError from DBMS! Please try to reload the swcfile."),
                                          QMessageBox::Ok);
-                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="DeleteSwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("DeleteSwcNodeDataError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
+                                         tr("DeleteSwcNodeDataError from DBMS! Please try to reload the swcfile."),
                                          QMessageBox::Ok);
-                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="ModifySwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("ModifySwcNodeDataError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
+                                         tr("ModifySwcNodeDataError from DBMS! Please try to reload the swcfile."),
                                          QMessageBox::Ok);
-                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="UpdateSwcAttachmentApoError"){
                 QMessageBox::information(0,tr("Infomation "),
-                                         tr("UpdateSwcAttachmentApoError from DBMS! The annotation file will be reload from the server to ensure synchronization."),
+                                         tr("UpdateSwcAttachmentApoError from DBMS! Please try to reload the swcfile."),
                                          QMessageBox::Ok);
-                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
             }
             else if(reason=="FullNumberError"){
                 QMessageBox::information(0,tr("Infomation "),
@@ -1220,7 +1220,7 @@ void V3dR_Communicator::onConnected() {
     reconnectCnt=0;
     QString RES=QString("RES(%1x%2x%3)").arg(ImageMaxRes.y).arg(ImageMaxRes.x).arg(ImageMaxRes.z);
 
-    sendMsg(QString("/login:%1 %2 %3 %4 %5").arg(userId).arg(userName).arg(password).arg(RES).arg(0));
+    sendMsg(QString("/login:%1 %2 %3 %4 %5 %6").arg(userId).arg(userName).arg(password).arg(RES).arg(LoadManageWidget::curSwcUuid).arg(0));
 //    sendMsg(QString("/login:%1 %2 %3").arg(userId).arg(RES).arg(0));
     QString msg = "Connect success! Ready to start collaborating";
     QMessageBox messageBox;
