@@ -4065,16 +4065,17 @@ void PMain::LoadFromServer()
         QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
         return;
     }
-    QSettings settings("HHMI", "CAR");
-    if(!settings.contains("UserName") || !settings.contains("UserPasswd")){
-        QMessageBox::information(0,tr("Message "),
-                        tr("Please enter from the main screen of CAR"),
-                        QMessageBox::Ok);
-        return;
-    }
-
-    userinfo.name=settings.value("UserName").toString();
-    userinfo.passwd=settings.value("UserPasswd").toString();
+//    QSettings settings("HHMI", "CAR");
+//    if(!settings.contains("UserName") || !settings.contains("UserPasswd")){
+//        QMessageBox::information(0,tr("Message "),
+//                        tr("Please enter from the main screen of CAR"),
+//                        QMessageBox::Ok);
+//        return;
+//    }
+    userinfo.name="zackzhy";
+    userinfo.passwd="123456";
+//    userinfo.name=settings.value("UserName").toString();
+//    userinfo.passwd=settings.value("UserPasswd").toString();
 //    userinfo.colorid = settings.value("UserID").toInt();
     userinfo.id = 0;
 

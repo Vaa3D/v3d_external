@@ -2008,14 +2008,9 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
             call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
         }
 
-        //this->getMainWindow()->show();
-        // if(_Call_ZZ_Plugin)
-        // {
-        // 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-        // 	emit(signalCallTerafly());
-        // }
+
     }
-    //process3Dwindow(true);
+
 
 }
 void V3dR_GLWidget::doclientView(bool check_flag)

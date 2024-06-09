@@ -644,3 +644,13 @@ v3d_main/v3d/release/
 v3d_main/build-vaa3d_msvc-unknown-Release/
 v3d_main/build-vaa3d_msvc-unknown-Debug/
 v3d_main/v3d/.qtc_clangd/
+*.svg
+*.qm
+*.txt
+*.csv
+*.dll
+*.json
+*.ano
+*.frag
+*.vert
+/v3d_main/build-vaa3d_msvc-Qt_4_8_6_V3D-Release

@@ -731,7 +731,144 @@ void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> con
         redoDeque.clear();
     }
 }
+// for eeg data
+void V3dR_Communicator::send2DArrayBinary(double** array, int rows, int cols)
+{
+    if(socket->state()!=QAbstractSocket::ConnectedState)
+        return;
+    // 创建数据包
+    QByteArray byteArray;
+    QDataStream stream(&byteArray, QIODevice::WriteOnly);
 
+    // 写入数组的行列数
+    stream << rows << cols;
+
+    // 写入数组数据
+    for (int i = 0; i < rows; ++i)
+    {
+        for (int j = 0; j < cols; ++j)
+        {
+            stream << array[i][j];
+        }
+    }
+
+    // 生成头部信息
+    QString header = QString("DataTypeWithSize:%1 %2\n")
+                        .arg(2) // 数据类型标识，假设2表示二维数组
+                        .arg(byteArray.size());
+
+    // 发送头部信息
+    socket->write(header.toStdString().c_str(), header.size());
+
+    // 发送数据包
+    socket->write(byteArray);
+    socket->flush();
+
+    qDebug() << "Sent binary data array with size:" << byteArray.size();
+}
+
+void V3dR_Communicator::send2DArrayBinary(QList<double> sumData)
+{
+    if(socket->state() != QAbstractSocket::ConnectedState)
+        return;
+
+
+
+    // 创建数据包
+    QByteArray byteArray;
+    QDataStream stream(&byteArray, QIODevice::WriteOnly);
+
+
+
+    // 写入数组数据
+    for (int i = 0; i < sumData.size(); ++i)
+    {
+         stream << sumData[i];
+    }
+    QString data_label = "123.csv";
+    // 生成头部信息
+    QString header = QString("DataTypeWithSize:%1 %2 %3\n")
+                        .arg(2) // 数据类型标识，假设2表示二维数组
+                        .arg(data_label.size()) // 数据类型标识，假设2表示二维数组
+                        .arg(byteArray.size());
+
+    // 发送头部信息
+    socket->write(header.toStdString().c_str(), header.size());
+    socket->write(data_label.toStdString().c_str(),data_label.size());
+    // 发送数据包
+    socket->write(byteArray,byteArray.size());
+    socket->flush();
+
+    qDebug() << "Sent binary data array with size:" << sumData.first()<<sumData.last();
+}
+void V3dR_Communicator::UpdateAdd2DArrayMsg(double** array, int rows, int cols, QString clienttype)
+{
+    if(clienttype == "TeraFly")
+    {
+
+
+        // 生成撤销和重做消息内容
+        QStringList result;
+        result.push_back(QString("%1 %2 %3 %4 %5").arg(1) // 假设1表示二维数组
+                                                .arg(userId)
+                                                .arg(rows)
+                                                .arg(cols)
+                                                .arg(rows)
+                                                .arg(rows)
+                                                .arg(rows));
+
+        qDebug()<<"drawline_sendMsg"<<result.count();
+        sendMsg(QString("/drawline_norm:"+result.join(",")));
+
+        // 调用 send2DArrayBinary 传输二维数组的二进制数据
+        send2DArrayBinary(array, rows, cols);
+        qDebug() << "eeg_sendData" << result.count();
+
+    }
+}
+void V3dR_Communicator::sendfiles(const QStringList &filepaths, const QStringList& filenames)
+{
+    qDebug() << "sendfiles" << filepaths.count();
+    if(socket->state()!=QAbstractSocket::ConnectedState)
+        return;
+
+    if(filepaths.size()!=filenames.size())
+        return;
+
+    int count = 0;
+    for (const auto &path : filepaths) {
+        QString filename = filenames[count];
+        QFile f(path);
+        if (f.open(QIODevice::ReadOnly)) {
+            QByteArray data = f.readAll();
+            QByteArray filenameBytes = filename.toUtf8();
+            qint64 filenameSize = filenameBytes.size();
+            qint64 dataSize = data.size();
+
+            // 使用 QDataStream 发送数据头和文件数据
+            QDataStream out(socket);
+            out.setVersion(QDataStream::Qt_4_8);
+
+            // 构建和发送数据头
+            QString header = QString("DataTypeWithSize:%1 %2 %3\n").arg(1).arg(filenameSize).arg(dataSize);
+            QByteArray headerBytes = header.toUtf8();
+            out.writeRawData(headerBytes.data(), headerBytes.size());
+
+            // 发送文件名
+            out.writeRawData(filenameBytes.data(), filenameSize);
+
+            // 发送文件数据
+            out.writeRawData(data.data(), dataSize);
+
+            qDebug() << "sendfiles" << header << filename << dataSize;
+        }
+        count++;
+    }
+    socket->flush();
+    socket->waitForBytesWritten();
+
+
+}
 void V3dR_Communicator::UpdateAddManySegsMsg(vector<V_NeuronSWC> segs, QString clienttype){
     if(clienttype=="TeraFly")
     {

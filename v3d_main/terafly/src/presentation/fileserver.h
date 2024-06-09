@@ -34,6 +34,7 @@
 //    quint64 m_bytesreceived;
 
 //};
+//useless todo:delete
 class FileSocket_receive:public QTcpSocket
 {
     Q_OBJECT

@@ -636,7 +636,7 @@ void VR_MainWindow::processAnalyzeMsg(QString line){
 int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,
                                 bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator* TeraflyCommunicator,
                                 XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
-
+qDebug()<<"StartVRScene-lddddddddddddd";
     pMainApplication = new CMainApplication(  0, 0 ,TeraflyCommunicator->CreatorMarkerPos);
 
     pMainApplication->mainwindow =pmain;
@@ -690,6 +690,16 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
         qDebug()<<"init failed";
         return 0;
     }
+
+    // 尝试初始化应用程序
+    if (!pMainApplication->eegDevice.initdevice()) {
+    qDebug() << "eegDevice Initialization failed. Shutting down.";
+    QMessageBox::critical(nullptr, "Initialization Failed", "EEG Device initialization failed. Shutting down.");
+
+    }
+    qDebug() << "eegDevice Initialization successful.";
+
+
     SendVRconfigInfo();
     pMainApplication->SetupCurrentUserInformation(VR_Communicator->userId.toStdString(),0);
     RunVRMainloop(zoomPOS);
@@ -737,6 +747,60 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
         //server sends the same data back to client;
         //READY_TO_SEND is set to false in onReadyRead();
         //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
+        QString recordFilePath = QCoreApplication::applicationDirPath() + "/record.csv";
+
+        // 创建一个 QDir 对象来操作文件路径
+        QDir directory(recordFilePath);
+
+        // 设置要过滤的文件类型，这里设置为过滤所有文件
+        directory.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+
+        QStringList files = directory.entryList();
+
+        int newFileCount = files.length() - previousFileCount;
+         QString FilePath = QCoreApplication::applicationDirPath() + "/record.csv";
+        // 如果有新文件
+        if (newFileCount > 0) {
+            QStringList newFiles;
+            QStringList newFiles_name;
+            foreach(const QString &file, files) {
+                if (!previousFiles.contains(file)) {
+                    FilePath = QCoreApplication::applicationDirPath() + "/record.csv/"+file;
+                    newFiles.append(FilePath);
+
+                    newFiles_name.append(file); // 提取文件名
+                    qDebug() << "Detected new file:" << FilePath; // 添加打印信息
+                    qDebug() << "Detected new file:" << file; // 添加打印信息
+                }
+            }
+
+            // 发送新文件
+            VR_Communicator->sendfiles(newFiles,newFiles_name);
+
+            // 更新上一次检查时的文件列表和文件数量
+            previousFiles = files;
+            previousFileCount = files.length();
+        }
+
+        QList<double> sumData = pMainApplication->getSumData();
+        if (!sumData.isEmpty() && sumData.size() > 1)
+        {
+            qDebug() << "RunVRMainloop";
+            qDebug() << "Latest data in sumData:" << sumData.last();
+            qDebug() << sumData.length();
+            if(VR_Communicator&&VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+            {
+                if(sumData.size()>=100||sumData.size()<300)
+                {
+                    VR_Communicator->send2DArrayBinary(sumData);
+                }
+
+            }
+        }
+        else
+        {
+            qDebug() << "Data is empty or index out of range.";
+        }
         qDebug()<<pMainApplication->READY_TO_SEND<<" "<<CURRENT_DATA_IS_SENT;
         if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
         {
@@ -951,7 +1015,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS)
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
-
+qDebug()<<"startStandaloneVRScene-lddddddddddddd";
     CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
     //pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
@@ -1005,6 +1069,18 @@ int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow
         pMainApplication->Shutdown();
         return 0;
     }
+
+    // 尝试初始化应用程序
+    if (!pMainApplication->eegDevice.initdevice()) {
+    qDebug() << "eegDevice Initialization failed. Shutting down.";
+    QMessageBox::critical(nullptr, "Initialization Failed", "EEG Device initialization failed. Shutting down.");
+
+    }
+    qDebug() << "eegDevice Initialization successful.";
+
+
+
+
     pMainApplication->SetupCurrentUserInformation("local user", 13);
 
     pMainApplication->RunMainLoop();

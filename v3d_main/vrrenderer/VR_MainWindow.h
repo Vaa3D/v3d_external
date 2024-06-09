@@ -60,6 +60,8 @@ private:
     QString userId;
     bool CURRENT_DATA_IS_SENT;
     vector<QString> CollaborationSendPool;
+    QStringList previousFiles; // 用于存储上一次检查时的文件列表
+    int previousFileCount = 0; // 上一次检查时的文件数量
 //    QTcpSocket* socket;
 //	QString vr_Port;
 

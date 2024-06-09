@@ -2,9 +2,9 @@
 
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
-
+#include <QObject>
 #include <SDL.h>
-
+#include "../eegdevice/EEGdevice.h"
 #include "../basic_c_fun/v3d_interface.h"
 
 
@@ -20,6 +20,9 @@
 //#include <gltext.hpp>//include freetype and gltest library
 
 #include "mainwindow.h"
+#include <QObject>
+#include <QTimer>
+#include <QDebug>  // 包含 qDebug 以便调试输出
 
 enum ModelControlR
 {
@@ -33,7 +36,8 @@ enum ModelControlR
 	m_reducenodeMode,
 	m_clipplaneMode,
 	m_ConnectMode, 
-	_MovetoCreator
+    _MovetoCreator,
+    m_ssvep
 	//m_slabplaneMode
 };
 enum ModeControlSettings
@@ -52,14 +56,15 @@ enum ModeControlSettings
 	_AutoRotate,
 	_ResetImage,
 	_RGBImage,
-
+    _m_ssvep,
 	_MovetoMarker,
 	_StretchImage
 };
 enum ModeTouchPadR
 {
 	tr_contrast = 0,
-	tr_clipplane
+    tr_clipplane = 1,
+    tr_ssvephz
 };
 enum RGBImageChannel
 {
@@ -154,8 +159,9 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-class CMainApplication
+class CMainApplication:public QObject
 {
+    Q_OBJECT
 public:
     CMainApplication(int argc = 0, char *argv[] = 0,XYZ glomarkerPOS=0);
 	virtual ~CMainApplication();
@@ -256,10 +262,15 @@ public:
         {
              m_pHMD->TriggerHapticPulse(m_iControllerIDLeft,0,30000);
         }
+
+     EEGdevice eegDevice; // Instance of EEGdevice
+     bool showImage=1;
 public:
 
 	MainWindow *mainwindow;
 	My4DImage *img4d;
+    QTimer *m_timer;
+    QTimer *timer_eegGet;
 	static My4DImage *img4d_replace;
 	bool replacetexture;
 	QList<NeuronTree> *loadedNTList; // neuron trees brought to the VR view from the 3D view.	
@@ -340,10 +351,12 @@ private:
 	bool m_rbShowTrackedDevice[ vr::k_unMaxTrackedDeviceCount ];
 
 	//gltext::Font * font_VR;//font for render text
-
+    static float fSSVEPHz;
+    static float fSSVEPHz_input;
 	//undo redo
 	bool bIsUndoEnable;
 	bool bIsRedoEnable;
+    bool isSSVEP=false;
 	vector<NTL> vUndoList;
 	vector<NTL> vRedoList;
 public:
@@ -636,6 +649,13 @@ public:
         bool undo=false;
         bool redo=false;
 
+
+
+        QList<double> getSumData() const;
+public slots:
+        void ImageDisplay(bool show);
+        void onTimerTimeout();
+        void timerTimeout();
 private:
         unsigned int framecnt=0;
         const int numofframe=7;

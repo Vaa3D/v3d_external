@@ -1,6 +1,6 @@
 ﻿#include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
-#include"./spline.h"
+//#include"./spline.h"
 //#include <GL/glew.h>
 #include <SDL_opengl.h>
 
@@ -67,6 +67,8 @@ int checkForOpenGLError(const char* file, int line)
 }
 
 float CMainApplication::fContrast = 1;
+float CMainApplication::fSSVEPHz = 1;
+float CMainApplication::fSSVEPHz_input = 1;
 bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
 float CMainApplication::iLineWid = 3;
@@ -780,8 +782,57 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
 	}
 	// other initialization tasks are done in BInit
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
-};
 
+    m_timer = new QTimer(this);
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(onTimerTimeout()));
+   //m_timer->start();
+    // 声明定时器
+    timer_eegGet = new QTimer(this);
+
+    // 连接定时器的timeout()信号到相应的槽函数
+    connect(timer_eegGet, SIGNAL(timeout()), this, SLOT(timerTimeout()));
+   // timer_eegGet->start();
+    printf( "timer_eegGet" );
+
+}
+void CMainApplication::onTimerTimeout()
+{
+
+
+    ImageDisplay(!showImage);
+
+    RenderFrame();
+
+
+
+}
+void CMainApplication::ImageDisplay(bool show)
+{
+    showImage = show;
+
+}
+QList<double> CMainApplication::getSumData() const {
+    return eegDevice.sumdata;
+}
+
+void CMainApplication::timerTimeout() {
+    if (eegDevice.isRecording)
+    {
+        if(eegDevice.sumdata.count()==0)
+        {
+            QTime startTime = QTime::currentTime();
+            qDebug() << "start time:" << startTime.toString("hh:mm:ss.zzz");
+        }
+        QList<double> newData = eegDevice.getDataFromAmp();
+        eegDevice.sumdata.append(newData);
+
+        qDebug() << "New data from amplifier:"<<eegDevice.sumdata.size();
+
+        qDebug() << newData.at(1);
+
+    }
+
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
@@ -1831,7 +1882,69 @@ bool CMainApplication::HandleInput()
 					glm::vec4 clipnormal = mat * glm::vec4(0.0, 0.0, 0.05, 1);
 					u_clipnormal = glm::vec3(clipnormal.x, clipnormal.y, clipnormal.z);
 					u_clippoint = glm::vec3(m_v4DevicePose.x, m_v4DevicePose.y, m_v4DevicePose.z);
-				}
+                }
+                else if(m_modeTouchPad_R==tr_ssvephz)//into ratate mode
+                {
+
+
+
+                       if (m_fTouchPosY > 0)
+                       {
+                           fSSVEPHz_input += 0.5;
+                           // 根据频率设置挡位
+                           if (fSSVEPHz_input <= 10) {
+                               fSSVEPHz = 7;
+                           } else if (fSSVEPHz_input <= 20) {
+                               fSSVEPHz = 13;
+                           } else if (fSSVEPHz_input <= 30) {
+                               fSSVEPHz = 15;
+                           } else if (fSSVEPHz_input <= 40) {
+                               fSSVEPHz = 18;
+                           } else if (fSSVEPHz_input <= 50) {
+                               fSSVEPHz = 45;
+                           } else {
+                               fSSVEPHz = 50;
+                           }
+
+                           // 设置定时器的间隔
+                           int interval = 1000 / fSSVEPHz;
+                           m_timer->setInterval(interval);
+                           //fBrightness+= 0.01f;
+                           //if(fBrightness>0.8f)
+                           //	fBrightness = 0.8f;
+                           std::cout << " handle Increased fSSVEPHz: " << fSSVEPHz << std::endl;
+                       }
+                       else
+                       {
+
+                           fSSVEPHz_input -= 0.5;
+                           if (fSSVEPHz_input < 1)
+                               fSSVEPHz = 1;
+                           else if (fSSVEPHz_input <= 10) {
+                               fSSVEPHz = 7;
+                           } else if (fSSVEPHz_input <= 20) {
+                               fSSVEPHz = 13;
+                           } else if (fSSVEPHz_input <= 30) {
+                               fSSVEPHz = 15;
+                           } else if (fSSVEPHz_input <= 40) {
+                               fSSVEPHz = 18;
+                           } else if (fSSVEPHz_input <= 50) {
+                               fSSVEPHz = 45;
+                           } else {
+                               fSSVEPHz = 50;
+                           }
+                           // 设置定时器的间隔
+                           int interval = 1000 / fSSVEPHz;
+                           m_timer->setInterval(interval);
+                           //fBrightness-= 0.01f;
+                           //if(fBrightness<0)
+                           //	fBrightness = 0;
+
+                           std::cout << "handle Decreased fSSVEPHz: " << fSSVEPHz << std::endl;
+                       }
+
+
+                }
 
 			}
 		}
@@ -1886,13 +1999,11 @@ void CMainApplication::RunMainLoop()
 bool CMainApplication::HandleOneIteration()
 {
 	bool bQuit = false;
-    //qdebug()<<"huanglei debug 8";
+
 	bQuit = HandleInput();
-    //qdebug()<<"huanglei debug 9";
+
 	RenderFrame();
-    //qdebug()<<"huanglei debug 10";
-//	if(bQuit==true) Shutdown();
-        //qdebug()<<"huanglei debug 11";
+
 	return bQuit;
 
 }
@@ -2575,13 +2686,17 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		{
 				glm::vec2 ShootingPadUV = calculateshootingPadUV();
 				if(showshootingPad)
-				MenuFunctionChoose(ShootingPadUV);
+                {
+
+                    MenuFunctionChoose(ShootingPadUV);
+                }
+
 				else if(m_secondMenu!=_nothing)
 				{
 
 					ColorMenuChoose(ShootingPadUV);
 				}
-				//qDebug()<<showshootingPad;
+                qDebug()<<showshootingPad;
 		}
 
 
@@ -3404,7 +3519,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							//qDebug("SS0 = %.2f,%.2f,%.2f\n",SS0.x,SS0.y,SS0.z);
 							if (dist >(dist_thres / m_globalScale * 5))
 								continue;
-							minvalue = glm::min(minvalue, dist);
+                            minvalue = glm::min(minvalue, dist);
 							if (minvalue == dist)
 							{
 								nearestNode = sketchedNTList[i].listNeuron[j+1];//modify nearest node's child pos
@@ -4440,8 +4555,8 @@ bool CMainApplication::SetupTexturemaps()
 	//std::string strFullPath = Path_MakeAbsolute( "../cube_texture.png", sExecutableDirectory );
 	//qDebug()<<"current applicationDirPath: "<<QCoreApplication::applicationDirPath();  
 	//qDebug()<<"current currentPath: "<<QDir::currentPath();
-	QString qstrFullPath = QCoreApplication::applicationDirPath() +"/materials/controller_texture.png";
-
+    QString qstrFullPath = QCoreApplication::applicationDirPath() +"/materials/controller_texture2.png";
+    qDebug()<<"current currentPath: "<<qstrFullPath;
 	//std::string strFullPath ="../materials/controller_texture.png";//C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/
 	std::vector<unsigned char> imageRGBA;
 	unsigned nImageWidth, nImageHeight;
@@ -4856,7 +4971,17 @@ void CMainApplication::SetupControllerTexture()
 			AddVertex(point_P.x, point_P.y, point_P.z, 0.42, 0.875f, vcVerts);
 			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.76f, vcVerts);
 		}
+
 		case _UndoRedo:
+        case _m_ssvep:
+        {
+            AddVertex(point_M.x, point_M.y, point_M.z, 0.165, 0.75f, vcVerts);
+            AddVertex(point_N.x, point_N.y, point_N.z, 0.25, 0.75f, vcVerts);
+            AddVertex(point_O.x, point_O.y, point_O.z, 0.165, 0.875f, vcVerts);
+            AddVertex(point_O.x, point_O.y, point_O.z, 0.165, 0.875f, vcVerts);
+            AddVertex(point_P.x, point_P.y, point_P.z, 0.25, 0.875f, vcVerts);
+            AddVertex(point_N.x, point_N.y, point_N.z, 0.25, 0.75f, vcVerts);
+        }
 		default:
 			break;
 
@@ -4941,6 +5066,24 @@ void CMainApplication::SetupControllerTexture()
 			AddVertex(point_F.x, point_F.y, point_F.z, 0.5,0.635f, vcVerts);
 			break;
 		}
+        //add vertex
+        //1------2/6
+        // |    /|
+        // |   / |
+        // |  /  |
+        // | /   |
+        // -------
+        // 3/4   5
+        case tr_ssvephz:
+        {
+            AddVertex(point_E.x, point_E.y, point_E.z, 0.17f,0.765f, vcVerts);
+            AddVertex(point_F.x, point_F.y, point_F.z, 0.25,0.765f, vcVerts);
+            AddVertex(point_G.x, point_G.y, point_G.z, 0.17f,0.895f, vcVerts);
+            AddVertex(point_G.x, point_G.y, point_G.z, 0.17f,0.895f, vcVerts);
+            AddVertex(point_H.x, point_H.y, point_H.z, 0.25,0.895f, vcVerts);
+            AddVertex(point_F.x, point_F.y, point_F.z, 0.25,0.765f, vcVerts);
+            break;
+        }
 		default:
 		break;
 	}
@@ -5010,9 +5153,9 @@ void CMainApplication::SetupControllerTexture()
 		{
 				AddVertex(point_lefttop.x,point_lefttop.y,point_lefttop.z,0.5,0.0f,vcVerts);
 				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
-				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
-				AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.5f,vcVerts);
-				AddVertex(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z,1.0,0.5f,vcVerts);
+                AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.6458f,vcVerts);
+                AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.6458f,vcVerts);
+                AddVertex(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z,1.0,0.6458f,vcVerts);
 				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
 		}
 		//add vertex
@@ -5025,12 +5168,12 @@ void CMainApplication::SetupControllerTexture()
 		// 3/4   5
 		else if(m_secondMenu==_colorPad)
 		{
-				AddVertex(colormenu_point_lefttop.x,colormenu_point_lefttop.y,colormenu_point_lefttop.z,0.5518f,0.5487f,vcVerts);
-				AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174f,0.5487f,vcVerts);
-				AddVertex(colormenu_point_leftbottom.x,colormenu_point_leftbottom.y,colormenu_point_leftbottom.z,0.5518f,0.6458f,vcVerts);
-				AddVertex(colormenu_point_leftbottom.x,colormenu_point_leftbottom.y,colormenu_point_leftbottom.z,0.5518f,0.6458f,vcVerts);
-				AddVertex(colormenu_point_rightbottom.x,colormenu_point_rightbottom.y,colormenu_point_rightbottom.z,0.7174,0.6458f,vcVerts);
-				AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174,0.5487f,vcVerts);
+                AddVertex(colormenu_point_lefttop.x,colormenu_point_lefttop.y,colormenu_point_lefttop.z,0.5518f,0.6945f,vcVerts);
+                AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174f,0.6945f,vcVerts);
+                AddVertex(colormenu_point_leftbottom.x,colormenu_point_leftbottom.y,colormenu_point_leftbottom.z,0.5518f,0.7916f,vcVerts);
+                AddVertex(colormenu_point_leftbottom.x,colormenu_point_leftbottom.y,colormenu_point_leftbottom.z,0.5518f,0.7916f,vcVerts);
+                AddVertex(colormenu_point_rightbottom.x,colormenu_point_rightbottom.y,colormenu_point_rightbottom.z,0.7174,0.7916f,vcVerts);
+                AddVertex(colormenu_point_righttop.x,colormenu_point_righttop.y,colormenu_point_righttop.z,0.7174,0.6945f,vcVerts);
 		}
         Vector4 point_M(-0.02f,0.002f,0.1f,1);//for the current interact mode dispaly "draw / delete / marker /pull"
         Vector4 point_N(0.02f,0.002f,0.1f,1);
@@ -5130,6 +5273,15 @@ void CMainApplication::SetupControllerTexture()
 			AddVertex(point_P.x, point_P.y, point_P.z, 0.42, 0.75f, vcVerts);
 			AddVertex(point_N.x, point_N.y, point_N.z, 0.42, 0.635f, vcVerts);
 		}
+            //add vertex
+            //1------2/6
+            // |    /|
+            // |   / |
+            // |  /  |
+            // | /   |
+            // -------
+            // 3/4   5
+
 		default:
 			break;
 		}
@@ -8071,6 +8223,7 @@ void CMainApplication::SetUinformsForRayCasting()
 		raycastingShader->setVec3("clipnormal", u_clipnormal);
 		raycastingShader->setInt("clipmode", 1);
 	}
+    raycastingShader->setBool("showImage", showImage);
 	// else if(m_modeGrip_R == m_slabplaneMode)
 	// {
 	// 	raycastingShader->setVec3("clippoint", u_clippoint);
@@ -8414,11 +8567,29 @@ void CMainApplication::ColorMenuChoose(glm::vec2 UV)
 		}
 	}
 }
+std::string toString(ModelControlR mode) {
+    switch (mode) {
+        case m_drawMode: return "m_drawMode";
+        case m_deleteMode: return "m_deleteMode";
+        case m_retypeMode: return "m_retypeMode";
+        case m_markMode: return "m_markMode";
+        case m_delmarkMode: return "m_delmarkMode";
+        case m_splitMode: return "m_splitMode";
+        case m_insertnodeMode: return "m_insertnodeMode";
+        case m_reducenodeMode: return "m_reducenodeMode";
+        case m_clipplaneMode: return "m_clipplaneMode";
+        case m_ConnectMode: return "m_ConnectMode";
+        case _MovetoCreator: return "_MovetoCreator";
+        case m_ssvep: return "m_ssvep";
+        default: return "Unknown";
+    }
+}
 void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 {
 	float panelpos_x=UV.x;
 	float panelpos_y=UV.y;
-
+    qDebug() << "panelpos_x =" << panelpos_x;
+    qDebug() << "panelpos_y =" << panelpos_y;
 
 //choose left controllerFunction
 	if(panelpos_x <= 0.436)
@@ -8487,51 +8658,84 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 	//choose Right controllerFunction
 	if(panelpos_x >= 0.437)
 	{
-		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.216))
 		{
 			m_modeGrip_R = m_drawMode;
 		}
-		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.25))
+        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.216))
 		{
 			m_modeGrip_R = m_deleteMode;
 		}
-		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.216)&&(panelpos_y <= 0.362))
 		{
 			m_modeGrip_R = m_insertnodeMode;
 		}
-		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.25)&&(panelpos_y <= 0.44))
+        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.216)&&(panelpos_y <= 0.362))
 		{
 			m_modeGrip_R = m_markMode;
 			//m_modeGrip_R = m_ConnectMode;
 		}
-		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
+        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.362)&&(panelpos_y <= 0.508))
 		{
             m_modeGrip_R = m_retypeMode;
 		}
-		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.44)&&(panelpos_y <= 0.617))
-		{
+        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.362)&&(panelpos_y <= 0.508))
+        {
 			m_modeGrip_R = m_splitMode;
 		}
-		if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.617)&&(panelpos_y <=0.8))
+        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.508)&&(panelpos_y <=0.654))
 		{
 			m_modeGrip_R = _MovetoCreator;
 		}
-		else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
+        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.508)&&(panelpos_y <= 0.654))
 		{
 			m_modeGrip_L = _Contrast;
 		}
-		else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.8)&&(panelpos_y <= 1))
-		{
-			m_modeGrip_R = m_reducenodeMode;
-		}
-		else if ((panelpos_x >= 0.626) && (panelpos_x <= 0.806) && (panelpos_y >= 0.8) && (panelpos_y <= 1))
+        else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.654)&&(panelpos_y <= 0.8))
+        {
+            m_modeGrip_R = m_reducenodeMode;
+        }
+        else if ((panelpos_x >= 0.626) && (panelpos_x <= 0.806) && (panelpos_y >= 0.654) && (panelpos_y <= 0.8))
 		{
 			m_modeGrip_L = _MovetoMarker;
-		}
-		//else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.617)&&(panelpos_y <= 0.8))
-		//{
-		//	m_modeGrip_R = m_slabplaneMode;
-		//}
+        }else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.8)&&(panelpos_y <= 0.99))
+        {
+            m_modeGrip_L = _m_ssvep;
+            qDebug() << "m_modeGrip_L:" << m_modeGrip_L;
+
+                qDebug() << "timer:"<<timer_eegGet->isActive();
+            if (!timer_eegGet->isActive()) {
+
+            bool success = eegDevice.StartRecording();
+            if (!success) {
+                    qDebug() << "Failed to start recording EEG data.";
+                    QMessageBox::critical(nullptr, "Initialization Failed", "Failed to start recording EEG data.");
+                    return;
+            }
+            qDebug() << "start reconding data";
+            // 启动定时器
+            timer_eegGet->start(1000);
+            qDebug() << "start timer";
+            m_timer->start(1000);
+
+
+            }else if (isSSVEP) {
+                                    timer_eegGet->stop();
+                                    qDebug() << "stop timer";
+                                    m_timer->stop();
+                                    eegDevice.StopRecording();
+                                    qDebug() << "stop reconding data";
+                                }
+
+
+            isSSVEP = true;
+        }
+        else
+        {
+            std::cout << "no mode: ";
+        }
+       std::cout << "Current mode: " << toString(m_modeGrip_R) << std::endl;
+
 	}
 	if(panelpos_x >= 0.806)//switch touchpad right function
 	{
@@ -8542,7 +8746,11 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		else if((panelpos_y >= 0.32)&&(panelpos_y <= 0.528))
 		{
 			m_modeTouchPad_R = tr_clipplane;
-		}
+        }else if((panelpos_y >= 0.528)&&(panelpos_y <= 0.736))
+        {
+            m_modeTouchPad_R = tr_ssvephz;
+            qDebug() << "tr_ssvephz";
+        }
 	}
 
 }

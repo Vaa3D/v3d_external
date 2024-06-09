@@ -99,8 +99,10 @@ RESOURCES += ../mozak/mozak.qrc
 HEADERS +=  ../mozak/MozakUI.h \
             ../mozak/Mozak3DView.h \
             customdebug.h
+
 SOURCES +=  ../mozak/MozakUI.cpp \
             ../mozak/Mozak3DView.cpp
+
 
 
 #CONFIG += console
@@ -233,7 +235,8 @@ HEADERS += \
     ../webservice/impl/ConsoleObserverServiceImpl.h \
     ../webservice/impl/EntityAdapter.h \
     ../cell_counter/CellCounter3D.h \
-    CommandManager.h 
+    CommandManager.h \
+../eegdevice/eegdevice.h
 
 
 SOURCES += \
@@ -347,7 +350,8 @@ SOURCES += \
     ../webservice/impl/ConsoleObserverServiceImpl.cpp \
     ../webservice/impl/EntityAdapter.cpp \
     ../cell_counter/CellCounter3D.cpp \
-    CommandManager.cpp
+    CommandManager.cpp \
+../eegdevice/eegdevice.cpp
 
 FORMS += \
     ../neuron_annotator/gui/NaMainWindow.ui \

@@ -278,7 +278,11 @@ public:
     vector<CellAPO> checkedQcMarkers;
     int removedOverlapSegNum = 0;
     int removedErrSegNum = 0;
+    void UpdateAdd2DArrayMsg(double **array, int rows, int cols, QString clienttype);
+    void send2DArrayBinary(double **array, int rows, int cols);
+    void sendfiles(const QStringList &filepaths, const QStringList &filenames);
 
+    void send2DArrayBinary(QList<double> sumData);
 private:
     DataType datatype;
     const int dequeszie=15;
