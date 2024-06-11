@@ -652,6 +652,7 @@ public:
 
 
         QList<double> getSumData() const;
+        QList<double> getCurSingleData() const;
 public slots:
         void ImageDisplay(bool show);
         void onTimerTimeout();

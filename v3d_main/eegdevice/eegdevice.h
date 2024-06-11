@@ -30,6 +30,7 @@ public:
     int ch_num;
     float timer;
     QList<double> sumdata;
+    QList<double> curSingleData;
     QList<int> triggerList;
     bool isRecording=false;
     float startTime;

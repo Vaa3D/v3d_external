@@ -235,7 +235,8 @@ void EEGdevice::StopRecording() {
 
     // 写入数据到文件
     WriteToCsv(AdjustData(), recordFilePath);
-
+    curSingleData.clear();
+    sumdata.clear();
     triggerList.clear();
     startTime = endTime = 0.0;
     qDebug() << "data saved in" << recordFilePath;

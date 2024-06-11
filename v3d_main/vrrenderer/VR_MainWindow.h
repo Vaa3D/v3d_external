@@ -2,6 +2,7 @@
 #define VR_MainWindow_H
 
 #include <QWidget>
+#include <QTimer>
 #include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
@@ -54,7 +55,10 @@ public:
     XYZ VRVolumeCurrentRes;
     XYZ VRvolumeMaxRes;
     int ResIndex;
-//    VRoutInfo VROutinfo;
+public slots:
+    //    VRoutInfo VROutinfo;
+    void performFileTransfer();
+    void startFileTransferTask();
 private:
 	V3dR_Communicator* VR_Communicator;
     QString userId;
@@ -62,6 +66,7 @@ private:
     vector<QString> CollaborationSendPool;
     QStringList previousFiles; // 用于存储上一次检查时的文件列表
     int previousFileCount = 0; // 上一次检查时的文件数量
+    QTimer *transferTimer;
 //    QTcpSocket* socket;
 //	QString vr_Port;
 

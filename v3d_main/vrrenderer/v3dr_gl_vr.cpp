@@ -814,7 +814,9 @@ void CMainApplication::ImageDisplay(bool show)
 QList<double> CMainApplication::getSumData() const {
     return eegDevice.sumdata;
 }
-
+QList<double> CMainApplication::getCurSingleData() const {
+    return eegDevice.curSingleData;
+}
 void CMainApplication::timerTimeout() {
     if (eegDevice.isRecording)
     {
@@ -825,7 +827,7 @@ void CMainApplication::timerTimeout() {
         }
         QList<double> newData = eegDevice.getDataFromAmp();
         eegDevice.sumdata.append(newData);
-
+        eegDevice.curSingleData = newData;
         qDebug() << "New data from amplifier:"<<eegDevice.sumdata.size();
 
         qDebug() << newData.at(1);

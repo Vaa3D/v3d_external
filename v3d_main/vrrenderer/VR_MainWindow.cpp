@@ -27,6 +27,8 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
     userId = TeraflyCommunicator->userId;
     qDebug()<<"userId "<<userId<<" "<<VR_Communicator->userId;
     CURRENT_DATA_IS_SENT=false;
+    transferTimer = new QTimer(this);
+    connect(transferTimer, SIGNAL(timeout()), this, SLOT(performFileTransfer()));
 }
 
 VR_MainWindow::~VR_MainWindow() {
@@ -36,8 +38,81 @@ VR_MainWindow::~VR_MainWindow() {
     connect(VR_Communicator, SIGNAL(msgtowarn(QString)), this, SLOT(processWarnMsg(QString)));
     disconnect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), this, SLOT(processAnalyzeMsg(QString)));
+    if (transferTimer->isActive()) {
+        transferTimer->stop();
+    }
+    delete transferTimer;
+}
+void VR_MainWindow::performFileTransfer() {
+
+    QString recordDirPath = QCoreApplication::applicationDirPath() + "/record.csv";
+
+    // 检查目录是否存在，如果不存在则创建
+    QDir directory(recordDirPath);
+    if (!directory.exists()) {
+        if (!QDir().mkdir(recordDirPath)) {
+            qDebug() << "Failed to create directory:" << recordDirPath;
+            return;
+        }
+    }
+    // 设置要过滤的文件类型
+    QStringList files = directory.entryList(QDir::Files | QDir::NoDotAndDotDot);
+
+    int newFileCount = files.length() - previousFileCount;
+
+    // 如果有新文件
+    if (newFileCount > 0) {
+        QStringList newFiles;
+        QStringList newFiles_name;
+        for (const QString &file : files) {
+            if (!previousFiles.contains(file)) {
+                QString filePath = directory.filePath(file);
+                newFiles.append(filePath);
+                newFiles_name.append(file);
+
+                qDebug() << "Detected new file:" << filePath;
+                qDebug() << "Detected new file:" << file;
+            }
+        }
+        // 发送新文件
+        if (VR_Communicator) {
+            VR_Communicator->sendfiles(newFiles, newFiles_name);
+        } else {
+            qDebug() << "VR_Communicator is null.";
+        }
+
+        // 更新上一次检查时的文件列表和文件数量
+        previousFiles = files;
+        previousFileCount = files.length();
+    }
+
+    QList<double> sumData = pMainApplication->getSumData();
+    QList<double> CurSingle = pMainApplication->getCurSingleData();
+    if (!CurSingle.isEmpty() && CurSingle.size() > 1) {
+        qDebug() << "RunVRMainloop";
+        qDebug() << "Latest data in CurSingle:" << CurSingle.last();
+        qDebug() << CurSingle.length();
+         qDebug() << sumData.length();
+
+        if (VR_Communicator && VR_Communicator->socket && VR_Communicator->socket->state() == QAbstractSocket::ConnectedState) {
+            if (CurSingle.size() >= 32*1000) {
+                VR_Communicator->send2DArrayBinary(CurSingle);
+
+            } else {
+                qDebug() << "CurSingle size is out of expected range.";
+            }
+        } else {
+            qDebug() << "VR_Communicator is not connected or socket is null.";
+        }
+    } else {
+        qDebug() << "Data is empty or index out of range.";
+    }
 }
 
+void VR_MainWindow::startFileTransferTask() {
+    // 设置定时器间隔为1小时（3600000毫秒）
+    transferTimer->start(5000);
+}
 //void VR_MainWindow::onReadySendSeg()
 //{
 //	if(!CollaborationSendPool.empty())
@@ -367,6 +442,8 @@ void VR_MainWindow::TVProcess(QString line)
             }else{
                 qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userId;
             }
+        }else {
+
         }
     }
 }
@@ -747,61 +824,12 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
         //server sends the same data back to client;
         //READY_TO_SEND is set to false in onReadyRead();
         //CURRENT_DATA_IS_SENT is used to ensure that each data is only sent once.
-        QString recordFilePath = QCoreApplication::applicationDirPath() + "/record.csv";
-
-        // 创建一个 QDir 对象来操作文件路径
-        QDir directory(recordFilePath);
-
-        // 设置要过滤的文件类型，这里设置为过滤所有文件
-        directory.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-
-        QStringList files = directory.entryList();
-
-        int newFileCount = files.length() - previousFileCount;
-         QString FilePath = QCoreApplication::applicationDirPath() + "/record.csv";
-        // 如果有新文件
-        if (newFileCount > 0) {
-            QStringList newFiles;
-            QStringList newFiles_name;
-            foreach(const QString &file, files) {
-                if (!previousFiles.contains(file)) {
-                    FilePath = QCoreApplication::applicationDirPath() + "/record.csv/"+file;
-                    newFiles.append(FilePath);
-
-                    newFiles_name.append(file); // 提取文件名
-                    qDebug() << "Detected new file:" << FilePath; // 添加打印信息
-                    qDebug() << "Detected new file:" << file; // 添加打印信息
-                }
-            }
-
-            // 发送新文件
-            VR_Communicator->sendfiles(newFiles,newFiles_name);
-
-            // 更新上一次检查时的文件列表和文件数量
-            previousFiles = files;
-            previousFileCount = files.length();
-        }
-
-        QList<double> sumData = pMainApplication->getSumData();
-        if (!sumData.isEmpty() && sumData.size() > 1)
+        if(!transferTimer->isActive())
         {
-            qDebug() << "RunVRMainloop";
-            qDebug() << "Latest data in sumData:" << sumData.last();
-            qDebug() << sumData.length();
-            if(VR_Communicator&&VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
-            {
-                if(sumData.size()>=100||sumData.size()<300)
-                {
-                    VR_Communicator->send2DArrayBinary(sumData);
-                }
+            startFileTransferTask(); // 启动定时器任务
+        }
 
-            }
-        }
-        else
-        {
-            qDebug() << "Data is empty or index out of range.";
-        }
-        qDebug()<<pMainApplication->READY_TO_SEND<<" "<<CURRENT_DATA_IS_SENT;
+       // qDebug()<<pMainApplication->READY_TO_SEND<<" "<<CURRENT_DATA_IS_SENT;
         if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
         {
             if(pMainApplication->undo)
