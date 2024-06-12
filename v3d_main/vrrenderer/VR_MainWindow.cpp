@@ -96,7 +96,10 @@ void VR_MainWindow::performFileTransfer() {
 
         if (VR_Communicator && VR_Communicator->socket && VR_Communicator->socket->state() == QAbstractSocket::ConnectedState) {
             if (CurSingle.size() >= 32*1000) {
-                VR_Communicator->send2DArrayBinary(CurSingle);
+
+                QString currentDateTime = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+                QString data_label = "eegdata_paradigm_" + VR_Communicator->userName + "_" + currentDateTime;
+                VR_Communicator->send2DArrayBinary(CurSingle,data_label);
 
             } else {
                 qDebug() << "CurSingle size is out of expected range.";

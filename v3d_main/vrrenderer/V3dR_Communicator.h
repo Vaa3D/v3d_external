@@ -282,7 +282,8 @@ public:
     void send2DArrayBinary(double **array, int rows, int cols);
     void sendfiles(const QStringList &filepaths, const QStringList &filenames);
 
-    void send2DArrayBinary(QList<double> sumData);
+
+    void send2DArrayBinary(QList<double> sumData, QString data_label = "default");
 private:
     DataType datatype;
     const int dequeszie=15;

@@ -769,12 +769,13 @@ void V3dR_Communicator::send2DArrayBinary(double** array, int rows, int cols)
     qDebug() << "Sent binary data array with size:" << byteArray.size();
 }
 
-void V3dR_Communicator::send2DArrayBinary(QList<double> sumData)
+void V3dR_Communicator::send2DArrayBinary(QList<double> sumData,QString data_label)
 {
     if(socket->state() != QAbstractSocket::ConnectedState)
         return;
 
-
+    if(data_label.isNull())
+        return;
 
     // 创建数据包
     QByteArray byteArray;
@@ -787,7 +788,7 @@ void V3dR_Communicator::send2DArrayBinary(QList<double> sumData)
     {
          stream << sumData[i];
     }
-    QString data_label = "123.csv";
+
     // 生成头部信息
     QString header = QString("DataTypeWithSize:%1 %2 %3\n")
                         .arg(2) // 数据类型标识，假设2表示二维数组
