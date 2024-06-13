@@ -1,3 +1,511 @@
 2023/03/31 18:46:50:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d" 
 2023/03/31 18:46:50:Debug: Cannot find ./plugins directory!
 2023/03/31 18:46:50:Debug: "D:/source/C++ project/Vaa3d/v3d_external/v3d_main/v3d" 
+2024/05/29 10:27:34:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/05/29 10:27:34:Debug: Cannot find ./plugins directory!
+2024/05/29 10:27:34:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/05/29 17:18:40:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/05/29 17:18:40:Debug: Cannot find ./plugins directory!
+2024/05/29 17:18:41:Debug: transparency true 
+2024/05/29 17:18:41:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 01:00:47:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 01:00:47:Debug: Cannot find ./plugins directory!
+2024/06/01 01:00:48:Debug: transparency true 
+2024/06/01 01:00:48:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 01:00:49:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2024/06/01 03:17:55:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 03:17:55:Debug: Cannot find ./plugins directory!
+2024/06/01 03:17:55:Debug: transparency true 
+2024/06/01 03:17:56:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 03:17:58:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x180f8d27a10) 
+2024/06/01 03:17:58:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2024/06/01 03:17:58:Debug: ChannelTable::linkXFormWidgetChannel  CDim=3  
+2024/06/01 03:17:58:Debug: time consume ... 277 
+2024/06/01 03:18:02:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/06/01 03:18:02:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:18:02:Debug: "3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:02:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/06/01 03:18:02:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/06/01 03:18:02:Debug: "C:/Users/10417/Downloads/human_brain_from_itk_example.tif" 
+2024/06/01 03:18:02:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/06/01 03:18:02:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:18:02:Debug: V3dR_GLWidget::initializeGL
+2024/06/01 03:18:02:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/06/01 03:18:02:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/06/01 03:18:02:Debug: V3dR_GLWidget::choiceRenderer
+2024/06/01 03:18:02:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/06/01 03:18:02:Debug:   Renderer_gl1::Renderer_gl1
+2024/06/01 03:18:02:Debug:    Renderer_gl2::Renderer_gl2
+2024/06/01 03:18:02:Debug: V3dR_GLWidget::settingRenderer
+2024/06/01 03:18:02:Debug: V3dR_GLWidget::preparingRenderer
+2024/06/01 03:18:02:Debug:    Renderer_gl1::cleanData
+2024/06/01 03:18:02:Debug:   Renderer_gl1::setupData
+2024/06/01 03:18:02:Debug: 	Down-sampling to 512x512x256 
+2024/06/01 03:18:02:Debug:    data4dp = 0x18085fcd040 	(start 0x0x0_0_0, size 181x217x181_3_1)
+2024/06/01 03:18:02:Debug:    rgbaBuf = 0x18090550040 	(181x217x181_3_1)
+2024/06/01 03:18:02:Debug:    data box in original image space @	(0 0 0)--(180 216 180)
+2024/06/01 03:18:02:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.163 sec
+2024/06/01 03:18:02:Debug:    Renderer_gl2::initialize (2)
+2024/06/01 03:18:02:Debug:   Renderer_gl1::initialize (1)
+2024/06/01 03:18:02:Debug:  Renderer::initialize (0)
+2024/06/01 03:18:02:Debug:    Renderer_gl1::cleanObj
+2024/06/01 03:18:02:Debug:   Renderer_gl1::loadObj
+2024/06/01 03:18:02:Debug:    Renderer_gl1::cleanVol
+2024/06/01 03:18:02:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/01 03:18:02:Debug:   Renderer_gl1::loadVol
+2024/06/01 03:18:02:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/06/01 03:18:02:Debug: "	ARB_texture_compression                supported " 
+2024/06/01 03:18:02:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/06/01 03:18:02:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/06/01 03:18:02:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/06/01 03:18:02:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/06/01 03:18:02:Debug:    sampleScale = 1x1x1   sampledImage = 181x217x181   fillTexture = 256x256x256
+2024/06/01 03:18:02:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/06/01 03:18:02:Debug:    setupStack: id & buffer ....................... cost time = 0.01 sec
+2024/06/01 03:18:02:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/06/01 03:18:02:Debug: Renderer_gl2::setupStackTexture() start 
+2024/06/01 03:18:02:Debug: Renderer_gl1::setupStackTexture() start 
+2024/06/01 03:18:02:Debug: 	texture:   real = 181x217x181   fill = 256x256x256
+2024/06/01 03:18:03:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 1.001 sec
+2024/06/01 03:18:03:Debug: 	  tex_stream_buffer = false
+2024/06/01 03:18:03:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/06/01 03:18:03:Debug: 	BoundingBox default (0 0 0)--(181 217 181)
+2024/06/01 03:18:03:Debug:     Renderer_gl2::cleanShader
+2024/06/01 03:18:03:Debug:    Renderer_gl2::loadShader
+2024/06/01 03:18:03:Debug: +++++++++ shader for Surface Object
+2024/06/01 03:18:03:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/06/01 03:18:03:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:18:03:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/06/01 03:18:03:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:18:03:Debug: +++++++++ shader for Volume texture2D
+2024/06/01 03:18:03:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:18:03:Debug: +++++++++ shader for Volume texture3D
+2024/06/01 03:18:03:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:18:03:Debug: +++++++++ GLSL shader setup finished.
+2024/06/01 03:18:03:Debug:    Renderer_gl2::initColormap
+2024/06/01 03:18:03:Debug: ++++++++++++ customEvent:  4 
+2024/06/01 03:18:03:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:03:Debug: 	( QEvent_InitControlValue )
+2024/06/01 03:18:03:Debug: V3dR_MainWindow::initControlValue
+2024/06/01 03:18:03:Debug: 	GL texture compression supported, enable texture compression function
+2024/06/01 03:18:03:Debug: 	GL shading language supported, enable volume colormap function
+2024/06/01 03:18:03:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:03:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:03:Debug: glWidget->TeraflyCommunicator==0 
+2024/06/01 03:18:03:Debug: ++++++++++++ customEvent:  2 
+2024/06/01 03:18:03:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:03:Debug: 	( QEvent_OpenFiles )
+2024/06/01 03:18:03:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/06/01 03:18:03:Debug: ++++++++++++ customEvent:  1 
+2024/06/01 03:18:03:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:03:Debug: 	( QEvent_Ready )
+2024/06/01 03:18:03:Debug: -------------------------------------------------------------- Ready
+2024/06/01 03:18:04:Debug: 	frontSlice:   real = 217^2   fill = 256^2
+2024/06/01 03:18:05:Debug: PMain::doCollaborationVRView() 
+2024/06/01 03:18:05:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:06:Debug: loadedNTList->size() 0   editableNTL size is 0  non editable NTL size is  0 
+2024/06/01 03:18:06:Debug: set up single 
+2024/06/01 03:18:06:Debug: Set up all NTs' VAO&VBO done 
+2024/06/01 03:18:06:Debug: old: center.x = 90.500000,center.y = 108.500000,center.z = 90.500000
+
+2024/06/01 03:18:06:Debug: 1 
+2024/06/01 03:18:06:Debug: g_texWidth = 2468, g_texHeight = 2740
+2024/06/01 03:18:06:Debug: Init! NOW listLandmarks.size is  0 
+2024/06/01 03:18:06:Debug: CollaborationCreatorPos: 0   0   0 
+2024/06/01 03:18:06:Debug: typeNumber: 13
+2024/06/01 03:18:06:Debug: set up controllerray VAO  
+2024/06/01 03:18:06:Debug: set up image axes VAO  
+2024/06/01 03:18:06:Debug: 11 
+2024/06/01 03:18:15:Debug: end of runMainLoop 
+2024/06/01 03:18:15:Debug: link_map is created.
+2024/06/01 03:18:15:Debug: 	editableNeuron.seg.size = 0
+2024/06/01 03:18:15:Debug: -------------------------------------------------------
+2024/06/01 03:18:15:Debug: Start to delete sphere.... 
+2024/06/01 03:18:15:Debug: shut down sucess! 
+2024/06/01 03:18:15:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:15:Debug: result is  0 
+2024/06/01 03:18:15:Debug: xxxxxxxxxxxxx ==%1 y ==%2 z ==%3 0 0 0 
+2024/06/01 03:18:15:Debug: 	 number of markers = 0
+2024/06/01 03:18:15:Debug:   Renderer_gl1::updateTracedNeuron
+2024/06/01 03:18:15:Debug: -------------------------------------------------------
+2024/06/01 03:18:16:Debug: V3dR_MainWindow::closeEvent, glWidget = 0x1808063d6e0
+2024/06/01 03:18:16:Debug:    Renderer_gl2::~Renderer_gl2
+2024/06/01 03:18:16:Debug:     Renderer_gl2::cleanShader
+2024/06/01 03:18:16:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/01 03:18:16:Debug:   Renderer_gl1::~Renderer_gl1
+2024/06/01 03:18:16:Debug:    Renderer_gl1::cleanVol
+2024/06/01 03:18:16:Debug:    Renderer_gl1::cleanObj
+2024/06/01 03:18:16:Debug:    Renderer_gl1::cleanData
+2024/06/01 03:18:16:Debug:  Renderer::~Renderer <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+2024/06/01 03:18:16:Debug: close event over 
+2024/06/01 03:18:16:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:16:Debug: V3dR_GLWidget::~V3dR_GLWidget =======================================
+2024/06/01 03:18:16:Debug: "3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:16:Debug: V3dR_MainWindow::~V3dR_MainWindow ====================================
+2024/06/01 03:18:16:Debug: V3dR_MainWindow::~V3dR_MainWindow end 
+2024/06/01 03:18:18:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/06/01 03:18:18:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:18:18:Debug: "3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:18:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/06/01 03:18:18:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/06/01 03:18:18:Debug: "C:/Users/10417/Downloads/human_brain_from_itk_example.tif" 
+2024/06/01 03:18:18:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/06/01 03:18:18:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:18:18:Debug: V3dR_GLWidget::initializeGL
+2024/06/01 03:18:18:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/06/01 03:18:18:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/06/01 03:18:18:Debug: V3dR_GLWidget::choiceRenderer
+2024/06/01 03:18:18:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/06/01 03:18:18:Debug:   Renderer_gl1::Renderer_gl1
+2024/06/01 03:18:18:Debug:    Renderer_gl2::Renderer_gl2
+2024/06/01 03:18:18:Debug: V3dR_GLWidget::settingRenderer
+2024/06/01 03:18:18:Debug: V3dR_GLWidget::preparingRenderer
+2024/06/01 03:18:18:Debug:    Renderer_gl1::cleanData
+2024/06/01 03:18:18:Debug:   Renderer_gl1::setupData
+2024/06/01 03:18:18:Debug: 	Down-sampling to 512x512x256 
+2024/06/01 03:18:18:Debug:    data4dp = 0x18085fcd040 	(start 0x0x0_0_0, size 181x217x181_3_1)
+2024/06/01 03:18:18:Debug:    rgbaBuf = 0x1809491e040 	(181x217x181_3_1)
+2024/06/01 03:18:18:Debug:    data box in original image space @	(0 0 0)--(180 216 180)
+2024/06/01 03:18:18:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.16 sec
+2024/06/01 03:18:18:Debug:    Renderer_gl2::initialize (2)
+2024/06/01 03:18:18:Debug:   Renderer_gl1::initialize (1)
+2024/06/01 03:18:18:Debug:  Renderer::initialize (0)
+2024/06/01 03:18:18:Debug:    Renderer_gl1::cleanObj
+2024/06/01 03:18:18:Debug:   Renderer_gl1::loadObj
+2024/06/01 03:18:18:Debug:    Renderer_gl1::cleanVol
+2024/06/01 03:18:18:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/01 03:18:18:Debug:   Renderer_gl1::loadVol
+2024/06/01 03:18:18:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/06/01 03:18:18:Debug: "	ARB_texture_compression                supported " 
+2024/06/01 03:18:18:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/06/01 03:18:18:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/06/01 03:18:18:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/06/01 03:18:18:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/06/01 03:18:18:Debug:    sampleScale = 1x1x1   sampledImage = 181x217x181   fillTexture = 256x256x256
+2024/06/01 03:18:18:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/06/01 03:18:18:Debug:    setupStack: id & buffer ....................... cost time = 0.01 sec
+2024/06/01 03:18:18:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/06/01 03:18:18:Debug: Renderer_gl2::setupStackTexture() start 
+2024/06/01 03:18:18:Debug: Renderer_gl1::setupStackTexture() start 
+2024/06/01 03:18:18:Debug: 	texture:   real = 181x217x181   fill = 256x256x256
+2024/06/01 03:18:19:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.963 sec
+2024/06/01 03:18:19:Debug: 	  tex_stream_buffer = false
+2024/06/01 03:18:19:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/06/01 03:18:19:Debug: 	BoundingBox default (0 0 0)--(181 217 181)
+2024/06/01 03:18:19:Debug:     Renderer_gl2::cleanShader
+2024/06/01 03:18:19:Debug:    Renderer_gl2::loadShader
+2024/06/01 03:18:19:Debug: +++++++++ shader for Surface Object
+2024/06/01 03:18:19:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/06/01 03:18:19:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:18:19:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/06/01 03:18:19:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:18:19:Debug: +++++++++ shader for Volume texture2D
+2024/06/01 03:18:19:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:18:19:Debug: +++++++++ shader for Volume texture3D
+2024/06/01 03:18:19:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:18:19:Debug: +++++++++ GLSL shader setup finished.
+2024/06/01 03:18:19:Debug:    Renderer_gl2::initColormap
+2024/06/01 03:18:19:Debug: ++++++++++++ customEvent:  4 
+2024/06/01 03:18:19:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:19:Debug: 	( QEvent_InitControlValue )
+2024/06/01 03:18:19:Debug: V3dR_MainWindow::initControlValue
+2024/06/01 03:18:19:Debug: 	GL texture compression supported, enable texture compression function
+2024/06/01 03:18:19:Debug: 	GL shading language supported, enable volume colormap function
+2024/06/01 03:18:19:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:19:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:19:Debug: glWidget->TeraflyCommunicator==0 
+2024/06/01 03:18:19:Debug: ++++++++++++ customEvent:  2 
+2024/06/01 03:18:19:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:19:Debug: 	( QEvent_OpenFiles )
+2024/06/01 03:18:19:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/06/01 03:18:19:Debug: ++++++++++++ customEvent:  1 
+2024/06/01 03:18:19:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:19:Debug: 	( QEvent_Ready )
+2024/06/01 03:18:19:Debug: -------------------------------------------------------------- Ready
+2024/06/01 03:18:19:Debug: 	frontSlice:   real = 217^2   fill = 256^2
+2024/06/01 03:18:21:Debug: PMain::doCollaborationVRView() 
+2024/06/01 03:18:21:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:21:Debug: loadedNTList->size() 0   editableNTL size is 0  non editable NTL size is  0 
+2024/06/01 03:18:21:Debug: set up single 
+2024/06/01 03:18:21:Debug: Set up all NTs' VAO&VBO done 
+2024/06/01 03:18:21:Debug: old: center.x = 90.500000,center.y = 108.500000,center.z = 90.500000
+
+2024/06/01 03:18:21:Debug: 1 
+2024/06/01 03:18:21:Debug: g_texWidth = 2468, g_texHeight = 2740
+2024/06/01 03:18:21:Debug: Init! NOW listLandmarks.size is  0 
+2024/06/01 03:18:21:Debug: CollaborationCreatorPos: 0   0   0 
+2024/06/01 03:18:21:Debug: typeNumber: 13
+2024/06/01 03:18:21:Debug: set up controllerray VAO  
+2024/06/01 03:18:21:Debug: set up image axes VAO  
+2024/06/01 03:18:21:Debug: 11 
+2024/06/01 03:18:23:Debug: end of runMainLoop 
+2024/06/01 03:18:23:Debug: link_map is created.
+2024/06/01 03:18:23:Debug: 	editableNeuron.seg.size = 0
+2024/06/01 03:18:23:Debug: -------------------------------------------------------
+2024/06/01 03:18:23:Debug: Start to delete sphere.... 
+2024/06/01 03:18:23:Debug: shut down sucess! 
+2024/06/01 03:18:23:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:23:Debug: result is  0 
+2024/06/01 03:18:23:Debug: xxxxxxxxxxxxx ==%1 y ==%2 z ==%3 0 0 0 
+2024/06/01 03:18:23:Debug: 	 number of markers = 0
+2024/06/01 03:18:23:Debug:   Renderer_gl1::updateTracedNeuron
+2024/06/01 03:18:23:Debug: -------------------------------------------------------
+2024/06/01 03:18:23:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:23:Warning: QCoreApplication::postEvent: Unexpected null receiver
+2024/06/01 03:18:23:Debug: V3dR_MainWindow::postClose
+2024/06/01 03:18:23:Debug: ***v3d: XFormWidget::closeEvent
+2024/06/01 03:18:23:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:23:Debug: V3dR_MainWindow::closeEvent, glWidget = 0x18085a8b520
+2024/06/01 03:18:23:Debug:    Renderer_gl2::~Renderer_gl2
+2024/06/01 03:18:23:Debug:     Renderer_gl2::cleanShader
+2024/06/01 03:18:24:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/01 03:18:24:Debug:   Renderer_gl1::~Renderer_gl1
+2024/06/01 03:18:24:Debug:    Renderer_gl1::cleanVol
+2024/06/01 03:18:24:Debug:    Renderer_gl1::cleanObj
+2024/06/01 03:18:24:Debug:    Renderer_gl1::cleanData
+2024/06/01 03:18:24:Debug:  Renderer::~Renderer <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+2024/06/01 03:18:24:Debug: close event over 
+2024/06/01 03:18:24:Debug: V3dR_GLWidget::~V3dR_GLWidget =======================================
+2024/06/01 03:18:24:Debug: "3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:24:Debug: V3dR_MainWindow::~V3dR_MainWindow ====================================
+2024/06/01 03:18:24:Debug: V3dR_MainWindow::~V3dR_MainWindow end 
+2024/06/01 03:18:27:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 03:18:27:Debug: Cannot find ./plugins directory!
+2024/06/01 03:18:28:Debug: transparency true 
+2024/06/01 03:18:28:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 03:18:30:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x12ff0ce77e0) 
+2024/06/01 03:18:30:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2024/06/01 03:18:31:Debug: ChannelTable::linkXFormWidgetChannel  CDim=3  
+2024/06/01 03:18:31:Debug: time consume ... 252 
+2024/06/01 03:18:32:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/06/01 03:18:32:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:18:32:Debug: "3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:32:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/06/01 03:18:32:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/06/01 03:18:32:Debug: "C:/Users/10417/Downloads/human_brain_from_itk_example.tif" 
+2024/06/01 03:18:32:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/06/01 03:18:32:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:18:32:Debug: V3dR_GLWidget::initializeGL
+2024/06/01 03:18:32:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/06/01 03:18:32:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/06/01 03:18:32:Debug: V3dR_GLWidget::choiceRenderer
+2024/06/01 03:18:32:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/06/01 03:18:32:Debug:   Renderer_gl1::Renderer_gl1
+2024/06/01 03:18:32:Debug:    Renderer_gl2::Renderer_gl2
+2024/06/01 03:18:32:Debug: V3dR_GLWidget::settingRenderer
+2024/06/01 03:18:32:Debug: V3dR_GLWidget::preparingRenderer
+2024/06/01 03:18:32:Debug:    Renderer_gl1::cleanData
+2024/06/01 03:18:32:Debug:   Renderer_gl1::setupData
+2024/06/01 03:18:32:Debug: 	Down-sampling to 512x512x256 
+2024/06/01 03:18:32:Debug:    data4dp = 0x12ff42b3040 	(start 0x0x0_0_0, size 181x217x181_3_1)
+2024/06/01 03:18:32:Debug:    rgbaBuf = 0x12ffd005040 	(181x217x181_3_1)
+2024/06/01 03:18:32:Debug:    data box in original image space @	(0 0 0)--(180 216 180)
+2024/06/01 03:18:33:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.161 sec
+2024/06/01 03:18:33:Debug:    Renderer_gl2::initialize (2)
+2024/06/01 03:18:33:Debug:   Renderer_gl1::initialize (1)
+2024/06/01 03:18:33:Debug:  Renderer::initialize (0)
+2024/06/01 03:18:33:Debug:    Renderer_gl1::cleanObj
+2024/06/01 03:18:33:Debug:   Renderer_gl1::loadObj
+2024/06/01 03:18:33:Debug:    Renderer_gl1::cleanVol
+2024/06/01 03:18:33:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/01 03:18:33:Debug:   Renderer_gl1::loadVol
+2024/06/01 03:18:33:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/06/01 03:18:33:Debug: "	ARB_texture_compression                supported " 
+2024/06/01 03:18:33:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/06/01 03:18:33:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/06/01 03:18:33:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/06/01 03:18:33:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/06/01 03:18:33:Debug:    sampleScale = 1x1x1   sampledImage = 181x217x181   fillTexture = 256x256x256
+2024/06/01 03:18:33:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/06/01 03:18:33:Debug:    setupStack: id & buffer ....................... cost time = 0.011 sec
+2024/06/01 03:18:33:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/06/01 03:18:33:Debug: Renderer_gl2::setupStackTexture() start 
+2024/06/01 03:18:33:Debug: Renderer_gl1::setupStackTexture() start 
+2024/06/01 03:18:33:Debug: 	texture:   real = 181x217x181   fill = 256x256x256
+2024/06/01 03:18:34:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.969 sec
+2024/06/01 03:18:34:Debug: 	  tex_stream_buffer = false
+2024/06/01 03:18:34:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/06/01 03:18:34:Debug: 	BoundingBox default (0 0 0)--(181 217 181)
+2024/06/01 03:18:34:Debug:     Renderer_gl2::cleanShader
+2024/06/01 03:18:34:Debug:    Renderer_gl2::loadShader
+2024/06/01 03:18:34:Debug: +++++++++ shader for Surface Object
+2024/06/01 03:18:34:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/06/01 03:18:34:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:18:34:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/06/01 03:18:34:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:18:34:Debug: +++++++++ shader for Volume texture2D
+2024/06/01 03:18:34:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:18:34:Debug: +++++++++ shader for Volume texture3D
+2024/06/01 03:18:34:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:18:34:Debug: +++++++++ GLSL shader setup finished.
+2024/06/01 03:18:34:Debug:    Renderer_gl2::initColormap
+2024/06/01 03:18:34:Debug: ++++++++++++ customEvent:  4 
+2024/06/01 03:18:34:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:34:Debug: 	( QEvent_InitControlValue )
+2024/06/01 03:18:34:Debug: V3dR_MainWindow::initControlValue
+2024/06/01 03:18:34:Debug: 	GL texture compression supported, enable texture compression function
+2024/06/01 03:18:34:Debug: 	GL shading language supported, enable volume colormap function
+2024/06/01 03:18:34:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:34:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:18:34:Debug: glWidget->TeraflyCommunicator==0 
+2024/06/01 03:18:34:Debug: ++++++++++++ customEvent:  2 
+2024/06/01 03:18:34:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:34:Debug: 	( QEvent_OpenFiles )
+2024/06/01 03:18:34:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/06/01 03:18:34:Debug: ++++++++++++ customEvent:  1 
+2024/06/01 03:18:34:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:18:34:Debug: 	( QEvent_Ready )
+2024/06/01 03:18:34:Debug: -------------------------------------------------------------- Ready
+2024/06/01 03:18:34:Debug: 	frontSlice:   real = 217^2   fill = 256^2
+2024/06/01 03:18:35:Debug: PMain::doCollaborationVRView() 
+2024/06/01 03:18:35:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:38:Debug: link_map is created.
+2024/06/01 03:18:38:Debug: 	editableNeuron.seg.size = 0
+2024/06/01 03:18:38:Debug: -------------------------------------------------------
+2024/06/01 03:18:38:Debug: shut down sucess! 
+2024/06/01 03:18:38:Debug: result is  0 
+2024/06/01 03:18:38:Debug: xxxxxxxxxxxxx ==%1 y ==%2 z ==%3 0 0 0 
+2024/06/01 03:18:38:Debug: 	 number of markers = 0
+2024/06/01 03:18:38:Debug:   Renderer_gl1::updateTracedNeuron
+2024/06/01 03:18:38:Debug: -------------------------------------------------------
+2024/06/01 03:18:41:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:18:48:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:19:16:Warning: QObject::killTimers: timers cannot be stopped from another thread
+2024/06/01 03:19:18:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 03:19:18:Debug: Cannot find ./plugins directory!
+2024/06/01 03:19:18:Debug: transparency true 
+2024/06/01 03:19:19:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 03:19:21:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x1b717161380) 
+2024/06/01 03:19:21:Debug: My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib= false 
+2024/06/01 03:19:21:Debug: ChannelTable::linkXFormWidgetChannel  CDim=3  
+2024/06/01 03:19:21:Debug: time consume ... 270 
+2024/06/01 03:19:23:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/06/01 03:19:23:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:19:23:Debug: "3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:19:23:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/06/01 03:19:23:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/06/01 03:19:23:Debug: "C:/Users/10417/Downloads/human_brain_from_itk_example.tif" 
+2024/06/01 03:19:23:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/06/01 03:19:23:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/01 03:19:24:Debug: V3dR_GLWidget::initializeGL
+2024/06/01 03:19:24:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/06/01 03:19:24:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/06/01 03:19:24:Debug: V3dR_GLWidget::choiceRenderer
+2024/06/01 03:19:24:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/06/01 03:19:24:Debug:   Renderer_gl1::Renderer_gl1
+2024/06/01 03:19:24:Debug:    Renderer_gl2::Renderer_gl2
+2024/06/01 03:19:24:Debug: V3dR_GLWidget::settingRenderer
+2024/06/01 03:19:24:Debug: V3dR_GLWidget::preparingRenderer
+2024/06/01 03:19:24:Debug:    Renderer_gl1::cleanData
+2024/06/01 03:19:24:Debug:   Renderer_gl1::setupData
+2024/06/01 03:19:24:Debug: 	Down-sampling to 512x512x256 
+2024/06/01 03:19:24:Debug:    data4dp = 0x1b71a6c4040 	(start 0x0x0_0_0, size 181x217x181_3_1)
+2024/06/01 03:19:24:Debug:    rgbaBuf = 0x1b723410040 	(181x217x181_3_1)
+2024/06/01 03:19:24:Debug:    data box in original image space @	(0 0 0)--(180 216 180)
+2024/06/01 03:19:24:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.163 sec
+2024/06/01 03:19:24:Debug:    Renderer_gl2::initialize (2)
+2024/06/01 03:19:24:Debug:   Renderer_gl1::initialize (1)
+2024/06/01 03:19:24:Debug:  Renderer::initialize (0)
+2024/06/01 03:19:24:Debug:    Renderer_gl1::cleanObj
+2024/06/01 03:19:24:Debug:   Renderer_gl1::loadObj
+2024/06/01 03:19:24:Debug:    Renderer_gl1::cleanVol
+2024/06/01 03:19:24:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/01 03:19:24:Debug:   Renderer_gl1::loadVol
+2024/06/01 03:19:24:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/06/01 03:19:24:Debug: "	ARB_texture_compression                supported " 
+2024/06/01 03:19:24:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/06/01 03:19:24:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/06/01 03:19:24:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/06/01 03:19:24:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/06/01 03:19:24:Debug:    sampleScale = 1x1x1   sampledImage = 181x217x181   fillTexture = 256x256x256
+2024/06/01 03:19:24:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/06/01 03:19:24:Debug:    setupStack: id & buffer ....................... cost time = 0.009 sec
+2024/06/01 03:19:24:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/06/01 03:19:24:Debug: Renderer_gl2::setupStackTexture() start 
+2024/06/01 03:19:24:Debug: Renderer_gl1::setupStackTexture() start 
+2024/06/01 03:19:24:Debug: 	texture:   real = 181x217x181   fill = 256x256x256
+2024/06/01 03:19:25:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 1.006 sec
+2024/06/01 03:19:25:Debug: 	  tex_stream_buffer = false
+2024/06/01 03:19:25:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/06/01 03:19:25:Debug: 	BoundingBox default (0 0 0)--(181 217 181)
+2024/06/01 03:19:25:Debug:     Renderer_gl2::cleanShader
+2024/06/01 03:19:25:Debug:    Renderer_gl2::loadShader
+2024/06/01 03:19:25:Debug: +++++++++ shader for Surface Object
+2024/06/01 03:19:25:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/06/01 03:19:25:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:19:25:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/06/01 03:19:25:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/01 03:19:25:Debug: +++++++++ shader for Volume texture2D
+2024/06/01 03:19:25:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:19:25:Debug: +++++++++ shader for Volume texture3D
+2024/06/01 03:19:25:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/01 03:19:25:Debug: +++++++++ GLSL shader setup finished.
+2024/06/01 03:19:25:Debug:    Renderer_gl2::initColormap
+2024/06/01 03:19:25:Debug: ++++++++++++ customEvent:  4 
+2024/06/01 03:19:25:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:19:25:Debug: 	( QEvent_InitControlValue )
+2024/06/01 03:19:25:Debug: V3dR_MainWindow::initControlValue
+2024/06/01 03:19:25:Debug: 	GL texture compression supported, enable texture compression function
+2024/06/01 03:19:25:Debug: 	GL shading language supported, enable volume colormap function
+2024/06/01 03:19:25:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:19:25:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:19:25:Debug: glWidget->TeraflyCommunicator==0 
+2024/06/01 03:19:25:Debug: ++++++++++++ customEvent:  2 
+2024/06/01 03:19:25:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:19:25:Debug: 	( QEvent_OpenFiles )
+2024/06/01 03:19:25:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/06/01 03:19:25:Debug: ++++++++++++ customEvent:  1 
+2024/06/01 03:19:25:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/01 03:19:25:Debug: 	( QEvent_Ready )
+2024/06/01 03:19:25:Debug: -------------------------------------------------------------- Ready
+2024/06/01 03:19:25:Debug: 	frontSlice:   real = 217^2   fill = 256^2
+2024/06/01 03:19:26:Debug: PMain::doCollaborationVRView() 
+2024/06/01 03:19:26:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:19:27:Debug: loadedNTList->size() 0   editableNTL size is 0  non editable NTL size is  0 
+2024/06/01 03:19:27:Debug: set up single 
+2024/06/01 03:19:27:Debug: Set up all NTs' VAO&VBO done 
+2024/06/01 03:19:27:Debug: old: center.x = 90.500000,center.y = 108.500000,center.z = 90.500000
+
+2024/06/01 03:19:27:Debug: 1 
+2024/06/01 03:19:28:Debug: g_texWidth = 2468, g_texHeight = 2740
+2024/06/01 03:19:28:Debug: Init! NOW listLandmarks.size is  0 
+2024/06/01 03:19:28:Debug: CollaborationCreatorPos: 0   0   0 
+2024/06/01 03:19:28:Debug: typeNumber: 13
+2024/06/01 03:19:28:Debug: set up controllerray VAO  
+2024/06/01 03:19:28:Debug: set up image axes VAO  
+2024/06/01 03:19:28:Debug: 11 
+2024/06/01 03:19:37:Debug: end of runMainLoop 
+2024/06/01 03:19:37:Debug: link_map is created.
+2024/06/01 03:19:37:Debug: 	editableNeuron.seg.size = 0
+2024/06/01 03:19:37:Debug: -------------------------------------------------------
+2024/06/01 03:19:37:Debug: Start to delete sphere.... 
+2024/06/01 03:19:37:Debug: shut down sucess! 
+2024/06/01 03:19:37:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:19:37:Debug: result is  0 
+2024/06/01 03:19:37:Debug: xxxxxxxxxxxxx ==%1 y ==%2 z ==%3 0 0 0 
+2024/06/01 03:19:37:Debug: 	 number of markers = 0
+2024/06/01 03:19:37:Debug:   Renderer_gl1::updateTracedNeuron
+2024/06/01 03:19:37:Debug: -------------------------------------------------------
+2024/06/01 03:19:38:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:19:38:Warning: QCoreApplication::postEvent: Unexpected null receiver
+2024/06/01 03:19:38:Debug: V3dR_MainWindow::postClose
+2024/06/01 03:19:38:Debug: ***v3d: XFormWidget::closeEvent
+2024/06/01 03:19:38:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/01 03:19:38:Debug: V3dR_MainWindow::closeEvent, glWidget = 0x1b7175e0e20
+2024/06/01 03:19:38:Debug:    Renderer_gl2::~Renderer_gl2
+2024/06/01 03:19:38:Debug:     Renderer_gl2::cleanShader
+2024/06/01 03:19:38:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/01 03:19:38:Debug:   Renderer_gl1::~Renderer_gl1
+2024/06/01 03:19:38:Debug:    Renderer_gl1::cleanVol
+2024/06/01 03:19:38:Debug:    Renderer_gl1::cleanObj
+2024/06/01 03:19:38:Debug:    Renderer_gl1::cleanData
+2024/06/01 03:19:38:Debug:  Renderer::~Renderer <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+2024/06/01 03:19:38:Debug: close event over 
+2024/06/01 03:19:38:Debug: V3dR_GLWidget::~V3dR_GLWidget =======================================
+2024/06/01 03:19:38:Debug: "3D View [C:/Users/10417/Downloads/human_brain_from_itk_example.tif]" 
+2024/06/01 03:19:38:Debug: V3dR_MainWindow::~V3dR_MainWindow ====================================
+2024/06/01 03:19:38:Debug: V3dR_MainWindow::~V3dR_MainWindow end 

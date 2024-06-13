@@ -16,10 +16,14 @@ uniform vec2      ImageSettings; // x = contrast, y= brightness
 uniform vec3 clippoint;
 uniform vec3 clipnormal;
 uniform float clipwidth;
+uniform bool showImage; // 添加 showImage 变量
 layout (location = 0) out vec4 FragColor;
 void main()
 {
-
+    // 如果 showImage 为 false，则丢弃当前片段
+    if (!showImage) {
+        discard;
+    }
     vec3 exitPoint = texture(ExitPoints, gl_FragCoord.st/ScreenSize).xyz;
     if (EntryPoint == exitPoint)
     	//background need no raycasting

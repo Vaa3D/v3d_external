@@ -113,3 +113,708 @@
 2023/04/07 21:03:04:Debug: 200 Ok 
 2023/04/07 21:03:06:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
 2023/04/07 21:03:06:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/29 21:56:07:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/05/29 21:56:07:Debug: Cannot find ./plugins directory!
+2024/05/29 21:57:03:Debug: transparency true 
+2024/05/29 21:57:19:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/05/29 21:58:36:Debug: PMain::doTeraflyVRView() 
+2024/05/30 11:26:32:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/05/30 11:26:32:Debug: Cannot find ./plugins directory!
+2024/05/30 11:26:32:Debug: transparency true 
+2024/05/30 11:26:33:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/05/30 11:27:29:Debug: SYL TEST CViewer::CViewer 
+2024/05/30 11:27:29:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x17f772f81a0) 
+2024/05/30 11:27:29:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels" 
+2024/05/30 11:27:29:Debug: MainWindow newImageWindow:  "ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels" 
+2024/05/30 11:27:29:Debug: V3d_PluginLoader newImageWindow:  XFormWidget(0x17f772f81a0) 
+2024/05/30 11:27:29:Debug: V3d_PluginLoader setImage:  0x17f772f81a0 0x17f7ec7b760 
+2024/05/30 11:27:29:Debug: MainWindow setImage now:  XFormWidget(0x17f772f81a0) 0x17f7ec7b760 
+2024/05/30 11:27:29:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2024/05/30 11:27:29:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels_processed" 
+2024/05/30 11:27:29:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/05/30 11:27:29:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/05/30 11:27:29:Debug: "3D View [ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels_processed]" 
+2024/05/30 11:27:29:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/05/30 11:27:29:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/05/30 11:27:29:Debug: "ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels_processed" 
+2024/05/30 11:27:29:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/05/30 11:27:29:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/05/30 11:27:29:Debug: V3d_PluginLoader getView3DControl =  0x17f0622c0a8  :  XFormWidget(0x17f772f81a0) / 0x17f772f81a0 
+2024/05/30 11:27:29:Debug: V3dR_GLWidget::initializeGL
+2024/05/30 11:27:29:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/05/30 11:27:29:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/05/30 11:27:29:Debug: V3dR_GLWidget::choiceRenderer
+2024/05/30 11:27:29:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/05/30 11:27:29:Debug:   Renderer_gl1::Renderer_gl1
+2024/05/30 11:27:29:Debug:    Renderer_gl2::Renderer_gl2
+2024/05/30 11:27:29:Debug: V3dR_GLWidget::settingRenderer
+2024/05/30 11:27:29:Debug: V3dR_GLWidget::preparingRenderer
+2024/05/30 11:27:29:Debug:    Renderer_gl1::cleanData
+2024/05/30 11:27:29:Debug:   Renderer_gl1::setupData
+2024/05/30 11:27:29:Debug: 	Down-sampling to 512x512x256 
+2024/05/30 11:27:29:Debug:    data4dp = 0x17f7fb86040 	(start 0x0x0_0_0, size 256x256x60_1_1)
+2024/05/30 11:27:29:Debug:    rgbaBuf = 0x17f236b9040 	(256x256x60_1_1)
+2024/05/30 11:27:29:Debug:    data box in original image space @	(0 0 0)--(255 255 59)
+2024/05/30 11:27:29:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.04 sec
+2024/05/30 11:27:29:Debug:    Renderer_gl2::initialize (2)
+2024/05/30 11:27:29:Debug:   Renderer_gl1::initialize (1)
+2024/05/30 11:27:29:Debug:  Renderer::initialize (0)
+2024/05/30 11:27:29:Debug:    Renderer_gl1::cleanObj
+2024/05/30 11:27:29:Debug:   Renderer_gl1::loadObj
+2024/05/30 11:27:29:Debug:    Renderer_gl1::cleanVol
+2024/05/30 11:27:29:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/05/30 11:27:29:Debug:   Renderer_gl1::loadVol
+2024/05/30 11:27:29:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/05/30 11:27:29:Debug: "	ARB_texture_compression                supported " 
+2024/05/30 11:27:29:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/05/30 11:27:29:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/05/30 11:27:29:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/05/30 11:27:29:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/05/30 11:27:29:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x60   fillTexture = 256x256x64
+2024/05/30 11:27:29:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/05/30 11:27:29:Debug:    setupStack: id & buffer ....................... cost time = 0.012 sec
+2024/05/30 11:27:29:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/05/30 11:27:29:Debug: Renderer_gl2::setupStackTexture() start 
+2024/05/30 11:27:29:Debug: Renderer_gl1::setupStackTexture() start 
+2024/05/30 11:27:29:Debug: 	texture:   real = 256x256x60   fill = 256x256x64
+2024/05/30 11:27:30:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.227 sec
+2024/05/30 11:27:30:Debug: 	  tex_stream_buffer = false
+2024/05/30 11:27:30:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/05/30 11:27:30:Debug: 	BoundingBox default (0 0 0)--(256 256 60)
+2024/05/30 11:27:30:Debug:     Renderer_gl2::cleanShader
+2024/05/30 11:27:30:Debug:    Renderer_gl2::loadShader
+2024/05/30 11:27:30:Debug: +++++++++ shader for Surface Object
+2024/05/30 11:27:30:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/05/30 11:27:30:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/05/30 11:27:30:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/05/30 11:27:30:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/05/30 11:27:30:Debug: +++++++++ shader for Volume texture2D
+2024/05/30 11:27:30:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/05/30 11:27:30:Debug: +++++++++ shader for Volume texture3D
+2024/05/30 11:27:30:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/05/30 11:27:30:Debug: +++++++++ GLSL shader setup finished.
+2024/05/30 11:27:30:Debug:    Renderer_gl2::initColormap
+2024/05/30 11:27:30:Debug: ++++++++++++ customEvent:  4 
+2024/05/30 11:27:30:Debug: V3dR_GLWidget::customEvent( ? )
+2024/05/30 11:27:30:Debug: 	( QEvent_InitControlValue )
+2024/05/30 11:27:30:Debug: V3dR_MainWindow::initControlValue
+2024/05/30 11:27:30:Debug: 	GL texture compression supported, enable texture compression function
+2024/05/30 11:27:30:Debug: 	GL shading language supported, enable volume colormap function
+2024/05/30 11:27:30:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:27:30:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels_processed]" 
+2024/05/30 11:27:30:Debug: glWidget->TeraflyCommunicator==0 
+2024/05/30 11:27:30:Debug: -------------------------------------------------------
+2024/05/30 11:27:30:Debug: -------------------------------------------------------
+2024/05/30 11:27:30:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2024/05/30 11:27:30:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:27:30:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:27:30:Debug: ++++++++++++ customEvent:  2 
+2024/05/30 11:27:30:Debug: V3dR_GLWidget::customEvent( ? )
+2024/05/30 11:27:30:Debug: 	( QEvent_OpenFiles )
+2024/05/30 11:27:30:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/05/30 11:27:30:Debug: ++++++++++++ customEvent:  1 
+2024/05/30 11:27:30:Debug: V3dR_GLWidget::customEvent( ? )
+2024/05/30 11:27:30:Debug: 	( QEvent_Ready )
+2024/05/30 11:27:30:Debug: -------------------------------------------------------------- Ready
+2024/05/30 11:27:38:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:29:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:29:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:30:Debug: SYL TEST V3dR_MainWindow::changeEvent 39 
+2024/05/30 11:28:30:Debug: V3dR_GLWidget::updateImageData -----------------------------------------
+2024/05/30 11:28:30:Debug:    Renderer_gl1::cleanData
+2024/05/30 11:28:30:Debug:   Renderer_gl1::setupData
+2024/05/30 11:28:30:Debug: 	Down-sampling to 512x512x256 
+2024/05/30 11:28:30:Debug:    data4dp = 0x17f7fb86040 	(start 0x0x0_0_0, size 256x256x60_1_1)
+2024/05/30 11:28:30:Debug:    rgbaBuf = 0x17f0207f040 	(256x256x60_1_1)
+2024/05/30 11:28:30:Debug:    data box in original image space @	(0 0 0)--(255 255 59)
+2024/05/30 11:28:30:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.041 sec
+2024/05/30 11:28:30:Debug:   Renderer_gl1::reinitializeVol (2)
+2024/05/30 11:28:30:Debug:    Renderer_gl1::cleanVol
+2024/05/30 11:28:30:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/05/30 11:28:30:Debug:   Renderer_gl1::loadVol
+2024/05/30 11:28:30:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/05/30 11:28:30:Debug: "	ARB_texture_compression                supported " 
+2024/05/30 11:28:30:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/05/30 11:28:30:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/05/30 11:28:30:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/05/30 11:28:30:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/05/30 11:28:30:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x60   fillTexture = 256x256x64
+2024/05/30 11:28:30:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/05/30 11:28:30:Debug:    setupStack: id & buffer ....................... cost time = 0.014 sec
+2024/05/30 11:28:30:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/05/30 11:28:30:Debug: Renderer_gl2::setupStackTexture() start 
+2024/05/30 11:28:30:Debug: Renderer_gl1::setupStackTexture() start 
+2024/05/30 11:28:30:Debug: 	texture:   real = 256x256x60   fill = 256x256x64
+2024/05/30 11:28:30:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.255 sec
+2024/05/30 11:28:30:Debug: 	  tex_stream_buffer = false
+2024/05/30 11:28:30:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/05/30 11:28:30:Debug: 	BoundingBox default (0 0 0)--(256 256 60)
+2024/05/30 11:28:30:Debug: SYL TEST V3dR_MainWindow::changeEvent 39 
+2024/05/30 11:28:30:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2024/05/30 11:28:32:Debug: SYL TEST Viewer::newViewer 
+2024/05/30 11:28:32:Debug: call newViewer ... ...  
+2024/05/30 11:28:32:Debug: SYL TEST CViewer::CViewer 
+2024/05/30 11:28:32:Debug: MainWindow::createMdiChild *** workspace->windowList: (XFormWidget(0x17f772f81a0) )  += XFormWidget(0x17f064852b0) 
+2024/05/30 11:28:32:Debug: XFormWidget::setCurrentFileName:  "ID(1), Res(512 x 512 x 121),Volume X=[121,376], Y=[115,370], Z=[1,121], T=[0,0], 1 channels" 
+2024/05/30 11:28:32:Debug: MainWindow newImageWindow:  "ID(1), Res(512 x 512 x 121),Volume X=[121,376], Y=[115,370], Z=[1,121], T=[0,0], 1 channels" 
+2024/05/30 11:28:32:Debug: V3d_PluginLoader newImageWindow:  XFormWidget(0x17f064852b0) 
+2024/05/30 11:28:32:Debug: V3d_PluginLoader setImage:  0x17f064852b0 0x17f06cfed30 
+2024/05/30 11:28:32:Debug: MainWindow setImage now:  XFormWidget(0x17f064852b0) 0x17f06cfed30 
+2024/05/30 11:28:32:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2024/05/30 11:28:32:Debug: XFormWidget::setCurrentFileName:  "ID(1), Res(512 x 512 x 121),Volume X=[121,376], Y=[115,370], Z=[1,121], T=[0,0], 1 channels_processed" 
+2024/05/30 11:28:32:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/05/30 11:28:32:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/05/30 11:28:32:Debug: "3D View [ID(1), Res(512 x 512 x 121),Volume X=[121,376], Y=[115,370], Z=[1,121], T=[0,0], 1 channels_processed]" 
+2024/05/30 11:28:32:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/05/30 11:28:32:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/05/30 11:28:32:Debug: "ID(1), Res(512 x 512 x 121),Volume X=[121,376], Y=[115,370], Z=[1,121], T=[0,0], 1 channels_processed" 
+2024/05/30 11:28:32:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/05/30 11:28:32:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/05/30 11:28:32:Debug: V3d_PluginLoader getView3DControl =  0x17f06e11408  :  XFormWidget(0x17f064852b0) / 0x17f064852b0 
+2024/05/30 11:28:32:Debug: V3dR_GLWidget::initializeGL
+2024/05/30 11:28:32:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/05/30 11:28:32:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/05/30 11:28:32:Debug: V3dR_GLWidget::choiceRenderer
+2024/05/30 11:28:32:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/05/30 11:28:32:Debug:   Renderer_gl1::Renderer_gl1
+2024/05/30 11:28:32:Debug:    Renderer_gl2::Renderer_gl2
+2024/05/30 11:28:32:Debug: V3dR_GLWidget::settingRenderer
+2024/05/30 11:28:32:Debug: V3dR_GLWidget::preparingRenderer
+2024/05/30 11:28:32:Debug:    Renderer_gl1::cleanData
+2024/05/30 11:28:32:Debug:   Renderer_gl1::setupData
+2024/05/30 11:28:32:Debug: 	Down-sampling to 512x512x256 
+2024/05/30 11:28:32:Debug:    data4dp = 0x17f02f94040 	(start 0x0x0_0_0, size 256x256x121_1_1)
+2024/05/30 11:28:32:Debug:    rgbaBuf = 0x17f3e599040 	(256x256x121_1_1)
+2024/05/30 11:28:32:Debug:    data box in original image space @	(0 0 0)--(255 255 120)
+2024/05/30 11:28:32:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.084 sec
+2024/05/30 11:28:32:Debug:    Renderer_gl2::initialize (2)
+2024/05/30 11:28:32:Debug:   Renderer_gl1::initialize (1)
+2024/05/30 11:28:32:Debug:  Renderer::initialize (0)
+2024/05/30 11:28:32:Debug:    Renderer_gl1::cleanObj
+2024/05/30 11:28:32:Debug:   Renderer_gl1::loadObj
+2024/05/30 11:28:32:Debug:    Renderer_gl1::cleanVol
+2024/05/30 11:28:32:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/05/30 11:28:32:Debug:   Renderer_gl1::loadVol
+2024/05/30 11:28:32:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/05/30 11:28:32:Debug: "	ARB_texture_compression                supported " 
+2024/05/30 11:28:32:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/05/30 11:28:32:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/05/30 11:28:32:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/05/30 11:28:32:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/05/30 11:28:32:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x121   fillTexture = 256x256x128
+2024/05/30 11:28:32:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/05/30 11:28:32:Debug:    setupStack: id & buffer ....................... cost time = 0.012 sec
+2024/05/30 11:28:32:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/05/30 11:28:32:Debug: Renderer_gl2::setupStackTexture() start 
+2024/05/30 11:28:32:Debug: Renderer_gl1::setupStackTexture() start 
+2024/05/30 11:28:32:Debug: 	texture:   real = 256x256x121   fill = 256x256x128
+2024/05/30 11:28:33:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.582 sec
+2024/05/30 11:28:33:Debug: 	  tex_stream_buffer = false
+2024/05/30 11:28:33:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/05/30 11:28:33:Debug: 	BoundingBox default (0 0 0)--(256 256 121)
+2024/05/30 11:28:33:Debug:     Renderer_gl2::cleanShader
+2024/05/30 11:28:33:Debug:    Renderer_gl2::loadShader
+2024/05/30 11:28:33:Debug: +++++++++ shader for Surface Object
+2024/05/30 11:28:33:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/05/30 11:28:33:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/05/30 11:28:33:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/05/30 11:28:33:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/05/30 11:28:33:Debug: +++++++++ shader for Volume texture2D
+2024/05/30 11:28:33:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/05/30 11:28:33:Debug: +++++++++ shader for Volume texture3D
+2024/05/30 11:28:33:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/05/30 11:28:33:Debug: +++++++++ GLSL shader setup finished.
+2024/05/30 11:28:33:Debug:    Renderer_gl2::initColormap
+2024/05/30 11:28:33:Debug: ++++++++++++ customEvent:  4 
+2024/05/30 11:28:33:Debug: V3dR_GLWidget::customEvent( ? )
+2024/05/30 11:28:33:Debug: 	( QEvent_InitControlValue )
+2024/05/30 11:28:33:Debug: V3dR_MainWindow::initControlValue
+2024/05/30 11:28:33:Debug: 	GL texture compression supported, enable texture compression function
+2024/05/30 11:28:33:Debug: 	GL shading language supported, enable volume colormap function
+2024/05/30 11:28:33:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:33:Debug: this->getDataTitle()= "ID(1), Res(512 x 512 x 121),Volume X=[121,376], Y=[115,370], Z=[1,121], T=[0,0], 1 channels_processed" 
+2024/05/30 11:28:33:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [ID(1), Res(512 x 512 x 121),Volume X=[121,376], Y=[115,370], Z=[1,121], T=[0,0], 1 channels_processed]" 
+2024/05/30 11:28:33:Debug: glWidget->TeraflyCommunicator==0 
+2024/05/30 11:28:33:Debug: -------------------------------------------------------
+2024/05/30 11:28:33:Debug: -------------------------------------------------------
+2024/05/30 11:28:33:Debug: 	 number of markers = 0
+2024/05/30 11:28:33:Debug:   Renderer_gl1::updateTracedNeuron
+2024/05/30 11:28:33:Debug: -------------------------------------------------------
+2024/05/30 11:28:33:Debug: V3d_PluginLoader pushObjectIn3DWindow:  XFormWidget(0x17f772f81a0) / 0x17f772f81a0 
+2024/05/30 11:28:33:Debug:   Renderer_gl1::endSelectMode  total elapsed time = [ 0 ] milliseconds 
+2024/05/30 11:28:33:Debug: MainWindow set SWC:  XFormWidget(0x17f064852b0) 0x3cde7fa4c0 
+2024/05/30 11:28:33:Debug: link_map is created.
+2024/05/30 11:28:33:Debug: 	editableNeuron.seg.size = 0
+2024/05/30 11:28:33:Debug:   Renderer_gl1::finishEditingNeuronTree
+2024/05/30 11:28:33:Debug: 	 number of markers = 0
+2024/05/30 11:28:33:Debug:   Renderer_gl1::updateTracedNeuron
+2024/05/30 11:28:33:Debug: -------------------------------------------------------
+2024/05/30 11:28:33:Debug: V3d_PluginLoader pushObjectIn3DWindow:  XFormWidget(0x17f064852b0) / 0x17f064852b0 
+2024/05/30 11:28:33:Debug:   Renderer_gl1::endSelectMode  total elapsed time = [ 0 ] milliseconds 
+2024/05/30 11:28:33:Debug: -------------------------------------------------------
+2024/05/30 11:28:33:Debug: -------------------------------------------------------
+2024/05/30 11:28:33:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2024/05/30 11:28:33:Debug: SYL TEST V3dR_MainWindow::changeEvent 39 
+2024/05/30 11:28:33:Debug: ++++++++++++ customEvent:  2 
+2024/05/30 11:28:33:Debug: V3dR_GLWidget::customEvent( ? )
+2024/05/30 11:28:33:Debug: 	( QEvent_OpenFiles )
+2024/05/30 11:28:33:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/05/30 11:28:33:Debug: ++++++++++++ customEvent:  1 
+2024/05/30 11:28:33:Debug: V3dR_GLWidget::customEvent( ? )
+2024/05/30 11:28:33:Debug: 	( QEvent_Ready )
+2024/05/30 11:28:33:Debug: -------------------------------------------------------------- Ready
+2024/05/30 11:28:33:Debug: V3dR_GLWidget::updateImageData -----------------------------------------
+2024/05/30 11:28:33:Debug:    Renderer_gl1::cleanData
+2024/05/30 11:28:33:Debug:   Renderer_gl1::setupData
+2024/05/30 11:28:33:Debug: 	Down-sampling to 512x512x256 
+2024/05/30 11:28:33:Debug:    data4dp = 0x17f02f94040 	(start 0x0x0_0_0, size 256x256x121_1_1)
+2024/05/30 11:28:33:Debug:    rgbaBuf = 0x17f3e594040 	(256x256x121_1_1)
+2024/05/30 11:28:33:Debug:    data box in original image space @	(0 0 0)--(255 255 120)
+2024/05/30 11:28:33:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.082 sec
+2024/05/30 11:28:33:Debug:   Renderer_gl1::reinitializeVol (2)
+2024/05/30 11:28:33:Debug:    Renderer_gl1::cleanVol
+2024/05/30 11:28:33:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/05/30 11:28:33:Debug:   Renderer_gl1::loadVol
+2024/05/30 11:28:33:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/05/30 11:28:33:Debug: "	ARB_texture_compression                supported " 
+2024/05/30 11:28:33:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/05/30 11:28:33:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/05/30 11:28:33:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/05/30 11:28:33:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/05/30 11:28:33:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x121   fillTexture = 256x256x128
+2024/05/30 11:28:33:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/05/30 11:28:33:Debug:    setupStack: id & buffer ....................... cost time = 0.017 sec
+2024/05/30 11:28:33:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/05/30 11:28:33:Debug: Renderer_gl2::setupStackTexture() start 
+2024/05/30 11:28:33:Debug: Renderer_gl1::setupStackTexture() start 
+2024/05/30 11:28:33:Debug: 	texture:   real = 256x256x121   fill = 256x256x128
+2024/05/30 11:28:34:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.929 sec
+2024/05/30 11:28:34:Debug: 	  tex_stream_buffer = false
+2024/05/30 11:28:34:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/05/30 11:28:34:Debug: 	BoundingBox default (0 0 0)--(256 256 121)
+2024/05/30 11:28:34:Debug: SYL TEST V3dR_MainWindow::changeEvent 39 
+2024/05/30 11:28:34:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2024/05/30 11:28:37:Debug: call restoreViewerFrom  ID(0), Res{0}, Vol{[0,256) [0,256) [0,60) [0,0]} 
+2024/05/30 11:28:37:Debug: prev ?  0  == current ?  1 
+2024/05/30 11:28:37:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:37:Debug: -------------------------------------------------------
+2024/05/30 11:28:37:Debug: -------------------------------------------------------
+2024/05/30 11:28:37:Debug: 	 number of markers = 0
+2024/05/30 11:28:37:Debug:   Renderer_gl1::updateTracedNeuron
+2024/05/30 11:28:37:Debug: -------------------------------------------------------
+2024/05/30 11:28:37:Debug: V3d_PluginLoader pushObjectIn3DWindow:  XFormWidget(0x17f064852b0) / 0x17f064852b0 
+2024/05/30 11:28:37:Debug:   Renderer_gl1::endSelectMode  total elapsed time = [ 0 ] milliseconds 
+2024/05/30 11:28:37:Debug: MainWindow set SWC:  XFormWidget(0x17f772f81a0) 0x3cde7fbbc0 
+2024/05/30 11:28:37:Debug: link_map is created.
+2024/05/30 11:28:37:Debug: 	editableNeuron.seg.size = 0
+2024/05/30 11:28:37:Debug:   Renderer_gl1::finishEditingNeuronTree
+2024/05/30 11:28:37:Debug: 	 number of markers = 0
+2024/05/30 11:28:37:Debug:   Renderer_gl1::updateTracedNeuron
+2024/05/30 11:28:37:Debug: -------------------------------------------------------
+2024/05/30 11:28:37:Debug: V3d_PluginLoader pushObjectIn3DWindow:  XFormWidget(0x17f772f81a0) / 0x17f772f81a0 
+2024/05/30 11:28:37:Debug:   Renderer_gl1::endSelectMode  total elapsed time = [ 0 ] milliseconds 
+2024/05/30 11:28:37:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:37:Debug: -------------------------------------------------------
+2024/05/30 11:28:37:Debug: -------------------------------------------------------
+2024/05/30 11:28:37:Debug: SYL TEST V3dR_MainWindow::changeEvent 39 
+2024/05/30 11:28:37:Debug: V3dR_GLWidget::updateImageData -----------------------------------------
+2024/05/30 11:28:37:Debug:    Renderer_gl1::cleanData
+2024/05/30 11:28:37:Debug:   Renderer_gl1::setupData
+2024/05/30 11:28:37:Debug: 	Down-sampling to 512x512x256 
+2024/05/30 11:28:37:Debug:    data4dp = 0x17f7fb86040 	(start 0x0x0_0_0, size 256x256x60_1_1)
+2024/05/30 11:28:37:Debug:    rgbaBuf = 0x17f02052040 	(256x256x60_1_1)
+2024/05/30 11:28:37:Debug:    data box in original image space @	(0 0 0)--(255 255 59)
+2024/05/30 11:28:37:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.041 sec
+2024/05/30 11:28:37:Debug:   Renderer_gl1::reinitializeVol (2)
+2024/05/30 11:28:37:Debug:    Renderer_gl1::cleanVol
+2024/05/30 11:28:37:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/05/30 11:28:37:Debug:   Renderer_gl1::loadVol
+2024/05/30 11:28:37:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/05/30 11:28:37:Debug: "	ARB_texture_compression                supported " 
+2024/05/30 11:28:37:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/05/30 11:28:37:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/05/30 11:28:37:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/05/30 11:28:37:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/05/30 11:28:37:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x60   fillTexture = 256x256x64
+2024/05/30 11:28:37:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/05/30 11:28:37:Debug:    setupStack: id & buffer ....................... cost time = 0.014 sec
+2024/05/30 11:28:37:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/05/30 11:28:37:Debug: Renderer_gl2::setupStackTexture() start 
+2024/05/30 11:28:37:Debug: Renderer_gl1::setupStackTexture() start 
+2024/05/30 11:28:37:Debug: 	texture:   real = 256x256x60   fill = 256x256x64
+2024/05/30 11:28:37:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.295 sec
+2024/05/30 11:28:37:Debug: 	  tex_stream_buffer = false
+2024/05/30 11:28:37:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/05/30 11:28:37:Debug: 	BoundingBox default (0 0 0)--(256 256 60)
+2024/05/30 11:28:37:Debug: SYL TEST V3dR_MainWindow::changeEvent 39 
+2024/05/30 11:28:37:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2024/05/30 11:28:46:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:51:Debug: PMain::doTeraflyVRView() 
+2024/05/30 11:28:51:Debug: PMain hide 
+2024/05/30 11:28:51:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:28:51:Debug: this->getDataTitle()= "ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels_processed" 
+2024/05/30 11:28:51:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [ID(0), Res(256 x 256 x 60),Volume X=[1,256], Y=[1,256], Z=[1,60], T=[0,0], 1 channels_processed]" 
+2024/05/30 11:28:51:Debug: glWidget->TeraflyCommunicator==0 
+2024/05/30 11:28:51:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/05/30 11:29:20:Debug: link_map is created.
+2024/05/30 11:29:20:Debug: 	editableNeuron.seg.size = 0
+2024/05/30 11:29:20:Debug: -------------------------------------------------------
+2024/05/30 11:29:20:Debug: shut down sucess! 
+2024/05/30 11:29:20:Debug: result is  0 
+2024/05/30 11:29:20:Debug: xxxxxxxxxxxxx ==%1 y ==%2 z ==%3 0 0 0 
+2024/05/30 11:29:20:Debug: 	 number of markers = 0
+2024/05/30 11:29:20:Debug:   Renderer_gl1::updateTracedNeuron
+2024/05/30 11:29:20:Debug: -------------------------------------------------------
+2024/05/30 11:29:20:Debug: PMain show 
+2024/05/30 11:32:29:Debug: -------------------------------------------------------
+2024/05/30 11:32:29:Debug: -------------------------------------------------------
+2024/05/30 11:37:29:Debug: -------------------------------------------------------
+2024/05/30 11:37:29:Debug: -------------------------------------------------------
+2024/05/30 11:42:29:Debug: -------------------------------------------------------
+2024/05/30 11:42:29:Debug: -------------------------------------------------------
+2024/05/30 11:47:29:Debug: -------------------------------------------------------
+2024/05/30 11:47:29:Debug: -------------------------------------------------------
+2024/05/30 11:52:29:Debug: -------------------------------------------------------
+2024/05/30 11:52:29:Debug: -------------------------------------------------------
+2024/05/30 11:57:29:Debug: -------------------------------------------------------
+2024/05/30 11:57:29:Debug: -------------------------------------------------------
+2024/05/30 12:02:29:Debug: -------------------------------------------------------
+2024/05/30 12:02:29:Debug: -------------------------------------------------------
+2024/05/30 12:07:29:Debug: -------------------------------------------------------
+2024/05/30 12:07:29:Debug: -------------------------------------------------------
+2024/05/30 12:12:29:Debug: -------------------------------------------------------
+2024/05/30 12:12:29:Debug: -------------------------------------------------------
+2024/05/30 12:17:29:Debug: -------------------------------------------------------
+2024/05/30 12:17:29:Debug: -------------------------------------------------------
+2024/05/30 12:22:29:Debug: -------------------------------------------------------
+2024/05/30 12:22:29:Debug: -------------------------------------------------------
+2024/05/30 12:27:29:Debug: -------------------------------------------------------
+2024/05/30 12:27:29:Debug: -------------------------------------------------------
+2024/05/30 12:32:29:Debug: -------------------------------------------------------
+2024/05/30 12:32:29:Debug: -------------------------------------------------------
+2024/05/30 12:37:29:Debug: -------------------------------------------------------
+2024/05/30 12:37:29:Debug: -------------------------------------------------------
+2024/05/30 12:42:29:Debug: -------------------------------------------------------
+2024/05/30 12:42:29:Debug: -------------------------------------------------------
+2024/05/30 12:47:29:Debug: -------------------------------------------------------
+2024/05/30 12:47:29:Debug: -------------------------------------------------------
+2024/05/30 12:52:29:Debug: -------------------------------------------------------
+2024/05/30 12:52:29:Debug: -------------------------------------------------------
+2024/05/30 12:57:29:Debug: -------------------------------------------------------
+2024/05/30 12:57:29:Debug: -------------------------------------------------------
+2024/05/30 13:02:29:Debug: -------------------------------------------------------
+2024/05/30 13:02:29:Debug: -------------------------------------------------------
+2024/05/30 13:07:29:Debug: -------------------------------------------------------
+2024/05/30 13:07:29:Debug: -------------------------------------------------------
+2024/05/30 13:12:29:Debug: -------------------------------------------------------
+2024/05/30 13:12:29:Debug: -------------------------------------------------------
+2024/05/30 13:17:29:Debug: -------------------------------------------------------
+2024/05/30 13:17:29:Debug: -------------------------------------------------------
+2024/05/30 13:22:29:Debug: -------------------------------------------------------
+2024/05/30 13:22:29:Debug: -------------------------------------------------------
+2024/05/30 13:27:29:Debug: -------------------------------------------------------
+2024/05/30 13:27:29:Debug: -------------------------------------------------------
+2024/05/30 13:32:29:Debug: -------------------------------------------------------
+2024/05/30 13:32:29:Debug: -------------------------------------------------------
+2024/05/30 13:37:29:Debug: -------------------------------------------------------
+2024/05/30 13:37:29:Debug: -------------------------------------------------------
+2024/05/30 13:42:29:Debug: -------------------------------------------------------
+2024/05/30 13:42:29:Debug: -------------------------------------------------------
+2024/05/30 13:47:29:Debug: -------------------------------------------------------
+2024/05/30 13:47:29:Debug: -------------------------------------------------------
+2024/05/30 13:52:29:Debug: -------------------------------------------------------
+2024/05/30 13:52:29:Debug: -------------------------------------------------------
+2024/05/30 13:57:29:Debug: -------------------------------------------------------
+2024/05/30 13:57:29:Debug: -------------------------------------------------------
+2024/05/30 14:02:29:Debug: -------------------------------------------------------
+2024/05/30 14:02:29:Debug: -------------------------------------------------------
+2024/05/30 14:07:29:Debug: -------------------------------------------------------
+2024/05/30 14:07:29:Debug: -------------------------------------------------------
+2024/05/30 14:12:29:Debug: -------------------------------------------------------
+2024/05/30 14:12:29:Debug: -------------------------------------------------------
+2024/05/30 14:17:29:Debug: -------------------------------------------------------
+2024/05/30 14:17:29:Debug: -------------------------------------------------------
+2024/05/30 14:22:29:Debug: -------------------------------------------------------
+2024/05/30 14:22:29:Debug: -------------------------------------------------------
+2024/05/30 14:27:29:Debug: -------------------------------------------------------
+2024/05/30 14:27:29:Debug: -------------------------------------------------------
+2024/05/30 14:32:29:Debug: -------------------------------------------------------
+2024/05/30 14:32:29:Debug: -------------------------------------------------------
+2024/05/30 14:37:29:Debug: -------------------------------------------------------
+2024/05/30 14:37:29:Debug: -------------------------------------------------------
+2024/05/30 14:42:29:Debug: -------------------------------------------------------
+2024/05/30 14:42:29:Debug: -------------------------------------------------------
+2024/05/30 14:47:29:Debug: -------------------------------------------------------
+2024/05/30 14:47:29:Debug: -------------------------------------------------------
+2024/05/30 14:52:29:Debug: -------------------------------------------------------
+2024/05/30 14:52:29:Debug: -------------------------------------------------------
+2024/05/30 14:57:29:Debug: -------------------------------------------------------
+2024/05/30 14:57:29:Debug: -------------------------------------------------------
+2024/05/30 15:02:29:Debug: -------------------------------------------------------
+2024/05/30 15:02:29:Debug: -------------------------------------------------------
+2024/06/01 00:50:42:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 00:50:42:Debug: Cannot find ./plugins directory!
+2024/06/01 00:50:42:Debug: transparency true 
+2024/06/01 00:50:43:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/01 00:50:44:Warning: QCoreApplication::postEvent: Unexpected null receiver
+2024/06/04 18:56:35:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/04 18:56:35:Debug: Cannot find ./plugins directory!
+2024/06/04 18:56:35:Debug: transparency true 
+2024/06/04 18:56:36:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/04 18:56:44:Debug: SYL TEST CViewer::CViewer 
+2024/06/04 18:56:44:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x278e5a7bed0) 
+2024/06/04 18:56:44:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels" 
+2024/06/04 18:56:44:Debug: MainWindow newImageWindow:  "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels" 
+2024/06/04 18:56:44:Debug: V3d_PluginLoader newImageWindow:  XFormWidget(0x278e5a7bed0) 
+2024/06/04 18:56:45:Debug: V3d_PluginLoader setImage:  0x278e5a7bed0 0x278e5ac3c90 
+2024/06/04 18:56:45:Debug: MainWindow setImage now:  XFormWidget(0x278e5a7bed0) 0x278e5ac3c90 
+2024/06/04 18:56:45:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2024/06/04 18:56:45:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed" 
+2024/06/04 18:56:45:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/06/04 18:56:45:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/04 18:56:45:Debug: "3D View [ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed]" 
+2024/06/04 18:56:45:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/06/04 18:56:45:Debug: "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed" 
+2024/06/04 18:56:45:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/06/04 18:56:45:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/04 18:56:45:Debug: V3d_PluginLoader getView3DControl =  0x278e60553e8  :  XFormWidget(0x278e5a7bed0) / 0x278e5a7bed0 
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::initializeGL
+2024/06/04 18:56:45:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/06/04 18:56:45:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::choiceRenderer
+2024/06/04 18:56:45:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/06/04 18:56:45:Debug:   Renderer_gl1::Renderer_gl1
+2024/06/04 18:56:45:Debug:    Renderer_gl2::Renderer_gl2
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::settingRenderer
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::preparingRenderer
+2024/06/04 18:56:45:Debug:    Renderer_gl1::cleanData
+2024/06/04 18:56:45:Debug:   Renderer_gl1::setupData
+2024/06/04 18:56:45:Debug: 	Down-sampling to 512x512x256 
+2024/06/04 18:56:45:Debug:    data4dp = 0x278e9533040 	(start 0x0x0_0_0, size 256x256x68_1_1)
+2024/06/04 18:56:45:Debug:    rgbaBuf = 0x27887f47040 	(256x256x68_1_1)
+2024/06/04 18:56:45:Debug:    data box in original image space @	(0 0 0)--(255 255 67)
+2024/06/04 18:56:45:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.046 sec
+2024/06/04 18:56:45:Debug:    Renderer_gl2::initialize (2)
+2024/06/04 18:56:45:Debug:   Renderer_gl1::initialize (1)
+2024/06/04 18:56:45:Debug:  Renderer::initialize (0)
+2024/06/04 18:56:45:Debug:    Renderer_gl1::cleanObj
+2024/06/04 18:56:45:Debug:   Renderer_gl1::loadObj
+2024/06/04 18:56:45:Debug:    Renderer_gl1::cleanVol
+2024/06/04 18:56:45:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/04 18:56:45:Debug:   Renderer_gl1::loadVol
+2024/06/04 18:56:45:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/06/04 18:56:45:Debug: "	ARB_texture_compression                supported " 
+2024/06/04 18:56:45:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/06/04 18:56:45:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/06/04 18:56:45:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/06/04 18:56:45:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/06/04 18:56:45:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x68   fillTexture = 256x256x128
+2024/06/04 18:56:45:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/06/04 18:56:45:Debug:    setupStack: id & buffer ....................... cost time = 0.007 sec
+2024/06/04 18:56:45:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/06/04 18:56:45:Debug: Renderer_gl2::setupStackTexture() start 
+2024/06/04 18:56:45:Debug: Renderer_gl1::setupStackTexture() start 
+2024/06/04 18:56:45:Debug: 	texture:   real = 256x256x68   fill = 256x256x128
+2024/06/04 18:56:45:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.257 sec
+2024/06/04 18:56:45:Debug: 	  tex_stream_buffer = false
+2024/06/04 18:56:45:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/06/04 18:56:45:Debug: 	BoundingBox default (0 0 0)--(256 256 68)
+2024/06/04 18:56:45:Debug:     Renderer_gl2::cleanShader
+2024/06/04 18:56:45:Debug:    Renderer_gl2::loadShader
+2024/06/04 18:56:45:Debug: +++++++++ shader for Surface Object
+2024/06/04 18:56:45:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/06/04 18:56:45:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/04 18:56:45:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/06/04 18:56:45:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/04 18:56:45:Debug: +++++++++ shader for Volume texture2D
+2024/06/04 18:56:45:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/04 18:56:45:Debug: +++++++++ shader for Volume texture3D
+2024/06/04 18:56:45:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/04 18:56:45:Debug: +++++++++ GLSL shader setup finished.
+2024/06/04 18:56:45:Debug:    Renderer_gl2::initColormap
+2024/06/04 18:56:45:Debug: ++++++++++++ customEvent:  4 
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/04 18:56:45:Debug: 	( QEvent_InitControlValue )
+2024/06/04 18:56:45:Debug: V3dR_MainWindow::initControlValue
+2024/06/04 18:56:45:Debug: 	GL texture compression supported, enable texture compression function
+2024/06/04 18:56:45:Debug: 	GL shading language supported, enable volume colormap function
+2024/06/04 18:56:45:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:56:45:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed]" 
+2024/06/04 18:56:45:Debug: glWidget->TeraflyCommunicator==0 
+2024/06/04 18:56:45:Debug: -------------------------------------------------------
+2024/06/04 18:56:45:Debug: -------------------------------------------------------
+2024/06/04 18:56:45:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2024/06/04 18:56:45:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:56:45:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:56:45:Debug: ++++++++++++ customEvent:  2 
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/04 18:56:45:Debug: 	( QEvent_OpenFiles )
+2024/06/04 18:56:45:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/06/04 18:56:45:Debug: ++++++++++++ customEvent:  1 
+2024/06/04 18:56:45:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/04 18:56:45:Debug: 	( QEvent_Ready )
+2024/06/04 18:56:45:Debug: -------------------------------------------------------------- Ready
+2024/06/04 18:56:48:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:56:52:Debug: getUserId  0 
+2024/06/04 18:56:57:Debug: getAnos 0 
+2024/06/04 18:56:58:Debug: 0 
+2024/06/04 18:57:07:Debug: 0 
+2024/06/04 18:57:13:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:57:13:Debug: in close volume 
+2024/06/04 18:57:13:Debug: ***v3d: XFormWidget::closeEvent
+2024/06/04 18:57:14:Debug: V3dR_MainWindow::closeEvent, glWidget = 0x278e60553c0
+2024/06/04 18:57:14:Debug:    Renderer_gl2::~Renderer_gl2
+2024/06/04 18:57:14:Debug:     Renderer_gl2::cleanShader
+2024/06/04 18:57:14:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/04 18:57:14:Debug:   Renderer_gl1::~Renderer_gl1
+2024/06/04 18:57:14:Debug:    Renderer_gl1::cleanVol
+2024/06/04 18:57:14:Debug:    Renderer_gl1::cleanObj
+2024/06/04 18:57:14:Debug:    Renderer_gl1::cleanData
+2024/06/04 18:57:14:Debug:  Renderer::~Renderer <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+2024/06/04 18:57:14:Debug: close event over 
+2024/06/04 18:57:14:Debug: V3dR_GLWidget::~V3dR_GLWidget =======================================
+2024/06/04 18:57:14:Debug: V3dR_MainWindow::closeEvent, glWidget = 0x278e60553c0
+2024/06/04 18:57:14:Debug: close event over 
+2024/06/04 18:57:14:Debug: "3D View [ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed]" 
+2024/06/04 18:57:14:Debug: V3dR_MainWindow::~V3dR_MainWindow ====================================
+2024/06/04 18:57:14:Debug: V3dR_MainWindow::~V3dR_MainWindow end 
+2024/06/04 18:57:50:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/04 18:57:50:Debug: Cannot find ./plugins directory!
+2024/06/04 18:57:50:Debug: transparency true 
+2024/06/04 18:57:51:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/04 18:57:57:Debug: SYL TEST CViewer::CViewer 
+2024/06/04 18:57:57:Debug: MainWindow::createMdiChild *** workspace->windowList: () += XFormWidget(0x16691133090) 
+2024/06/04 18:57:57:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels" 
+2024/06/04 18:57:57:Debug: MainWindow newImageWindow:  "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels" 
+2024/06/04 18:57:57:Debug: V3d_PluginLoader newImageWindow:  XFormWidget(0x16691133090) 
+2024/06/04 18:57:57:Debug: V3d_PluginLoader setImage:  0x16691133090 0x16690e15980 
+2024/06/04 18:57:57:Debug: MainWindow setImage now:  XFormWidget(0x16691133090) 0x16690e15980 
+2024/06/04 18:57:57:Debug: ChannelTable::linkXFormWidgetChannel  CDim=1  
+2024/06/04 18:57:57:Debug: XFormWidget::setCurrentFileName:  "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed" 
+2024/06/04 18:57:57:Debug: V3dR_MainWindow::V3dR_MainWindow =====================================
+2024/06/04 18:57:57:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/04 18:57:57:Debug: "3D View [ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed]" 
+2024/06/04 18:57:57:Debug: SYL TEST V3dR_MainWindow::changeEvent 33 
+2024/06/04 18:57:57:Debug: V3dR_GLWidget::V3dR_GLWidget ========================================
+2024/06/04 18:57:57:Debug: "ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed" 
+2024/06/04 18:57:57:Debug: V3dR_MainWindow::connectSignal with V3dR_GLWidget
+2024/06/04 18:57:57:Debug: SYL TEST V3dR_MainWindow::changeEvent 21 
+2024/06/04 18:57:57:Debug: V3d_PluginLoader getView3DControl =  0x166910e0ae8  :  XFormWidget(0x16691133090) / 0x16691133090 
+2024/06/04 18:57:57:Debug: V3dR_GLWidget::initializeGL
+2024/06/04 18:57:57:Debug:    GLformat: (version = 0x1f07f) (samples double-buffer stereo plane overlay = 4 1 0 0 0)
+2024/06/04 18:57:57:Debug:    GLformat: (r g b a = 8 8 8 -1) + (depth stencil accum = 24 8 64)
+2024/06/04 18:57:57:Debug: V3dR_GLWidget::choiceRenderer
+2024/06/04 18:57:57:Debug:  Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+2024/06/04 18:57:57:Debug:   Renderer_gl1::Renderer_gl1
+2024/06/04 18:57:57:Debug:    Renderer_gl2::Renderer_gl2
+2024/06/04 18:57:57:Debug: V3dR_GLWidget::settingRenderer
+2024/06/04 18:57:57:Debug: V3dR_GLWidget::preparingRenderer
+2024/06/04 18:57:57:Debug:    Renderer_gl1::cleanData
+2024/06/04 18:57:57:Debug:   Renderer_gl1::setupData
+2024/06/04 18:57:57:Debug: 	Down-sampling to 512x512x256 
+2024/06/04 18:57:57:Debug:    data4dp = 0x166948ff040 	(start 0x0x0_0_0, size 256x256x68_1_1)
+2024/06/04 18:57:57:Debug:    rgbaBuf = 0x166b177c040 	(256x256x68_1_1)
+2024/06/04 18:57:57:Debug:    data box in original image space @	(0 0 0)--(255 255 67)
+2024/06/04 18:57:57:Debug:    data4dp_to_rgba3d ............................................... cost time = 0.046 sec
+2024/06/04 18:57:57:Debug:    Renderer_gl2::initialize (2)
+2024/06/04 18:57:57:Debug:   Renderer_gl1::initialize (1)
+2024/06/04 18:57:57:Debug:  Renderer::initialize (0)
+2024/06/04 18:57:57:Debug:    Renderer_gl1::cleanObj
+2024/06/04 18:57:57:Debug:   Renderer_gl1::loadObj
+2024/06/04 18:57:57:Debug:    Renderer_gl1::cleanVol
+2024/06/04 18:57:57:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/04 18:57:57:Debug:   Renderer_gl1::loadVol
+2024/06/04 18:57:57:Debug: "	ARB_texture_non_power_of_two           supported " 
+2024/06/04 18:57:57:Debug: "	ARB_texture_compression                supported " 
+2024/06/04 18:57:57:Debug: "	EXT_texture3D (or OpenGL 2.0)          supported " 
+2024/06/04 18:57:57:Debug: "	texture stream (need PBO and GLSL)     supported " 
+2024/06/04 18:57:57:Debug: "	GLSL (and OpenGL 2.0)                  supported " 
+2024/06/04 18:57:57:Debug:    setupStack start --- try (compress 3d npt stream shader = 1 0 0 0 1)
+2024/06/04 18:57:57:Debug:    sampleScale = 1x1x1   sampledImage = 256x256x68   fillTexture = 256x256x128
+2024/06/04 18:57:57:Debug: Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set
+ 
+2024/06/04 18:57:57:Debug:    setupStack: id & buffer ....................... cost time = 0.008 sec
+2024/06/04 18:57:57:Debug: Calling setupStackTexture() from Renderer_gl1::subloadTex() 
+2024/06/04 18:57:57:Debug: Renderer_gl2::setupStackTexture() start 
+2024/06/04 18:57:57:Debug: Renderer_gl1::setupStackTexture() start 
+2024/06/04 18:57:57:Debug: 	texture:   real = 256x256x68   fill = 256x256x128
+2024/06/04 18:57:58:Debug:    subloadTex [0]: (compress 3d npt stream shader = 1 0 0 0 1) ...... cost time = 0.255 sec
+2024/06/04 18:57:58:Debug: 	  tex_stream_buffer = false
+2024/06/04 18:57:58:Debug: 	BoundingBox surface (1 1 1)--(-1 -1 -1)
+2024/06/04 18:57:58:Debug: 	BoundingBox default (0 0 0)--(256 256 68)
+2024/06/04 18:57:58:Debug:     Renderer_gl2::cleanShader
+2024/06/04 18:57:58:Debug:    Renderer_gl2::loadShader
+2024/06/04 18:57:58:Debug: +++++++++ shader for Surface Object
+2024/06/04 18:57:58:Debug: Load shader:  ":/shader/obj_fragment.txt" 
+2024/06/04 18:57:58:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/04 18:57:58:Debug: Load shader:  ":/shader/color_vertex.txt" 
+2024/06/04 18:57:58:Debug: Load shader:  ":/shader/lighting.txt" 
+2024/06/04 18:57:58:Debug: +++++++++ shader for Volume texture2D
+2024/06/04 18:57:58:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/04 18:57:58:Debug: +++++++++ shader for Volume texture3D
+2024/06/04 18:57:58:Debug: Load shader:  ":/shader/tex_fragment.txt" 
+2024/06/04 18:57:58:Debug: +++++++++ GLSL shader setup finished.
+2024/06/04 18:57:58:Debug:    Renderer_gl2::initColormap
+2024/06/04 18:57:58:Debug: ++++++++++++ customEvent:  4 
+2024/06/04 18:57:58:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/04 18:57:58:Debug: 	( QEvent_InitControlValue )
+2024/06/04 18:57:58:Debug: V3dR_MainWindow::initControlValue
+2024/06/04 18:57:58:Debug: 	GL texture compression supported, enable texture compression function
+2024/06/04 18:57:58:Debug: 	GL shading language supported, enable volume colormap function
+2024/06/04 18:57:58:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:57:58:Debug: "V3dR_MainWindow::changeEvent, ActivationChange-> 3D View [ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed]" 
+2024/06/04 18:57:58:Debug: glWidget->TeraflyCommunicator==0 
+2024/06/04 18:57:58:Debug: -------------------------------------------------------
+2024/06/04 18:57:58:Debug: -------------------------------------------------------
+2024/06/04 18:57:58:Debug: 	frontSlice:   real = 256^2   fill = 256^2
+2024/06/04 18:57:58:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:57:58:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:57:58:Debug: ++++++++++++ customEvent:  2 
+2024/06/04 18:57:58:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/04 18:57:58:Debug: 	( QEvent_OpenFiles )
+2024/06/04 18:57:58:Debug:    Renderer_gl1::loadObjectListFromFile
+2024/06/04 18:57:58:Debug: ++++++++++++ customEvent:  1 
+2024/06/04 18:57:58:Debug: V3dR_GLWidget::customEvent( ? )
+2024/06/04 18:57:58:Debug: 	( QEvent_Ready )
+2024/06/04 18:57:58:Debug: -------------------------------------------------------------- Ready
+2024/06/04 18:58:00:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:58:03:Debug: getUserId  0 
+2024/06/04 18:58:07:Debug: getAnos 0 
+2024/06/04 18:58:08:Debug: 0 
+2024/06/04 18:58:23:Debug: 0 
+2024/06/04 18:58:26:Debug: begin to load Ano 
+2024/06/04 18:58:29:Debug: begin to load Ano 
+2024/06/04 18:58:29:Debug: begin to load Ano 
+2024/06/04 18:58:33:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:58:58:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:59:00:Debug: ***v3d: XFormWidget::closeEvent
+2024/06/04 18:59:00:Warning: QCoreApplication::postEvent: Unexpected null receiver
+2024/06/04 18:59:00:Debug: V3dR_MainWindow::postClose
+2024/06/04 18:59:00:Debug: SYL TEST V3dR_MainWindow::changeEvent 99 
+2024/06/04 18:59:00:Debug: V3dR_MainWindow::closeEvent, glWidget = 0x166910e0ac0
+2024/06/04 18:59:00:Debug:    Renderer_gl2::~Renderer_gl2
+2024/06/04 18:59:00:Debug:     Renderer_gl2::cleanShader
+2024/06/04 18:59:00:Debug:     Renderer_gl2::cleanStreamBuffer
+2024/06/04 18:59:00:Debug:   Renderer_gl1::~Renderer_gl1
+2024/06/04 18:59:00:Debug:    Renderer_gl1::cleanVol
+2024/06/04 18:59:00:Debug:    Renderer_gl1::cleanObj
+2024/06/04 18:59:00:Debug:    Renderer_gl1::cleanData
+2024/06/04 18:59:00:Debug:  Renderer::~Renderer <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+2024/06/04 18:59:00:Debug: close event over 
+2024/06/04 18:59:00:Debug: V3dR_MainWindow::closeEvent, glWidget = 0x166910e0ac0
+2024/06/04 18:59:00:Debug: close event over 
+2024/06/04 18:59:00:Debug: V3dR_GLWidget::~V3dR_GLWidget =======================================
+2024/06/04 18:59:00:Debug: "3D View [ID(0), Res(256 x 256 x 68),Volume X=[1,256], Y=[1,256], Z=[1,68], T=[0,0], 1 channels_processed]" 
+2024/06/04 18:59:00:Debug: V3dR_MainWindow::~V3dR_MainWindow ====================================
+2024/06/04 18:59:00:Debug: V3dR_MainWindow::~V3dR_MainWindow end 
+2024/06/04 18:59:09:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
+2024/06/04 18:59:09:Debug: Cannot find ./plugins directory!
+2024/06/04 18:59:09:Debug: transparency true 
+2024/06/04 18:59:10:Debug: "F:/git_all/v3d_external_car/v3d_main/v3d" 
