@@ -351,12 +351,13 @@ private:
 	bool m_rbShowTrackedDevice[ vr::k_unMaxTrackedDeviceCount ];
 
 	//gltext::Font * font_VR;//font for render text
-    static float fSSVEPHz;
-    static float fSSVEPHz_input;
+
 	//undo redo
 	bool bIsUndoEnable;
 	bool bIsRedoEnable;
     bool isSSVEP=false;
+    static float fSSVEPHz;
+    static float fSSVEPHz_input;
 	vector<NTL> vUndoList;
 	vector<NTL> vRedoList;
 public:
@@ -653,10 +654,20 @@ public:
 
         QList<double> getSumData() const;
         QList<double> getCurSingleData() const;
+        bool getIsSSVEP() const;
+
+        static float getFSSVEPHz();
+
+        void setIsSSVEP(bool value);
+
+        static void setFSSVEPHz(float value);
+
 public slots:
         void ImageDisplay(bool show);
         void onTimerTimeout();
         void timerTimeout();
+        bool startBCIparadigm();
+        void stopBCIparadigm();
 private:
         unsigned int framecnt=0;
         const int numofframe=7;

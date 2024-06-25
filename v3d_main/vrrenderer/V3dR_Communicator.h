@@ -162,6 +162,7 @@ public slots:
     void resetWarnMulBifurcationFlag();
     void resetWarnLoopFlag();
 
+    void UpdateBCIMsg(QString MSG);
 signals:
     void load(QString);
     void reloadFile(QString);
@@ -183,6 +184,8 @@ signals:
     void connectSeg(QString);
 //    void updateuserview(QString);
     void updateOnlineUsers(QString);
+    void updateBCIstate(QString);
+
     void setDefineSomaActionState(bool);
     //msg process end
 

@@ -59,6 +59,7 @@ public slots:
     //    VRoutInfo VROutinfo;
     void performFileTransfer();
     void startFileTransferTask();
+    void updateBCIstate(QString receivedString);
 private:
 	V3dR_Communicator* VR_Communicator;
     QString userId;
@@ -67,6 +68,25 @@ private:
     QStringList previousFiles; // 用于存储上一次检查时的文件列表
     int previousFileCount = 0; // 上一次检查时的文件数量
     QTimer *transferTimer;
+    QString lastBCIstate;
+    // 定义BCI参数的结构体
+    struct BCIParameters {
+        QString userId;
+        QString BCI_paradigm;
+        bool BCI_ssvep_mode;
+        float BCI_parameter;
+
+        // 设置函数，用于设置结构体成员变量的值
+        void setParams(QString uid, const QString &paradigm, const bool &ssvep_mode, const float &parameter) {
+            userId = uid;
+            BCI_paradigm = paradigm;
+            BCI_ssvep_mode = ssvep_mode;
+            BCI_parameter = parameter;
+        }
+    };
+    // 创建一个BCIParameters对象
+    BCIParameters params;
+
 //    QTcpSocket* socket;
 //	QString vr_Port;
 

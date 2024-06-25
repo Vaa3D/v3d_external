@@ -174,8 +174,8 @@ void EEGdevice::disConnect()
 }
 // 开始记录数据
 bool EEGdevice::StartRecording() {
-    qDebug() << "StartRecording";
-   {
+    qDebug() << "StartRecording"<<FindAmp;
+
         if (!FindAmp) {
             qDebug() << "InitAmp";
             if (!InitAmp()) {
@@ -183,7 +183,7 @@ bool EEGdevice::StartRecording() {
                 return false;
             }
         }
-    }
+
     timer = 60.0;
     sumdata.clear();
     isRecording = true;

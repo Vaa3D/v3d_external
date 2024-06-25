@@ -4072,11 +4072,11 @@ void PMain::LoadFromServer()
                         QMessageBox::Ok);
         return;
     }
-//    userinfo.name="zackzhy";
+//    userinfo.name="test2222";
 //    userinfo.passwd="123456";
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
-    userinfo.colorid = settings.value("UserID").toInt();
+//    userinfo.colorid = settings.value("UserID").toInt();
     userinfo.id = 0;
 
     // 读取 JSON 配置文件

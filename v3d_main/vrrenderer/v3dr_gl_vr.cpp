@@ -2333,6 +2333,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 		vr::VRControllerState_t state;	
 		m_pHMD->GetControllerState( m_iControllerIDLeft, &state, sizeof(state));
 		float temp_x  = state.rAxis[0].x;
+        float temp_y  = state.rAxis[0].y;
 		// bool ONorOFF=false;
 		// if(temp_x>0)
 		// {
@@ -2400,6 +2401,43 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
 				break;
 			}
+        case _m_ssvep:
+        {
+            qDebug() << "m_modeGrip_L:" << m_modeGrip_L;
+
+
+            qDebug() << "temp_y:"<<temp_y;
+
+//            if(temp_y>0)
+//            {
+//                if (!timer_eegGet->isActive()) {
+
+//                    bool success = startBCIparadigm();  // 调用 startBCIparadigm 函数
+
+//                    if (success) {
+//                        // BCI 范式启动成功
+//                        qDebug() << "BCI paradigm started successfully.";
+//                    } else {
+//                        // 启动失败，可能需要处理失败情况
+//                        qDebug() << "Failed to start BCI paradigm.";
+//                    }
+
+
+//                }
+//           }
+//           else
+//           {
+//                if (isSSVEP) {
+//                                    stopBCIparadigm();
+//                                                }
+//           }
+
+
+
+//            isSSVEP = true;
+//            // 使用setParams函数设置成员变量的值
+
+        }
 		case _UndoRedo:
 			{
 //				qDebug()<<"Undo/Redo Operation. Lines Only.";
@@ -7543,6 +7581,26 @@ float CMainApplication::GetGlobalScale()
 	return m_globalScale;
 }
 
+void CMainApplication::setFSSVEPHz(float value)
+{
+    fSSVEPHz = value;
+}
+
+void CMainApplication::setIsSSVEP(bool value)
+{
+    isSSVEP = value;
+}
+
+float CMainApplication::getFSSVEPHz()
+{
+    return fSSVEPHz;
+}
+
+bool CMainApplication::getIsSSVEP() const
+{
+    return isSSVEP;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Create/destroy GL a Render Model for a single tracked device
 //-----------------------------------------------------------------------------
@@ -8703,6 +8761,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
         }else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.8)&&(panelpos_y <= 0.99))
         {
             m_modeGrip_L = _m_ssvep;
+
             qDebug() << "m_modeGrip_L:" << m_modeGrip_L;
 
                 qDebug() << "timer:"<<timer_eegGet->isActive();
@@ -8731,6 +8790,7 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 
 
             isSSVEP = true;
+
         }
         else
         {
@@ -8755,6 +8815,39 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
         }
 	}
 
+}
+void CMainApplication::stopBCIparadigm() {
+
+    if(timer_eegGet->isActive()){
+        timer_eegGet->stop();
+        qDebug() << "Stopped timer for EEG data acquisition.";
+
+        m_timer->stop();
+        qDebug() << "Stopped general timer.";
+
+        eegDevice.StopRecording();
+        qDebug() << "Stopped recording EEG data.";
+    }else
+        qDebug() << "BCIparadigm is not working.";
+}
+bool CMainApplication::startBCIparadigm() {
+    bool success = eegDevice.StartRecording();
+    if (!success) {
+        qDebug() << "Failed to start recording EEG data.";
+
+        return false;  // 返回操作失败
+    }
+
+    qDebug() << "Started recording EEG data successfully.";
+
+    // 启动定时器
+    timer_eegGet->start(1000);
+    qDebug() << "Started timer for EEG data acquisition.";
+
+    m_timer->start(1000);
+    qDebug() << "Started general timer.";
+
+    return true;  // 返回操作成功
 }
 XYZ CMainApplication::ConvertLocaltoGlobalCoords(float x,float y,float z,XYZ targetRes)//localtogolbal
 {

@@ -17,6 +17,8 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
 {
     userId="";
     VR_Communicator = TeraflyCommunicator;
+
+
     disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
     disconnect(VR_Communicator, SIGNAL(msgtowarn(QString)), 0, 0);
@@ -24,6 +26,11 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
     disconnect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), this, SLOT(processAnalyzeMsg(QString)));
     //    connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySendSeg()));
+
+    disconnect(VR_Communicator,SIGNAL(updateBCIstate(QString)), 0, 0);
+    connect(VR_Communicator,SIGNAL(updateBCIstate(QString)),this,SLOT(updateBCIstate(QString)));
+
+
     userId = TeraflyCommunicator->userId;
     qDebug()<<"userId "<<userId<<" "<<VR_Communicator->userId;
     CURRENT_DATA_IS_SENT=false;
@@ -450,7 +457,52 @@ void VR_MainWindow::TVProcess(QString line)
         }
     }
 }
+void VR_MainWindow::updateBCIstate(QString receivedString){
+    qDebug() << "updateBCIstate Received message from client:" << receivedString;
 
+    // 使用空格分割字符串
+    QStringList parts = receivedString.split(" ");
+
+    // 检查是否有足够的部分
+    if (parts.size() >= 5) {
+        // 解析各个部分
+        QString userIdD = parts[1];
+        QString BCI_paradigm = parts[2];
+        bool BCI_ssvep_mode = (parts[3] == "true"); // 将字符串转换为bool
+        float BCI_parameter = parts[4].toFloat();
+        BCIParameters param;
+        // 现在可以使用解析出来的数据进行处理
+        qDebug() << "User ID:" << userIdD;
+        qDebug() << "BCI Paradigm:" << BCI_paradigm;
+        qDebug() << "BCI SSVEP Mode:" << BCI_ssvep_mode;
+        qDebug() << "BCI Parameter:" << BCI_parameter;
+
+        // 使用setParams函数设置成员变量的值
+        param.setParams(userIdD, BCI_paradigm, BCI_ssvep_mode, BCI_parameter);
+
+        QString msg = "bci/msgs:";
+        // 比较 BCIParameters 和 myServer->params_all 是否一致
+        if (param.userId == params.userId &&
+            param.BCI_paradigm == params.BCI_paradigm &&
+            param.BCI_ssvep_mode == params.BCI_ssvep_mode &&
+            param.BCI_parameter == params.BCI_parameter) {
+            std::cout << "BCIParameters and server.params_all are equal." << std::endl;
+
+        } else {
+            std::cout << "BCIParameters and server.params_all are not equal." << std::endl;
+            params.setParams(userIdD, BCI_paradigm, BCI_ssvep_mode, BCI_parameter);
+            pMainApplication->setIsSSVEP(BCI_ssvep_mode);
+            pMainApplication->setFSSVEPHz(BCI_parameter);
+
+        }
+
+        // 进行进一步的处理或者回复客户端
+    } else {
+        // 如果部分数量不够，处理格式错误情况
+        qDebug() << "Received message format error!";
+        // 可以返回错误信息给客户端或者进行其他处理
+    }
+}
 void VR_MainWindow::processWarnMsg(QString line){
     QRegExp warnreg("/WARN_(.*):(.*)");
     line=line.trimmed();
@@ -865,7 +917,41 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             }
 
         }
+        if(pMainApplication->m_modeGrip_L==_m_ssvep)
+                    {
 
+                        QString BCI_paradigm="ssvep";
+                            // 使用setParams函数设置成员变量的值
+                        params.setParams(VR_Communicator->userId, BCI_paradigm,pMainApplication->getIsSSVEP(), pMainApplication->getFSSVEPHz());
+
+                        // 构建待发送的QString
+                        QString waitsend = QString("1 %1 %2 %3 %4")
+                                .arg(params.userId)
+                                .arg(params.BCI_paradigm)
+                                .arg(params.BCI_ssvep_mode ? "true" : "false") // 将bool转换为字符串
+                                .arg(params.BCI_parameter);
+                        if(waitsend!=lastBCIstate)
+                        {
+
+
+                            if(VR_Communicator&&
+                                VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
+                            {
+
+
+                                VR_Communicator->UpdateBCIMsg(waitsend);
+
+                                lastBCIstate=waitsend;
+                                CURRENT_DATA_IS_SENT=true;
+                            }
+
+                        }else
+                        {
+                            pMainApplication->READY_TO_SEND=false;
+                            CURRENT_DATA_IS_SENT=false;
+
+                        }
+                    }
         if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
         {
             if(pMainApplication->m_modeGrip_R==m_drawMode)

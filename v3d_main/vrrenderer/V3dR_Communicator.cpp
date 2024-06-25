@@ -147,6 +147,10 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
         }else if(msg.startsWith("file/data_received:")){
             qDebug()<<"lddddd OnRead:"<<msg;
+        }else if(msg.startsWith("bci/set_msgs:")){
+
+            emit updateBCIstate(msg.right(msg.size()-QString("bci/set_msgs:").size()));
+            qDebug()<<"updateBCIstate:"<<msg.right(msg.size()-QString("bci/set_msgs:").size());
         }else if(onlineUsersRex.indexIn(msg) != -1){
 //            emit updateuserview(usersRex.cap(1));
             emit updateOnlineUsers(onlineUsersRex.cap(1));
@@ -1149,6 +1153,11 @@ void V3dR_Communicator::UpdateRetypeManySegsMsg(vector<V_NeuronSWC> segs,int typ
     }
 }
 
+void V3dR_Communicator::UpdateBCIMsg(QString MSG)
+{
+
+    this->sendMsg("/bci_message:"+MSG);
+}
 void V3dR_Communicator::UpdateAddSegMsg(QString TVaddSegMSG)
 {
     this->sendMsg("/drawline_norm:"+TVaddSegMSG);
