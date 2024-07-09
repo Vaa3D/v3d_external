@@ -582,6 +582,8 @@ public slots:
 
     void setLockMagnification(bool locked);
 
+    void getImagePath(QString path);
+
 
 signals:
 
@@ -593,6 +595,7 @@ signals:
     /*----------------collaborate mdoe-------------------*/
 public:
     static V3dR_Communicator *Communicator;
+    static string image_path;
     QMenu *collaborateMenu,*userMenu;
     QMenu *analyzeMenu;
 //    QAction *loadAction,*configAction;
@@ -603,6 +606,7 @@ public:
     QAction *qcManagerAction;
     QListWidget *userView;
     QAction *onlineUsersAction;
+    QAction *disconnectAction;
     static UserInfo userinfo;
     static std::unique_ptr<LoadManageWidget> managewidget_ptr;
     static string hostIp;
@@ -634,6 +638,7 @@ public slots:
     void openSwcManagerClient();
     void openQcManager();
     void openOnlineUserDialog();
+    void disconnectFromServer();
     //        void startAutoTrace();//自动算法
 signals:
 

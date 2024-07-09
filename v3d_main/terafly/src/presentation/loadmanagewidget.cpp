@@ -71,7 +71,7 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     int currentScreen = qApp->desktop()->screenNumber(this);//程序所在的屏幕编号
     QRect rect = qApp->desktop()->screenGeometry(currentScreen);//程序所在屏幕尺寸
 
-    this->setMinimumSize(900, 380);
+    this->setMinimumSize(1100, 420);
     this->move((rect.width() - this->width()) / 2 - 50, (rect.height() - this->height()) / 2);//移动到所在屏幕中间
 
     connect(loadBtn,SIGNAL(clicked()),this,SLOT(loadAno()));
@@ -207,6 +207,7 @@ void LoadManageWidget::getAllProjectSwcList(){
 }
 
 void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proUuid){
+    qDebug()<<proUuid;
     QNetworkRequest request;
     QString urlForGetAllProject = DBMSAddress + "/GetProjectSwcNamesByProjectUuid";
     request.setUrl(QUrl(urlForGetAllProject));
@@ -230,7 +231,9 @@ void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proU
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
 
     int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    qDebug()<<"getProjectSwcNamesByProjectUuid: "<<code;
+    if(code != 200){
+        qDebug()<<"getProjectSwcNamesByProjectUuid: "<<code;
+    }
     if(code==200)
     {
         json=reply->readAll();
@@ -346,12 +349,12 @@ void LoadManageWidget::loadAno()
     QString image, neuron;
     //image是否带后缀
     if(image_suf.size() == 1){
-        image = image_pre + "_" + image_suf;
+        image = parts[0] + "_" + parts[1];
         neuron = image + "_" + parts[2];
     }
     else{
         image = parts[0];
-        neuron = parts[0] + "_" + parts[1];
+        neuron = image + "_" + parts[1];
     }
 
     QNetworkRequest request;

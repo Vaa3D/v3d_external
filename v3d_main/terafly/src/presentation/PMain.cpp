@@ -101,6 +101,7 @@ PMain* PMain::uniqueInstance = 0;
 
 std::unique_ptr<LoadManageWidget> PMain::managewidget_ptr=nullptr;
 V3dR_Communicator* PMain::Communicator=0;
+string PMain::image_path = "";
 
 string PMain::hostIp;
 string PMain::braintellServerAddress;
@@ -313,13 +314,17 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 //    connect(openSwcManagerClientAction,SIGNAL(triggered()),this,SLOT(openSwcManagerClient()));
 //    openSwcManagerClientAction->setDisabled(false);
 
-    qcManagerAction=new QAction("Quality Control Manager", collaborateMenu);
+    qcManagerAction = new QAction("Quality Control Manager", collaborateMenu);
     collaborateMenu->addAction(qcManagerAction);
-    connect(qcManagerAction,SIGNAL(triggered()),this,SLOT(openQcManager()));
+    connect(qcManagerAction, SIGNAL(triggered()), this, SLOT(openQcManager()));
 
-    onlineUsersAction=new QAction("Check Online Users", collaborateMenu);
+    onlineUsersAction = new QAction("Check Online Users", collaborateMenu);
     collaborateMenu->addAction(onlineUsersAction);
-    connect(onlineUsersAction,SIGNAL(triggered()),this,SLOT(openOnlineUserDialog()));
+    connect(onlineUsersAction, SIGNAL(triggered()), this, SLOT(openOnlineUserDialog()));
+
+    disconnectAction = new QAction("Disconnect From Server", collaborateMenu);
+    collaborateMenu->addAction(disconnectAction);
+    connect(disconnectAction, SIGNAL(triggered()), this, SLOT(disconnectFromServer()));
 
 //    defineSomaAction->setEnabled(false);
 
@@ -1209,6 +1214,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     // signals and slots
     /**/tf::debug(tf::LEV3, "Signals and slots", __itm__current__function__);
     connect(CImport::instance(), SIGNAL(sendOperationOutcome(tf::RuntimeException*, qint64)), this, SLOT(importDone(tf::RuntimeException*, qint64)), Qt::QueuedConnection);
+    connect(CImport::instance(), SIGNAL(sendImagePath(QString)), this, SLOT(getImagePath(QString)), Qt::QueuedConnection);
     connect(xShiftSBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
     connect(yShiftSBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
     connect(zShiftSBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged(int)));
@@ -4728,6 +4734,42 @@ void PMain::openOnlineUserDialog(){
         QPoint topLeftPoint = cur_win->getGLWidget()->geometry().topLeft();
         this->Communicator->onlineUserDialog=new V3dr_onlineusersDialog(topLeftPoint);
     }
+}
+
+void PMain::disconnectFromServer(){
+    if(this->Communicator && this->Communicator->socket){
+        this->Communicator->socket->disconnectFromHost();
+        this->Communicator->socket->deleteLater();
+        this->Communicator->socket=0;
+        Communicator->qcDialog->deleteLater();
+        Communicator->qcDialog=0;
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
+        Communicator->resetdatatype();
+    }
+    QString msg = "success!";
+    QMessageBox messageBox;
+    messageBox.setWindowTitle(tr("Information"));
+    messageBox.setText(tr(msg.toStdString().c_str()));
+    messageBox.setIcon(QMessageBox::Information);
+    QTimer::singleShot(800, &messageBox, SLOT(accept()));
+    messageBox.exec();
+}
+
+void PMain::getImagePath(QString path){
+    string old_path = image_path;
+    image_path = path.toStdString();
+    qDebug()<<"----------------- "<< QString::fromStdString(image_path);
+
+//    if(this->Communicator && this->Communicator->socket){
+//        this->Communicator->socket->deleteLater();
+//        this->Communicator->socket=0;
+//        Communicator->qcDialog->deleteLater();
+//        Communicator->qcDialog=0;
+//        Communicator->onlineUserDialog->deleteLater();
+//        Communicator->onlineUserDialog=nullptr;
+//        Communicator->resetdatatype();
+//    }
 }
 
 //void PMain::startAutoTrace()

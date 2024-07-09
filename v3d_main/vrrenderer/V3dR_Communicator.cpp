@@ -275,19 +275,19 @@ void V3dR_Communicator::processWarnMsg(QString line){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("AddSwcNodeDataError from DBMS! Please try to reload the swcfile."),
                                          QMessageBox::Ok);
-//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+                emit reloadFile(LoadManageWidget::m_port);
             }
             else if(reason=="DeleteSwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("DeleteSwcNodeDataError from DBMS! Please try to reload the swcfile."),
                                          QMessageBox::Ok);
-//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+                emit reloadFile(LoadManageWidget::m_port);
             }
             else if(reason=="ModifySwcNodeDataError"){
                 QMessageBox::information(0,tr("Infomation "),
                                          tr("ModifySwcNodeDataError from DBMS! Please try to reload the swcfile."),
                                          QMessageBox::Ok);
-//                emit reloadFile(LoadManageWidget::m_ano, LoadManageWidget::m_port);
+                emit reloadFile(LoadManageWidget::m_port);
             }
             else if(reason=="UpdateSwcAttachmentApoError"){
                 QMessageBox::information(0,tr("Infomation "),

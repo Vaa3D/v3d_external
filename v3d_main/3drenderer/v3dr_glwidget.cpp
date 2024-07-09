@@ -68,6 +68,7 @@ bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoi
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 bool V3dR_GLWidget::resumeCollaborationVR=false;
+string V3dR_GLWidget::image_path="";
 #endif
 
 //PROGRESS_DIALOG("", 0)

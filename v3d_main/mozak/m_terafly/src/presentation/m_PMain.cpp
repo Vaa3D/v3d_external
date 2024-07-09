@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -38,7 +38,6 @@
 #include "m_CSettings.h"
 #include "m_CViewer.h"
 #include "m_CAnnotations.h"
-#include "m_V3Dsubclasses.h"
 #include "m_CAnnotations.h"
 #include "m_CImageUtils.h"
 #include "m_COperation.h"
@@ -1871,7 +1870,6 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
 
     //resetting some widgets
     resetGUI();
-
 }
 
 // Separate initialization to allow inherited classes to define their own viewer

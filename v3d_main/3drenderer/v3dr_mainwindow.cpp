@@ -49,6 +49,7 @@ last update: 060903
 
 #include "v3dr_control_signal.cpp" // create control widgets and connect signals
 #include "v3dr_onlineusersDialog.h"
+#include "v3dr_qualitycontroldialog.h"
 
 ///QTimer V3dR_MainWindow::animate_timer;// for static
 
@@ -94,6 +95,7 @@ void V3dR_MainWindow::closeEvent(QCloseEvent* e)
 //        glWidget->TeraflyCommunicator->socket->disconnect();
 //        glWidget->OnVRSocketDisConnected();
         //DELETE_AND_ZERO(glWidget->renderer); //090710
+
         if(glWidget->TeraflyCommunicator && glWidget->TeraflyCommunicator->socket && glWidget->TeraflyCommunicator->onlineUserDialog){
             glWidget->TeraflyCommunicator->onlineUserDialog->hide();
         }
@@ -167,7 +169,7 @@ V3dR_MainWindow::~V3dR_MainWindow()
 }
 
 
-V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
+V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep, bool isForTerafly)
 {
 	qDebug("V3dR_MainWindow::V3dR_MainWindow =====================================");
 	
@@ -223,6 +225,17 @@ V3dR_MainWindow::V3dR_MainWindow(iDrawExternalParameter* idep)
     //////////////////////////////////////////////////////////////////
     glWidget = 0;
     glWidget = new V3dR_GLWidget(_idep, this, data_title); // 'this' pointer for glWidget calling back
+    if(!isForTerafly){
+        if(glWidget->TeraflyCommunicator && glWidget->TeraflyCommunicator->socket){
+            glWidget->TeraflyCommunicator->socket->deleteLater();
+            glWidget->TeraflyCommunicator->socket=0;
+            glWidget->TeraflyCommunicator->qcDialog->deleteLater();
+            glWidget->TeraflyCommunicator->qcDialog=0;
+            glWidget->TeraflyCommunicator->onlineUserDialog->deleteLater();
+            glWidget->TeraflyCommunicator->onlineUserDialog=nullptr;
+            glWidget->TeraflyCommunicator->resetdatatype();
+        }
+    }
 #if defined(USE_Qt5)
     if ( !glWidget ) //Under Qt5, the GL Widget is not valid until after it's shown
 #else

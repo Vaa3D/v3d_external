@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
@@ -53,7 +53,7 @@ class V3dR_MainWindow : public QWidget
     Q_OBJECT
 
 public:
-    V3dR_MainWindow(iDrawExternalParameter* idep);
+    V3dR_MainWindow(iDrawExternalParameter* idep, bool isForTerafly = true);
     ~V3dR_MainWindow();
 	void setDataTitle(QString newdt);
 

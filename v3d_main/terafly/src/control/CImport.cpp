@@ -434,6 +434,7 @@ void CImport::run()
         }
 
         //everything went OK
+        emit sendImagePath(QString::fromStdString(path));
         emit sendOperationOutcome(0, timerIO.elapsed());
 
         /**/tf::debug(tf::LEV1, "EOF", __itm__current__function__);

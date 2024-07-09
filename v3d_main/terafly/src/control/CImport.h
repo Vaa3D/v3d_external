@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------------------------
 // Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
@@ -222,6 +222,7 @@ class terafly::CImport : public QThread
         * Carries the outcome of the operation associated to this thread.
         **********************************************************************************/
         void sendOperationOutcome(tf::RuntimeException* ex, qint64 elapsed_time = 0);
+        void sendImagePath(QString path);
 };
 
 struct terafly::volume_format

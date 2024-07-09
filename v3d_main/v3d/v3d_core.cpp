@@ -5091,12 +5091,12 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 		{
 			if (b_local)
 			{
-				my3dwin = new V3dR_MainWindow(&mypara_3Dlocalview); //090628 RZC
+                my3dwin = new V3dR_MainWindow(&mypara_3Dlocalview); //090628 RZC
 				mypara_3Dlocalview.window3D = my3dwin;
 			}
 			else
 			{
-				my3dwin = new V3dR_MainWindow(&mypara_3Dview); //iDrawMainWindow-->V3dR_MainWindow, by RZC 20080921
+                my3dwin = new V3dR_MainWindow(&mypara_3Dview); //iDrawMainWindow-->V3dR_MainWindow, by RZC 20080921
 				mypara_3Dview.window3D = my3dwin;
 			}
 			my3dwin->setParent(0);
