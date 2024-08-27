@@ -35,10 +35,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  */
 
 #include "v3d_message.h"
-
+    // Include for PNG support
 #include "stackutil.h"
 #include "basic_4dimage.h"
-
+#include <QImage>
+#include <QString>
 //extern "C" {
 //#include "../common_lib/src_packages/mylib_tiff/image.h"
 //};
@@ -66,9 +67,9 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
 	int pixelnbits=1; //100817
 
     const char * curFileSuffix = getSuffix(imgSrcFile);
-    //printf("The current input file has the suffix [%s]\n", curFileSuffix);
+    printf("The current input file has the suffix [%s]\n", imgSrcFile);
 
-    if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
+if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0 ||
         strcasecmp(curFileSuffix, "lsm")==0) ) //read tiff/lsm stacks
 	{
             //printf("Image4DSimple::loadImage loading filename=[%s]\n", filename);

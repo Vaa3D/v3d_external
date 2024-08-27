@@ -11,7 +11,7 @@ public:
 	GLenum GetPrimitiveType();
 	void fillVertexBuffer();
 	void fillIndexBuffer();
-
+    void updateSize(float radius, float unused);
 private:
 	float topRadius, bottomRadius;
 	float height;

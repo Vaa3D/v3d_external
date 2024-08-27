@@ -1926,7 +1926,11 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
     Renderer_gl1* tempptr = (Renderer_gl1*)renderer;
     QList <NeuronTree> * listNeuronTrees = tempptr->getHandleNeuronTrees();
+
     My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
+
+//    img4d->loadImage("‪E:/aircraft_carrier_06s.jpg");
+//    qDebug()<<"  img4d->loadImage(‪E:/aircraft_carrier_06s.jpg";
     this->getMainWindow()->hide();
     //    if (/*reply == QMessageBox::Yes*/true)
     if(bCanCoMode&&TeraflyCommunicator)

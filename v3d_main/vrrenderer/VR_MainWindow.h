@@ -60,6 +60,8 @@ public slots:
     void performFileTransfer();
     void startFileTransferTask();
     void updateBCIstate(QString receivedString);
+private slots:
+    void onReplyFinished();
 private:
 	V3dR_Communicator* VR_Communicator;
     QString userId;
@@ -94,6 +96,8 @@ private:
 
 
 
+    void sendDataToServer(const QByteArray &jsonData);
+    void generateAndSendData();
 };
 
 // bool startStandaloneVRScene(QList<NeuronTree> *ntlist, My4DImage *img4d, MainWindow *pmain);

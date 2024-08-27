@@ -143,3 +143,11 @@ INCLUDEPATH += C:/local/boost_1_61_0/lib64-msvc-12.0
 DEPENDPATH += C:/local/boost_1_61_0/lib64-msvc-12.0
 
 QT += widgets
+
+HEADERS += \
+    ../vrrenderer/cone.h \
+    ../vrrenderer/cube.h
+
+SOURCES += \
+    ../vrrenderer/cone.cpp \
+    ../vrrenderer/cube.cpp

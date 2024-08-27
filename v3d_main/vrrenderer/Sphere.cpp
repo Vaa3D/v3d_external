@@ -56,3 +56,11 @@ void Sphere::fillIndexBuffer()
 		}
 	}
 }
+void Sphere::updateSize(float newRadius, float unused) {
+    radius = newRadius;
+    fillVertexBuffer();
+    fillIndexBuffer();
+    indices.clear();
+    vertices.clear();
+    Init();
+}

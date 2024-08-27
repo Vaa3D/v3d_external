@@ -23,7 +23,9 @@
 #include <QObject>
 #include <QTimer>
 #include <QDebug>  // 包含 qDebug 以便调试输出
-
+#include "Sphere.h"
+#include "cube.h"
+#include "cone.h"
 enum ModelControlR
 {
 	m_drawMode = 0,
@@ -57,7 +59,14 @@ enum ModeControlSettings
 	_ResetImage,
 	_RGBImage,
     _m_ssvep,
+      _m_3dssvep,
+    _m_cobci,
 	_MovetoMarker,
+        _P300,
+        _RSVP,
+    _ChangeColor,
+    _Zoom,
+    _Stimulus,
 	_StretchImage
 };
 enum ModeTouchPadR
@@ -91,6 +100,8 @@ typedef QList<NeuronTree> NTL;
 
 class Shader;
 class Sphere;
+class Cube;
+class Cone;
 class Cylinder;
 class My4DImage;
 class MainWindow;
@@ -264,7 +275,12 @@ public:
         }
 
      EEGdevice eegDevice; // Instance of EEGdevice
-     bool showImage=1;
+     int VRStimulusType = 1;  //0--3d object/1--Biomedical image/2--audio /3--nature image
+     bool showImage = 1;
+    int currentIndex = 0;  //for 3d object
+     double baseRadius = 50;
+     double height = 50;
+     int color_num = 1;
 public:
 
 	MainWindow *mainwindow;
@@ -303,6 +319,7 @@ public:
 	XYZ CollaborationTargetMarkerRes;
 	XYZ collaborationTargetdelcurveRes;
 	XYZ SegNode_tobedeleted;//second node of seg , same to terafly collaboration delete seg
+    void updateShapeProperties(RenderableObject* shape, float size1, float size2, const glm::vec3& color, bool visibility);
 
 private: 
 	std::string current_agent_color;
@@ -334,6 +351,11 @@ private:
 	BoundingBox swcBB;
 	QList<ImageMarker> drawnMarkerList;
 	vector<int> markerVisibility; //control the visibility of individual markers. temporarily used for VR experiment.
+        vector<int> VRStimulusVisibility; //control the visibility of individual markers. temporarily used for VR experiment.
+
+        bool VR3DStimulusVisibility = false; //control the visibility of individual markers. temporarily used for VR experiment.
+
+
 	vector<qint64> elapsedTimes;
 	QElapsedTimer timer1;
 	int curveDrawingTestStatus;
@@ -356,6 +378,7 @@ private:
 	bool bIsUndoEnable;
 	bool bIsRedoEnable;
     bool isSSVEP=false;
+    bool isReady=false;
     static float fSSVEPHz;
     static float fSSVEPHz_input;
 	vector<NTL> vUndoList;
@@ -456,6 +479,19 @@ private: // OpenGL bookkeeping
 	vector<glm::vec3> Markers_spheresPos;
 	vector<glm::vec3> Markers_spheresColor;
 
+    vector<Sphere*> Label_spheres;
+    vector<glm::vec3> Label_spheresPos;
+    vector<glm::vec3> Label_spheresColor;
+
+    vector<Cube*> Label_cubes;
+    vector<glm::vec3> Label_cubesPos;
+    vector<glm::vec3> Label_cubesColor;
+
+    vector<Cone*> Label_cones;
+    vector<glm::vec3> Label_conesPos;
+    vector<glm::vec3> Label_conesColor;
+
+
 	Sphere* ctrSphere; // indicate the origin for curve drawing
 	glm::vec3 ctrSpherePos;
 	glm::vec3 ctrSphereColor;
@@ -535,7 +571,7 @@ private: // OpenGL bookkeeping
 		VertexDataWindow( const Vector2 & pos, const Vector2 tex ) :  position(pos), texCoord(tex) {	}
 	};
 
-	Shader* morphologyShader;
+        Shader* morphologyShader;
 	GLuint m_unCompanionWindowProgramID;
 	GLuint m_unControllerTransformProgramID;
 	GLuint m_unRenderModelProgramID;
@@ -662,12 +698,19 @@ public:
 
         static void setFSSVEPHz(float value);
 
+        bool getIsReady() const;
+        void setIsReady(bool value);
+
 public slots:
         void ImageDisplay(bool show);
         void onTimerTimeout();
         void timerTimeout();
         bool startBCIparadigm();
         void stopBCIparadigm();
+        void updatesetVisible(RenderableObject *shape, bool visibility);
+        void updateupdateSize(RenderableObject *shape, float size1, float size2);
+
+        void updatesetColor(RenderableObject *shape, const glm::vec3 &color);
 private:
         unsigned int framecnt=0;
         const int numofframe=7;

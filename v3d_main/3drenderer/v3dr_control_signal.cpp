@@ -635,9 +635,9 @@ void V3dR_MainWindow::createControlWidgets()
 	//rotCView->setToolTip("You can edit current image in collaboration mode.");
 	//controlLayout->addWidget(rotCView);
 	//VR
-	rotVRView = new QPushButton("See in VR", controlGroup);
+    rotVRView = new QPushButton("See in VR", controlGroup);
 	rotVRView->setToolTip("You can see current image in VR environment.");
-	controlLayout->addWidget(rotVRView);
+    controlLayout->addWidget(rotVRView);
 
 #endif
 	

@@ -1031,7 +1031,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     localviewer_panel_layout->addLayout(VOImaxsize_layout, 0);
 #ifdef __ALLOW_VR_FUNCS__
     /* --------------------- forth row ---------------------- */
-    teraflyVRView = new QPushButton("See in VR",0);
+    teraflyVRView = new QPushButton("See in CVR-BBI",0);
     teraflyVRView->setToolTip("You can see current image in VR environment.");
 
     collaborationVRView = new QPushButton("Collaborate in CAR-VR",0);

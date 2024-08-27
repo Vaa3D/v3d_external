@@ -12,6 +12,7 @@ public:
 	void fillVertexBuffer();
 	void fillIndexBuffer();
 
+    void updateSize(float radius, float unused = 0) override;
 private:
 	float radius;
 	int slices, stacks;

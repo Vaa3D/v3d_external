@@ -25,7 +25,7 @@
 #include <cstdlib>
 
 #include "shader_m.h"
-#include "Sphere.h"
+
 #include "Cylinder.h"
 
 #if defined(POSIX)
@@ -634,7 +634,23 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
         };//////////////////////////////////////////////////////////////////////////////////
 const int neuron_type_color_num = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 //
+// 定义一些常见颜色
+const glm::vec3 RED(1.0f, 0.0f, 0.0f);
+const glm::vec3 GREEN(0.0f, 1.0f, 0.0f);
+const glm::vec3 BLUE(0.0f, 0.0f, 1.0f);
+const glm::vec3 YELLOW(1.0f, 1.0f, 0.0f);
+const glm::vec3 WHITE(1.0f, 1.0f, 1.0f);
+const glm::vec3 BLACK(0.0f, 0.0f, 0.0f);
 
+// 将颜色存储在一个 map 中，使用数字索引
+std::map<int, glm::vec3> colorMap = {
+    {1, RED},
+    {2, GREEN},
+    {3, BLUE},
+    {4, YELLOW},
+    {5, WHITE},
+    {6, BLACK}
+};
 
 void ThreadSleep( unsigned long nMilliseconds )
 {
@@ -792,14 +808,21 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
     // 连接定时器的timeout()信号到相应的槽函数
     connect(timer_eegGet, SIGNAL(timeout()), this, SLOT(timerTimeout()));
    // timer_eegGet->start();
-    printf( "timer_eegGet" );
+
 
 }
 void CMainApplication::onTimerTimeout()
 {
 
-
+if(VRStimulusType==1)
+{
     ImageDisplay(!showImage);
+}else if(VRStimulusType==0)
+{
+    VR3DStimulusVisibility=!VR3DStimulusVisibility;
+}
+
+
 
     RenderFrame();
 
@@ -950,7 +973,7 @@ bool CMainApplication::BInit()
 
 
 
-    m_pCompanionWindow = SDL_CreateWindow( "CAR-VR", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
+    m_pCompanionWindow = SDL_CreateWindow( "CVR-BBI", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
 	if (m_pCompanionWindow == NULL)
 	{
 		printf( "%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
@@ -1457,6 +1480,15 @@ void CMainApplication::Shutdown()
 		Markers_spheres.clear();
 		Markers_spheresPos.clear();
 		Markers_spheresColor.clear();
+
+        Label_cubes.clear();
+        Label_cubesPos.clear();
+        Label_cubesColor.clear();
+
+        Label_cones.clear();
+        Label_conesPos.clear();
+        Label_conesColor.clear();
+
 
 		sketchedNTList.clear();
 		drawnMarkerList.clear();
@@ -2408,36 +2440,277 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
             qDebug() << "temp_y:"<<temp_y;
 
-//            if(temp_y>0)
-//            {
-//                if (!timer_eegGet->isActive()) {
+            if(temp_y>0)
+            {
+//                if (!timer_eegGet->isActive()&&!getIsSSVEP()) {
 
 //                    bool success = startBCIparadigm();  // 调用 startBCIparadigm 函数
 
 //                    if (success) {
 //                        // BCI 范式启动成功
 //                        qDebug() << "BCI paradigm started successfully.";
+//                        setIsSSVEP(true);
+
 //                    } else {
 //                        // 启动失败，可能需要处理失败情况
 //                        qDebug() << "Failed to start BCI paradigm.";
+//                        setIsSSVEP(false);
 //                    }
 
 
 //                }
-//           }
-//           else
-//           {
-//                if (isSSVEP) {
-//                                    stopBCIparadigm();
-//                                                }
-//           }
+    m_timer->start(1000);
+           }
+            else
+           {
+//                if (getIsSSVEP()) {
+//                     stopBCIparadigm();
+//                     setIsSSVEP(false);
+//                 }
+
+    m_timer->stop();
+           }
+
+break;
 
 
-
-//            isSSVEP = true;
-//            // 使用setParams函数设置成员变量的值
+            // 使用setParams函数设置成员变量的值
 
         }
+        case _m_3dssvep:
+        {
+            qDebug() << "_m_3dssvep:" << m_modeGrip_L;
+
+            ImageDisplay(false);
+            qDebug() << "_Stimulus:" << m_modeGrip_L;
+            qDebug() << "temp_y:"<<temp_y;
+            VRStimulusType = 0;
+            VR3DStimulusVisibility = 1;
+            if(temp_y>0)
+            {
+                if (!timer_eegGet->isActive()&&!getIsSSVEP()) {
+
+                    bool success = startBCIparadigm();  // 调用 startBCIparadigm 函数
+
+                    if (success) {
+                        // BCI 范式启动成功
+                        qDebug() << "BCI paradigm started successfully.";
+                        setIsSSVEP(true);
+
+                    } else {
+                        // 启动失败，可能需要处理失败情况
+                        qDebug() << "Failed to start BCI paradigm.";
+                        setIsSSVEP(false);
+                    }
+
+
+                }
+
+           }
+            else
+           {
+                if (getIsSSVEP()) {
+                     stopBCIparadigm();
+                     setIsSSVEP(false);
+                 }
+
+
+           }
+
+        break;
+
+            // 使用setParams函数设置成员变量的值
+
+        }
+        case _ChangeColor:
+        {
+            ImageDisplay(false);
+            qDebug() << "_ChangeColor:" << m_modeGrip_L;
+
+
+            qDebug() << "temp_y:"<<temp_y;
+
+            if (temp_y > 0) {
+                color_num = color_num - 1;
+            } else {
+                color_num = color_num + 1;
+            }
+
+            // 限制 color_num 在 1 到 6 的范围内
+            if (color_num < 1) {
+                color_num = 1;
+            } else if (color_num > 6) {
+                color_num = 6;
+            }
+            // 尝试通过数字索引获取颜色
+            int colorIndex = color_num;
+
+            qDebug()<<"height"<<height;
+           qDebug()<<"colorIndex"<<color_num;
+
+            // 使用 colorMap.at() 获取颜色
+            glm::vec3 color = colorMap[colorIndex];
+
+           qDebug() << "currentIndex:" << currentIndex;
+            // Calculate the total number of objects
+            int totalObjects = Label_spheres.size() + Label_cubes.size() + Label_cones.size();
+            if (currentIndex < totalObjects) {
+
+                // Display the object at currentIndex
+                if (currentIndex < Label_spheres.size()) {
+                    updatesetColor(Label_spheres[currentIndex],color);
+                } else if (currentIndex < Label_spheres.size() + Label_cubes.size()) {
+                    updatesetColor(Label_cubes[currentIndex - Label_spheres.size()],color);
+                } else {
+                    updatesetColor(Label_cones[currentIndex - Label_spheres.size() - Label_cubes.size()],color);
+                }
+
+
+            } else {
+                currentIndex = 0; // Reset index if it exceeds the number of available objects
+            }
+break;
+        }
+        case _Stimulus:
+        {
+            ImageDisplay(false);
+            qDebug() << "_Stimulus:" << m_modeGrip_L;
+            int colorIndex = color_num;
+            VRStimulusType = 0;
+            VR3DStimulusVisibility = 1;
+            if (temp_y > 0) {
+                 currentIndex++;
+            } else {
+                 currentIndex--;
+            }
+            if (currentIndex < 0) currentIndex = 0;
+
+           // 使用 colorMap.at() 获取颜色
+            glm::vec3 color = colorMap[colorIndex];
+            // Hide all objects before showing the next one
+            for (int i = 0; i < Label_spheres.size(); ++i) {
+                updateupdateSize(Label_spheres[i], 0,0);
+            }
+            for (int i = 0; i < Label_cubes.size(); ++i) {
+                updateupdateSize(Label_cubes[i], 0,0);
+            }
+            for (int i = 0; i < Label_cones.size(); ++i) {
+                updateupdateSize(Label_cones[i], 0,0);
+            }
+
+
+            qDebug() << "currentIndex:" << currentIndex;
+
+
+            // Calculate the total number of objects
+            int totalObjects = Label_spheres.size() + Label_cubes.size() + Label_cones.size()+1;
+            qDebug() << "totalObjects:" << totalObjects;
+            if (currentIndex < totalObjects) {
+                // Determine which collection the current index falls into and display the object
+                if (currentIndex < Label_spheres.size()) {
+                    updateShapeProperties(Label_spheres[currentIndex], baseRadius, height, color, true);
+                    qDebug() << "Label_spheres:" << currentIndex;
+                } else if (currentIndex < Label_spheres.size() + Label_cubes.size()) {
+                    updateShapeProperties(Label_cubes[currentIndex - Label_spheres.size()], baseRadius, height, color, true);
+                    qDebug() << "Label_cubes:" << currentIndex - Label_spheres.size();
+                } else if(currentIndex < Label_spheres.size() + Label_cubes.size()+Label_cones.size()){
+                    updateShapeProperties(Label_cones[currentIndex - Label_spheres.size() - Label_cubes.size()], baseRadius, height, color, true);
+                    qDebug() << "Label_cones:" << currentIndex - Label_spheres.size() - Label_cubes.size();
+                }else if(currentIndex < Label_spheres.size() + Label_cubes.size()+Label_cones.size()+1)
+                {
+                    ImageDisplay(true);
+                    VRStimulusType=1;
+                    qDebug() << "ImageDisplay(true)";
+                }
+
+            } else {
+                currentIndex = 0; // Reset index if it exceeds the number of available objects
+            }
+        break;
+        }
+        case _Zoom:
+        {
+            qDebug() << "_Zoom:" << m_modeGrip_L;
+
+            ImageDisplay(false);
+            qDebug() << "temp_y:"<<temp_y;
+
+            if (temp_y > 0) {
+                // 增加 baseRadius 和 height
+                baseRadius += 10.0f;
+                height += 10.0f;
+            } else {
+                // 减少 baseRadius 和 height
+                baseRadius -= 10.0f;
+                height -= 10.0f;
+            }
+
+            // 确保 baseRadius 和 height 在合理范围内，例如 1 到 100
+            if (baseRadius < 1.0f) baseRadius = 1.0f;
+            if (baseRadius > 100.0f) baseRadius = 100.0f;
+            if (height < 1.0f) height = 1.0f;
+            if (height > 100.0f) height = 100.0f;
+            qDebug()<<"height"<<height;
+           qDebug()<<"colorIndex"<<color_num;
+            // 尝试通过数字索引获取颜色
+            int colorIndex = color_num;
+
+
+
+            // 使用 colorMap.at() 获取颜色
+            glm::vec3 color = colorMap[colorIndex];
+            qDebug() << "currentIndex:" << currentIndex;
+
+
+            // Calculate the total number of objects
+            int totalObjects = Label_spheres.size() + Label_cubes.size() + Label_cones.size();
+            qDebug() << "totalObjects:" << totalObjects;
+            if (currentIndex < totalObjects) {
+                // Determine which collection the current index falls into and display the object
+                if (currentIndex < Label_spheres.size()) {
+                    updateupdateSize(Label_spheres[currentIndex], baseRadius, height);
+                    qDebug() << "Label_spheres:" << currentIndex;
+                } else if (currentIndex < Label_spheres.size() + Label_cubes.size()) {
+                    updateupdateSize(Label_cubes[currentIndex - Label_spheres.size()], baseRadius, height);
+                    qDebug() << "Label_cubes:" << currentIndex - Label_spheres.size();
+                } else {
+                    updateupdateSize(Label_cones[currentIndex - Label_spheres.size() - Label_cubes.size()], baseRadius, height);
+                    qDebug() << "Label_cones:" << currentIndex - Label_spheres.size() - Label_cubes.size();
+                }
+
+            } else {
+                currentIndex = 0; // Reset index if it exceeds the number of available objects
+            }
+        break;
+break;
+
+        }
+        case _m_cobci:
+        {
+            qDebug() << "m_modeGrip_L:" << m_modeGrip_L;
+
+
+            qDebug() << "temp_y:"<<temp_y;
+
+            if(temp_y>0)
+            {
+                qDebug() << "agree to join co-bci:";
+                setIsReady(true);
+
+
+
+//                }
+           }
+            else
+           {
+                qDebug() << "disagree to join co-bci:";
+                setIsReady(false);
+
+           }
+
+break;
+        }
+
 		case _UndoRedo:
 			{
 //				qDebug()<<"Undo/Redo Operation. Lines Only.";
@@ -4261,7 +4534,7 @@ void CMainApplication::RenderFrame()
 	if ( m_pHMD )
 	{
 		QString AgentsNum = QString("%1").arg(Agents_spheres.size()+1);
-        std::string strWindowTitle = "CAR-VR [Username: "+current_agent_name+"]";
+        std::string strWindowTitle = "CVR-BBI [Username: "+current_agent_name+"]";
 //                [Color: "+current_agent_color+"][#Online users: "+AgentsNum.toStdString() + "]";
 		SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
 		RenderControllerAxes();
@@ -4595,7 +4868,7 @@ bool CMainApplication::SetupTexturemaps()
 	//std::string strFullPath = Path_MakeAbsolute( "../cube_texture.png", sExecutableDirectory );
 	//qDebug()<<"current applicationDirPath: "<<QCoreApplication::applicationDirPath();  
 	//qDebug()<<"current currentPath: "<<QDir::currentPath();
-    QString qstrFullPath = QCoreApplication::applicationDirPath() +"/materials/controller_texture2.png";
+    QString qstrFullPath = QCoreApplication::applicationDirPath() +"/materials/controller_texture5.png";
     qDebug()<<"current currentPath: "<<qstrFullPath;
 	//std::string strFullPath ="../materials/controller_texture.png";//C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/
 	std::vector<unsigned char> imageRGBA;
@@ -4899,17 +5172,35 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.5,0.125f,vcVerts);
 				break;
 			}
-		case _VirtualFinger:
-			{//virtual finger
-				AddVertex(point_M.x,point_M.y,point_M.z,0.17f,0,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.25f,0,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.125f,vcVerts);
-				AddVertex(point_O.x,point_O.y,point_O.z,0.17f,0.125f,vcVerts);
-				AddVertex(point_P.x,point_P.y,point_P.z,0.25f,0.125f,vcVerts);
-				AddVertex(point_N.x,point_N.y,point_N.z,0.25f,0,vcVerts);
+            //add vertex
+            //1------2/6
+            // |    /|
+            // |   / |
+            // |  /  |
+            // | /   |
+            // -------
+            // 3/4   5
+        case _Zoom:
+            {
+                AddVertex(point_M.x,point_M.y,point_M.z,0.335f,0,vcVerts);
+                AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0,vcVerts);
+                AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.125f,vcVerts);
+                AddVertex(point_O.x,point_O.y,point_O.z,0.335f,0.125f,vcVerts);
+                AddVertex(point_P.x,point_P.y,point_P.z,0.42f,0.125f,vcVerts);
+                AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0,vcVerts);
 				break;
 			}
-		case _Freeze:
+        case _Stimulus:
+            {
+                AddVertex(point_M.x,point_M.y,point_M.z,0.25f,0,vcVerts);
+                AddVertex(point_N.x,point_N.y,point_N.z,0.335f,0,vcVerts);
+                AddVertex(point_O.x,point_O.y,point_O.z,0.25f,0.125f,vcVerts);
+                AddVertex(point_O.x,point_O.y,point_O.z,0.25f,0.125f,vcVerts);
+                AddVertex(point_P.x,point_P.y,point_P.z,0.335f,0.125f,vcVerts);
+                AddVertex(point_N.x,point_N.y,point_N.z,0.335f,0,vcVerts);
+                break;
+            }
+        case _ChangeColor:
 			{//freeze
 				AddVertex(point_M.x,point_M.y,point_M.z,0.335f,0.125f,vcVerts);
 				AddVertex(point_N.x,point_N.y,point_N.z,0.42f,0.125f,vcVerts);
@@ -4961,6 +5252,14 @@ void CMainApplication::SetupControllerTexture()
 				AddVertex(point_N.x,point_N.y,point_N.z,0.085f,0.125f,vcVerts);
 				break;
 			}
+            //add vertex
+            //1------2/6
+            // |    /|
+            // |   / |
+            // |  /  |
+            // | /   |
+            // -------
+            // 3/4   5
 		case _TeraZoom:
 			{//_TeraZoom
 				AddVertex(point_M.x,point_M.y,point_M.z,0.42f,0.5f,vcVerts);
@@ -5022,6 +5321,34 @@ void CMainApplication::SetupControllerTexture()
             AddVertex(point_P.x, point_P.y, point_P.z, 0.25, 0.875f, vcVerts);
             AddVertex(point_N.x, point_N.y, point_N.z, 0.25, 0.75f, vcVerts);
         }
+            //add vertex
+            //1------2/6
+            // |    /|
+            // |   / |
+            // |  /  |
+            // | /   |
+            // -------
+            // 3/4   5
+        case _m_3dssvep:
+        {
+            AddVertex(point_M.x, point_M.y, point_M.z, 0.165, 0.75f, vcVerts);
+            AddVertex(point_N.x, point_N.y, point_N.z, 0.25, 0.75f, vcVerts);
+            AddVertex(point_O.x, point_O.y, point_O.z, 0.165, 0.875f, vcVerts);
+            AddVertex(point_O.x, point_O.y, point_O.z, 0.165, 0.875f, vcVerts);
+            AddVertex(point_P.x, point_P.y, point_P.z, 0.25, 0.875f, vcVerts);
+            AddVertex(point_N.x, point_N.y, point_N.z, 0.25, 0.75f, vcVerts);
+        }
+
+        case _m_cobci:
+        {
+            AddVertex(point_M.x, point_M.y, point_M.z, 0.165, 0.75f, vcVerts);
+            AddVertex(point_N.x, point_N.y, point_N.z, 0.25, 0.75f, vcVerts);
+            AddVertex(point_O.x, point_O.y, point_O.z, 0.165, 0.875f, vcVerts);
+            AddVertex(point_O.x, point_O.y, point_O.z, 0.165, 0.875f, vcVerts);
+            AddVertex(point_P.x, point_P.y, point_P.z, 0.25, 0.875f, vcVerts);
+            AddVertex(point_N.x, point_N.y, point_N.z, 0.25, 0.75f, vcVerts);
+        }
+
 		default:
 			break;
 
@@ -6320,6 +6647,10 @@ void CMainApplication::RenderStereoTargets()
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0 );
 }
 
+// 生成随机浮点数的函数
+float randomFloat(float min, float max) {
+    return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Renders a scene with respect to nEye.
@@ -6331,27 +6662,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-	//if(nEye==vr::Eye_Left )
-	//{
-	//	// render text on Companion Window
 
-	//	// Enable and configure blending for font antialiasing and transparency
-	//	glEnable(GL_BLEND);
-	//	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-	//	// Draw some text with the loaded font
-	//	font_VR->setPenPosition(650, 200);
-	//	font_VR->setPenColor(0.5,0.5,0.5);
-	//	char temp_str[10];
-	//	sprintf(temp_str,"%d",Agents_spheres.size()+1);
-	//	//char user_str[30]="#CURRENT USERS = ";
-	//	//std::strcat(user_str,temp_str);
-	//	string user_str="#CURRENT USERS = ";
-	//	user_str+=temp_str;
-	//	font_VR->draw(user_str);
-
-	//	glDisable(GL_BLEND);
-	//}
 
 ///*
 	//=================== draw volume image ======================
@@ -6443,78 +6754,200 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
-	//=================== draw markers with sphere ====================
-	if(m_bShowMorphologyMarker)
-	{
-		morphologyShader->use();
+
+    // 创建并初始化一些球体
+    if(Label_cones.size()==0)
+    {
+
+        Cone* cone = new Cone(10.0f, 20.0f, 3600); // 创建一个圆锥体对象
+        Label_cones.push_back(cone);
+
+        // 随机位置
+        float xPos = randomFloat(0.0f, 10.0f);
+        float yPos = randomFloat(0.0f, 10.0f);
+        float zPos = randomFloat(0.0f, 10.0f);
+        Label_conesPos.push_back(glm::vec3(xPos, yPos, zPos)); // 设置随机位置
+
+        Label_conesColor.push_back(glm::vec3(
+                                       static_cast<float>(std::rand()) / RAND_MAX,
+                                       static_cast<float>(std::rand()) / RAND_MAX,
+                                       static_cast<float>(std::rand()) / RAND_MAX
+                                   )); // 设置颜色
+
+        markerVisibility.push_back(true); // 设置可见性
+    }
+    // 创建并初始化一些球体
+    if(Label_cubes.size()==0)
+    {
+
+        Cube* cone = new Cube(10.0f); // 创建一个圆锥体对象
+        Label_cubes.push_back(cone);
+
+        // 随机位置
+        float xPos = randomFloat(-10.0f, 10.0f);
+        float yPos = randomFloat(-10.0f, 10.0f);
+        float zPos = randomFloat(-10.0f, 10.0f);
+        Label_cubesPos.push_back(glm::vec3(xPos, yPos, zPos)); // 设置随机位置
+
+        Label_cubesColor.push_back(glm::vec3(
+                                       static_cast<float>(std::rand()) / RAND_MAX,
+                                       static_cast<float>(std::rand()) / RAND_MAX,
+                                       static_cast<float>(std::rand()) / RAND_MAX
+                                   )); // 设置颜色
+
+        markerVisibility.push_back(true); // 设置可见性
+    }
+//    // 创建并初始化一些球体
+   if(Label_spheres.size()==0)
+    {
+
+        Sphere* cone = new Sphere(10.0f, 20.0f, 36); // 创建一个圆锥体对象
+        Label_spheres.push_back(cone);
+
+        // 随机位置
+        float xPos = randomFloat(-20.0f, 0.0f);
+        float yPos = randomFloat(-20.0f, 0.0f);
+        float zPos = randomFloat(-20.0f, 0.0f);
+        Label_spheresPos.push_back(glm::vec3(xPos, yPos, zPos)); // 设置随机位置
+
+        Label_spheresColor.push_back(glm::vec3(
+                                         static_cast<float>(std::rand()) / RAND_MAX,
+                                         static_cast<float>(std::rand()) / RAND_MAX,
+                                         static_cast<float>(std::rand()) / RAND_MAX
+                                     )); // 设置颜色
+
+        markerVisibility.push_back(true); // 设置可见性
+    }
+    //=================== draw markers with sphere ====================
+    // 设置模型矩阵，随机生成大小
+
+    if(m_bShowMorphologyMarker)
+    {
+        morphologyShader->use();
 		
-		morphologyShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		morphologyShader->setVec3("lightPos", 1.2f, 1.0f, 2.0f);
-		//morphologyShader->setVec3("lightPos",glm::vec3(m_EyeTransLeft * m_HMDTrans* glm::vec4( 0, 0, 0, 1 )));
+        morphologyShader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        morphologyShader->setVec3("lightPos", 1.2f, 1.0f, 2.0f);
+        //morphologyShader->setVec3("lightPos",glm::vec3(m_EyeTransLeft * m_HMDTrans* glm::vec4( 0, 0, 0, 1 )));
 
-		glm::mat4 projection,view;
-		if (nEye == vr::Eye_Left)
-		{
-			morphologyShader->setVec3("viewPos", m_EyePosLeft);
-			projection = m_ProjTransLeft;
-			view = m_EyeTransLeft * m_HMDTrans;
-		}
-		else if (nEye == vr::Eye_Right)
-		{
-			morphologyShader->setVec3("viewPos", m_EyePosRight); 
-			projection = m_ProjTransRight;
-			view = m_EyeTransRight * m_HMDTrans;
-		}
-		morphologyShader->setMat4("projection", projection);
-		morphologyShader->setMat4("view", view);
-		
-		for(int i = 0;i<Markers_spheres.size();i++)// sketch neuron tree
-		{	//draw sphere
-			if (!markerVisibility[i]) continue;
-			glm::mat4 model;
-			Sphere* sphr = Markers_spheres[i];
-			glm::vec3 sPos = Markers_spheresPos[i];
-			//glm::vec3 sPos2 = glm::vec3(10,100,50);
-			//qDebug("%f    %f    %f",sPos.x,sPos.y,sPos.z);
-			model = glm::translate(glm::mat4(), sPos);
+        glm::mat4 projection,view;
+        if (nEye == vr::Eye_Left)
+        {
+            morphologyShader->setVec3("viewPos", m_EyePosLeft);
+            projection = m_ProjTransLeft;
+            view = m_EyeTransLeft * m_HMDTrans;
+        }
+        else if (nEye == vr::Eye_Right)
+        {
+            morphologyShader->setVec3("viewPos", m_EyePosRight);
+            projection = m_ProjTransRight;
+            view = m_EyeTransRight * m_HMDTrans;
+        }
+        morphologyShader->setMat4("projection", projection);
+        morphologyShader->setMat4("view", view);
 
-			model = m_globalMatrix * model;
+        for(int i = 0;i<Label_cones.size();i++)// sketch neuron tree
+        {	//draw sphere
+            if (!VR3DStimulusVisibility) continue;
+            glm::mat4 model;
 
-			morphologyShader->setMat4("model", model);
-			morphologyShader->setVec3("objectColor", Markers_spheresColor[i]);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			sphr->Render();
-			morphologyShader->setVec3("objectColor", surfcolor);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			sphr->Render();
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-//		for (int i = 0; i < sketchedNTList.size(); ++i)
-//		{
-//			NeuronTree curNT = sketchedNTList[i];
-//			for (int j = 0; j < curNT.listNeuron.size(); ++j)
-//			{
-//				glm::mat4 model;
-//				NeuronSWC SS0 = curNT.listNeuron.at(j);
-//				Sphere* sphr = new Sphere(0.005f / m_globalScale, 5, 5);
-//				glm::vec3 sPos = glm::vec3(SS0.x, SS0.y, SS0.z);
-//				glm::vec3 scolor = glm::vec3(0, 0, 1);
-//				model = glm::translate(glm::mat4(), sPos);
 
-//				model = m_globalMatrix * model;
 
-//				morphologyShader->setMat4("model", model);
-//				morphologyShader->setVec3("objectColor", scolor);
-//				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//				sphr->Render();
-//				morphologyShader->setVec3("objectColor", surfcolor);
-//				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//				sphr->Render();
-//				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//			}
-//		}
-	}
-	//=================== draw morphology in tube mode ======================
+            Cone* sphr = Label_cones[i];
+
+
+
+            glm::vec3 sPos = Label_conesPos[i];
+
+            model = glm::translate(glm::mat4(), sPos);
+
+            model = m_globalMatrix * model;
+            Label_conesColor[i]=sphr->color;
+            morphologyShader->setMat4("model", model);
+            morphologyShader->setVec3("objectColor", Label_conesColor[i]);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            sphr->Render();
+            morphologyShader->setVec3("objectColor", surfcolor);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            sphr->Render();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        for(int i = 0;i<Label_cubes.size();i++)// sketch neuron tree
+        {	//draw sphere
+            if (!VR3DStimulusVisibility) continue;
+            glm::mat4 model;
+
+
+
+            Cube* sphr = Label_cubes[i];
+
+
+
+            glm::vec3 sPos = Label_cubesPos[i];
+
+            model = glm::translate(glm::mat4(), sPos);
+
+            model = m_globalMatrix * model;
+            Label_cubesColor[i]=sphr->color;
+            morphologyShader->setMat4("model", model);
+            morphologyShader->setVec3("objectColor", Label_cubesColor[i]);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            sphr->Render();
+            morphologyShader->setVec3("objectColor", surfcolor);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            sphr->Render();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        for(int i = 0;i<Label_spheres.size();i++)// sketch neuron tree
+        {	//draw sphere
+            if (!VR3DStimulusVisibility) continue;
+            glm::mat4 model;
+
+
+
+            Sphere* sphr = Label_spheres[i];
+
+
+            glm::vec3 sPos = Label_spheresPos[i];
+
+            model = glm::translate(glm::mat4(), sPos);
+
+            model = m_globalMatrix * model;
+            Label_spheresColor[i]=sphr->color;
+            morphologyShader->setMat4("model", model);
+            morphologyShader->setVec3("objectColor", Label_spheresColor[i]);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            sphr->Render();
+            morphologyShader->setVec3("objectColor", surfcolor);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            sphr->Render();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
+        for(int i = 0;i<Markers_spheres.size();i++)// sketch neuron tree
+        {	//draw sphere
+            if (!markerVisibility[i]) continue;
+            glm::mat4 model;
+            Sphere* sphr = Markers_spheres[i];
+
+            glm::vec3 sPos = Markers_spheresPos[i];
+
+            model = glm::translate(glm::mat4(), sPos);
+
+            model = m_globalMatrix * model;
+
+            morphologyShader->setMat4("model", model);
+            morphologyShader->setVec3("objectColor", Markers_spheresColor[i]);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            sphr->Render();
+            morphologyShader->setVec3("objectColor", surfcolor);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            sphr->Render();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
+
+    }
+    //=================== draw morphology in tube mode ======================
 	if (m_bShowMorphologySurface)
 	{
 		morphologyShader->use();
@@ -6544,16 +6977,6 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		const QList <NeuronSWC> & loaded_listNeuron = loadedNT_merged.listNeuron;
 		const QHash <int, int> & loaded_hashNeuron = loadedNT_merged.hashNeuron;
 		NeuronSWC S0,S1;
-
-		//freeze is used for brightness suppression
-		 //if (!m_bFrozen) {
-		 //	m_frozen_globalMatrix = m_globalMatrix;
-		 //}
-			//else 
-		// {
-		// 	m_globalMatrix = m_frozen_globalMatrix;
-		// }
-
 		int cy_count = 0;
 		for(int i = 0;i<loaded_spheres.size();i++)//loaded neuron tree
 		{
@@ -7578,7 +8001,49 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 
 float CMainApplication::GetGlobalScale()
 {
-	return m_globalScale;
+    return m_globalScale;
+}
+
+void CMainApplication::updateShapeProperties(RenderableObject *shape, float size1, float size2, const glm::vec3 &color, bool visibility)
+{
+
+        if (shape) {
+            shape->updateSize(size1, size2);
+            shape->setColor(color);
+            shape->setVisible(visibility);
+        }
+
+
+}
+void CMainApplication::updatesetVisible(RenderableObject *shape, bool visibility)
+{
+
+        if (shape) {
+            shape->setVisible(visibility);
+        }
+
+
+}
+void CMainApplication::updatesetColor(RenderableObject *shape, const glm::vec3 &color)
+{
+        if (shape) {
+             shape->setColor(color);
+        }
+}
+void CMainApplication::updateupdateSize(RenderableObject *shape,float size1, float size2)
+{
+        if (shape) {
+             shape->updateSize(size1,size2);
+        }
+}
+bool CMainApplication::getIsReady() const
+{
+    return isReady;
+}
+
+void CMainApplication::setIsReady(bool value)
+{
+    isReady = value;
 }
 
 void CMainApplication::setFSSVEPHz(float value)
@@ -8654,52 +9119,60 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 //choose left controllerFunction
 	if(panelpos_x <= 0.436)
 	{
-		if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
-		{
-			m_modeGrip_L = _TeraShift;
-		}
-		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
-		{
-			m_modeGrip_L = _TeraZoom;
-		}
-		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
-		{
-			m_modeGrip_L = _UndoRedo;
-		}
-		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
-		{
-			m_modeGrip_L = _AutoRotate;
+//		if((panelpos_x <= 0.26) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.1))
+//		{
+//			m_modeGrip_L = _TeraShift;
+//		}
+//		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.25)&&(panelpos_y >= 0.075)&&(panelpos_x >= 0.26))
+//		{
+//			m_modeGrip_L = _TeraZoom;
+//		}
+//		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.1))
+//		{
+//			m_modeGrip_L = _UndoRedo;
+//		}
+//		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.44)&&(panelpos_y >= 0.25)&&(panelpos_x >= 0.27))
+//		{
+//			m_modeGrip_L = _AutoRotate;
 
-		}
+//		}
 		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.1))
 		{
-			m_modeGrip_L = _Surface;
+//			m_modeGrip_L = _Surface;
+            m_modeGrip_L = _Stimulus;
+            qDebug() << "m_modeGrip_L __Stimulus" ;
 		}
 		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
 		{
-			m_modeGrip_L = _ColorChange;
-			m_secondMenu = _colorPad;
-			showshootingPad = false;
+//			m_modeGrip_L = _ColorChange;
+//			m_secondMenu = _colorPad;
+//			showshootingPad = false;
+            m_modeGrip_L = _Zoom;
+            qDebug() << "m_modeGrip_L _Zoom" ;
 			//hide top menu,show color menu
 		}
-		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
-		{
-			m_modeGrip_L = _VirtualFinger;
-		}
+//		 if((panelpos_x <= 0.26) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.1))
+//		{
+////			m_modeGrip_L = _VirtualFinger;
+//            m_modeGrip_L = _Zoom;
+//            qDebug() << "m_modeGrip_L _Zoom" ;
+//		}
 		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.8)&&(panelpos_y >= 0.617)&&(panelpos_x >= 0.27))
 		{
-			m_modeGrip_L = _Freeze;
+//			m_modeGrip_L = _Freeze;
+            m_modeGrip_L = _ChangeColor;
+            qDebug() << "m_modeGrip_L _ChangeColor"  ;
 		}
-		 if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
-		{
-			m_modeGrip_L = _RGBImage;
-			//m_modeGrip_L = _LineWidth;
-		}
-		 if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
-		{
-			//m_modeGrip_L = _Contrast;
-			m_modeGrip_L = _StretchImage;
-		}
+//		 if((panelpos_x <= 0.26) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.1))
+//		{
+//			m_modeGrip_L = _RGBImage;
+//			//m_modeGrip_L = _LineWidth;
+//		}
+//		 if((panelpos_x <= 0.436) && (panelpos_y<= 1)&&(panelpos_y >= 0.8)&&(panelpos_x >= 0.27))
+//		{
+//			//m_modeGrip_L = _Contrast;
+//			m_modeGrip_L = _StretchImage;
+//		}
 		// else if((panelpos_x <= 0.26) && (panelpos_y<= 0.59)&&(panelpos_y >= 0.5)&&(panelpos_x >= 0.1))
 		// {
 		// 	m_modeGrip_L = _ResetImage;
@@ -8718,46 +9191,52 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 	//choose Right controllerFunction
 	if(panelpos_x >= 0.437)
 	{
-        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.216))
-		{
-			m_modeGrip_R = m_drawMode;
-		}
-        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.216))
-		{
-			m_modeGrip_R = m_deleteMode;
-		}
-        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.216)&&(panelpos_y <= 0.362))
-		{
-			m_modeGrip_R = m_insertnodeMode;
-		}
-        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.216)&&(panelpos_y <= 0.362))
-		{
-			m_modeGrip_R = m_markMode;
-			//m_modeGrip_R = m_ConnectMode;
-		}
-        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.362)&&(panelpos_y <= 0.508))
-		{
-            m_modeGrip_R = m_retypeMode;
-		}
-        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.362)&&(panelpos_y <= 0.508))
+//        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.216))
+//		{
+//			m_modeGrip_R = m_drawMode;
+//		}
+//        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.07)&&(panelpos_y <= 0.216))
+//		{
+//			m_modeGrip_R = m_deleteMode;
+//		}
+//        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.216)&&(panelpos_y <= 0.362))
+//		{
+//			m_modeGrip_R = m_insertnodeMode;
+//		}
+//        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.216)&&(panelpos_y <= 0.362))
+//		{
+//			m_modeGrip_R = m_markMode;
+//			//m_modeGrip_R = m_ConnectMode;
+//		}
+//        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.362)&&(panelpos_y <= 0.508))
+//		{
+//            m_modeGrip_R = m_retypeMode;
+//		}
+         if((panelpos_x >= 0.656)&&(panelpos_x <= 0.746)&&(panelpos_y >= 0.508)&&(panelpos_y <=0.554))
         {
-			m_modeGrip_R = m_splitMode;
-		}
-        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.508)&&(panelpos_y <=0.654))
-		{
-			m_modeGrip_R = _MovetoCreator;
-		}
-        else if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.508)&&(panelpos_y <= 0.654))
+             m_modeGrip_L = _m_cobci;
+              qDebug() << "_m_cobci:" << m_modeGrip_L;
+        }
+        if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.508)&&(panelpos_y <=0.554))
+        {
+            m_modeGrip_L = _m_3dssvep;
+qDebug() << "m_modeGrip_L:_m_3dssvep" ;
+        }
+        if((panelpos_x >= 0.626)&&(panelpos_x <= 0.806)&&(panelpos_y >= 0.508)&&(panelpos_y <= 0.654))
 		{
 			m_modeGrip_L = _Contrast;
 		}
         else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.654)&&(panelpos_y <= 0.8))
         {
-            m_modeGrip_R = m_reducenodeMode;
+//            m_modeGrip_R = m_reducenodeMode;
+            m_modeGrip_L = _P300;
+            qDebug() << "m_modeGrip_L:_P300" ;
         }
         else if ((panelpos_x >= 0.626) && (panelpos_x <= 0.806) && (panelpos_y >= 0.654) && (panelpos_y <= 0.8))
 		{
-			m_modeGrip_L = _MovetoMarker;
+//			m_modeGrip_L = _MovetoMarker;
+            m_modeGrip_L = _RSVP;
+            qDebug() << "m_modeGrip_L:_RSVP";
         }else if((panelpos_x >= 0.437)&&(panelpos_x <= 0.626)&&(panelpos_y >= 0.8)&&(panelpos_y <= 0.99))
         {
             m_modeGrip_L = _m_ssvep;
@@ -8765,33 +9244,37 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
             qDebug() << "m_modeGrip_L:" << m_modeGrip_L;
 
                 qDebug() << "timer:"<<timer_eegGet->isActive();
-            if (!timer_eegGet->isActive()) {
+//            if (!timer_eegGet->isActive()) {
 
-            bool success = eegDevice.StartRecording();
-            if (!success) {
-                    qDebug() << "Failed to start recording EEG data.";
-                    QMessageBox::critical(nullptr, "Initialization Failed", "Failed to start recording EEG data.");
-                    return;
-            }
-            qDebug() << "start reconding data";
-            // 启动定时器
-            timer_eegGet->start(1000);
-            qDebug() << "start timer";
-            m_timer->start(1000);
-
-
-            }else if (isSSVEP) {
-                                    timer_eegGet->stop();
-                                    qDebug() << "stop timer";
-                                    m_timer->stop();
-                                    eegDevice.StopRecording();
-                                    qDebug() << "stop reconding data";
-                                }
+//            bool success = eegDevice.StartRecording();
+//            if (!success) {
+//                    qDebug() << "Failed to start recording EEG data.";
+//                    QMessageBox::critical(nullptr, "Initialization Failed", "Failed to start recording EEG data.");
+//                    return;
+//            }
+//            qDebug() << "start reconding data";
+//            // 启动定时器
+//            timer_eegGet->start(1000);
+//            qDebug() << "start timer";
+//            m_timer->start(1000);
 
 
-            isSSVEP = true;
+//            }else if (isSSVEP) {
+//                                    timer_eegGet->stop();
+//                                    qDebug() << "stop timer";
+//                                    m_timer->stop();
+//                                    eegDevice.StopRecording();
+//                                    qDebug() << "stop reconding data";
+//                                }
+
+
+//            isSSVEP = true;
+
+        }else if((panelpos_x >= 0.626) && (panelpos_x <= 0.806)&&(panelpos_y >= 0.8)&&(panelpos_y <= 0.99))
+        {
 
         }
+
         else
         {
             std::cout << "no mode: ";

@@ -105,5 +105,10 @@ void Cylinder::fillIndexBuffer()
 		indices.push_back(centerIndex);
 		indices.push_back(baseIndex + i);
 		indices.push_back(baseIndex + i + 1);
-	}
+    }
+}
+
+void Cylinder::updateSize(float radius, float unused)
+{
+
 }

@@ -47,7 +47,18 @@ void RenderableObject::Init()
 
 void RenderableObject::Render()
 {
-	glBindVertexArray(vaoID);
-	glDrawElements(primType, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+    glBindVertexArray(vaoID);
+    glDrawElements(primType, indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
+void RenderableObject::setColor(const glm::vec3& color) {
+    this->color = color;
+}
+
+void RenderableObject::setVisible(bool visible) {
+    this->visible = visible;
+}
+
+bool RenderableObject::isVisible() const {
+    return visible;
 }

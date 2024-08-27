@@ -9,6 +9,22 @@
 #include <iostream>
 #include <sstream>
 #include <math.h>
+#include <glm/glm.hpp>
+#include <vector>
+#include <map>
+#include <QCoreApplication>
+#include <QDataStream>
+#include <QFile>
+#include <QUrl>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QDebug>
+#include <qjson/serializer.h>
+#include <qjson/parser.h>
+#include <qjson/qobjecthelper.h>
+
+
 
 //extern std::vector<Agent> Agents;
 //std::vector<Agent> Agents;
@@ -36,6 +52,24 @@ VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
     CURRENT_DATA_IS_SENT=false;
     transferTimer = new QTimer(this);
     connect(transferTimer, SIGNAL(timeout()), this, SLOT(performFileTransfer()));
+
+
+    QString recordDirPath = QCoreApplication::applicationDirPath() + "/record.csv";
+
+    // 检查目录是否存在，如果不存在则创建
+    QDir directory(recordDirPath);
+    if (!directory.exists()) {
+        if (!QDir().mkdir(recordDirPath)) {
+            qDebug() << "Failed to create directory:" << recordDirPath;
+            return;
+        }
+    }
+    // 设置要过滤的文件类型
+    QStringList files = directory.entryList(QDir::Files | QDir::NoDotAndDotDot);
+
+    previousFileCount = files.length();
+
+    qDebug()<<"VR_MainWindowVR_MainWindowVR_MainWindow";
 }
 
 VR_MainWindow::~VR_MainWindow() {
@@ -49,6 +83,115 @@ VR_MainWindow::~VR_MainWindow() {
         transferTimer->stop();
     }
     delete transferTimer;
+}
+void VR_MainWindow::sendDataToServer(const QByteArray &jsonData) {
+    // Prepare HTTP request
+    QUrl url("http://127.0.0.1:8000/data_analysis/analysisR/");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkAccessManager manager;
+    QNetworkReply *reply = manager.post(request, jsonData);
+    QEventLoop eventLoop;
+    connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
+    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+       qDebug()<<"getAllProject: "<<code;
+       if (code == 200) {
+           QByteArray json = reply->readAll();
+           qDebug() << "Response:" << json;
+
+           QJson::Parser parser;
+           bool ok;
+           QVariantMap result = parser.parse(json, &ok).toMap();
+
+           if (!ok) {
+               qDebug() << "Failed to parse JSON";
+               return;
+           }
+
+           bool status = result["status"].toBool();
+           QString message = result["message"].toString();
+           QString resultString = result["result_string"].toString();
+           double resultDouble = result["result_double"].toDouble();
+
+           if (!status) {
+               QString msg = "Operation Failed! " + message;
+               qDebug() << msg;
+               QMessageBox::information(0, "Message", msg, QMessageBox::Ok);
+               return;
+           }
+
+           qDebug() << "Status:" << status;
+           qDebug() << "Message:" << message;
+           qDebug() << "Result String:" << resultString;
+           qDebug() << "Result Double:" << resultDouble;
+
+       } else {
+           QString reason = reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+           QMessageBox::information(0, "Message", reason, QMessageBox::Ok);
+       }
+
+       reply->deleteLater();
+}
+void VR_MainWindow::onReplyFinished() {
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    if (reply) {
+        if (reply->error() == QNetworkReply::NoError) {
+            qDebug() << "Request successful";
+            qDebug() << "Response:" << reply->readAll();
+        } else {
+            qDebug() << "Request failed:" << reply->errorString();
+        }
+        reply->deleteLater();
+
+    }
+}
+void VR_MainWindow::generateAndSendData() {
+    const int numChannels = 32;
+    const int numSamples = 1000;
+    const double sfreq = 1000.0;  // Sampling frequency in Hz
+    const double freq = 10.0;     // Frequency of the sinusoidal component in Hz
+    const double amplitude = 1.0; // Amplitude of the sinusoidal component
+    const double noiseLevel = 0.5; // Standard deviation of the Gaussian noise
+    qDebug()<<"generateAndSendData";
+    // Generate mock data (10x10 double array)
+    std::vector<std::vector<double>> data(numChannels, std::vector<double>(numSamples));
+    double t, signal, noise;
+
+    std::srand(static_cast<unsigned>(std::time(0)));
+
+    for (int i = 0; i < numChannels; ++i) {
+        for (int j = 0; j < numSamples; ++j) {
+            t = static_cast<double>(j) / sfreq;
+            signal = amplitude * std::sin(2 * M_PI * freq * t);
+            noise = noiseLevel * (static_cast<double>(std::rand()) / RAND_MAX - 0.5);
+            data[i][j] = signal + noise;
+        }
+    }
+
+    // Convert to JSON string using QJson::Serializer
+    QJson::Serializer serializer;
+    QVariantMap jsonMap;
+    jsonMap["data_name"] = "data_matrix"; // Example data name
+
+
+
+
+    QVariantList dataArray;
+    for (int i = 0; i < numChannels; ++i) {
+        QVariantList rowArray;
+        for (int j = 0; j < numSamples; ++j) {
+            rowArray.append(data[i][j]);
+        }
+        dataArray.append(rowArray);
+    }
+    jsonMap["data_value"] = dataArray;
+
+    QByteArray jsonData = serializer.serialize(jsonMap);
+
+    // Send JSON data to server
+    sendDataToServer(jsonData);
 }
 void VR_MainWindow::performFileTransfer() {
 
@@ -66,7 +209,7 @@ void VR_MainWindow::performFileTransfer() {
     QStringList files = directory.entryList(QDir::Files | QDir::NoDotAndDotDot);
 
     int newFileCount = files.length() - previousFileCount;
-
+    generateAndSendData();
     // 如果有新文件
     if (newFileCount > 0) {
         QStringList newFiles;
@@ -92,31 +235,35 @@ void VR_MainWindow::performFileTransfer() {
         previousFiles = files;
         previousFileCount = files.length();
     }
+    if(pMainApplication->eegDevice.isRecording)
+    {
+        QList<double> sumData = pMainApplication->getSumData();
+        QList<double> CurSingle = pMainApplication->getCurSingleData();
+        if (!CurSingle.isEmpty() && CurSingle.size() > 1) {
+            qDebug() << "RunVRMainloop";
+            qDebug() << "Latest data in CurSingle:" << CurSingle.last();
+            qDebug() << CurSingle.length();
+             qDebug() << sumData.length();
 
-    QList<double> sumData = pMainApplication->getSumData();
-    QList<double> CurSingle = pMainApplication->getCurSingleData();
-    if (!CurSingle.isEmpty() && CurSingle.size() > 1) {
-        qDebug() << "RunVRMainloop";
-        qDebug() << "Latest data in CurSingle:" << CurSingle.last();
-        qDebug() << CurSingle.length();
-         qDebug() << sumData.length();
+            if (VR_Communicator && VR_Communicator->socket && VR_Communicator->socket->state() == QAbstractSocket::ConnectedState) {
+                if (CurSingle.size() >= 32*1000) {
 
-        if (VR_Communicator && VR_Communicator->socket && VR_Communicator->socket->state() == QAbstractSocket::ConnectedState) {
-            if (CurSingle.size() >= 32*1000) {
+                    QString currentDateTime = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+                    QString data_label = "eegdata_paradigm_" + VR_Communicator->userName + "_" + currentDateTime;
+                    VR_Communicator->send2DArrayBinary(CurSingle,data_label);
 
-                QString currentDateTime = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-                QString data_label = "eegdata_paradigm_" + VR_Communicator->userName + "_" + currentDateTime;
-                VR_Communicator->send2DArrayBinary(CurSingle,data_label);
-
+                } else {
+                    qDebug() << "CurSingle size is out of expected range.";
+                }
             } else {
-                qDebug() << "CurSingle size is out of expected range.";
+                qDebug() << "VR_Communicator is not connected or socket is null.";
             }
         } else {
-            qDebug() << "VR_Communicator is not connected or socket is null.";
+            qDebug() << "Data is empty or index out of range.";
         }
-    } else {
-        qDebug() << "Data is empty or index out of range.";
+
     }
+
 }
 
 void VR_MainWindow::startFileTransferTask() {
@@ -480,21 +627,55 @@ void VR_MainWindow::updateBCIstate(QString receivedString){
         // 使用setParams函数设置成员变量的值
         param.setParams(userIdD, BCI_paradigm, BCI_ssvep_mode, BCI_parameter);
 
-        QString msg = "bci/msgs:";
-        // 比较 BCIParameters 和 myServer->params_all 是否一致
-        if (param.userId == params.userId &&
-            param.BCI_paradigm == params.BCI_paradigm &&
-            param.BCI_ssvep_mode == params.BCI_ssvep_mode &&
-            param.BCI_parameter == params.BCI_parameter) {
-            std::cout << "BCIParameters and server.params_all are equal." << std::endl;
 
-        } else {
-            std::cout << "BCIParameters and server.params_all are not equal." << std::endl;
-            params.setParams(userIdD, BCI_paradigm, BCI_ssvep_mode, BCI_parameter);
-            pMainApplication->setIsSSVEP(BCI_ssvep_mode);
-            pMainApplication->setFSSVEPHz(BCI_parameter);
+        params.setParams(userIdD, BCI_paradigm, BCI_ssvep_mode, BCI_parameter);
 
-        }
+            if(pMainApplication->m_modeGrip_L==_m_cobci){
+
+                pMainApplication->setIsReady(BCI_ssvep_mode);
+                pMainApplication->setFSSVEPHz(BCI_parameter);
+                // 设置定时器的间隔
+                int interval = (int)1000 / BCI_parameter;
+                pMainApplication->m_timer->setInterval(interval);
+
+                std::cout << " handle Increased fSSVEPHz: " << BCI_parameter << std::endl;
+                if(BCI_ssvep_mode){
+
+
+                     qDebug() <<VR_Communicator->userId <<"will join co-bci from "<<userIdD;
+                     if (!pMainApplication->timer_eegGet->isActive()) {
+
+                         bool success = pMainApplication->startBCIparadigm();  // 调用 startBCIparadigm 函数
+
+                         if (success) {
+                             // BCI 范式启动成功
+                             qDebug() << "BCI paradigm started successfully.";
+
+
+                         } else {
+                             // 启动失败，可能需要处理失败情况
+                             qDebug() << "Failed to start BCI paradigm.";
+                             pMainApplication->setIsSSVEP(false);
+                         }
+
+
+                     }
+                }
+                 else
+                {
+                    qDebug() <<VR_Communicator->userId <<"will leave co-bci from "<<userIdD;
+
+                     pMainApplication->stopBCIparadigm();
+                     pMainApplication->setIsSSVEP(false);
+
+
+                }
+
+
+            }
+
+
+
 
         // 进行进一步的处理或者回复客户端
     } else {
@@ -768,13 +949,16 @@ void VR_MainWindow::processAnalyzeMsg(QString line){
 int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain,
                                 bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator* TeraflyCommunicator,
                                 XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
-qDebug()<<"StartVRScene-lddddddddddddd";
+
+    qDebug()<<"StartVRScene-lddddddddddddd";
+
     pMainApplication = new CMainApplication(  0, 0 ,TeraflyCommunicator->CreatorMarkerPos);
 
     pMainApplication->mainwindow =pmain;
 
     pMainApplication->isOnline = isLinkSuccess;
     GetResindexandStartPointfromVRInfo(ImageVolumeInfo,MaxResolution);
+
     if(ntlist != NULL)
     {
         if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
@@ -827,7 +1011,6 @@ qDebug()<<"StartVRScene-lddddddddddddd";
     if (!pMainApplication->eegDevice.initdevice()) {
     qDebug() << "eegDevice Initialization failed. Shutting down.";
     QMessageBox::critical(nullptr, "Initialization Failed", "EEG Device initialization failed. Shutting down.");
-
     }
     qDebug() << "eegDevice Initialization successful.";
 
@@ -917,12 +1100,13 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
             }
 
         }
-        if(pMainApplication->m_modeGrip_L==_m_ssvep)
-                    {
+        if(pMainApplication->m_modeGrip_L==_m_cobci)
+        {
+
 
                         QString BCI_paradigm="ssvep";
                             // 使用setParams函数设置成员变量的值
-                        params.setParams(VR_Communicator->userId, BCI_paradigm,pMainApplication->getIsSSVEP(), pMainApplication->getFSSVEPHz());
+                        params.setParams(VR_Communicator->userId, BCI_paradigm,pMainApplication->getIsReady(), pMainApplication->getFSSVEPHz());
 
                         // 构建待发送的QString
                         QString waitsend = QString("1 %1 %2 %3 %4")
@@ -951,7 +1135,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                             CURRENT_DATA_IS_SENT=false;
 
                         }
-                    }
+     }
         if((pMainApplication->READY_TO_SEND==true)&&(CURRENT_DATA_IS_SENT==false))
         {
             if(pMainApplication->m_modeGrip_R==m_drawMode)
@@ -1138,7 +1322,7 @@ qDebug()<<"startStandaloneVRScene-lddddddddddddd";
     pMainApplication->mainwindow = pmain;
     pMainApplication->isOnline = false;
 
-
+qDebug()<<"startStandaloneVRScene-lddddddddddddd";
     if(ntlist != NULL)
     {
         if((ntlist->size()==1)&&(ntlist->at(0).name.isEmpty()))
@@ -1175,18 +1359,19 @@ qDebug()<<"startStandaloneVRScene-lddddddddddddd";
         }
     }
     pMainApplication->loadedNTList = ntlist;
-
+qDebug()<<"startStandaloneVRScene-i4d->valid()";
     if(i4d->valid())
     {
         pMainApplication->img4d = i4d;
         pMainApplication->m_bHasImage4D=true;
     }
+    qDebug()<<"startStandaloneVRScene-!pMainApplication->BInit())";
     if (!pMainApplication->BInit())
     {
         pMainApplication->Shutdown();
         return 0;
     }
-
+qDebug()<<"startStandaloneVRScene-lddddddddddddd";
     // 尝试初始化应用程序
     if (!pMainApplication->eegDevice.initdevice()) {
     qDebug() << "eegDevice Initialization failed. Shutting down.";
