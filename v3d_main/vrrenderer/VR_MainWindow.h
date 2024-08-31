@@ -60,12 +60,14 @@ public slots:
     void performFileTransfer();
     void startFileTransferTask();
     void updateBCIstate(QString receivedString);
+    void sendRealDataAndGetResult(const QList<double> &curSingle, const QString &dataName);
 private slots:
     void onReplyFinished();
 private:
 	V3dR_Communicator* VR_Communicator;
     QString userId;
     bool CURRENT_DATA_IS_SENT;
+
     vector<QString> CollaborationSendPool;
     QStringList previousFiles; // 用于存储上一次检查时的文件列表
     int previousFileCount = 0; // 上一次检查时的文件数量

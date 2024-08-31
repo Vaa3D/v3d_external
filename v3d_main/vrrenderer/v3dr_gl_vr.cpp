@@ -8,7 +8,7 @@
 #include "../neuron_tracing/fastmarching_linker.h"
 
 
-
+#include "../neuron_annotator/utility/ImageLoaderBasic.h"
 #if defined( OSX )
 #include <Foundation/Foundation.h>
 #include <AppKit/AppKit.h>
@@ -809,6 +809,19 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
     connect(timer_eegGet, SIGNAL(timeout()), this, SLOT(timerTimeout()));
    // timer_eegGet->start();
 
+    // Set the folder path and filters
+    QDir dir("F:/git_all/CVR-BBI/code/RSVP");
+    QStringList filters;
+    filters << "*.tif" << "*.tiff";  // Add both common TIFF extensions
+    dir.setNameFilters(filters);
+
+
+
+    // Store all valid image paths
+    QFileInfoList fileList = dir.entryInfoList(QDir::Files | QDir::Readable, QDir::Name);
+    for (const QFileInfo& fileInfo : fileList) {
+        imagePaths.append(fileInfo.absoluteFilePath());
+    }
 
 }
 void CMainApplication::onTimerTimeout()
@@ -817,6 +830,11 @@ void CMainApplication::onTimerTimeout()
 if(VRStimulusType==1)
 {
     ImageDisplay(!showImage);
+    if(showImage&&m_modeGrip_L == _RSVP)
+    {
+       ChangeImgae();
+
+    }
 }else if(VRStimulusType==0)
 {
     VR3DStimulusVisibility=!VR3DStimulusVisibility;
@@ -829,6 +847,39 @@ if(VRStimulusType==1)
 
 
 }
+void CMainApplication::ChangeImgae()
+{
+if(imgsizeforRSVP==imagePaths.length())
+{
+imgsizeforRSVP=0;
+}
+    QString filename = imagePaths.at(imgsizeforRSVP);
+    qDebug() << "Loading image from:" << filename;
+    // 打印 QString
+     qDebug() << "QString filename:" << filename;
+
+     // 打印 QString 转 std::string
+     std::string stdString = filename.toStdString();
+     qDebug() << "std::string filename:" << QString::fromStdString(stdString);
+
+     // 打印 std::string 转 const char*
+     const char* cstr = stdString.c_str();
+     qDebug() << "const char* filename:" << cstr;
+    if (QFile::exists(filename)) {
+       setImg4d(filename.toStdString().c_str());
+       if (m_bHasImage4D)
+       {
+
+           SetupVolumeRendering();
+
+imgsizeforRSVP++;
+       }
+    } else {
+        qDebug() << "File does not exist.";
+    }
+}
+
+
 void CMainApplication::ImageDisplay(bool show)
 {
     showImage = show;
@@ -1920,6 +1971,29 @@ bool CMainApplication::HandleInput()
                 else if(m_modeTouchPad_R==tr_ssvephz)//into ratate mode
                 {
 
+//                    QString filename = "E:/aircraft_carrier_06s.tif";
+//                    qDebug() << "Loading image from:" << filename;
+//                    // 打印 QString
+//                     qDebug() << "QString filename:" << filename;
+
+//                     // 打印 QString 转 std::string
+//                     std::string stdString = filename.toStdString();
+//                     qDebug() << "std::string filename:" << QString::fromStdString(stdString);
+
+//                     // 打印 std::string 转 const char*
+//                     const char* cstr = stdString.c_str();
+//                     qDebug() << "const char* filename:" << cstr;
+//                    if (QFile::exists(filename)) {
+//                       setImg4d(filename.toStdString().c_str());
+//                       if (m_bHasImage4D)
+//                       {
+
+//                           SetupVolumeRendering();
+
+//                       }
+//                    } else {
+//                        qDebug() << "File does not exist.";
+//                    }
 
 
                        if (m_fTouchPosY > 0)
@@ -2028,6 +2102,58 @@ void CMainApplication::RunMainLoop()
 	}
     qDebug()<<"end of runMainLoop";
 	SDL_StopTextInput();
+}
+QString CMainApplication::getModeControlSettingsDescription(ModeControlSettings setting) {
+    switch (setting) {
+        case _donothing:
+            return "Do Nothing";
+        case _TeraShift:
+            return "Tera Shift";
+        case _TeraZoom:
+            return "Tera Zoom";
+        case _Contrast:
+            return "Contrast";
+        case _UndoRedo:
+            return "Undo/Redo";
+        case _ColorChange:
+            return "Color Change";
+        case _Surface:
+            return "Surface";
+        case _VirtualFinger:
+            return "Virtual Finger";
+        case _Freeze:
+            return "Freeze";
+        case _LineWidth:
+            return "Line Width";
+        case _AutoRotate:
+            return "Auto Rotate";
+        case _ResetImage:
+            return "Reset Image";
+        case _RGBImage:
+            return "RGB Image";
+        case _m_ssvep:
+            return "SSVEP";
+        case _m_3dssvep:
+            return "3D SSVEP";
+        case _m_cobci:
+            return "COBCI";
+        case _MovetoMarker:
+            return "Move to Marker";
+        case _P300:
+            return "P300";
+        case _RSVP:
+            return "RSVP";
+        case _ChangeColor:
+            return "Change Color";
+        case _Zoom:
+            return "Zoom";
+        case _Stimulus:
+            return "Stimulus";
+        case _StretchImage:
+            return "Stretch Image";
+        default:
+            return "Unknown Setting";
+    }
 }
 // using in VR_MainWindow.cpp
 bool CMainApplication::HandleOneIteration()
@@ -2476,6 +2602,47 @@ break;
 
             // 使用setParams函数设置成员变量的值
 
+        }
+
+        case _RSVP:
+        {
+            qDebug() << "_RSVP:" << m_modeGrip_L;
+
+            ImageDisplay(true);
+            qDebug() << "temp_y:"<<temp_y;
+            VRStimulusType = 1;
+            VR3DStimulusVisibility = 0;
+            if(temp_y>0)
+            {
+                if (!timer_eegGet->isActive()&&!getIsRSVP()) {
+
+                    bool success = startBCIparadigm();  // 调用 startBCIparadigm 函数
+
+                    if (success) {
+                        // BCI 范式启动成功
+                        qDebug() << "BCI paradigm started successfully.";
+                        setIsRSVP(true);
+
+                    } else {
+                        // 启动失败，可能需要处理失败情况
+                        qDebug() << "Failed to start BCI paradigm.";
+                        setIsRSVP(false);
+                    }
+
+
+                }
+
+           }
+            else
+           {
+                if (getIsRSVP()) {
+                     stopBCIparadigm();
+                     setIsRSVP(false);
+                 }
+
+
+           }
+            break;
         }
         case _m_3dssvep:
         {
@@ -4542,11 +4709,7 @@ void CMainApplication::RenderFrame()
 		SetupControllerRay();
 		SetupImageAxes();
 		SetupMorphologyLine(1);//for currently drawn stroke(currentNT)
-		//FlashStuff(m_flashtype,FlashCoords);
-		//for all (synchronized) sketched strokes
-		//SetupMorphologySurface(currentNT,sketch_spheres,sketch_cylinders,sketch_spheresPos);
-		//SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,1);
-		 
+
 		if (m_autoRotateON) //auto rotation is on
 		{
 			m_globalMatrix = glm::translate(m_globalMatrix,autoRotationCenter);
@@ -6674,7 +6837,7 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_frameBufferBackface); 
 		backfaceShader->use();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		RenderImage4D(backfaceShader,nEye,GL_BACK); 
+        RenderImage4D(backfaceShader,nEye,GL_BACK);
 		glUseProgram(0);
 		///*
 		// bind to previous framebuffer again
@@ -8004,6 +8167,29 @@ float CMainApplication::GetGlobalScale()
     return m_globalScale;
 }
 
+void CMainApplication::setImg4d(const char* filename)
+{
+    My4DImage *value=new My4DImage();
+    qDebug()<<"  img4d->loadImage  "<<filename;
+   value->loadImage(filename);
+      unsigned char * datanew = new unsigned char [value->getTotalBytes()];
+      memcpy(datanew, value->getRawData(), value->getTotalBytes());
+       img4d=value;
+
+img4d->setNewRawDataPointer(datanew);
+   img4d->updateViews();
+   img4d->setupData4D();
+//   unsigned char * datanew = new unsigned char [value->getTotalBytes()];
+//   memcpy(datanew, value->getRawData(), value->getTotalBytes());
+
+
+//   if (img4d->setNewImageData(datanew, value->getXDim(), value->getYDim(), value->getZDim(), value->getCDim(), value->getDatatype())==false)
+//   {
+//       v3d_msg("Fail to update the new image content returned by the plugin to the window.");
+
+//   }
+}
+
 void CMainApplication::updateShapeProperties(RenderableObject *shape, float size1, float size2, const glm::vec3 &color, bool visibility)
 {
 
@@ -8015,11 +8201,21 @@ void CMainApplication::updateShapeProperties(RenderableObject *shape, float size
 
 
 }
+
+bool CMainApplication::getIsRSVP() const
+{
+    return isRSVP;
+}
+
+void CMainApplication::setIsRSVP(bool value)
+{
+    isRSVP = value;
+}
 void CMainApplication::updatesetVisible(RenderableObject *shape, bool visibility)
 {
 
-        if (shape) {
-            shape->setVisible(visibility);
+    if (shape) {
+        shape->setVisible(visibility);
         }
 
 
@@ -8700,13 +8896,9 @@ void CMainApplication::SetUinformsForRayCasting()
 	
 	raycastingShader->setVec2("ScreenSize",(float)g_winWidth, (float)g_winHeight);
 	raycastingShader->setFloat("StepSize",0.001f);
-	//raycastingShader->setFloat("Stepsizeoctree8",0.01f);
-	//raycastingShader->setFloat("Stepsizeoctree16",0.02f);
-	//raycastingShader->setFloat("Stepsizeoctree32",0.04f);
-	//raycastingShader->setFloat("Stepsizeoctree64",0.08f);
+
 	raycastingShader->setVec2("ImageSettings",fContrast, fBrightness);
-	//raycastingShader->setFloat("contrast ",fContrast);
-	//raycastingShader->setFloat("brightness ",fBrightness);
+
 	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_1D, g_tffTexObj);
@@ -8720,20 +8912,7 @@ void CMainApplication::SetUinformsForRayCasting()
 	glBindTexture(GL_TEXTURE_3D, g_volTexObj);
 	raycastingShader->setInt("VolumeTex", 2);
 
-	// glActiveTexture(GL_TEXTURE3);
-	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_8);
-	// raycastingShader->setInt("VolumeTexoctree8", 3);
 
-	// glActiveTexture(GL_TEXTURE4);
-	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_16);
-	// raycastingShader->setInt("VolumeTexoctree16", 4);
-	// glActiveTexture(GL_TEXTURE5);
-	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_32);
-	// raycastingShader->setInt("VolumeTexoctree32", 5);
-	
-	// glActiveTexture(GL_TEXTURE6);
-	// glBindTexture(GL_TEXTURE_3D, g_volTexObj_octree_64);
-	// raycastingShader->setInt("VolumeTexoctree64", 6);
 
 	if(img4d->getCDim()== 1 )//single channel image
 	// to do
@@ -8749,17 +8928,7 @@ void CMainApplication::SetUinformsForRayCasting()
 		raycastingShader->setInt("clipmode", 1);
 	}
     raycastingShader->setBool("showImage", showImage);
-	// else if(m_modeGrip_R == m_slabplaneMode)
-	// {
-	// 	raycastingShader->setVec3("clippoint", u_clippoint);
-	// 	raycastingShader->setVec3("clipnormal", u_clipnormal);
-	// 	raycastingShader->setInt("clipmode", 2);
-	// 	raycastingShader->setFloat("clipwidth",fSlabwidth);
-	// }
-	// else 
-	// {
-	// 	raycastingShader->setInt("clipmode", 0);
-	// }
+
 }
 
 

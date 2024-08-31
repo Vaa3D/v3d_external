@@ -147,6 +147,38 @@ void VR_MainWindow::onReplyFinished() {
 
     }
 }
+void VR_MainWindow::sendRealDataAndGetResult(const QList<double>& curSingle, const QString& dataName) {
+    qDebug() << "sendRealData";
+
+    // Validate the input parameters
+    if (curSingle.isEmpty()) {
+        qWarning() << "Error: The data list cannot be empty.";
+        return;
+    }
+
+    if (dataName.isEmpty()) {
+        qWarning() << "Error: Data name cannot be empty.";
+        return;
+    }
+
+    // Convert the data to JSON using the original method
+    QJson::Serializer serializer;
+    QVariantMap jsonMap;
+    jsonMap["data_name"] = dataName;
+
+    // Convert QList<double> to QVariantList
+    QVariantList dataArray;
+    for (double value : curSingle) {
+        dataArray.append(value);
+    }
+    jsonMap["data_value"] = dataArray;
+
+    // Serialize the QVariantMap to JSON
+    QByteArray jsonData = serializer.serialize(jsonMap);
+
+    // Send JSON data to server
+    sendDataToServer(jsonData);
+}
 void VR_MainWindow::generateAndSendData() {
     const int numChannels = 32;
     const int numSamples = 1000;
@@ -193,10 +225,11 @@ void VR_MainWindow::generateAndSendData() {
     // Send JSON data to server
     sendDataToServer(jsonData);
 }
+
 void VR_MainWindow::performFileTransfer() {
 
     QString recordDirPath = QCoreApplication::applicationDirPath() + "/record.csv";
-
+    qDebug() << "performFileTransfer.";
     // 检查目录是否存在，如果不存在则创建
     QDir directory(recordDirPath);
     if (!directory.exists()) {
@@ -249,8 +282,18 @@ void VR_MainWindow::performFileTransfer() {
                 if (CurSingle.size() >= 32*1000) {
 
                     QString currentDateTime = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+                    QString eegdata_paradigm = pMainApplication->getModeControlSettingsDescription(pMainApplication->m_modeGrip_L);;
                     QString data_label = "eegdata_paradigm_" + VR_Communicator->userName + "_" + currentDateTime;
+//                    QString data_label = eegdata_paradigm+"_" + VR_Communicator->userName + "_" + currentDateTime;
                     VR_Communicator->send2DArrayBinary(CurSingle,data_label);
+                    // Optionally handle the result
+                    if (pMainApplication->isClosedLoop) {
+                        qDebug() << "Data sent successfully and received result: " ;
+                        sendRealDataAndGetResult(CurSingle, data_label);
+                    }
+                    // Send the data using the provided function
+
+
 
                 } else {
                     qDebug() << "CurSingle size is out of expected range.";

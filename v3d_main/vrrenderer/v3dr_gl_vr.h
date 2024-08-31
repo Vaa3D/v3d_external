@@ -277,6 +277,7 @@ public:
      EEGdevice eegDevice; // Instance of EEGdevice
      int VRStimulusType = 1;  //0--3d object/1--Biomedical image/2--audio /3--nature image
      bool showImage = 1;
+     bool isClosedLoop = false;
     int currentIndex = 0;  //for 3d object
      double baseRadius = 50;
      double height = 50;
@@ -287,6 +288,8 @@ public:
 	My4DImage *img4d;
     QTimer *m_timer;
     QTimer *timer_eegGet;
+        QStringList imagePaths;
+        int imgsizeforRSVP=0;
 	static My4DImage *img4d_replace;
 	bool replacetexture;
 	QList<NeuronTree> *loadedNTList; // neuron trees brought to the VR view from the 3D view.	
@@ -378,6 +381,7 @@ private:
 	bool bIsUndoEnable;
 	bool bIsRedoEnable;
     bool isSSVEP=false;
+        bool isRSVP=false;
     bool isReady=false;
     static float fSSVEPHz;
     static float fSSVEPHz_input;
@@ -701,6 +705,12 @@ public:
         bool getIsReady() const;
         void setIsReady(bool value);
 
+        void setImg4d(const char* filename);
+
+        void ChangeImgae();
+        bool getIsRSVP() const;
+        void setIsRSVP(bool value);
+
 public slots:
         void ImageDisplay(bool show);
         void onTimerTimeout();
@@ -711,6 +721,7 @@ public slots:
         void updateupdateSize(RenderableObject *shape, float size1, float size2);
 
         void updatesetColor(RenderableObject *shape, const glm::vec3 &color);
+        QString getModeControlSettingsDescription(ModeControlSettings setting);
 private:
         unsigned int framecnt=0;
         const int numofframe=7;
