@@ -22,9 +22,9 @@ public:
     int getDataSize();
     void TriggerTool(QString description);
     void StopRecording();
-    bool StartRecording();
+    bool StartRecording(QString papadigmName);
     double **AdjustData();
-    void WriteToCsv(double **dataArray, QString fullPath);
+    void WriteToCsv(double **dataArray, QString filename="filename", QString fullPath=QCoreApplication::applicationDirPath() + "/record.csv");
     int Sample_num; // 假设你已经定义了 Sample_num 变量
     bool FindAmp=false;
     int ch_num;
@@ -36,6 +36,7 @@ public:
     float startTime;
     float endTime;
     QString recordFilePath;
+    QString papadigmName;
     int getDataChannel();
     bool initdevice();
 private:

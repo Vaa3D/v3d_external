@@ -2106,39 +2106,25 @@ void CMainApplication::RunMainLoop()
 QString CMainApplication::getModeControlSettingsDescription(ModeControlSettings setting) {
     switch (setting) {
         case _donothing:
-            return "Do Nothing";
+            return "Do_Nothing";
         case _TeraShift:
-            return "Tera Shift";
+            return "Tera_Shift";
         case _TeraZoom:
-            return "Tera Zoom";
+            return "Tera_Zoom";
         case _Contrast:
             return "Contrast";
         case _UndoRedo:
             return "Undo/Redo";
         case _ColorChange:
-            return "Color Change";
+            return "Color_Change";
         case _Surface:
             return "Surface";
-        case _VirtualFinger:
-            return "Virtual Finger";
-        case _Freeze:
-            return "Freeze";
-        case _LineWidth:
-            return "Line Width";
-        case _AutoRotate:
-            return "Auto Rotate";
-        case _ResetImage:
-            return "Reset Image";
-        case _RGBImage:
-            return "RGB Image";
         case _m_ssvep:
             return "SSVEP";
         case _m_3dssvep:
-            return "3D SSVEP";
+            return "3D_SSVEP";
         case _m_cobci:
             return "COBCI";
-        case _MovetoMarker:
-            return "Move to Marker";
         case _P300:
             return "P300";
         case _RSVP:
@@ -9483,7 +9469,7 @@ void CMainApplication::stopBCIparadigm() {
         qDebug() << "BCIparadigm is not working.";
 }
 bool CMainApplication::startBCIparadigm() {
-    bool success = eegDevice.StartRecording();
+    bool success = eegDevice.StartRecording(getModeControlSettingsDescription(m_modeGrip_L));
     if (!success) {
         qDebug() << "Failed to start recording EEG data.";
 

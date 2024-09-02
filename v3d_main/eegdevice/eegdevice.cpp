@@ -172,8 +172,8 @@ void EEGdevice::disConnect()
         FindAmp = false;
     }
 }
-// 开始记录数据
-bool EEGdevice::StartRecording() {
+//start data collection
+bool EEGdevice::StartRecording(QString _papadigmName) {
     qDebug() << "StartRecording"<<FindAmp;
 
         if (!FindAmp) {
@@ -183,14 +183,14 @@ bool EEGdevice::StartRecording() {
                 return false;
             }
         }
-
+    papadigmName= _papadigmName;
     timer = 60.0;
     sumdata.clear();
     isRecording = true;
     triggerList.clear();
     return true;
 }
-// 开始记录数据
+
 bool EEGdevice::initdevice() {
     qDebug() << "initdevice"<<FindAmp;
 
@@ -278,7 +278,7 @@ double** EEGdevice::AdjustData() {
 }
 
 
-void EEGdevice::WriteToCsv(double** dataArray, QString fullPath) {
+void EEGdevice::WriteToCsv(double** dataArray, QString filename,QString fullPath) {
     // 确保目录存在
     QDir dir(fullPath);
     if (!dir.exists()) {
@@ -290,7 +290,7 @@ void EEGdevice::WriteToCsv(double** dataArray, QString fullPath) {
     QString currentTimeString = currentTime.toString("yyyy-MM-dd-HH-mm-ss");
 
     // 创建文件并写入数据
-    QString filePath = fullPath + "/filename" + currentTimeString + ".csv";
+    QString filePath = fullPath + "/" + filename+ currentTimeString + ".csv";
     qDebug() << "File path:" << filePath; // 输出文件路径
     qDebug() << "dataArray:" << dataArray[1][1]; // 输出文件路径
         qDebug() << "ch_num:" << ch_num;
