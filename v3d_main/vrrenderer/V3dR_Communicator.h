@@ -161,10 +161,12 @@ public slots:
     void autoExit();
     void resetWarnMulBifurcationFlag();
     void resetWarnLoopFlag();
+    void checkConnectionForVR();
 
 signals:
     void load(QString);
     void reloadFile(QString);
+    void resetConn(QString);
     //msg process
     void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
     void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
@@ -184,6 +186,7 @@ signals:
 //    void updateuserview(QString);
     void updateOnlineUsers(QString);
     void setDefineSomaActionState(bool);
+    void ack();
     //msg process end
 
     void exit();
@@ -211,6 +214,7 @@ public:
     void emitAddManyMarkersDone() {emit addManyMarkersDone();}
     void emitAddMarkerDone() {emit addMarkerDone();}
     void emitReloadFile(QString port) {emit reloadFile(port);}
+    void emitAck() {emit ack();}
 
     void setAddressIP(QString addressIp);
     void setPort(uint port);

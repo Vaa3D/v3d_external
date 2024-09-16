@@ -335,6 +335,8 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 //    userMenu->addAction(configAction);
     Communicator=nullptr;
     userView=nullptr;
+    timerCheckConn = new QTimer(this);
+    connect(timerCheckConn, SIGNAL(timeout()), this, SLOT(checkConnection()));
 
 #endif
     /*---------------------------------------------------*/
@@ -2972,9 +2974,20 @@ void PMain::doTeraflyVRView()
     }
 }
 
+void PMain::doimageVRView(bool flag){
+    CViewer *cur_win = CViewer::getCurrent();
+    cur_win->view3DWidget->doimageVRView(flag);
+}
+
+void PMain::showPMain(){
+    this->show();
+    qDebug()<<"PMain show";;
+}
+
 void PMain::doCollaborationVRView()
 {
     qDebug()<<"PMain::doCollaborationVRView()";
+    timerCheckConn->stop();
     try
     {
         CViewer *cur_win = CViewer::getCurrent();
@@ -2991,7 +3004,18 @@ void PMain::doCollaborationVRView()
             cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
             this->show();
-            qDebug() << "PMain Show";
+            qDebug()<<"PMain show";
+            timerCheckConn->start(3000);
+//            // 启动子线程执行任务
+//            QFuture<void> future = QtConcurrent::run(this, &PMain::doimageVRView, true);
+//            // 使用 QFutureWatcher 监控任务状态
+//            QFutureWatcher<void> *watcher = new QFutureWatcher<void>;
+
+//            // 连接任务完成信号，以便获取结果并处理
+//            QObject::connect(watcher, SIGNAL(finished()), this, SLOT(showPMain()));
+
+//            // 设置监控的 future 对象
+//            watcher->setFuture(future);
         }
     }
     catch(...)
@@ -4148,7 +4172,7 @@ void PMain::LoadFromServer()
     qDebug()<<userinfo.id;
 }
 
-void PMain::startCollaborate(QString port)
+bool PMain::startCollaborate(QString port)
 {
     qDebug()<<"enter startCollaborate========================================";
     managewidget_ptr->hide();
@@ -4176,10 +4200,10 @@ void PMain::startCollaborate(QString port)
 
     qDebug()<<Communicator;
 
-
     if(Communicator->socket){
         delete Communicator->socket;
         Communicator->socket=0;
+        timerCheckConn->stop();
         Communicator->resetdatatype();
     }
     Communicator->socket=new QTcpSocket();
@@ -4203,7 +4227,6 @@ void PMain::startCollaborate(QString port)
     disconnect(Communicator,SIGNAL(load(QString)), 0, 0);
     // load信号会在接收到服务器传来的startCollaborate消息后触发
     connect(Communicator,SIGNAL(load(QString)),this,SLOT(getAndLoadAno(QString)),Qt::DirectConnection);
-
 
     terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
 
@@ -4276,6 +4299,9 @@ void PMain::startCollaborate(QString port)
     disconnect(Communicator,SIGNAL(setDefineSomaActionState(bool)), 0, 0);
     connect(Communicator,SIGNAL(setDefineSomaActionState(bool)),this,SLOT(setDefineSomaState(bool)));
 
+    disconnect(Communicator, SIGNAL(resetConn(QString)), 0, 0);
+    connect(Communicator, SIGNAL(resetConn(QString)), this, SLOT(resetConnection(QString)));
+
     Communicator->setAddressIP(QString::fromStdString(hostIp));
 
     Communicator->setPort(port.toUInt());
@@ -4293,7 +4319,7 @@ void PMain::startCollaborate(QString port)
         messageBox.setWindowTitle(tr("Information"));
         messageBox.setText(tr(msg.toStdString().c_str()));
         messageBox.setIcon(QMessageBox::Information);
-        QTimer::singleShot(1500, &messageBox, SLOT(accept()));
+        QTimer::singleShot(3000, &messageBox, SLOT(accept()));
         messageBox.exec();
 
 //        QMessageBox::information(0,tr("Message "),
@@ -4310,8 +4336,13 @@ void PMain::startCollaborate(QString port)
         }
         Communicator->deleteLater();
         Communicator=nullptr;
-        return;
+        timerCheckConn->stop();
+        return false;
     }
+    if(!timerCheckConn->isActive()){
+        timerCheckConn->start(3000);
+    }
+    return true;
 }
 
 //void PMain::getAno(QString anoFile){
@@ -4608,9 +4639,16 @@ void PMain::onMessageError(QAbstractSocket::SocketError socketError)
     //                                 tr("Connect failed!"),
     //                                 QMessageBox::Ok);
     //    }
-    QMessageBox::information(0,tr("Message "),
-                             tr("Disconnection! Further operations won't be synced! Please try to reload the swcfile."),
-                             QMessageBox::Ok);
+//    QMessageBox::information(0,tr("Message "),
+//                             tr("Disconnection! Further operations won't be synced! Please try to reload the swcfile."),
+//                             QMessageBox::Ok);
+    QString msg = "Disconnection! Further operations won't be synced!";
+    QMessageBox messageBox;
+    messageBox.setWindowTitle(tr("Information"));
+    messageBox.setText(tr(msg.toStdString().c_str()));
+    messageBox.setIcon(QMessageBox::Information);
+    QTimer::singleShot(800, &messageBox, SLOT(accept()));
+    messageBox.exec();
 
     //    this->Communicator->socket->deleteLater();
     //    this->Communicator ->deleteLater();
@@ -4633,6 +4671,7 @@ void PMain::handleExit(){
     {
         this->Communicator->socket->deleteLater();
         this->Communicator->socket=0;
+        timerCheckConn->stop();
         Communicator->qcDialog->deleteLater();
         Communicator->qcDialog=0;
         Communicator->onlineUserDialog->deleteLater();
@@ -4747,6 +4786,7 @@ void PMain::disconnectFromServer(){
         Communicator->onlineUserDialog=nullptr;
         Communicator->resetdatatype();
     }
+    timerCheckConn->stop();
     QString msg = "success!";
     QMessageBox messageBox;
     messageBox.setWindowTitle(tr("Information"));
@@ -4771,6 +4811,59 @@ void PMain::getImagePath(QString path){
 //        Communicator->resetdatatype();
 //    }
 }
+
+void PMain::checkConnection(){
+    if(!Communicator->socket || Communicator->socket->state() != QAbstractSocket::ConnectedState){
+        QString msg = "Disconnection! Start Reconnecting...";
+        QMessageBox messageBox;
+        messageBox.setWindowTitle(tr("Information"));
+        messageBox.setText(tr(msg.toStdString().c_str()));
+        messageBox.setIcon(QMessageBox::Information);
+        QTimer::singleShot(800, &messageBox, SLOT(accept()));
+        messageBox.exec();
+        startCollaborate(LoadManageWidget::m_port);
+    }
+}
+
+void PMain::resetConnection(QString port){
+    startCollaborate(port);
+    timerCheckConn->start(3000);
+}
+
+//void PMain::checkConnectionForVR(){
+//    if(!Communicator->socket || Communicator->socket->state() != QAbstractSocket::ConnectedState){
+//        QString msg = "Disconnection! Start Reconnecting...";
+//        qDebug() << msg;
+//        if(startCollaborate(LoadManageWidget::m_port)){
+//            CViewer *cur_win = CViewer::getCurrent();
+//            while(cur_win && cur_win->view3DWidget && cur_win->view3DWidget->myvrwin && !cur_win->view3DWidget->myvrwin->isQuit){
+//                cur_win->view3DWidget->myvrwin->bQuit = true;
+//            }
+
+////                if(cur_win->view3DWidget->myvrwin->pMainApplication){
+////                    cur_win->view3DWidget->myvrwin->shutdown();
+////                    delete cur_win->view3DWidget->myvrwin;
+////                    cur_win->view3DWidget->myvrwin=nullptr;
+////                }
+////            }
+////            doCollaborationVRView();
+//        }
+//        else{
+//            CViewer *cur_win = CViewer::getCurrent();
+//            while(cur_win && cur_win->view3DWidget && cur_win->view3DWidget->myvrwin && !cur_win->view3DWidget->myvrwin->isQuit){
+//                cur_win->view3DWidget->myvrwin->bQuit = true;
+//            }
+////                if(cur_win->view3DWidget->myvrwin->pMainApplication){
+////                    cur_win->view3DWidget->myvrwin->shutdown();
+////                    delete cur_win->view3DWidget->myvrwin;
+////                    cur_win->view3DWidget->myvrwin=nullptr;
+////                }
+////            }
+//        }
+//        timerCheckConnVR->stop();
+//        timerCheckConn->start(3000);
+//    }
+//}
 
 //void PMain::startAutoTrace()
 //{

@@ -1922,6 +1922,11 @@ void V3dR_GLWidget::process3Dwindow(bool show)
     }
 
 }
+
+void V3dR_GLWidget::startVRScene() {
+
+}
+
 //called by clicking collaborate button in 3D View or shift/zoom in VR
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {

@@ -613,13 +613,15 @@ public:
     static string braintellServerAddress;
     static string dbmsServerAddress;
     static string apiVersion;
+    int retryCount = 0;
 
     void getAno(QString anoFile);
+    void doimageVRView(bool flag);
     //        static QNetworkAccessManager *accessmanager;
 public slots:
     void configApp();
     void LoadFromServer();
-    void startCollaborate(QString port);
+    bool startCollaborate(QString port);
     void getAndLoadAno(QString anoFile);
     void ColLoadANO(QString ANOfile);
     void onMessageDisConnect();
@@ -639,12 +641,17 @@ public slots:
     void openQcManager();
     void openOnlineUserDialog();
     void disconnectFromServer();
+    void checkConnection();
+//    void checkConnectionForVR();
+    void showPMain();
+    void resetConnection(QString port);
     //        void startAutoTrace();//自动算法
 signals:
 
 
 private:
     QString currentPath;//for auto trace
+    QTimer* timerCheckConn;
     /*---------------------------------------------------*/
 #endif
 };

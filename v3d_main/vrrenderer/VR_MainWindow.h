@@ -10,6 +10,7 @@
 //    #include <windows.h>
 //#endif
 #include "V3dR_Communicator.h"
+#include "../terafly/src/control/CPlugin.h"
 #include "../basic_c_fun/v3d_interface.h"
 class V3dR_Communicator;
 struct VRoutInfo
@@ -35,10 +36,21 @@ public:
     XYZ ConvertMaxGlobal2LocalBlock(float x,float y,float z);
     XYZ ConvertBlock2GloabelInRES(XYZ local);
     void SendVRconfigInfo();
+    void shutdown();
+
+    void addCurveInAllSpace(QString segInfo);
+    void deleteCurveInAllSpace(QString segInfo, int isMany);
+//    void retypeCurveInAllSpace(QString segInfo,int type, int isMany);
+//    void splitCurveInAllSpace(QString segInfo);
+//    void delMarkersInAllSpace(QString markersPOS);
+//    void addMarkerInAllSpace(QString markerPOS, QString comment);
+    int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);
+
 public slots:
     void TVProcess(QString);
     void processWarnMsg(QString);
     void processAnalyzeMsg(QString line);
+    void checkConnectionForVR();
 //    /**
 //     * @brief onReadySendSeg
 //     * 从队列中发出画线命令
@@ -54,6 +66,9 @@ public:
     XYZ VRVolumeCurrentRes;
     XYZ VRvolumeMaxRes;
     int ResIndex;
+//    bool bQuit = false;
+    bool isQuit = false;
+    QTimer* timerCheckConnVR;
 //    VRoutInfo VROutinfo;
 private:
 	V3dR_Communicator* VR_Communicator;

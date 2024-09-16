@@ -3746,7 +3746,7 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				}
 
 				//special situation for splitnode in head or end
-				if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2))
+                if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())/*||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2)*/)
 				{
 					qDebug()<<"split node in hear/end or neuron is too short";
 					break;
@@ -3820,10 +3820,13 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 				for(int j=splitNT2beginindex,k=0;j<nearestNT.listNeuron.size();j++,k++)
 				{
 					if(j==splitNT2beginindex)
-					{	
-						splitNT2.listNeuron[k].x=nearestNode.x - directionsplit.x;
-						splitNT2.listNeuron[k].y=nearestNode.y - directionsplit.y;
-						splitNT2.listNeuron[k].z=nearestNode.z - directionsplit.z;
+                    {
+//						splitNT2.listNeuron[k].x=nearestNode.x - directionsplit.x;
+//						splitNT2.listNeuron[k].y=nearestNode.y - directionsplit.y;
+//						splitNT2.listNeuron[k].z=nearestNode.z - directionsplit.z;
+                        splitNT2.listNeuron[k].x=nearestNT.listNeuron[j].x;
+                        splitNT2.listNeuron[k].y=nearestNT.listNeuron[j].y;
+                        splitNT2.listNeuron[k].z=nearestNT.listNeuron[j].z;
 						splitNT2.listNeuron[k].r=nearestNT.listNeuron[j].r;
 						splitNT2.listNeuron[k].creatmode = nearestNT.listNeuron[j].creatmode;
 						splitNT2.listNeuron[k].timestamp = seconds;
@@ -6796,7 +6799,7 @@ QStringList CMainApplication::NT2QString(NeuronTree nt)
 {
     QStringList messageBuff;
 
-    for(int i=0;(i<nt.listNeuron.size())&&(i<120);i++)
+    for(int i=0;i<nt.listNeuron.size();i++)
 	{
         auto S_temp=nt.listNeuron[i];
 		XYZ tempconvertedxyz = ConvertLocaltoGlobalCoords(S_temp.x,S_temp.y,S_temp.z,CollaborationMaxResolution);
@@ -7141,7 +7144,7 @@ int CMainApplication::findseg(QVector<XYZ> coords,float dist)
            index=i;dist=sum/nt.listNeuron.size();
        }
     }
-    return  index;
+    return index;
 }
 bool CMainApplication::DeleteSegment(QVector<XYZ> coords,float dist)
 {
@@ -7149,7 +7152,6 @@ bool CMainApplication::DeleteSegment(QVector<XYZ> coords,float dist)
     qDebug()<<"index = "<<index;
     if(index>=0)
     {
-
         sketchedNTList.removeAt(index);
         SetupSingleMorphologyLine(index, 2);
         return true;

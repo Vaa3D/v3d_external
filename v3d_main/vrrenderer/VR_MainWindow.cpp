@@ -15,14 +15,18 @@
 VR_MainWindow::VR_MainWindow(V3dR_Communicator * TeraflyCommunicator) :
     QWidget()
 {
+    timerCheckConnVR = new QTimer(this);
     userId="";
     VR_Communicator = TeraflyCommunicator;
     disconnect(VR_Communicator, SIGNAL(msgtoprocess(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), this, SLOT(TVProcess(QString)));
     disconnect(VR_Communicator, SIGNAL(msgtowarn(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtowarn(QString)), this, SLOT(processWarnMsg(QString)));
-    disconnect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), 0, 0);
-    connect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), this, SLOT(processAnalyzeMsg(QString)));
+    disconnect(timerCheckConnVR, SIGNAL(timeout()), 0, 0);
+    connect(timerCheckConnVR, SIGNAL(timeout()), this, SLOT(checkConnectionForVR()));
+    timerCheckConnVR->start(3000);
+//    disconnect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), 0, 0);
+//    connect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), this, SLOT(processAnalyzeMsg(QString)));
     //    connect(this,SIGNAL(sendPoolHead()),this,SLOT(onReadySendSeg()));
     userId = TeraflyCommunicator->userId;
     qDebug()<<"userId "<<userId<<" "<<VR_Communicator->userId;
@@ -34,8 +38,24 @@ VR_MainWindow::~VR_MainWindow() {
     connect(VR_Communicator, SIGNAL(msgtoprocess(QString)), VR_Communicator, SLOT(TFProcess(QString)));
     disconnect(VR_Communicator, SIGNAL(msgtowarn(QString)), 0, 0);
     connect(VR_Communicator, SIGNAL(msgtowarn(QString)), this, SLOT(processWarnMsg(QString)));
-    disconnect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), 0, 0);
-    connect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), this, SLOT(processAnalyzeMsg(QString)));
+//    disconnect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), 0, 0);
+//    connect(VR_Communicator, SIGNAL(msgtoanalyze(QString)), this, SLOT(processAnalyzeMsg(QString)));
+}
+
+void VR_MainWindow::checkConnectionForVR(){
+    if(!VR_Communicator->socket || VR_Communicator->socket->state() != QAbstractSocket::ConnectedState){
+        QString msg = "Disconnection! Start Reconnecting...";
+        qDebug() << msg;
+        this->isQuit = true;
+
+        //                if(cur_win->view3DWidget->myvrwin->pMainApplication){
+        //                    cur_win->view3DWidget->myvrwin->shutdown();
+        //                    delete cur_win->view3DWidget->myvrwin;
+        //                    cur_win->view3DWidget->myvrwin=nullptr;
+        //                }
+        //            }
+        //            doCollaborationVRView();
+    }
 }
 
 //void VR_MainWindow::onReadySendSeg()
@@ -95,6 +115,8 @@ void VR_MainWindow::TVProcess(QString line)
                     pMainApplication->UpdateNTList(coords,type);
                     //需要判断线是否在图像中，如果不在则调用全局处理
                 }
+                listwithheader.removeFirst();
+                addCurveInAllSpace(listwithheader.join(","));
             }
 
             if(user==VR_Communicator->userId)
@@ -138,12 +160,12 @@ void VR_MainWindow::TVProcess(QString line)
                             if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
                             {
                                 qDebug()<<"delete in block failed";
-                                VR_Communicator->emitDelSeg(coordsInSeg.join(";"), 0);
-                                //全局删线处理
                             }
+                            VR_Communicator->emitDelSeg(coordsInSeg.join(","), 0);
                         }
                         coords.clear();
                         coordsInSeg.clear();
+//                        deleteCurveInAllSpace()
                         continue;
                     }
                     auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
@@ -151,9 +173,7 @@ void VR_MainWindow::TVProcess(QString line)
                     coords.push_front(converted);
                     coordsInSeg.append(listwithheader[i]);
                 }
-
             }
-
 
             if(user==VR_Communicator->userId)
             {
@@ -187,9 +207,8 @@ void VR_MainWindow::TVProcess(QString line)
                             if(!pMainApplication->DeleteSegment(coords,0.2*VRVolumeCurrentRes.x/VRvolumeMaxRes.x));
                             {
                                 qDebug()<<"delete in block failed";
-                                VR_Communicator->emitDelSeg(coordsInDelSeg.join(";"), 0);
-                                //全局删线处理
                             }
+                            VR_Communicator->emitDelSeg(coordsInDelSeg.join(","), 0);
                         }
                         coords.clear();
                         coordsInDelSeg.clear();
@@ -203,15 +222,8 @@ void VR_MainWindow::TVProcess(QString line)
                 }
 
             }
-            if(user==VR_Communicator->userId)
-            {
-                pMainApplication->READY_TO_SEND=false;
-                CURRENT_DATA_IS_SENT=false;
 
-            }else{
-                qDebug() << "user = " << user << " " << VR_Communicator->userId << " " << userId;
-            }
-
+            QStringList coordsInAddSeg;
             int type=-1;
             if(listwithheader.size()>1)
             {
@@ -222,7 +234,8 @@ void VR_MainWindow::TVProcess(QString line)
                         if(listwithheader[i]!="$"){
                             auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
                             auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
-                            coords.push_front(converted);
+                            coords.push_back(converted);
+                            coordsInAddSeg.append(listwithheader[i]);
                         }
                         if(pMainApplication&&!coords.isEmpty())
                         {
@@ -230,12 +243,15 @@ void VR_MainWindow::TVProcess(QString line)
                             pMainApplication->UpdateNTList(coords,type);
                             //需要判断线是否在图像中，如果不在则调用全局处理
                         }
+                        addCurveInAllSpace(coordsInAddSeg.join(","));
                         coords.clear();
+                        coordsInAddSeg.clear();
                         continue;
                     }
                     auto nodeinfo=listwithheader[i].split(" ",QString::SkipEmptyParts);
                     auto converted=ConvertMaxGlobal2LocalBlock(nodeinfo[1].toFloat(),nodeinfo[2].toFloat(),nodeinfo[3].toFloat());
                     coords.push_back(converted);
+                    coordsInAddSeg.append(listwithheader[i]);
                     type=nodeinfo[0].toInt();
                 }
             }
@@ -271,6 +287,7 @@ void VR_MainWindow::TVProcess(QString line)
                 XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
                 pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, color.r, color.g, color.b);
                 //需要判断点是否在图像中，如果不在则全局处理
+                VR_Communicator->emitAddMarker(listwithheader[1], "");
             }
             if(user==VR_Communicator->userId)
             {
@@ -296,10 +313,8 @@ void VR_MainWindow::TVProcess(QString line)
                     float my = node.at(4).toFloat();
                     float mz = node.at(5).toFloat();
                     XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
-                    if(!pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z))
-                    {
-                        VR_Communicator->emitDelMarker(listwithheader[i]);
-                    }
+                    pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
+                    VR_Communicator->emitDelMarker(listwithheader[i]);
                     //需要判断点是否在图像中，如果不在则全局处理
                 }
             }
@@ -345,8 +360,8 @@ void VR_MainWindow::TVProcess(QString line)
                                     type))
                             {
                                 qDebug()<<"Vr call fly retype ";
-                                VR_Communicator->emitRetypeSeg(coordsInSeg.join(";"),type,0);
                             }
+                            VR_Communicator->emitRetypeSeg(coordsInSeg.join(","),type,0);
                         }
                         coords.clear();
                         coordsInSeg.clear();
@@ -393,6 +408,16 @@ void VR_MainWindow::processWarnMsg(QString line){
         if(sender=="server"){
             if(reason=="TipUndone" || reason=="CrossingError" || reason=="MulBifurcation" || reason=="BranchingError")
             {
+                QString comment;
+                if(reason == "TipUndone"){
+                    comment = "Missing";
+                }else if(reason == "CrossingError"){
+                    comment = "Crossing error";
+                }else if(reason == "MulBifurcation"){
+                    comment = "Multifurcation";
+                }else if(reason == "BranchingError"){
+                    comment = "Branching error";
+                }
                 if(listwithheader.size()>=1)
                 {
                     for(int i=0; i<listwithheader.size(); i++){
@@ -408,6 +433,7 @@ void VR_MainWindow::processWarnMsg(QString line){
                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, color.r, color.g, color.b);
                         //需要判断点是否在图像中，如果不在则全局处理
                     }
+                    VR_Communicator->emitAddManyMarkers(listwithheader.join(","), comment);
                 }
             }
             else if(reason=="Loop")
@@ -431,6 +457,7 @@ void VR_MainWindow::processWarnMsg(QString line){
                         pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, color.r, color.g, color.b);
                         //需要判断点是否在图像中，如果不在则全局处理
                     }
+                    VR_Communicator->emitAddManyMarkers(listwithheader.join(","), "Loop");
                 }
             }
             else if(reason=="DisconnectError"){
@@ -483,26 +510,176 @@ void VR_MainWindow::processWarnMsg(QString line){
                                          tr("The number of collaborating users has been full about this swc!"),
                                          QMessageBox::Ok);
             }
-            else {
-                if(listwithheader.size()>=1)
-                {
-                    auto node=listwithheader[0].split(" ");
-                    RGB8 color;
-                    color.r = node.at(0).toUInt();
-                    color.g = node.at(1).toUInt();
-                    color.b = node.at(2).toUInt();
-                    float mx = node.at(3).toFloat();
-                    float my = node.at(4).toFloat();
-                    float mz = node.at(5).toFloat();
-                    XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
-                    pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, color.r, color.g, color.b);
-                    //需要判断点是否在图像中，如果不在则全局处理
-                }
+            else if(reason=="Approaching bifurcation"){
+                auto node=listwithheader[0].split(" ");
+                RGB8 color;
+                color.r = node.at(0).toUInt();
+                color.g = node.at(1).toUInt();
+                color.b = node.at(2).toUInt();
+                float mx = node.at(3).toFloat();
+                float my = node.at(4).toFloat();
+                float mz = node.at(5).toFloat();
+                XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+                pMainApplication->SetupMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z, color.r, color.g, color.b);
+                VR_Communicator->emitAddMarker(listwithheader[0], "Approaching bifurcation");
             }
         }
-
     }
 }
+
+//void VR_MainWindow::processAnalyzeMsg(QString line){
+//    qDebug()<<line;
+//    QRegExp analyzereg("/FEEDBACK_ANALYZE_(.*):(.*)");
+//    QRegExp definereg("/FEEDBACK_DEFINE_(.*):(.*)");
+//    line=line.trimmed();
+//    if(analyzereg.indexIn(line) != -1)
+//    {
+//        QString type=analyzereg.cap(1).trimmed();
+//        QString operatorMsg=analyzereg.cap(2).trimmed();
+
+//        qDebug()<<"type:"<<type;
+//        qDebug()<<"operatormsg:"<<operatorMsg;
+//        if(type=="SomaNearBy"){
+//            QString sender=operatorMsg.split(" ").at(0).trimmed();
+//            QString request_senderid=operatorMsg.split(" ").at(1).trimmed();
+//            int result=operatorMsg.split(" ").at(2).trimmed().toInt();
+//            if (sender=="server" && result==1)
+//            {
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("no error"),
+//                                         QMessageBox::Ok);
+//            }
+//            else if(sender=="server" && result==0){
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("error: soma is not connected to one point!"),
+//                                         QMessageBox::Ok);
+//            }else if(sender=="server" && result==-1){
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("error: soma not detected!"),
+//                                         QMessageBox::Ok);
+//            }
+//        }
+//        if(type=="ColorMutation"){
+//            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+//            QString msgHeader=listWithHeader[0];
+//            QStringList msgList=listWithHeader;
+//            msgList.removeAt(0);
+
+//            QString sender=msgHeader.split(" ").at(0).trimmed();
+//            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+//            int result=msgHeader.split(" ").at(2).trimmed().toInt();
+//            if (sender=="server" && result==1)
+//            {
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("no error"),
+//                                         QMessageBox::Ok);
+//            }
+//            else if(sender=="server" && result==0){
+//                emit addManyMarkers(msgList.join(","), "Color mutation");
+
+//                emit updateQcInfo();
+//                emit updateQcMarkersCounts();
+
+//                if( request_senderid==userId )
+//                    QMessageBox::information(0,tr("Infomation "),
+//                                             tr("error: color mutation exists! notice the soma nearby and the red markers!"),
+//                                             QMessageBox::Ok);
+//            }else if(sender=="server" && result==-1){
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("error: soma not detected!"),
+//                                         QMessageBox::Ok);
+//            }
+//        }
+//        if(type=="Dissociative"){
+//            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+//            QString msgHeader=listWithHeader[0];
+//            QStringList msgList=listWithHeader;
+//            msgList.removeAt(0);
+
+//            QString sender=msgHeader.split(" ").at(0).trimmed();
+//            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+//            int result=msgHeader.split(" ").at(2).trimmed().toInt();
+//            if (sender=="server" && result==1)
+//            {
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("no error"),
+//                                         QMessageBox::Ok);
+//            }
+//            else if(sender=="server" && result==0){
+//                emit addManyMarkers(msgList.join(","), "Dissociative seg");
+
+//                emit updateQcInfo();
+//                emit updateQcMarkersCounts();
+
+//                if(request_senderid==userId)
+//                    QMessageBox::information(0,tr("Infomation "),
+//                                             tr("error: dissociative seg exists! notice the red markers!"),
+//                                             QMessageBox::Ok);
+//            }
+//        }
+//        if(type=="Angle"){
+//            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+//            QString msgHeader=listWithHeader[0];
+//            QStringList msgList=listWithHeader;
+//            msgList.removeAt(0);
+
+//            QString sender=msgHeader.split(" ").at(0).trimmed();
+//            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+//            int result=msgHeader.split(" ").at(2).trimmed().toInt();
+//            if (sender=="server" && result==1)
+//            {
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("no error"),
+//                                         QMessageBox::Ok);
+//            }
+//            else if(sender=="server" && result==0){
+//                emit addManyMarkers(msgList.join(","), "Angle error");
+
+//                emit updateQcInfo();
+//                emit updateQcMarkersCounts();
+
+//                if(request_senderid==userId)
+//                    QMessageBox::information(0,tr("Infomation "),
+//                                             tr("error: incorrect angle exists! notice the red markers!"),
+//                                             QMessageBox::Ok);
+//            }else if(sender=="server" && result==-1){
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         tr("error: soma not detected!"),
+//                                         QMessageBox::Ok);
+//            }
+//        }
+//    }
+//    else if(definereg.indexIn(line) != -1){
+//        QString type=definereg.cap(1).trimmed();
+//        QString operatorMsg=definereg.cap(2).trimmed();
+
+//        qDebug()<<"type:"<<type;
+//        qDebug()<<"operatormsg:"<<operatorMsg;
+//        if(type=="Soma"){
+//            QStringList listWithHeader=operatorMsg.split(",",QString::SkipEmptyParts);
+//            QString msgHeader=listWithHeader[0];
+//            QStringList msgList=listWithHeader;
+//            msgList.removeAt(0);
+
+//            QString sender=msgHeader.split(" ").at(0).trimmed();
+//            QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+//            int result=msgHeader.split(" ").at(2).trimmed().toInt();
+
+//            if (sender=="server" && result==0)
+//            {
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         "error: " + msgList.join(","),
+//                                         QMessageBox::Ok);
+//            }
+//            if(sender=="server" && result==1)
+//            {
+//                QMessageBox::information(0,tr("Infomation "),
+//                                         msgList.join(","),
+//                                         QMessageBox::Ok);
+//            }
+//        }
+//    }
+//}
 
 void VR_MainWindow::processAnalyzeMsg(QString line){
     qDebug()<<line;
@@ -693,6 +870,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
     SendVRconfigInfo();
     pMainApplication->SetupCurrentUserInformation(VR_Communicator->userId.toStdString(),0);
     RunVRMainloop(zoomPOS);
+    qDebug()<<"11111111111111111111111";
     pMainApplication->Shutdown();
     qDebug()<<"Now quit VR";
     int _call_that_function = pMainApplication->postVRFunctionCallMode;
@@ -708,6 +886,12 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
     delete pMainApplication;
     pMainApplication=0;
     return _call_that_function;
+}
+
+void VR_MainWindow::shutdown(){
+    pMainApplication->Shutdown();
+    delete pMainApplication;
+    pMainApplication=0;
 }
 
 //void VR_MainWindow::SendHMDPosition()
@@ -727,7 +911,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 {
     qDebug()<<"get into RunMainloop";
     bool bQuit = false;
-    while(!bQuit)
+    while(!bQuit && !isQuit)
     {
         //handle one rendering loop, and handle user interaction
         //        qDebug()<<"VR_MainWindow"
@@ -781,7 +965,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                 {
 
                     pMainApplication->ClearCurrentNT();
-                    if(VR_Communicator&&
+                    if(VR_Communicator&&VR_Communicator->socket&&
                         VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
                         waitsend.push_front(QString("1 %1 %2 %3 %4").arg(VR_Communicator->userId).arg(VRVolumeCurrentRes.x).arg(VRVolumeCurrentRes.y).arg(VRVolumeCurrentRes.z));
@@ -807,7 +991,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         result.push_back(ConvertToMaxGlobalForSeg(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                                                                       .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                     }
-                    if(VR_Communicator&&
+                    if(VR_Communicator&&VR_Communicator->socket&&
                         VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
                         VR_Communicator->UpdateDelSegMsg(QString(result.join(",")));
@@ -835,7 +1019,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     if(ConvertedmarkerPOS.split(" ")[0]=="-1")
                     {
                         qDebug()<<"TeraVR del marker";
-                        if(VR_Communicator&&
+                        if(VR_Communicator&&VR_Communicator->socket&&
                             VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                         {
                             VR_Communicator->UpdateDelMarkerMsg(QString(result.join(",")));
@@ -868,7 +1052,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                         result.push_back(ConvertToMaxGlobalForSeg(QString("%1 %2 %3 %4").arg(pMainApplication->segtobedeleted.listNeuron[i].x)
                                                                       .arg(pMainApplication->segtobedeleted.listNeuron[i].y).arg(pMainApplication->segtobedeleted.listNeuron[i].z).arg(pMainApplication->segtobedeleted.listNeuron[i].type)));
                     }
-                    if(VR_Communicator&&
+                    if(VR_Communicator&&VR_Communicator->socket&&
                         VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
                         VR_Communicator->UpdateRetypeSegMsg(QString(result.join(",")));
@@ -916,7 +1100,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
                     qDebug()<<"waitsends = "<<waitsends;
 
 
-                    if(VR_Communicator&&
+                    if(VR_Communicator&&VR_Communicator->socket&&
                         VR_Communicator->socket->state()==QAbstractSocket::ConnectedState)
                     {
                         //                    VR_Communicator->UpdateDelSegMsg(QString(result.join(";")));
@@ -1109,4 +1293,148 @@ XYZ VR_MainWindow:: ConvertMaxGlobal2LocalBlock(float x,float y,float z)
     y-=(VRVolumeStartPoint.y-1);
     z-=(VRVolumeStartPoint.z-1);
     return XYZ(x,y,z);
+}
+
+void VR_MainWindow::addCurveInAllSpace(QString segInfo){
+    //    qDebug()<<"enter";
+    if(segInfo.isEmpty()) return;
+    NeuronTree nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    QStringList qsl=segInfo.split(",",QString::SkipEmptyParts);
+    //    qDebug()<<"after receive the msg"<<segInfo;
+    int index=0;
+    int timestamp=QDateTime::currentMSecsSinceEpoch();
+    for (int i = 0; i<qsl.size(); i++)
+    {
+        if(qsl[i]!="$"){
+            NeuronSWC S;
+            QStringList nodelist=qsl[i].split(" ",QString::SkipEmptyParts);
+            //            qDebug()<<i<<":"<<nodelist;
+            if(nodelist.size()<4) return;
+            S.n=i+1;
+            S.type=nodelist[0].toInt();
+            S.x=nodelist[1].toFloat();
+            S.y=nodelist[2].toFloat();
+            S.z=nodelist[3].toFloat();
+            S.r=1;
+            if(index==0) S.pn=-1;
+            else S.pn=i;
+            S.timestamp=timestamp;
+            newTempNT.listNeuron.push_back(S);
+            newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+            index++;
+        }
+        else{
+            index=0;
+        }
+    }
+
+    //        qDebug()<<"new NT is constructed";
+    auto segs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
+    v_ns_list.seg.push_back(segs[0]);
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+    //    qDebug()<<"end";
+    //    QString fileName = "";
+    //    writeSWC_file(fileName,nt);
+}
+
+void VR_MainWindow::deleteCurveInAllSpace(QString segInfo, int isMany){
+    if(segInfo.isEmpty())
+        return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    //    qDebug()<<"ZLL________________1";
+
+    auto segInfos=segInfo.split(",");
+
+    float mindist=1;
+
+    QVector<XYZ> coords;
+    for(int i=0;i<segInfos.size();i++)
+    {
+        if(segInfos.at(i)!="$"){
+            auto node= segInfos.at(i).split(" ");
+            coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
+        }
+        else{
+            int index=findseg(v_ns_list,coords);
+            if(index>=0)
+            {
+                //        qDebug()<<"ZLL_____________________2.5";
+                v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
+            }else
+            {
+                //                qDebug()<<"ERROR:cannot delete curve " + segInfo;
+            }
+            coords.clear();
+        }
+    }
+
+    if(isMany==0){
+        int index=findseg(v_ns_list,coords);
+        if(index>=0)
+        {
+            //        qDebug()<<"ZLL_____________________2.5";
+            v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
+        }else
+        {
+            //            qDebug()<<"ERROR:cannot delete curve " + segInfo;
+        }
+    }
+
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+}
+
+//void VR_MainWindow::retypeCurveInAllSpace(QString segInfo,int type, int isMany);
+//void VR_MainWindow::splitCurveInAllSpace(QString segInfo);
+//void VR_MainWindow::delMarkersInAllSpace(QString markersPOS);
+//void VR_MainWindow::addMarkerInAllSpace(QString markerPOS, QString comment);
+int VR_MainWindow::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
+{
+    double mindist = 1;
+    int index=-1;
+    //    for(int j=0;j<coords.size();j++)
+    //    {
+    //        qDebug()<<j<<":"<<coords[j].x<<" "<<coords[j].y<<" "<<coords[j].z;
+    //    }
+    for(int i=0;i<v_ns_list.seg.size();i++)
+    {
+        if(coords.size()!=v_ns_list.seg.at(i).row.size()) continue;
+        auto seg=v_ns_list.seg.at(i).row;
+        //        for(int j=0;j<coords.size();j++)
+        //        {
+        //            qDebug()<<j<<":"<<seg[j].x<<" "<<seg[j].y<<" "<<seg[j].z;
+        //        }
+        float sum=0;
+        for(int j=0;j<coords.size();j++)
+        {
+            sum+=sqrt(pow(coords[j].x-seg[j].x,2)+pow(coords[j].y-seg[j].y,2)
+                        +pow(coords[j].z-seg[j].z,2));
+        }
+        if(sum/coords.size()<mindist)
+        {
+            mindist=sum/coords.size();
+            index=i;
+        }
+        reverse(coords.begin(),coords.end());
+        sum=0;
+        for(int j=0;j<coords.size();j++)
+        {
+            sum+=sqrt(pow(coords[j].x-seg[j].x,2)+pow(coords[j].y-seg[j].y,2)
+                        +pow(coords[j].z-seg[j].z,2));
+        }
+        if(sum/coords.size()<mindist)
+        {
+            mindist=sum/coords.size();
+            index=i;
+        }
+    }
+    //    if(index<0) qDebug()<<"fail to findseg";
+    return index;
 }

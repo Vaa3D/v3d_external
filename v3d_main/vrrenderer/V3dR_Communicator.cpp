@@ -145,7 +145,10 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
         if(msg.startsWith("STARTCOLLABORATE:")){
             //            qDebug()<<"start collaborate_msg____Debug_zll"<<msg;
             emit load(msg.right(msg.size()-QString("STARTCOLLABORATE:").size()));
-        }else if(onlineUsersRex.indexIn(msg) != -1){
+        }else if(msg.startsWith("/ACK")){
+            emit ack();
+        }
+        else if(onlineUsersRex.indexIn(msg) != -1){
 //            emit updateuserview(usersRex.cap(1));
             emit updateOnlineUsers(onlineUsersRex.cap(1));
         }else if(warnRex.indexIn(msg) != -1){
@@ -1227,7 +1230,7 @@ void V3dR_Communicator::onConnected() {
     messageBox.setWindowTitle(tr("Information"));
     messageBox.setText(tr(msg.toStdString().c_str()));
     messageBox.setIcon(QMessageBox::Information);
-    QTimer::singleShot(1500, &messageBox, SLOT(accept()));
+    QTimer::singleShot(800, &messageBox, SLOT(accept()));
     messageBox.exec();
 
 //    QMessageBox::information(0,tr("Message "),
@@ -1387,4 +1390,27 @@ void V3dR_Communicator::resetdatatype()
     datatype.isFile=false;
     datatype.datasize=0;
     datatype.filesize=0;
+}
+
+void V3dR_Communicator::checkConnectionForVR(){
+    if(!this->socket || this->socket->state() != QAbstractSocket::ConnectedState){
+        QString msg = "Disconnection! Start Reconnecting...";
+        qDebug() << msg;
+        terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+//        while(cur_win && cur_win->getGLWidget() && cur_win->getGLWidget()->myvrwin && !cur_win->getGLWidget()->myvrwin->isQuit){
+//            cur_win->getGLWidget()->myvrwin->isQuit = true;
+//        }
+        if(cur_win && cur_win->getGLWidget() && cur_win->getGLWidget()->myvrwin){
+            cur_win->getGLWidget()->myvrwin->isQuit = true;
+        }
+        emit resetConn(LoadManageWidget::m_port);
+
+            //                if(cur_win->view3DWidget->myvrwin->pMainApplication){
+            //                    cur_win->view3DWidget->myvrwin->shutdown();
+            //                    delete cur_win->view3DWidget->myvrwin;
+            //                    cur_win->view3DWidget->myvrwin=nullptr;
+            //                }
+            //            }
+            //            doCollaborationVRView();
+    }
 }

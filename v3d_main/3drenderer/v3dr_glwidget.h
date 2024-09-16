@@ -123,6 +123,7 @@ public:
     virtual void preparingRenderer();
 #ifdef __ALLOW_VR_FUNCS__
     void UpdateVRcollaInfo();
+    void startVRScene();
     bool VRClientON;
     VR_MainWindow * myvrwin;
     static V3dR_Communicator * TeraflyCommunicator;

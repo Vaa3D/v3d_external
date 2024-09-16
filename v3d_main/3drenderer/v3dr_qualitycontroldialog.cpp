@@ -60,6 +60,7 @@ void V3dr_qualitycontrolDialog::createLayout(){
     QVBoxLayout* rightLayout = new QVBoxLayout(rightGroup);
 
     QFont font;
+    //old:11 new:28
     font.setPointSize(11);
     leftGroup->setFont(font);
     rightGroup->setFont(font);
@@ -74,11 +75,11 @@ void V3dr_qualitycontrolDialog::createLayout(){
         leftLayout->addWidget(table);
     rightLayout->addWidget(sumCountLabel);
     rightLayout->addWidget(multifurCountLabel);
-    rightLayout->addWidget(approchingBifurCountLabel);
+//    rightLayout->addWidget(approchingBifurCountLabel);
     rightLayout->addWidget(loopCountLabel);
     rightLayout->addWidget(missingCountLabel);
     rightLayout->addWidget(crossingCountLabel);
-    rightLayout->addWidget(colorMutationCountLabel);
+//    rightLayout->addWidget(colorMutationCountLabel);
     rightLayout->addWidget(dissocaitiveSegCountLabel);
     rightLayout->addWidget(angleCountLabel);
     rightLayout->addWidget(overlapSegsCountLabel);
@@ -124,6 +125,7 @@ QTableWidget* V3dr_qualitycontrolDialog::createTableMarker(){
 
             QTableWidget* t = new QTableWidget(row, col, this);
             QFont font;
+            //old:10 new:26
             font.setPointSize(10);
             t->setHorizontalHeaderLabels(qsl);
             t->horizontalHeader()->setFont(font);
@@ -209,17 +211,17 @@ void V3dr_qualitycontrolDialog::createSatistians(){
     overlapSegsCountLabel = new QLabel(this);
     errorSegsCountLabel = new QLabel(this);
 
-    sumCountLabel->setText(QString("Total number of markers:  %1 ").arg(allCount));
-    multifurCountLabel->setText(QString("Multifurcation:\t\t  %1 ").arg(type2IndexsMap["Multifurcation"].size()));
-    approchingBifurCountLabel->setText(QString("Approaching bifurcation:  %1 ").arg(type2IndexsMap["Approaching bifurcation"].size()));
-    loopCountLabel->setText(QString("Loop:\t\t\t  %1 ").arg(type2IndexsMap["Loop"].size()));
-    missingCountLabel->setText(QString("Missing:\t\t  %1 ").arg(type2IndexsMap["Missing"].size()));
-    crossingCountLabel->setText(QString("Crossing error:\t\t  %1 ").arg(type2IndexsMap["Crossing error"].size()));
-    colorMutationCountLabel->setText(QString("Color mutation:\t\t  %1 ").arg(type2IndexsMap["Color mutation"].size()));
-    dissocaitiveSegCountLabel->setText(QString("Dissociative seg:\t  %1 ").arg(type2IndexsMap["Dissociative seg"].size()));
-    angleCountLabel->setText(QString("Angle error:\t\t  %1 ").arg(type2IndexsMap["Angle error"].size()));
-    overlapSegsCountLabel->setText(QString("Overlap seg(removed):\t  %1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
-    errorSegsCountLabel->setText(QString("Error seg(removed):\t  %1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
+    sumCountLabel->setText(QString("Total number of markers:\t%1 ").arg(allCount));
+    multifurCountLabel->setText(QString("Multifurcation:\t\t\t%1 ").arg(type2IndexsMap["Multifurcation"].size()));
+//    approchingBifurCountLabel->setText(QString("Approaching bifurcation:%1 ").arg(type2IndexsMap["Approaching bifurcation"].size()));
+    loopCountLabel->setText(QString("Loop:\t\t\t\t%1 ").arg(type2IndexsMap["Loop"].size()));
+    missingCountLabel->setText(QString("Missing:\t\t\t%1 ").arg(type2IndexsMap["Missing"].size()));
+    crossingCountLabel->setText(QString("Crossing direction error:\t%1 ").arg(type2IndexsMap["Crossing error"].size()));
+//    colorMutationCountLabel->setText(QString("Color mutation:\t\t%1 ").arg(type2IndexsMap["Color mutation"].size()));
+    dissocaitiveSegCountLabel->setText(QString("Floating branch:\t\t%1 ").arg(type2IndexsMap["Dissociative seg"].size()));
+    angleCountLabel->setText(QString("Angle error:\t\t\t%1 ").arg(type2IndexsMap["Angle error"].size()));
+    overlapSegsCountLabel->setText(QString("Overlapping branch(removed):\t%1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
+    errorSegsCountLabel->setText(QString("Error seg(tuned):\t\t%1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
 
     QFont font;
     font.setPointSize(11);
@@ -336,18 +338,18 @@ void V3dr_qualitycontrolDialog::updateMarkersCounts(){
         allCount += it->second.size();
     }
 
-    sumCountLabel->setText(QString("Total number of markers:  %1 ").arg(allCount));
-    multifurCountLabel->setText(QString("Multifurcation:\t\t  %1 ").arg(type2IndexsMap["Multifurcation"].size()));
-    approchingBifurCountLabel->setText(QString("Approaching bifurcation:  %1 ").arg(type2IndexsMap["Approaching bifurcation"].size()));
-    loopCountLabel->setText(QString("Loop:\t\t\t  %1 ").arg(type2IndexsMap["Loop"].size()));
-    missingCountLabel->setText(QString("Missing:\t\t  %1 ").arg(type2IndexsMap["Missing"].size()));
-    crossingCountLabel->setText(QString("Crossing error:\t\t  %1 ").arg(type2IndexsMap["Crossing error"].size()));
-    colorMutationCountLabel->setText(QString("Color mutation:\t\t  %1 ").arg(type2IndexsMap["Color mutation"].size()));
-    dissocaitiveSegCountLabel->setText(QString("Dissociative seg:\t  %1 ").arg(type2IndexsMap["Dissociative seg"].size()));
-    angleCountLabel->setText(QString("Angle error:\t\t  %1 ").arg(type2IndexsMap["Angle error"].size()));
+    sumCountLabel->setText(QString("Total number of markers:\t%1 ").arg(allCount));
+    multifurCountLabel->setText(QString("Multifurcation:\t\t\t%1 ").arg(type2IndexsMap["Multifurcation"].size()));
+//    approchingBifurCountLabel->setText(QString("Approaching bifurcation:  %1 ").arg(type2IndexsMap["Approaching bifurcation"].size()));
+    loopCountLabel->setText(QString("Loop:\t\t\t\t%1 ").arg(type2IndexsMap["Loop"].size()));
+    missingCountLabel->setText(QString("Missing:\t\t\t%1 ").arg(type2IndexsMap["Missing"].size()));
+    crossingCountLabel->setText(QString("Crossing direction error:\t%1 ").arg(type2IndexsMap["Crossing error"].size()));
+//    colorMutationCountLabel->setText(QString("Color mutation:\t\t  %1 ").arg(type2IndexsMap["Color mutation"].size()));
+    dissocaitiveSegCountLabel->setText(QString("Floating branch:\t\t%1 ").arg(type2IndexsMap["Dissociative seg"].size()));
+    angleCountLabel->setText(QString("Angle error:\t\t\t%1 ").arg(type2IndexsMap["Angle error"].size()));
 }
 
 void V3dr_qualitycontrolDialog::updateSegsCounts(){
-    overlapSegsCountLabel->setText(QString("Overlap seg(removed):\t  %1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
-    errorSegsCountLabel->setText(QString("Error seg(removed):\t  %1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
+    overlapSegsCountLabel->setText(QString("Overlapping branch(removed):\t%1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
+    errorSegsCountLabel->setText(QString("Error seg(tuned):\t\t%1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
 }
