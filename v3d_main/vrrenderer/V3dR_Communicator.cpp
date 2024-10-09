@@ -387,14 +387,14 @@ void V3dR_Communicator::processAnalyzeMsg(QString line){
                                          QMessageBox::Ok);
             }
             else if(sender=="server" && result==0){
-                emit addManyMarkers(msgList.join(","), "Dissociative seg");
+                emit addManyMarkers(msgList.join(","), "Isolated branch");
 
                 emit updateQcInfo();
                 emit updateQcMarkersCounts();
 
                 if(request_senderid==userId)
                     QMessageBox::information(0,tr("Infomation "),
-                                             tr("error: dissociative seg exists! notice the red markers!"),
+                                             tr("error: Isolated branch exists! notice the red markers!"),
                                              QMessageBox::Ok);
             }
         }

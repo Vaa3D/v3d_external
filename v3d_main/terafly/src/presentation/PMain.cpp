@@ -297,11 +297,11 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     analyzeMenu->addAction(colorMutationAction);
     connect(colorMutationAction,SIGNAL(triggered()),this,SLOT(analyzeColorMutation()));
 
-    dissociativeAction=new QAction("Analyze dissociative segs", analyzeMenu);
+    dissociativeAction=new QAction("Analyze Isolated branches", analyzeMenu);
     analyzeMenu->addAction(dissociativeAction);
     connect(dissociativeAction,SIGNAL(triggered()),this,SLOT(analyzeDissociative()));
 
-    angleAction=new QAction("Analyze the Angle of dendrite bifurcations", analyzeMenu);
+    angleAction=new QAction("Analyze the Angles of dendrite bifurcations", analyzeMenu);
     analyzeMenu->addAction(angleAction);
     connect(angleAction,SIGNAL(triggered()),this,SLOT(analyzeAngle()));
 

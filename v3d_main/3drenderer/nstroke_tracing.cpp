@@ -4803,6 +4803,7 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
     set<size_t> headRegionSegs = this->wholeGrid2segIDmap[gridKeyHead];
     set<size_t> tailRegionSegs = this->wholeGrid2segIDmap[gridKeyTail];
 
+//    qDebug() << "head:" << (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x << " " << (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y << " " << (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z;
     //cout << " Head region segs:";
     for (set<size_t>::iterator headIt = headRegionSegs.begin(); headIt != headRegionSegs.end(); ++headIt)
     {
@@ -4811,14 +4812,17 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
             continue;
         }
         if (*headIt == inputSegID || curImg->tracedNeuron.seg[*headIt].to_be_deleted) continue;
+//        curImg->tracedNeuron.seg[*headIt].printInfo();
         //cout << *headIt << " ";
         for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*headIt].row.begin(); nodeIt != curImg->tracedNeuron.seg[*headIt].row.end(); ++nodeIt)
         {
-            if (nodeIt->x == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x && nodeIt->y == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y && nodeIt->z == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z)
+//            if(nodeIt->x == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x && nodeIt->y == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y && nodeIt->z == (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z)
+            if (fabs(nodeIt->x - (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->x) < 1e-5 && fabs(nodeIt->y - (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->y) < 1e-5 && fabs(nodeIt->z - (curImg->tracedNeuron.seg[inputSegID].row.end() - 1)->z) < 1e-5)
                 otherConnectedSegs.insert(*headIt);
         }
     }
     //cout << endl << " Tail region segs:";
+//    qDebug() << "tail:" << (curImg->tracedNeuron.seg[inputSegID].row.begin())->x << " " << (curImg->tracedNeuron.seg[inputSegID].row.begin())->y << " " << (curImg->tracedNeuron.seg[inputSegID].row.begin())->z;
     for (set<size_t>::iterator tailIt = tailRegionSegs.begin(); tailIt != tailRegionSegs.end(); ++tailIt)
     {
         if(*tailIt < 0 || *tailIt >= curImg->tracedNeuron.seg.size())
@@ -4827,9 +4831,11 @@ set<size_t> Renderer_gl1::segEndRegionCheck(My4DImage* curImg, size_t inputSegID
         }
         if (*tailIt == inputSegID || curImg->tracedNeuron.seg[*tailIt].to_be_deleted) continue;
         //cout << *tailIt << " ";
+//        curImg->tracedNeuron.seg[*tailIt].printInfo();
         for (vector<V_NeuronSWC_unit>::iterator nodeIt = curImg->tracedNeuron.seg[*tailIt].row.begin(); nodeIt != curImg->tracedNeuron.seg[*tailIt].row.end(); ++nodeIt)
         {
-            if (nodeIt->x == curImg->tracedNeuron.seg[inputSegID].row.begin()->x && nodeIt->y == curImg->tracedNeuron.seg[inputSegID].row.begin()->y && nodeIt->z == curImg->tracedNeuron.seg[inputSegID].row.begin()->z)
+//            if (nodeIt->x == curImg->tracedNeuron.seg[inputSegID].row.begin()->x && nodeIt->y == curImg->tracedNeuron.seg[inputSegID].row.begin()->y && nodeIt->z == curImg->tracedNeuron.seg[inputSegID].row.begin()->z)
+            if (fabs(nodeIt->x - curImg->tracedNeuron.seg[inputSegID].row.begin()->x) < 1e-5 && fabs(nodeIt->y - curImg->tracedNeuron.seg[inputSegID].row.begin()->y) < 1e-5 && fabs(nodeIt->z - curImg->tracedNeuron.seg[inputSegID].row.begin()->z) < 1e-5)
                 otherConnectedSegs.insert(*tailIt);
         }
     }

@@ -82,7 +82,7 @@ const vector<QString> V3dR_GLWidget::quality_control_types = {
     "Missing",
     "Crossing error",
     "Color mutation",
-    "Dissociative seg",
+    "Isolated branch",
     "Angle error"
 };
 

@@ -8,7 +8,7 @@ const vector<QString> V3dr_qualitycontrolDialog::quality_control_types = {
     "Missing",
     "Crossing error",
     "Color mutation",
-    "Dissociative seg",
+    "Isolated branch",
     "Angle error"
 };
 
@@ -218,7 +218,7 @@ void V3dr_qualitycontrolDialog::createSatistians(){
     missingCountLabel->setText(QString("Missing:\t\t\t%1 ").arg(type2IndexsMap["Missing"].size()));
     crossingCountLabel->setText(QString("Crossing direction error:\t%1 ").arg(type2IndexsMap["Crossing error"].size()));
 //    colorMutationCountLabel->setText(QString("Color mutation:\t\t%1 ").arg(type2IndexsMap["Color mutation"].size()));
-    dissocaitiveSegCountLabel->setText(QString("Floating branch:\t\t%1 ").arg(type2IndexsMap["Dissociative seg"].size()));
+    dissocaitiveSegCountLabel->setText(QString("Isolated branch:\t\t%1 ").arg(type2IndexsMap["Dissociative seg"].size()));
     angleCountLabel->setText(QString("Angle error:\t\t\t%1 ").arg(type2IndexsMap["Angle error"].size()));
     overlapSegsCountLabel->setText(QString("Overlapping branch(removed):\t%1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
     errorSegsCountLabel->setText(QString("Error seg(tuned):\t\t%1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
@@ -345,7 +345,7 @@ void V3dr_qualitycontrolDialog::updateMarkersCounts(){
     missingCountLabel->setText(QString("Missing:\t\t\t%1 ").arg(type2IndexsMap["Missing"].size()));
     crossingCountLabel->setText(QString("Crossing direction error:\t%1 ").arg(type2IndexsMap["Crossing error"].size()));
 //    colorMutationCountLabel->setText(QString("Color mutation:\t\t  %1 ").arg(type2IndexsMap["Color mutation"].size()));
-    dissocaitiveSegCountLabel->setText(QString("Floating branch:\t\t%1 ").arg(type2IndexsMap["Dissociative seg"].size()));
+    dissocaitiveSegCountLabel->setText(QString("Isolated branch:\t\t%1 ").arg(type2IndexsMap["Dissociative seg"].size()));
     angleCountLabel->setText(QString("Angle error:\t\t\t%1 ").arg(type2IndexsMap["Angle error"].size()));
 }
 

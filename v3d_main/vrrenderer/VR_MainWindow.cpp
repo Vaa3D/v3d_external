@@ -764,7 +764,7 @@ void VR_MainWindow::processAnalyzeMsg(QString line){
                 }
                 if(request_senderid==userId)
                     QMessageBox::information(0,tr("Infomation "),
-                                             tr("error: dissociative seg exists! notice the red markers!"),
+                                             tr("error: Isolated branch exists! notice the red markers!"),
                                              QMessageBox::Ok);
             }
         }
