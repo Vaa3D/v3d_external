@@ -4155,11 +4155,11 @@ void PMain::LoadFromServer()
     LoadManageWidget::DBMSAddress=QString::fromStdString(dbmsServerAddress);
     LoadManageWidget::ApiVersion=QString::fromStdString(apiVersion);
 
-    if(managewidget_ptr){
-        qDebug()<<"delete managewidget";
-        managewidget_ptr.reset();
-        managewidget_ptr=nullptr;
-    }
+//    if(managewidget_ptr){
+//        qDebug()<<"delete managewidget";
+//        managewidget_ptr.reset();
+//        managewidget_ptr=nullptr;
+//    }
 
     if(managewidget_ptr == nullptr){
         //更新一下用户信息

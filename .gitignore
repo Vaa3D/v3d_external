@@ -34,7 +34,7 @@ CMakeFiles/*
 .DS_Store
 
 #ignore lib files or header files in common_lib
-v3d_main/common_lib/*
+#v3d_main/common_lib/*
 
 #ignore symlink folder
 released_plugins_more
@@ -48,7 +48,7 @@ v3d_main/v3d/vaa3d
 build_linux-*/
 build_macosx-*/
 build_windows-*/
-<<<<<<< HEAD
+
 v3d_main/v3d/release/autosave/166_stamp2018_12_23_11_11.ano
 v3d_main/v3d/release/autosave/166_stamp2018_12_23_11_11.ano.apo
 v3d_main/v3d/release/autosave/166_stamp2018_12_23_11_11.ano.eswc

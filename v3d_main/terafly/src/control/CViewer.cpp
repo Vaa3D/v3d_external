@@ -1103,7 +1103,11 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     if(!_isActive || toBeClosed)
     {
         QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
-        return;
+        qDebug() << "Precondition check \"!_isActive || toBeClosed\" failed.";
+        qDebug() << "!_isActive: " << !_isActive;
+        qDebug() << "toBeClosed: " << toBeClosed;
+        setActive(true);
+        //        return;
     }
 
     // check precondition #2: valid resolution
@@ -1114,7 +1118,9 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     if( !_isReady )
     {
         tf::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
-        return;
+        _isReady = true;
+        qDebug() << "precondition (!isReady) not met. Aborting newView";
+        //        return;
     }
 
     // deactivate current window and processing all pending events
@@ -1122,9 +1128,11 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     QApplication::processEvents();
 
     // after processEvents(), it might be that this windows is no longer valid, then terminating
-    if(toBeClosed)
-        return;
-
+    if(toBeClosed){
+        qDebug() << "toBeClosed: true";
+        toBeClosed = false;
+//       return;
+    }
     // restart timer (measures the time needed to switch to a new view)
     newViewerTimer.restart();
 
