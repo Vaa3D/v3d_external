@@ -207,7 +207,7 @@ void LoadManageWidget::getAllProjectSwcList(){
 }
 
 void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proUuid){
-    qDebug()<<proUuid;
+//    qDebug()<<proUuid;
     QNetworkRequest request;
     QString urlForGetAllProject = DBMSAddress + "/GetProjectSwcNamesByProjectUuid";
     request.setUrl(QUrl(urlForGetAllProject));
@@ -389,7 +389,7 @@ void LoadManageWidget::loadAno()
     {
         qDebug()<<"replycode"<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
         json=reply->readAll();
-        qDebug()<<"loadAnojson"<<json;
+//        qDebug()<<"loadAnojson"<<json;
         QJson::Parser parser;
         auto result=parser.parse(json,&ok).toMap();
         auto ano=result["ano"].toString();

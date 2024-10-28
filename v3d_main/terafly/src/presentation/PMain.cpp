@@ -4105,6 +4105,7 @@ void PMain::LoadFromServer()
 
     userinfo.name=settings.value("UserName").toString();
     userinfo.passwd=settings.value("UserPasswd").toString();
+    qDebug() << userinfo.passwd;
 //    userinfo.colorid = settings.value("UserID").toInt();
     userinfo.id = 0;
 
@@ -4169,7 +4170,6 @@ void PMain::LoadFromServer()
 
     managewidget_ptr->raise();
     managewidget_ptr->show();
-    qDebug()<<userinfo.id;
 }
 
 bool PMain::startCollaborate(QString port)
