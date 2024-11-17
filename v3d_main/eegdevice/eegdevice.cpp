@@ -284,13 +284,13 @@ void EEGdevice::WriteToCsv(double** dataArray, QString filename,QString fullPath
     if (!dir.exists()) {
         dir.mkpath(".");
     }
-
+qDebug() << "fullPath:" << fullPath; // 输出文件路径
     // 获取当前时间
     QDateTime currentTime = QDateTime::currentDateTime();
     QString currentTimeString = currentTime.toString("yyyy-MM-dd-HH-mm-ss");
 
     // 创建文件并写入数据
-    QString filePath = fullPath + "/" + filename+ currentTimeString + ".csv";
+    QString filePath = fullPath + "/" + currentTimeString + ".csv";
     qDebug() << "File path:" << filePath; // 输出文件路径
     qDebug() << "dataArray:" << dataArray[1][1]; // 输出文件路径
         qDebug() << "ch_num:" << ch_num;

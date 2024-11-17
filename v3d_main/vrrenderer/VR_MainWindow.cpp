@@ -84,6 +84,56 @@ VR_MainWindow::~VR_MainWindow() {
     }
     delete transferTimer;
 }
+//void VR_MainWindow::sendDataToServer(const QByteArray &jsonData) {
+//    // Prepare HTTP request
+//    QUrl url("http://127.0.0.1:8000/data_analysis/analysisR/");
+//    QNetworkRequest request(url);
+//    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+//    QNetworkAccessManager manager;
+//    QNetworkReply *reply = manager.post(request, jsonData);
+//    QEventLoop eventLoop;
+//    connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
+//    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+//    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+//       qDebug()<<"getAllProject: "<<code;
+//       if (code == 200) {
+//           QByteArray json = reply->readAll();
+//           qDebug() << "Response:" << json;
+
+//           QJson::Parser parser;
+//           bool ok;
+//           QVariantMap result = parser.parse(json, &ok).toMap();
+
+//           if (!ok) {
+//               qDebug() << "Failed to parse JSON";
+//               return;
+//           }
+
+//           bool status = result["status"].toBool();
+//           QString message = result["message"].toString();
+//           QString resultString = result["result_string"].toString();
+//           double resultDouble = result["result_double"].toDouble();
+
+//           if (!status) {
+//               QString msg = "Operation Failed! " + message;
+//               qDebug() << msg;
+//               QMessageBox::information(0, "Message", msg, QMessageBox::Ok);
+//               return;
+//           }
+
+//           qDebug() << "Status:" << status;
+//           qDebug() << "Message:" << message;
+//           qDebug() << "Result String:" << resultString;
+//           qDebug() << "Result Double:" << resultDouble;
+
+//       } else {
+//           QString reason = reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+//           QMessageBox::information(0, "Message", reason, QMessageBox::Ok);
+//       }
+
+//       reply->deleteLater();
+//}
 void VR_MainWindow::sendDataToServer(const QByteArray &jsonData) {
     // Prepare HTTP request
     QUrl url("http://127.0.0.1:8000/data_analysis/analysisR/");
@@ -95,45 +145,89 @@ void VR_MainWindow::sendDataToServer(const QByteArray &jsonData) {
     QEventLoop eventLoop;
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-       qDebug()<<"getAllProject: "<<code;
-       if (code == 200) {
-           QByteArray json = reply->readAll();
-           qDebug() << "Response:" << json;
 
-           QJson::Parser parser;
-           bool ok;
-           QVariantMap result = parser.parse(json, &ok).toMap();
+    int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    qDebug() << "getAllProject: " << code;
 
-           if (!ok) {
-               qDebug() << "Failed to parse JSON";
-               return;
-           }
+    if (code == 200) {
+        QByteArray json = reply->readAll();
+        qDebug() << "Response:" << json;
 
-           bool status = result["status"].toBool();
-           QString message = result["message"].toString();
-           QString resultString = result["result_string"].toString();
-           double resultDouble = result["result_double"].toDouble();
+        QJson::Parser parser;
+        bool ok;
+        QVariantMap result = parser.parse(json, &ok).toMap();
 
-           if (!status) {
-               QString msg = "Operation Failed! " + message;
-               qDebug() << msg;
-               QMessageBox::information(0, "Message", msg, QMessageBox::Ok);
-               return;
-           }
+        if (!ok) {
+            qDebug() << "Failed to parse JSON";
+            return;
+        }
 
-           qDebug() << "Status:" << status;
-           qDebug() << "Message:" << message;
-           qDebug() << "Result String:" << resultString;
-           qDebug() << "Result Double:" << resultDouble;
+        bool status = result["status"].toBool();
+        QString message = result["message"].toString();
+        QString resultString = result["result_string"].toString();
+        double resultDouble = result["result_double"].toDouble();
 
-       } else {
-           QString reason = reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-           QMessageBox::information(0, "Message", reason, QMessageBox::Ok);
-       }
+        if (!status) {
+            QString msg = "Operation Failed! " + message;
+            qDebug() << msg;
+            QMessageBox::information(0, "Message", msg, QMessageBox::Ok);
+            return;
+        }
 
-       reply->deleteLater();
+        // Print the result values
+        qDebug() << "Status:" << status;
+        qDebug() << "Message:" << message;
+        qDebug() << "Result String:" << resultString;
+        qDebug() << "Result Double:" << resultDouble;
+
+        // 处理接收到的图像数据 (Base64)
+        QString base64Image = result["image"].toString(); // 读取图像的Base64编码
+        if (!base64Image.isEmpty()) {
+            // Decode the Base64 string to QByteArray
+//            QByteArray imageData = QByteArray::fromBase64(base64Image.toUtf8());
+
+
+            // Get the path to save the image (same directory as the .exe file)
+            QString exePath = QCoreApplication::applicationDirPath();
+            QString imagePath = exePath + "/received_image.jpg"; // You can modify the image file name as needed
+            // 读取图片文件
+            QFile imageFile(imagePath);
+            if (!imageFile.exists()) {
+                qWarning() << "Image file does not exist at" << imagePath;
+                return;
+            }
+
+            if (!imageFile.open(QIODevice::ReadOnly)) {
+                qWarning() << "Failed to open image file:" << imagePath;
+                return;
+            }
+
+            QByteArray imageData = imageFile.readAll();
+            imageFile.close();
+            pMainApplication->onNewVolumeDataReceived(imageData);
+            qDebug() << "onNewVolumeDataReceived";
+
+//            // Save the image to the path
+//            QFile file(imagePath);
+//            if (file.open(QIODevice::WriteOnly)) {
+//                file.write(imageData);
+//                file.close();
+//                // 发射信号，传递图像数据
+
+//                qDebug() << "Image saved to:" << imagePath;
+//            } else {
+//                qDebug() << "Failed to save the image.";
+//            }
+        }
+
+    } else {
+        QString reason = reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+        QMessageBox::information(0, "Message", reason, QMessageBox::Ok);
+    }
+
+    reply->deleteLater();
 }
+
 void VR_MainWindow::onReplyFinished() {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     if (reply) {
@@ -240,9 +334,9 @@ void VR_MainWindow::performFileTransfer() {
     }
     // 设置要过滤的文件类型
     QStringList files = directory.entryList(QDir::Files | QDir::NoDotAndDotDot);
-
+//    generateAndSendData();
     int newFileCount = files.length() - previousFileCount;
-    generateAndSendData();
+
     // 如果有新文件
     if (newFileCount > 0) {
         QStringList newFiles;
@@ -285,12 +379,13 @@ void VR_MainWindow::performFileTransfer() {
                     QString eegdata_paradigm = pMainApplication->getModeControlSettingsDescription(pMainApplication->m_modeGrip_L);;
                     QString data_label = "eegdata_paradigm_" + VR_Communicator->userName + "_" + currentDateTime;
 //                    QString data_label = eegdata_paradigm+"_" + VR_Communicator->userName + "_" + currentDateTime;
-                    VR_Communicator->send2DArrayBinary(CurSingle,data_label);
+                    //VR_Communicator->send2DArrayBinary(CurSingle,data_label);
                     // Optionally handle the result
                     if (pMainApplication->isClosedLoop) {
-                        qDebug() << "Data sent successfully and received result: " ;
-                        sendRealDataAndGetResult(CurSingle, data_label);
+
                     }
+                    qDebug() << "Data sent successfully and received result: " ;
+                    sendRealDataAndGetResult(CurSingle, data_label);
                     // Send the data using the provided function
 
 
@@ -993,7 +1088,7 @@ int VR_MainWindow::StartVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainW
                                 bool isLinkSuccess,QString ImageVolumeInfo,int &CreatorRes,V3dR_Communicator* TeraflyCommunicator,
                                 XYZ* zoomPOS,XYZ *CreatorPos,XYZ MaxResolution) {
 
-    qDebug()<<"StartVRScene-lddddddddddddd";
+    qDebug()<<"StartVRScene-lddddddddddddd1114";
 
     pMainApplication = new CMainApplication(  0, 0 ,TeraflyCommunicator->CreatorMarkerPos);
 
@@ -1359,7 +1454,7 @@ void VR_MainWindow::RunVRMainloop(XYZ* zoomPOS)
 int startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain, XYZ* zoomPOS)
 // bool startStandaloneVRScene(QList<NeuronTree>* ntlist, My4DImage *i4d, MainWindow *pmain)
 {
-qDebug()<<"startStandaloneVRScene-lddddddddddddd";
+qDebug()<<"startStandaloneVRScene-lddddddddddddd888";
     CMainApplication *pMainApplication = new CMainApplication( 0, 0 );
     //pMainApplication->setnetworkmodefalse();//->NetworkModeOn=false;
     pMainApplication->mainwindow = pmain;
