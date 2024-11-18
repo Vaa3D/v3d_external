@@ -7,7 +7,7 @@
 #include "../eegdevice/EEGdevice.h"
 #include "../basic_c_fun/v3d_interface.h"
 
-
+#include <chrono>
 #include <openvr.h>
 #include "lodepng.h"
 
@@ -87,6 +87,7 @@ enum SecondeMenu
 {
 	_nothing = 0,
 	_colorPad = 1,
+        _brainMap = 2,
 //	_cutplane = 2
 };
 enum FlashType
@@ -217,7 +218,8 @@ public:
 	bool HandleInput();//handle controller and keyboard input
 	void ProcessVREvent( const vr::VREvent_t & event );
 	void RenderFrame();
-	
+        void SetupBrainMap();
+
 	bool SetupTexturemaps();//load controller textures and setup properties
 	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
 	void SetupControllerTexture();//update texture coordinates according to controller's new location
@@ -277,7 +279,7 @@ public:
      EEGdevice eegDevice; // Instance of EEGdevice
      int VRStimulusType = 1;  //0--3d object/1--Biomedical image/2--audio /3--nature image
      bool showImage = 1;
-     bool isClosedLoop = false;
+     bool isClosedLoop = true;
     int currentIndex = 0;  //for 3d object
      double baseRadius = 50;
      double height = 50;
@@ -323,6 +325,15 @@ public:
 	XYZ collaborationTargetdelcurveRes;
 	XYZ SegNode_tobedeleted;//second node of seg , same to terafly collaboration delete seg
     void updateShapeProperties(RenderableObject* shape, float size1, float size2, const glm::vec3& color, bool visibility);
+//    // 定义一个全局的 QElapsedTimer 来计算时间间隔
+//    QElapsedTimer timerrrr;
+//    qint64 lastTime = 0;  // 记录上一次的时间
+    std::chrono::steady_clock::time_point lastTime;
+        bool isFirstCall = true;  // 用于标记是否为第一次调用
+
+        std::deque<std::pair<std::chrono::steady_clock::time_point, double>> frequencyRecords;  // 存储时间戳和频率的队列
+
+        double calculateAverageFrequency();  // 计算平均频率的函数
 
 private: 
 	std::string current_agent_color;
@@ -443,13 +454,14 @@ private: // OpenGL bookkeeping
 	std::string m_strPoseClasses;                            // what classes we saw poses for this frame
 	char m_rDevClassChar[ vr::k_unMaxTrackedDeviceCount ];   // for each device, a character representing its class
 
-
+        unsigned int m_quadVAO, m_quadVBO;
 	
 	float m_fNearClip;
 
 	float m_fFarClip;
 
 	GLuint m_iTexture;
+        GLuint m_iTextureBrainMap;
 	GLuint m_ControllerTexVAO;
 	GLuint m_ControllerTexVBO;
 	GLuint m_unCtrTexProgramID;
@@ -634,6 +646,7 @@ private:
 	GLuint m_VolumeImageVAO;
 	Shader* backfaceShader;//back face, first pass
 	Shader* raycastingShader;//ray casting front face, second pass
+        Shader* imageShader;
 	Shader* clipPatchShader;//ray casting front face, second pass
 
 	GLuint g_winWidth; //todo: may be removable. wym
@@ -644,6 +657,8 @@ private:
 	GLuint g_texWidth;
 	GLuint g_texHeight;
 	GLuint g_volTexObj;
+        GLuint g_volTexObj_brain;
+        GLuint m_newTexture;
 	GLuint g_volTexObj_octree_8;
 	GLuint g_volTexObj_octree_16;
 	GLuint g_volTexObj_octree_32;	
@@ -711,6 +726,10 @@ public:
         bool getIsRSVP() const;
         void setIsRSVP(bool value);
 
+        GLuint renderReceivedImageTo3DTexture(const QByteArray &imageData);
+        void SetupQuad();
+        GLuint Load2DImageTexture(const QByteArray &imageData);
+        bool SetupBrainMapTexture();
 public slots:
         void ImageDisplay(bool show);
         void onTimerTimeout();
@@ -722,9 +741,17 @@ public slots:
 
         void updatesetColor(RenderableObject *shape, const glm::vec3 &color);
         QString getModeControlSettingsDescription(ModeControlSettings setting);
+        void RefreshImages();
+
+
+        void onNewVolumeDataReceived(const QByteArray &imageData); // 槽：处理图像数据
+        void LoadNewTextureFromQImage(const QImage &image);
+        bool Load2DBrainTextureFromQImage(const QImage &image);
 private:
         unsigned int framecnt=0;
         const int numofframe=7;
+signals:
+    void newVolumeDataReceived(const QByteArray &imageData); // 信号：接收原始图像字节数据
 //signals:
 //        void undo();
 };

@@ -204,8 +204,8 @@ void VR_MainWindow::sendDataToServer(const QByteArray &jsonData) {
 
             QByteArray imageData = imageFile.readAll();
             imageFile.close();
-            pMainApplication->onNewVolumeDataReceived(imageData);
-            qDebug() << "onNewVolumeDataReceived";
+//            pMainApplication->onNewVolumeDataReceived(imageData);
+//            qDebug() << "onNewVolumeDataReceived";
 
 //            // Save the image to the path
 //            QFile file(imagePath);

@@ -67,7 +67,7 @@ int checkForOpenGLError(const char* file, int line)
 }
 
 float CMainApplication::fContrast = 1;
-float CMainApplication::fSSVEPHz = 1;
+float CMainApplication::fSSVEPHz = 150;
 float CMainApplication::fSSVEPHz_input = 1;
 bool CMainApplication::m_bFrozen = false;
 bool CMainApplication::m_bVirtualFingerON = false;
@@ -815,7 +815,8 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
     filters << "*.tif" << "*.tiff";  // Add both common TIFF extensions
     dir.setNameFilters(filters);
 
-
+//    // 连接信号和槽
+//    connect(this, SIGNAL(newVolumeDataReceived()), this, SLOT(onNewVolumeDataReceived()));
 
     // Store all valid image paths
     QFileInfoList fileList = dir.entryInfoList(QDir::Files | QDir::Readable, QDir::Name);
@@ -823,10 +824,59 @@ CMainApplication::CMainApplication(int argc, char *argv[],XYZ glomarkerPOS)
         imagePaths.append(fileInfo.absoluteFilePath());
     }
 
+
+}
+double CMainApplication::calculateAverageFrequency()
+{
+    if (frequencyRecords.empty())
+    {
+        return 0.0;  // 如果队列为空，返回0
+    }
+
+    double totalFrequency = 0.0;
+    for (const auto& record : frequencyRecords)
+    {
+        totalFrequency += record.second;
+    }
+
+    // 计算平均频率
+    return totalFrequency / frequencyRecords.size();
 }
 void CMainApplication::onTimerTimeout()
 {
+    // 获取当前时间
+    auto currentTime = std::chrono::steady_clock::now();
 
+//    // 如果不是第一次调用，计算时间差
+//    if (!isFirstCall)
+//    {
+//        auto deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count();
+//        double frequency = (deltaTime > 0) ? (1000.0 / deltaTime) : 0;  // 频率，单位为赫兹
+
+//        // 打印时间差和频率
+//        qDebug() << "Time since last call (ms):" << 1000/fSSVEPHz;
+//        qDebug() << "Frequency (Hz):" << fSSVEPHz;
+
+//        // 将当前频率和时间戳记录到队列中
+//        frequencyRecords.push_back(std::make_pair(currentTime, frequency));
+
+//        // 移除超过10秒的旧记录
+//        while (!frequencyRecords.empty() && std::chrono::duration_cast<std::chrono::seconds>(currentTime - frequencyRecords.front().first).count() > 5)
+//        {
+//            frequencyRecords.pop_front();
+//        }
+
+//        // 计算并打印平均频率
+//        double averageFrequency = calculateAverageFrequency();
+//        qDebug() << "Average frequency over the last 10 seconds (Hz):" << averageFrequency;
+//    }
+//    else
+//    {
+//        isFirstCall = false;  // 设置为非第一次调用
+//    }
+
+    // 更新 lastTime 为当前时间
+    lastTime = currentTime;
 if(VRStimulusType==1)
 {
     ImageDisplay(!showImage);
@@ -835,24 +885,41 @@ if(VRStimulusType==1)
        ChangeImgae();
 
     }
-}else if(VRStimulusType==0)
-{
-    VR3DStimulusVisibility=!VR3DStimulusVisibility;
-}
+    }else if(VRStimulusType==0)
+    {
+        VR3DStimulusVisibility=!VR3DStimulusVisibility;
+    }
 
+    QString exePath = QCoreApplication::applicationDirPath();
+    QString imagePath = exePath + "/received_image.jpg"; // You can modify the image file name as needed
+    // 读取图片文件
+    QFile imageFile(imagePath);
+    if (!imageFile.exists()) {
+        qWarning() << "Image file does not exist at" << imagePath;
+        return;
+    }
 
+    if (!imageFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open image file:" << imagePath;
+        return;
+    }
 
-    RenderFrame();
+    QByteArray imageData = imageFile.readAll();
+    imageFile.close();
+//    onNewVolumeDataReceived(imageData);
+//    qDebug() << "onNewVolumeDataReceived";
 
+    //    RenderFrame();
+    RefreshImages();
 
 
 }
 void CMainApplication::ChangeImgae()
 {
-if(imgsizeforRSVP==imagePaths.length())
-{
-imgsizeforRSVP=0;
-}
+    if(imgsizeforRSVP==imagePaths.length())
+    {
+    imgsizeforRSVP=0;
+    }
     QString filename = imagePaths.at(imgsizeforRSVP);
     qDebug() << "Loading image from:" << filename;
     // 打印 QString
@@ -944,193 +1011,167 @@ std::string GetTrackedDeviceString( vr::IVRSystem *pHmd, vr::TrackedDeviceIndex_
 //-----------------------------------------------------------------------------
 bool CMainApplication::BInit()
 {
-	if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 )
-	{
-		printf("%s - SDL could not initialize! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
-		return false;
-	}
+    printf("%s - Starting initialization...\n", __FUNCTION__);
 
-	// Loading the SteamVR Runtime
-	vr::EVRInitError eError = vr::VRInitError_None;
-	m_pHMD = vr::VR_Init( &eError, vr::VRApplication_Scene );
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
+    {
+        printf("%s - SDL could not initialize! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
+        return false;
+    }
+    printf("%s - SDL Initialized successfully.\n", __FUNCTION__);
 
-	if ( eError != vr::VRInitError_None )
-	{
-		m_pHMD = NULL;
-		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
-		return false;
-	}
+    // Loading the SteamVR Runtime
+    vr::EVRInitError eError = vr::VRInitError_None;
+    m_pHMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
 
+    if (eError != vr::VRInitError_None)
+    {
+        m_pHMD = NULL;
+        char buf[1024];
+        sprintf_s(buf, sizeof(buf), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL);
+        return false;
+    }
+    printf("%s - VR Runtime Initialized successfully.\n", __FUNCTION__);
 
+    m_pRenderModels = (vr::IVRRenderModels *)vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &eError);
+    if (!m_pRenderModels)
+    {
+        m_pHMD = NULL;
+        vr::VR_Shutdown();
 
-	m_pRenderModels = (vr::IVRRenderModels *)vr::VR_GetGenericInterface( vr::IVRRenderModels_Version, &eError );
-	//question: difference between IVRRenderModels and the CGLRenderModel?
-	//is IVRRenderModels necessary for VR? comment it and observe the change
-	if( !m_pRenderModels )
-	{
-		m_pHMD = NULL;
-		vr::VR_Shutdown();
+        char buf[1024];
+        sprintf_s(buf, sizeof(buf), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL);
+        return false;
+    }
+    printf("%s - Render models interface retrieved.\n", __FUNCTION__);
 
-		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
-		return false;
-	}
-	m_pChaperone = (vr::IVRChaperone *)vr::VR_GetGenericInterface( vr::IVRChaperone_Version, &eError );
-	//question: difference between IVRRenderModels and the CGLRenderModel?
-	//is IVRRenderModels necessary for VR? comment it and observe the change
-	if( !m_pChaperone )
-	{
-		m_pHMD = NULL;
-		vr::VR_Shutdown();
+    m_pChaperone = (vr::IVRChaperone *)vr::VR_GetGenericInterface(vr::IVRChaperone_Version, &eError);
+    if (!m_pChaperone)
+    {
+        m_pHMD = NULL;
+        vr::VR_Shutdown();
 
-		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
-		return false;
-	}
+        char buf[1024];
+        sprintf_s(buf, sizeof(buf), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL);
+        return false;
+    }
+    printf("%s - Chaperone interface retrieved.\n", __FUNCTION__);
 
+    int nWindowPosX = 100;
+    int nWindowPosY = 100;
+    printf("%s - Setting up window...\n", __FUNCTION__);
 
-	int nWindowPosX = 100;
-	int nWindowPosY = 100;
-	//fps test liqi
-	 countsPerSecond = 0.0;
-	 CounterStart = 0;
+    countsPerSecond = 0.0;
+    CounterStart = 0;
 
-	 frameCount = 0;
-	 fps = 0;
+    frameCount = 0;
+    fps = 0;
 
-	 frameTimeOld = 0;
-	 frameTime;
+    frameTimeOld = 0;
+    frameTime;
 
-	Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
-	/*m_flashtype = noflash;
-	m_Flashcolor = 0;
-	m_FlashCount = 0;*/
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
-	//SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+    Uint32 unWindowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 0 );
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 0 );
-	if( m_bDebugOpenGL )
-		SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
+    if (m_bDebugOpenGL)
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
+    m_pCompanionWindow = SDL_CreateWindow("CVR-BBI", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags);
+    if (m_pCompanionWindow == NULL)
+    {
+        printf("%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
+        return false;
+    }
+    printf("%s - Window created successfully.\n", __FUNCTION__);
 
+    m_pContext = SDL_GL_CreateContext(m_pCompanionWindow);
+    if (m_pContext == NULL)
+    {
+        printf("%s - OpenGL context could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
+        return false;
+    }
+    printf("%s - OpenGL context created successfully.\n", __FUNCTION__);
 
+    glewExperimental = GL_TRUE;
+    GLenum nGlewError = glewInit();
+    if (nGlewError != GLEW_OK)
+    {
+        printf("%s - Error initializing GLEW! %s\n", __FUNCTION__, glewGetErrorString(nGlewError));
+        return false;
+    }
+    glGetError(); // to clear the error caused deep in GLEW
 
+    if (SDL_GL_SetSwapInterval(m_bVblank ? 1 : 0) < 0)
+    {
+        printf("%s - Warning: Unable to set VSync! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
+        return false;
+    }
+    printf("%s - VSync set successfully.\n", __FUNCTION__);
 
+    m_strDriver = "No Driver";
+    m_strDisplay = "No Display";
 
-    m_pCompanionWindow = SDL_CreateWindow( "CVR-BBI", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags );
-	if (m_pCompanionWindow == NULL)
-	{
-		printf( "%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
-		return false;
-	}
+    m_strDriver = GetTrackedDeviceString(m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String);
+    m_strDisplay = GetTrackedDeviceString(m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String);
 
-	m_pContext = SDL_GL_CreateContext(m_pCompanionWindow);
-	if (m_pContext == NULL)
-	{
-		printf( "%s - OpenGL context could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
-		return false;
-	}
-
-	glewExperimental = GL_TRUE;
-	GLenum nGlewError = glewInit();
-	if (nGlewError != GLEW_OK)
-	{
-		printf( "%s - Error initializing GLEW! %s\n", __FUNCTION__, glewGetErrorString( nGlewError ) );
-		return false;
-	}
-	glGetError(); // to clear the error caused deep in GLEW
-
-	if ( SDL_GL_SetSwapInterval( m_bVblank ? 1 : 0 ) < 0 )
-	{
-		printf( "%s - Warning: Unable to set VSync! SDL Error: %s\n", __FUNCTION__, SDL_GetError() );
-		return false;
-	}
-
-	m_strDriver = "No Driver";
-	m_strDisplay = "No Display";
-
-	m_strDriver = GetTrackedDeviceString( m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String );
-	m_strDisplay = GetTrackedDeviceString( m_pHMD, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String );
-
-	//std::string strWindowTitle = "Vaa3D VR - " + m_strDriver + " " + m_strDisplay;
     std::string strWindowTitle = "CAR-VR - Initializing";
-	SDL_SetWindowTitle( m_pCompanionWindow, strWindowTitle.c_str() );
+    SDL_SetWindowTitle(m_pCompanionWindow, strWindowTitle.c_str());
+    printf("%s - Window title set: %s\n", __FUNCTION__, strWindowTitle.c_str());
 
-	
-	m_fNearClip = 0.1f;
+    m_fNearClip = 0.1f;
+    m_fFarClip = 30.0f;
 
- 	m_fFarClip = 30.0f;
-	m_iTexture = 0;
-	m_uiControllerTexIndexSize = 0;
-	m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
-	//m_oldGlobalMatrix = m_ctrlChangeMatrix = m_oldCtrlMatrix= glm::mat4();
+    if (!BInitGL())
+    {
+        printf("%s - Unable to initialize OpenGL!\n", __FUNCTION__);
+        return false;
+    }
+    printf("%s - OpenGL Initialized successfully.\n", __FUNCTION__);
 
-	// m_modeGrip_R = global_padm_modeGrip_R;
-	// m_modeGrip_L = global_padm_modeGrip_L;
-    delSegName = "";
-    delMarkerName = "";
-	dragnodePOS="";
-	line_tobedeleted = "";
-	loadedNTCenter = glm::vec3(0);
-	vertexcount = swccount = 0;
-	pick_node = 0;
+    if (!BInitCompositor())
+    {
+        printf("%s - Failed to initialize VR Compositor!\n", __FUNCTION__);
+        return false;
+    }
+    printf("%s - VR Compositor Initialized successfully.\n", __FUNCTION__);
 
-	fSlabwidth = 0.05;
-	
-	if (!BInitGL())
-	{
-		printf("%s - Unable to initialize OpenGL!\n", __FUNCTION__);
-		return false;
-	}
+    ctrSphere = new Sphere(0.01f);
+    ctrSphereColor = glm::vec3();
+    int color_id = (m_curMarkerColorType >= 0 && m_curMarkerColorType < neuron_type_color_num) ? m_curMarkerColorType : 0;
+    ctrSphereColor[0] = neuron_type_color[color_id][0] / 255.0;
+    ctrSphereColor[1] = neuron_type_color[color_id][1] / 255.0;
+    ctrSphereColor[2] = neuron_type_color[color_id][2] / 255.0;
 
-	if (!BInitCompositor())
-	{
-		printf("%s - Failed to initialize VR Compositor!\n", __FUNCTION__);
-		return false;
-	}
+    u_clipnormal = glm::vec3(0, -1.0, 0);
+    u_clippoint = glm::vec3(0.0, 0.0, 2.0);
 
-	//if(font_VR)
-	//	delete font_VR;
-	//font_VR = 0;
-	//// init font
-	//font_VR= new gltext::Font("data/DroidSans.ttf", 32, 512, 512);
-	//// specify the screen size for perfect pixel rendering
-	//font_VR->setDisplaySize(m_nCompanionWindowWidth, m_nCompanionWindowHeight);
-	//// NOTE: cache is hard to use properly; you need to calculate the right cache size in the above gltext::Font() constructor
-	//font_VR->cacheCharacters("1234567890!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,./;'[]\\<>?:\"{}|-=_+");
-
-
-	ctrSphere = new Sphere(0.01f);
-	ctrSphereColor = glm::vec3();
-	int color_id = (m_curMarkerColorType>=0 && m_curMarkerColorType<neuron_type_color_num)? m_curMarkerColorType : 0;
-	ctrSphereColor[0] =  neuron_type_color[color_id][0] /255.0;
-	ctrSphereColor[1] =  neuron_type_color[color_id][1] /255.0;
-	ctrSphereColor[2] =  neuron_type_color[color_id][2] /255.0;
-
-	u_clipnormal = glm::vec3(0,-1.0,0);
-	u_clippoint = glm::vec3(0.0,0.0,2.0);
-	teraflyPOS = 0;
-    if(CollaborationCreatorGLOPos.x!=0&&CollaborationCreatorGLOPos.y!=0&&CollaborationCreatorGLOPos.z!=0)
-        CollaborationCreatorPos = ConvertGlobaltoLocalCoords(CollaborationCreatorGLOPos.x,CollaborationCreatorGLOPos.y,CollaborationCreatorGLOPos.z);
+    printf("%s - Initializing Collaboration Creator Position...\n", __FUNCTION__);
+    if (CollaborationCreatorGLOPos.x != 0 && CollaborationCreatorGLOPos.y != 0 && CollaborationCreatorGLOPos.z != 0)
+        CollaborationCreatorPos = ConvertGlobaltoLocalCoords(CollaborationCreatorGLOPos.x, CollaborationCreatorGLOPos.y, CollaborationCreatorGLOPos.z);
     else
-        CollaborationCreatorPos=XYZ(0);
-    qDebug()<<"CollaborationCreatorPos:"<<CollaborationCreatorPos.x<<" "<<CollaborationCreatorPos.y<<" "<<CollaborationCreatorPos.z;
-	SDL_StartTextInput();
-	SDL_ShowCursor( SDL_DISABLE );
-	currentNT.listNeuron.clear();
-	currentNT.hashNeuron.clear();
+        CollaborationCreatorPos = XYZ(0);
+    qDebug() << "CollaborationCreatorPos:" << CollaborationCreatorPos.x << " " << CollaborationCreatorPos.y << " " << CollaborationCreatorPos.z;
 
-	tempNT.listNeuron.clear();
-	tempNT.hashNeuron.clear();
-	return true;
+    SDL_StartTextInput();
+    SDL_ShowCursor(SDL_DISABLE);
+
+    currentNT.listNeuron.clear();
+    currentNT.hashNeuron.clear();
+
+    tempNT.listNeuron.clear();
+    tempNT.hashNeuron.clear();
+
+    printf("%s - Initialization complete.\n", __FUNCTION__);
+    return true;
 }
+
 
 //*/
 //-----------------------------------------------------------------------------
@@ -1204,11 +1245,11 @@ bool CMainApplication::BInitGL()
 	SetupGlobalMatrix();
 	
 	SetupMorphologyLine(0);
-	//SetupMorphologyLine(2);
-	//SetupMorphologyLine(loadedNT_merged,m_unMorphologyLineModeVAO,m_glMorphologyLineModeVertBuffer,m_glMorphologyLineModeIndexBuffer,m_uiMorphologyLineModeVertcount,0);
-	//SetupMorphologySurface(loadedNT_merged,loaded_spheres,loaded_cylinders,loaded_spheresPos);
 
+
+//    SetupBrainMap();
 	SetupTexturemaps();
+//    SetupBrainMapTexture();
 	SetupCameras();
 	SetupCamerasForMorphology();
 	SetupStereoRenderTargets();
@@ -1998,24 +2039,25 @@ bool CMainApplication::HandleInput()
 
                        if (m_fTouchPosY > 0)
                        {
+                           fSSVEPHz += 1;
                            fSSVEPHz_input += 0.5;
                            // 根据频率设置挡位
-                           if (fSSVEPHz_input <= 10) {
-                               fSSVEPHz = 7;
-                           } else if (fSSVEPHz_input <= 20) {
-                               fSSVEPHz = 13;
-                           } else if (fSSVEPHz_input <= 30) {
-                               fSSVEPHz = 15;
-                           } else if (fSSVEPHz_input <= 40) {
-                               fSSVEPHz = 18;
-                           } else if (fSSVEPHz_input <= 50) {
-                               fSSVEPHz = 45;
-                           } else {
-                               fSSVEPHz = 50;
+                           if (fSSVEPHz_input >= 15) {
+                               fSSVEPHz_input = 15;
+//                           } else if (fSSVEPHz_input <= 20) {
+//                               fSSVEPHz = 13;
+//                           } else if (fSSVEPHz_input <= 30) {
+//                               fSSVEPHz = 15;
+//                           } else if (fSSVEPHz_input <= 40) {
+//                               fSSVEPHz = 18;
+//                           } else if (fSSVEPHz_input <= 50) {
+//                               fSSVEPHz = 45;
+//                           } else {
+//                               fSSVEPHz = 50;
                            }
 
                            // 设置定时器的间隔
-                           int interval = 1000 / fSSVEPHz;
+                           int interval = fSSVEPHz;
                            m_timer->setInterval(interval);
                            //fBrightness+= 0.01f;
                            //if(fBrightness>0.8f)
@@ -2024,25 +2066,25 @@ bool CMainApplication::HandleInput()
                        }
                        else
                        {
-
+                           fSSVEPHz -= 1;
                            fSSVEPHz_input -= 0.5;
-                           if (fSSVEPHz_input < 1)
-                               fSSVEPHz = 1;
-                           else if (fSSVEPHz_input <= 10) {
-                               fSSVEPHz = 7;
-                           } else if (fSSVEPHz_input <= 20) {
-                               fSSVEPHz = 13;
-                           } else if (fSSVEPHz_input <= 30) {
-                               fSSVEPHz = 15;
-                           } else if (fSSVEPHz_input <= 40) {
-                               fSSVEPHz = 18;
-                           } else if (fSSVEPHz_input <= 50) {
-                               fSSVEPHz = 45;
-                           } else {
-                               fSSVEPHz = 50;
-                           }
+                           if (fSSVEPHz_input < 7)
+                               fSSVEPHz_input = 7;
+//                           else if (fSSVEPHz_input <= 10) {
+//                               fSSVEPHz = 7;
+//                           } else if (fSSVEPHz_input <= 20) {
+//                               fSSVEPHz = 13;
+//                           } else if (fSSVEPHz_input <= 30) {
+//                               fSSVEPHz = 15;
+//                           } else if (fSSVEPHz_input <= 40) {
+//                               fSSVEPHz = 18;
+//                           } else if (fSSVEPHz_input <= 50) {
+//                               fSSVEPHz = 45;
+//                           } else {
+//                               fSSVEPHz = 50;
+//                           }
                            // 设置定时器的间隔
-                           int interval = 1000 / fSSVEPHz;
+                           int interval = fSSVEPHz;
                            m_timer->setInterval(interval);
                            //fBrightness-= 0.01f;
                            //if(fBrightness<0)
@@ -2554,33 +2596,33 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 
             if(temp_y>0)
             {
-//                if (!timer_eegGet->isActive()&&!getIsSSVEP()) {
+                if (!timer_eegGet->isActive()&&!getIsSSVEP()) {
 
-//                    bool success = startBCIparadigm();  // 调用 startBCIparadigm 函数
+                    bool success = startBCIparadigm();  // 调用 startBCIparadigm 函数
 
-//                    if (success) {
-//                        // BCI 范式启动成功
-//                        qDebug() << "BCI paradigm started successfully.";
-//                        setIsSSVEP(true);
+                    if (success) {
+                        // BCI 范式启动成功
+                        qDebug() << "BCI paradigm started successfully.";
+                        setIsSSVEP(true);
 
-//                    } else {
-//                        // 启动失败，可能需要处理失败情况
-//                        qDebug() << "Failed to start BCI paradigm.";
-//                        setIsSSVEP(false);
-//                    }
+                    } else {
+                        // 启动失败，可能需要处理失败情况
+                        qDebug() << "Failed to start BCI paradigm.";
+                        setIsSSVEP(false);
+                    }
 
 
-//                }
-    m_timer->start(1000);
+                }
+//    m_timer->start(1000);
            }
             else
            {
-//                if (getIsSSVEP()) {
-//                     stopBCIparadigm();
-//                     setIsSSVEP(false);
-//                 }
+                if (getIsSSVEP()) {
+                     stopBCIparadigm();
+                     setIsSSVEP(false);
+                 }
 
-    m_timer->stop();
+//    m_timer->stop();
            }
 
 break;
@@ -3142,6 +3184,7 @@ break;
 
     if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.eventType==vr::VREvent_ButtonPress)&&(event.data.controller.button==vr::k_EButton_SteamVR_Touchpad)/*&&(!showshootingray)*/)
     {
+
         vr::VRControllerState_t state;
 		m_pHMD->GetControllerState( m_iControllerIDRight, &state, sizeof(state));
 		float temp_x  = state.rAxis[0].x;
@@ -3150,6 +3193,7 @@ break;
 	}
 		if((event.trackedDeviceIndex==m_iControllerIDRight)&&(event.data.controller.button==vr::k_EButton_SteamVR_Trigger)&&(event.eventType==vr::VREvent_ButtonUnpress))	//detect trigger when menu show
 		{
+
 				glm::vec2 ShootingPadUV = calculateshootingPadUV();
 				if(showshootingPad)
                 {
@@ -3157,11 +3201,17 @@ break;
                     MenuFunctionChoose(ShootingPadUV);
                 }
 
-				else if(m_secondMenu!=_nothing)
+                else if(m_secondMenu==_colorPad)
 				{
 
 					ColorMenuChoose(ShootingPadUV);
 				}
+
+                else if(m_secondMenu==_brainMap)
+                {
+
+
+                }
                 qDebug()<<showshootingPad;
 		}
 
@@ -4534,6 +4584,8 @@ break;
 				//2.return to top menu from second menu and hide second menu meantime
 				//3.hide top menu
 				//4.when no menu show ,hide ray
+
+         qDebug()<<"k_EButton_SteamVR_Trigger";
 				showshootingPad = !showshootingPad; //show virtualPad
 				if (showshootingPad)
 					m_secondMenu = _nothing;
@@ -4676,6 +4728,14 @@ void CMainApplication::MergeNeuronTrees(NeuronTree &ntree, const QList<NeuronTre
 			ntree.hashNeuron.insert(ss.n, ntree.listNeuron.size()-1);
 		}
 	}
+}
+void CMainApplication::RefreshImages()
+{
+    RenderStereoTargets();
+    vr::Texture_t leftEyeTexture = {(void*)(uintptr_t)leftEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+    vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture );
+    vr::Texture_t rightEyeTexture = {(void*)(uintptr_t)rightEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+    vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture );
 }
 
 //-----------------------------------------------------------------------------
@@ -5011,56 +5071,208 @@ bool CMainApplication::CreateAllShaders()//todo: change shader code
 		&& m_unControllerRayProgramID!= 0
 		&& m_unImageAxesProgramID!= 0;
 }
+bool CMainApplication::SetupBrainMapTexture()
+{
+    // 获取大脑地形图的图像路径
+    QString qstrFullPath = QCoreApplication::applicationDirPath() + "/received_image.png";
+    qDebug() << "Loading brain map image from: " << qstrFullPath;
+
+    // 使用 QImage 加载大脑地形图
+    QImage brainMapImage(qstrFullPath);
+    if (brainMapImage.isNull()) {
+        qCritical() << "Failed to load brain map image!";
+        return false;
+    }
+
+    // 使用 LoadTextureFromQImage 封装的函数加载纹理
+    if (!Load2DBrainTextureFromQImage(brainMapImage)) {
+        qCritical() << "Failed to load brain map texture!";
+        return false;
+    }
+
+    qDebug() << "Brain map texture loaded successfully!";
+    return true;
+}
+bool CMainApplication::Load2DBrainTextureFromQImage(const QImage& image)
+{
+    if (image.isNull()) {
+        qCritical() << "Failed to load image!";
+        return false;
+    }
+
+    // 将图像转换为 32 位 ARGB 格式（兼容性强）
+    QImage imageARGB = image.convertToFormat(QImage::Format_ARGB32);
+    if (imageARGB.isNull()) {
+        qCritical() << "Failed to convert image to ARGB format!";
+        return false;
+    }
+
+    // 获取图像的宽度、高度和数据指针
+    int nImageWidth = imageARGB.width();
+    int nImageHeight = imageARGB.height();
+    unsigned char *imageData = imageARGB.bits(); // 获取图像数据
+
+    // 将 ARGB 数据转换为 RGBA 格式（OpenGL 更易支持）
+    for (int i = 0; i < nImageWidth * nImageHeight; ++i) {
+        unsigned char a = imageData[i * 4 + 3]; // Alpha 通道
+        unsigned char r = imageData[i * 4 + 2]; // Red 通道
+        unsigned char g = imageData[i * 4 + 1]; // Green 通道
+        unsigned char b = imageData[i * 4 + 0]; // Blue 通道
+
+        // 调整为 RGBA 格式
+        imageData[i * 4 + 0] = r;
+        imageData[i * 4 + 1] = g;
+        imageData[i * 4 + 2] = b;
+        imageData[i * 4 + 3] = a;
+    }
+
+    // 创建 OpenGL 纹理
+    glGenTextures(1, &m_iTextureBrainMap);
+    glBindTexture(GL_TEXTURE_2D, m_iTextureBrainMap);
+
+    // 将图像数据上传到 OpenGL 纹理
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nImageWidth, nImageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+
+    // 生成 Mipmap
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // 设置纹理参数
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    // 设置最大各向异性过滤
+    GLfloat fLargest;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+
+    // 解绑纹理
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return (m_iTextureBrainMap != 0);
+}
+
+
 bool CMainApplication::SetupTexturemaps()
 {
-	//std::string sExecutableDirectory = Path_StripFilename( Path_GetExecutablePath() );
-	//std::string strFullPath = Path_MakeAbsolute( "../cube_texture.png", sExecutableDirectory );
-	//qDebug()<<"current applicationDirPath: "<<QCoreApplication::applicationDirPath();  
-	//qDebug()<<"current currentPath: "<<QDir::currentPath();
+    //std::string sExecutableDirectory = Path_StripFilename( Path_GetExecutablePath() );
+    //std::string strFullPath = Path_MakeAbsolute( "../cube_texture.png", sExecutableDirectory );
+    //qDebug()<<"current applicationDirPath: "<<QCoreApplication::applicationDirPath();
+    //qDebug()<<"current currentPath: "<<QDir::currentPath();
     QString qstrFullPath = QCoreApplication::applicationDirPath() +"/materials/controller_texture5.png";
     qDebug()<<"current currentPath: "<<qstrFullPath;
-	//std::string strFullPath ="../materials/controller_texture.png";//C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/
-	std::vector<unsigned char> imageRGBA;
-	unsigned nImageWidth, nImageHeight;
-	unsigned nError = lodepng::decode( imageRGBA, nImageWidth, nImageHeight, qstrFullPath.toStdString());//strFullPath.c_str() );
+    //std::string strFullPath ="../materials/controller_texture.png";//C:/Users/penglab/Documents/GitHub/v3d_external/v3d_main/v3d/release/
+    std::vector<unsigned char> imageRGBA;
+    unsigned nImageWidth, nImageHeight;
+    unsigned nError = lodepng::decode( imageRGBA, nImageWidth, nImageHeight, qstrFullPath.toStdString());//strFullPath.c_str() );
 	
-	if ( nError != 0 )
-		return false;
-	for(int i = 0;i < nImageWidth; i ++)
-	{
-		for(int j = 0; j < nImageHeight; j ++)
-		{
-			if(imageRGBA[(j*nImageWidth + i)*4+1] > 225 && imageRGBA[(j*nImageWidth + i)*4+2] > 225)
-			{
-				imageRGBA[(j*nImageWidth + i)*4+3] = 1;
-			}
-			else
-			{
-				imageRGBA[(j*nImageWidth + i)*4+3] = 255;
-			}
-		}
-	}
-	glGenTextures(1, &m_iTexture );
-	glBindTexture( GL_TEXTURE_2D, m_iTexture );
+    if ( nError != 0 )
+        return false;
+    for(int i = 0;i < nImageWidth; i ++)
+    {
+        for(int j = 0; j < nImageHeight; j ++)
+        {
+            if(imageRGBA[(j*nImageWidth + i)*4+1] > 225 && imageRGBA[(j*nImageWidth + i)*4+2] > 225)
+            {
+                imageRGBA[(j*nImageWidth + i)*4+3] = 1;
+            }
+            else
+            {
+                imageRGBA[(j*nImageWidth + i)*4+3] = 255;
+            }
+        }
+    }
+    glGenTextures(1, &m_iTexture );
+    glBindTexture( GL_TEXTURE_2D, m_iTexture );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, nImageWidth, nImageHeight,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, &imageRGBA[0] );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, nImageWidth, nImageHeight,
+        0, GL_RGBA, GL_UNSIGNED_BYTE, &imageRGBA[0] );
 
-	glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
-	GLfloat fLargest;
-	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+    GLfloat fLargest;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
 	 	
-	glBindTexture( GL_TEXTURE_2D, 0 );
+    glBindTexture( GL_TEXTURE_2D, 0 );
 
-	return ( m_iTexture != 0 );
+    return ( m_iTexture != 0 );
+
+
+//    // 获取图像路径
+//    QString qstrFullPath = QCoreApplication::applicationDirPath() + "/materials/controller_texture5.png";
+//    qDebug() << "Loading image from: " << qstrFullPath;
+
+//     // 使用 QImage 加载图像
+//     QImage image(qstrFullPath);
+//     if (image.isNull()) {
+//         qCritical() << "Failed to load image!";
+//         return false;
+//     }
+
+//     // 将图像转换为 32 位 ARGB 格式（兼容性强）
+//     QImage imageARGB = image.convertToFormat(QImage::Format_ARGB32);
+//     if (imageARGB.isNull()) {
+//         qCritical() << "Failed to convert image to ARGB format!";
+//         return false;
+//     }
+
+//     // 获取图像的宽度、高度和数据指针
+//     int nImageWidth = imageARGB.width();
+//     int nImageHeight = imageARGB.height();
+//     unsigned char *imageData = imageARGB.bits(); // 获取图像数据
+
+//     // 将 ARGB 数据转换为 RGBA 格式（OpenGL 更易支持）
+//     for (int i = 0; i < nImageWidth * nImageHeight; ++i) {
+//         unsigned char a = imageData[i * 4 + 3]; // Alpha 通道
+//         unsigned char r = imageData[i * 4 + 2]; // Red 通道
+//         unsigned char g = imageData[i * 4 + 1]; // Green 通道
+//         unsigned char b = imageData[i * 4 + 0]; // Blue 通道
+
+//         // 调整为 RGBA 格式
+//         imageData[i * 4 + 0] = r;
+//         imageData[i * 4 + 1] = g;
+//         imageData[i * 4 + 2] = b;
+//         imageData[i * 4 + 3] = a;
+//     }
+
+//     // 调试信息
+//     qDebug() << "Image loaded successfully. Size:" << nImageWidth << "x" << nImageHeight;
+
+//     // 创建 OpenGL 纹理
+//     glGenTextures(1, &m_iTexture);
+//     glBindTexture(GL_TEXTURE_2D, m_iTexture);
+
+//     // 将图像数据上传到 OpenGL 纹理
+//     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nImageWidth, nImageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+
+//     // 生成 Mipmap
+//     glGenerateMipmap(GL_TEXTURE_2D);
+
+//     // 设置纹理参数
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+//     // 设置最大各向异性过滤
+//     GLfloat fLargest;
+//     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+//     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+
+//     // 解绑纹理
+//     glBindTexture(GL_TEXTURE_2D, 0);
+
+//     // 返回是否成功创建纹理
+//     return (m_iTexture != 0);
 }
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -5672,7 +5884,22 @@ void CMainApplication::SetupControllerTexture()
                 AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.6458f,vcVerts);
                 AddVertex(point_leftbottom.x,point_leftbottom.y,point_leftbottom.z,0.5,0.6458f,vcVerts);
                 AddVertex(point_rightbottom.x,point_rightbottom.y,point_rightbottom.z,1.0,0.6458f,vcVerts);
-				AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
+                AddVertex(point_righttop.x,point_righttop.y,point_righttop.z,1.0,0.0f,vcVerts);
+
+                //test for showing full image in vr
+//            // Texture coordinates (u, v) mapped to 0-1 range
+//            float u_lefttop = 0.0f, v_lefttop = 0.0f;  // top-left corner
+//            float u_righttop = 1.0f, v_righttop = 0.0f;  // top-right corner
+//            float u_leftbottom = 0.0f, v_leftbottom = 1.0f;  // bottom-left corner
+//            float u_rightbottom = 1.0f, v_rightbottom = 1.0f;  // bottom-right corner
+
+//            // Add the vertices for the rectangle with the new texture coordinates
+//            AddVertex(point_lefttop.x, point_lefttop.y, point_lefttop.z, u_lefttop, v_lefttop, vcVerts);
+//            AddVertex(point_righttop.x, point_righttop.y, point_righttop.z, u_righttop, v_righttop, vcVerts);
+//            AddVertex(point_leftbottom.x, point_leftbottom.y, point_leftbottom.z, u_leftbottom, v_leftbottom, vcVerts);
+//            AddVertex(point_leftbottom.x, point_leftbottom.y, point_leftbottom.z, u_leftbottom, v_leftbottom, vcVerts);
+//            AddVertex(point_rightbottom.x, point_rightbottom.y, point_rightbottom.z, u_rightbottom, v_rightbottom, vcVerts);
+//            AddVertex(point_righttop.x, point_righttop.y, point_righttop.z, u_righttop, v_righttop, vcVerts);
 		}
 		//add vertex
 		//1------2/6
@@ -5985,188 +6212,8 @@ void CMainApplication::SetupImageAxes()
 	}
 }
 
-//void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
-//{
-//	NeuronSWC S0,S1;
-//	for(int i = spheres.size();i<neurontree.listNeuron.size();i++)
-//	{
-//		S0=neurontree.listNeuron.at(i);
-//
-//		//draw sphere
-//		spheres.push_back(new Sphere((float)(S0.r)));
-//		spheresPos.push_back(glm::vec3(S0.x,S0.y,S0.z));
-//		if(S0.pn!=-1){
-//			S1 = neurontree.listNeuron.at(S0.pn-1);
-//			//draw cylinder
-//			float dist = glm::sqrt((S1.x-S0.x)*(S1.x-S0.x)+(S1.y-S0.y)*(S1.y-S0.y)+(S1.z-S0.z)*(S1.z-S0.z));
-//			cylinders.push_back(new Cylinder(S0.r,S1.r,dist));
-//		}
-//		//else {//todo-yimin: temp, to be deleted
-//		//	cylinders.push_back(new Cylinder(S0.r,S0.r,0));//generate a degenerated cylinder
-//		//}
-//	}
-//}
-//
-////-----------------------------------------------------------------------------
-//// Purpose: prepare data for line mode
-////-----------------------------------------------------------------------------
-//void CMainApplication::SetupMorphologyLine( int drawMode)//pass 3 parameters: &neuronTree, VAO, VertVBO, IdxVBO
-//{
-//	if(drawMode==0){
-//		SetupMorphologyLine(loadedNT_merged,m_unMorphologyLineModeVAO,m_glMorphologyLineModeVertBuffer,m_glMorphologyLineModeIndexBuffer,m_uiMorphologyLineModeVertcount,drawMode);
-//	}
-//	else{
-//		SetupMorphologyLine(currentNT,m_unSketchMorphologyLineModeVAO,m_glSketchMorphologyLineModeVertBuffer,m_glSketchMorphologyLineModeIndexBuffer,m_uiSketchMorphologyLineModeVertcount,drawMode);
-//	}
-//
-//}//*/
-//
-////-----------------------------------------------------------------------------
-//void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
-//                                           GLuint& LineModeVAO,
-//                                           GLuint& LineModeVBO,
-//                                           GLuint& LineModeIndex,
-//                                           unsigned int& Vertcount,
-//                                           int drawMode)
-//{
-//	vector <glm::vec3> vertices;
-//	vector<GLuint> indices;
-//
-//	NeuronSWC S0,S1;
-//    if (neuron_Tree.listNeuron.size()<1)
-//		return;
-//
-//    // try to be consistent with the 3D viewer window, by PHC 20170616
-//    const QList <NeuronSWC> & listNeuron = neuron_Tree.listNeuron;
-//    const QHash <int, int> & hashNeuron = neuron_Tree.hashNeuron;
-//    RGBA8 rgba = neuron_Tree.color;
-//    bool on    = neuron_Tree.on;
-//    bool editable = neuron_Tree.editable;
-//    int cur_linemode = neuron_Tree.linemode;
-//    //
-//
-//    for(int i=0; i<listNeuron.size(); i++)
-//	{
-//        //S0 = listNeuron.at(i);
-//        //by PHC 20170616. also try to fix the bug of nonsorted neuron display
-//
-//        S1 = listNeuron.at(i);   // at(i) faster than [i]
-//        bool valid = false;
-//        if (S1.pn == -1) // root end, 081105
-//        {
-//            S0 = S1;
-//            valid = true;
-//        }
-//        else if (S1.pn >= 0) //change to >=0 from >0, PHC 091123
-//        {
-//            // or using hash for finding parent node
-//            int j = hashNeuron.value(S1.pn, -1);
-//            if (j>=0 && j <listNeuron.size())
-//            {
-//                S0 = listNeuron.at(j);
-//                valid = true;
-//            }
-//        }
-//        if (! valid)
-//            continue;
-//
-//        //
-//
-//		vertices.push_back(glm::vec3(S0.x,S0.y,S0.z));
-//
-//        glm::vec3 vcolor_load(0,1,0);//green for loaded neuron tree
-//
-//        //by PHC 20170616. Try to draw as consistent as possible as the 3D viewer
-//
-//        if (rgba.a==0 || editable) //make the skeleton be able to use the default color by adjusting alpha value
-//        {
-//            int type = S0.type;
-//            if (editable)
-//            {
-//                int ncolorused = neuron_type_color_num;
-//                if (neuron_type_color_num>19)
-//                    ncolorused = 19;
-//                type = S0.seg_id %(ncolorused -5)+5; //segment color using hanchuan's neuron_type_color
-//            }
-//            if (type >= 300 && type <= 555 )  // heat colormap index starts from 300 , for sequencial feature scalar visaulziation
-//            {
-//                vcolor_load[0] =  neuron_type_color_heat[ type - 300][0];
-//                vcolor_load[1] =  neuron_type_color_heat[ type - 300][1];
-//                vcolor_load[2] =  neuron_type_color_heat[ type - 300][2];
-//            }
-//            else
-//            {
-//                vcolor_load[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
-//                vcolor_load[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
-//                vcolor_load[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
-//            }
-//        }
-//        else
-//        {
-//            vcolor_load[0] = rgba.c[0];
-//            vcolor_load[1] = rgba.c[1];
-//            vcolor_load[2] = rgba.c[2];
-//        }
-//
-//        //
-//
-//        glm::vec3 vcolor_draw(1,0,0);//red for drawing neuron tree
-//
-//        vertices.push_back((drawMode==0) ? vcolor_load : vcolor_draw);
-//
-//        //Yimin's original code which does not display nonsorted neuron correctly
-///*
-//		if (S0.pn != -1)
-//		{
-//			S1 = neuron_Tree.listNeuron.at(S0.pn-1);
-//			indices.push_back(S0.n-1);
-//			indices.push_back(S1.n-1);
-//		}
-//		else
-//		{
-//			indices.push_back(S0.n-1);
-//            indices.push_back(S0.n-1);
-//		}
-// */
-//
-//
-//        {
-//            indices.push_back(S0.n-1);
-//            indices.push_back(S1.n-1);
-//        }
-//	}
-//
-//	Vertcount = vertices.size();
-//
-//    if(LineModeVAO == 0)
-//    {
-//        //setup vao and vbo stuff
-//        glGenVertexArrays(1, &LineModeVAO);
-//        glGenBuffers(1, &LineModeVBO);
-//        glGenBuffers(1, &LineModeIndex);
-//
-//        //now allocate buffers
-//        glBindVertexArray(LineModeVAO);
-//
-//        glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
-//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
-//
-//        glEnableVertexAttribArray(0);
-//        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3), (GLvoid*)0);
-//        uintptr_t offset =  sizeof( glm::vec3 );
-//        glEnableVertexAttribArray( 1 );
-//        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3), (const void *)offset);
-//
-//        glBindVertexArray(0);
-//    }
-//    glBindBuffer(GL_ARRAY_BUFFER, LineModeVBO);
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, LineModeIndex);
-//    if( vertices.size() > 0 )
-//    {
-//        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0],(drawMode==0)?GL_STATIC_DRAW:GL_DYNAMIC_DRAW);
-//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0],(drawMode==0)?GL_STATIC_DRAW: GL_DYNAMIC_DRAW);
-//    }
-//}
+
+
 
 
 void CMainApplication::SetupMorphologySurface(NeuronTree neurontree,vector<Sphere*>& spheres,vector<Cylinder*>& cylinders,vector<glm::vec3>& spheresPos)
@@ -7351,7 +7398,15 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		glUseProgram( m_unCtrTexProgramID );
 		glBindVertexArray( m_ControllerTexVAO );
 		glUniformMatrix4fv( m_nCtrTexMatrixLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix( nEye ).get() );
-		glBindTexture( GL_TEXTURE_2D, m_iTexture );
+//        if (m_secondMenu == _brainMap)
+//        {
+//            glBindTexture(GL_TEXTURE_2D, m_iTextureBrainMap);
+//        }
+//        else
+//        {
+//            glBindTexture(GL_TEXTURE_2D, m_iTexture);
+//        }
+        glBindTexture(GL_TEXTURE_2D, m_iTexture);
 		glDrawArrays( GL_TRIANGLES, 0, m_uiControllerTexIndexSize );
 		glBindTexture( GL_TEXTURE_2D, 0 );
 		glBindVertexArray( 0 );
@@ -7518,6 +7573,7 @@ void CMainApplication::UpdateHMDMatrixPose()
 	}
 	
 }
+
 
 QString  CMainApplication::getHMDPOSstr()
 {
@@ -8491,6 +8547,10 @@ Matrix4 CMainApplication::ConvertSteamVRMatrixToMatrix4( const vr::HmdMatrix34_t
 	return matrixObj;
 }
 
+void CMainApplication::SetupQuad() {
+
+}
+
 /***********************************
 ***    volume image rendering    ***
 ***********************************/
@@ -8663,6 +8723,18 @@ GLuint CMainApplication::initFace2DTex(GLuint bfTexWidth, GLuint bfTexHeight)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, bfTexWidth, bfTexHeight, 0, GL_RGBA, GL_FLOAT, NULL);
     return backFace2DTex;
 }
+void CMainApplication::LoadNewTextureFromQImage(const QImage &image) {
+
+
+}
+
+
+GLuint CMainApplication::renderReceivedImageTo3DTexture(const QByteArray &imageData)
+{
+    GLuint w;
+    return w;
+}
+
 
 // init 3D texture to store the volume data used fo ray casting
 GLuint CMainApplication::initVol3DTex()
@@ -8822,7 +8894,12 @@ void CMainApplication::SetupVolumeRendering()
 	//g_volTexObj_octree_32 = initVolOctree3DTex(32);
     initFrameBufferForVolumeRendering(g_bfTexObj, g_texWidth, g_texHeight);
 }
-
+void CMainApplication::onNewVolumeDataReceived(const QByteArray &imageData)
+{
+    // 将 QByteArray 图像数据转换为 3D 纹理
+    g_volTexObj_brain = renderReceivedImageTo3DTexture(imageData);
+    qDebug() << "New image data received and texture updated.";
+}
 bool CMainApplication::CreateVolumeRenderingShaders()
 {
 	//qDebug("CreateVolumeRenderingShaders() is called.");
@@ -9123,7 +9200,13 @@ glm::vec2 CMainApplication::calculateshootingPadUV()
 		point_righttop = Vector4(0.1f,0.05f,-0.05f,1);
 		point_leftbottom = Vector4(-0.1f,0.02f,0.03f,1);
 		point_rightbottom = Vector4(0.1f,0.02f,0.03f,1);
-	}
+    }else if(m_secondMenu==_brainMap)
+    {
+//        point_lefttop = Vector4(-0.1f,0.05f,-0.05f,1);
+//        point_righttop = Vector4(0.1f,0.05f,-0.05f,1);
+//        point_leftbottom = Vector4(-0.1f,0.02f,0.03f,1);
+//        point_rightbottom = Vector4(0.1f,0.02f,0.03f,1);
+    }
 	point_lefttop = mat_L * point_lefttop;
 	point_righttop = mat_L * point_righttop;
 	point_leftbottom = mat_L * point_leftbottom;
@@ -9300,8 +9383,8 @@ void CMainApplication::MenuFunctionChoose(glm::vec2 UV)
 		 if((panelpos_x <= 0.436) && (panelpos_y<= 0.617)&&(panelpos_y >= 0.44)&&(panelpos_x >= 0.27))
 		{
 //			m_modeGrip_L = _ColorChange;
-//			m_secondMenu = _colorPad;
-//			showshootingPad = false;
+            m_secondMenu = _brainMap;
+            showshootingPad = false;
             m_modeGrip_L = _Zoom;
             qDebug() << "m_modeGrip_L _Zoom" ;
 			//hide top menu,show color menu
