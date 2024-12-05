@@ -94,23 +94,20 @@ PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
     printf("instance\n");
     if (uniqueInstance == 0)
         uniqueInstance = new PMain(callback, parent);
-    else
-    {
-        uniqueInstance->setWindowState(Qt::WindowNoState);
-        uniqueInstance->raise();
-        uniqueInstance->activateWindow();
-        uniqueInstance->show();
-        if(CViewer::getCurrent())
-        {
-            CViewer::getCurrent()->window3D->setWindowState(Qt::WindowNoState);
-            CViewer::getCurrent()->window3D->raise();
-            CViewer::getCurrent()->window3D->activateWindow();
-            CViewer::getCurrent()->window3D->show();
-            CViewer::getCurrent()->alignToRight(uniqueInstance, 0);
-        }
+
+    uniqueInstance->setWindowState(Qt::WindowNoState);
+    uniqueInstance->raise();
+    uniqueInstance->activateWindow();
+    uniqueInstance->show();
+    if (CViewer::getCurrent()) {
+        CViewer::getCurrent()->window3D->setWindowState(Qt::WindowNoState);
+        CViewer::getCurrent()->window3D->raise();
+        CViewer::getCurrent()->window3D->activateWindow();
+        CViewer::getCurrent()->window3D->show();
+        CViewer::getCurrent()->alignToRight(uniqueInstance, 0);
     }
 
-	return uniqueInstance;
+    return uniqueInstance;
 }
 PMain* PMain::getInstance()
 {
@@ -1181,13 +1178,10 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(lockMagnification, SIGNAL(toggled(bool)), this, SLOT(setLockMagnification(bool)));
 
     // first resize to the desired size
-    resize(380, CSettings::instance()->getViewerHeight());
-
+    //resize(380, CSettings::instance()->getViewerHeight());
 
     //set always on top and show
     //setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
-    show();
-
 
     // fix current window size
     //setFixedSize(width(), height());
