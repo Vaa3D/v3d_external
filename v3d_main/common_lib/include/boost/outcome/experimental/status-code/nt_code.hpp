@@ -1,5 +1,5 @@
 /* Proposed SG14 status_code
-(C) 2018-2021 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
+(C) 2018-2024 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
 File Created: Feb 2018
 
 
@@ -42,21 +42,29 @@ BOOST_OUTCOME_SYSTEM_ERROR2_NAMESPACE_BEGIN
 //! \exclude
 namespace win32
 {
-  // A Win32 NTSTATUS
-  using NTSTATUS = long;
-  // A Win32 HMODULE
-  using HMODULE = void *;
-  // Used to retrieve where the NTDLL DLL is mapped into memory
-  extern HMODULE __stdcall GetModuleHandleW(const wchar_t *lpModuleName);
+#ifdef __MINGW32__
+  extern "C"
+  {
+#endif
+    // A Win32 NTSTATUS
+    using NTSTATUS = long;
+    // A Win32 HMODULE
+    using HMODULE = void *;
+    // Used to retrieve where the NTDLL DLL is mapped into memory
+    extern HMODULE __stdcall GetModuleHandleW(const wchar_t *lpModuleName);
+#ifdef __MINGW32__
+  }
+#else
 #pragma comment(lib, "kernel32.lib")
 #if(defined(__x86_64__) || defined(_M_X64)) || (defined(__aarch64__) || defined(_M_ARM64))
 #pragma comment(linker, "/alternatename:?GetModuleHandleW@win32@system_error2@@YAPEAXPEB_W@Z=GetModuleHandleW")
 #elif defined(__x86__) || defined(_M_IX86) || defined(__i386__)
-#pragma comment(linker, "/alternatename:?GetModuleHandleW@win32@system_error2@@YGPAXPB_W@Z=__imp__GetModuleHandleW@4")
+#pragma comment(linker, "/alternatename:?GetModuleHandleW@win32@system_error2@@YGPAXPB_W@Z=_GetModuleHandleW@4")
 #elif defined(__arm__) || defined(_M_ARM)
 #pragma comment(linker, "/alternatename:?GetModuleHandleW@win32@system_error2@@YAPAXPB_W@Z=GetModuleHandleW")
 #else
 #error Unknown architecture
+#endif
 #endif
 }  // namespace win32
 
@@ -71,7 +79,6 @@ using nt_error = status_error<_nt_code_domain>;
 class _nt_code_domain : public status_code_domain
 {
   template <class DomainType> friend class status_code;
-  template <class StatusCode> friend class detail::indirecting_domain;
   friend class _com_code_domain;
   using _base = status_code_domain;
   static int _nt_code_to_errno(win32::NTSTATUS c)
@@ -103,7 +110,9 @@ class _nt_code_domain : public status_code_domain
   {
     wchar_t buffer[32768];
     static win32::HMODULE ntdll = win32::GetModuleHandleW(L"NTDLL.DLL");
-    win32::DWORD wlen = win32::FormatMessageW(0x00000800 /*FORMAT_MESSAGE_FROM_HMODULE*/ | 0x00001000 /*FORMAT_MESSAGE_FROM_SYSTEM*/ | 0x00000200 /*FORMAT_MESSAGE_IGNORE_INSERTS*/, ntdll, c, (1 << 10) /*MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)*/, buffer, 32768, nullptr);
+    win32::DWORD wlen =
+    win32::FormatMessageW(0x00000800 /*FORMAT_MESSAGE_FROM_HMODULE*/ | 0x00001000 /*FORMAT_MESSAGE_FROM_SYSTEM*/ | 0x00000200 /*FORMAT_MESSAGE_IGNORE_INSERTS*/,
+                          ntdll, c, (1 << 10) /*MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)*/, buffer, 32768, nullptr);
     size_t allocation = wlen + (wlen >> 1);
     win32::DWORD bytes;
     if(wlen == 0)
@@ -159,6 +168,13 @@ public:
   static inline constexpr const _nt_code_domain &get();
 
   virtual string_ref name() const noexcept override { return string_ref("NT domain"); }  // NOLINT
+
+  virtual payload_info_t payload_info() const noexcept override
+  {
+    return {sizeof(value_type), sizeof(status_code_domain *) + sizeof(value_type),
+            (alignof(value_type) > alignof(status_code_domain *)) ? alignof(value_type) : alignof(status_code_domain *)};
+  }
+
 protected:
   virtual bool _do_failure(const status_code<void> &code) const noexcept override  // NOLINT
   {

@@ -69,10 +69,6 @@
 #define BOOST_ATOMIC_DETAIL_NO_CXX11_CONSTEXPR_UNION_INIT
 #endif
 
-#if !defined(__cpp_deduction_guides) || __cpp_deduction_guides < 201703
-#define BOOST_ATOMIC_DETAIL_NO_CXX17_DEDUCTION_GUIDES
-#endif // !defined(__cpp_deduction_guides) || __cpp_deduction_guides < 201703
-
 #if !defined(BOOST_ATOMIC_DETAIL_NO_CXX11_CONSTEXPR_UNION_INIT)
 #define BOOST_ATOMIC_DETAIL_CONSTEXPR_UNION_INIT BOOST_CONSTEXPR
 #else
@@ -112,7 +108,14 @@
 #if __has_builtin(__builtin_constant_p)
 #define BOOST_ATOMIC_DETAIL_IS_CONSTANT(x) __builtin_constant_p(x)
 #endif
-#elif defined(__GNUC__)
+#if __has_builtin(__builtin_clear_padding)
+#define BOOST_ATOMIC_DETAIL_CLEAR_PADDING(x) __builtin_clear_padding(x)
+#elif __has_builtin(__builtin_zero_non_value_bits)
+#define BOOST_ATOMIC_DETAIL_CLEAR_PADDING(x) __builtin_zero_non_value_bits(x)
+#endif
+#endif
+
+#if !defined(BOOST_ATOMIC_DETAIL_IS_CONSTANT) && defined(__GNUC__)
 #define BOOST_ATOMIC_DETAIL_IS_CONSTANT(x) __builtin_constant_p(x)
 #endif
 
@@ -120,59 +123,21 @@
 #define BOOST_ATOMIC_DETAIL_IS_CONSTANT(x) false
 #endif
 
+#if !defined(BOOST_ATOMIC_DETAIL_CLEAR_PADDING) && defined(BOOST_MSVC) && BOOST_MSVC >= 1927
+// Note that as of MSVC 19.29 this intrinsic does not clear padding in unions:
+// https://developercommunity.visualstudio.com/t/__builtin_zero_non_value_bits-does-not-c/1551510
+#define BOOST_ATOMIC_DETAIL_CLEAR_PADDING(x) __builtin_zero_non_value_bits(x)
+#endif
+
+#if !defined(BOOST_ATOMIC_DETAIL_CLEAR_PADDING)
+#define BOOST_ATOMIC_NO_CLEAR_PADDING
+#define BOOST_ATOMIC_DETAIL_CLEAR_PADDING(x)
+#endif
+
 #if (defined(__BYTE_ORDER__) && defined(__FLOAT_WORD_ORDER__) && __BYTE_ORDER__ == __FLOAT_WORD_ORDER__) ||\
     defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
 // This macro indicates that integer and floating point endianness is the same
 #define BOOST_ATOMIC_DETAIL_INT_FP_ENDIAN_MATCH
-#endif
-
-// Deprecated symbols markup
-#if !defined(BOOST_ATOMIC_DETAIL_DEPRECATED) && defined(_MSC_VER)
-#if (_MSC_VER) >= 1400
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg) __declspec(deprecated(msg))
-#else
-// MSVC 7.1 only supports the attribute without a message
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg) __declspec(deprecated)
-#endif
-#endif
-
-#if !defined(BOOST_ATOMIC_DETAIL_DEPRECATED) && defined(__has_extension)
-#if __has_extension(attribute_deprecated_with_message)
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg) __attribute__((deprecated(msg)))
-#endif
-#endif
-
-// gcc since 4.5 supports deprecated attribute with a message; older versions support the attribute without a message.
-// Oracle Studio 12.4 supports deprecated attribute with a message; this is the first release that supports the attribute.
-#if !defined(BOOST_ATOMIC_DETAIL_DEPRECATED) && (\
-    (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 405) ||\
-    (defined(__SUNPRO_CC) && __SUNPRO_CC >= 0x5130))
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg) __attribute__((deprecated(msg)))
-#endif
-
-#if !defined(BOOST_ATOMIC_DETAIL_DEPRECATED) && __cplusplus >= 201402
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg) [[deprecated(msg)]]
-#endif
-
-#if !defined(BOOST_ATOMIC_DETAIL_DEPRECATED) && defined(__GNUC__)
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg) __attribute__((deprecated))
-#endif
-
-#if !defined(BOOST_ATOMIC_DETAIL_DEPRECATED) && defined(__has_attribute)
-#if __has_attribute(deprecated)
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg) __attribute__((deprecated))
-#endif
-#endif
-
-#if !defined(BOOST_ATOMIC_DETAIL_DEPRECATED)
-#define BOOST_ATOMIC_DETAIL_DEPRECATED(msg)
-#endif
-
-// In Boost.Atomic 1.73 we deprecated atomic<>::storage() accessor in favor of atomic<>::value(). In future releases storage() will be removed.
-#if !defined(BOOST_ATOMIC_SILENCE_STORAGE_DEPRECATION)
-#define BOOST_ATOMIC_DETAIL_STORAGE_DEPRECATED BOOST_ATOMIC_DETAIL_DEPRECATED("Boost.Atomic 1.73 has deprecated atomic<>::storage() in favor of atomic<>::value() and atomic<>::storage_type in favor of atomic<>::value_type. You can define BOOST_ATOMIC_SILENCE_STORAGE_DEPRECATION to disable this warning.")
-#else
-#define BOOST_ATOMIC_DETAIL_STORAGE_DEPRECATED
 #endif
 
 #endif // BOOST_ATOMIC_DETAIL_CONFIG_HPP_INCLUDED_

@@ -28,6 +28,7 @@
 #include <boost/interprocess/sync/interprocess_upgradable_mutex.hpp>
 #include <boost/interprocess/sync/shm/named_creation_functor.hpp>
 #include <boost/interprocess/permissions.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 
 //!\file
 //!Describes a named upgradable mutex class for inter-process synchronization
@@ -57,20 +58,20 @@ class named_upgradable_mutex
 
    //!Creates a global upgradable mutex with a name.
    //!If the upgradable mutex can't be created throws interprocess_exception
-   named_upgradable_mutex(create_only_t create_only, const char *name, const permissions &perm = permissions());
+   named_upgradable_mutex(create_only_t, const char *name, const permissions &perm = permissions());
 
    //!Opens or creates a global upgradable mutex with a name.
    //!If the upgradable mutex is created, this call is equivalent to
    //!named_upgradable_mutex(create_only_t, ...)
    //!If the upgradable mutex is already created, this call is equivalent to
    //!named_upgradable_mutex(open_only_t, ... ).
-   named_upgradable_mutex(open_or_create_t open_or_create, const char *name, const permissions &perm = permissions());
+   named_upgradable_mutex(open_or_create_t, const char *name, const permissions &perm = permissions());
 
    //!Opens a global upgradable mutex with a name if that upgradable mutex
    //!is previously.
    //!created. If it is not previously created this function throws
    //!interprocess_exception.
-   named_upgradable_mutex(open_only_t open_only, const char *name);
+   named_upgradable_mutex(open_only_t, const char *name);
 
    #if defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
@@ -79,7 +80,7 @@ class named_upgradable_mutex
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_upgradable_mutex(create_only_t create_only, const wchar_t *name, const permissions &perm = permissions());
+   named_upgradable_mutex(create_only_t, const wchar_t *name, const permissions &perm = permissions());
 
    //!Opens or creates a global upgradable mutex with a name.
    //!If the upgradable mutex is created, this call is equivalent to
@@ -89,7 +90,7 @@ class named_upgradable_mutex
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_upgradable_mutex(open_or_create_t open_or_create, const wchar_t *name, const permissions &perm = permissions());
+   named_upgradable_mutex(open_or_create_t, const wchar_t *name, const permissions &perm = permissions());
 
    //!Opens a global upgradable mutex with a name if that upgradable mutex
    //!is previously.
@@ -98,7 +99,7 @@ class named_upgradable_mutex
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_upgradable_mutex(open_only_t open_only, const wchar_t *name);
+   named_upgradable_mutex(open_only_t, const wchar_t *name);
 
    #endif //defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
@@ -152,6 +153,16 @@ class named_upgradable_mutex
    template<class TimePoint>
    bool timed_lock(const TimePoint &abs_time);
 
+   //!Same as `timed_lock`, but this function is modeled after the
+   //!standard library interface.
+   template<class TimePoint> bool try_lock_until(const TimePoint &abs_time)
+   {  return this->timed_lock(abs_time);  }
+
+   //!Same as `timed_lock`, but this function is modeled after the
+   //!standard library interface.
+   template<class Duration>  bool try_lock_for(const Duration &dur)
+   {  return this->timed_lock(ipcdetail::duration_to_ustime(dur)); }
+
    //!Precondition: The thread must have exclusive ownership of the mutex.
    //!Effects: The calling thread releases the exclusive ownership of the mutex.
    //!Throws: An exception derived from interprocess_exception on error.
@@ -171,6 +182,11 @@ class named_upgradable_mutex
    //!   an exception could be thrown
    void lock_sharable();
 
+   //!Same as `lock_sharable` but with a std-compatible interface
+   //! 
+   void lock_shared()
+   {  this->lock_sharable();  }
+
    //!Requires: The calling thread does not own the mutex.
    //!
    //!Effects: The calling thread tries to acquire sharable ownership of the mutex
@@ -184,6 +200,11 @@ class named_upgradable_mutex
    //!   this function. If the implementation can detect the deadlock,
    //!   an exception could be thrown
    bool try_lock_sharable();
+
+   //!Same as `try_lock_sharable` but with a std-compatible interface
+   //! 
+   bool try_lock_shared()
+   {  return this->try_lock_sharable();  }
 
    //!Requires: The calling thread does not own the mutex.
    //!
@@ -199,10 +220,25 @@ class named_upgradable_mutex
    template<class TimePoint>
    bool timed_lock_sharable(const TimePoint &abs_time);
 
+   //!Same as `timed_lock_sharable`, but this function is modeled after the
+   //!standard library interface.
+   template<class TimePoint> bool try_lock_shared_until(const TimePoint &abs_time)
+   {  return this->timed_lock_sharable(abs_time);  }
+
+   //!Same as `timed_lock_sharable`, but this function is modeled after the
+   //!standard library interface.
+   template<class Duration>  bool try_lock_shared_for(const Duration &dur)
+   {  return this->timed_lock_sharable(ipcdetail::duration_to_ustime(dur)); }
+
    //!Precondition: The thread must have sharable ownership of the mutex.
    //!Effects: The calling thread releases the sharable ownership of the mutex.
    //!Throws: An exception derived from interprocess_exception on error.
    void unlock_sharable();
+
+   //!Same as `unlock_sharable` but with a std-compatible interface
+   //! 
+   void unlock_shared()
+   {  this->unlock_sharable();  }
 
    //Upgradable locking
 

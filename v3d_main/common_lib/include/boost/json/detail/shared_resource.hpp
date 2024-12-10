@@ -10,11 +10,13 @@
 #ifndef BOOST_JSON_DETAIL_SHARED_RESOURCE_HPP
 #define BOOST_JSON_DETAIL_SHARED_RESOURCE_HPP
 
+#include <boost/container/pmr/memory_resource.hpp>
 #include <boost/json/memory_resource.hpp>
 #include <atomic>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 #ifdef _MSC_VER
@@ -24,7 +26,7 @@ namespace detail {
 
 struct BOOST_SYMBOL_VISIBLE
     shared_resource
-    : memory_resource
+    : container::pmr::memory_resource
 {
     BOOST_JSON_DECL
     shared_resource();
@@ -80,6 +82,7 @@ public:
 #endif
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

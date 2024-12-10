@@ -16,8 +16,6 @@
 #include <cstddef>
 #include <utility>
 
-#include <boost/numeric/conversion/cast.hpp>
-
 #include <boost/geometry/util/math.hpp>
 #include <boost/geometry/util/calculation_type.hpp>
 
@@ -67,7 +65,7 @@ public:
     {}
 
     typedef covered_by::spherical_point_box disjoint_point_box_strategy_type;
-    
+
     static inline disjoint_point_box_strategy_type get_disjoint_point_box_strategy()
     {
         return disjoint_point_box_strategy_type();

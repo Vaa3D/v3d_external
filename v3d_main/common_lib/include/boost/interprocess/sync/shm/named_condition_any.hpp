@@ -21,6 +21,8 @@
 
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
+
+#include <boost/interprocess/sync/cv_status.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/interprocess/detail/type_traits.hpp>
 #include <boost/interprocess/creation_tags.hpp>
@@ -33,6 +35,7 @@
 #include <boost/interprocess/permissions.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 #include <boost/interprocess/sync/detail/condition_any_algorithm.hpp>
 
 //!\file
@@ -61,8 +64,8 @@ class shm_named_condition_any
    //!Creates a global condition with a name.
    //!If the condition can't be created throws interprocess_exception
    template <class CharT>
-   shm_named_condition_any(create_only_t create_only, const CharT *name, const permissions &perm = permissions())
-      :  m_shmem  (create_only
+   shm_named_condition_any(create_only_t, const CharT *name, const permissions &perm = permissions())
+      :  m_shmem  (create_only_t()
                   ,name
                   ,sizeof(internal_condition) +
                      open_create_impl_t::ManagedOpenOrCreateUserOffset
@@ -79,8 +82,8 @@ class shm_named_condition_any
    //!shm_named_condition_any(open_only_t, ... )
    //!Does not throw
    template <class CharT>
-   shm_named_condition_any(open_or_create_t open_or_create, const CharT *name, const permissions &perm = permissions())
-      :  m_shmem  (open_or_create
+   shm_named_condition_any(open_or_create_t, const CharT *name, const permissions &perm = permissions())
+      :  m_shmem  (open_or_create_t()
                   ,name
                   ,sizeof(internal_condition) +
                      open_create_impl_t::ManagedOpenOrCreateUserOffset
@@ -94,8 +97,8 @@ class shm_named_condition_any
    //!created. If it is not previously created this function throws
    //!interprocess_exception.
    template <class CharT>
-   shm_named_condition_any(open_only_t open_only, const CharT *name)
-      :  m_shmem  (open_only
+   shm_named_condition_any(open_only_t, const CharT *name)
+      :  m_shmem  (open_only_t()
                   ,name
                   ,read_write
                   ,0
@@ -149,6 +152,30 @@ class shm_named_condition_any
    template <typename L, typename TimePoint, typename Pr>
    bool timed_wait(L& lock, const TimePoint &abs_time, Pr pred)
    {  return this->internal_cond().timed_wait(lock, abs_time, pred); }
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface.
+   template <typename L, class TimePoint>
+   cv_status wait_until(L& lock, const TimePoint &abs_time)
+   {  return this->timed_wait(lock, abs_time) ? cv_status::no_timeout : cv_status::timeout; }
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface.
+   template <typename L, class TimePoint, typename Pr>
+   bool wait_until(L& lock, const TimePoint &abs_time, Pr pred)
+   {  return this->timed_wait(lock, abs_time, pred); }
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface and uses relative timeouts.
+   template <typename L, class Duration>
+   cv_status wait_for(L& lock, const Duration &dur)
+   {  return this->wait_until(lock, ipcdetail::duration_to_ustime(dur)); }
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface and uses relative timeouts
+   template <typename L, class Duration, typename Pr>
+   bool wait_for(L& lock, const Duration &dur, Pr pred)
+   {  return this->wait_until(lock, ipcdetail::duration_to_ustime(dur), pred); }
 
    //!Erases a named condition from the system.
    //!Returns false on error. Never throws.

@@ -67,7 +67,6 @@
 #include <boost/geometry/strategies/cartesian/point_in_poly_crossings_multiply.hpp>
 #include <boost/geometry/strategies/cartesian/point_in_poly_winding.hpp>
 #include <boost/geometry/strategies/cartesian/line_interpolate.hpp>
-#include <boost/geometry/strategies/cartesian/side_by_triangle.hpp>
 
 #include <boost/geometry/strategies/spherical/azimuth.hpp>
 #include <boost/geometry/strategies/spherical/densify.hpp>
@@ -85,7 +84,11 @@
 #include <boost/geometry/strategies/spherical/ssf.hpp>
 
 #include <boost/geometry/strategies/geographic/azimuth.hpp>
+#include <boost/geometry/strategies/geographic/buffer_end_round.hpp>
+#include <boost/geometry/strategies/geographic/buffer_join_miter.hpp>
+#include <boost/geometry/strategies/geographic/buffer_join_round.hpp>
 #include <boost/geometry/strategies/geographic/buffer_point_circle.hpp>
+#include <boost/geometry/strategies/geographic/buffer_side_straight.hpp>
 #include <boost/geometry/strategies/geographic/densify.hpp>
 #include <boost/geometry/strategies/geographic/disjoint_segment_box.hpp>
 #include <boost/geometry/strategies/geographic/distance.hpp>
@@ -135,6 +138,8 @@
 #include <boost/geometry/strategy/cartesian/expand_box.hpp>
 #include <boost/geometry/strategy/cartesian/expand_point.hpp>
 #include <boost/geometry/strategy/cartesian/expand_segment.hpp>
+#include <boost/geometry/strategy/cartesian/side_by_triangle.hpp>
+#include <boost/geometry/strategy/cartesian/side_robust.hpp>
 
 #include <boost/geometry/strategy/geographic/area.hpp>
 #include <boost/geometry/strategy/geographic/envelope.hpp>

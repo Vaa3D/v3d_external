@@ -21,8 +21,11 @@
 
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
+
+#include <boost/interprocess/sync/cv_status.hpp>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/exceptions.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 #include <boost/interprocess/detail/interprocess_tester.hpp>
 #include <boost/interprocess/permissions.hpp>
 #include <boost/interprocess/sync/detail/locks.hpp>
@@ -58,7 +61,7 @@ class named_condition
 
    //!Creates a global condition with a name.
    //!If the condition can't be created throws interprocess_exception
-   named_condition(create_only_t create_only, const char *name, const permissions &perm = permissions());
+   named_condition(create_only_t, const char *name, const permissions &perm = permissions());
 
    //!Opens or creates a global condition with a name.
    //!If the condition is created, this call is equivalent to
@@ -66,12 +69,12 @@ class named_condition
    //!If the condition is already created, this call is equivalent
    //!named_condition(open_only_t, ... )
    //!Does not throw
-   named_condition(open_or_create_t open_or_create, const char *name, const permissions &perm = permissions());
+   named_condition(open_or_create_t, const char *name, const permissions &perm = permissions());
 
    //!Opens a global condition with a name if that condition is previously
    //!created. If it is not previously created this function throws
    //!interprocess_exception.
-   named_condition(open_only_t open_only, const char *name);
+   named_condition(open_only_t, const char *name);
 
    //!Opens a global condition with a name if that condition is previously
    //!created. If it is not previously created this function throws
@@ -83,7 +86,7 @@ class named_condition
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_condition(create_only_t create_only, const wchar_t *name, const permissions &perm = permissions());
+   named_condition(create_only_t, const wchar_t *name, const permissions &perm = permissions());
 
    //!Opens or creates a global condition with a name.
    //!If the condition is created, this call is equivalent to
@@ -94,7 +97,7 @@ class named_condition
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_condition(open_or_create_t open_or_create, const wchar_t *name, const permissions &perm = permissions());
+   named_condition(open_or_create_t, const wchar_t *name, const permissions &perm = permissions());
 
    //!Opens a global condition with a name if that condition is previously
    //!created. If it is not previously created this function throws
@@ -102,7 +105,7 @@ class named_condition
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_condition(open_only_t open_only, const wchar_t *name);
+   named_condition(open_only_t, const wchar_t *name);
 
    #endif //#if defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
@@ -146,6 +149,30 @@ class named_condition
    //!               } return true;
    template <typename L, class TimePoint, typename Pr>
    bool timed_wait(L& lock, const TimePoint &abs_time, Pr pred);
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface.
+   template <typename L, class TimePoint>
+   cv_status wait_until(L& lock, const TimePoint &abs_time)
+   {  return this->timed_wait(lock, abs_time) ? cv_status::no_timeout : cv_status::timeout; }
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface.
+   template <typename L, class TimePoint, typename Pr>
+   bool wait_until(L& lock, const TimePoint &abs_time, Pr pred)
+   {  return this->timed_wait(lock, abs_time, pred); }
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface and uses relative timeouts.
+   template <typename L, class Duration>
+   cv_status wait_for(L& lock, const Duration &dur)
+   {  return this->wait_until(lock, ipcdetail::duration_to_ustime(dur)); }
+
+   //!Same as `timed_wait`, but this function is modeled after the
+   //!standard library interface and uses relative timeouts
+   template <typename L, class Duration, typename Pr>
+   bool wait_for(L& lock, const Duration &dur, Pr pred)
+   {  return this->wait_until(lock, ipcdetail::duration_to_ustime(dur), pred); }
 
    //!Erases a named condition from the system.
    //!Returns false on error. Never throws.

@@ -22,7 +22,6 @@
 
 #include <boost/concept_check.hpp>
 #include <boost/assert.hpp>
-#include <boost/spirit/include/classic_core.hpp>
 
 #include <boost/wave/wave_config.hpp>
 #include <boost/wave/language_support.hpp>
@@ -274,7 +273,8 @@ lexer<IteratorT, PositionT, TokenT>::get(TokenT& result)
     case T_ANY_TRIGRAPH:
         if (boost::wave::need_convert_trigraphs(language)) {
             value = impl::convert_trigraph(
-                string_type((char const *)scanner.tok));
+                string_type((char const *)scanner.tok,
+                            scanner.cur-scanner.tok));
         }
         else {
             value = string_type((char const *)scanner.tok,
@@ -315,12 +315,13 @@ lexer<IteratorT, PositionT, TokenT>::report_error(Scanner<IteratorT> const *s, i
     BOOST_ASSERT(0 != s);
     BOOST_ASSERT(0 != msg);
 
-    using namespace std;    // some system have vsprintf in namespace std
+    using namespace std;    // some systems have vsnprintf in namespace std
 
-    char buffer[200];           // should be large enough
+    constexpr std::size_t bufsize = 200;            // should be large enough
+    char buffer[bufsize];
     va_list params;
     va_start(params, msg);
-    vsprintf(buffer, msg, params);
+    vsnprintf(buffer, bufsize, msg, params);
     va_end(params);
 
     BOOST_WAVE_LEXER_THROW_VAR(lexing_exception, errcode, buffer, s->line,

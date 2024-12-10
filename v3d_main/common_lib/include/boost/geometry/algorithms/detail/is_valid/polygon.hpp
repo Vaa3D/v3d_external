@@ -1,9 +1,9 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2017 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2017-2023 Adam Wulkiewicz, Lodz, Poland.
 
-// Copyright (c) 2014-2020, Oracle and/or its affiliates.
-
+// Copyright (c) 2014-2023, Oracle and/or its affiliates.
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
@@ -34,7 +34,7 @@
 #include <boost/geometry/core/ring_type.hpp>
 #include <boost/geometry/core/tags.hpp>
 
-#include <boost/geometry/util/condition.hpp>
+#include <boost/geometry/util/constexpr.hpp>
 #include <boost/geometry/util/range.hpp>
 #include <boost/geometry/util/sequence.hpp>
 
@@ -50,7 +50,6 @@
 #include <boost/geometry/algorithms/detail/point_on_border.hpp>
 #include <boost/geometry/algorithms/within.hpp>
 
-#include <boost/geometry/algorithms/detail/check_iterator_range.hpp>
 #include <boost/geometry/algorithms/detail/partition.hpp>
 
 #include <boost/geometry/algorithms/detail/is_valid/complement_graph.hpp>
@@ -86,17 +85,17 @@ class is_valid_polygon
 protected:
 
     template <typename VisitPolicy, typename Strategy>
-    struct per_ring
+    struct is_invalid_ring
     {
-        per_ring(VisitPolicy& policy, Strategy const& strategy)
+        is_invalid_ring(VisitPolicy& policy, Strategy const& strategy)
             : m_policy(policy)
             , m_strategy(strategy)
         {}
 
         template <typename Ring>
-        inline bool apply(Ring const& ring) const
+        inline bool operator()(Ring const& ring) const
         {
-            return detail::is_valid::is_valid_ring
+            return ! detail::is_valid::is_valid_ring
                 <
                     Ring, false, true
                 >::apply(ring, m_policy, m_strategy);
@@ -111,14 +110,9 @@ protected:
                                          VisitPolicy& visitor,
                                          Strategy const& strategy)
     {
-        return
-            detail::check_iterator_range
-                <
-                    per_ring<VisitPolicy, Strategy>,
-                    true // allow for empty interior ring range
-                >::apply(boost::begin(interior_rings),
-                         boost::end(interior_rings),
-                         per_ring<VisitPolicy, Strategy>(visitor, strategy));
+        return std::none_of(boost::begin(interior_rings),
+                            boost::end(interior_rings),
+                            is_invalid_ring<VisitPolicy, Strategy>(visitor, strategy));
     }
 
     struct has_valid_rings
@@ -372,7 +366,7 @@ protected:
     }
 
     struct has_holes_inside
-    {    
+    {
         template <typename TurnIterator, typename VisitPolicy, typename Strategy>
         static inline bool apply(Polygon const& polygon,
                                  TurnIterator first,
@@ -410,7 +404,7 @@ protected:
             typedef complement_graph
                 <
                     typename turn_type::point_type,
-                    typename Strategy::cs_tag
+                    Strategy
                 > graph;
 
             graph g(geometry::num_interior_rings(polygon) + 1);
@@ -452,46 +446,48 @@ public:
             return false;
         }
 
-        if (BOOST_GEOMETRY_CONDITION(CheckRingValidityOnly))
+        if BOOST_GEOMETRY_CONSTEXPR (CheckRingValidityOnly)
         {
             return true;
         }
-
-        // compute turns and check if all are acceptable
-        typedef debug_validity_phase<Polygon> debug_phase;
-        debug_phase::apply(3);
-
-        typedef has_valid_self_turns<Polygon, typename Strategy::cs_tag> has_valid_turns;
-
-        std::deque<typename has_valid_turns::turn_type> turns;
-        bool has_invalid_turns
-            = ! has_valid_turns::apply(polygon, turns, visitor, strategy);
-        debug_print_turns(turns.begin(), turns.end());
-
-        if (has_invalid_turns)
+        else // else prevents unreachable code warning
         {
-            return false;
+            // compute turns and check if all are acceptable
+            typedef debug_validity_phase<Polygon> debug_phase;
+            debug_phase::apply(3);
+
+            typedef has_valid_self_turns<Polygon, typename Strategy::cs_tag> has_valid_turns;
+
+            std::deque<typename has_valid_turns::turn_type> turns;
+            bool has_invalid_turns
+                = ! has_valid_turns::apply(polygon, turns, visitor, strategy);
+            debug_print_turns(turns.begin(), turns.end());
+
+            if (has_invalid_turns)
+            {
+                return false;
+            }
+
+            // check if all interior rings are inside the exterior ring
+            debug_phase::apply(4);
+
+            if (! has_holes_inside::apply(polygon,
+                                          turns.begin(), turns.end(),
+                                          visitor,
+                                          strategy))
+            {
+                return false;
+            }
+
+            // check whether the interior of the polygon is a connected set
+            debug_phase::apply(5);
+
+            return has_connected_interior::apply(polygon,
+                                                 turns.begin(),
+                                                 turns.end(),
+                                                 visitor,
+                                                 strategy);
         }
-
-        // check if all interior rings are inside the exterior ring
-        debug_phase::apply(4);
-
-        if (! has_holes_inside::apply(polygon,
-                                      turns.begin(), turns.end(),
-                                      visitor,
-                                      strategy))
-        {
-            return false;
-        }
-
-        // check whether the interior of the polygon is a connected set
-        debug_phase::apply(5);
-
-        return has_connected_interior::apply(polygon,
-                                             turns.begin(),
-                                             turns.end(),
-                                             visitor,
-                                             strategy);
     }
 };
 

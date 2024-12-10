@@ -669,6 +669,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             }
             else if(mouseEvt->button() == Qt::RightButton && PAnoToolBar::instance()->buttonMarkerCreate->isChecked())
             {
+                qDebug()<<"glwidget size"<<view3DWidget->size();
                 createMarkerAt(mouseEvt->x(), mouseEvt->y());
                 return true;
             }

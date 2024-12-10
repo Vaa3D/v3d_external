@@ -28,7 +28,7 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/detail/utilities.hpp>
-#include <boost/interprocess/detail/timed_utils.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/exceptions.hpp>
@@ -38,6 +38,7 @@
 #include <boost/intrusive/pointer_traits.hpp>
 #include <boost/move/detail/type_traits.hpp> //make_unsigned, alignment_of
 #include <boost/intrusive/pointer_traits.hpp>
+#include <boost/move/detail/force_ptr.hpp>
 #include <boost/assert.hpp>
 #include <algorithm> //std::lower_bound
 #include <cstddef>   //std::size_t
@@ -82,7 +83,7 @@ class message_queue_t
    //!Creates a process shared message queue with name "name". For this message queue,
    //!the maximum number of messages will be "max_num_msg" and the maximum message size
    //!will be "max_msg_size". Throws on error and if the queue was previously created.
-   message_queue_t(create_only_t create_only,
+   message_queue_t(create_only_t,
                  const char *name,
                  size_type max_num_msg,
                  size_type max_msg_size,
@@ -93,7 +94,7 @@ class message_queue_t
    //!and the maximum message size will be "max_msg_size". If queue was previously
    //!created the queue will be opened and "max_num_msg" and "max_msg_size" parameters
    //!are ignored. Throws on error.
-   message_queue_t(open_or_create_t open_or_create,
+   message_queue_t(open_or_create_t,
                  const char *name,
                  size_type max_num_msg,
                  size_type max_msg_size,
@@ -102,7 +103,7 @@ class message_queue_t
    //!Opens a previously created process shared message queue with name "name".
    //!If the queue was not previously created or there are no free resources,
    //!throws an error.
-   message_queue_t(open_only_t open_only, const char *name);
+   message_queue_t(open_only_t, const char *name);
 
    #if defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
@@ -112,7 +113,7 @@ class message_queue_t
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   message_queue_t(create_only_t create_only,
+   message_queue_t(create_only_t,
                  const wchar_t *name,
                  size_type max_num_msg,
                  size_type max_msg_size,
@@ -126,7 +127,7 @@ class message_queue_t
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   message_queue_t(open_or_create_t open_or_create,
+   message_queue_t(open_or_create_t,
                  const wchar_t *name,
                  size_type max_num_msg,
                  size_type max_msg_size,
@@ -138,9 +139,15 @@ class message_queue_t
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   message_queue_t(open_only_t open_only, const wchar_t *name);
+   message_queue_t(open_only_t, const wchar_t *name);
 
    #endif //defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
+
+   //!Creates a process shared message queue in anonymous memory. For this message queue,
+   //!the maximum number of messages will be "max_num_msg" and the maximum message size
+   //!will be "max_msg_size". Throws on error.
+   message_queue_t(size_type max_num_msg,
+                 size_type max_msg_size);
 
    //!Destroys *this and indicates that the calling process is finished using
    //!the resource. All opened message queues are still
@@ -407,24 +414,24 @@ class mq_hdr_t
    msg_header &top_msg()
    {
       size_type pos = this->end_pos();
-      return *mp_index[pos ? --pos : m_max_num_msg - 1];
+      return *mp_index[difference_type(pos ? --pos : m_max_num_msg - 1)];
    }
 
    //!Returns the inserted message with bottom priority
    msg_header &bottom_msg()
-      {  return *mp_index[m_cur_first_msg];   }
+      {  return *mp_index[difference_type(m_cur_first_msg)];   }
 
    iterator inserted_ptr_begin() const
-   {  return &mp_index[m_cur_first_msg]; }
+   {  return &mp_index[difference_type(m_cur_first_msg)]; }
 
    iterator inserted_ptr_end() const
-      {  return &mp_index[this->end_pos()];  }
+      {  return &mp_index[difference_type(this->end_pos())];  }
 
    iterator lower_bound(const msg_hdr_ptr_t & value, priority_functor<VoidPointer> func)
    {
       iterator begin(this->inserted_ptr_begin()), end(this->inserted_ptr_end());
       if(end < begin){
-         iterator idx_end = &mp_index[m_max_num_msg];
+         iterator idx_end = &mp_index[difference_type(m_max_num_msg)];
          iterator ret = std::lower_bound(begin, idx_end, value, func);
          if(idx_end == ret){
             iterator idx_beg = &mp_index[0];
@@ -452,14 +459,14 @@ class mq_hdr_t
          m_cur_first_msg = m_cur_first_msg ? m_cur_first_msg : m_max_num_msg;
          --m_cur_first_msg;
          ++m_cur_num_msg;
-         return *mp_index[m_cur_first_msg];
+         return *mp_index[difference_type(m_cur_first_msg)];
       }
       else if(where == it_inserted_ptr_end){
          ++m_cur_num_msg;
          return **it_inserted_ptr_end;
       }
       else{
-         size_type pos  = where - &mp_index[0];
+         size_type pos  = size_type(where - &mp_index[0]);
          size_type circ_pos = pos >= m_cur_first_msg ? pos - m_cur_first_msg : pos + (m_max_num_msg - m_cur_first_msg);
          //Check if it's more efficient to move back or move front
          if(circ_pos < m_cur_num_msg/2){
@@ -467,7 +474,7 @@ class mq_hdr_t
             //indicates two step insertion
             if(!pos){
                pos   = m_max_num_msg;
-               where = &mp_index[m_max_num_msg-1];
+               where = &mp_index[difference_type(m_max_num_msg-1u)];
             }
             else{
                --where;
@@ -484,7 +491,7 @@ class mq_hdr_t
                std::copy( &mp_index[0] + second_segment_beg
                         , &mp_index[0] + second_segment_end
                         , &mp_index[0] + second_segment_beg - 1);
-               mp_index[m_max_num_msg-1] = mp_index[0];
+               mp_index[difference_type(m_max_num_msg-1u)] = mp_index[0];
             }
             std::copy( &mp_index[0] + first_segment_beg
                      , &mp_index[0] + first_segment_end
@@ -510,12 +517,12 @@ class mq_hdr_t
             if(!unique_segment){
                std::copy_backward( &mp_index[0] + second_segment_beg
                                  , &mp_index[0] + second_segment_end
-                                 , &mp_index[0] + second_segment_end + 1);
-               mp_index[0] = mp_index[m_max_num_msg-1];
+                                 , &mp_index[0] + second_segment_end + 1u);
+               mp_index[0] = mp_index[difference_type(m_max_num_msg-1u)];
             }
             std::copy_backward( &mp_index[0] + first_segment_beg
                               , &mp_index[0] + first_segment_end
-                              , &mp_index[0] + first_segment_end + 1);
+                              , &mp_index[0] + first_segment_end + 1u);
             *where = backup;
             ++m_cur_num_msg;
             return **where;
@@ -529,7 +536,7 @@ class mq_hdr_t
 
    //!Returns the inserted message with top priority
    msg_header &top_msg()
-      {  return *mp_index[m_cur_num_msg-1];   }
+      {  return *mp_index[difference_type(m_cur_num_msg-1u)];   }
 
    //!Returns the inserted message with bottom priority
    msg_header &bottom_msg()
@@ -539,7 +546,7 @@ class mq_hdr_t
    {  return &mp_index[0]; }
 
    iterator inserted_ptr_end() const
-   {  return &mp_index[m_cur_num_msg]; }
+   {  return &mp_index[difference_type(m_cur_num_msg)]; }
 
    iterator lower_bound(const msg_hdr_ptr_t & value, priority_functor<VoidPointer> func)
    {  return std::lower_bound(this->inserted_ptr_begin(), this->inserted_ptr_end(), value, func);  }
@@ -611,11 +618,11 @@ class mq_hdr_t
          r_max_msg_size = ipcdetail::get_rounded_size<size_type>(m_max_msg_size, msg_hdr_align) + sizeof(msg_header);
 
       //Pointer to the index
-      msg_hdr_ptr_t *index =  reinterpret_cast<msg_hdr_ptr_t*>
+      msg_hdr_ptr_t *index =  move_detail::force_ptr<msg_hdr_ptr_t*>
                                  (reinterpret_cast<char*>(this)+r_hdr_size);
 
       //Pointer to the first message header
-      msg_header *msg_hdr   =  reinterpret_cast<msg_header*>
+      msg_header *msg_hdr   =  move_detail::force_ptr<msg_header*>
                                  (reinterpret_cast<char*>(this)+r_hdr_size+r_index_size);
 
       //Initialize the pointer to the index
@@ -624,7 +631,7 @@ class mq_hdr_t
       //Initialize the index so each slot points to a preallocated message
       for(size_type i = 0; i < m_max_num_msg; ++i){
          index[i] = msg_hdr;
-         msg_hdr  = reinterpret_cast<msg_header*>
+         msg_hdr  = move_detail::force_ptr<msg_header*>
                         (reinterpret_cast<char*>(msg_hdr)+r_max_msg_size);
       }
    }
@@ -683,8 +690,7 @@ class msg_queue_initialization_func_t
          }
          BOOST_CATCH(...){
             return false;
-         }
-         BOOST_CATCH_END
+         } BOOST_CATCH_END
       }
       return true;
    }
@@ -804,6 +810,15 @@ inline message_queue_t<VoidPointer>::message_queue_t(open_only_t, const wchar_t 
 
 #endif //defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
+template <class VoidPointer>
+inline message_queue_t<VoidPointer>::message_queue_t(size_type max_num_msg,
+                                    size_type max_msg_size)
+   :  m_shmem(get_mem_size(max_msg_size, max_num_msg),
+            static_cast<void*>(0),
+            //Prepare initialization functor
+            ipcdetail::msg_queue_initialization_func_t<VoidPointer> (max_num_msg, max_msg_size))
+{}
+
 template<class VoidPointer>
 inline void message_queue_t<VoidPointer>::send
    (const void *buffer, size_type buffer_size, unsigned int priority)
@@ -893,8 +908,7 @@ inline bool message_queue_t<VoidPointer>::do_send(
             --p_hdr->m_blocked_senders;
             #endif
             BOOST_RETHROW;
-         }
-         BOOST_CATCH_END
+         } BOOST_CATCH_END
       }
 
       #if defined(BOOST_INTERPROCESS_MSG_QUEUE_CIRCULAR_INDEX)
@@ -1024,8 +1038,7 @@ inline bool
             --p_hdr->m_blocked_receivers;
             #endif
             BOOST_RETHROW;
-         }
-         BOOST_CATCH_END
+         } BOOST_CATCH_END
       }
 
       #ifdef BOOST_INTERPROCESS_MSG_QUEUE_CIRCULAR_INDEX

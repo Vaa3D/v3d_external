@@ -1,4 +1,4 @@
-// Copyright Antony Polukhin, 2016-2021.
+// Copyright Antony Polukhin, 2016-2024.
 //
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
@@ -90,8 +90,8 @@ std::string frame::name() const {
     }
 
 #if !defined(BOOST_WINDOWS) && !defined(__CYGWIN__)
-    ::Dl_info dli;
-    const bool dl_ok = !!::dladdr(const_cast<void*>(addr_), &dli); // `dladdr` on Solaris accepts nonconst addresses
+    boost::stacktrace::detail::Dl_info dli;
+    const bool dl_ok = !!boost::stacktrace::detail::dladdr(addr_, dli);
     if (dl_ok && dli.dli_sname) {
         return boost::core::demangle(dli.dli_sname);
     }

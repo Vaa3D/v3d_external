@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_HPP
 #define BOOST_JSON_DETAIL_VALUE_HPP
 
+#include <boost/json/fwd.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <cstdint>
@@ -17,7 +18,8 @@
 #include <new>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 struct key_t
@@ -271,7 +273,12 @@ struct access
     }
 };
 
+BOOST_JSON_DECL
+std::size_t
+hash_value_impl( value const& jv ) noexcept;
+
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

@@ -2549,8 +2549,8 @@ void Renderer_gl1::_appendMarkerPos(int x, int y)
     pos.y = 2 * y;
 #endif
 #ifdef Q_OS_MACX
-    pos.x = x;
-    pos.y = y;
+    pos.x = 2 * x;
+    pos.y = 2 * y;
 #endif
     pos.drawn = false;
     for (int i=0; i<4; i++){

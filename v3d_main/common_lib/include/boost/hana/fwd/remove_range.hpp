@@ -2,7 +2,7 @@
 @file
 Forward declares `boost::hana::remove_range` and `boost::hana::remove_range_c`.
 
-@copyright Louis Dionne 2013-2017
+Copyright Louis Dionne 2013-2022
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -16,7 +16,7 @@ Distributed under the Boost Software License, Version 1.0.
 #include <cstddef>
 
 
-BOOST_HANA_NAMESPACE_BEGIN
+namespace boost { namespace hana {
     //! Remove the elements inside a given range of indices from a sequence.
     //! @ingroup group-Sequence
     //!
@@ -80,6 +80,6 @@ BOOST_HANA_NAMESPACE_BEGIN
     template <std::size_t from, std::size_t to>
     BOOST_HANA_INLINE_VARIABLE constexpr remove_range_c_t<from, to> remove_range_c{};
 #endif
-BOOST_HANA_NAMESPACE_END
+}} // end namespace boost::hana
 
 #endif // !BOOST_HANA_FWD_REMOVE_RANGE_HPP

@@ -4,8 +4,8 @@
 //
 // Copyright (c) 2011-2018 Adam Wulkiewicz, Lodz, Poland.
 //
-// This file was modified by Oracle on 2019-2020.
-// Modifications copyright (c) 2019-2020 Oracle and/or its affiliates.
+// This file was modified by Oracle on 2019-2021.
+// Modifications copyright (c) 2019-2021 Oracle and/or its affiliates.
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 //
 // Use, modification and distribution is subject to the Boost Software License,
@@ -16,9 +16,12 @@
 #define BOOST_GEOMETRY_INDEX_DETAIL_ALGORITHMS_INTERSECTION_CONTENT_HPP
 
 #include <boost/geometry/algorithms/detail/disjoint/box_box.hpp>
-#include <boost/geometry/algorithms/detail/overlay/intersection_box_box.hpp>
+#include <boost/geometry/algorithms/detail/intersection/box_box_implementation.hpp>
 
 #include <boost/geometry/index/detail/algorithms/content.hpp>
+
+#include <boost/geometry/strategies/default_strategy.hpp>
+#include <boost/geometry/strategies/disjoint.hpp>
 
 namespace boost { namespace geometry { namespace index { namespace detail {
 

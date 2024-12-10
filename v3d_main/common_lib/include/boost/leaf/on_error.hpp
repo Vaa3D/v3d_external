@@ -1,21 +1,12 @@
 #ifndef BOOST_LEAF_ON_ERROR_HPP_INCLUDED
 #define BOOST_LEAF_ON_ERROR_HPP_INCLUDED
 
-/// Copyright (c) 2018-2021 Emil Dotchevski and Reverge Studios, Inc.
+// Copyright 2018-2023 Emil Dotchevski and Reverge Studios, Inc.
 
-/// Distributed under the Boost Software License, Version 1.0. (See accompanying
-/// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef BOOST_LEAF_ENABLE_WARNINGS ///
-#   if defined(_MSC_VER) ///
-#       pragma warning(push,1) ///
-#   elif defined(__clang__) ///
-#       pragma clang system_header ///
-#   elif (__GNUC__*100+__GNUC_MINOR__>301) ///
-#       pragma GCC system_header ///
-#   endif ///
-#endif ///
-
+#include <boost/leaf/config.hpp>
 #include <boost/leaf/error.hpp>
 
 namespace boost { namespace leaf {
@@ -101,69 +92,54 @@ namespace leaf_detail
     class preloaded_item
     {
         using decay_E = typename std::decay<E>::type;
-        slot<decay_E> * s_;
         decay_E e_;
 
     public:
 
         BOOST_LEAF_CONSTEXPR preloaded_item( E && e ):
-            s_(tl_slot_ptr<decay_E>::p),
             e_(std::forward<E>(e))
         {
         }
 
         BOOST_LEAF_CONSTEXPR void trigger( int err_id ) noexcept
         {
-            BOOST_LEAF_ASSERT((err_id&3)==1);
-            if( s_ )
-            {
-                if( !s_->has_value(err_id) )
-                    s_->put(err_id, std::move(e_));
-            }
-#if BOOST_LEAF_DIAGNOSTICS
-            else
-            {
-                int c = tl_unexpected_enabled<>::counter;
-                BOOST_LEAF_ASSERT(c>=0);
-                if( c )
-                    load_unexpected(err_id, std::move(e_));
-            }
-#endif
+            (void) load_slot<true>(err_id, std::move(e_));
         }
     };
 
-    template <class F>
+    template <class F, class ReturnType = typename function_traits<F>::return_type>
     class deferred_item
     {
-        using E = decltype(std::declval<F>()());
-        slot<E> * s_;
         F f_;
 
     public:
 
         BOOST_LEAF_CONSTEXPR deferred_item( F && f ) noexcept:
-            s_(tl_slot_ptr<E>::p),
             f_(std::forward<F>(f))
         {
         }
 
         BOOST_LEAF_CONSTEXPR void trigger( int err_id ) noexcept
         {
-            BOOST_LEAF_ASSERT((err_id&3)==1);
-            if( s_ )
-            {
-                if( !s_->has_value(err_id) )
-                    s_->put(err_id, f_());
-            }
-#if BOOST_LEAF_DIAGNOSTICS
-            else
-            {
-                int c = tl_unexpected_enabled<>::counter;
-                BOOST_LEAF_ASSERT(c>=0);
-                if( c )
-                    load_unexpected(err_id, std::forward<E>(f_()));
-            }
-#endif
+            (void) load_slot_deferred<true>(err_id, f_);
+        }
+    };
+
+    template <class F>
+    class deferred_item<F, void>
+    {
+        F f_;
+
+    public:
+
+        BOOST_LEAF_CONSTEXPR deferred_item( F && f ) noexcept:
+            f_(std::forward<F>(f))
+        {
+        }
+
+        BOOST_LEAF_CONSTEXPR void trigger( int ) noexcept
+        {
+            f_();
         }
     };
 
@@ -173,26 +149,18 @@ namespace leaf_detail
     template <class F, class A0>
     class accumulating_item<F, A0 &, 1>
     {
-        using E = A0;
-        slot<E> * s_;
         F f_;
 
     public:
 
         BOOST_LEAF_CONSTEXPR accumulating_item( F && f ) noexcept:
-            s_(tl_slot_ptr<E>::p),
             f_(std::forward<F>(f))
         {
         }
 
         BOOST_LEAF_CONSTEXPR void trigger( int err_id ) noexcept
         {
-            BOOST_LEAF_ASSERT((err_id&3)==1);
-            if( s_ )
-                if( E * e = s_->has_value(err_id) )
-                    (void) f_(*e);
-                else
-                    (void) f_(s_->put(err_id, E()));
+            load_slot_accumulate<true>(err_id, std::move(f_));
         }
     };
 
@@ -253,7 +221,7 @@ namespace leaf_detail
 }
 
 template <class... Item>
-BOOST_LEAF_NODISCARD BOOST_LEAF_CONSTEXPR inline
+BOOST_LEAF_ATTRIBUTE_NODISCARD BOOST_LEAF_CONSTEXPR inline
 leaf_detail::preloaded<typename leaf_detail::deduce_item_type<Item>::type...>
 on_error( Item && ... i )
 {
@@ -261,9 +229,5 @@ on_error( Item && ... i )
 }
 
 } }
-
-#if defined(_MSC_VER) && !defined(BOOST_LEAF_ENABLE_WARNINGS) ///
-#pragma warning(pop) ///
-#endif ///
 
 #endif

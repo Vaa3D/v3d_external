@@ -4,8 +4,9 @@
 //
 // Copyright (c) 2011-2015 Adam Wulkiewicz, Lodz, Poland.
 //
-// This file was modified by Oracle on 2019-2021.
-// Modifications copyright (c) 2019-2021 Oracle and/or its affiliates.
+// This file was modified by Oracle on 2019-2023.
+// Modifications copyright (c) 2019-2023 Oracle and/or its affiliates.
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 //
 // Use, modification and distribution is subject to the Boost Software License,
@@ -19,9 +20,20 @@
 #include <type_traits>
 //#include <utility>
 
+#include <boost/geometry/algorithms/detail/covered_by/interface.hpp>
+#include <boost/geometry/algorithms/detail/disjoint/interface.hpp>
+#include <boost/geometry/algorithms/detail/intersects/interface.hpp>
+#include <boost/geometry/algorithms/detail/overlaps/interface.hpp>
+#include <boost/geometry/algorithms/detail/touches/interface.hpp>
+#include <boost/geometry/algorithms/detail/within/interface.hpp>
+
 #include <boost/geometry/core/static_assert.hpp>
+#include <boost/geometry/core/tag.hpp>
+#include <boost/geometry/core/tags.hpp>
 
 #include <boost/geometry/index/detail/tags.hpp>
+
+#include <boost/geometry/strategies/default_strategy.hpp>
 
 namespace boost { namespace geometry { namespace index { namespace detail {
 
@@ -31,10 +43,10 @@ namespace predicates {
 // predicates
 // ------------------------------------------------------------------ //
 
-template <typename Fun, bool IsFunction>
+template <typename Fun, bool IsFunction = std::is_function<Fun>::value>
 struct satisfies_impl
 {
-    satisfies_impl() : fun(NULL) {}
+    satisfies_impl() : fun(nullptr) {}
     satisfies_impl(Fun f) : fun(f) {}
     Fun * fun;
 };
@@ -42,20 +54,19 @@ struct satisfies_impl
 template <typename Fun>
 struct satisfies_impl<Fun, false>
 {
-    satisfies_impl() {}
+    satisfies_impl() = default;
     satisfies_impl(Fun const& f) : fun(f) {}
     Fun fun;
 };
 
 template <typename Fun, bool Negated>
-struct satisfies
-    : satisfies_impl<Fun, ::boost::is_function<Fun>::value>
+struct satisfies : satisfies_impl<Fun>
 {
-    typedef satisfies_impl<Fun, ::boost::is_function<Fun>::value> base;
+    using base_t = satisfies_impl<Fun>;
 
-    satisfies() {}
-    satisfies(Fun const& f) : base(f) {}
-    satisfies(base const& b) : base(b) {}
+    satisfies() = default;
+    satisfies(Fun const& f) : base_t(f) {}
+    satisfies(base_t const& b) : base_t(b) {}
 };
 
 // ------------------------------------------------------------------ //
@@ -619,11 +630,13 @@ struct predicates_check_impl<std::tuple<Ts...>, Tag, First, Last>
     }
 };
 
-template <typename Tag, std::size_t First, std::size_t Last, typename Predicates, typename Value, typename Indexable, typename Strategy>
+template <typename Tag, typename Predicates, typename Value, typename Indexable, typename Strategy>
 inline bool predicates_check(Predicates const& p, Value const& v, Indexable const& i, Strategy const& s)
 {
-    return detail::predicates_check_impl<Predicates, Tag, First, Last>
-        ::apply(p, v, i, s);
+    return detail::predicates_check_impl
+        <
+            Predicates, Tag, 0, predicates_length<Predicates>::value
+        >::apply(p, v, i, s);
 }
 
 // ------------------------------------------------------------------ //

@@ -1,7 +1,8 @@
 // Boost.Geometry
 
-// Copyright (c) 2020, Oracle and/or its affiliates.
+// Copyright (c) 2020-2023, Oracle and/or its affiliates.
 
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Licensed under the Boost Software License version 1.0.
@@ -26,6 +27,8 @@
 #include <boost/geometry/strategies/detail.hpp>
 
 #include <boost/geometry/strategy/cartesian/area.hpp>
+#include <boost/geometry/strategy/cartesian/side_robust.hpp>
+#include <boost/geometry/strategy/cartesian/side_by_triangle.hpp>
 #include <boost/geometry/strategy/cartesian/area_box.hpp>
 
 #include <boost/geometry/util/type_traits.hpp>
@@ -156,7 +159,10 @@ public:
 
     static auto side()
     {
-        return strategy::side::side_by_triangle<CalculationType>();
+        using side_strategy_type
+            = typename strategy::side::services::default_strategy
+                <cartesian_tag, CalculationType>::type;
+        return side_strategy_type();
     }
 
     // within
@@ -182,6 +188,14 @@ public:
     {
         return strategy::within::cartesian_box_box();
     }
+
+    template <typename ComparePolicy, typename EqualsPolicy>
+    using compare_type = typename strategy::compare::cartesian
+        <
+            ComparePolicy,
+            EqualsPolicy,
+            -1
+        >;
 };
 
 
@@ -376,6 +390,15 @@ template <typename CalculationType>
 struct strategy_converter<strategy::side::side_by_triangle<CalculationType>>
 {
     static auto get(strategy::side::side_by_triangle<CalculationType> const&)
+    {
+        return strategies::relate::cartesian<CalculationType>();
+    }
+};
+
+template <typename CalculationType>
+struct strategy_converter<strategy::side::side_robust<CalculationType>>
+{
+    static auto get(strategy::side::side_robust<CalculationType> const&)
     {
         return strategies::relate::cartesian<CalculationType>();
     }

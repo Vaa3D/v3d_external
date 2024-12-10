@@ -20,15 +20,16 @@
 #pragma warning(disable: 4127) // conditional expression is constant
 #endif
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 enum class serializer::state : char
 {
     nul1, nul2, nul3, nul4,
     tru1, tru2, tru3, tru4,
     fal1, fal2, fal3, fal4, fal5,
-    str1, str2, str3, str4, esc1,
-    utf1, utf2, utf3, utf4, utf5,
+    str1, str2, str3, esc1, utf1,
+    utf2, utf3, utf4, utf5,
     num,
     arr1, arr2, arr3, arr4,
     obj1, obj2, obj3, obj4, obj5, obj6
@@ -37,7 +38,18 @@ enum class serializer::state : char
 //----------------------------------------------------------
 
 serializer::
-~serializer() noexcept = default;
+serializer(
+    storage_ptr sp,
+    unsigned char* buf,
+    std::size_t buf_size,
+    serialize_options const& opts) noexcept
+    : st_(
+        std::move(sp),
+        buf,
+        buf_size)
+    , opts_(opts)
+{
+}
 
 bool
 serializer::
@@ -222,7 +234,6 @@ write_string(stream& ss0)
         case state::str1: goto do_str1;
         case state::str2: goto do_str2;
         case state::str3: goto do_str3;
-        case state::str4: goto do_str4;
         case state::esc1: goto do_esc1;
         case state::utf1: goto do_utf1;
         case state::utf2: goto do_utf2;
@@ -341,12 +352,6 @@ do_str3:
     }
     return suspend(state::str3);
 
-do_str4:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('\x22'); // '"'
-    else
-        return suspend(state::str4);
-
 do_esc1:
     if(BOOST_JSON_LIKELY(ss))
         ss.append(buf_[0]);
@@ -424,12 +429,15 @@ write_number(stream& ss0)
                 ss.remain() >=
                     detail::max_number_chars))
             {
-                ss.advance(detail::format_double(
-                    ss.data(), jv_->get_double()));
+                ss.advance(
+                    detail::format_double(
+                        ss.data(),
+                        jv_->get_double(),
+                        opts_.allow_infinity_and_nan));
                 return true;
             }
             cs0_ = { buf_, detail::format_double(
-                buf_, jv_->get_double()) };
+                buf_, jv_->get_double(), opts_.allow_infinity_and_nan) };
             break;
         }
     }
@@ -687,8 +695,7 @@ write_value(stream& ss)
             return write_false<StackEmpty>(ss);
 
         case state::str1: case state::str2:
-        case state::str3: case state::str4:
-        case state::esc1:
+        case state::str3: case state::esc1:
         case state::utf1: case state::utf2:
         case state::utf3: case state::utf4:
         case state::utf5:
@@ -737,7 +744,8 @@ read_some(
 //----------------------------------------------------------
 
 serializer::
-serializer() noexcept
+serializer( serialize_options const& opts ) noexcept
+    : opts_(opts)
 {
     // ensure room for \uXXXX escape plus one
     BOOST_STATIC_ASSERT(
@@ -813,7 +821,8 @@ read(char* dest, std::size_t size)
     return read_some(dest, size);
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #ifdef _MSC_VER
 #pragma warning(pop)

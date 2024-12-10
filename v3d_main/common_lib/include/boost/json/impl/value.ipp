@@ -10,17 +10,75 @@
 #ifndef BOOST_JSON_IMPL_VALUE_IPP
 #define BOOST_JSON_IMPL_VALUE_IPP
 
+#include <boost/container_hash/hash.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/detail/hash_combine.hpp>
+#include <boost/json/parser.hpp>
 #include <cstring>
+#include <istream>
 #include <limits>
 #include <new>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
+
+namespace
+{
+
+int parse_depth_xalloc = std::ios::xalloc();
+int parse_flags_xalloc = std::ios::xalloc();
+
+struct value_hasher
+{
+    std::size_t& seed;
+
+    template< class T >
+    void operator()( T&& t ) const noexcept
+    {
+        boost::hash_combine( seed, t );
+    }
+};
+
+enum class stream_parse_flags
+{
+    allow_comments = 1 << 0,
+    allow_trailing_commas = 1 << 1,
+    allow_invalid_utf8 = 1 << 2,
+};
+
+long
+to_bitmask( parse_options const& opts )
+{
+    using E = stream_parse_flags;
+    return
+        (opts.allow_comments ?
+            static_cast<long>(E::allow_comments) : 0) |
+        (opts.allow_trailing_commas ?
+            static_cast<long>(E::allow_trailing_commas) : 0) |
+        (opts.allow_invalid_utf8 ?
+            static_cast<long>(E::allow_invalid_utf8) : 0);
+}
+
+parse_options
+get_parse_options( std::istream& is )
+{
+    long const flags = is.iword(parse_flags_xalloc);
+
+    using E = stream_parse_flags;
+    parse_options opts;
+    opts.allow_comments =
+        flags & static_cast<long>(E::allow_comments) ? true : false;
+    opts.allow_trailing_commas =
+        flags & static_cast<long>(E::allow_trailing_commas) ? true : false;
+    opts.allow_invalid_utf8 =
+        flags & static_cast<long>(E::allow_invalid_utf8) ? true : false;
+    return opts;
+}
+
+} // namespace
 
 value::
-~value()
+~value() noexcept
 {
     switch(kind())
     {
@@ -173,13 +231,28 @@ value(
     storage_ptr sp)
 {
     if(value_ref::maybe_object(init))
+    {
         ::new(&obj_) object(
             value_ref::make_object(
                 init, std::move(sp)));
+    }
     else
-        ::new(&arr_) array(
-            value_ref::make_array(
-                init, std::move(sp)));
+    {
+#ifndef BOOST_JSON_LEGACY_INIT_LIST_BEHAVIOR
+        if( init.size() == 1 )
+        {
+            ::new(&sca_) scalar();
+            value temp = init.begin()->make_value( std::move(sp) );
+            swap(temp);
+        }
+        else
+#endif
+        {
+            ::new(&arr_) array(
+                value_ref::make_array(
+                    init, std::move(sp)));
+        }
+    }
 }
 
 //----------------------------------------------------------
@@ -285,6 +358,279 @@ operator=(object&& obj)
 
 //----------------------------------------------------------
 //
+// Accessors
+//
+//----------------------------------------------------------
+
+system::result<array&>
+value::try_as_array() noexcept
+{
+    if( is_array() )
+        return arr_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_array);
+    return ec;
+}
+
+system::result<array const&>
+value::try_as_array() const noexcept
+{
+    if( is_array() )
+        return arr_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_array);
+    return ec;
+}
+
+system::result<object&>
+value::try_as_object() noexcept
+{
+    if( is_object() )
+        return obj_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_object);
+    return ec;
+}
+
+system::result<object const&>
+value::try_as_object() const noexcept
+{
+    if( is_object() )
+        return obj_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_object);
+    return ec;
+}
+
+system::result<string&>
+value::try_as_string() noexcept
+{
+    if( is_string() )
+        return str_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return ec;
+}
+
+system::result<string const&>
+value::try_as_string() const noexcept
+{
+    if( is_string() )
+        return str_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return ec;
+}
+
+system::result<std::int64_t&>
+value::try_as_int64() noexcept
+{
+    if( is_int64() )
+        return sca_.i;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_int64);
+    return ec;
+}
+
+system::result<std::int64_t>
+value::try_as_int64() const noexcept
+{
+    if( is_int64() )
+        return sca_.i;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_int64);
+    return ec;
+}
+
+system::result<std::uint64_t&>
+value::try_as_uint64() noexcept
+{
+    if( is_uint64() )
+        return sca_.u;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_uint64);
+    return ec;
+}
+
+system::result<std::uint64_t>
+value::try_as_uint64() const noexcept
+{
+    if( is_uint64() )
+        return sca_.u;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_uint64);
+    return ec;
+}
+
+system::result<double&>
+value::try_as_double() noexcept
+{
+    if( is_double() )
+        return sca_.d;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_double);
+    return ec;
+}
+
+system::result<double>
+value::try_as_double() const noexcept
+{
+    if( is_double() )
+        return sca_.d;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_double);
+    return ec;
+}
+
+system::result<bool&>
+value::try_as_bool() noexcept
+{
+    if( is_bool() )
+        return sca_.b;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_bool);
+    return ec;
+}
+
+system::result<bool>
+value::try_as_bool() const noexcept
+{
+    if( is_bool() )
+        return sca_.b;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_bool);
+    return ec;
+}
+
+system::result<std::nullptr_t>
+value::try_as_null() const noexcept
+{
+    if( is_null() )
+        return nullptr;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_null);
+    return ec;
+}
+
+boost::system::result<value&>
+value::try_at(string_view key) noexcept
+{
+    auto r = try_as_object();
+    if( !r )
+        return r.error();
+    return r->try_at(key);
+}
+
+boost::system::result<value const&>
+value::try_at(string_view key) const noexcept
+{
+    auto r = try_as_object();
+    if( !r )
+        return r.error();
+    return r->try_at(key);
+}
+
+boost::system::result<value&>
+value::try_at(std::size_t pos) noexcept
+{
+    auto r = try_as_array();
+    if( !r )
+        return r.error();
+    return r->try_at(pos);
+}
+
+boost::system::result<value const&>
+value::try_at(std::size_t pos) const noexcept
+{
+    auto r = try_as_array();
+    if( !r )
+        return r.error();
+    return r->try_at(pos);
+}
+
+object const&
+value::as_object(source_location const& loc) const&
+{
+    return try_as_object().value(loc);
+}
+
+array const&
+value::as_array(source_location const& loc) const&
+{
+    return try_as_array().value(loc);
+}
+
+string const&
+value::as_string(source_location const& loc) const&
+{
+    return try_as_string().value(loc);
+}
+
+std::int64_t&
+value::as_int64(source_location const& loc)
+{
+    return try_as_int64().value(loc);
+}
+
+std::int64_t
+value::as_int64(source_location const& loc) const
+{
+    return try_as_int64().value(loc);
+}
+
+std::uint64_t&
+value::as_uint64(source_location const& loc)
+{
+    return try_as_uint64().value(loc);
+}
+
+std::uint64_t
+value::as_uint64(source_location const& loc) const
+{
+    return try_as_uint64().value(loc);
+}
+
+double&
+value::as_double(source_location const& loc)
+{
+    return try_as_double().value(loc);
+}
+
+double
+value::as_double(source_location const& loc) const
+{
+    return try_as_double().value(loc);
+}
+
+bool&
+value::as_bool(source_location const& loc)
+{
+    return try_as_bool().value(loc);
+}
+
+bool
+value::as_bool(source_location const& loc) const
+{
+    return try_as_bool().value(loc);
+}
+
+//----------------------------------------------------------
+//
 // Modifiers
 //
 //----------------------------------------------------------
@@ -341,6 +687,117 @@ swap(value& other)
     ::new(&other) value(pilfer(temp1));
     this->~value();
     ::new(this) value(pilfer(temp2));
+}
+
+std::istream&
+operator>>(
+    std::istream& is,
+    value& jv)
+{
+    using Traits = std::istream::traits_type;
+
+    // sentry prepares the stream for reading and finalizes it in destructor
+    std::istream::sentry sentry(is);
+    if( !sentry )
+        return is;
+
+    parse_options opts = get_parse_options( is );
+    if( auto depth = static_cast<std::size_t>( is.iword(parse_depth_xalloc) ) )
+        opts.max_depth = depth;
+
+    unsigned char parser_buf[BOOST_JSON_STACK_BUFFER_SIZE / 2];
+    stream_parser p( {}, opts, parser_buf );
+    p.reset( jv.storage() );
+
+    char read_buf[BOOST_JSON_STACK_BUFFER_SIZE / 2];
+    std::streambuf& buf = *is.rdbuf();
+    std::ios::iostate err = std::ios::goodbit;
+#ifndef BOOST_NO_EXCEPTIONS
+    try
+#endif
+    {
+        while( true )
+        {
+            system::error_code ec;
+
+            // we peek the buffer; this either makes sure that there's no
+            // more input, or makes sure there's something in the internal
+            // buffer (so in_avail will return a positive number)
+            std::istream::int_type c = is.rdbuf()->sgetc();
+            // if we indeed reached EOF, we check if we parsed a full JSON
+            // document; if not, we error out
+            if( Traits::eq_int_type(c, Traits::eof()) )
+            {
+                err |= std::ios::eofbit;
+                p.finish(ec);
+                if( ec.failed() )
+                    break;
+            }
+
+            // regardless of reaching EOF, we might have parsed a full JSON
+            // document; if so, we successfully finish
+            if( p.done() )
+            {
+                jv = p.release();
+                return is;
+            }
+
+            // at this point we definitely have more input, specifically in
+            // buf's internal buffer; we also definitely haven't parsed a whole
+            // document
+            std::streamsize available = buf.in_avail();
+            // if this assert fails, the streambuf is buggy
+            BOOST_ASSERT( available > 0 );
+
+            available = ( std::min )(
+                static_cast<std::size_t>(available), sizeof(read_buf) );
+            // we read from the internal buffer of buf into our buffer
+            available = buf.sgetn( read_buf, available );
+
+            std::size_t consumed = p.write_some(
+                read_buf, static_cast<std::size_t>(available), ec );
+            // if the parser hasn't consumed the entire input we've took from
+            // buf, we put the remaining data back; this should succeed,
+            // because we only read data from buf's internal buffer
+            while( consumed++ < static_cast<std::size_t>(available) )
+            {
+                std::istream::int_type const status = buf.sungetc();
+                BOOST_ASSERT( status != Traits::eof() );
+                (void)status;
+            }
+
+            if( ec.failed() )
+                break;
+        }
+    }
+#ifndef BOOST_NO_EXCEPTIONS
+    catch(...)
+    {
+        try
+        {
+            is.setstate(std::ios::badbit);
+        }
+        // we ignore the exception, because we need to throw the original
+        // exception instead
+        catch( std::ios::failure const& ) { }
+
+        if( is.exceptions() & std::ios::badbit )
+            throw;
+    }
+#endif
+
+    is.setstate(err | std::ios::failbit);
+    return is;
+}
+
+std::istream&
+operator>>(
+    std::istream& is,
+    parse_options const& opts)
+{
+    is.iword(parse_flags_xalloc) = to_bitmask(opts);
+    is.iword(parse_depth_xalloc) = static_cast<long>(opts.max_depth);
+    return is;
 }
 
 //----------------------------------------------------------
@@ -493,7 +950,24 @@ key_value_pair(
 
 //----------------------------------------------------------
 
-BOOST_JSON_NS_END
+namespace detail
+{
+
+std::size_t
+hash_value_impl( value const& jv ) noexcept
+{
+    std::size_t seed = 0;
+
+    kind const k = jv.kind();
+    boost::hash_combine( seed, k != kind::int64 ? k : kind::uint64 );
+
+    visit( value_hasher{seed}, jv );
+    return seed;
+}
+
+} // namespace detail
+} // namespace json
+} // namespace boost
 
 //----------------------------------------------------------
 //
@@ -505,40 +979,7 @@ std::size_t
 std::hash<::boost::json::value>::operator()(
     ::boost::json::value const& jv) const noexcept
 {
-  std::size_t seed = static_cast<std::size_t>(jv.kind());
-  switch (jv.kind()) {
-    default:
-    case ::boost::json::kind::null:
-      return seed;
-    case ::boost::json::kind::bool_:
-      return ::boost::json::detail::hash_combine(
-        seed,
-        hash<bool>{}(jv.get_bool()));
-    case ::boost::json::kind::int64:
-      return ::boost::json::detail::hash_combine(
-        static_cast<size_t>(::boost::json::kind::uint64),
-        hash<std::uint64_t>{}(jv.get_int64()));
-    case ::boost::json::kind::uint64:
-      return ::boost::json::detail::hash_combine(
-        seed,
-        hash<std::uint64_t>{}(jv.get_uint64()));
-    case ::boost::json::kind::double_:
-      return ::boost::json::detail::hash_combine(
-        seed,
-        hash<double>{}(jv.get_double()));
-    case ::boost::json::kind::string:
-      return ::boost::json::detail::hash_combine(
-        seed,
-        hash<::boost::json::string>{}(jv.get_string()));
-    case ::boost::json::kind::array:
-      return ::boost::json::detail::hash_combine(
-        seed,
-        hash<::boost::json::array>{}(jv.get_array()));
-    case ::boost::json::kind::object:
-      return ::boost::json::detail::hash_combine(
-        seed,
-        hash<::boost::json::object>{}(jv.get_object()));
-  }
+    return ::boost::hash< ::boost::json::value >()( jv );
 }
 
 //----------------------------------------------------------

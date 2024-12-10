@@ -49,6 +49,7 @@
 #ifndef BOOST_NO_EXCEPTIONS
 #include <exception>
 #endif
+#include <typeinfo>
 
 //!\file
 //!Describes the object placed in a memory segment that provides
@@ -303,7 +304,7 @@ class segment_manager_base
       ptr = hdr->value();
 
       //Now call constructors
-      ipcdetail::array_construct(ptr, num, table);
+      table.construct_n(ptr, num);
 
       //All constructors successful, we don't want erase memory
       mem.release();
@@ -329,8 +330,7 @@ class segment_manager_base
 
       //Call destructors and free memory
       //Build scoped ptr to avoid leaks with destructor exception
-      std::size_t destroyed = 0;
-     table.destroy_n(const_cast<void*>(object), ctrl_data->m_value_bytes/table.size, destroyed);
+      table.destroy_n(const_cast<void*>(object), ctrl_data->m_value_bytes/table.size);
       this->deallocate(ctrl_data);
    }
    #endif   //#ifndef BOOST_INTERPROCESS_DOXYGEN_INVOKED
@@ -890,9 +890,9 @@ class segment_manager
        size_type &length, ipcdetail::false_ is_intrusive, bool use_lock)
    {
       (void)is_intrusive;
-      typedef IndexType<ipcdetail::index_config<CharT, MemoryAlgorithm> >      index_type;
-      typedef typename index_type::key_type        key_type;
-      typedef typename index_type::iterator        index_it;
+      typedef IndexType<ipcdetail::index_config<CharT, MemoryAlgorithm> >      char_aware_index_type;
+      typedef typename char_aware_index_type::key_type        key_type;
+      typedef typename char_aware_index_type::iterator        index_it;
 
       //-------------------------------
       scoped_lock<rmutex> guard(priv_get_lock(use_lock));
@@ -987,8 +987,7 @@ class segment_manager
       iv->~intrusive_value_type();
 
       //Call destructors and free memory
-      std::size_t destroyed;
-      table.destroy_n(values, num, destroyed);
+      table.destroy_n(values, num);
       this->deallocate(memory);
       return true;
    }
@@ -1000,9 +999,9 @@ class segment_manager
                                    ipcdetail::false_ is_intrusive_index)
    {
       (void)is_intrusive_index;
-      typedef IndexType<ipcdetail::index_config<CharT, MemoryAlgorithm> >            index_type;
-      typedef typename index_type::iterator              index_it;
-      typedef typename index_type::key_type              key_type;
+      typedef IndexType<ipcdetail::index_config<CharT, MemoryAlgorithm> >            char_aware_index_type;
+      typedef typename char_aware_index_type::iterator              index_it;
+      typedef typename char_aware_index_type::key_type              key_type;
 
       //-------------------------------
       scoped_lock<rmutex> guard(m_header);
@@ -1026,8 +1025,8 @@ class segment_manager
       IndexType<ipcdetail::index_config<CharT, MemoryAlgorithm> > &index,
       ipcdetail::in_place_interface &table)
    {
-      typedef IndexType<ipcdetail::index_config<CharT, MemoryAlgorithm> >      index_type;
-      typedef typename index_type::iterator        index_it;
+      typedef IndexType<ipcdetail::index_config<CharT, MemoryAlgorithm> >      char_aware_index_type;
+      typedef typename char_aware_index_type::iterator        index_it;
 
       //Get allocation parameters
       block_header_t *ctrl_data = reinterpret_cast<block_header_t*>
@@ -1063,8 +1062,7 @@ class segment_manager
       }
 
       //Call destructors and free memory
-      std::size_t destroyed;
-      table.destroy_n(values, num, destroyed);
+      table.destroy_n(values, num);
       this->deallocate(memory);
       return true;
    }
@@ -1184,7 +1182,7 @@ class segment_manager
       value_eraser<index_type_t> v_eraser(index, it);
 
       //Construct array, this can throw
-      ipcdetail::array_construct(ptr, num, table);
+      table.construct_n(ptr, num);
 
       //Release rollbacks since construction was successful
       v_eraser.release();
@@ -1307,7 +1305,7 @@ class segment_manager
          (buffer_ptr, *static_cast<segment_manager_base_type*>(this));
 
       //Construct array, this can throw
-      ipcdetail::array_construct(ptr, num, table);
+      table.construct_n(ptr, num);
 
       //All constructors successful, we don't want to release memory
       mem.release();

@@ -21,12 +21,15 @@
 
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
+
+#include <boost/interprocess/sync/cv_status.hpp>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/permissions.hpp>
 #include <boost/interprocess/detail/interprocess_tester.hpp>
 #include <boost/interprocess/sync/windows/named_sync.hpp>
 #include <boost/interprocess/sync/windows/winapi_semaphore_wrapper.hpp>
 #include <boost/interprocess/sync/detail/condition_algorithm_8a.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 
 namespace boost {
 namespace interprocess {
@@ -156,6 +159,22 @@ class winapi_named_condition_any
    void wait(L& lock, Pr pred)
    {  m_condition_data.wait(lock, pred);   }
 
+   template <typename L, class TimePoint>
+   cv_status wait_until(L& lock, const TimePoint &abs_time)
+   {  return this->timed_wait(lock, abs_time) ? cv_status::no_timeout : cv_status::timeout; }
+
+   template <typename L, class TimePoint, typename Pr>
+   bool wait_until(L& lock, const TimePoint &abs_time, Pr pred)
+   {  return this->timed_wait(lock, abs_time, pred); }
+
+   template <typename L, class Duration>
+   cv_status wait_for(L& lock, const Duration &dur)
+   {  return this->wait_until(lock, ipcdetail::duration_to_ustime(dur)); }
+
+   template <typename L, class Duration, typename Pr>
+   bool wait_for(L& lock, const Duration &dur, Pr pred)
+   {  return this->wait_until(lock, ipcdetail::duration_to_ustime(dur), pred); }
+
    static bool remove(const char *name)
    {  return windows_named_sync::remove(name);  }
 
@@ -213,33 +232,33 @@ class winapi_named_condition_any
          : m_condition_data(cond_data)
       {}
 
-      virtual std::size_t get_data_size() const
+      virtual std::size_t get_data_size() const BOOST_OVERRIDE
       {  return sizeof(sem_counts);   }
 
-      virtual const void *buffer_with_final_data_to_file()
+      virtual const void *buffer_with_final_data_to_file() BOOST_OVERRIDE
       {
          sem_counts[0] = m_condition_data.m_sem_block_queue.value();
          sem_counts[1] = m_condition_data.m_sem_block_lock.value();
          return &sem_counts;
       }
 
-      virtual const void *buffer_with_init_data_to_file()
+      virtual const void *buffer_with_init_data_to_file() BOOST_OVERRIDE
       {
          sem_counts[0] = 0;
          sem_counts[1] = 1;
          return &sem_counts;
       }
 
-      virtual void *buffer_to_store_init_data_from_file()
+      virtual void *buffer_to_store_init_data_from_file() BOOST_OVERRIDE
       {  return &sem_counts; }
 
-      virtual bool open(create_enum_t op, const char *id_name)
+      virtual bool open(create_enum_t op, const char *id_name) BOOST_OVERRIDE
       {  return this->open_impl(op, id_name);   }
 
-      virtual bool open(create_enum_t op, const wchar_t *id_name)
+      virtual bool open(create_enum_t op, const wchar_t *id_name) BOOST_OVERRIDE
       {  return this->open_impl(op, id_name);   }
 
-      virtual void close()
+      virtual void close() BOOST_OVERRIDE
       {
          m_condition_data.m_sem_block_queue.close();
          m_condition_data.m_sem_block_lock.close();
@@ -249,7 +268,7 @@ class winapi_named_condition_any
          m_condition_data.m_nwaiters_to_unblock = 0;
       }
 
-      virtual ~named_cond_callbacks()
+      virtual ~named_cond_callbacks() BOOST_OVERRIDE
       {}
 
       private:
@@ -276,7 +295,7 @@ class winapi_named_condition_any
          winapi_semaphore_wrapper sem_block_queue;
          bool created;
          if(!sem_block_queue.open_or_create
-            (aux_str.c_str(), sem_counts[0], winapi_semaphore_wrapper::MaxCount, perm, created))
+            (aux_str.c_str(), static_cast<long>(sem_counts[0]), winapi_semaphore_wrapper::MaxCount, perm, created))
             return false;
          aux_str.erase(pos);
 
@@ -284,7 +303,7 @@ class winapi_named_condition_any
          aux_str += str_t::bl();
          winapi_semaphore_wrapper sem_block_lock;
          if(!sem_block_lock.open_or_create
-            (aux_str.c_str(), sem_counts[1], winapi_semaphore_wrapper::MaxCount, perm, created))
+            (aux_str.c_str(), static_cast<long>(sem_counts[1]), winapi_semaphore_wrapper::MaxCount, perm, created))
             return false;
          aux_str.erase(pos);
 

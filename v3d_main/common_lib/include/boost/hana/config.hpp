@@ -2,7 +2,7 @@
 @file
 Defines configuration macros used throughout the library.
 
-@copyright Louis Dionne 2013-2017
+Copyright Louis Dionne 2013-2022
 Distributed under the Boost Software License, Version 1.0.
 (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
  */
@@ -46,11 +46,13 @@ Distributed under the Boost Software License, Version 1.0.
 
 #elif defined(__clang__) && defined(_MSC_VER) // Clang-cl (Clang for Windows)
 
+#   define BOOST_HANA_CONFIG_CLANG_CL
 #   define BOOST_HANA_CONFIG_CLANG BOOST_HANA_CONFIG_VERSION(               \
                     __clang_major__, __clang_minor__, __clang_patchlevel__)
 
 #elif defined(__clang__) && defined(__apple_build_version__) // Apple's Clang
 
+#   define BOOST_HANA_CONFIG_APPLE_CLANG
 #   if __apple_build_version__ >= 6020049
 #       define BOOST_HANA_CONFIG_CLANG BOOST_HANA_CONFIG_VERSION(3, 6, 0)
 #   endif
@@ -112,13 +114,6 @@ Distributed under the Boost Software License, Version 1.0.
 #else
 #   define BOOST_HANA_INLINE_VARIABLE /* nothing */
 #endif
-
-//////////////////////////////////////////////////////////////////////////////
-// Namespace macros
-//////////////////////////////////////////////////////////////////////////////
-#define BOOST_HANA_NAMESPACE_BEGIN namespace boost { namespace hana {
-
-#define BOOST_HANA_NAMESPACE_END }}
 
 //////////////////////////////////////////////////////////////////////////////
 // Library features and options that can be tweaked by users

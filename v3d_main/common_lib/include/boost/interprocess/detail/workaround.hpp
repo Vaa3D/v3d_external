@@ -37,7 +37,7 @@
    //////////////////////////////////////////////////////
    //Check for XSI shared memory objects. They are available in nearly all UNIX platforms
    //////////////////////////////////////////////////////
-   #if !defined(__QNXNTO__) && !defined(__ANDROID__) && !defined(__HAIKU__) && !(__VXWORKS__)
+   #if !defined(__QNXNTO__) && !defined(__ANDROID__) && !defined(__HAIKU__) && !(__VXWORKS__) && !(__EMSCRIPTEN__)
       #define BOOST_INTERPROCESS_XSI_SHARED_MEMORY_OBJECTS
    #endif
 
@@ -69,6 +69,13 @@
       #else
          #define BOOST_INTERPROCESS_POSIX_PROCESS_SHARED
       #endif
+   #endif
+
+   //////////////////////////////////////////////////////
+   //    BOOST_INTERPROCESS_POSIX_ROBUST_MUTEXES
+   //////////////////////////////////////////////////////
+   #if (_XOPEN_SOURCE >= 700 || _POSIX_C_SOURCE >= 200809L)
+      #define BOOST_INTERPROCESS_POSIX_ROBUST_MUTEXES
    #endif
 
    //////////////////////////////////////////////////////
@@ -159,7 +166,7 @@
    //////////////////////////////////////////////////////
    //posix_fallocate
    //////////////////////////////////////////////////////
-   #if (_XOPEN_SOURCE >= 600 || __POSIX_C_SOURCE >= 200112L)
+   #if (_XOPEN_SOURCE >= 600 || _POSIX_C_SOURCE >= 200112L)
    #define BOOST_INTERPROCESS_POSIX_FALLOCATE
    #endif
 
@@ -184,6 +191,18 @@
    #define BOOST_INTERPROCESS_TIMEOUT_WHEN_LOCKING_DURATION_MS 10000
 #endif
 
+
+// Max open or create tries with managed memory segments
+#ifndef BOOST_INTERPROCESS_MANAGED_OPEN_OR_CREATE_INITIALIZE_MAX_TRIES
+   #define BOOST_INTERPROCESS_MANAGED_OPEN_OR_CREATE_INITIALIZE_MAX_TRIES 20u
+#endif
+
+// Maximum timeout in seconds with open or create tries with managed memory segments
+// waiting the creator to initialize the shared memory
+#ifndef BOOST_INTERPROCESS_MANAGED_OPEN_OR_CREATE_INITIALIZE_TIMEOUT_SEC
+   #define BOOST_INTERPROCESS_MANAGED_OPEN_OR_CREATE_INITIALIZE_TIMEOUT_SEC 300u
+#endif
+
 //Other switches
 //BOOST_INTERPROCESS_MSG_QUEUE_USES_CIRC_INDEX
 //message queue uses a circular queue as index instead of an array (better performance)
@@ -204,11 +223,14 @@
    #define BOOST_INTERPROCESS_FORCEINLINE inline
 #elif defined(BOOST_INTERPROCESS_FORCEINLINE_IS_BOOST_FORCELINE)
    #define BOOST_INTERPROCESS_FORCEINLINE BOOST_FORCEINLINE
-#elif defined(BOOST_MSVC) && defined(_DEBUG)
-   //"__forceinline" and MSVC seems to have some bugs in debug mode
+#elif defined(BOOST_MSVC) && (_MSC_VER < 1900 || defined(_DEBUG))
+   //"__forceinline" and MSVC seems to have some bugs in old versions and in debug mode
    #define BOOST_INTERPROCESS_FORCEINLINE inline
-#elif defined(__GNUC__) && ((__GNUC__ < 4) || (__GNUC__ == 4 && (__GNUC_MINOR__ < 5)))
+#elif defined(BOOST_CLANG) || (defined(BOOST_GCC) && ((__GNUC__ <= 5) || defined(__MINGW32__)))
    //Older GCCs have problems with forceinline
+   //Clang can have code bloat issues with forceinline, see
+   //https://lists.boost.org/boost-users/2023/04/91445.php and
+   //https://github.com/llvm/llvm-project/issues/62202
    #define BOOST_INTERPROCESS_FORCEINLINE inline
 #else
    #define BOOST_INTERPROCESS_FORCEINLINE BOOST_FORCEINLINE
@@ -237,5 +259,7 @@
 #   define BOOST_INTERPROCESS_HAS_REENTRANT_STD_FUNCTIONS
 #  endif
 #endif
+
+#include <boost/core/no_exceptions_support.hpp>
 
 #endif   //#ifndef BOOST_INTERPROCESS_DETAIL_WORKAROUND_HPP

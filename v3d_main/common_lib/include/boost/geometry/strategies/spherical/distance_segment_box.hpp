@@ -14,6 +14,7 @@
 #include <type_traits>
 
 #include <boost/geometry/algorithms/detail/distance/segment_to_box.hpp>
+#include <boost/geometry/algorithms/envelope.hpp>
 
 #include <boost/geometry/strategies/distance.hpp>
 #include <boost/geometry/strategies/normalize.hpp>
@@ -23,6 +24,9 @@
 #include <boost/geometry/strategies/spherical/point_in_point.hpp>
 #include <boost/geometry/strategies/cartesian/point_in_box.hpp> // spherical
 #include <boost/geometry/strategies/spherical/ssf.hpp>
+
+#include <boost/geometry/util/numeric_cast.hpp>
+
 
 namespace boost { namespace geometry
 {
@@ -147,7 +151,7 @@ struct generic_segment_box
         if (less_equal(geometry::get_as_radian<0>(bottom_left),
                        geometry::get_as_radian<0>(p_max)))
         {
-            result = boost::numeric_cast<ReturnType>(
+            result = util::numeric_cast<ReturnType>(
                 strategies.distance(bottom_left, seg).apply(bottom_left, p0, p1));
         }
         else

@@ -1,5 +1,6 @@
 //
 // Copyright 2007-2012 Christian Henning, Andreas Pokorny
+// Copyright 2024 Dirk Stolle
 //
 // Distributed under the Boost Software License, Version 1.0
 // See accompanying file LICENSE_1_0.txt or copy at
@@ -120,8 +121,8 @@ public:
            )
     {}
 
-    FILE*       get()       { return _file.get(); }
-    const FILE* get() const { return _file.get(); }
+    auto get() -> FILE* { return _file.get(); }
+    auto get() const -> FILE const* { return _file.get(); }
 
     int getc_unchecked()
     {
@@ -140,9 +141,7 @@ public:
     }
 
     ///@todo: change byte_t* to void*
-    std::size_t read( byte_t*     data
-                    , std::size_t count
-                    )
+    auto read(byte_t* data, std::size_t count) -> std::size_t
     {
         std::size_t num_elements = fread( data
                                         , 1
@@ -162,9 +161,7 @@ public:
     }
 
     /// Reads array
-    template< typename T
-            , int      N
-            >
+    template< typename T, int N>
     void read( T (&buf)[N] )
     {
         io_error_if( read( buf, N ) < N
@@ -201,9 +198,7 @@ public:
 
     /// Writes number of elements from a buffer
     template < typename T >
-    std::size_t write( const T*    buf
-                     , std::size_t count
-                     )
+    auto write(T const* buf, std::size_t count) -> std::size_t
     {
         std::size_t num_elements = fwrite( buf
                                          , buff_item<T>::size
@@ -415,12 +410,28 @@ public:
                  );
     }
 
+    long int tell()
+    {
+        auto pos = _in.tellg();
+
+        io_error_if( pos == std::istream::pos_type(-1)
+                   , "istream_device: file position error"
+                   );
+
+        return static_cast<long int>(pos);
+    }
+
     void write(const byte_t*, std::size_t)
     {
         io_error( "istream_device: Bad io error." );
     }
 
     void flush() {}
+
+    int error()
+    {
+        return _in.fail();
+    }
 
 private:
 
@@ -454,6 +465,17 @@ public:
                         ?std::ios::cur
                         :std::ios::end )
                   );
+    }
+
+    long int tell()
+    {
+        auto pos = _out.tellp();
+
+        io_error_if( pos == std::ostream::pos_type(-1)
+                   , "ostream_device: file position error"
+                   );
+
+        return static_cast<long int>(pos);
     }
 
     void write( const byte_t* data
@@ -515,7 +537,10 @@ public:
         _out << line;
     }
 
-
+    int error()
+    {
+        return _out.fail();
+    }
 
 private:
 

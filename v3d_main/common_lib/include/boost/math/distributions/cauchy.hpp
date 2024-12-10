@@ -81,7 +81,7 @@ RealType cdf_imp(const cauchy_distribution<RealType, Policy>& dist, const RealTy
    RealType mx = -fabs((x - location) / scale); // scale is > 0
    if(mx > -tools::epsilon<RealType>() / 8)
    {  // special case first: x extremely close to location.
-      return 0.5;
+      return static_cast<RealType>(0.5f);
    }
    result = -atan(1 / mx) / constants::pi<RealType>();
    return (((x > location) != complement) ? 1 - result : result);
@@ -175,6 +175,13 @@ private:
 };
 
 typedef cauchy_distribution<double> cauchy;
+
+#ifdef __cpp_deduction_guides
+template <class RealType>
+cauchy_distribution(RealType)->cauchy_distribution<typename boost::math::tools::promote_args<RealType>::type>;
+template <class RealType>
+cauchy_distribution(RealType,RealType)->cauchy_distribution<typename boost::math::tools::promote_args<RealType>::type>;
+#endif
 
 template <class RealType, class Policy>
 inline const std::pair<RealType, RealType> range(const cauchy_distribution<RealType, Policy>&)

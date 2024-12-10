@@ -1,11 +1,10 @@
-// Boost.Geometry (aka GGL, Generic Geometry Library)
+// Boost.Geometry
 
-// Copyright (c) 2007-2012 Barend Gehrels, Amsterdam, the Netherlands.
-// Copyright (c) 2017 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2007-2023 Barend Gehrels, Amsterdam, the Netherlands.
+// Copyright (c) 2017-2023 Adam Wulkiewicz, Lodz, Poland.
 
-// This file was modified by Oracle on 2015-2020.
-// Modifications copyright (c) 2015-2020 Oracle and/or its affiliates.
-
+// This file was modified by Oracle on 2015-2022.
+// Modifications copyright (c) 2015-2022 Oracle and/or its affiliates.
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Use, modification and distribution is subject to the Boost Software License,
@@ -26,14 +25,9 @@
 #include <boost/geometry/algorithms/convert.hpp>
 #include <boost/geometry/algorithms/detail/overlay/get_distance_measure.hpp>
 #include <boost/geometry/algorithms/detail/overlay/turn_info.hpp>
-
 #include <boost/geometry/algorithms/detail/overlay/get_turn_info_helpers.hpp>
 
-// Silence warning C4127: conditional expression is constant
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4127)
-#endif
+#include <boost/geometry/util/constexpr.hpp>
 
 
 namespace boost { namespace geometry
@@ -52,10 +46,7 @@ public:
         message += method;
     }
 
-    virtual ~turn_info_exception() throw()
-    {}
-
-    virtual char const* what() const throw()
+    virtual char const* What() const noexcept
     {
         return message.c_str();
     }
@@ -65,6 +56,36 @@ public:
 #ifndef DOXYGEN_NO_DETAIL
 namespace detail { namespace overlay
 {
+
+
+struct policy_verify_nothing
+{
+    static bool const use_side_verification = false;
+    static bool const use_start_turn = false;
+    static bool const use_handle_as_touch = false;
+    static bool const use_handle_as_equal = false;
+    static bool const use_handle_imperfect_touch = false;
+};
+
+struct policy_verify_all
+{
+    static bool const use_side_verification = true;
+    static bool const use_start_turn = true;
+    static bool const use_handle_as_touch = true;
+    static bool const use_handle_as_equal = true;
+    static bool const use_handle_imperfect_touch = true;
+};
+
+
+#if defined(BOOST_GEOMETRY_USE_RESCALING)
+using verify_policy_aa = policy_verify_nothing;
+#else
+using verify_policy_aa = policy_verify_all;
+#endif
+
+using verify_policy_ll = policy_verify_nothing;
+using verify_policy_la = policy_verify_nothing;
+
 
 struct base_turn_handler
 {
@@ -106,52 +127,6 @@ struct base_turn_handler
     {
         both(ti, condition ? operation_union : operation_intersection);
     }
-
-
-#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
-    template
-    <
-        typename UniqueSubRange1,
-        typename UniqueSubRange2
-    >
-    static inline int side_with_distance_measure(UniqueSubRange1 const& range_p,
-            UniqueSubRange2 const& range_q,
-            int range_index, int point_index)
-    {
-        if (range_index >= 1 && range_p.is_last_segment())
-        {
-            return 0;
-        }
-        if (point_index >= 2 && range_q.is_last_segment())
-        {
-            return 0;
-        }
-
-        auto const dm = get_distance_measure(range_p.at(range_index), range_p.at(range_index + 1), range_q.at(point_index));
-        return dm.measure == 0 ? 0 : dm.measure > 0 ? 1 : -1;
-    }
-
-    template
-    <
-        typename UniqueSubRange1,
-        typename UniqueSubRange2
-    >
-    static inline int verified_side(int side,
-                                    UniqueSubRange1 const& range_p,
-                                    UniqueSubRange2 const& range_q,
-                                    int range_index,
-                                    int point_index)
-    {
-        return side == 0 ? side_with_distance_measure(range_p, range_q, range_index, point_index) : side;
-    }
-#else
-    template <typename T1, typename T2>
-    static inline int verified_side(int side, T1 const& , T2 const& , int , int)
-    {
-        return side;
-    }
-#endif
-
 
     template <typename TurnInfo, typename IntersectionInfo>
     static inline void assign_point(TurnInfo& ti,
@@ -208,15 +183,91 @@ struct base_turn_handler
             ? 1 : 0;
     }
 
+};
+
+template<typename VerifyPolicy>
+struct turn_info_verification_functions
+{
     template <typename Point1, typename Point2>
-    static inline typename geometry::coordinate_type<Point1>::type
-            distance_measure(Point1 const& a, Point2 const& b)
+    static inline
+    typename select_coordinate_type<Point1, Point2>::type
+    distance_measure(Point1 const& a, Point2 const& b)
     {
-        // TODO: use comparable distance for point-point instead - but that
-        // causes currently cycling include problems
-        auto const dx = get<0>(a) - get<0>(b);
-        auto const dy = get<1>(a) - get<1>(b);
+        // TODO: revise this using comparable distance for various
+        // coordinate systems
+        using coor_t = typename select_coordinate_type<Point1, Point2>::type;
+
+        coor_t const dx = get<0>(a) - get<0>(b);
+        coor_t const dy = get<1>(a) - get<1>(b);
         return dx * dx + dy * dy;
+    }
+
+    template
+    <
+            std::size_t IndexP,
+            std::size_t IndexQ,
+            typename UniqueSubRange1,
+            typename UniqueSubRange2,
+            typename UmbrellaStrategy,
+            typename TurnInfo
+    >
+    static inline void set_both_verified(
+            UniqueSubRange1 const& range_p,
+            UniqueSubRange2 const& range_q,
+            UmbrellaStrategy const& umbrella_strategy,
+            std::size_t index_p, std::size_t index_q,
+            TurnInfo& ti)
+    {
+        BOOST_GEOMETRY_ASSERT(IndexP + IndexQ == 1);
+        BOOST_GEOMETRY_ASSERT(index_p > 0 && index_p <= 2);
+        BOOST_GEOMETRY_ASSERT(index_q > 0 && index_q <= 2);
+
+        using distance_measure_result_type = typename geometry::coordinate_type<decltype(ti.point)>::type;
+
+        bool const p_in_range = index_p < range_p.size();
+        bool const q_in_range = index_q < range_q.size();
+        ti.operations[IndexP].remaining_distance
+            = p_in_range
+              ? distance_measure(ti.point, range_p.at(index_p))
+              : distance_measure_result_type{0};
+        ti.operations[IndexQ].remaining_distance
+            = q_in_range
+              ? distance_measure(ti.point, range_q.at(index_q))
+              : distance_measure_result_type{0};
+
+        if (p_in_range && q_in_range)
+        {
+            // pk/q2 is considered as collinear, but there might be
+            // a tiny measurable difference. If so, use that.
+            // Calculate pk // qj-qk
+            bool const p_closer
+                = ti.operations[IndexP].remaining_distance
+                  <  ti.operations[IndexQ].remaining_distance;
+            auto const dm
+                = p_closer
+                ? get_distance_measure(range_q.at(index_q - 1),
+                                       range_q.at(index_q), range_p.at(index_p),
+                                       umbrella_strategy)
+                : get_distance_measure(range_p.at(index_p - 1),
+                                       range_p.at(index_p), range_q.at(index_q),
+                                       umbrella_strategy);
+
+            if (! dm.is_zero())
+            {
+                // Not truely collinear, distinguish for union/intersection
+                // If p goes left (positive), take that for a union
+                bool const p_left
+                    = p_closer ? dm.is_positive() : dm.is_negative();
+
+                ti.operations[IndexP].operation = p_left
+                            ? operation_union : operation_intersection;
+                ti.operations[IndexQ].operation = p_left
+                            ? operation_intersection : operation_union;
+                return;
+            }
+        }
+
+        base_turn_handler::both(ti, operation_continue);
     }
 
     template
@@ -231,47 +282,56 @@ struct base_turn_handler
     static inline void both_collinear(
             UniqueSubRange1 const& range_p,
             UniqueSubRange2 const& range_q,
-            UmbrellaStrategy const&,
+            UmbrellaStrategy const& umbrella_strategy,
             std::size_t index_p, std::size_t index_q,
             TurnInfo& ti)
     {
-        boost::ignore_unused(range_p, range_q);
-        BOOST_GEOMETRY_ASSERT(IndexP + IndexQ == 1);
-        BOOST_GEOMETRY_ASSERT(index_p > 0 && index_p <= 2);
-        BOOST_GEOMETRY_ASSERT(index_q > 0 && index_q <= 2);
-
-#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
-        ti.operations[IndexP].remaining_distance = distance_measure(ti.point, range_p.at(index_p));
-        ti.operations[IndexQ].remaining_distance = distance_measure(ti.point, range_q.at(index_q));
-
-        // pk/q2 is considered as collinear, but there might be
-        // a tiny measurable difference. If so, use that.
-        // Calculate pk // qj-qk
-        bool const p_closer =
-                ti.operations[IndexP].remaining_distance
-                <  ti.operations[IndexQ].remaining_distance;
-        auto const dm
-                = p_closer
-                ? get_distance_measure(range_q.at(index_q - 1),
-                    range_q.at(index_q), range_p.at(index_p))
-                : get_distance_measure(range_p.at(index_p - 1),
-                    range_p.at(index_p), range_q.at(index_q));
-
-        if (! dm.is_zero())
+        if BOOST_GEOMETRY_CONSTEXPR (VerifyPolicy::use_side_verification)
         {
-            // Not truely collinear, distinguish for union/intersection
-            // If p goes left (positive), take that for a union
-            bool const p_left = p_closer ? dm.is_positive() : dm.is_negative();
-
-            ti.operations[IndexP].operation = p_left
-                        ? operation_union : operation_intersection;
-            ti.operations[IndexQ].operation = p_left
-                        ? operation_intersection : operation_union;
-            return;
+            set_both_verified<IndexP, IndexQ>(range_p, range_q, umbrella_strategy,
+                                              index_p, index_q, ti);
         }
-#endif
+        else
+        {
+            base_turn_handler::both(ti, operation_continue);
+        }
+    }
 
-        both(ti, operation_continue);
+    template
+    <
+        typename UniqueSubRange1,
+        typename UniqueSubRange2,
+        typename UmbrellaStrategy
+    >
+    static inline int verified_side(int side,
+                                    UniqueSubRange1 const& range_p,
+                                    UniqueSubRange2 const& range_q,
+                                    UmbrellaStrategy const& umbrella_strategy,
+                                    int index_p, int index_q)
+    {
+        if BOOST_GEOMETRY_CONSTEXPR (VerifyPolicy::use_side_verification)
+        {
+            if (side == 0)
+            {
+                if (index_p >= 1 && range_p.is_last_segment())
+                {
+                    return 0;
+                }
+                if (index_q >= 2 && range_q.is_last_segment())
+                {
+                    return 0;
+                }
+
+                auto const dm = get_distance_measure(range_p.at(index_p),
+                                                     range_p.at(index_p + 1),
+                                                     range_q.at(index_q),
+                                                     umbrella_strategy);
+                static decltype(dm.measure) const zero = 0;
+                return dm.measure == zero ? 0 : dm.measure > zero ? 1 : -1;
+            }
+        }
+
+        return side;
     }
 
 };
@@ -279,10 +339,12 @@ struct base_turn_handler
 
 template
 <
-    typename TurnInfo
+    typename TurnInfo,
+    typename VerifyPolicy
 >
 struct touch_interior : public base_turn_handler
 {
+    using fun = turn_info_verification_functions<VerifyPolicy>;
 
     template
     <
@@ -292,43 +354,47 @@ struct touch_interior : public base_turn_handler
     static bool handle_as_touch(IntersectionInfo const& info,
                                 UniqueSubRange const& non_touching_range)
     {
-#if defined(BOOST_GEOMETRY_USE_RESCALING)
-        return false;
-#endif
-        //
-        //
-        //                         ^  Q(i)                ^ P(i)
-        //                          \                    /
-        //                           \                  /
-        //                            \                /
-        //                             \              /
-        //                              \            /
-        //                               \          /
-        //                                \        /
-        //                                 \      /
-        //                                  \    /
-        //                                   \  / it is about buffer_rt_r
-        //                  P(k)              v/  they touch here "in the middle", but at the intersection...
-        //                  <---------------->v   there is no follow up IP
-        //                                   /
-        //                                  /
-        //                                 /
-        //                                /
-        //                               /
-        //                              /
-        //                             v Q(k)
-        //
+        if BOOST_GEOMETRY_CONSTEXPR (! VerifyPolicy::use_handle_as_touch)
+        {
+            return false;
+        }
+        else // else prevents unreachable code warning
+        {
+            //
+            //
+            //                         ^  Q(i)                ^ P(i)
+            //                          \                    /
+            //                           \                  /
+            //                            \                /
+            //                             \              /
+            //                              \            /
+            //                               \          /
+            //                                \        /
+            //                                 \      /
+            //                                  \    /
+            //                                   \  / it is about buffer_rt_r
+            //                  P(k)              v/  they touch here "in the middle", but at the intersection...
+            //                  <---------------->v   there is no follow up IP
+            //                                   /
+            //                                  /
+            //                                 /
+            //                                /
+            //                               /
+            //                              /
+            //                             v Q(k)
+            //
 
-        // Measure where the IP is located. If it is really close to the end,
-        // then there is no space for the next IP (on P(1)/Q(2). A "from"
-        // intersection will be generated, but those are never handled.
-        // Therefore handle it as a normal touch (two segments arrive at the
-        // intersection point). It currently checks for zero, but even a
-        // distance a little bit larger would do.
-        auto const dm = distance_measure(info.intersections[0], non_touching_range.at(1));
-        decltype(dm) const zero = 0;
-        bool const result = math::equals(dm, zero);
-        return result;
+            // Measure where the IP is located. If it is really close to the end,
+            // then there is no space for the next IP (on P(1)/Q(2). A "from"
+            // intersection will be generated, but those are never handled.
+            // Therefore handle it as a normal touch (two segments arrive at the
+            // intersection point). It currently checks for zero, but even a
+            // distance a little bit larger would do.
+            auto const dm = fun::distance_measure(info.intersections[0], non_touching_range.at(1));
+            decltype(dm) const zero = 0;
+            bool const result = math::equals(dm, zero);
+            return result;
+        }
     }
 
     // Index: 0, P is the interior, Q is touching and vice versa
@@ -448,7 +514,8 @@ struct touch_interior : public base_turn_handler
             // Q intersects on interior of P and continues collinearly
             if (side_qk_q == side_qi_p)
             {
-                both_collinear<index_p, index_q>(range_p, range_q, umbrella_strategy, 1, 2, ti);
+                fun::template both_collinear<index_p, index_q>(range_p, range_q, umbrella_strategy,
+                                                               1, 2, ti);
             }
             else
             {
@@ -472,81 +539,92 @@ struct touch_interior : public base_turn_handler
 
 template
 <
-    typename TurnInfo
+    typename TurnInfo,
+    typename VerifyPolicy
 >
 struct touch : public base_turn_handler
 {
+    using fun = turn_info_verification_functions<VerifyPolicy>;
+
     static inline bool between(int side1, int side2, int turn)
     {
         return side1 == side2 && ! opposite(side1, turn);
     }
 
-#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
     template
     <
         typename UniqueSubRange1,
-        typename UniqueSubRange2
+        typename UniqueSubRange2,
+        typename UmbrellaStrategy
     >
     static inline bool handle_imperfect_touch(UniqueSubRange1 const& range_p,
-            UniqueSubRange2 const& range_q, TurnInfo& ti)
+                                              UniqueSubRange2 const& range_q,
+                                              int side_pk_q2,
+                                              UmbrellaStrategy const& umbrella_strategy,
+                                              TurnInfo& ti)
     {
-        //  Q
-        //  ^
-        // ||
-        // ||
-        // |^----
-        // >----->P
-        // *            * they touch here (P/Q are (nearly) on top)
-        //
-        // Q continues from where P comes.
-        // P continues from where Q comes
-        // This is often a blocking situation,
-        // unless there are FP issues: there might be a distance
-        // between Pj and Qj, in that case handle it as a union.
-        //
-        // Exaggerated:
-        //  Q
-        //  ^           Q is nearly vertical
-        //   \          but not completely - and still ends above P
-        // |  \qj       In this case it should block P and
-        // |  ^------   set Q to Union
-        // >----->P     qj is LEFT of P1 and pi is LEFT of Q2
-        //              (the other way round is also possible)
-
-        auto const dm_qj_p1 = get_distance_measure(range_p.at(0), range_p.at(1), range_q.at(1));
-        auto const dm_pi_q2 = get_distance_measure(range_q.at(1), range_q.at(2), range_p.at(0));
-
-        if (dm_qj_p1.measure > 0 && dm_pi_q2.measure > 0)
+        if BOOST_GEOMETRY_CONSTEXPR (! VerifyPolicy::use_handle_imperfect_touch)
         {
-            // Even though there is a touch, Q(j) is left of P1
-            // and P(i) is still left from Q2.
-            // It can continue.
-            ti.operations[0].operation = operation_blocked;
-            // Q turns right -> union (both independent),
-            // Q turns left -> intersection
-            ti.operations[1].operation = operation_union;
-            ti.touch_only = true;
-            return true;
+            return false;
         }
-
-        auto const dm_pj_q1 = get_distance_measure(range_q.at(0), range_q.at(1), range_p.at(1));
-        auto const dm_qi_p2 = get_distance_measure(range_p.at(1), range_p.at(2), range_q.at(0));
-
-        if (dm_pj_q1.measure > 0 && dm_qi_p2.measure > 0)
+        else // else prevents unreachable code warning
         {
-            // Even though there is a touch, Q(j) is left of P1
-            // and P(i) is still left from Q2.
-            // It can continue.
-            ti.operations[0].operation = operation_union;
-            // Q turns right -> union (both independent),
-            // Q turns left -> intersection
-            ti.operations[1].operation = operation_blocked;
-            ti.touch_only = true;
-            return true;
+            //  Q
+            //  ^
+            // ||
+            // ||
+            // |^----
+            // >----->P
+            // *            * they touch here (P/Q are (nearly) on top)
+            //
+            // Q continues from where P comes.
+            // P continues from where Q comes
+            // This is often a blocking situation,
+            // unless there are FP issues: there might be a distance
+            // between Pj and Qj, in that case handle it as a union.
+            //
+            // Exaggerated:
+            //  Q
+            //  ^           Q is nearly vertical
+            //   \          but not completely - and still ends above P
+            // |  \qj       In this case it should block P and
+            // |  ^------   set Q to Union
+            // >----->P     qj is LEFT of P1 and pi is LEFT of Q2
+            //              (the other way round is also possible)
+
+            auto has_distance = [&](auto const& r1, auto const& r2) -> bool
+            {
+                auto const d1 = get_distance_measure(r1.at(0), r1.at(1), r2.at(1), umbrella_strategy);
+                auto const d2 = get_distance_measure(r2.at(1), r2.at(2), r1.at(0), umbrella_strategy);
+                return d1.measure > 0 && d2.measure > 0;
+            };
+
+            if (side_pk_q2 == -1 && has_distance(range_p, range_q))
+            {
+                // Even though there is a touch, Q(j) is left of P1
+                // and P(i) is still left from Q2.
+                // Q continues to the right.
+                // It can continue.
+                ti.operations[0].operation = operation_blocked;
+                // Q turns right -> union (both independent),
+                // Q turns left -> intersection
+                ti.operations[1].operation = operation_union;
+                ti.touch_only = true;
+                return true;
+            }
+
+            if (side_pk_q2 == 1 && has_distance(range_q, range_p))
+            {
+                // Similarly, but the other way round.
+                // Q continues to the left.
+                ti.operations[0].operation = operation_union;
+                ti.operations[1].operation = operation_blocked;
+                ti.touch_only = true;
+                return true;
+            }
+            return false;
         }
-        return false;
     }
-#endif
 
     template
     <
@@ -572,8 +650,12 @@ struct touch : public base_turn_handler
 
         int const side_pk_q1 = has_pk ? side.pk_wrt_q1() : 0;
 
-        int const side_qi_p1 = verified_side(dir_info.sides.template get<1, 0>(), range_p, range_q, 0, 0);
-        int const side_qk_p1 = has_qk ? verified_side(side.qk_wrt_p1(), range_p, range_q, 0, 2) : 0;
+        int const side_qi_p1 = fun::verified_side(dir_info.sides.template get<1, 0>(),
+                                                  range_p, range_q, umbrella_strategy, 0, 0);
+        int const side_qk_p1 = has_qk
+                             ? fun::verified_side(side.qk_wrt_p1(), range_p, range_q,
+                                                  umbrella_strategy, 0, 2)
+                             : 0;
 
         // If Qi and Qk are both at same side of Pi-Pj,
         // or collinear (so: not opposite sides)
@@ -596,21 +678,20 @@ struct touch : public base_turn_handler
                 || side_pk_p == side_qk_p1
                 || (side_qi_p1 == 0 && side_qk_p1 == 0 && side_pk_p != -1))
             {
-#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
                 if (side_qk_p1 == 0 && side_pk_q1 == 0
-                    && has_qk && has_qk
-                    && handle_imperfect_touch(range_p, range_q, ti))
+                    && has_pk && has_qk
+                    && handle_imperfect_touch(range_p, range_q, side_pk_q2, umbrella_strategy, ti))
                 {
                     // If q continues collinearly (opposite) with p, it should be blocked
                     // but (FP) not if there is just a tiny space in between
                     return;
                 }
-#endif
                 // Collinear -> lines join, continue
                 // (#BRL2)
                 if (side_pk_q2 == 0 && ! block_q)
                 {
-                    both_collinear<0, 1>(range_p, range_q, umbrella_strategy, 2, 2, ti);
+                    fun::template both_collinear<0, 1>(range_p, range_q, umbrella_strategy,
+                                                       2, 2, ti);
                     return;
                 }
 
@@ -687,7 +768,10 @@ struct touch : public base_turn_handler
         {
             // The qi/qk are opposite to each other, w.r.t. p1
             // From left to right or from right to left
-            int const side_pk_p = has_pk ? verified_side(side.pk_wrt_p1(), range_p, range_p, 0, 2) : 0;
+            int const side_pk_p = has_pk
+                                ? fun::verified_side(side.pk_wrt_p1(), range_p, range_p,
+                                                     umbrella_strategy, 0, 2)
+                                : 0;
             bool const right_to_left = side_qk_p1 == 1;
 
             // If p turns into direction of qi (1,2)
@@ -738,10 +822,13 @@ struct touch : public base_turn_handler
 
 template
 <
-    typename TurnInfo
+    typename TurnInfo,
+    typename VerifyPolicy
 >
 struct equal : public base_turn_handler
 {
+    using fun = turn_info_verification_functions<VerifyPolicy>;
+
     template
     <
         typename UniqueSubRange1,
@@ -769,27 +856,18 @@ struct equal : public base_turn_handler
         int const side_pk_p = has_pk ? side.pk_wrt_p1() : 0;
         int const side_qk_p = has_qk ? side.qk_wrt_p1() : 0;
 
-#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
-
         if (has_pk && has_qk && side_pk_p == side_qk_p)
         {
             // They turn to the same side, or continue both collinearly
-            // Without rescaling, to check for union/intersection,
-            // try to check side values (without any thresholds)
-            auto const dm_pk_q2
-               = get_distance_measure(range_q.at(1), range_q.at(2), range_p.at(2));
-            auto const dm_qk_p2
-               = get_distance_measure(range_p.at(1), range_p.at(2), range_q.at(2));
+            // To check for union/intersection, try to check side values
+            int const side_qk_p2 = side.qk_wrt_p2();
 
-            if (dm_qk_p2.measure != dm_pk_q2.measure)
+            if (opposite(side_qk_p2, side_pk_q2))
             {
-                // A (possibly very small) difference is detected, which
-                // can be used to distinguish between union/intersection
-                ui_else_iu(dm_qk_p2.measure < dm_pk_q2.measure, ti);
+                ui_else_iu(side_pk_q2 == 1, ti);
                 return;
             }
         }
-#endif
 
         // If pk is collinear with qj-qk, they continue collinearly.
         // This can be on either side of p1 (== q1), or collinear
@@ -797,7 +875,7 @@ struct equal : public base_turn_handler
         // oppositely
         if (side_pk_q2 == 0 && side_pk_p == side_qk_p)
         {
-            both_collinear<0, 1>(range_p, range_q, umbrella_strategy, 2, 2, ti);
+            fun::template both_collinear<0, 1>(range_p, range_q, umbrella_strategy, 2, 2, ti);
             return;
         }
 
@@ -819,7 +897,8 @@ struct equal : public base_turn_handler
 
 template
 <
-    typename TurnInfo
+    typename TurnInfo,
+    typename VerifyPolicy
 >
 struct start : public base_turn_handler
 {
@@ -840,39 +919,40 @@ struct start : public base_turn_handler
                 SideCalculator const& side,
                 UmbrellaStrategy const& )
     {
-#if defined(BOOST_GEOMETRY_USE_RESCALING)
-        // With rescaling, start turns are not needed.
-        return false;
-#endif
-
-        // Start turns have either how_a = -1, or how_b = -1 (either p leaves or q leaves)
-        BOOST_GEOMETRY_ASSERT(dir_info.how_a != dir_info.how_b);
-        BOOST_GEOMETRY_ASSERT(dir_info.how_a == -1 || dir_info.how_b == -1);
-        BOOST_GEOMETRY_ASSERT(dir_info.how_a == 0 || dir_info.how_b == 0);
-
-        if (dir_info.how_b == -1)
+        if BOOST_GEOMETRY_CONSTEXPR (! VerifyPolicy::use_start_turn)
         {
-            // p --------------->
-            //             |
-            //             | q         q leaves
-            //             v
-            //
-
-            int const side_qj_p1 = side.qj_wrt_p1();
-            ui_else_iu(side_qj_p1 == -1, ti);
+            return false;
         }
-        else if (dir_info.how_a == -1)
+        else // else prevents unreachable code warning
         {
-            // p leaves
-            int const side_pj_q1 = side.pj_wrt_q1();
-            ui_else_iu(side_pj_q1 == 1, ti);
-        }
+            // Start turns have either how_a = -1, or how_b = -1 (either p leaves or q leaves)
+            BOOST_GEOMETRY_ASSERT(dir_info.how_a != dir_info.how_b);
+            BOOST_GEOMETRY_ASSERT(dir_info.how_a == -1 || dir_info.how_b == -1);
+            BOOST_GEOMETRY_ASSERT(dir_info.how_a == 0 || dir_info.how_b == 0);
 
-        // Copy intersection point
-        assign_point_and_correct(ti, method_start, info, dir_info);
-        return true;
+            if (dir_info.how_b == -1)
+            {
+                // p --------------->
+                //             |
+                //             | q         q leaves
+                //             v
+                //
+
+                int const side_qj_p1 = side.qj_wrt_p1();
+                ui_else_iu(side_qj_p1 == -1, ti);
+            }
+            else if (dir_info.how_a == -1)
+            {
+                // p leaves
+                int const side_pj_q1 = side.pj_wrt_q1();
+                ui_else_iu(side_pj_q1 == 1, ti);
+            }
+
+            // Copy intersection point
+            assign_point_and_correct(ti, method_start, info, dir_info);
+            return true;
+        }
     }
-
 };
 
 
@@ -898,7 +978,7 @@ struct equal_opposite : public base_turn_handler
                 IntersectionInfo const& intersection_info)
     {
         // For equal-opposite segments, normally don't do anything.
-        if (AssignPolicy::include_opposite)
+        if BOOST_GEOMETRY_CONSTEXPR (AssignPolicy::include_opposite)
         {
             tp.method = method_equal;
             for (unsigned int i = 0; i < 2; i++)
@@ -916,10 +996,13 @@ struct equal_opposite : public base_turn_handler
 
 template
 <
-    typename TurnInfo
+    typename TurnInfo,
+    typename VerifyPolicy
 >
 struct collinear : public base_turn_handler
 {
+    using fun = turn_info_verification_functions<VerifyPolicy>;
+
     template
     <
         typename IntersectionInfo,
@@ -932,21 +1015,26 @@ struct collinear : public base_turn_handler
                                 UniqueSubRange2 const& range_q,
                                 DirInfo const& dir_info)
     {
-#if defined(BOOST_GEOMETRY_USE_RESCALING)
-        return false;
-#endif
-        int const arrival_p = dir_info.arrival[0];
-        int const arrival_q = dir_info.arrival[1];
-        if (arrival_p * arrival_q != -1 || info.count != 2)
+        if BOOST_GEOMETRY_CONSTEXPR (! VerifyPolicy::use_handle_as_equal)
         {
-            // Code below assumes that either p or q arrives in the other segment
             return false;
         }
+        else // else prevents unreachable code warning
+        {
+            int const arrival_p = dir_info.arrival[0];
+            int const arrival_q = dir_info.arrival[1];
+            if (arrival_p * arrival_q != -1 || info.count != 2)
+            {
+                // Code below assumes that either p or q arrives in the other segment
+                return false;
+            }
 
-        auto const dm = distance_measure(info.intersections[1],
-                arrival_p == 1 ? range_q.at(1) : range_p.at(1));
-        decltype(dm) const zero = 0;
-        return math::equals(dm, zero);
+            auto const dm = arrival_p == 1
+                          ? fun::distance_measure(info.intersections[1], range_q.at(1))
+                          : fun::distance_measure(info.intersections[1], range_p.at(1));
+            decltype(dm) const zero = 0;
+            return math::equals(dm, zero);
+        }
     }
 
     /*
@@ -1046,12 +1134,12 @@ struct collinear : public base_turn_handler
         // measured until the end of the next segment
         ti.operations[0].remaining_distance
                 = side_p == 0 && has_pk
-                ? distance_measure(ti.point, range_p.at(2))
-                : distance_measure(ti.point, range_p.at(1));
+                ? fun::distance_measure(ti.point, range_p.at(2))
+                : fun::distance_measure(ti.point, range_p.at(1));
         ti.operations[1].remaining_distance
                 = side_q == 0 && has_qk
-                ? distance_measure(ti.point, range_q.at(2))
-                : distance_measure(ti.point, range_q.at(1));
+                ? fun::distance_measure(ti.point, range_q.at(2))
+                : fun::distance_measure(ti.point, range_q.at(1));
     }
 };
 
@@ -1110,7 +1198,7 @@ private :
                 // two operations blocked, so the whole point does not need
                 // to be generated.
                 // So return false to indicate nothing is to be done.
-                if (AssignPolicy::include_opposite)
+                if BOOST_GEOMETRY_CONSTEXPR (AssignPolicy::include_opposite)
                 {
                     tp.operations[Index].operation = operation_opposite;
                     blocked = operation_opposite;
@@ -1204,7 +1292,7 @@ public:
             *out++ = tp;
         }
 
-        if (AssignPolicy::include_opposite)
+        if BOOST_GEOMETRY_CONSTEXPR (AssignPolicy::include_opposite)
         {
             // Handle cases not yet handled above
             if ((arrival_q == -1 && arrival_p == 0)
@@ -1352,8 +1440,11 @@ struct get_turn_info
         if (handle_as_start)
         {
             // It is in some cases necessary to handle a start turn
-            if (AssignPolicy::include_start_turn
-                && start<TurnInfo>::apply(range_p, range_q, tp, inters.i_info(), inters.d_info(), inters.sides(), umbrella_strategy))
+            using handler = start<TurnInfo, verify_policy_aa>;
+            if (BOOST_GEOMETRY_CONDITION(AssignPolicy::include_start_turn)
+                && handler::apply(range_p, range_q, tp,
+                               inters.i_info(), inters.d_info(), inters.sides(),
+                               umbrella_strategy))
             {
                 *out++ = tp;
             }
@@ -1365,7 +1456,7 @@ struct get_turn_info
 
         if (handle_as_touch_interior)
         {
-            typedef touch_interior<TurnInfo> handler;
+            using handler = touch_interior<TurnInfo, verify_policy_aa>;
 
             if ( inters.d_info().arrival[1] == 1 )
             {
@@ -1406,7 +1497,9 @@ struct get_turn_info
         if (handle_as_touch)
         {
             // Touch: both segments arrive at the intersection point
-            touch<TurnInfo>::apply(range_p, range_q, tp, inters.i_info(), inters.d_info(), inters.sides(), umbrella_strategy);
+            using handler = touch<TurnInfo, verify_policy_aa>;
+            handler::apply(range_p, range_q, tp, inters.i_info(), inters.d_info(), inters.sides(),
+                           umbrella_strategy);
             *out++ = tp;
         }
 
@@ -1415,16 +1508,17 @@ struct get_turn_info
             // Collinear
             if ( ! inters.d_info().opposite )
             {
+                using handler = collinear<TurnInfo, verify_policy_aa>;
                 if (inters.d_info().arrival[0] == 0
-                    || collinear<TurnInfo>::handle_as_equal(inters.i_info(), range_p, range_q, inters.d_info()))
+                    || handler::handle_as_equal(inters.i_info(), range_p, range_q, inters.d_info()))
                 {
                     // Both segments arrive at the second intersection point
                     handle_as_equal = true;
                 }
                 else
                 {
-                    collinear<TurnInfo>::apply(range_p, range_q, tp,
-                            inters.i_info(), inters.d_info(), inters.sides());
+                    handler::apply(range_p, range_q, tp, inters.i_info(),
+                                   inters.d_info(), inters.sides());
                     *out++ = tp;
                 }
             }
@@ -1445,7 +1539,8 @@ struct get_turn_info
             {
                 // Both equal
                 // or collinear-and-ending at intersection point
-                equal<TurnInfo>::apply(range_p, range_q, tp,
+                using handler = equal<TurnInfo, verify_policy_aa>;
+                handler::apply(range_p, range_q, tp,
                         inters.i_info(), inters.d_info(), inters.sides(),
                         umbrella_strategy);
                 if (handle_as_collinear)
@@ -1467,8 +1562,10 @@ struct get_turn_info
             }
         }
 
-        if ((handle_as_degenerate && AssignPolicy::include_degenerate)
-            || (do_only_convert && AssignPolicy::include_no_turn))
+        if ((handle_as_degenerate
+             && BOOST_GEOMETRY_CONDITION(AssignPolicy::include_degenerate))
+            || (do_only_convert
+                && BOOST_GEOMETRY_CONDITION(AssignPolicy::include_no_turn)))
         {
             if (inters.i_info().count > 0)
             {
@@ -1488,9 +1585,5 @@ struct get_turn_info
 
 }} // namespace boost::geometry
 
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 
 #endif // BOOST_GEOMETRY_ALGORITHMS_DETAIL_OVERLAY_GET_TURN_INFO_HPP

@@ -4,8 +4,9 @@
 // Copyright (c) 2008-2012 Bruno Lalande, Paris, France.
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 
-// This file was modified by Oracle on 2020-2021.
-// Modifications copyright (c) 2020-2021 Oracle and/or its affiliates.
+// This file was modified by Oracle on 2020-2023.
+// Modifications copyright (c) 2020-2023 Oracle and/or its affiliates.
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
@@ -19,6 +20,7 @@
 #define BOOST_GEOMETRY_VIEWS_CLOSEABLE_VIEW_HPP
 
 #include <boost/geometry/core/closure.hpp>
+#include <boost/geometry/core/point_order.hpp>
 #include <boost/geometry/core/ring_type.hpp>
 #include <boost/geometry/core/tag.hpp>
 #include <boost/geometry/core/tags.hpp>
@@ -55,19 +57,27 @@ private:
 };
 
 
-// As template alias for now. It's possible that this should be a struct.
-//   It'd also prevent instantiating the other, unneeded view.
 template
 <
     typename Range,
     closure_selector Close = geometry::closure<Range>::value
 >
-using closed_view = std::conditional_t
-    <
-        Close == open,
-        closing_view<Range>,
-        identity_view<Range>
-    >;
+struct closed_view
+    : identity_view<Range>
+{
+    explicit inline closed_view(Range const& r)
+        : identity_view<Range const>(r)
+    {}
+};
+
+template <typename Range>
+struct closed_view<Range, open>
+    : closing_view<Range>
+{
+    explicit inline closed_view(Range const& r)
+        : closing_view<Range const>(r)
+    {}
+};
 
 
 } // namespace detail
@@ -107,6 +117,32 @@ struct closeable_view<Range, open>
 };
 
 #endif // DOXYGEN_NO_SPECIALIZATIONS
+
+
+#ifndef DOXYGEN_NO_TRAITS_SPECIALIZATIONS
+namespace traits
+{
+
+
+template <typename Range, closure_selector Close>
+struct tag<geometry::detail::closed_view<Range, Close> >
+    : geometry::tag<Range>
+{};
+
+template <typename Range, closure_selector Close>
+struct point_order<geometry::detail::closed_view<Range, Close> >
+    : geometry::point_order<Range>
+{};
+
+template <typename Range, closure_selector Close>
+struct closure<geometry::detail::closed_view<Range, Close> >
+{
+    static const closure_selector value = closed;
+};
+
+
+} // namespace traits
+#endif // DOXYGEN_NO_TRAITS_SPECIALIZATIONS
 
 
 }} // namespace boost::geometry

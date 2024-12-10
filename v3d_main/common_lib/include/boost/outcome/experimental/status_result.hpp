@@ -1,5 +1,5 @@
 /* A very simple result type
-(C) 2018-2021 Niall Douglas <http://www.nedproductions.biz/> (11 commits)
+(C) 2018-2024 Niall Douglas <http://www.nedproductions.biz/> (11 commits)
 File Created: Apr 2018
 
 
@@ -34,7 +34,19 @@ DEALINGS IN THE SOFTWARE.
 #include "../basic_result.hpp"
 #include "../policy/fail_to_compile_observers.hpp"
 
+#ifndef BOOST_OUTCOME_SYSTEM_ERROR2_USE_STD_ADDRESSOF
+#if BOOST_OUTCOME_USE_STD_ADDRESSOF
+#define BOOST_OUTCOME_SYSTEM_ERROR2_USE_STD_ADDRESSOF 1
+#endif
+#endif
+
+#if __PCPP_ALWAYS_TRUE__
 #include "status-code/system_error2.hpp"
+#elif !BOOST_OUTCOME_USE_SYSTEM_STATUS_CODE && __has_include("status-code/system_error2.hpp")
+#include "status-code/system_error2.hpp"
+#else
+#include <status-code/system_error2.hpp>
+#endif
 
 BOOST_OUTCOME_V2_NAMESPACE_EXPORT_BEGIN
 
@@ -153,9 +165,37 @@ namespace experimental
   /*! AWAITING HUGO JSON CONVERSION TOOL
 SIGNATURE NOT RECOGNISED
 */
-  template <class R, class S = errored_status_code<erased<typename system_code::value_type>>,
+  template <class R, class S = erased_errored_status_code<typename system_code::value_type>,
             class NoValuePolicy = policy::default_status_result_policy<R, S>>  //
   using status_result = basic_result<R, S, NoValuePolicy>;
+
+  /*! AWAITING HUGO JSON CONVERSION TOOL
+SIGNATURE NOT RECOGNISED
+*/
+  BOOST_OUTCOME_TEMPLATE(class R, class S, class NoValuePolicy)
+  BOOST_OUTCOME_TREQUIRES(BOOST_OUTCOME_TPRED(std::is_copy_constructible<R>::value && (is_status_code<S>::value || is_errored_status_code<S>::value)))
+  inline basic_result<R, S, NoValuePolicy> clone(const basic_result<R, S, NoValuePolicy> &v)
+  {
+    if(v)
+    {
+      return success_type<R>(v.assume_value());
+    }
+    return failure_type<S>(v.assume_error().clone(), hooks::spare_storage(&v));
+  }
+
+  /*! AWAITING HUGO JSON CONVERSION TOOL
+SIGNATURE NOT RECOGNISED
+*/
+  BOOST_OUTCOME_TEMPLATE(class S, class NoValuePolicy)
+  BOOST_OUTCOME_TREQUIRES(BOOST_OUTCOME_TPRED(is_status_code<S>::value || is_errored_status_code<S>::value))
+  inline basic_result<void, S, NoValuePolicy> clone(const basic_result<void, S, NoValuePolicy> &v)
+  {
+    if(v)
+    {
+      return success_type<void>();
+    }
+    return failure_type<S>(v.assume_error().clone(), hooks::spare_storage(&v));
+  }
 
 }  // namespace experimental
 

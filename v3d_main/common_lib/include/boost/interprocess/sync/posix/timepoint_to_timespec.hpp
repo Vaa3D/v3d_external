@@ -21,7 +21,7 @@
 
 #include <boost/interprocess/detail/mpl.hpp>
 #include <boost/interprocess/detail/type_traits.hpp>
-#include <boost/interprocess/detail/timed_utils.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 
 namespace boost {
 
@@ -31,7 +31,7 @@ namespace ipcdetail {
 
 template<class TimePoint>
 inline timespec timepoint_to_timespec ( const TimePoint &tm
-                                  , typename enable_if_ptime<TimePoint>::type * = 0)
+                                      , typename enable_if_ptime<TimePoint>::type * = 0)
 {
    typedef typename TimePoint::date_type            date_type;
    typedef typename TimePoint::time_duration_type   time_duration_type;
@@ -42,38 +42,42 @@ inline timespec timepoint_to_timespec ( const TimePoint &tm
    time_duration_type duration  = (tm <= epoch) ? time_duration_type(epoch - epoch)
                                                 : time_duration_type(tm - epoch);
    timespec ts;
-   ts.tv_sec  = duration.total_seconds();
-   ts.tv_nsec = duration.total_nanoseconds() % 1000000000;
+   ts.tv_sec  = static_cast<time_t>(duration.total_seconds());
+   ts.tv_nsec = static_cast<long>(duration.total_nanoseconds() % 1000000000);
    return ts;
 }
 
 inline timespec timepoint_to_timespec (const ustime &tm)
 {
    timespec ts;
-   ts.tv_sec  = tm.get_microsecs()/1000000u;
-   ts.tv_nsec = (tm.get_microsecs()%1000000u)*1000u;
+   const boost::uint64_t micros = tm.get_microsecs();
+   ts.tv_sec  = static_cast<time_t>(micros /1000000u);
+   ts.tv_nsec = static_cast<long>((micros%1000000u)*1000u);
    return ts;
 }
 
 template<class TimePoint>
 inline timespec timepoint_to_timespec ( const TimePoint &tm
-                                       , typename enable_if_time_point<TimePoint>::type * = 0)
+                                      , typename enable_if_time_point<TimePoint>::type * = 0)
 {
    typedef typename TimePoint::duration duration_t;
    duration_t d(tm.time_since_epoch());
 
    timespec ts;
+   const typename duration_t::rep cnt = d.count();
+
    BOOST_IF_CONSTEXPR(duration_t::period::num == 1 && duration_t::period::den == 1000000000)
    {
-      ts.tv_sec  = d.count()/duration_t::period::den;
-      ts.tv_nsec = d.count()%duration_t::period::den;
+
+      ts.tv_sec  = static_cast<time_t>(cnt /duration_t::period::den);
+      ts.tv_nsec = static_cast<long>(cnt%duration_t::period::den);
    }
    else
    {
       const double factor = double(duration_t::period::num)/double(duration_t::period::den);
-      const double res = d.count()*factor;
-      ts.tv_sec  = static_cast<boost::uint64_t>(res);
-      ts.tv_nsec = static_cast<boost::uint64_t>(res - double(ts.tv_sec));
+      const double res = double(cnt)*factor;
+      ts.tv_sec  = static_cast<time_t>(res);
+      ts.tv_nsec = static_cast<long>(1000000000.0*(res - double(ts.tv_sec)));
    }
    return ts;
 }

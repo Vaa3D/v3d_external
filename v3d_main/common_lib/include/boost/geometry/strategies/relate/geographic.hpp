@@ -1,7 +1,8 @@
 // Boost.Geometry
 
-// Copyright (c) 2020-2021, Oracle and/or its affiliates.
+// Copyright (c) 2020-2023, Oracle and/or its affiliates.
 
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Licensed under the Boost Software License version 1.0.
@@ -13,6 +14,7 @@
 
 // TEMP - move to strategy
 #include <boost/geometry/strategies/agnostic/point_in_box_by_side.hpp>
+#include <boost/geometry/strategies/cartesian/box_in_box.hpp>
 #include <boost/geometry/strategies/geographic/intersection.hpp>
 #include <boost/geometry/strategies/geographic/point_in_poly_winding.hpp>
 #include <boost/geometry/strategies/spherical/point_in_point.hpp>
@@ -208,6 +210,14 @@ public:
     {
         return strategy::within::spherical_box_box();
     }
+
+    template <typename ComparePolicy, typename EqualsPolicy>
+    using compare_type = typename strategy::compare::spherical
+        <
+            ComparePolicy,
+            EqualsPolicy,
+            -1
+        >;
 };
 
 
@@ -279,6 +289,14 @@ struct strategy_converter<strategy::intersection::geographic_segments<FormulaPol
                     FormulaPolicy, SeriesOrder, Spheroid, CalculationType
                 >(base_t::m_spheroid);
         }
+
+        template <typename ComparePolicy, typename EqualsPolicy>
+        using compare_type = typename strategy::compare::spherical
+            <
+                ComparePolicy,
+                EqualsPolicy,
+               -1
+            >;
     };
 
     static auto get(strategy::intersection::geographic_segments<FormulaPolicy, SeriesOrder, Spheroid, CalculationType> const& s)

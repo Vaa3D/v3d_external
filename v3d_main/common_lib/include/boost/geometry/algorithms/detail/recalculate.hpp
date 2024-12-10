@@ -21,8 +21,6 @@
 
 #include <boost/concept/requires.hpp>
 #include <boost/concept_check.hpp>
-#include <boost/numeric/conversion/bounds.hpp>
-#include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/size.hpp>
@@ -106,13 +104,10 @@ struct range_to_range
         typedef recalculate_point<geometry::dimension<point_type>::value> per_point;
         geometry::clear(destination);
 
-        for (typename boost::range_iterator<Range2 const>::type it
-                = boost::begin(source);
-            it != boost::end(source);
-            ++it)
+        for (auto const& source_point : source)
         {
             point_type p;
-            per_point::apply(p, *it, strategy);
+            per_point::apply(p, source_point, strategy);
             geometry::append(destination, p);
         }
     }

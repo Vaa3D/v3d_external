@@ -1,5 +1,5 @@
 /* Proposed SG14 status_code
-(C) 2018-2021 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
+(C) 2018-2024 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
 File Created: Feb 2018
 
 
@@ -58,7 +58,7 @@ For POSIX, `posix_code` is possible.
 You are guaranteed that `system_code` can be transported by the compiler
 in exactly two CPU registers.
 */
-using system_code = status_code<erased<intptr_t>>;
+using system_code = erased_status_code<intptr_t>;
 
 #ifndef NDEBUG
 static_assert(sizeof(system_code) == 2 * sizeof(void *), "system_code is not exactly two pointers in size!");

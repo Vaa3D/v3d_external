@@ -90,6 +90,9 @@ public:
    std_real_concept& operator=(float c) { m_value = c; return *this; }
    std_real_concept& operator=(double c) { m_value = c; return *this; }
    std_real_concept& operator=(long double c) { m_value = c; return *this; }
+#ifdef BOOST_MATH_USE_FLOAT128
+   std_real_concept& operator=(BOOST_MATH_FLOAT128_TYPE c) { m_value = c; return *this; }
+#endif
 
    // Access:
    std_real_concept_base_type value()const{ return m_value; }
@@ -340,7 +343,6 @@ inline std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, t
 } // namespace concepts
 }}
 
-#include <boost/math/tools/precision.hpp>
 #include <boost/math/tools/big_constant.hpp>
 
 namespace boost{ namespace math{

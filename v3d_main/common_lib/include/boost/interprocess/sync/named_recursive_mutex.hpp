@@ -23,6 +23,7 @@
 #include <boost/interprocess/detail/workaround.hpp>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/permissions.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 
 #if !defined(BOOST_INTERPROCESS_FORCE_GENERIC_EMULATION) && defined (BOOST_INTERPROCESS_WINDOWS)
    #include <boost/interprocess/sync/windows/named_recursive_mutex.hpp>
@@ -56,7 +57,7 @@ class named_recursive_mutex
 
    //!Creates a global recursive_mutex with a name.
    //!If the recursive_mutex can't be created throws interprocess_exception
-   named_recursive_mutex(create_only_t create_only, const char *name, const permissions &perm = permissions());
+   named_recursive_mutex(create_only_t, const char *name, const permissions &perm = permissions());
 
    //!Opens or creates a global recursive_mutex with a name.
    //!If the recursive_mutex is created, this call is equivalent to
@@ -64,12 +65,12 @@ class named_recursive_mutex
    //!If the recursive_mutex is already created, this call is equivalent
    //!named_recursive_mutex(open_only_t, ... )
    //!Does not throw
-   named_recursive_mutex(open_or_create_t open_or_create, const char *name, const permissions &perm = permissions());
+   named_recursive_mutex(open_or_create_t, const char *name, const permissions &perm = permissions());
 
    //!Opens a global recursive_mutex with a name if that recursive_mutex is previously
    //!created. If it is not previously created this function throws
    //!interprocess_exception.
-   named_recursive_mutex(open_only_t open_only, const char *name);
+   named_recursive_mutex(open_only_t, const char *name);
 
    #if defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
@@ -78,7 +79,7 @@ class named_recursive_mutex
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_recursive_mutex(create_only_t create_only, const wchar_t *name, const permissions &perm = permissions());
+   named_recursive_mutex(create_only_t, const wchar_t *name, const permissions &perm = permissions());
 
    //!Opens or creates a global recursive_mutex with a name.
    //!If the recursive_mutex is created, this call is equivalent to
@@ -89,7 +90,7 @@ class named_recursive_mutex
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_recursive_mutex(open_or_create_t open_or_create, const wchar_t *name, const permissions &perm = permissions());
+   named_recursive_mutex(open_or_create_t, const wchar_t *name, const permissions &perm = permissions());
 
    //!Opens a global recursive_mutex with a name if that recursive_mutex is previously
    //!created. If it is not previously created this function throws
@@ -97,7 +98,7 @@ class named_recursive_mutex
    //! 
    //!Note: This function is only available on operating systems with
    //!      native wchar_t APIs (e.g. Windows).
-   named_recursive_mutex(open_only_t open_only, const wchar_t *name);
+   named_recursive_mutex(open_only_t, const wchar_t *name);
 
    #endif //defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
@@ -136,6 +137,16 @@ class named_recursive_mutex
    //!   this function. 
    template<class TimePoint>
    bool timed_lock(const TimePoint &abs_time);
+
+   //!Same as `timed_lock`, but this function is modeled after the
+   //!standard library interface.
+   template<class TimePoint> bool try_lock_until(const TimePoint &abs_time)
+   {  return this->timed_lock(abs_time);  }
+
+   //!Same as `timed_lock`, but this function is modeled after the
+   //!standard library interface.
+   template<class Duration>  bool try_lock_for(const Duration &dur)
+   {  return this->timed_lock(ipcdetail::duration_to_ustime(dur)); }
 
    //!Erases a named recursive mutex
    //!from the system

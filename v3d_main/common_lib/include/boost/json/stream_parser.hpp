@@ -19,13 +19,14 @@
 #include <type_traits>
 #include <cstddef>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
-/** A DOM parser for JSON contained in multiple buffers.
+/** A DOM parser for JSON text contained in multiple buffers.
 
-    This class is used to parse a JSON contained in a
+    This class is used to parse a JSON text contained in a
     series of one or more character buffers, into a
     @ref value container. It implements a
     <a href="https://en.wikipedia.org/wiki/Streaming_algorithm">
@@ -34,7 +35,7 @@ BOOST_JSON_NS_BEGIN
 
     @li Parse a JSON file a piece at a time.
 
-    @li Parse incoming JSON as it arrives,
+    @li Parse incoming JSON text as it arrives,
         one buffer at a time.
 
     @li Parse with bounded resource consumption
@@ -45,7 +46,7 @@ BOOST_JSON_NS_BEGIN
     To use the parser first construct it, then optionally
     call @ref reset to specify a @ref storage_ptr to use
     for the resulting @ref value. Then call @ref write
-    one or more times to parse a single, complete JSON.
+    one or more times to parse a single, complete JSON text.
     Call @ref done to determine if the parse has completed.
     To indicate there are no more buffers, call @ref finish.
     If the parse is successful, call @ref release to take
@@ -53,9 +54,9 @@ BOOST_JSON_NS_BEGIN
 
     @code
     stream_parser p;                                // construct a parser
-    p.write( "[1,2" );                              // parse some of a JSON
-    p.write( ",3,4]" );                             // parse the rest of the JSON
-    assert( p.done() );                             // we have a complete JSON
+    p.write( "[1,2" );                              // parse some of a JSON text
+    p.write( ",3,4]" );                             // parse the rest of the JSON text
+    assert( p.done() );                             // we have a complete JSON text
     value jv = p.release();                         // take ownership of the value
     @endcode
 
@@ -63,20 +64,20 @@ BOOST_JSON_NS_BEGIN
 
     When the character buffer provided as input contains
     additional data that is not part of the complete
-    JSON, an error is returned. The @ref write_some
+    JSON text, an error is returned. The @ref write_some
     function is an alternative which allows the parse
     to finish early, without consuming all the characters
     in the buffer. This allows parsing of a buffer
-    containing multiple individual JSONs or containing
+    containing multiple individual JSON texts or containing
     different protocol data:
     @code
     stream_parser p;                                // construct a parser
     std::size_t n;                                  // number of characters used
-    n = p.write_some( "[1,2" );                     // parse some of a JSON
+    n = p.write_some( "[1,2" );                     // parse some of a JSON text
     assert( n == 4 );                               // all characters consumed
-    n = p.write_some( ",3,4] null" );               // parse the remainder of the JSON
+    n = p.write_some( ",3,4] null" );               // parse the remainder of the JSON text
     assert( n == 6 );                               // only some characters consumed
-    assert( p.done() );                             // we have a complete JSON
+    assert( p.done() );                             // we have a complete JSON text
     value jv = p.release();                         // take ownership of the value
     @endcode
 
@@ -84,23 +85,21 @@ BOOST_JSON_NS_BEGIN
 
     The parser may dynamically allocate temporary
     storage as needed to accommodate the nesting level
-    of the JSON being parsed. Temporary storage is
+    of the JSON text being parsed. Temporary storage is
     first obtained from an optional, caller-owned
     buffer specified upon construction. When that
     is exhausted, the next allocation uses the
-    @ref memory_resource passed to the constructor; if
+    `boost::container::pmr::memory_resource` passed to the constructor; if
     no such argument is specified, the default memory
     resource is used. Temporary storage is freed only
     when the parser is destroyed; The performance of
-    parsing multiple JSONs may be improved by reusing
+    parsing multiple JSON texts may be improved by reusing
     the same parser instance.
 \n
-    It is important to note that the @ref memory_resource
-    supplied upon construction is used for temporary
-    storage only, and not for allocating the elements
-    which make up the parsed value. That other memory
-    resource is optionally supplied in each call
-    to @ref reset.
+    It is important to note that the `boost::container::pmr::memory_resource`
+    supplied upon construction is used for temporary storage only, and not for
+    allocating the elements which make up the parsed value. That other memory
+    resource is optionally supplied in each call to @ref reset.
 
     @par Duplicate Keys
 
@@ -417,10 +416,10 @@ public:
 #endif
 #endif
 
-    /** Reset the parser for a new JSON.
+    /** Reset the parser for a new JSON text.
 
         This function is used to reset the parser to
-        prepare it for parsing a new complete JSON.
+        prepare it for parsing a new complete JSON text.
         Any previous partial results are destroyed.
 
         @par Complexity
@@ -430,20 +429,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use for the resulting @ref value. The parser
-        will acquire shared ownership.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use for the resulting @ref value. The parser will acquire shared
+        ownership.
     */
     BOOST_JSON_DECL
     void
     reset(storage_ptr sp = {}) noexcept;
 
-    /** Return true if a complete JSON has been parsed.
+    /** Return true if a complete JSON text has been parsed.
 
         This function returns `true` when all of these
         conditions are met:
 
-        @li A complete serialized JSON has been
+        @li A complete serialized JSON text has been
             presented to the parser, and
 
         @li No error has occurred since the parser
@@ -462,24 +461,24 @@ public:
         return p_.done();
     }
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    /** Parse a buffer containing all or part of a complete JSON text.
 
-        This function parses JSON contained in the
+        This function parses JSON text contained in the
         specified character buffer. If parsing completes,
         any additional characters past the end of the
-        complete JSON are ignored. The function returns the
+        complete JSON text are ignored. The function returns the
         actual number of characters parsed, which may be
         less than the size of the input. This allows parsing
-        of a buffer containing multiple individual JSONs or
+        of a buffer containing multiple individual JSON texts or
         containing different protocol data.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write_some( "[1,2" );                     // parse the first part of the JSON
+        n = p.write_some( "[1,2" );                     // parse the first part of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write_some( "3,4] null" );                // parse the rest of the JSON
+        n = p.write_some( "3,4] null" );                // parse the rest of the JSON text
         assert( n == 5 );                               // only some characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -497,7 +496,7 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
@@ -510,31 +509,40 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
+    /** @{ */
     BOOST_JSON_DECL
     std::size_t
     write_some(
         char const* data,
         std::size_t size,
-        error_code& ec);
+        system::error_code& ec);
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    BOOST_JSON_DECL
+    std::size_t
+    write_some(
+        char const* data,
+        std::size_t size,
+        std::error_code& ec);
+    /** @} */
 
-        This function parses JSON contained in the
+    /** Parse a buffer containing all or part of a complete JSON text.
+
+        This function parses JSON text contained in the
         specified character buffer. If parsing completes,
         any additional characters past the end of the
-        complete JSON are ignored. The function returns the
+        complete JSON text are ignored. The function returns the
         actual number of characters parsed, which may be
         less than the size of the input. This allows parsing
-        of a buffer containing multiple individual JSONs or
+        of a buffer containing multiple individual JSON texts or
         containing different protocol data.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write_some( "[1,2" );                     // parse the first part of the JSON
+        n = p.write_some( "[1,2" );                     // parse the first part of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write_some( "3,4] null" );                // parse the rest of the JSON
+        n = p.write_some( "3,4] null" );                // parse the rest of the JSON text
         assert( n == 5 );                               // only some characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -552,7 +560,7 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
@@ -563,7 +571,7 @@ public:
         @param size The number of characters pointed to
         by `data`.
 
-        @throw system_error Thrown on error.
+        @throw `boost::system::system_error` Thrown on error.
     */
     BOOST_JSON_DECL
     std::size_t
@@ -571,24 +579,24 @@ public:
         char const* data,
         std::size_t size);
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    /** Parse a buffer containing all or part of a complete JSON text.
 
-        This function parses JSON contained in the
+        This function parses JSON text contained in the
         specified character buffer. If parsing completes,
         any additional characters past the end of the
-        complete JSON are ignored. The function returns the
+        complete JSON text are ignored. The function returns the
         actual number of characters parsed, which may be
         less than the size of the input. This allows parsing
-        of a buffer containing multiple individual JSONs or
+        of a buffer containing multiple individual JSON texts or
         containing different protocol data.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write_some( "[1,2" );                     // parse the first part of the JSON
+        n = p.write_some( "[1,2" );                     // parse the first part of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write_some( "3,4] null" );                // parse the rest of the JSON
+        n = p.write_some( "3,4] null" );                // parse the rest of the JSON text
         assert( n == 5 );                               // only some characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -606,7 +614,7 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
@@ -615,33 +623,44 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
+    /** @{ */
     std::size_t
     write_some(
         string_view s,
-        error_code& ec)
+        system::error_code& ec)
     {
         return write_some(
             s.data(), s.size(), ec);
     }
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    std::size_t
+    write_some(
+        string_view s,
+        std::error_code& ec)
+    {
+        return write_some(
+            s.data(), s.size(), ec);
+    }
+    /** @} */
 
-        This function parses JSON contained in the
+    /** Parse a buffer containing all or part of a complete JSON text.
+
+        This function parses JSON text contained in the
         specified character buffer. If parsing completes,
         any additional characters past the end of the
-        complete JSON are ignored. The function returns the
+        complete JSON text are ignored. The function returns the
         actual number of characters parsed, which may be
         less than the size of the input. This allows parsing
-        of a buffer containing multiple individual JSONs or
+        of a buffer containing multiple individual JSON texts or
         containing different protocol data.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write_some( "[1,2" );                     // parse the first part of the JSON
+        n = p.write_some( "[1,2" );                     // parse the first part of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write_some( "3,4] null" );                // parse the rest of the JSON
+        n = p.write_some( "3,4] null" );                // parse the rest of the JSON text
         assert( n == 5 );                               // only some characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -659,14 +678,14 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
 
         @param s The character string to parse.
 
-        @throw system_error Thrown on error.
+        @throw `boost::system::system_error` Thrown on error.
     */
     std::size_t
     write_some(
@@ -676,21 +695,21 @@ public:
             s.data(), s.size());
     }
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    /** Parse a buffer containing all or part of a complete JSON text.
 
-        This function parses a all or part of a JSON
+        This function parses a all or part of a JSON text
         contained in the specified character buffer. The
         entire buffer must be consumed; if there are
         additional characters past the end of the complete
-        JSON, the parse fails and an error is returned.
+        JSON text, the parse fails and an error is returned.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write( "[1,2" );                          // parse some of the JSON
+        n = p.write( "[1,2" );                          // parse some of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write( "3,4]" );                          // parse the rest of the JSON
+        n = p.write( "3,4]" );                          // parse the rest of the JSON text
         assert( n == 4 );                               // all characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -708,7 +727,7 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
@@ -721,28 +740,37 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
+    /** @{ */
     BOOST_JSON_DECL
     std::size_t
     write(
         char const* data,
         std::size_t size,
-        error_code& ec);
+        system::error_code& ec);
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    BOOST_JSON_DECL
+    std::size_t
+    write(
+        char const* data,
+        std::size_t size,
+        std::error_code& ec);
+    /** @} */
 
-        This function parses a all or part of a JSON
+    /** Parse a buffer containing all or part of a complete JSON text.
+
+        This function parses a all or part of a JSON text
         contained in the specified character buffer. The
         entire buffer must be consumed; if there are
         additional characters past the end of the complete
-        JSON, the parse fails and an error is returned.
+        JSON text, the parse fails and an error is returned.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write( "[1,2" );                          // parse some of the JSON
+        n = p.write( "[1,2" );                          // parse some of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write( "3,4]" );                          // parse the rest of the JSON
+        n = p.write( "3,4]" );                          // parse the rest of the JSON text
         assert( n == 4 );                               // all characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -760,7 +788,7 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
@@ -771,7 +799,7 @@ public:
         @param size The number of characters pointed to
         by `data`.
 
-        @throw system_error Thrown on error.
+        @throw `boost::system::system_error` Thrown on error.
     */
     BOOST_JSON_DECL
     std::size_t
@@ -779,21 +807,21 @@ public:
         char const* data,
         std::size_t size);
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    /** Parse a buffer containing all or part of a complete JSON text.
 
-        This function parses a all or part of a JSON
+        This function parses a all or part of a JSON text
         contained in the specified character buffer. The
         entire buffer must be consumed; if there are
         additional characters past the end of the complete
-        JSON, the parse fails and an error is returned.
+        JSON text, the parse fails and an error is returned.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write( "[1,2" );                          // parse some of the JSON
+        n = p.write( "[1,2" );                          // parse some of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write( "3,4]" );                          // parse the rest of the JSON
+        n = p.write( "3,4]" );                          // parse the rest of the JSON text
         assert( n == 4 );                               // all characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -811,7 +839,7 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
@@ -820,30 +848,41 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
+    /** @{ */
     std::size_t
     write(
         string_view s,
-        error_code& ec)
+        system::error_code& ec)
     {
         return write(
             s.data(), s.size(), ec);
     }
 
-    /** Parse a buffer containing all or part of a complete JSON.
+    std::size_t
+    write(
+        string_view s,
+        std::error_code& ec)
+    {
+        return write(
+            s.data(), s.size(), ec);
+    }
+    /** @} */
 
-        This function parses a all or part of a JSON
+    /** Parse a buffer containing all or part of a complete JSON text.
+
+        This function parses a all or part of a JSON text
         contained in the specified character buffer. The
         entire buffer must be consumed; if there are
         additional characters past the end of the complete
-        JSON, the parse fails and an error is returned.
+        JSON text, the parse fails and an error is returned.
 
         @par Example
         @code
         stream_parser p;                                // construct a parser
         std::size_t n;                                  // number of characters used
-        n = p.write( "[1,2" );                          // parse some of the JSON
+        n = p.write( "[1,2" );                          // parse some of the JSON text
         assert( n == 4 );                               // all characters consumed
-        n = p.write( "3,4]" );                          // parse the rest of the JSON
+        n = p.write( "3,4]" );                          // parse the rest of the JSON text
         assert( n == 4 );                               // all characters consumed
         value jv = p.release();                         // take ownership of the value
         @endcode
@@ -861,14 +900,14 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @return The number of characters consumed from
         the buffer.
 
         @param s The character string to parse.
 
-        @throw system_error Thrown on error.
+        @throw `boost::system::system_error` Thrown on error.
     */
     std::size_t
     write(
@@ -882,7 +921,7 @@ public:
 
         This function is used to indicate that there
         are no more character buffers in the current
-        JSON being parsed. If ther resulting JSON is
+        JSON text being parsed. If the resulting JSON text is
         incomplete, the error is set to indicate a
         parsing failure.
 
@@ -907,19 +946,25 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
         @param ec Set to the error, if any occurred.
     */
+    /** @{ */
     BOOST_JSON_DECL
     void
-    finish(error_code& ec);
+    finish(system::error_code& ec);
+
+    BOOST_JSON_DECL
+    void
+    finish(std::error_code& ec);
+    /** @} */
 
     /** Indicate the end of JSON input.
 
         This function is used to indicate that there
         are no more character buffers in the current
-        JSON being parsed. If ther resulting JSON is
+        JSON text being parsed. If the resulting JSON text is
         incomplete, the error is set to indicate a
         parsing failure.
 
@@ -944,9 +989,9 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
         Upon error or exception, subsequent calls will
-        fail until @ref reset is called to parse a new JSON.
+        fail until @ref reset is called to parse a new JSON text.
 
-        @throw system_error Thrown on error.
+        @throw `boost::system::system_error` Thrown on error.
     */
     BOOST_JSON_DECL
     void
@@ -958,7 +1003,7 @@ public:
         an exception if the parsing is incomplete or
         failed. It is necessary to call @ref reset
         after calling this function in order to parse
-        another JSON.
+        another JSON text.
 
         @par Effects
         @code
@@ -973,13 +1018,14 @@ public:
         @return The parsed value. Ownership of this
         value is transferred to the caller.
 
-        @throw system_error Thrown on failure.
+        @throw `boost::system::system_error` Thrown on failure.
     */
     BOOST_JSON_DECL
     value
     release();
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

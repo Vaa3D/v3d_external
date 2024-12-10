@@ -1,22 +1,17 @@
 #ifndef BOOST_LEAF_CONTEXT_HPP_INCLUDED
 #define BOOST_LEAF_CONTEXT_HPP_INCLUDED
 
-/// Copyright (c) 2018-2021 Emil Dotchevski and Reverge Studios, Inc.
+// Copyright 2018-2023 Emil Dotchevski and Reverge Studios, Inc.
 
-/// Distributed under the Boost Software License, Version 1.0. (See accompanying
-/// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef BOOST_LEAF_ENABLE_WARNINGS ///
-#   if defined(_MSC_VER) ///
-#       pragma warning(push,1) ///
-#   elif defined(__clang__) ///
-#       pragma clang system_header ///
-#   elif (__GNUC__*100+__GNUC_MINOR__>301) ///
-#       pragma GCC system_header ///
-#   endif ///
-#endif ///
-
+#include <boost/leaf/config.hpp>
 #include <boost/leaf/error.hpp>
+
+#if !defined(BOOST_LEAF_NO_THREADS) && !defined(NDEBUG)
+#   include <thread>
+#endif
 
 namespace boost { namespace leaf {
 
@@ -77,7 +72,7 @@ namespace leaf_detail
         {
             auto e = base::check(tup, ei);
             return e && Pred::evaluate(*e);
-        };
+        }
 
         template <class Tup>
         BOOST_LEAF_CONSTEXPR static Pred get( Tup const & tup, error_info const & ei ) noexcept
@@ -96,7 +91,7 @@ namespace leaf_detail
         BOOST_LEAF_CONSTEXPR static bool check( Tup &, error_info const & ) noexcept
         {
             return true;
-        };
+        }
     };
 
     template <class E>
@@ -130,16 +125,6 @@ namespace leaf_detail
         }
     };
 
-    template <>
-    struct handler_argument_traits<error_info const &>: handler_argument_always_available<void>
-    {
-        template <class Tup>
-        BOOST_LEAF_CONSTEXPR static error_info const & get( Tup const &, error_info const & ei ) noexcept
-        {
-            return ei;
-        }
-    };
-
     template <class E>
     struct handler_argument_traits_require_by_value
     {
@@ -168,28 +153,21 @@ namespace leaf_detail
             tuple_for_each<I-1,Tuple>::deactivate(tup);
         }
 
-        BOOST_LEAF_CONSTEXPR static void propagate( Tuple & tup ) noexcept
+        BOOST_LEAF_CONSTEXPR static void unload( Tuple & tup, int err_id ) noexcept
         {
             static_assert(!std::is_same<error_info, typename std::decay<decltype(std::get<I-1>(tup))>::type>::value, "Bug in LEAF: context type deduction");
+            BOOST_LEAF_ASSERT(err_id != 0);
             auto & sl = std::get<I-1>(tup);
-            sl.propagate();
-            tuple_for_each<I-1,Tuple>::propagate(tup);
+            sl.unload(err_id);
+            tuple_for_each<I-1,Tuple>::unload(tup, err_id);
         }
 
-        BOOST_LEAF_CONSTEXPR static void propagate_captured( Tuple & tup, int err_id ) noexcept
+        template <class CharT, class Traits>
+        static void print( std::basic_ostream<CharT, Traits> & os, void const * tup, int err_id_to_print )
         {
-            static_assert(!std::is_same<error_info, typename std::decay<decltype(std::get<I-1>(tup))>::type>::value, "Bug in LEAF: context type deduction");
-            auto & sl = std::get<I-1>(tup);
-            if( sl.has_value(err_id) )
-                load_slot(err_id, std::move(sl).value(err_id));
-            tuple_for_each<I-1,Tuple>::propagate_captured(tup, err_id);
-        }
-
-        static void print( std::ostream & os, void const * tup, int key_to_print )
-        {
-            BOOST_LEAF_ASSERT(tup != 0);
-            tuple_for_each<I-1,Tuple>::print(os, tup, key_to_print);
-            std::get<I-1>(*static_cast<Tuple const *>(tup)).print(os, key_to_print);
+            BOOST_LEAF_ASSERT(tup != nullptr);
+            tuple_for_each<I-1,Tuple>::print(os, tup, err_id_to_print);
+            std::get<I-1>(*static_cast<Tuple const *>(tup)).print(os, err_id_to_print);
         }
     };
 
@@ -198,49 +176,19 @@ namespace leaf_detail
     {
         BOOST_LEAF_CONSTEXPR static void activate( Tuple & ) noexcept { }
         BOOST_LEAF_CONSTEXPR static void deactivate( Tuple & ) noexcept { }
-        BOOST_LEAF_CONSTEXPR static void propagate( Tuple & tup ) noexcept { }
-        BOOST_LEAF_CONSTEXPR static void propagate_captured( Tuple & tup, int ) noexcept { }
-        static void print( std::ostream &, void const *, int ) { }
+        BOOST_LEAF_CONSTEXPR static void unload( Tuple &, int ) noexcept { }
+        template <class CharT, class Traits>
+        BOOST_LEAF_CONSTEXPR static void print( std::basic_ostream<CharT, Traits> &, void const *, int ) { }
     };
 }
 
 ////////////////////////////////////////////
 
-#if BOOST_LEAF_DIAGNOSTICS
-
 namespace leaf_detail
 {
-    template <class T> struct requires_unexpected { constexpr static bool value = false; };
-    template <class T> struct requires_unexpected<T const> { constexpr static bool value = requires_unexpected<T>::value; };
-    template <class T> struct requires_unexpected<T const &> { constexpr static bool value = requires_unexpected<T>::value; };
-    template <class T> struct requires_unexpected<T const *> { constexpr static bool value = requires_unexpected<T>::value; };
-    template <> struct requires_unexpected<e_unexpected_count> { constexpr static bool value = true; };
-    template <> struct requires_unexpected<e_unexpected_info> { constexpr static bool value = true; };
-
-    template <class L>
-    struct unexpected_requested;
-
-    template <template <class ...> class L>
-    struct unexpected_requested<L<>>
-    {
-        constexpr static bool value = false;
-    };
-
-    template <template <class...> class L, template <class> class S, class Car, class... Cdr>
-    struct unexpected_requested<L<S<Car>, S<Cdr>...>>
-    {
-        constexpr static bool value = requires_unexpected<Car>::value || unexpected_requested<L<S<Cdr>...>>::value;
-    };
-}
-
-#endif
-
-////////////////////////////////////////////
-
-namespace leaf_detail
-{
-    template <class T> struct does_not_participate_in_context_deduction: std::false_type { };
+    template <class T> struct does_not_participate_in_context_deduction: std::is_abstract<T> { };
     template <> struct does_not_participate_in_context_deduction<void>: std::true_type { };
+    template <> struct does_not_participate_in_context_deduction<error_id>: std::true_type { };
 
     template <class L>
     struct deduce_e_type_list;
@@ -280,19 +228,11 @@ class context
 
     using Tup = leaf_detail::deduce_e_tuple<E...>;
     Tup tup_;
+    bool is_active_;
 
 #if !defined(BOOST_LEAF_NO_THREADS) && !defined(NDEBUG)
     std::thread::id thread_id_;
 #endif
-    bool is_active_;
-
-protected:
-
-    BOOST_LEAF_CONSTEXPR error_id propagate_captured_errors( error_id err_id ) noexcept
-    {
-        leaf_detail::tuple_for_each<std::tuple_size<Tup>::value,Tup>::propagate_captured(tup_, err_id.value());
-        return err_id;
-    }
 
 public:
 
@@ -328,10 +268,6 @@ public:
         using namespace leaf_detail;
         BOOST_LEAF_ASSERT(!is_active());
         tuple_for_each<std::tuple_size<Tup>::value,Tup>::activate(tup_);
-#if BOOST_LEAF_DIAGNOSTICS
-        if( unexpected_requested<Tup>::value )
-            ++tl_unexpected_enabled<>::counter;
-#endif
 #if !defined(BOOST_LEAF_NO_THREADS) && !defined(NDEBUG)
         thread_id_ = std::this_thread::get_id();
 #endif
@@ -347,16 +283,13 @@ public:
         BOOST_LEAF_ASSERT(std::this_thread::get_id() == thread_id_);
         thread_id_ = std::thread::id();
 #endif
-#if BOOST_LEAF_DIAGNOSTICS
-        if( unexpected_requested<Tup>::value )
-            --tl_unexpected_enabled<>::counter;
-#endif
         tuple_for_each<std::tuple_size<Tup>::value,Tup>::deactivate(tup_);
     }
 
-    BOOST_LEAF_CONSTEXPR void propagate() noexcept
+    BOOST_LEAF_CONSTEXPR void unload(error_id id) noexcept
     {
-        leaf_detail::tuple_for_each<std::tuple_size<Tup>::value,Tup>::propagate(tup_);
+        BOOST_LEAF_ASSERT(!is_active());
+        leaf_detail::tuple_for_each<std::tuple_size<Tup>::value,Tup>::unload(tup_, id.value());
     }
 
     BOOST_LEAF_CONSTEXPR bool is_active() const noexcept
@@ -364,9 +297,17 @@ public:
         return is_active_;
     }
 
-    void print( std::ostream & os ) const
+    template <class CharT, class Traits>
+    void print( std::basic_ostream<CharT, Traits> & os ) const
     {
         leaf_detail::tuple_for_each<std::tuple_size<Tup>::value,Tup>::print(os, &tup_, 0);
+    }
+
+    template <class CharT, class Traits>
+    friend std::ostream & operator<<( std::basic_ostream<CharT, Traits> & os, context const & ctx )
+    {
+        ctx.print(os);
+        return os;
     }
 
     template <class R, class... H>
@@ -375,6 +316,12 @@ public:
     template <class R, class... H>
     BOOST_LEAF_CONSTEXPR R handle_error( error_id, H && ... );
 };
+
+template <class Ctx>
+BOOST_LEAF_CONSTEXPR BOOST_LEAF_ALWAYS_INLINE context_activator<Ctx> activate_context(Ctx & ctx) noexcept
+{
+    return context_activator<Ctx>(ctx);
+}
 
 ////////////////////////////////////////
 
@@ -415,17 +362,6 @@ namespace leaf_detail
     {
         using type = deduce_context<leaf_detail_mp11::mp_append<typename fn_mp_args_fwd<H>::type...>>;
     };
-
-    template <class Ctx>
-    struct polymorphic_context_impl: polymorphic_context, Ctx
-    {
-        error_id propagate_captured_errors() noexcept final override { return Ctx::propagate_captured_errors(captured_id_); }
-        void activate() noexcept final override { Ctx::activate(); }
-        void deactivate() noexcept final override { Ctx::deactivate(); }
-        void propagate() noexcept final override { Ctx::propagate(); }
-        bool is_active() const noexcept final override { return Ctx::is_active(); }
-        void print( std::ostream & os ) const final override { return Ctx::print(os); }
-    };
 }
 
 template <class... H>
@@ -447,22 +383,24 @@ BOOST_LEAF_CONSTEXPR inline context_type_from_handlers<H...> make_context( H && 
 
 ////////////////////////////////////////////
 
-template <class...  H>
+#if BOOST_LEAF_CFG_CAPTURE
+
+template <class...>
+BOOST_LEAF_DEPRECATED("Please use try_capture_all instead of make_shared_context/capture.")
 inline context_ptr make_shared_context() noexcept
 {
-    return std::make_shared<leaf_detail::polymorphic_context_impl<context_type_from_handlers<H...>>>();
+    return std::make_shared<polymorphic_context>();
 }
 
-template <class...  H>
+template <class... H>
+BOOST_LEAF_DEPRECATED("Please use try_capture_all instead of make_shared_context/capture.")
 inline context_ptr make_shared_context( H && ... ) noexcept
 {
-    return std::make_shared<leaf_detail::polymorphic_context_impl<context_type_from_handlers<H...>>>();
+    return std::make_shared<polymorphic_context>();
 }
 
-} }
+#endif
 
-#if defined(_MSC_VER) && !defined(BOOST_LEAF_ENABLE_WARNINGS) ///
-#pragma warning(pop) ///
-#endif ///
+} }
 
 #endif

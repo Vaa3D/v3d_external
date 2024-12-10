@@ -1,5 +1,5 @@
 /* Proposed SG14 status_code
-(C) 2018-2021 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
+(C) 2018-2024 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
 File Created: Feb 2018
 
 
@@ -41,6 +41,22 @@ DEALINGS IN THE SOFTWARE.
 
 BOOST_OUTCOME_SYSTEM_ERROR2_NAMESPACE_BEGIN
 
+// Fix for issue #48 Issue compiling on arm-none-eabi (newlib) with GNU extensions off
+#if !defined(_MSC_VER) && !defined(__APPLE__)
+namespace detail
+{
+  namespace avoid_string_include
+  {
+#if defined(__GLIBC__) && !defined(__UCLIBC__)
+    // This returns int for non-glibc strerror_r, but glibc's is particularly weird so we retain it
+    extern "C" char *strerror_r(int errnum, char *buf, size_t buflen);
+#else
+    extern "C" int strerror_r(int errnum, char *buf, size_t buflen);
+#endif
+  }  // namespace avoid_string_include
+}  // namespace detail
+#endif
+
 class _posix_code_domain;
 //! A POSIX error code, those returned by `errno`.
 using posix_code = status_code<_posix_code_domain>;
@@ -63,7 +79,6 @@ namespace mixins
 class _posix_code_domain : public status_code_domain
 {
   template <class DomainType> friend class status_code;
-  template <class StatusCode> friend class detail::indirecting_domain;
   using _base = status_code_domain;
 
   static _base::string_ref _make_string_ref(int c) noexcept
@@ -71,13 +86,15 @@ class _posix_code_domain : public status_code_domain
     char buffer[1024] = "";
 #ifdef _WIN32
     strerror_s(buffer, sizeof(buffer), c);
-#elif defined(__gnu_linux__) && !defined(__ANDROID__)  // handle glibc's weird strerror_r()
-    char *s = strerror_r(c, buffer, sizeof(buffer));  // NOLINT
+#elif defined(__GLIBC__) && !defined(__UCLIBC__)  // handle glibc's weird strerror_r()
+    char *s = detail::avoid_string_include::strerror_r(c, buffer, sizeof(buffer));  // NOLINT
     if(s != nullptr)
     {
-      strncpy(buffer, s, sizeof(buffer));  // NOLINT
+      strncpy(buffer, s, sizeof(buffer) - 1);  // NOLINT
       buffer[1023] = 0;
     }
+#elif !defined(__APPLE__)
+    detail::avoid_string_include::strerror_r(c, buffer, sizeof(buffer));
 #else
     strerror_r(c, buffer, sizeof(buffer));
 #endif
@@ -111,16 +128,23 @@ public:
   static inline constexpr const _posix_code_domain &get();
 
   virtual string_ref name() const noexcept override { return string_ref("posix domain"); }  // NOLINT
-protected:
-  virtual bool _do_failure(const status_code<void> &code) const noexcept override  // NOLINT
+
+  virtual payload_info_t payload_info() const noexcept override
   {
-    assert(code.domain() == *this);                             // NOLINT
-    return static_cast<const posix_code &>(code).value() != 0;  // NOLINT
+    return {sizeof(value_type), sizeof(status_code_domain *) + sizeof(value_type),
+            (alignof(value_type) > alignof(status_code_domain *)) ? alignof(value_type) : alignof(status_code_domain *)};
+  }
+
+protected:
+  virtual bool _do_failure(const status_code<void> &code) const noexcept override                                      // NOLINT
+  {
+    assert(code.domain() == *this);                                                                                    // NOLINT
+    return static_cast<const posix_code &>(code).value() != 0;                                                         // NOLINT
   }
   virtual bool _do_equivalent(const status_code<void> &code1, const status_code<void> &code2) const noexcept override  // NOLINT
   {
-    assert(code1.domain() == *this);                          // NOLINT
-    const auto &c1 = static_cast<const posix_code &>(code1);  // NOLINT
+    assert(code1.domain() == *this);                                                                                   // NOLINT
+    const auto &c1 = static_cast<const posix_code &>(code1);                                                           // NOLINT
     if(code2.domain() == *this)
     {
       const auto &c2 = static_cast<const posix_code &>(code2);  // NOLINT
@@ -138,21 +162,21 @@ protected:
   }
   virtual generic_code _generic_code(const status_code<void> &code) const noexcept override  // NOLINT
   {
-    assert(code.domain() == *this);                         // NOLINT
-    const auto &c = static_cast<const posix_code &>(code);  // NOLINT
+    assert(code.domain() == *this);                                                          // NOLINT
+    const auto &c = static_cast<const posix_code &>(code);                                   // NOLINT
     return generic_code(static_cast<errc>(c.value()));
   }
   virtual string_ref _do_message(const status_code<void> &code) const noexcept override  // NOLINT
   {
-    assert(code.domain() == *this);                         // NOLINT
-    const auto &c = static_cast<const posix_code &>(code);  // NOLINT
+    assert(code.domain() == *this);                                                      // NOLINT
+    const auto &c = static_cast<const posix_code &>(code);                               // NOLINT
     return _make_string_ref(c.value());
   }
 #if defined(_CPPUNWIND) || defined(__EXCEPTIONS) || defined(BOOST_OUTCOME_STANDARDESE_IS_IN_THE_HOUSE)
   BOOST_OUTCOME_SYSTEM_ERROR2_NORETURN virtual void _do_throw_exception(const status_code<void> &code) const override  // NOLINT
   {
-    assert(code.domain() == *this);                         // NOLINT
-    const auto &c = static_cast<const posix_code &>(code);  // NOLINT
+    assert(code.domain() == *this);                                                                      // NOLINT
+    const auto &c = static_cast<const posix_code &>(code);                                               // NOLINT
     throw status_error<_posix_code_domain>(c);
   }
 #endif
@@ -166,7 +190,10 @@ inline constexpr const _posix_code_domain &_posix_code_domain::get()
 
 namespace mixins
 {
-  template <class Base> inline posix_code mixin<Base, _posix_code_domain>::current() noexcept { return posix_code(errno); }
+  template <class Base> inline posix_code mixin<Base, _posix_code_domain>::current() noexcept
+  {
+    return posix_code(errno);
+  }
 }  // namespace mixins
 
 BOOST_OUTCOME_SYSTEM_ERROR2_NAMESPACE_END

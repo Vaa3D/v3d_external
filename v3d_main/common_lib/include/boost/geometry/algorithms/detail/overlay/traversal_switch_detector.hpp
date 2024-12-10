@@ -1,10 +1,10 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
 // Copyright (c) 2015-2016 Barend Gehrels, Amsterdam, the Netherlands.
+// Copyright (c) 2023 Adam Wulkiewicz, Lodz, Poland.
 
 // This file was modified by Oracle on 2018-2020.
 // Modifications copyright (c) 2018-2020 Oracle and/or its affiliates.
-
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Use, modification and distribution is subject to the Boost Software License,
@@ -21,8 +21,12 @@
 #include <boost/geometry/algorithms/detail/overlay/cluster_info.hpp>
 #include <boost/geometry/algorithms/detail/overlay/is_self_turn.hpp>
 #include <boost/geometry/algorithms/detail/overlay/turn_info.hpp>
+
+#if defined(BOOST_GEOMETRY_DEBUG_TRAVERSAL_SWITCH_DETECTOR)
 #include <boost/geometry/core/access.hpp>
-#include <boost/geometry/util/condition.hpp>
+#endif
+
+#include <boost/geometry/util/constexpr.hpp>
 
 #include <cstddef>
 #include <map>
@@ -89,7 +93,6 @@ struct traversal_switch_detector
 
     enum isolation_type
     {
-        isolation_unknown = -1,
         isolation_no = 0,
         isolation_yes = 1,
         isolation_multiple = 2
@@ -121,7 +124,7 @@ struct traversal_switch_detector
     struct region_properties
     {
         signed_size_type region_id = -1;
-        isolation_type isolated = isolation_unknown;
+        isolation_type isolated = isolation_no;
         set_type unique_turn_ids;
         connection_map connected_region_counts;
     };
@@ -374,7 +377,7 @@ struct traversal_switch_detector
             {
                 region_properties& properties = key_val.second;
 
-                if (properties.isolated == isolation_unknown
+                if (properties.isolated == isolation_no
                         && has_only_isolated_children(properties))
                 {
                     properties.isolated = isolation_yes;
@@ -388,13 +391,44 @@ struct traversal_switch_detector
     {
         for (turn_type& turn : m_turns)
         {
+            constexpr auto order1 = geometry::point_order<Geometry1>::value;
+            constexpr bool reverse1 = (order1 == boost::geometry::counterclockwise)
+                ? ! Reverse1 : Reverse1;
+
+            constexpr auto order2 = geometry::point_order<Geometry2>::value;
+            constexpr bool reverse2 = (order2 == boost::geometry::counterclockwise)
+                ? ! Reverse2 : Reverse2;
+
+            // For difference, for the input walked through in reverse,
+            // the meaning is reversed: what is isolated is actually not,
+            // and vice versa.
+            bool const reverseMeaningInTurn
+                    = (reverse1 || reverse2)
+                      && ! turn.is_self()
+                      && ! turn.is_clustered()
+                      && uu_or_ii(turn)
+                      && turn.operations[0].enriched.region_id
+                         != turn.operations[1].enriched.region_id;
+
             for (auto& op : turn.operations)
             {
                 auto mit = m_connected_regions.find(op.enriched.region_id);
                 if (mit != m_connected_regions.end())
                 {
+                    bool const reverseMeaningInOp
+                        = reverseMeaningInTurn
+                          && ((op.seg_id.source_index == 0 && reverse1)
+                               || (op.seg_id.source_index == 1 && reverse2));
+
+                    // It is assigned to isolated if it's property is "Yes",
+                    // (one connected interior, or chained).
+                    // "Multiple" doesn't count for isolation,
+                    // neither for intersection, neither for difference.
                     region_properties const& prop = mit->second;
-                    op.enriched.isolated = prop.isolated == isolation_yes;
+                    op.enriched.isolated
+                            = reverseMeaningInOp
+                            ? false
+                            : prop.isolated == isolation_yes;
                 }
             }
         }
@@ -478,8 +512,12 @@ struct traversal_switch_detector
         // Discarded turns don't connect rings to the same region
         // Also xx are not relevant
         // (otherwise discarded colocated uu turn could make a connection)
-        return ! turn.discarded
-            && ! turn.both(operation_blocked);
+        return ! turn.discarded && ! turn.both(operation_blocked);
+    }
+
+    inline bool uu_or_ii(turn_type const& turn) const
+    {
+        return turn.both(operation_union) || turn.both(operation_intersection);
     }
 
     inline bool connects_same_region(turn_type const& turn) const
@@ -492,22 +530,24 @@ struct traversal_switch_detector
         if (! turn.is_clustered())
         {
             // If it is a uu/ii-turn (non clustered), it is never same region
-            return ! (turn.both(operation_union) || turn.both(operation_intersection));
+            return ! uu_or_ii(turn);
         }
 
-        if (BOOST_GEOMETRY_CONDITION(target_operation == operation_union))
+        if BOOST_GEOMETRY_CONSTEXPR (target_operation == operation_union)
         {
             // It is a cluster, check zones
             // (assigned by sort_by_side/handle colocations) of both operations
             return turn.operations[0].enriched.zone
                     == turn.operations[1].enriched.zone;
         }
-
-        // For an intersection, two regions connect if they are not ii
-        // (ii-regions are isolated) or, in some cases, not iu (for example
-        // when a multi-polygon is inside an interior ring and connecting it)
-        return ! (turn.both(operation_intersection)
-                  || turn.combination(operation_intersection, operation_union));
+        else // else prevents unreachable code warning
+        {
+            // For an intersection, two regions connect if they are not ii
+            // (ii-regions are isolated) or, in some cases, not iu (for example
+            // when a multi-polygon is inside an interior ring and connecting it)
+            return ! (turn.both(operation_intersection)
+                      || turn.combination(operation_intersection, operation_union));
+        }
     }
 
     void create_region(signed_size_type& new_region_id, ring_identifier const& ring_id,
@@ -565,10 +605,83 @@ struct traversal_switch_detector
         }
     }
 
+#if defined(BOOST_GEOMETRY_DEBUG_TRAVERSAL_SWITCH_DETECTOR)
+    void debug_show_results()
+    {
+        auto isolation_to_string = [](isolation_type const& iso) -> std::string
+        {
+            switch(iso)
+            {
+                case isolation_no : return "no";
+                case isolation_yes : return "yes";
+                case isolation_multiple : return "multiple";
+            }
+            return "error";
+        };
+        auto set_to_string = [](auto const& s) -> std::string
+        {
+            std::ostringstream result;
+            for (auto item : s) { result << " " << item; }
+            return result.str();
+        };
+
+        for (auto const& kv : m_connected_regions)
+        {
+            auto const& prop = kv.second;
+
+            std::ostringstream sub;
+            sub << "[turns" << set_to_string(prop.unique_turn_ids)
+                << "] regions";
+            for (auto const& kvs : prop.connected_region_counts)
+            {
+                sub << " { " << kvs.first
+                    << " : via [" << set_to_string(kvs.second.unique_turn_ids)
+                    << " ] }";
+            }
+
+            std::cout << "REGION " << prop.region_id
+                      << " " << isolation_to_string(prop.isolated)
+                      << " " << sub.str()
+                      << std::endl;
+        }
+
+        for (std::size_t turn_index = 0; turn_index < m_turns.size(); ++turn_index)
+        {
+            turn_type const& turn = m_turns[turn_index];
+
+            if (uu_or_ii(turn) && ! turn.is_clustered())
+            {
+                std::cout << (turn.both(operation_union) ? "UU" : "II")
+                          << " " << turn_index
+                          << " (" << geometry::get<0>(turn.point)
+                          << ", " << geometry::get<1>(turn.point) << ")"
+                          << " -> " << std::boolalpha
+                          << " [" << turn.operations[0].seg_id.source_index
+                          << "/" << turn.operations[1].seg_id.source_index << "] "
+                          << "(" << turn.operations[0].enriched.region_id
+                          << " " << turn.operations[0].enriched.isolated
+                          << ") / (" << turn.operations[1].enriched.region_id
+                          << " " << turn.operations[1].enriched.isolated << ")"
+                          << std::endl;
+            }
+        }
+
+        for (auto const& key_val : m_clusters)
+        {
+            cluster_info const& cinfo = key_val.second;
+            std::cout << "CL RESULT " << key_val.first
+                         << " -> " << cinfo.open_count << std::endl;
+        }
+    }
+#endif
+
     void iterate()
     {
 #if defined(BOOST_GEOMETRY_DEBUG_TRAVERSAL_SWITCH_DETECTOR)
-        std::cout << "BEGIN SWITCH DETECTOR (region_ids and isolation)" << std::endl;
+        std::cout << "BEGIN SWITCH DETECTOR (region_ids and isolation)"
+                  << (Reverse1 ? " REVERSE_1" : "")
+                  << (Reverse2 ? " REVERSE_2" : "")
+                  << std::endl;
 #endif
 
         // Collect turns per ring
@@ -579,11 +692,13 @@ struct traversal_switch_detector
         {
             turn_type const& turn = m_turns[turn_index];
 
-            if (turn.discarded
-                && BOOST_GEOMETRY_CONDITION(target_operation == operation_intersection))
+            if BOOST_GEOMETRY_CONSTEXPR (target_operation == operation_intersection)
             {
-                // Discarded turn (union currently still needs it to determine regions)
-                continue;
+                if (turn.discarded)
+                {
+                    // Discarded turn (union currently still needs it to determine regions)
+                    continue;
+                }
             }
 
             for (auto const& op : turn.operations)
@@ -608,33 +723,7 @@ struct traversal_switch_detector
 
 #if defined(BOOST_GEOMETRY_DEBUG_TRAVERSAL_SWITCH_DETECTOR)
         std::cout << "END SWITCH DETECTOR" << std::endl;
-
-        for (std::size_t turn_index = 0; turn_index < m_turns.size(); ++turn_index)
-        {
-            turn_type const& turn = m_turns[turn_index];
-
-            if ((turn.both(operation_union) || turn.both(operation_intersection))
-                 && ! turn.is_clustered())
-            {
-                std::cout << (turn.both(operation_union) ? "UU" : "II")
-                          << " " << turn_index
-                          << " (" << geometry::get<0>(turn.point)
-                          << ", " << geometry::get<1>(turn.point) << ")"
-                          << " -> " << std::boolalpha
-                          << "(" << turn.operations[0].enriched.region_id
-                          << " " << turn.operations[0].enriched.isolated
-                          << ") / (" << turn.operations[1].enriched.region_id
-                          << " " << turn.operations[1].enriched.isolated << ")"
-                          << std::endl;
-            }
-        }
-
-        for (auto const& key_val : m_clusters)
-        {
-            cluster_info const& cinfo = key_val.second;
-            std::cout << "CL RESULT " << key_val.first
-                         << " -> " << cinfo.open_count << std::endl;
-        }
+        debug_show_results();
 #endif
 
     }

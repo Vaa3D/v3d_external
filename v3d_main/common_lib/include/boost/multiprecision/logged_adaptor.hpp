@@ -3,9 +3,10 @@
 //  Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
 
-#ifndef BOOST_MATH_LOGGED_ADAPTER_HPP
-#define BOOST_MATH_LOGGED_ADAPTER_HPP
+#ifndef BOOST_MP_LOGGED_ADAPTER_HPP
+#define BOOST_MP_LOGGED_ADAPTER_HPP
 
+#include <boost/multiprecision/detail/standalone_config.hpp>
 #include <boost/multiprecision/traits/extract_exponent_type.hpp>
 #include <boost/multiprecision/detail/integer_ops.hpp>
 
@@ -83,35 +84,37 @@ struct logged_adaptor
       return *this;
    }
    template <class T>
-   logged_adaptor(const T& i, const typename std::enable_if<std::is_convertible<T, Backend>::value>::type* = 0)
+   logged_adaptor(const T& i, const typename std::enable_if<std::is_convertible<T, Backend>::value>::type* = nullptr)
        : m_value(i)
    {
       log_postfix_event(m_value, "construct from arithmetic type");
    }
    template <class T>
-   logged_adaptor(const logged_adaptor<T>& i, const typename std::enable_if<std::is_convertible<T, Backend>::value>::type* = 0)
+   logged_adaptor(const logged_adaptor<T>& i, const typename std::enable_if<std::is_convertible<T, Backend>::value>::type* = nullptr)
        : m_value(i.value())
    {
       log_postfix_event(m_value, "construct from arithmetic type");
    }
-   template <class T>
-   logged_adaptor(const T& i, const T& j)
+   template <class T, class U>
+   logged_adaptor(const T& i, const U& j, typename std::enable_if<std::is_constructible<Backend, const T&, const U&>::value>::type* = nullptr)
       : m_value(i, j)
    {
       log_postfix_event(m_value, "construct from a pair of arithmetic types");
    }
-   logged_adaptor(const Backend& i, unsigned digits10)
+   template <class D = Backend>
+   logged_adaptor(const Backend& i, unsigned digits10, typename std::enable_if<std::is_constructible<D, Backend const&, unsigned>::value>::type const* = nullptr)
       : m_value(i, digits10)
    {
       log_postfix_event(m_value, "construct from arithmetic type and precision");
    }
-   logged_adaptor(const logged_adaptor<Backend>& i, unsigned digits10)
-      : m_value(i, digits10)
+   template <class D = Backend>
+   logged_adaptor(const logged_adaptor<Backend>& i, unsigned digits10, typename std::enable_if<std::is_constructible<D, Backend const&, unsigned>::value>::type const* = nullptr)
+      : m_value(i.value(), digits10)
    {
       log_postfix_event(m_value, "construct from arithmetic type and precision");
    }
    template <class T>
-   typename std::enable_if<boost::multiprecision::detail::is_arithmetic<T>::value || std::is_convertible<T, Backend>::value, logged_adaptor&>::type operator=(const T& i)
+   typename std::enable_if<boost::multiprecision::detail::is_arithmetic<T>::value || std::is_assignable<Backend, T>::value, logged_adaptor&>::type operator=(const T& i)
    {
       log_prefix_event(m_value, i, "Assignment from arithmetic type");
       m_value = i;
@@ -167,6 +170,8 @@ struct logged_adaptor
    {
       return m_value;
    }
+   
+   #ifndef BOOST_MP_STANDALONE
    template <class Archive>
    void serialize(Archive& ar, const unsigned int /*version*/)
    {
@@ -174,6 +179,8 @@ struct logged_adaptor
       ar& boost::make_nvp("value", m_value);
       log_postfix_event(m_value, "serialize");
    }
+   #endif
+
    static unsigned default_precision() noexcept
    {
       return Backend::default_precision();
@@ -524,37 +531,37 @@ inline void eval_right_shift(logged_adaptor<Backend>& arg, const logged_adaptor<
 }
 
 template <class Backend, class T>
-inline unsigned eval_integer_modulus(const logged_adaptor<Backend>& arg, const T& a)
+inline T eval_integer_modulus(const logged_adaptor<Backend>& arg, const T& a)
 {
    using default_ops::eval_integer_modulus;
    log_prefix_event(arg.value(), a, "integer-modulus");
-   unsigned r = eval_integer_modulus(arg.value(), a);
+   T r = eval_integer_modulus(arg.value(), a);
    log_postfix_event(arg.value(), r, "integer-modulus");
    return r;
 }
 
 template <class Backend>
-inline unsigned eval_lsb(const logged_adaptor<Backend>& arg)
+inline std::size_t eval_lsb(const logged_adaptor<Backend>& arg)
 {
    using default_ops::eval_lsb;
    log_prefix_event(arg.value(), "least-significant-bit");
-   unsigned r = eval_lsb(arg.value());
+   std::size_t r = eval_lsb(arg.value());
    log_postfix_event(arg.value(), r, "least-significant-bit");
    return r;
 }
 
 template <class Backend>
-inline unsigned eval_msb(const logged_adaptor<Backend>& arg)
+inline std::size_t eval_msb(const logged_adaptor<Backend>& arg)
 {
    using default_ops::eval_msb;
    log_prefix_event(arg.value(), "most-significant-bit");
-   unsigned r = eval_msb(arg.value());
+   std::size_t r = eval_msb(arg.value());
    log_postfix_event(arg.value(), r, "most-significant-bit");
    return r;
 }
 
 template <class Backend>
-inline bool eval_bit_test(const logged_adaptor<Backend>& arg, unsigned a)
+inline bool eval_bit_test(const logged_adaptor<Backend>& arg, std::size_t a)
 {
    using default_ops::eval_bit_test;
    log_prefix_event(arg.value(), a, "bit-test");
@@ -564,7 +571,7 @@ inline bool eval_bit_test(const logged_adaptor<Backend>& arg, unsigned a)
 }
 
 template <class Backend>
-inline void eval_bit_set(const logged_adaptor<Backend>& arg, unsigned a)
+inline void eval_bit_set(const logged_adaptor<Backend>& arg, std::size_t a)
 {
    using default_ops::eval_bit_set;
    log_prefix_event(arg.value(), a, "bit-set");
@@ -572,7 +579,7 @@ inline void eval_bit_set(const logged_adaptor<Backend>& arg, unsigned a)
    log_postfix_event(arg.value(), arg, "bit-set");
 }
 template <class Backend>
-inline void eval_bit_unset(const logged_adaptor<Backend>& arg, unsigned a)
+inline void eval_bit_unset(const logged_adaptor<Backend>& arg, std::size_t a)
 {
    using default_ops::eval_bit_unset;
    log_prefix_event(arg.value(), a, "bit-unset");
@@ -580,7 +587,7 @@ inline void eval_bit_unset(const logged_adaptor<Backend>& arg, unsigned a)
    log_postfix_event(arg.value(), arg, "bit-unset");
 }
 template <class Backend>
-inline void eval_bit_flip(const logged_adaptor<Backend>& arg, unsigned a)
+inline void eval_bit_flip(const logged_adaptor<Backend>& arg, std::size_t a)
 {
    using default_ops::eval_bit_flip;
    log_prefix_event(arg.value(), a, "bit-flip");
@@ -741,20 +748,28 @@ inline void assign_components(logged_adaptor<T>& result, const V& v1, const U& v
 
 } // namespace backends
 
-using backends::logged_adaptor;
-
 namespace detail {
    template <class Backend>
    struct is_variable_precision<logged_adaptor<Backend> > : public is_variable_precision<Backend>
    {};
-} // namespace detail
+#ifdef BOOST_HAS_INT128
+   template <class Backend>
+   struct is_convertible_arithmetic<int128_type, logged_adaptor<Backend> > : public is_convertible_arithmetic<int128_type, Backend>
+   {};
+   template <class Backend>
+   struct is_convertible_arithmetic<uint128_type, logged_adaptor<Backend> > : public is_convertible_arithmetic<uint128_type, Backend>
+   {};
+#endif
+#ifdef BOOST_HAS_FLOAT128
+   template <class Backend>
+   struct is_convertible_arithmetic<float128_type, logged_adaptor<Backend> > : public is_convertible_arithmetic<float128_type, Backend>
+   {};
+#endif
+   } // namespace detail
 
 template <class Backend>
 struct number_category<backends::logged_adaptor<Backend> > : public number_category<Backend>
 {};
-
-template <class Number>
-using logged_adaptor_t = number<logged_adaptor<typename Number::backend_type>, Number::et>;
 
 template <class Backend, expression_template_option ExpressionTemplates>
 struct component_type<number<logged_adaptor<Backend>, ExpressionTemplates>>
@@ -795,6 +810,7 @@ class numeric_limits<boost::multiprecision::number<boost::multiprecision::backen
 
 } // namespace std
 
+#ifdef BOOST_MP_MATH_AVAILABLE
 namespace boost {
 namespace math {
 
@@ -808,6 +824,7 @@ struct precision<boost::multiprecision::number<boost::multiprecision::logged_ada
 }
 
 }} // namespace boost::math::policies
+#endif // BOOST_MP_MATH_AVAILABLE
 
 #undef NON_MEMBER_OP1
 #undef NON_MEMBER_OP2

@@ -34,36 +34,20 @@ namespace boost { namespace math { namespace detail{
 template <typename T>
 T bessel_j0(T x);
 
-template <class T>
-struct bessel_j0_initializer
-{
-   struct init
-   {
-      init()
-      {
-         do_init();
-      }
-      static void do_init()
-      {
-         bessel_j0(T(1));
-      }
-      void force_instantiate()const{}
-   };
-   static const init initializer;
-   static void force_instantiate()
-   {
-      initializer.force_instantiate();
-   }
-};
-
-template <class T>
-const typename bessel_j0_initializer<T>::init bessel_j0_initializer<T>::initializer;
-
 template <typename T>
 T bessel_j0(T x)
 {
-    bessel_j0_initializer<T>::force_instantiate();
-    
+#ifdef BOOST_MATH_INSTRUMENT
+    static bool b = false;
+    if (!b)
+    {
+       std::cout << "bessel_j0 called with " << typeid(x).name() << std::endl;
+       std::cout << "double      = " << typeid(double).name() << std::endl;
+       std::cout << "long double = " << typeid(long double).name() << std::endl;
+       b = true;
+    }
+#endif
+
     static const T P1[] = {
          static_cast<T>(BOOST_MATH_BIG_CONSTANT(T, 64, -4.1298668500990866786e+11)),
          static_cast<T>(BOOST_MATH_BIG_CONSTANT(T, 64, 2.7282507878605942706e+10)),
@@ -147,10 +131,8 @@ T bessel_j0(T x)
     using namespace boost::math::tools;
     using namespace boost::math::constants;
 
-    if (x < 0)
-    {
-        x = -x;                         // even function
-    }
+    BOOST_MATH_ASSERT(x >= 0); // reflection handled elsewhere.
+
     if (x == 0)
     {
         return static_cast<T>(1);
@@ -191,6 +173,11 @@ T bessel_j0(T x)
         //
         T sx = sin(x);
         T cx = cos(x);
+        BOOST_MATH_INSTRUMENT_VARIABLE(rc);
+        BOOST_MATH_INSTRUMENT_VARIABLE(rs);
+        BOOST_MATH_INSTRUMENT_VARIABLE(factor);
+        BOOST_MATH_INSTRUMENT_VARIABLE(sx);
+        BOOST_MATH_INSTRUMENT_VARIABLE(cx);
         value = factor * (rc * (cx + sx) - y * rs * (sx - cx));
     }
 

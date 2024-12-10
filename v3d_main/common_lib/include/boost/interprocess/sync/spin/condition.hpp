@@ -21,12 +21,14 @@
 
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
+
+#include <boost/interprocess/sync/cv_status.hpp>
 #include <boost/interprocess/sync/spin/mutex.hpp>
 #include <boost/interprocess/detail/atomic.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/exceptions.hpp>
 #include <boost/interprocess/detail/os_thread_functions.hpp>
-#include <boost/interprocess/detail/timed_utils.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 #include <boost/interprocess/sync/spin/wait.hpp>
 #include <boost/move/utility_core.hpp>
 #include <boost/cstdint.hpp>
@@ -63,6 +65,24 @@ class spin_condition
    void notify_all()
    {  this->notify(NOTIFY_ALL);  }
 
+   template <typename L>
+   void wait(L& lock)
+   {
+      if (!lock)
+         throw lock_exception();
+      this->do_timed_wait_impl<false>(ustime(0u), *lock.mutex());
+   }
+
+   template <typename L, typename Pr>
+   void wait(L& lock, Pr pred)
+   {
+      if (!lock)
+         throw lock_exception();
+
+      while (!pred())
+         this->do_timed_wait_impl<false>(ustime(0u), *lock.mutex());
+   }
+
    template <typename L, typename TimePoint>
    bool timed_wait(L& lock, const TimePoint &abs_time)
    {
@@ -93,23 +113,21 @@ class spin_condition
       return true;
    }
 
-   template <typename L>
-   void wait(L& lock)
-   {
-      if (!lock)
-         throw lock_exception();
-      this->do_timed_wait_impl<false>(0, *lock.mutex());
-   }
+   template <typename L, class TimePoint>
+   cv_status wait_until(L& lock, const TimePoint &abs_time)
+   {  return this->timed_wait(lock, abs_time) ? cv_status::no_timeout : cv_status::timeout; }
 
-   template <typename L, typename Pr>
-   void wait(L& lock, Pr pred)
-   {
-      if (!lock)
-         throw lock_exception();
+   template <typename L, class TimePoint, typename Pr>
+   bool wait_until(L& lock, const TimePoint &abs_time, Pr pred)
+   {  return this->timed_wait(lock, abs_time, pred); }
 
-      while (!pred())
-         this->do_timed_wait_impl<false>(0, *lock.mutex());
-   }
+   template <typename L, class Duration>
+   cv_status wait_for(L& lock, const Duration &dur)
+   {  return this->wait_until(lock, duration_to_ustime(dur)); }
+
+   template <typename L, class Duration, typename Pr>
+   bool wait_for(L& lock, const Duration &dur, Pr pred)
+   {  return this->wait_until(lock, duration_to_ustime(dur), pred); }
 
    private:
 
@@ -150,7 +168,8 @@ class spin_condition
 
             //Check for timeout
             if(TimeoutEnabled){
-               TimePoint now = get_now<TimePoint>(bool_<TimeoutEnabled>());
+               typedef typename microsec_clock<TimePoint>::time_point time_point;
+               time_point now = get_now<TimePoint>(bool_<TimeoutEnabled>());
 
                if(now >= abs_time){
                   //If we can lock the mutex it means that no notification
@@ -221,12 +240,12 @@ class spin_condition
    }
 
    template <class TimePoint>
-   static TimePoint get_now(bool_<true>)
+   static typename microsec_clock<TimePoint>::time_point get_now(bool_<true>)
    {  return microsec_clock<TimePoint>::universal_time();  }
 
    template <class TimePoint>
-   static TimePoint get_now(bool_<false>)
-   {  return TimePoint();  }
+   static typename microsec_clock<TimePoint>::time_point get_now(bool_<false>)
+   {  return typename microsec_clock<TimePoint>::time_point();  }
 
    template <class Mutex, class Lock, class TimePoint>
    static void  get_lock(bool_<true>, Mutex &m, Lock &lck, const TimePoint &abs_time)

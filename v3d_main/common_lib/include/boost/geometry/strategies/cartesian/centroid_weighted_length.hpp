@@ -3,9 +3,9 @@
 // Copyright (c) 2009-2015 Mateusz Loskot, London, UK.
 // Copyright (c) 2009-2015 Barend Gehrels, Amsterdam, the Netherlands.
 
-// This file was modified by Oracle on 2015-2021.
-// Modifications copyright (c) 2015-2021, Oracle and/or its affiliates.
-
+// This file was modified by Oracle on 2015-2023.
+// Modifications copyright (c) 2015-2023, Oracle and/or its affiliates.
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
@@ -19,7 +19,8 @@
 #define BOOST_GEOMETRY_STRATEGIES_CARTESIAN_CENTROID_WEIGHTED_LENGTH_HPP
 
 #include <boost/math/special_functions/fpclassify.hpp>
-#include <boost/numeric/conversion/cast.hpp>
+
+#include <boost/geometry/algorithms/assign.hpp>
 
 #include <boost/geometry/arithmetic/arithmetic.hpp>
 
@@ -30,6 +31,7 @@
 #include <boost/geometry/strategies/centroid.hpp>
 
 #include <boost/geometry/util/algorithm.hpp>
+#include <boost/geometry/util/numeric_cast.hpp>
 #include <boost/geometry/util/select_most_precise.hpp>
 
 
@@ -130,7 +132,7 @@ public :
                 typedef typename geometry::coordinate_type<ResultPoint>::type coordinate_type;
                 geometry::set<dimension>(
                     centroid,
-                    boost::numeric_cast<coordinate_type>(
+                    util::numeric_cast<coordinate_type>(
                         geometry::get<dimension>(state.average_sum) / state.length
                     )
                 );

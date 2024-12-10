@@ -26,6 +26,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/interprocess/detail/os_thread_functions.hpp>
 #include <boost/interprocess/sync/detail/common_algorithms.hpp>
+#include <boost/interprocess/timed_utils.hpp>
 
 namespace boost {
 namespace interprocess {
@@ -42,7 +43,15 @@ class spin_mutex
 
    void lock();
    bool try_lock();
-   template<class TimePoint> bool timed_lock(const TimePoint &abs_time);
+   template<class TimePoint>
+   bool timed_lock(const TimePoint &abs_time);
+
+   template<class TimePoint> bool try_lock_until(const TimePoint &abs_time)
+   {  return this->timed_lock(abs_time);  }
+
+   template<class Duration>  bool try_lock_for(const Duration &dur)
+   {  return this->timed_lock(duration_to_ustime(dur)); }
+
    void unlock();
    void take_ownership(){}
    private:

@@ -2,7 +2,7 @@
 //
 // R-tree nodes
 //
-// Copyright (c) 2011-2015 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2011-2023 Adam Wulkiewicz, Lodz, Poland.
 //
 // This file was modified by Oracle on 2019-2020.
 // Modifications copyright (c) 2019-2020 Oracle and/or its affiliates.
@@ -21,6 +21,8 @@
 
 #include <boost/geometry/core/static_assert.hpp>
 
+#include <boost/geometry/algorithms/expand.hpp>
+
 #include <boost/geometry/index/detail/varray.hpp>
 
 #include <boost/geometry/index/detail/rtree/node/concept.hpp>
@@ -36,13 +38,13 @@
 #include <boost/geometry/index/detail/rtree/node/variant_dynamic.hpp>
 #include <boost/geometry/index/detail/rtree/node/variant_static.hpp>
 
-#include <boost/geometry/algorithms/expand.hpp>
-
 #include <boost/geometry/index/detail/rtree/visitors/destroy.hpp>
 #include <boost/geometry/index/detail/rtree/visitors/is_leaf.hpp>
 
 #include <boost/geometry/index/detail/algorithms/bounds.hpp>
 #include <boost/geometry/index/detail/is_bounding_geometry.hpp>
+
+#include <boost/geometry/util/constexpr.hpp>
 
 namespace boost { namespace geometry { namespace index {
 
@@ -55,7 +57,7 @@ inline Box elements_box(FwdIter first, FwdIter last, Translator const& tr,
                         Strategy const& strategy)
 {
     Box result;
-    
+
     // Only here to suppress 'uninitialized local variable used' warning
     // until the suggestion below is not implemented
     geometry::assign_inverse(result);
@@ -92,11 +94,10 @@ inline Box values_box(FwdIter first, FwdIter last, Translator const& tr,
     Box result = elements_box<Box>(first, last, tr, strategy);
 
 #ifdef BOOST_GEOMETRY_INDEX_EXPERIMENTAL_ENLARGE_BY_EPSILON
-    if (BOOST_GEOMETRY_CONDITION((
-        ! is_bounding_geometry
-            <
-                typename indexable_type<Translator>::type
-            >::value)))
+    if BOOST_GEOMETRY_CONSTEXPR (! index::detail::is_bounding_geometry
+                                    <
+                                        typename indexable_type<Translator>::type
+                                    >::value)
     {
         geometry::detail::expand_by_epsilon(result);
     }
@@ -218,7 +219,7 @@ void move_from_back(Container & container, Iterator it)
     --back_it;
     if ( it != back_it )
     {
-        *it = boost::move(*back_it);                                                             // MAY THROW (copy)
+        *it = std::move(*back_it);                                                             // MAY THROW (copy)
     }
 }
 

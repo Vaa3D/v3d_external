@@ -5,10 +5,11 @@
 // Copyright (c) 2009-2015 Mateusz Loskot, London, UK.
 // Copyright (c) 2014-2017 Adam Wulkiewicz, Lodz, Poland.
 
-// This file was modified by Oracle on 2014-2021.
-// Modifications copyright (c) 2014-2021 Oracle and/or its affiliates.
-// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
+// This file was modified by Oracle on 2014-2023.
+// Modifications copyright (c) 2014-2023 Oracle and/or its affiliates.
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -28,28 +29,21 @@
 #include <boost/range/end.hpp>
 #include <boost/range/size.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
-#include <boost/variant/variant_fwd.hpp>
 
-#include <boost/geometry/core/closure.hpp>
-#include <boost/geometry/core/cs.hpp>
-#include <boost/geometry/core/coordinate_dimension.hpp>
 #include <boost/geometry/core/exception.hpp>
 #include <boost/geometry/core/exterior_ring.hpp>
 #include <boost/geometry/core/interior_rings.hpp>
-#include <boost/geometry/core/tag_cast.hpp>
 #include <boost/geometry/core/tags.hpp>
 #include <boost/geometry/core/point_type.hpp>
+#include <boost/geometry/core/visit.hpp>
 
-#include <boost/geometry/algorithms/assign.hpp>
 #include <boost/geometry/algorithms/convert.hpp>
 #include <boost/geometry/algorithms/detail/centroid/translating_transformer.hpp>
-#include <boost/geometry/algorithms/detail/interior_iterator.hpp>
 #include <boost/geometry/algorithms/detail/point_on_border.hpp>
 #include <boost/geometry/algorithms/is_empty.hpp>
 #include <boost/geometry/algorithms/not_implemented.hpp>
 
+#include <boost/geometry/geometries/adapted/boost_variant.hpp> // For backward compatibility
 #include <boost/geometry/geometries/concepts/check.hpp>
 
 #include <boost/geometry/strategies/centroid/cartesian.hpp>
@@ -61,6 +55,7 @@
 
 #include <boost/geometry/util/algorithm.hpp>
 #include <boost/geometry/util/select_coordinate_type.hpp>
+#include <boost/geometry/util/type_traits_std.hpp>
 
 #include <boost/geometry/views/closeable_view.hpp>
 
@@ -87,16 +82,9 @@ class centroid_exception : public geometry::exception
 {
 public:
 
-    /*!
-    \brief The default constructor
-    */
     inline centroid_exception() {}
 
-    /*!
-    \brief Returns the explanatory string.
-    \return Pointer to a null-terminated string with explanatory information.
-    */
-    virtual char const* what() const throw()
+    char const* what() const noexcept override
     {
         return "Boost.Geometry Centroid calculation exception";
     }
@@ -217,7 +205,7 @@ struct centroid_range
         {
             // prepare translation transformer
             translating_transformer<Range> transformer(*boost::begin(range));
-            
+
             typename Strategy::template state_type
                 <
                     typename geometry::point_type<Range>::type,
@@ -225,7 +213,7 @@ struct centroid_range
                 >::type state;
 
             centroid_range_state::apply(range, transformer, strategy, state);
-            
+
             if ( strategy.result(state, centroid) )
             {
                 // translate the result back
@@ -254,11 +242,9 @@ struct centroid_polygon_state
     {
         centroid_range_state::apply(exterior_ring(poly), transformer, strategy, state);
 
-        typename interior_return_type<Polygon const>::type
-            rings = interior_rings(poly);
-
-        for (typename detail::interior_iterator<Polygon const>::type
-                it = boost::begin(rings); it != boost::end(rings); ++it)
+        auto const& rings = interior_rings(poly);
+        auto const end = boost::end(rings);
+        for (auto it = boost::begin(rings); it != end; ++it)
         {
             centroid_range_state::apply(*it, transformer, strategy, state);
         }
@@ -276,7 +262,7 @@ struct centroid_polygon
             // prepare translation transformer
             translating_transformer<Polygon>
                 transformer(*boost::begin(exterior_ring(poly)));
-            
+
             typename Strategy::template state_type
                 <
                     typename geometry::point_type<Polygon>::type,
@@ -284,7 +270,7 @@ struct centroid_polygon
                 >::type state;
 
             centroid_polygon_state::apply(poly, transformer, strategy, state);
-            
+
             if ( strategy.result(state, centroid) )
             {
                 // translate the result back
@@ -351,21 +337,18 @@ struct centroid_multi
                 Point
             >::type state;
 
-        for (typename boost::range_iterator<Multi const>::type
-                it = boost::begin(multi);
-            it != boost::end(multi);
-            ++it)
+        for (auto it = boost::begin(multi); it != boost::end(multi); ++it)
         {
             Policy::apply(*it, transformer, strategy, state);
         }
 
-        if ( strategy.result(state, centroid) )
+        if (strategy.result(state, centroid))
         {
             // translate the result back
             transformer.apply_reverse(centroid);
             return true;
         }
-        
+
         return false;
     }
 };
@@ -540,9 +523,9 @@ struct centroid<default_strategy, false>
 } // namespace resolve_strategy
 
 
-namespace resolve_variant {
+namespace resolve_dynamic {
 
-template <typename Geometry>
+template <typename Geometry, typename Tag = typename tag<Geometry>::type>
 struct centroid
 {
     template <typename Point, typename Strategy>
@@ -553,37 +536,22 @@ struct centroid
     }
 };
 
-template <BOOST_VARIANT_ENUM_PARAMS(typename T)>
-struct centroid<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> >
+template <typename Geometry>
+struct centroid<Geometry, dynamic_geometry_tag>
 {
     template <typename Point, typename Strategy>
-    struct visitor: boost::static_visitor<void>
+    static inline void apply(Geometry const& geometry,
+                             Point& out,
+                             Strategy const& strategy)
     {
-        Point& m_out;
-        Strategy const& m_strategy;
-
-        visitor(Point& out, Strategy const& strategy)
-        : m_out(out), m_strategy(strategy)
-        {}
-
-        template <typename Geometry>
-        void operator()(Geometry const& geometry) const
+        traits::visit<Geometry>::apply([&](auto const& g)
         {
-            centroid<Geometry>::apply(geometry, m_out, m_strategy);
-        }
-    };
-
-    template <typename Point, typename Strategy>
-    static inline void
-    apply(boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> const& geometry,
-          Point& out,
-          Strategy const& strategy)
-    {
-        boost::apply_visitor(visitor<Point, Strategy>(out, strategy), geometry);
+            centroid<util::remove_cref_t<decltype(g)>>::apply(g, out, strategy);
+        }, geometry);
     }
 };
 
-} // namespace resolve_variant
+} // namespace resolve_dynamic
 
 
 /*!
@@ -604,10 +572,9 @@ struct centroid<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> >
 
 */
 template<typename Geometry, typename Point, typename Strategy>
-inline void centroid(Geometry const& geometry, Point& c,
-        Strategy const& strategy)
+inline void centroid(Geometry const& geometry, Point& c, Strategy const& strategy)
 {
-    resolve_variant::centroid<Geometry>::apply(geometry, c, strategy);
+    resolve_dynamic::centroid<Geometry>::apply(geometry, c, strategy);
 }
 
 

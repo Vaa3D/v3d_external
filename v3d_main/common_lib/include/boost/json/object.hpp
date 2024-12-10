@@ -11,19 +11,21 @@
 #define BOOST_JSON_OBJECT_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/kind.hpp>
-#include <boost/json/pilfer.hpp>
-#include <boost/json/storage_ptr.hpp>
-#include <boost/json/string_view.hpp>
 #include <boost/json/detail/object.hpp>
 #include <boost/json/detail/value.hpp>
+#include <boost/json/kind.hpp>
+#include <boost/json/pilfer.hpp>
+#include <boost/system/result.hpp>
+#include <boost/json/storage_ptr.hpp>
+#include <boost/json/string_view.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class value;
 class value_ref;
@@ -85,7 +87,7 @@ class object
     template<class T>
     using is_inputit = typename std::enable_if<
         std::is_constructible<key_value_pair,
-        typename std::iterator_traits<T>::value_type
+        typename std::iterator_traits<T>::reference
             >::value>::type;
 
     BOOST_JSON_DECL
@@ -93,16 +95,8 @@ class object
     object(detail::unchecked_object&& uo);
 
 public:
-    /** The type of _Allocator_ returned by @ref get_allocator
-
-        This type is a @ref polymorphic_allocator.
-    */
-#ifdef BOOST_JSON_DOCS
-    // VFALCO doc toolchain renders this incorrectly
-    using allocator_type = __see_below__;
-#else
-    using allocator_type = polymorphic_allocator<value>;
-#endif
+    /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
+    using allocator_type = container::pmr::polymorphic_allocator<value>;
 
     /** The type of keys.
 
@@ -153,9 +147,9 @@ public:
 
     /** Destructor.
 
-        The destructor for each element is called if needed,
-        any used memory is deallocated, and shared ownership
-        of the @ref memory_resource is released.
+        The destructor for each element is called if needed, any used memory is
+        deallocated, and shared ownership of the
+        `boost::container::pmr::memory_resource` is released.
 
         @par Complexity
         Constant, or linear in @ref size().
@@ -164,20 +158,22 @@ public:
         No-throw guarantee.
     */
     BOOST_JSON_DECL
-    ~object();
+    ~object() noexcept;
 
     //------------------------------------------------------
 
     /** Default constructor.
 
         The constructed object is empty with zero
-        capacity, using the default memory resource.
+        capacity, using the [default memory resource].
 
         @par Complexity
         Constant.
 
         @par Exception Safety
         No-throw guarantee.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     object() noexcept
         : t_(&empty_)
@@ -195,9 +191,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     explicit
     object(storage_ptr sp) noexcept
@@ -223,9 +219,9 @@ public:
         of elements for which capacity is guaranteed
         without a subsequent reallocation.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     BOOST_JSON_DECL
     object(
@@ -246,7 +242,7 @@ public:
         @code
         std::is_constructible_v<
             key_value_pair,
-            std::iterator_traits<InputIt>::value_type>
+            std::iterator_traits<InputIt>::reference>
         @endcode
 
         @par Complexity
@@ -269,9 +265,9 @@ public:
         Upon construction, @ref capacity() will be greater
         than or equal to this number.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
 
         @tparam InputIt a type satisfying the requirements
         of __InputIterator__.
@@ -346,9 +342,9 @@ public:
 
         @param other The object to move.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     BOOST_JSON_DECL
     object(
@@ -418,9 +414,9 @@ public:
 
         @param other The object to copy.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     BOOST_JSON_DECL
     object(
@@ -446,9 +442,9 @@ public:
 
         @param init The initializer list to insert.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     object(
         std::initializer_list<
@@ -485,9 +481,9 @@ public:
         Upon construction, @ref capacity() will be greater
         than or equal to this number.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     BOOST_JSON_DECL
     object(
@@ -573,10 +569,10 @@ public:
 
     //------------------------------------------------------
 
-    /** Return the associated @ref memory_resource
+    /** Return the associated memory resource.
 
-        This returns the @ref memory_resource used by
-        the container.
+        This function returns the `boost::container::pmr::memory_resource` used
+        by the container.
 
         @par Complexity
         Constant.
@@ -590,11 +586,10 @@ public:
         return sp_;
     }
 
-    /** Return the associated @ref memory_resource
+    /** Return the associated allocator.
 
-        This function returns an instance of
-        @ref polymorphic_allocator constructed from the
-        associated @ref memory_resource.
+        This function returns an instance of @ref allocator_type constructed
+        from the associated `boost::container::pmr::memory_resource`.
 
         @par Complexity
         Constant.
@@ -893,15 +888,11 @@ public:
 
         @param new_capacity The new minimum capacity.
 
-        @throw std::length_error `new_capacity > max_size()`
+        @throw `boost::system::system_error`  `new_capacity > max_size()`.
     */
+    inline
     void
-    reserve(std::size_t new_capacity)
-    {
-        if(new_capacity <= capacity())
-            return;
-        rehash(new_capacity);
-    }
+    reserve(std::size_t new_capacity);
 
     //------------------------------------------------------
     //
@@ -929,8 +920,14 @@ public:
 
     /** Insert elements.
 
-        Inserts `p`, from which @ref value_type must
-        be constructible.
+        Inserts `p` if `this->contains(value_type(p).key())` is `false`.
+        @ref value_type must be constructible from `p`.
+
+        If the insertion occurs and results in a rehashing
+        of the container, all iterators and references are invalidated.
+        Otherwise, they are not affected.
+        Rehashing occurs only if the new number of elements
+        is greater than @ref capacity().
 
         @par Constraints
         @code
@@ -947,14 +944,12 @@ public:
 
         @param p The value to insert.
 
-        @throw std::length_error key is too long.
-
-        @throw std::length_error @ref size() >= max_size().
+        @throw `boost::system::system_error` key is too long.
+        @throw `boost::system::system_error` @ref size() >= max_size().
 
         @return A pair where `first` is an iterator
         to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
+        is `true` if the insertion took place or `false` otherwise.
     */
     template<class P
 #ifndef BOOST_JSON_DOCS
@@ -968,26 +963,31 @@ public:
 
     /** Insert elements.
 
-        The elements in the range `{first, last)` whose
-        keys are unique are inserted one at a time, in order.
-        If there are elements with duplicate keys; that
-        is, if multiple elements in the range have keys
-        that compare equal, only the first equivalent
-        element will be inserted.
+        The elements in the range `[first, last)` are inserted one at a time,
+        in order. Any element with key that is a duplicate of a key already
+        present in container will be skipped. This also means, that if there
+        are two keys within the range that are equal to each other, only the
+        first will be inserted.
+
+        Insertion may result in rehashing of the container. In that case all
+        iterators and references are invalidated. Otherwise, they are not
+        affected.
 
         @par Precondition
         `first` and `last` are not iterators into `*this`.
+        `first` and `last` form a valid range.
 
         @par Constraints
         @code
-        std::is_constructible_v<value_type, std::iterator_traits<InputIt>::value_type>
+        std::is_constructible_v<value_type, std::iterator_traits<InputIt>::reference>
         @endcode
 
         @par Complexity
         Linear in `std::distance(first, last)`.
 
         @par Exception Safety
-        Strong guarantee.
+        Strong guarantee for forward iterators, basic guarantee for input
+        iterators.
         Calls to `memory_resource::allocate` may throw.
 
         @param first An input iterator pointing to the first
@@ -1015,18 +1015,21 @@ public:
 
     /** Insert elements.
 
-        The elements in the initializer list whose
-        keys are unique are inserted one at a time, in order.
-        If there are elements with duplicate keys; that
-        is, if multiple elements in the range have keys
-        that compare equal, only the first equivalent
-        element will be inserted.
+        The elements in the initializer list are inserted one at a time, in
+        order. Any element with key that is a duplicate of a key already
+        present in container will be skipped. This also means, that if there
+        are two keys within the initializer list that are equal to each other,
+        only the first will be inserted.
+
+        Insertion may result in rehashing of the container. In that case all
+        iterators and references are invalidated. Otherwise, they are not
+        affected.
 
         @par Complexity
         Linear in `init.size()`.
 
         @par Exception Safety
-        Strong guarantee.
+        Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to insert
@@ -1039,18 +1042,15 @@ public:
     /** Insert an element or assign to the current element if the key already exists.
 
         If the key equivalent to `key` already exists in the
-        container. assigns `std::forward<M>(obj)` to the
-        `mapped type` corresponding to the key. Otherwise,
+        container, assigns `std::forward<M>(m)` to the
+        `mapped_type` corresponding to the key. Otherwise,
         inserts the new value at the end as if by insert,
-        constructing it from
-        `value_type(key, std::forward<M>(obj))`.
+        constructing it from `value_type(key, std::forward<M>(m))`.
 
-        If the insertion occurs and results in a rehashing
-        of the container, all iterators are invalidated.
-        Otherwise, iterators are not affected.
-        References are not invalidated.
-        Rehashing occurs only if the new number of elements
-        is greater than @ref capacity().
+        If the insertion occurs and results in a rehashing of the container,
+        all iterators and references are invalidated. Otherwise, they are not
+        affected. Rehashing occurs only if the new number of elements is
+        greater than @ref capacity().
 
         @par Complexity
         Amortized constant on average, worst case linear in @ref size().
@@ -1068,7 +1068,7 @@ public:
 
         @param m The value to insert or assign
 
-        @throw std::length_error if key is too long
+        @throw `boost::system::system_error` if key is too long.
     */
     template<class M>
     std::pair<iterator, bool>
@@ -1079,16 +1079,12 @@ public:
 
         Inserts a new element into the container constructed
         in-place with the given argument if there is no
-        element with the key in the container.
-        The element is inserted after all the existing
-        elements.
+        element with the `key` in the container.
 
-        If the insertion occurs and results in a rehashing
-        of the container, all iterators are invalidated.
-        Otherwise, iterators are not affected.
-        References are not invalidated.
-        Rehashing occurs only if the new number of elements
-        is greater than @ref capacity().
+        If the insertion occurs and results in a rehashing of the container,
+        all iterators and references are invalidated. Otherwise, they are not
+        affected. Rehashing occurs only if the new number of elements is
+        greater than @ref capacity().
 
         @par Complexity
         Amortized constant on average, worst case linear in @ref size().
@@ -1099,8 +1095,7 @@ public:
 
         @return A `std::pair` where `first` is an iterator
         to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
+        is `true` if the insertion took place or `false` otherwise.
 
         @param key The key used for lookup and insertion
 
@@ -1108,7 +1103,7 @@ public:
         This will be passed as `std::forward<Arg>(arg)` to
         the @ref value constructor.
 
-        @throw std::length_error if key is too long
+        @throw `boost::system::system_error` if key is too long.
     */
     template<class Arg>
     std::pair<iterator, bool>
@@ -1117,12 +1112,15 @@ public:
     /** Erase an element
 
         Remove the element pointed to by `pos`, which must
-        be valid and dereferenceable. Thus the @ref end()
-        iterator (which is valid but cannot be dereferenced)
-        cannot be used as a value for `pos`.
+        be valid and dereferenceable.
         References and iterators to the erased element are
         invalidated. Other iterators and references are not
         invalidated.
+
+        @note
+
+        The @ref end() iterator (which is valid but cannot be
+        dereferenced) cannot be used as a value for `pos`.
 
         @par Complexity
         Constant on average, worst case linear in @ref size().
@@ -1130,7 +1128,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @return An iterator following the last removed element.
+        @return An iterator following the removed element.
 
         @param pos An iterator pointing to the element to be
         removed.
@@ -1161,11 +1159,58 @@ public:
     std::size_t
     erase(string_view key) noexcept;
 
+    /** Erase an element preserving order
+
+        Remove the element pointed to by `pos`, which must be valid and
+        dereferenceable. References and iterators from `pos` to @ref end(),
+        both included, are invalidated. Other iterators and references are not
+        invalidated. The relative order of remaining elements is preserved.
+
+        @note
+        The @ref end() iterator (which is valid but cannot be dereferenced)
+        cannot be used as a value for `pos`.
+
+        @par Complexity
+        Linear in @ref size().
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @return An iterator following the removed element.
+
+        @param pos An iterator pointing to the element to be
+        removed.
+    */
+    BOOST_JSON_DECL
+    iterator
+    stable_erase(const_iterator pos) noexcept;
+
+    /** Erase an element preserving order
+
+        Remove the element which matches `key`, if it exists.
+        All references and iterators are invalidated.
+        The relative order of remaining elements is preserved.
+
+        @par Complexity
+        Linear in @ref size().
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @return The number of elements removed, which will
+        be either 0 or 1.
+
+        @param key The key to match.
+    */
+    BOOST_JSON_DECL
+    std::size_t
+    stable_erase(string_view key) noexcept;
+
     /** Swap two objects.
 
-        Exchanges the contents of this object with another
-        object. Ownership of the respective @ref memory_resource
-        objects is not transferred.
+        Exchanges the contents of this object with another object. Ownership of
+        the respective `boost::container::pmr::memory_resource` objects is not
+        transferred.
 
         @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is swapped in
@@ -1193,9 +1238,9 @@ public:
 
     /** Swap two objects.
 
-        Exchanges the contents of the object `lhs` with
-        another object `rhs`. Ownership of the respective
-        @ref memory_resource objects is not transferred.
+        Exchanges the contents of the object `lhs` with another object `rhs`.
+        Ownership of the respective `boost::container::pmr::memory_resource`
+        objects is not transferred.
 
         @li If `*lhs.storage() == *rhs.storage()`,
         ownership of the underlying memory is swapped in
@@ -1241,6 +1286,30 @@ public:
 
     /** Access the specified element, with bounds checking.
 
+        Returns `boost::system::result` containing a reference to the
+        mapped value of the element that matches `key`. Otherwise the result
+        contains an `error_code`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param key The key of the element to find.
+
+        @par Complexity
+        Constant on average, worst case linear in @ref size().
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    system::result<value&>
+    try_at(string_view key) noexcept;
+
+    BOOST_JSON_DECL
+    system::result<value const&>
+    try_at(string_view key) const noexcept;
+    /** @} */
+
+    /** Access the specified element, with bounds checking.
+
         Returns a reference to the mapped value of the element
         that matches `key`, otherwise throws.
 
@@ -1254,32 +1323,30 @@ public:
 
         @param key The key of the element to find.
 
-        @throw std::out_of_range if no such element exists.
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @throw `boost::system::system_error` if no such element exists.
     */
+    /** @{ */
     inline
     value&
-    at(string_view key);
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &;
 
-    /** Access the specified element, with bounds checking.
-
-        Returns a constant reference to the mapped value of
-        the element that matches `key`, otherwise throws.
-
-        @par Complexity
-        Constant on average, worst case linear in @ref size().
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @return A reference to the mapped value.
-
-        @param key The key of the element to find.
-
-        @throw std::out_of_range if no such element exists.
-    */
     inline
+    value&&
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &&;
+
+    BOOST_JSON_DECL
     value const&
-    at(string_view key) const;
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const&;
+    /** @} */
 
     /** Access or insert the specified element
 
@@ -1482,45 +1549,73 @@ public:
         return ! (lhs == rhs);
     }
 
+    /** Serialize @ref object to an output stream.
+
+        This function serializes an `object` as JSON into the output stream.
+
+        @return Reference to `os`.
+
+        @par Complexity
+        Constant or linear in the size of `obj`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param os The output stream to serialize to.
+
+        @param obj The value to serialize.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::ostream&
+    operator<<(
+        std::ostream& os,
+        object const& obj);
 private:
-    template<class InputIt>
-    void
-    construct(
-        InputIt first,
-        InputIt last,
-        std::size_t min_capacity,
-        std::input_iterator_tag);
-
-    template<class InputIt>
-    void
-    construct(
-        InputIt first,
-        InputIt last,
-        std::size_t min_capacity,
-        std::forward_iterator_tag);
-
-    template<class InputIt>
-    void
-    insert(
-        InputIt first,
-        InputIt last,
-        std::input_iterator_tag);
-
-    template<class InputIt>
-    void
-    insert(
-        InputIt first,
-        InputIt last,
-        std::forward_iterator_tag);
-
-    BOOST_JSON_DECL
+#ifndef BOOST_JSON_DOCS
+    // VFALCO friending a detail function makes it public
+    template<class CharRange>
+    friend
     std::pair<key_value_pair*, std::size_t>
-    find_impl(string_view key) const noexcept;
+    detail::find_in_object(
+        object const& obj,
+        CharRange key) noexcept;
+#endif
 
-    BOOST_JSON_DECL
+    template<class InputIt>
+    void
+    construct(
+        InputIt first,
+        InputIt last,
+        std::size_t min_capacity,
+        std::input_iterator_tag);
+
+    template<class InputIt>
+    void
+    construct(
+        InputIt first,
+        InputIt last,
+        std::size_t min_capacity,
+        std::forward_iterator_tag);
+
+    template<class InputIt>
+    void
+    insert(
+        InputIt first,
+        InputIt last,
+        std::input_iterator_tag);
+
+    template<class InputIt>
+    void
+    insert(
+        InputIt first,
+        InputIt last,
+        std::forward_iterator_tag);
+
+    template< class... Args >
     std::pair<iterator, bool>
-    insert_impl(
-        pilfered<key_value_pair> p);
+    emplace_impl(string_view key, Args&& ... args );
 
     BOOST_JSON_DECL
     key_value_pair*
@@ -1529,8 +1624,8 @@ private:
         std::size_t hash);
 
     BOOST_JSON_DECL
-    void
-    rehash(std::size_t new_capacity);
+    table*
+    reserve_impl(std::size_t new_capacity);
 
     BOOST_JSON_DECL
     bool
@@ -1556,12 +1651,43 @@ private:
     destroy(
         key_value_pair* first,
         key_value_pair* last) noexcept;
+
+    template<class FS, class FB>
+    auto
+    do_erase(
+        const_iterator pos,
+        FS small_reloc,
+        FB big_reloc) noexcept
+        -> iterator;
+
+    inline
+    void
+    reindex_relocate(
+        key_value_pair* src,
+        key_value_pair* dst) noexcept;
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
+
+#ifndef BOOST_JSON_DOCS
+// boost::hash trait
+namespace boost
+{
+namespace container_hash
+{
+
+template< class T > struct is_unordered_range;
+
+template<>
+struct is_unordered_range< json::object >
+    : std::true_type
+{};
+
+} // namespace container_hash
+} // namespace boost
 
 // std::hash specialization
-#ifndef BOOST_JSON_DOCS
 namespace std {
 template <>
 struct hash< ::boost::json::object > {

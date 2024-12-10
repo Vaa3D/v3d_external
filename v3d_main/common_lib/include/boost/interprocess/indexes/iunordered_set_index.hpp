@@ -30,6 +30,7 @@
 #include <boost/intrusive/detail/minimal_less_equal_header.hpp>   //std::less
 #include <boost/container/detail/minimal_char_traits_header.hpp>  //std::char_traits
 #include <boost/container/detail/placement_new.hpp>
+#include <boost/intrusive/detail/hash.hpp>
 
 //!\file
 //!Describes index adaptor of boost::intrusive::unordered_set container, to use it
@@ -88,25 +89,35 @@ struct iunordered_set_index_aux
       }
    };
 
-    struct hash_function
-    {
-        typedef value_type argument_type;
-        typedef std::size_t result_type;
+   struct hash_function
+   {
+      typedef value_type argument_type;
+      typedef std::size_t result_type;
 
-        std::size_t operator()(const value_type &val) const
-        {
-            const char_type *beg = ipcdetail::to_raw_pointer(val.name()),
-                            *end = beg + val.name_length();
-            return boost::hash_range(beg, end);
-        }
+      std::size_t hash_char_range(const char_type* beg, const char_type* end) const
+      {
+         std::size_t seed = 0;
+         while (beg != end) {
+            boost::intrusive::detail::hash_combine_size_t(seed, boost::intrusive::detail::internal_hash_functor<char_type>()(*beg));
+            ++beg;
+         }
+         return seed;
+      }
 
-        std::size_t operator()(const intrusive_compare_key_type &i) const
-        {
-            const char_type *beg = i.mp_str,
-                            *end = beg + i.m_len;
-            return boost::hash_range(beg, end);
-        }
-    };
+      std::size_t operator()(const value_type &val) const
+      {
+         const char_type* beg = ipcdetail::to_raw_pointer(val.name()),
+                        * end = beg + val.name_length();
+         return hash_char_range(beg, end);
+      }
+
+      std::size_t operator()(const intrusive_compare_key_type &i) const
+      {
+         const char_type *beg = i.mp_str,
+                           *end = beg + i.m_len;
+         return hash_char_range(beg, end);
+      }
+   };
 
    typedef typename bi::make_unordered_set
       < value_type
@@ -161,6 +172,7 @@ class iunordered_set_index
    typedef typename index_type::bucket_type              bucket_type;
    typedef typename index_type::bucket_traits            bucket_traits;
    typedef typename index_type::size_type                size_type;
+   typedef typename index_type::difference_type          difference_type;
 
    #if !defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
    private:
@@ -203,7 +215,7 @@ class iunordered_set_index
          (boost::interprocess::shrink_in_place | boost::interprocess::nothrow_allocation, received_size, received_size, buckets);
       BOOST_ASSERT(buckets == shunk_p); (void)shunk_p;
 
-      bucket_ptr buckets_init = buckets + received_size;
+      bucket_ptr buckets_init = buckets + difference_type(received_size);
       for(size_type i = 0; i < (old_size - received_size); ++i){
          to_raw_pointer(buckets_init++)->~bucket_type();
       }
@@ -219,7 +231,7 @@ class iunordered_set_index
       bucket_ptr ret = alloc.allocation_command
             (boost::interprocess::expand_fwd | boost::interprocess::allocate_new, new_num, received_size, reuse);
       if(ret == old_buckets){
-         bucket_ptr buckets_init = old_buckets + old_num;
+         bucket_ptr buckets_init = old_buckets + difference_type(old_num);
          for(size_type i = 0; i < (new_num - old_num); ++i){
             ::new(to_raw_pointer(buckets_init++), boost_container_new_t())bucket_type();
          }
@@ -276,15 +288,15 @@ class iunordered_set_index
       new_n = index_type::suggested_upper_bucket_count(new_n);
       bucket_ptr new_p;
       //This can throw
-      try{
+      BOOST_TRY{
          if(old_p != bucket_ptr(&this->init_bucket))
             new_p = expand_or_create_buckets(old_p, old_n, this->alloc, new_n);
          else
             new_p = create_buckets(this->alloc, new_n);
       }
-      catch(...){
+      BOOST_CATCH(...){
          return;
-      }
+      } BOOST_CATCH_END
       //Rehashing does not throw, since neither the hash nor the
       //comparison function can throw
       this->rehash(bucket_traits(new_p, new_n));
@@ -312,12 +324,12 @@ class iunordered_set_index
          if(sug_count >= cur_count)
             return;
 
-         try{
+         BOOST_TRY{
             shrink_buckets(old_p, cur_count, this->alloc, sug_count);
          }
-         catch(...){
+         BOOST_CATCH(...){
             return;
-         }
+         } BOOST_CATCH_END
 
          //Rehashing does not throw, since neither the hash nor the
          //comparison function can throw
@@ -340,10 +352,10 @@ class iunordered_set_index
       iterator it = index_type::insert_commit(val, commit_data);
       size_type cur_size      = this->size();
       if(cur_size > this->bucket_count()){
-         try{
+         BOOST_TRY{
             this->reserve(cur_size);
          }
-         catch(...){
+         BOOST_CATCH(...){
             //Strong guarantee: if something goes wrong
             //we should remove the insertion.
             //
@@ -352,8 +364,8 @@ class iunordered_set_index
             //throw only because of the memory allocation:
             //the iterator has not been invalidated.
             index_type::erase(it);
-            throw;
-         }
+            BOOST_RETHROW
+         } BOOST_CATCH_END
       }
       return it;
    }

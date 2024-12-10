@@ -1,6 +1,8 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2014-2021 Oracle and/or its affiliates.
+// Copyright (c) 2023-2024 Adam Wulkiewicz, Lodz, Poland.
+
+// Copyright (c) 2014-2023 Oracle and/or its affiliates.
 
 // Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
@@ -18,7 +20,6 @@
 #include <vector>
 
 #include <boost/core/ignore_unused.hpp>
-#include <boost/numeric/conversion/cast.hpp>
 
 #include <boost/geometry/algorithms/detail/assign_box_corners.hpp>
 #include <boost/geometry/algorithms/detail/assign_indexed_point.hpp>
@@ -41,9 +42,10 @@
 #include <boost/geometry/policies/compare.hpp>
 
 #include <boost/geometry/util/calculation_type.hpp>
-#include <boost/geometry/util/condition.hpp>
+#include <boost/geometry/util/constexpr.hpp>
 #include <boost/geometry/util/has_nan_coordinate.hpp>
 #include <boost/geometry/util/math.hpp>
+#include <boost/geometry/util/numeric_cast.hpp>
 
 #include <boost/geometry/strategies/disjoint.hpp>
 #include <boost/geometry/strategies/distance.hpp>
@@ -91,7 +93,7 @@ private:
             std::vector<box_point>,
             open
         > point_to_point_range;
-    
+
 public:
     // TODO: Or should the return type be defined by sb_strategy_type?
     typedef distance::return_t<box_point, Segment, Strategies> return_type;
@@ -114,7 +116,7 @@ public:
         // get box points
         std::vector<box_point> box_points(4);
         detail::assign_box_corners_oriented<true>(box, box_points);
- 
+
         ps_strategy_type const strategy = strategies.distance(dummy_point(), dummy_segment());
 
         auto const cstrategy = strategy::distance::services::get_comparable
@@ -154,21 +156,23 @@ public:
             }
         }
 
-        if (BOOST_GEOMETRY_CONDITION(is_comparable<ps_strategy_type>::value))
+        if BOOST_GEOMETRY_CONSTEXPR (is_comparable<ps_strategy_type>::value)
         {
             return cd[imin];
         }
-
-        if (imin < 4)
+        else // else prevents unreachable code warning
         {
-            return strategy.apply(box_points[imin], p[0], p[1]);
-        }
-        else
-        {
-            unsigned int bimin = imin - 4;
-            return strategy.apply(p[bimin],
-                                  *bit_min[bimin].first,
-                                  *bit_min[bimin].second);
+            if (imin < 4)
+            {
+                return strategy.apply(box_points[imin], p[0], p[1]);
+            }
+            else
+            {
+                unsigned int bimin = imin - 4;
+                return strategy.apply(p[bimin],
+                                      *bit_min[bimin].first,
+                                      *bit_min[bimin].second);
+            }
         }
     }
 };
@@ -192,7 +196,7 @@ private:
 public:
     // TODO: Or should the return type be defined by sb_strategy_type?
     typedef distance::return_t<box_point, Segment, Strategies> return_type;
-    
+
     static inline return_type apply(Segment const& segment,
                                     Box const& box,
                                     Strategies const& strategies,
@@ -285,7 +289,7 @@ private:
         template <typename T>
         static inline Result apply(T const& t)
         {
-            return boost::numeric_cast<Result>(t);
+            return util::numeric_cast<Result>(t);
         }
     };
 
@@ -658,7 +662,7 @@ public:
                                    BoxPoint const& bottom_right,
                                    Strategies const& strategies)
     {
-        BOOST_GEOMETRY_ASSERT( (geometry::less<SegmentPoint, -1, typename Strategies::cs_tag>()(p0, p1))
+        BOOST_GEOMETRY_ASSERT( (geometry::less<SegmentPoint, -1, Strategies>()(p0, p1))
                             || geometry::has_nan_coordinate(p0)
                             || geometry::has_nan_coordinate(p1) );
 
@@ -753,7 +757,7 @@ public:
                               bottom_left, bottom_right,
                               top_left, top_right);
 
-        typedef geometry::less<segment_point, -1, typename Strategies::cs_tag> less_type;
+        typedef geometry::less<segment_point, -1, Strategies> less_type;
         if (less_type()(p[0], p[1]))
         {
             return segment_to_box_2D

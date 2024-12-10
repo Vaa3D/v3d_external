@@ -14,12 +14,14 @@
 #include <boost/geometry/core/cs.hpp>
 #include <boost/geometry/core/static_assert.hpp>
 
+#include <boost/geometry/strategies/distance.hpp>
+
 
 namespace boost { namespace geometry
 {
 
 namespace strategies { namespace distance
-{  
+{
 
 #ifndef DOXYGEN_NO_DETAIL
 namespace detail

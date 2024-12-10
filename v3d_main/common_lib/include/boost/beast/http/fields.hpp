@@ -59,7 +59,9 @@ class basic_fields
         std::allocator_traits<Allocator>::pointer>::value,
         "Allocator must use regular pointers");
 
+#ifndef BOOST_BEAST_DOXYGEN
     friend class fields_test; // for `header`
+#endif
 
     struct element;
 
@@ -72,7 +74,9 @@ public:
     /// The type of element used to represent a field
     class value_type
     {
+#ifndef BOOST_BEAST_DOXYGEN
         friend class basic_fields;
+#endif
 
         off_t off_;
         off_t len_;
@@ -95,7 +99,7 @@ public:
         /// Assignment (deleted)
         value_type& operator=(value_type const&) = delete;
 
-        /// Returns the field enum, which can be @ref field::unknown
+        /// Returns the field enum, which can be @ref boost::beast::http::field::unknown
         field
         name() const;
 
@@ -186,7 +190,7 @@ private:
 
     using set_t = typename boost::intrusive::make_multiset<
         element,
-        boost::intrusive::constant_time_size<true>,
+        boost::intrusive::constant_time_size<false>,
         boost::intrusive::compare<key_compare>
             >::type;
 
@@ -199,6 +203,15 @@ private:
 
     using alloc_traits =
         beast::detail::allocator_traits<rebind_type>;
+
+    using pocma = typename
+        alloc_traits::propagate_on_container_move_assignment;
+
+    using pocca = typename
+        alloc_traits::propagate_on_container_copy_assignment;
+
+    using pocs = typename
+        alloc_traits::propagate_on_container_swap;
 
     using size_type = typename
         beast::detail::allocator_traits<Allocator>::size_type;
@@ -261,7 +274,7 @@ public:
         as if constructed using the same allocator.
     */
     basic_fields& operator=(basic_fields&&) noexcept(
-        alloc_traits::propagate_on_container_move_assignment::value);
+        pocma::value && std::is_nothrow_move_assignable<Allocator>::value);
 
     /// Copy assignment.
     basic_fields& operator=(basic_fields const&);
@@ -313,7 +326,7 @@ public:
         If more than one field with the specified name exists, the
         first field defined by insertion order is returned.
 
-        @param name The name of the field.
+        @param name The name of the field. It is interpreted as a case-insensitive string.
 
         @return The field value.
 
@@ -337,7 +350,7 @@ public:
         If more than one field with the specified name exists, the
         first field defined by insertion order is returned.
 
-        @param name The name of the field.
+        @param name The name of the field. It is interpreted as a case-insensitive string.
     */
     string_view const
     operator[](string_view name) const;
@@ -417,10 +430,11 @@ public:
         If one or more fields with the same name already exist,
         the new field will be inserted after the last field with
         the matching name, in serialization order.
+        The value can be an empty string.
 
         @param name The field name.
 
-        @param value The value of the field, as a @ref string_view
+        @param value The value of the field, as a @ref boost::beast::string_view
     */
     void
     insert(field name, string_view const& value);
@@ -435,10 +449,11 @@ public:
         If one or more fields with the same name already exist,
         the new field will be inserted after the last field with
         the matching name, in serialization order.
+        The value can be an empty string.
 
-        @param name The field name.
+        @param name The field name. It is interpreted as a case-insensitive string.
 
-        @param value The value of the field, as a @ref string_view
+        @param value The value of the field, as a @ref boost::beast::string_view
     */
     void
     insert(string_view name, string_view const& value);
@@ -453,6 +468,7 @@ public:
         If one or more fields with the same name already exist,
         the new field will be inserted after the last field with
         the matching name, in serialization order.
+        The value can be an empty string.
 
         @param name The field name.
 
@@ -461,7 +477,7 @@ public:
         must be equal to `to_string(name)` using a case-insensitive
         comparison, otherwise the behavior is undefined.
 
-        @param value The value of the field, as a @ref string_view
+        @param value The value of the field, as a @ref boost::beast::string_view
     */
     void
     insert(field name, string_view name_string,
@@ -473,13 +489,14 @@ public:
     /** Set a field value, removing any other instances of that field.
 
         First removes any values with matching field names, then
-        inserts the new field value.
+        inserts the new field value. The value may be an empty string.
 
         @param name The field name.
 
-        @param value The value of the field, as a @ref string_view
+        @param value The value of the field, as a @ref boost::beast::string_view
 
         @return The field value.
+
     */
     void
     set(field name, string_view const& value);
@@ -490,11 +507,11 @@ public:
     /** Set a field value, removing any other instances of that field.
 
         First removes any values with matching field names, then
-        inserts the new field value.
+        inserts the new field value. The value can be an empty string.
 
-        @param name The field name.
+        @param name The field name. It is interpreted as a case-insensitive string.
 
-        @param value The value of the field, as a @ref string_view
+        @param value The value of the field, as a @ref boost::beast::string_view
     */
     void
     set(string_view name, string_view const& value);
@@ -540,7 +557,7 @@ public:
         invalidated. Other references and iterators are not
         affected.
 
-        @param name The field name.
+        @param name The field name. It is interpreted as a case-insensitive string.
 
         @return The number of fields removed.
     */
@@ -582,7 +599,7 @@ public:
 
     /** Return the number of fields with the specified name.
 
-        @param name The field name.
+        @param name The field name. It is interpreted as a case-insensitive string.
     */
     std::size_t
     count(string_view name) const;
@@ -605,7 +622,7 @@ public:
         If more than one field with the specified name exists, the
         first field defined by insertion order is returned.
 
-        @param name The field name.
+        @param name The field name. It is interpreted as a case-insensitive string.
 
         @return An iterator to the matching field, or `end()` if
         no match was found.
@@ -615,6 +632,14 @@ public:
 
     /** Returns a range of iterators to the fields with the specified name.
 
+        This function returns the first and last iterators to the ordered
+        fields with the specified name.
+
+        @note The fields represented by the range are ordered. Its elements
+        are guaranteed to match the field ordering of the message. This
+        means users do not need to sort this range when comparing fields
+        of the same name in different messages.
+
         @param name The field name.
 
         @return A range of iterators to fields with the same name,
@@ -623,13 +648,7 @@ public:
     std::pair<const_iterator, const_iterator>
     equal_range(field name) const;
 
-    /** Returns a range of iterators to the fields with the specified name.
-
-        @param name The field name.
-
-        @return A range of iterators to fields with the same name,
-        otherwise an empty range.
-    */
+    /// @copydoc boost::beast::http::basic_fields::equal_range(boost::beast::http::field) const
     std::pair<const_iterator, const_iterator>
     equal_range(string_view name) const;
 
