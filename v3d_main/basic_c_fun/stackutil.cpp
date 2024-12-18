@@ -2137,8 +2137,8 @@ int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	}
 	else
 	{
-		V3DLONG i,j,k,c;
-		V3DLONG pgsz1=sz[2]*sz[1]*sz[0], pgsz2=sz[1]*sz[0], pgsz3=sz[0];
+        V3DLONG i,j,k,c,p;
+        V3DLONG pgsz1=sz[2]*sz[1]*sz[0]*tmpstack->kind, pgsz2=sz[1]*sz[0]*tmpstack->kind, pgsz3=sz[0]*tmpstack->kind, pgunit=tmpstack->kind;
 
 		switch (tmpstack->kind)
 		{
@@ -2149,7 +2149,7 @@ int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 						for (j=0;j<sz[1]; j++)
 							for (i=0;i<sz[0]; i++)
 								//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_8(tmpstack,i,j,k,c);
-								img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c);
+                                img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,0,i,j,k,c);
 
 				break;
 
@@ -2160,9 +2160,10 @@ int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 						for (k=0;k<sz[2]; k++)
 							for (j=0;j<sz[1]; j++)
 								for (i=0;i<sz[0]; i++)
-									//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_16(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
+                                    for(p=0;p<tmpstack->kind;p++)
+                                    //img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_16(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
 									//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
-									img16[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c); //do not assume anything. 080930
+                                        img16[c*pgsz1 + k*pgsz2 + j*pgsz3 + i*pgunit + p] = Get_Stack_Pixel(tmpstack,p,i,j,k,c); //do not assume anything. 080930
 				}
 
 				break;
@@ -2200,7 +2201,7 @@ int saveStack2Tif(const char * filename, const unsigned char * img, const V3DLON
 {
 	int b_error=0;
 
-	int i,j,k,c;
+    int i,j,k,c,p;
 	for (i=0;i<4;i++)
 	{
 		if (sz[i]<0)
@@ -2221,7 +2222,7 @@ int saveStack2Tif(const char * filename, const unsigned char * img, const V3DLON
 	int kind;
     if (sz[3]==1){
         if(datatype==1)
-		kind = GREY;
+            kind = GREY;
         else
             kind=GREY16;
     }
@@ -2236,12 +2237,13 @@ int saveStack2Tif(const char * filename, const unsigned char * img, const V3DLON
 		return b_error;
 	}
 
-	V3DLONG pgsz1=sz[2]*sz[1]*sz[0], pgsz2=sz[1]*sz[0], pgsz3=sz[0];
+    V3DLONG pgsz1=sz[2]*sz[1]*sz[0]*kind, pgsz2=sz[1]*sz[0]*kind, pgsz3=sz[0]*kind, pgunit=kind;
 	for (c=0;c<sz[3];c++)
 		for (k=0;k<sz[2]; k++)
 			for (j=0;j<sz[1]; j++)
-				for (i=0;i<sz[0]; i++)
-					Set_Stack_Pixel(tmpstack,i,j,k,c, img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i]);
+                for (i=0;i<sz[0]; i++)
+                    for(p=0;p<kind;p++)
+                        Set_Stack_Pixel(tmpstack,p,i,j,k,c, img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i*pgunit + p]);
 
 	//output to file
 	Write_Stack((char*)filename, tmpstack);
@@ -2335,8 +2337,8 @@ int loadLsm2Stack_obsolete(char * filename, unsigned char * & img, V3DLONG * & s
 	}
 	else
 	{
-		V3DLONG i,j,k,c;
-		V3DLONG pgsz1=sz[2]*sz[1]*sz[0], pgsz2=sz[1]*sz[0], pgsz3=sz[0];
+        V3DLONG i,j,k,c;
+        V3DLONG pgsz1=sz[2]*sz[1]*sz[0], pgsz2=sz[1]*sz[0], pgsz3=sz[0];
 
 		switch (tmpstack->kind)
 		{
@@ -2347,7 +2349,7 @@ int loadLsm2Stack_obsolete(char * filename, unsigned char * & img, V3DLONG * & s
 						for (j=0;j<sz[1]; j++)
 							for (i=0;i<sz[0]; i++)
 								//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_8(tmpstack,i,j,k,c);
-								img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c);
+                                img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,0,i,j,k,c);
 
 				break;
 
@@ -2355,9 +2357,10 @@ int loadLsm2Stack_obsolete(char * filename, unsigned char * & img, V3DLONG * & s
 				for (c=0;c<sz[3];c++)
 					for (k=0;k<sz[2]; k++)
 						for (j=0;j<sz[1]; j++)
-							for (i=0;i<sz[0]; i++)
+                            for (i=0;i<sz[0]; i++)
 								//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_16(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
-								img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
+                                // obsolete
+                                //                                img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
 				break;
 
 			default:

@@ -125,22 +125,22 @@ public:
 	}
 
 	//main interface to the data
-        unsigned char * getRawData() {return data1d;}
-        const unsigned char * getRawData() const {return data1d;} // const version 25-Apr 2011 CMB
-        V3DLONG getXDim() const {return sz0;}
-        V3DLONG getYDim() const {return sz1;}
-        V3DLONG getZDim() const {return sz2;}
-        V3DLONG getCDim() const {return sz3;}
-        V3DLONG getTDim() const {return sz_time;}
-        V3DLONG getValidZSliceNum() const {return valid_zslicenum;}
-        V3DLONG getPreValidZSliceNum() const {return prevalid_zslicenum;}
-        int getError() const {return b_error;}
-        ImagePixelType getDatatype() const {return datatype;}
-        TimePackType getTimePackType() const {return timepacktype;}
-        V3DLONG getTotalUnitNumber() const {return sz0*sz1*sz2*sz3;}
-        V3DLONG getTotalUnitNumberPerPlane() const {return sz0*sz1;}
-        V3DLONG getTotalUnitNumberPerChannel() const {return sz0*sz1*sz2;}
-        V3DLONG getUnitBytes() const
+    unsigned char * getRawData() {return data1d;}
+    const unsigned char * getRawData() const {return data1d;} // const version 25-Apr 2011 CMB
+    V3DLONG getXDim() const {return sz0;}
+    V3DLONG getYDim() const {return sz1;}
+    V3DLONG getZDim() const {return sz2;}
+    V3DLONG getCDim() const {return sz3;}
+    V3DLONG getTDim() const {return sz_time;}
+    V3DLONG getValidZSliceNum() const {return valid_zslicenum;}
+    V3DLONG getPreValidZSliceNum() const {return prevalid_zslicenum;}
+    int getError() const {return b_error;}
+    ImagePixelType getDatatype() const {return datatype;}
+    TimePackType getTimePackType() const {return timepacktype;}
+    V3DLONG getTotalUnitNumber() const {return sz0*sz1*sz2*sz3;}
+    V3DLONG getTotalUnitNumberPerPlane() const {return sz0*sz1;}
+    V3DLONG getTotalUnitNumberPerChannel() const {return sz0*sz1*sz2;}
+    V3DLONG getUnitBytes() const
 	{
 		switch (datatype)
 		{
@@ -150,7 +150,7 @@ public:
 			default: return 1;
 		}
 	}
-        V3DLONG getTotalBytes() const {return getUnitBytes()*sz0*sz1*sz2*sz3;}
+    V3DLONG getTotalBytes() const {return getUnitBytes()*sz0*sz1*sz2*sz3;}
 	unsigned char * getRawDataAtChannel(V3DLONG cid)
 	{
 		V3DLONG myid = cid; if (myid<0) myid=0; else if (myid>=sz3) myid = sz3-1;
@@ -335,7 +335,7 @@ public:
 
 
 
-        bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
+    bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
 	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
 	void setOriginX(double a) { origin_x = a;}
@@ -445,11 +445,11 @@ public:
 	{
 		return (data_p + stride_x*x + stride_y*y + stride_z*z + stride_c*c);
 	}
-        inline const v3d_uint8* at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
-        {
-                return (data_p + stride_x*x + stride_y*y + stride_z*z + stride_c*c);
-        }
-        inline v3d_uint8* begin()
+    inline const v3d_uint8* at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
+    {
+        return (data_p + stride_x*x + stride_y*y + stride_z*z + stride_c*c);
+    }
+    inline v3d_uint8* begin()
 	{
 		return data_p;
 	}
@@ -473,7 +473,7 @@ public:
 	{
 		return (v3d_float32*)at(x,y,z,c);
 	}
-        inline double value_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
+    inline double value_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
 	{
 		double v;
 		switch (su)
@@ -505,11 +505,11 @@ public:
 			vmax.push_back( p_vmax[i] );
 		}
 	}
-        inline bool has_minmax() const
+    inline bool has_minmax() const
 	{
 		return vmin.size()==sc && vmax.size()==sc && su>1;
 	}
-        inline v3d_uint8 value8bit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
+    inline v3d_uint8 value8bit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
 	{
 		//double v = value_at(x,y,z);
 		double v;

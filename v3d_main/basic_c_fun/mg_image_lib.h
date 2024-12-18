@@ -169,20 +169,20 @@ typedef struct
       ((uint8  *) ((img)->array +   \
            ((((z)*(img)->height + (y))*(img)->width + (x))*(img)->kind + (c))))
 
-#define STACK_PIXEL_16(img,x,y,z,c) \
+#define STACK_PIXEL_16(img,p,x,y,z,c) \
       ((uint16 *) ((img)->array +   \
-           ((((z)*(img)->height + (y))*(img)->width + (x))*(img)->kind/2 + (c))))
+           ((((z)*(img)->height + (y))*(img)->width + (x))*(img)->kind + (c) + (p))))
 
-static inline int Get_Stack_Pixel(Stack *stack, int x, int y, int z, int c)
+static inline int Get_Stack_Pixel(Stack *stack, int p, int x, int y, int z, int c)
 { if (stack->kind == GREY16)
-    return (*STACK_PIXEL_16(stack,x,y,z,c));
+    return (*STACK_PIXEL_16(stack,p,x,y,z,c));
   else
     return (*STACK_PIXEL_8(stack,x,y,z,c));
 }
 
-static inline void Set_Stack_Pixel(Stack *stack, int x, int y, int z, int c, int v)
+static inline void Set_Stack_Pixel(Stack *stack, int p, int x, int y, int z, int c, int v)
 { if (stack->kind == GREY16)
-    *STACK_PIXEL_16(stack,x,y,z,c) = v;
+    *STACK_PIXEL_16(stack,p,x,y,z,c) = v;
   else
     *STACK_PIXEL_8(stack,x,y,z,c) = v;
 }
