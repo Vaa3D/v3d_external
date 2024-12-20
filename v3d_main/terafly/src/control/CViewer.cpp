@@ -660,8 +660,14 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
         ***************************************************************************/
         if (object == view3DWidget && event->type() == QEvent::MouseButtonPress)
         {
+            QMouseEvent *mouseEvt = (QMouseEvent *) event;
+
+            qDebug() << "devicePixelRatio: " << devicePixelRatio();
+            qDebug() << "pos: " << mouseEvt->pos();
+            qDebug() << "scenePosition: " << mouseEvt->scenePosition();
+            qDebug() << "globalPosition: " << mouseEvt->globalPosition();
+
             qDebug()<<"object == view3DWidget && event->type() == QEvent::MouseButtonPress)";
-            QMouseEvent* mouseEvt = (QMouseEvent*)event;
             if(mouseEvt->button() == Qt::RightButton && PAnoToolBar::instance()->buttonMarkerDelete->isChecked())
             {
                 deleteMarkerAt(mouseEvt->x(), mouseEvt->y());
@@ -1990,11 +1996,19 @@ void CViewer::deleteSelectedMarkers()
     }
 }
 
-
-void CViewer::createMarkerAt(int x, int y)
+void CViewer::createMarkerAt(int logicX, int logicY)
 {
-    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
-    view3DWidget->getRenderer()->hitPen(x, y);
+    int deviceCoordX = logicX * devicePixelRatio();
+    int deviceCoordY = logicY * devicePixelRatio();
+
+    /**/ tf::debug(tf::LEV1,
+                   strprintf("title = %s, point = (%d, %d)",
+                             titleShort.c_str(),
+                             deviceCoordX,
+                             deviceCoordY)
+                       .c_str(),
+                   __itm__current__function__);
+    view3DWidget->getRenderer()->hitPen(deviceCoordX, deviceCoordY);
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
     if(vaa3dMarkers.empty())
         return;
@@ -2012,10 +2026,19 @@ void CViewer::createMarkerAt(int x, int y)
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 }
 
-void CViewer::createMarker2At(int x, int y)
+void CViewer::createMarker2At(int logicX, int logicY)
 {
-    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
-    view3DWidget->getRenderer()->hitPen(x, y);
+    int deviceCoordX = logicX * devicePixelRatio();
+    int deviceCoordY = logicY * devicePixelRatio();
+
+    /**/ tf::debug(tf::LEV1,
+                   strprintf("title = %s, point = (%d, %d)",
+                             titleShort.c_str(),
+                             deviceCoordX,
+                             deviceCoordY)
+                       .c_str(),
+                   __itm__current__function__);
+    view3DWidget->getRenderer()->hitPen(deviceCoordX, deviceCoordY);
 
     static bool every_two_clicks_flag = true;
     every_two_clicks_flag = !every_two_clicks_flag;
@@ -2042,12 +2065,21 @@ void CViewer::createMarker2At(int x, int y)
     }
 }
 
-void CViewer::deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers /* = 0 */)
+void CViewer::deleteMarkerAt(int logicX, int logicY, QList<LocationSimple> *deletedMarkers /* = 0 */)
 {
-    /**/tf::debug(tf::LEV1, strprintf("title = %s, point = (%d, %d)", titleShort.c_str(), x, y).c_str(), __itm__current__function__);
+    int deviceCoordX = logicX * devicePixelRatio();
+    int deviceCoordY = logicY * devicePixelRatio();
+
+    /**/ tf::debug(tf::LEV1,
+                   strprintf("title = %s, point = (%d, %d)",
+                             titleShort.c_str(),
+                             deviceCoordX,
+                             deviceCoordY)
+                       .c_str(),
+                   __itm__current__function__);
 
     // select marker (if any) at the clicked location
-    view3DWidget->getRenderer()->selectObj(x,y, false);
+    view3DWidget->getRenderer()->selectObj(deviceCoordX, deviceCoordY, false);
 
     // search for the selected markers
     vector<int> vaa3dMarkers_tbd;

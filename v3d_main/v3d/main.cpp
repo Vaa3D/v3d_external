@@ -118,6 +118,7 @@ int main(int argc, char **argv)
 //    qInstallMsgHandler(customMessageHandler);
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling,true);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
  for (int myii=0; myii<argc;myii++)
  {
      v3d_msg(QString("[%1]").arg(argv[myii]));
