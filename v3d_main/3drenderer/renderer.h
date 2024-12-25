@@ -45,13 +45,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 //#include "version_control.h"
 // #if defined(USE_Qt5_VS2015_Win7_81) || defined(USE_Qt5_VS2015_Win10_10_14393)
 //   #include <GLES3\gl3.h>
-//   #include <GL\glew.h>
 //#else
-#if defined(__APPLE__)
-  #include <OpenGL/glu.h>
-#else
-  #include <GL/glu.h>
-#endif
+//#if defined(__APPLE__)
+//  #include <OpenGL/glu.h>
+//#else
+//#include <GL/glu.h>
+//#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Renderer

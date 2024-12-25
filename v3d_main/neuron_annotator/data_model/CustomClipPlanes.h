@@ -1,6 +1,9 @@
 #ifndef CUSTOMCLIPPLANES_H
 #define CUSTOMCLIPPLANES_H
 
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+
+#include <GL/glew.h>
 
 #include <QUndoStack>
 #include <QUndoCommand>
@@ -13,7 +16,7 @@
 #ifdef MACOS_SYSTEM
 #include <gl.h>
 #else
-#include <GL/gl.h>
+//#include <GL/gl.h>
 #endif
 
 

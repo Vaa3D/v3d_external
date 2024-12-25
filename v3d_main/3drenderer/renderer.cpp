@@ -37,7 +37,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  *  Last change: 2010-Dec-09. by Hanchuan Peng. remove a few functions and convert them as template functions and move to the header file
  */
 
-#include "GLee2glew.h" ////2020-2-10
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+
+#include <GL/glew.h>
 
 #include "renderer.h"
 #include "v3dr_glwidget.h" //for makeCurrent, drawText
@@ -49,9 +51,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #ifdef MACOS_SYSTEM
 #include <gl.h>
 #else
-#include <GL/gl.h>
+//#include <GL/gl.h>
 #endif
-#include <GL/glew.h>
 Renderer::SelectMode Renderer::defaultSelectMode = Renderer::smObject;
 
 using namespace std;

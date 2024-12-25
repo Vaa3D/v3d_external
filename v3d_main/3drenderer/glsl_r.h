@@ -73,10 +73,14 @@ Make sure to check extension "GL_EXT_geometry_shader4" before using Geometry sha
 typedef char GLchar;
 #endif
 
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+
+#include <GL/glew.h>
+
 #ifdef MACOS_SYSTEM
 #include <gl.h>
 #else
-#include <GL/gl.h>
+//#include <GL/gl.h>
 #endif
 
 

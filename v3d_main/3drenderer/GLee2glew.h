@@ -39,6 +39,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #ifndef GLEE2GLEW_H_
 #define GLEE2GLEW_H_
 
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+
+#include <GL/glew.h>
+
 /************************************************************************************************************
  * if try to include <QtWidgets> it will also include gl.h with QtOGL, then GLEW throws error when including glew.h,
  * because gl.h has been included before GLEW.
@@ -59,6 +63,12 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 
 //@2020-5-10 RZC: for crash using glew & Qt4 at linux
 //@2020-10-31 RZC: fixed crash by USING (glewExperimental=true) BEFORE glewInit() AT LINUX
+
+//#if defined(__APPLE__)
+//#include <OpenGL/glu.h>
+//#else
+//#include <GL/glu.h>
+//#endif
 
 #if 0// ! defined( USE_Qt5 )
 //
@@ -83,10 +93,6 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 //#endif
 //
 #else
-
-#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
-#include <glew/GL/glew.h>
-
 
 #define GLEE_VERSION_2_0    GLEW_VERSION_2_0
 #define GLEE_VERSION_1_5    GLEW_VERSION_1_5
