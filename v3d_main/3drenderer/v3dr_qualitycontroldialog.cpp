@@ -61,7 +61,7 @@ void V3dr_qualitycontrolDialog::createLayout(){
 
     QFont font("Microsoft YaHei");
     //old:11 new:28
-    font.setPointSize(30);
+    font.setPointSize(11);
     leftGroup->setFont(font);
     rightGroup->setFont(font);
 
@@ -126,7 +126,7 @@ QTableWidget* V3dr_qualitycontrolDialog::createTableMarker(){
             QTableWidget* t = new QTableWidget(row, col, this);
             QFont font("Microsoft YaHei");
             //old:10 new:26
-            font.setPointSize(28);
+            font.setPointSize(10);
             t->setHorizontalHeaderLabels(qsl);
             t->horizontalHeader()->setFont(font);
 
@@ -211,20 +211,20 @@ void V3dr_qualitycontrolDialog::createSatistians(){
     overlapSegsCountLabel = new QLabel(this);
     errorSegsCountLabel = new QLabel(this);
 
-    sumCountLabel->setText(QString("Total number of markers:\t\t %1 ").arg(allCount));
-    multifurCountLabel->setText(QString("Multifurcation:\t\t\t %1 ").arg(type2IndexsMap["Multifurcation"].size()));
-//    approchingBifurCountLabel->setText(QString("Approaching bifurcation: %1 ").arg(type2IndexsMap["Approaching bifurcation"].size()));
-    loopCountLabel->setText(QString("Loop:\t\t\t\t %1 ").arg(type2IndexsMap["Loop"].size()));
-    missingCountLabel->setText(QString("Missing:\t\t\t\t %1 ").arg(type2IndexsMap["Missing"].size()));
-    crossingCountLabel->setText(QString("Crossing direction error:\t\t %1 ").arg(type2IndexsMap["Crossing error"].size()));
-//    colorMutationCountLabel->setText(QString("Color mutation:\t\t %1 ").arg(type2IndexsMap["Color mutation"].size()));
-    dissocaitiveSegCountLabel->setText(QString("Isolated branch:\t\t\t %1 ").arg(type2IndexsMap["Dissociative seg"].size()));
-    angleCountLabel->setText(QString("Angle error:\t\t\t %1 ").arg(type2IndexsMap["Angle error"].size()));
-    overlapSegsCountLabel->setText(QString("Overlapping branches(removed):\t %1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
-    errorSegsCountLabel->setText(QString("Error seg(tuned):\t\t\t %1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
+    sumCountLabel->setText(QString("Total number of markers:\t\t  %1 ").arg(allCount));
+    multifurCountLabel->setText(QString("Multifurcation:\t\t\t  %1 ").arg(type2IndexsMap["Multifurcation"].size()));
+//    approchingBifurCountLabel->setText(QString("Approaching bifurcation:  %1 ").arg(type2IndexsMap["Approaching bifurcation"].size()));
+    loopCountLabel->setText(QString("Loop:\t\t\t\t  %1 ").arg(type2IndexsMap["Loop"].size()));
+    missingCountLabel->setText(QString("Missing:\t\t\t\t  %1 ").arg(type2IndexsMap["Missing"].size()));
+    crossingCountLabel->setText(QString("Crossing direction error:\t\t  %1 ").arg(type2IndexsMap["Crossing error"].size()));
+//    colorMutationCountLabel->setText(QString("Color mutation:\t\t  %1 ").arg(type2IndexsMap["Color mutation"].size()));
+    dissocaitiveSegCountLabel->setText(QString("Isolated branch:\t\t\t  %1 ").arg(type2IndexsMap["Dissociative seg"].size()));
+    angleCountLabel->setText(QString("Angle error:\t\t\t  %1 ").arg(type2IndexsMap["Angle error"].size()));
+    overlapSegsCountLabel->setText(QString("Overlapping branches(removed):\t  %1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
+    errorSegsCountLabel->setText(QString("Error seg(tuned):\t\t  %1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
 
     QFont font("Microsoft YaHei");
-    font.setPointSize(30);
+    font.setPointSize(11);
     sumCountLabel->setFont(font);
     multifurCountLabel->setFont(font);
     approchingBifurCountLabel->setFont(font);
@@ -338,18 +338,18 @@ void V3dr_qualitycontrolDialog::updateMarkersCounts(){
         allCount += it->second.size();
     }
 
-    sumCountLabel->setText(QString("Total number of markers:\t\t %1 ").arg(allCount));
-    multifurCountLabel->setText(QString("Multifurcation:\t\t\t %1 ").arg(type2IndexsMap["Multifurcation"].size()));
+    sumCountLabel->setText(QString("Total number of markers:\t\t  %1 ").arg(allCount));
+    multifurCountLabel->setText(QString("Multifurcation:\t\t\t  %1 ").arg(type2IndexsMap["Multifurcation"].size()));
 //    approchingBifurCountLabel->setText(QString("Approaching bifurcation:  %1 ").arg(type2IndexsMap["Approaching bifurcation"].size()));
-    loopCountLabel->setText(QString("Loop:\t\t\t\t %1 ").arg(type2IndexsMap["Loop"].size()));
-    missingCountLabel->setText(QString("Missing:\t\t\t\t %1 ").arg(type2IndexsMap["Missing"].size()));
-    crossingCountLabel->setText(QString("Crossing direction error:\t\t %1 ").arg(type2IndexsMap["Crossing error"].size()));
+    loopCountLabel->setText(QString("Loop:\t\t\t\t  %1 ").arg(type2IndexsMap["Loop"].size()));
+    missingCountLabel->setText(QString("Missing:\t\t\t\t  %1 ").arg(type2IndexsMap["Missing"].size()));
+    crossingCountLabel->setText(QString("Crossing direction error:\t\t  %1 ").arg(type2IndexsMap["Crossing error"].size()));
 //    colorMutationCountLabel->setText(QString("Color mutation:\t\t  %1 ").arg(type2IndexsMap["Color mutation"].size()));
-    dissocaitiveSegCountLabel->setText(QString("Isolated branch:\t\t\t %1 ").arg(type2IndexsMap["Dissociative seg"].size()));
-    angleCountLabel->setText(QString("Angle error:\t\t\t %1 ").arg(type2IndexsMap["Angle error"].size()));
+    dissocaitiveSegCountLabel->setText(QString("Isolated branch:\t\t\t  %1 ").arg(type2IndexsMap["Dissociative seg"].size()));
+    angleCountLabel->setText(QString("Angle error:\t\t\t  %1 ").arg(type2IndexsMap["Angle error"].size()));
 }
 
 void V3dr_qualitycontrolDialog::updateSegsCounts(){
-    overlapSegsCountLabel->setText(QString("Overlapping branches(removed):\t %1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
-    errorSegsCountLabel->setText(QString("Error seg(tuned):\t\t\t %1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
+    overlapSegsCountLabel->setText(QString("Overlapping branches(removed):\t  %1 ").arg(glwidget->TeraflyCommunicator->removedOverlapSegNum));
+    errorSegsCountLabel->setText(QString("Error seg(tuned):\t\t  %1 ").arg(glwidget->TeraflyCommunicator->removedErrSegNum));
 }
