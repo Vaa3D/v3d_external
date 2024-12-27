@@ -641,6 +641,6 @@ v3d_main/v3d/release/autosave/annotations_stamp_2019_05_20_10_42.ano.eswc
 #ignore build directories
 v3d_main/v3d/release/
 
-v3d_main/build-vaa3d_msvc-unknown-Release/
-v3d_main/build-vaa3d_msvc-unknown-Debug/
+v3d_main/build-vaa3d_msvc-unknown-Release/*
+v3d_main/build-vaa3d_msvc-unknown-Debug/*
 v3d_main/v3d/.qtc_clangd/
