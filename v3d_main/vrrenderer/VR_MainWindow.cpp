@@ -312,7 +312,7 @@ void VR_MainWindow::TVProcess(QString line)
                     float mx = node.at(3).toFloat();
                     float my = node.at(4).toFloat();
                     float mz = node.at(5).toFloat();
-                    XYZ  converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
+                    XYZ converreceivexyz = ConvertMaxGlobal2LocalBlock(mx, my, mz);
                     pMainApplication->RemoveMarkerandSurface(converreceivexyz.x, converreceivexyz.y, converreceivexyz.z);
                     VR_Communicator->emitDelMarker(listwithheader[i]);
                     //需要判断点是否在图像中，如果不在则全局处理

@@ -29,6 +29,7 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     font.setPointSize(11); // 设置字体大小为11点
     // 创建主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QHBoxLayout *btnLayout = new QHBoxLayout(this);
     // 创建 QSplitter
     QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
 
@@ -50,7 +51,8 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 3);
 
-    loadBtn=new QPushButton("LoadAno",this);
+    loadBtn=new QPushButton("LoadAno", this);
+    reloadDataBtn=new QPushButton("ReloadData", this);
 
     // 获取桌面信息
     QDesktopWidget desktopWidget;
@@ -63,8 +65,11 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     int centerX = screenWidth / 2 - 50;
     int centerY = screenHeight / 2;
 
+    btnLayout->addWidget(reloadDataBtn);
+    btnLayout->addWidget(loadBtn);
+
     mainLayout->addWidget(splitter);
-    mainLayout->addWidget(loadBtn);
+    mainLayout->addLayout(btnLayout);
 
     setLayout(mainLayout);
 //    this->setMinimumSize(850, 250);
@@ -75,6 +80,7 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     this->move((rect.width() - this->width()) / 2 - 50, (rect.height() - this->height()) / 2);//移动到所在屏幕中间
 
     connect(loadBtn,SIGNAL(clicked()),this,SLOT(loadAno()));
+    connect(reloadDataBtn,SIGNAL(clicked()),this,SLOT(reloadData()));
     getUserId();
     getAllProjectSwcList();
 }
@@ -324,6 +330,11 @@ void LoadManageWidget::displayItems(QListWidgetItem *current, QListWidgetItem *p
     for(auto swcName : swcList){
         swcWidget->addItem(swcName);
     }
+}
+
+void LoadManageWidget::reloadData(){
+    getUserId();
+    getAllProjectSwcList();
 }
 
 void LoadManageWidget::loadAno()

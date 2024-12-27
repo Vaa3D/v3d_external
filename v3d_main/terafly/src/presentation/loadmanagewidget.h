@@ -19,6 +19,7 @@ class LoadManageWidget:public QWidget
 public:
     LoadManageWidget(UserInfo *user);
     QPushButton *loadBtn;
+    QPushButton *reloadDataBtn;
     QListWidget *swcWidget;
     QListWidget *projectWidget;
 //    QPushButton *getImageBtn,*getNeuronBtn,*getAnoBtn,*loadBtn;
@@ -40,6 +41,7 @@ public slots:
     void getAllProjectSwcList();
     void getAllSwcUuidAndNameByProId(QString proName, QString proUuid);
     void loadAno();
+    void reloadData();
     void displayItems(QListWidgetItem *current, QListWidgetItem *previous);
 signals:
     void triggerStartCollaborate(QString port);

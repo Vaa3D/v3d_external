@@ -122,9 +122,9 @@ int main(int argc, char **argv)
 //    QString UserName = argv[1];
 //    QString UserPassword = argv[2];
 
-    QSettings settings("HHMI", "CAR");
-    settings.setValue("UserName", "zackzhy");
-    settings.setValue("UserPasswd", "123456");
+//    QSettings settings("HHMI", "CAR");
+//    settings.setValue("UserName", "zackzhy");
+//    settings.setValue("UserPasswd", "123456");
 
 //    argc -= 2;
 //    argv += 2;

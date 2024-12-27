@@ -4107,7 +4107,6 @@ void PMain::LoadFromServer()
     userinfo.passwd=settings.value("UserPasswd").toString();
     qDebug() << userinfo.passwd;
 //    userinfo.colorid = settings.value("UserID").toInt();
-    userinfo.id = 0;
 
     // 读取 JSON 配置文件
     string configFilePath = QCoreApplication::applicationDirPath().toStdString() + "/config.json";
