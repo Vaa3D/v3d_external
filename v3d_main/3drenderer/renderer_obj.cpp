@@ -1688,9 +1688,108 @@ void Renderer_gl1::updateNeuronBoundingBox()
     }
 }
 
+void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode,int type)
+{
+#define CURVE_NAME "curve_segment"
+#define CURVE_FILE "curve_segment"
+
+#ifndef test_main_cpp
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    My4DImage* curImg =  v3dr_getImage4d(_idep);
+
+    if (w && curImg)
+    {
+        if (0)  //should append the curves to the being-edited neuron directly
+        {
+            v3d_msg("NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);");
+
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
+
+            NeuronTree oldtree = listNeuronTree.at(realCurEditingNeuron_inNeuronTree);
+            NeuronTree curTree  = curImg->proj_trace_add_curve_segment_append_to_a_neuron(loc_list, chno,
+                                                                                         oldtree, 3, creatmode); //LMG 26/10/2018 Creation mode 0 by default, set in every usage of addCurveSwc
+            listNeuronTree.replace(realCurEditingNeuron_inNeuronTree, curTree);
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+        //// Mozak
+        else if (ui3dviewMode == Mozak)
+        {
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
+            if (highlightedNodeType >= 0)
+                curImg->proj_trace_add_curve_segment(loc_list, chno, highlightedNodeType, 1, creatmode);
+            else
+                curImg->proj_trace_add_curve_segment(loc_list, chno, currentTraceType, 1, creatmode);
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+        //// Vaa3d || Terafly
+        else
+        {
+            if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
+                creatmode = 1;
+            if(selectMode == smCurveCreate_MarkerCreate1_fm)
+                curImg->proj_trace_add_curve_segment(loc_list, chno,type,default_radius_gd,creatmode);
+            else
+                curImg->proj_trace_add_curve_segment(loc_list, chno,type, 1,creatmode);
+            curImg->update_3drenderer_neuron_view(w, this);
+        }
+    }
+
+
+#else
+    v3d_msg("testmain addCurveSWC(vector<XYZ> &loc_list, int chno)");
+
+    QList <NeuronSWC> listNeuron;
+    QHash <int, int>  hashNeuron;
+    listNeuron.clear();
+    hashNeuron.clear();
+    try {
+        int count = 0;
+        qDebug("-------------------------------------------------------");
+        for (int k=0;k<loc_list.size();k++)
+        {
+            count++;
+            NeuronSWC S;
+            S.n 	= 1+k;
+            S.type 	= 0;
+            S.x 	= loc_list.at(k).x;
+            S.y 	= loc_list.at(k).y;
+            S.z 	= loc_list.at(k).z;
+            S.r 	= 1;
+            S.pn 	= (k==0)? -1 : k;
+            //qDebug("%s  ///  %d %d (%g %g %g) %g %d", buf, S.n, S.type, S.x, S.y, S.z, S.r, S.pn);
+            {
+                listNeuron.append(S);
+                hashNeuron.insert(S.n, listNeuron.size()-1);
+            }
+        }
+        qDebug("---------------------add %d lines, %d remained lines", count, listNeuron.size());
+        NeuronTree SS;
+        SS.n = -1;
+        RGBA8 tt; tt.r = 255;tt.g = 0;tt.b = 0;tt.a = 0;
+        SS.color = tt; //RGBA8(255, 0,0,0);//random_rgba8(255);
+        SS.on = true;
+        SS.listNeuron = listNeuron;
+        SS.hashNeuron = hashNeuron;
+        //091028: this is important
+        {
+            SS.n = 1+listNeuronTree.size();
+            QString snum = QString("_%1").arg(SS.n);
+            SS.name = CURVE_NAME +snum;
+            SS.file = CURVE_FILE +snum;
+            listNeuronTree.append(SS);
+        }
+    } CATCH_handler( "Renderer_gl1::addCurveSWC" );
+    updateNeuronBoundingBox();
+    updateBoundingBox(); // all of loaded bounding-box are updated here
+#endif
+}
+
+
 
 #define __add_curve_SWC_with_default_type___
-void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode)
+void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode, bool fromserver)
 {
 #define CURVE_NAME "curve_segment"
 #define CURVE_FILE "curve_segment"

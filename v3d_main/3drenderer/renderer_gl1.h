@@ -405,7 +405,7 @@ public:
     void refineMarkerCenter();
     void refineMarkerLocal(int marker_id);
 
-    void addMarker(XYZ &loc);
+    void addMarker(XYZ &loc, bool fromserver=false);
     void addMarkerUnique(XYZ &loc);
     void addSpecialMarker(XYZ &loc); //add special marker, by XZ, 20190720
     void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120
@@ -623,6 +623,7 @@ public:
      void selectMultiMarkersByStroke();
 
      void retypeMultiNeuronsByStroke();
+     void retypeMultiNeuronsbyshortcut();
 
      // forceSingleCut @ADDED T Pavlik 20151217, split was splitting more segments than desired so best cut option added
      void breakMultiNeuronsByStrokeCommit();
@@ -748,7 +749,8 @@ public:
     }
 
     // in renderer_obj.cpp
-    void addCurveSWC(vector<XYZ> &loc_list, int chno=0, double creatmode=0); //if no chno is specified, then assume to be the first channel //LMG 26/10/2018 if no creatmode specified set to 0
+    void addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode,int type);
+    void addCurveSWC(vector<XYZ> &loc_list, int chno=0, double creatmode=0, bool fromserver = false); //if no chno is specified, then assume to be the first channel //LMG 26/10/2018 if no creatmode specified set to 0
 
     //for local view
     bool produceZoomViewOf3DRoi(vector <XYZ> & loc_vec, int ops_type=0);

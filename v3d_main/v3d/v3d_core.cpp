@@ -4325,7 +4325,7 @@ void XFormWidget::updateDataRelatedGUI()
         }
         focusPointFeatureWidget->setMinimumHeight(0.1 * screenH);
         focusPointFeatureWidget->setMaximumHeight(0.25 * screenH);
-        focusPointFeatureWidget->setFixedWidth(0.24 * screenW);
+        focusPointFeatureWidget->setFixedWidth(0.22 * screenW);
 
         imgData->setFocusFeatureView((MyTextBrowser*)focusPointFeatureWidget);
 
@@ -6496,8 +6496,62 @@ void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
     }
 }
 
-void My4DImage::
-update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
+vector<XYZ> My4DImage::ExtractDeletingNode()
+{
+    vector<XYZ> out_LocList;
+    std::vector<V_NeuronSWC>::iterator iter = tracedNeuron.seg.begin();
+    while (iter != tracedNeuron.seg.end())
+    {
+        if (iter->to_be_deleted)
+        {
+            out_LocList.push_back(XYZ(iter->row[1].x, iter->row[1].y, iter->row[1].z));
+        }
+        iter++;
+    }
+
+    return out_LocList;
+}
+
+vector<XYZ> My4DImage::ExtractDeletingNode(vector<V_NeuronSWC> &vector_VSWC)
+{
+    vector<XYZ> out_LocList;
+
+    for(int i=0;i<tracedNeuron.seg.size();i++)
+    {
+        if(tracedNeuron.seg.at(i).to_be_deleted)
+        {
+            if(tracedNeuron.seg.at(i).row.size()>0)
+            {
+                vector_VSWC.push_back(tracedNeuron.seg.at(i));
+            }
+        }
+    }
+
+    return out_LocList;
+}
+
+vector<XYZ> My4DImage::ExtractDeletingNode2(map<size_t, vector<V_NeuronSWC_unit>> &originalSegMap, vector<V_NeuronSWC> &vector_VSWC)
+{
+    vector<XYZ> out_LocList;
+
+    for(int i=0;i<tracedNeuron.seg.size();i++)
+    {
+        if(tracedNeuron.seg.at(i).to_be_deleted)
+        {
+            if(tracedNeuron.seg.at(i).row.size()>0)
+            {
+                V_NeuronSWC seg = tracedNeuron.seg.at(i);
+                seg.row = originalSegMap[i];
+                vector_VSWC.push_back(seg);
+            }
+        }
+    }
+
+    return out_LocList;
+}
+
+
+void My4DImage::update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
 {
     LOAD_traced_neuron(this, renderer);
     glwidget->updateTool();

@@ -4529,16 +4529,16 @@ double Renderer_gl1::solveMarkerCenter()
     if (b_addthismarker) //100822, PHC, 120506
     {
         addMarker(loc);
-        if (b_ablation)
-        {
-            loc_vec.push_back(loc);
-            ablate3DLocationSeries(loc_vec);
-        }
-        if (b_imaging || b_grabhighrez)
-        {
-            loc_vec.push_back(loc);
-            produceZoomViewOf3DRoi(loc_vec);
-        }
+//        if (b_ablation)
+//        {
+//            loc_vec.push_back(loc);
+//            ablate3DLocationSeries(loc_vec);
+//        }
+//        if (b_imaging || b_grabhighrez)
+//        {
+//            loc_vec.push_back(loc);
+//            produceZoomViewOf3DRoi(loc_vec);
+//        }
     }
     else //then zoom-in, 100822, PHC
     {
@@ -4669,7 +4669,7 @@ void Renderer_gl1::refineMarkerLocal(int marker_id)
     //added by PHC, 090120. update the marker location in both views
     updateMarkerLocation(marker_id, loc);
 }
-void Renderer_gl1::addMarker(XYZ &loc)
+void Renderer_gl1::addMarker(XYZ &loc, bool fromserver)
 {
     XYZ pt(loc.x+1, loc.y+1, loc.z+1); // marker position is 1-based
 #ifndef test_main_cpp
@@ -4710,6 +4710,10 @@ void Renderer_gl1::addMarker(XYZ &loc)
             S.radius = V3Dmainwindow->global_setting.default_marker_radius;
         S.on = true;
         listLoc.append(S);
+        if(!fromserver){
+//            w->TeraflyCommunicator->Upda
+        }
+
         updateLandmark();
     }
 #else

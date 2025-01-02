@@ -89,6 +89,9 @@ string PMain::HTproofreading = "Start a stoppable/resumable block-by-block scan 
 string PMain::HTquickscan = "<i>QuickScan</i>: a scrollable maximum-intensity-projection-based preview to roughly check hundreds of blocks per minute and load only the nonempty ones.";
 
 PMain* PMain::uniqueInstance = 0;
+
+V3dR_Communicator* PMain::Communicator=0;
+
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
 {
     printf("instance\n");
@@ -99,6 +102,7 @@ PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
     uniqueInstance->raise();
     uniqueInstance->activateWindow();
     uniqueInstance->show();
+
     if (CViewer::getCurrent()) {
         CViewer::getCurrent()->window3D->setWindowState(Qt::WindowNoState);
         CViewer::getCurrent()->window3D->raise();
@@ -157,7 +161,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     V3D_env = callback;
     parentWidget = parent;
     annotationsPathLRU = "";
-    marginLeft = 65;
+    marginLeft = 45;
 
 #ifdef _NEURON_ASSEMBLER_
 	NeuronAssemblerPortal = nullptr;
@@ -543,7 +547,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     toolBar->setOrientation(Qt::Horizontal);
     toolBar->setMovable(false);
     toolBar->setFloatable(false);
-    toolBar->setIconSize(QSize(25,25));
+    toolBar->setIconSize(QSize(18,18));
     toolBar->setStyleSheet("QToolBar{background:qlineargradient(x1: 1, y1: 0, x2: 1, y2: 1,"
                            "stop: 0 rgb(180,180,180), stop: 1 rgb(220,220,220)); border-left: none; border-right: none; border-bottom: 1px solid rgb(150,150,150);}");
 
@@ -1119,12 +1123,12 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     helpBoxLayout->setContentsMargins(0,0,0,0);
     helpBoxLayout->addWidget(helpBox, 1);
     innerLayout->addLayout(helpBoxLayout, 1);
-    innerLayout->setSpacing(5);
+    innerLayout->setSpacing(3);
     centralLayout->addLayout(innerLayout, 1);
     bottomLayout->addWidget(editStatus);
     bottomLayout->addWidget(statusBar);
     bottomLayout->addWidget(progressBar);
-    bottomLayout->setContentsMargins(10,10,10,10);
+    bottomLayout->setContentsMargins(5,5,5,5);
     layout->addWidget(menuBar, 0);
     centralLayout->setContentsMargins(0,0,0,0);
     layout->addLayout(centralLayout, 1);
@@ -1327,6 +1331,18 @@ void PMain::reset()
         tabs->setCurrentIndex(tab_selected);
     }
     #endif
+
+    // 获取屏幕尺寸
+    QRect screenGeometry = QApplication::primaryScreen()->geometry();
+    int screenWidth = screenGeometry.width();
+    // 获取窗口的尺寸
+    int windowWidth = uniqueInstance->width();
+    // 计算窗口右上角的位置
+    int xPos = screenWidth - windowWidth;
+    int yPos = 0;  // 顶部对齐
+    // 移动窗口
+    uniqueInstance->move(xPos, yPos);
+    uniqueInstance->show();
 }
 
 

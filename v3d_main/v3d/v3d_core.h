@@ -350,6 +350,15 @@ public:
     QElapsedTimer triviewTimer;  //added on 20120702.
     bool b_triviewTimerON;
 
+    //collaboration
+    bool b_addnewSWC;
+    int cur_chno;
+    double cur_createmode;
+    V_NeuronSWC colla_cur_seg;
+    vector<XYZ> ExtractDeletingNode();
+    vector<XYZ> ExtractDeletingNode(vector<V_NeuronSWC>&);
+    vector<XYZ> ExtractDeletingNode2(map<size_t, vector<V_NeuronSWC_unit>> &originalSegMap, vector<V_NeuronSWC> &vector_VSWC);
+
     bool compute_rgn_stat(LocationSimple & pt, int channo);
     void loadLandmarkFromFile();
     void saveLandmarkToFile();

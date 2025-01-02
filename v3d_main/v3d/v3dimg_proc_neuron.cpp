@@ -841,7 +841,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 }
 
 #define ___trace_add_segment_default_type___
-bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/, double default_radius/*=1*/, double creatmode/*=0*/, double default_timestamp/*=0*/, double default_tfresindex/*=0*/)
+bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, double default_type/*=3*/, double default_radius/*=1*/, double createmode/*=0*/, double default_timestamp/*=0*/, double default_tfresindex/*=0*/)
 {
     if (mCoord.size()<=0)  return false;
 
@@ -849,7 +849,7 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     V3DLONG nexist = tracedNeuron.maxnoden();
 
     V_NeuronSWC cur_seg;
-    set_simple_path(cur_seg, nexist, mCoord, false, default_radius, default_type, creatmode, default_timestamp, default_tfresindex); //reverse link
+    set_simple_path(cur_seg, nexist, mCoord, false, default_radius, default_type, createmode, default_timestamp, default_tfresindex); //reverse link
 
     // Add timestamp LMG 10/10/2018
     // Get current timestamp
@@ -869,18 +869,26 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno, doub
     //qDebug("raw/cur_seg Timestamp: %.0f / %.0f", seconds, cur_seg.row[cur_seg.nrows()-1].timestamp);
 
     //LMG 13-12-2017 get current resolution and save in eswc
-   // tf::PluginInterface resinterface;
-    //int resindex = resinterface.getRes();
-    //int allresnum = resinterface.getallRes();
-//    resindex = int(pow(2,double(allresnum-resindex)));
-//    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
-//    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
-//    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
+    tf::PluginInterface resinterface;
+    int resindex = resinterface.getRes();
+    int allresnum = resinterface.getallRes();
+    resindex = int(pow(2,double(allresnum-resindex)));
+    if(resindex != 1) qDebug() << "Saving Tera-Fly resolution (downsampled" << resindex << "times) in eswc";
+    else qDebug() << "Saving Tera-Fly resolution (Full Resolution, index 1) in eswc";
+    for (V3DLONG k=0;k<(V3DLONG)cur_seg.nrows();k++) cur_seg.row[k].tfresindex = resindex;
 
     QString tmpss;  tmpss.setNum(tracedNeuron.nsegs()+1);
     cur_seg.name = qPrintable(tmpss);
     cur_seg.b_linegraph=true; //donot forget to do this
     tracedNeuron.append(cur_seg);
+    b_addnewSWC = true;
+    cur_chno = chno;
+    cur_createmode = createmode;
+    this->colla_cur_seg.clear();
+    for(V3DLONG k = 0; k < (V3DLONG)cur_seg.nrows(); k++){
+        colla_cur_seg.append(cur_seg.row[k]);
+    }
+    colla_cur_seg.name = cur_seg.name;
     tracedNeuron.name = TRACED_NAME;
     tracedNeuron.file = TRACED_FILE;
 

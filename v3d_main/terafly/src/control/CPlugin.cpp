@@ -246,7 +246,7 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
     return nt;
 }
 
-bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
+bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate, int resolution)
 {
     try
     {
@@ -267,7 +267,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
         CAnnotations::getInstance()->addCurves(x_range, y_range, z_range, nt);
 
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
         return true;
     }
     catch (tf::RuntimeException & e)
@@ -304,13 +304,14 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+        //        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 
     return markers;
 }
 
-bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resolution)
+bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collaborate, int resolution)
 {
     try
     {
@@ -331,7 +332,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resoluti
         CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, landmark_list);
 
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
     }
     catch (tf::RuntimeException & e)
     {

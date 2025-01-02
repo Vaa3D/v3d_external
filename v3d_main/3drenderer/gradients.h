@@ -73,6 +73,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #ifndef GRADIENTS_H
 #define GRADIENTS_H
+#include "GL/glew.h"
 #include <QWidget>
 #include <version_control.h>
 #if defined(USE_Qt5)

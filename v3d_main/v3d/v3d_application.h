@@ -54,10 +54,20 @@ private:
 #endif
 			theApp->installEventFilter(qMainWindow);
 			QSettings settings("HHMI", "Vaa3D");
-            QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
-            QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
+//            QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
+//            QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
+            QPoint windowPosition = QPoint(30, 30);
+            // 获取主屏幕的大小
+            QScreen *screen = QGuiApplication::primaryScreen();
+            QRect screenGeometry = screen->geometry();
+
+            // 计算窗口的大小为屏幕大小的一半
+            int width = screenGeometry.width() * 2 / 3;
+            int height = screenGeometry.height() * 4 / 5;
+
+            // 设置窗口大小
             qMainWindow->move(windowPosition);
-            qMainWindow->resize(windowSize);
+            qMainWindow->resize(width, height);
             qMainWindow->show();
         }
     }

@@ -599,6 +599,9 @@ class terafly::PMain : public QWidget
         void sendProgressBarChanged(int val, int minutes, int seconds, const char* message);
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
+public:
+        static V3dR_Communicator *Communicator;
+
 //public:
 //        ManageSocket * managesocket;
 //protected:

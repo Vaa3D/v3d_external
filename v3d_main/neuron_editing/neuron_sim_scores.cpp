@@ -82,7 +82,7 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 	V3DLONG nseg1, nseg2;
 	double sum12big, sum21big;
     double maxdist12 = -1, maxdist21 = -1; //set as some big numbers
-	V3DLONG nseg1big, nseg2big;
+    V3DLONG nseg1big, nseg2big;
     sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12);
     sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21);
 
@@ -179,7 +179,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
             if (cur_d>=d_thres)
 			{
 				sum1big += cur_d;
-				nseg1big++;
+                nseg1big++;
                 //qDebug() << "(" << cur_d << ", " << nseg1big << ")";
 			}
 

@@ -2787,6 +2787,7 @@ XFormWidget *MainWindow::createMdiChild()
     child->setMainControlWindow(this);
     //qDebug()<<child->v3d_mainwindow;
     child->adjustSize();
+    child->move(0, 0);
     QSize tmpsz = child->size();
     QSize oldszhint = child->sizeHint();
     printf("size hint=%d %d min size hint=%d %d\n", oldszhint.width(), oldszhint.height(), child->minimumSizeHint().width(), child->minimumSizeHint().height());

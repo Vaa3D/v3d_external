@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef ITEM_EDITOR_H_
 #define ITEM_EDITOR_H_
 
+#include "GL/glew.h"
 #include "../v3d/version_control.h"
 #if defined(USE_Qt5)
   #include <QtWidgets>

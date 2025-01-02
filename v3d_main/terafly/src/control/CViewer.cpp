@@ -144,8 +144,8 @@ void CViewer::show()
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
 
         // also reset undo/redo (which are referred to this viewer)
-        PAnoToolBar::instance()->buttonUndo->setEnabled(false);
-        PAnoToolBar::instance()->buttonRedo->setEnabled(false);
+        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
+        PAnoToolBar::instance()->buttonRedo->setEnabled(true);
 
 
         // re-arrange viewer's layout
@@ -1173,7 +1173,10 @@ void CViewer::receiveData(
                 if (PMain::getInstance()->resumeVR)
                 {
                     PMain::getInstance()->resumeVR = false;
-                    QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+                    if(PMain::getInstance()->Communicator)
+                        QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
+                    else
+                        QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
                 }
             }
         }
@@ -1215,7 +1218,11 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     if(!_isActive || toBeClosed)
     {
         QMessageBox::warning(0, "Unexpected behaviour", "Precondition check \"!isActive || toBeClosed\" failed. Please contact the developers");
-        return;
+        qDebug() << "Precondition check \"!_isActive || toBeClosed\" failed.";
+        qDebug() << "!_isActive: " << !_isActive;
+        qDebug() << "toBeClosed: " << toBeClosed;
+        setActive(true);
+        //        return;
     }
 
     // check precondition #2: valid resolution
@@ -1226,7 +1233,9 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     if( !_isReady )
     {
         tf::warning("precondition (!isReady) not met. Aborting newView", __itm__current__function__);
-        return;
+        _isReady = true;
+        qDebug() << "precondition (!isReady) not met. Aborting newView";
+        //        return;
     }
 
     // deactivate current window and processing all pending events
@@ -1234,9 +1243,11 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
     QApplication::processEvents();
 
     // after processEvents(), it might be that this windows is no longer valid, then terminating
-    if(toBeClosed)
-        return;
-
+    if(toBeClosed){
+        qDebug() << "toBeClosed: true";
+        toBeClosed = false;
+        //       return;
+    }
     // restart timer (measures the time needed to switch to a new view)
     newViewerTimer.restart();
 
@@ -1325,24 +1336,24 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                 z  = round(z  - marginz);
                 z0 = round(z0 + marginz);
 
-//                if(x - x0 >= pMain.Hdim_sbox->value())
-//                {
-//                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
-//                    x  = round(x  - margin);
-//                    x0 = round(x0 + margin);
-//                }
-//                if(y - y0 >= pMain.Vdim_sbox->value())
-//                {
-//                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
-//                    y  = round(y  - margin);
-//                    y0 = round(y0 + margin);
-//                }
-//                if(z - z0 > pMain.Ddim_sbox->value())
-//                {
-//                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
-//                    z  = round(z  - margin);
-//                    z0 = round(z0 + margin);
-//                }
+                //                if(x - x0 >= pMain.Hdim_sbox->value())
+                //                {
+                //                    float margin = ( (x - x0) - pMain.Hdim_sbox->value() )/2.0f ;
+                //                    x  = round(x  - margin);
+                //                    x0 = round(x0 + margin);
+                //                }
+                //                if(y - y0 >= pMain.Vdim_sbox->value())
+                //                {
+                //                    float margin = ( (y - y0) - pMain.Vdim_sbox->value() )/2.0f ;
+                //                    y  = round(y  - margin);
+                //                    y0 = round(y0 + margin);
+                //                }
+                //                if(z - z0 > pMain.Ddim_sbox->value())
+                //                {
+                //                    float margin = ( (z - z0) - pMain.Ddim_sbox->value() )/2.0f ;
+                //                    z  = round(z  - margin);
+                //                    z0 = round(z0 + margin);
+                //                }
                 t0 = std::max(0, std::min(t0,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 t1 = std::max(0, std::min(t1,CImport::instance()->getVolume(volResIndex)->getDIM_T()-1));
                 if(CImport::instance()->is5D() && (t1-t0+1 > pMain.Tdim_sbox->value()))
@@ -1359,19 +1370,10 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
         CVolume* cVolume = CVolume::instance();
         try
         {
-#ifdef MACOS_SYSTEM
-
-            if (dx != -1 && dy != -1 && dz != -1)
-                cVolume->setVoi(0, resolution, y - dy, y + dy, x - 2* dx, x + 2* dx, z - dz, z + dz, t0, t1);
-            else
-                cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
-#else
             if (dx != -1 && dy != -1 && dz != -1)
                 cVolume->setVoi(0, resolution, y - dy, y + dy, x - dx, x + dx, z - dz, z + dz, t0, t1);
             else
                 cVolume->setVoi(0, resolution, y0, y, x0, x, z0, z, t0, t1);
-
-#endif
         }
         catch(RuntimeException &ex)
         {
@@ -1429,15 +1431,15 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
                                        cVolume->getVoiD1()-cVolume->getVoiD0(),
                                        voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
             std::string message = tf::strprintf("Block X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d] loaded from view %s, black-filled region is "
-                                   "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
-                    rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
-                    voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
+                                                "X=[%d, %d) Y=[%d, %d) Z=[%d, %d) T[%d, %d]",
+                                                rVoiH0, rVoiH1, rVoiV0, rVoiV1, rVoiD0, rVoiD1, cVolume->getVoiT0(), cVolume->getVoiT1(), title.c_str(),
+                                                voiH0m, voiH1m, voiV0m, voiV1m,voiD0m, voiD1m, voiT0m, voiT1m);
             PLog::instance()->appendOperation(new NewViewerOperation(message, tf::CPU, timer.elapsed()));
 
             // create new window
             this->next = new CViewer(V3D_env, resolution, lowresData,
-                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
-                                             cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+                                     cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+                                     cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
             // update CVolume with the request of the actual missing VOI along t and the current selected frame
             cVolume->setVoiT(voiT0m, voiT1m, window3D->timeSlider->value());
@@ -1449,10 +1451,10 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             cVolume->setSource(next);
             connect(CVolume::instance(), SIGNAL(sendData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), next, SLOT(receiveData(tf::uint8*,tf::integer_array,tf::integer_array,QWidget*,bool,tf::RuntimeException*,qint64,QString,int)), Qt::QueuedConnection);
 
-// lock updateGraphicsInProgress mutex on this thread (i.e. the GUI thread or main queue event thread)
-/**/tf::debug(tf::LEV3, strprintf("Waiting for updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
-/**/ updateGraphicsInProgress.lock();
-/**/tf::debug(tf::LEV3, strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
+            // lock updateGraphicsInProgress mutex on this thread (i.e. the GUI thread or main queue event thread)
+            /**/tf::debug(tf::LEV3, strprintf("Waiting for updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
+            /**/ updateGraphicsInProgress.lock();
+            /**/tf::debug(tf::LEV3, strprintf("Access granted from updateGraphicsInProgress mutex").c_str(), __itm__current__function__);
 
             // update status bar message
             pMain.statusBar->showMessage("Loading image data...");
@@ -1470,24 +1472,9 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             if(resolution == volResIndex)
                 this->close();
 
-#ifdef _NEURON_ASSEMBLER_
-            // There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
-            if (PMain::getInstance()->fragTracePluginInstance)
-            {
-                cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
-                //system("pause");
-
-                // Since I make
-                PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(next);
-
-                PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
-                PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
-            }
-#endif
-
-// unlock updateGraphicsInProgress mutex
-/**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
-/**/ updateGraphicsInProgress.unlock();
+            // unlock updateGraphicsInProgress mutex
+            /**/tf::debug(tf::LEV3, strprintf("updateGraphicsInProgress.unlock()").c_str(), __itm__current__function__);
+            /**/ updateGraphicsInProgress.unlock();
 
 
         }
@@ -1499,8 +1486,8 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
 
             // load data and instance new viewer
             this->next = new CViewer(V3D_env, resolution, CVolume::instance()->loadData(),
-                                             cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
-                                             cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
+                                     cVolume->getVoiV0(), cVolume->getVoiV1(), cVolume->getVoiH0(), cVolume->getVoiH1(), cVolume->getVoiD0(), cVolume->getVoiD1(),
+                                     cVolume->getVoiT0(), cVolume->getVoiT1(), nchannels, this, sliding_viewer_block_ID);
 
             //
             toRetrieveData = true;
@@ -1517,18 +1504,6 @@ CViewer::newViewer(int x, int y, int z,             //can be either the VOI's ce
             // if new viewer has the same resolution, this window has to be closed
             if(resolution == volResIndex)
                 this->close();
-
-#ifdef _NEURON_ASSEMBLER_
-            // There must be a PMain instance if CViewer is existing. Therefore, no need to check PMain instance first.
-            if (PMain::getInstance()->fragTracePluginInstance)
-            {
-                cout << " ==> CViewer ID: " << PMain::getInstance()->getCViewerID() << endl;
-                //system("pause");
-                PMain::getInstance()->FragTracerPluginLoaderPtr->castCViewer = qobject_cast<INeuronAssembler*>(next);
-                PMain::getInstance()->NeuronAssemblerPortal->updateCViewerPortal();
-                PMain::getInstance()->NeuronAssemblerPortal->exitNAeditingMode();
-            }
-#endif
         }
     }
     catch(RuntimeException &ex)
@@ -2179,7 +2154,7 @@ void CViewer::updateAnnotationSpace()
 
 }
 
-void CViewer::loadAnnotations()
+void CViewer::loadAnnotations(bool collaborate)
 {
     myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
@@ -2248,8 +2223,9 @@ void CViewer::loadAnnotations()
     V3D_env->setSWC(window, vaa3dCurves);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
-    view3DWidget->getRenderer()->endSelectMode();
 
+    if(!collaborate)
+        view3DWidget->getRenderer()->endSelectMode();
     //end curve editing mode
     QList<NeuronTree>* listNeuronTree = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->getHandleNeuronTrees();
     for (int i=0; i<listNeuronTree->size(); i++)
@@ -2565,7 +2541,10 @@ void CViewer::restoreViewerFrom(CViewer* source)
         if (PMain::getInstance()->resumeVR)
         {
             PMain::getInstance()->resumeVR = false;
-            QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
+            if(PMain::getInstance()->Communicator)
+                QTimer::singleShot(1000, PMain::getInstance(), SLOT(doCollaborationVRView()));
+            else
+                QTimer::singleShot(1000, PMain::getInstance(), SLOT(doTeraflyVRView()));
         }
 
         // in situ translation at the same resolution

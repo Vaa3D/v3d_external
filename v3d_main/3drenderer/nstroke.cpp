@@ -1325,6 +1325,9 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
             w->setCursor(QCursor(Qt::PointingHandCursor));
         }
     }
+    if(w){
+        retypeMultiNeuronsbyshortcut();
+    }
 }
 
 void Renderer_gl1::callStrokeDeleteMultiNeurons()

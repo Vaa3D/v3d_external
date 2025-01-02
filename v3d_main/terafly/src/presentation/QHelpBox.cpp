@@ -8,7 +8,7 @@ QHelpBox::QHelpBox(QWidget *_parent) : QWidget(_parent)
 
     backgroundPanel = new QLabel();
     backgroundPanel->setStyleSheet("border: 1px solid; border-color: rgb(71,127,249); background-color: rgb(245,245,245); margin-top:0px; "
-                                               "margin-bottom:0px; margin-left: 0px; padding-right: 4px; padding-top:4px; padding-bottom:4px; padding-left:60px;"
+                                               "margin-bottom:0px; margin-left: 0px; padding-right: 4px; padding-top:4px; padding-bottom:4px; padding-left:50px;"
                            "");
 
     helpBox = new QLabel();
@@ -26,8 +26,8 @@ QHelpBox::QHelpBox(QWidget *_parent) : QWidget(_parent)
     helpBox->setOpenExternalLinks(true);
     QPixmap pixmap(":/icons/help2.png");
     helpIcon = new QLabel();
-    helpIcon->setPixmap(pixmap.scaled(50,50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    helpIcon->setStyleSheet("margin-left: 5px");
+    helpIcon->setPixmap(pixmap.scaled(40,40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    helpIcon->setStyleSheet("margin-left: 10px");
 
     QStackedLayout *helpLayout = new QStackedLayout();
     helpLayout->addWidget(backgroundPanel);
@@ -40,7 +40,7 @@ QHelpBox::QHelpBox(QWidget *_parent) : QWidget(_parent)
     this->setFixedHeight(90);
     #endif
     #ifdef Q_OS_WIN32
-    this->setFixedHeight(120);
+    this->setFixedHeight(80);
     #endif
     #ifdef Q_OS_LINUX
     this->setFixedHeight(120);

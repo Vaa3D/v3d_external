@@ -866,19 +866,19 @@ if(WIN32)
     link_directories(${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64)
 
     target_link_libraries(Vaa3D-x PRIVATE
-        glew32
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/glew32.dll
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/SDL2.dll
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/openvr_api.dll
         Opengl32
-        zlib
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/libzlib.lib
         glu32
-        hdf5
-        szip
-        teem
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/libhdf5.lib
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/libszip.lib
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/libteem.lib
         z
-        v3dnewmat
-        v3dtiff
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/libv3dnewmat.lib
+        ${CMAKE_SOURCE_DIR}/v3d_main/common_lib/mingw64/libv3dtiff.lib
         wsock32
-        SDL2
-        openvr_api
         Threads::Threads
     )
 endif()

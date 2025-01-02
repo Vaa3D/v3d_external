@@ -47,7 +47,7 @@ last update: 060903
 #include "v3dr_mainwindow.h"
 #include "v3dr_glwidget.h"
 #include <QElapsedTimer>
-#include "v3dr_control_signal.cpp" // create control widgets and connect signals
+/*#include "v3dr_control_signal.cpp"*/ // create control widgets and connect signals
 
 ///QTimer V3dR_MainWindow::animate_timer;// for static
 
