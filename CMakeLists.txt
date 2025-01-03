@@ -295,6 +295,8 @@ add_executable(Vaa3D-x WIN32 MACOSX_BUNDLE
     v3d_main/terafly/src/control/V3Dsubclasses.h
     v3d_main/terafly/src/control/VirtualPyramid.cpp
     v3d_main/terafly/src/control/VirtualPyramid.h
+    v3d_main/terafly/src/presentation/loadmanagewidget.cpp
+    v3d_main/terafly/src/presentation/loadmanagewidget.h
     v3d_main/terafly/src/presentation/PAbout.cpp
     v3d_main/terafly/src/presentation/PAbout.h
     v3d_main/terafly/src/presentation/PAnoToolBar.cpp
@@ -345,6 +347,7 @@ add_executable(Vaa3D-x WIN32 MACOSX_BUNDLE
     v3d_main/terafly/src/terarepo/src/crossmips/my_defs.h
     v3d_main/terafly/src/terarepo/src/imagemanager/BDVVolume.cpp
     v3d_main/terafly/src/terarepo/src/imagemanager/BDVVolume.h
+    v3d_main/terafly/src/terarepo/src/imagemanager/ComposedVolume.h
     v3d_main/terafly/src/terarepo/src/imagemanager/ComposedVolume.cpp
     v3d_main/terafly/src/terarepo/src/imagemanager/HDF5Mngr.cpp
     v3d_main/terafly/src/terarepo/src/imagemanager/HDF5Mngr.h
@@ -352,7 +355,9 @@ add_executable(Vaa3D-x WIN32 MACOSX_BUNDLE
     v3d_main/terafly/src/terarepo/src/imagemanager/IMS_HDF5Mngr.h
     v3d_main/terafly/src/terarepo/src/imagemanager/IM_config.cpp
     v3d_main/terafly/src/terarepo/src/imagemanager/IM_config.h
+    v3d_main/terafly/src/terarepo/src/imagemanager/MultiCycleVolume.h
     v3d_main/terafly/src/terarepo/src/imagemanager/MultiCycleVolume.cpp
+    v3d_main/terafly/src/terarepo/src/imagemanager/MultiSliceVolume.h
     v3d_main/terafly/src/terarepo/src/imagemanager/MultiSliceVolume.cpp
     v3d_main/terafly/src/terarepo/src/imagemanager/RawFmtMngr.cpp
     v3d_main/terafly/src/terarepo/src/imagemanager/RawFmtMngr.h
@@ -414,6 +419,7 @@ add_executable(Vaa3D-x WIN32 MACOSX_BUNDLE
     v3d_main/terafly/src/terarepo/src/stitcher/StackStitcher.h
     v3d_main/terafly/src/terarepo/src/stitcher/TPAlgo.cpp
     v3d_main/terafly/src/terarepo/src/stitcher/TPAlgo.h
+    v3d_main/terafly/src/terarepo/src/stitcher/TPAlgoLQP.h
     v3d_main/terafly/src/terarepo/src/stitcher/TPAlgoLQP.cpp
     v3d_main/terafly/src/terarepo/src/stitcher/TPAlgoMST.cpp
     v3d_main/terafly/src/terarepo/src/stitcher/TPAlgoMST.h
@@ -563,9 +569,10 @@ add_executable(Vaa3D-x WIN32 MACOSX_BUNDLE
 )
 
 set(INCLUDE_PATHS
+    .
     ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/common_lib/include/hdf5
     ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/common_lib/include/glew
-    .
+    ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/common_lib/include/nlohmann_json
     ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/common_lib/include
     ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/serverconnection
     ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/basic_c_fun
