@@ -22,7 +22,7 @@ class PrivateVolumeTexture; // forward declaration
 /// Contains OpenGL texture data for 3D viewer representation of NeuronAnnotator volume
 class VolumeTexture : public NaSharedDataModel<PrivateVolumeTexture>
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     VolumeTexture();
@@ -32,7 +32,7 @@ public:
     bool hasFastVolumesQueued() const;
     void loadOneVolume(ProgressiveCompanion* item, QList<QUrl> foldersToSearch);
 
-signals:
+//signals:
     // When textures change, they must be uploaded in the main/OpenGL thread
     void visibilityTextureChanged();
     void colorMapTextureChanged();
@@ -46,7 +46,7 @@ signals:
     void mpegLoadSequenceRequested();
     void loadNextVolumeRequested();
 
-public slots:
+//public slots:
     bool updateVolume();
     void updateNeuronVisibilityTexture();
     bool updateColorMapTexture();

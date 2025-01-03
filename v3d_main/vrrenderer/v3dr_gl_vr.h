@@ -2,27 +2,43 @@
 
 #ifndef __V3DR_GL_VR_H__
 #define __V3DR_GL_VR_H__
+#include "mainwindow.h"
 
-#include <glew/GL/glew.h>
+#include <QPixmap>
+#include <QImage>
+#include <QSharedMemory>
+#include <QObject>
+#include "Communicate.h"
+#include "../basic_c_fun/v3d_interface.h"
+
+#ifdef Q_OS_WIN
+#include <openvr.hpp>
 #include <SDL.h>
+#endif
+#ifdef Q_OS_LINUX
+#include <common_lib/include/SDL/SDL.h>
+#include "../basic_c_fun/v3d_interface.h"
+#include <common_lib/include/openvr/openvr.h>
+#endif
 
-//#include "../basic_c_fun/v3d_interface.h"
-
-#include <openvr.h>
 #include "lodepng.h"
 
 #include "Matrices.h"//todo-yimin: this header is removable
-////#include <GL/glew.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "V3dR_Communicator.h"
+#include <QObject>
+#include <QOpenGLWidget>
 //#include <gltext.hpp>//include freetype and gltest library
+#include "VRwidget.h"
 
-#include "mainwindow.h"
-
-#include "../basic_c_fun/v3d_interface.h"
-
+struct Agent {
+    QString name;
+    bool isItSelf;
+    int colorType;
+    float position[16];
+};
 
 enum ModelControlR
 {
@@ -154,8 +170,9 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-class CMainApplication
+class CMainApplication:public QObject
 {
+    Q_OBJECT
 public:
 	CMainApplication(int argc = 0, char *argv[] = 0);
 	virtual ~CMainApplication();
@@ -189,7 +206,7 @@ public:
 	void RunMainLoop();
 	bool HandleInput();//handle controller and keyboard input
 	void ProcessVREvent( const vr::VREvent_t & event );
-	void RenderFrame();
+    void RenderFrame();
 	
 	bool SetupTexturemaps();//load controller textures and setup properties
 	void AddVertex( float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float> &vertdata );
@@ -240,8 +257,12 @@ public:
 	CGLRenderModel *FindOrLoadRenderModel( const char *pchRenderModelName );
 
 	float GetGlobalScale();
+signals:
+    void stopvr();
+public slots:
+    void startvrloop();     //csz20220706
 public:
-
+    QTimer *mvr_timer;      //csz20220706
 	MainWindow *mainwindow;
 	My4DImage *img4d;
 	static My4DImage *img4d_replace;
@@ -565,12 +586,12 @@ private:
 	float fSlabwidth;//used to control slabplane width
 
 	double countsPerSecond;
-	__int64 CounterStart;
+    long long CounterStart;
 
 	int frameCount;
 	int fps;
 
-	__int64 frameTimeOld;
+    long long frameTimeOld;
 	double frameTime;
 
 	void StartTimer();

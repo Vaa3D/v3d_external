@@ -63,4 +63,3 @@ libv3dnewmat : $(newmat_lobj)
 clean :
 	rm $(newmat_lobj)
 	if [ -f libv3dnewmat.a ]; then rm libv3dnewmat.a; fi
-

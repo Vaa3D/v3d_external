@@ -84,7 +84,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //QT_FORWARD_DECLARE_CLASS(QBypassWidget)
 
-
+#include <QWidget>
 class HoverPoints : public QObject
 {
     Q_OBJECT;

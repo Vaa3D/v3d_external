@@ -18,7 +18,7 @@
 class DataFlowModel : public QObject
 {
 
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     DataFlowModel(QObject* parentParam = NULL);
@@ -97,7 +97,7 @@ public:
     const Fast3DTexture& getFast3DTexture() const {return fast3DTexture;}
 #endif
 
-signals:
+//signals:
     void scrollBarFocus(NeuronSelectionModel::NeuronIndex index);
     void deselectNeuron();
     void volumeDataNeeded(); // stimulate VolumeData to load images from disk
@@ -105,7 +105,7 @@ signals:
     void benchmarkTimerPrintRequested(QString);
     void zRatioChanged(double ratio);
 
-public slots:
+//public slots:
     void cancel();
     void debugColorModel();
     void synchronizeColorModels();

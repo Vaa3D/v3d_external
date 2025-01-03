@@ -14,7 +14,7 @@ class VolumeTexture;
 // but inner classes cannot be QObjects.
 class NaVolumeDataLoadableStack : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     NaVolumeDataLoadableStack(My4DImage* stackp, QUrl fileUrl, int stackIndex = -1);
@@ -23,14 +23,14 @@ public:
     const QUrl& getFileUrl() const {return fileUrl;}
     bool isCanceled() const {return bIsCanceled;}
 
-signals:
+//signals:
     void progressValueChanged(int progressValue, int stackIndex);
     void progressMessageChanged(QString);
     void failed();
     void finished();
     void canceled();
 
-public slots:
+//public slots:
     void cancel() {
         if (bIsCanceled) return;
         bIsCanceled = true;
@@ -61,7 +61,7 @@ protected:
 // temporary locks when accessing the image data.
 class NaVolumeData : public NaLockableData
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit NaVolumeData();
@@ -77,7 +77,7 @@ public:
     }
     void splitH5JStack();
 
-signals:
+//signals:
     void referenceLoaded();
     void channelLoaded(int channel_index);
     void channelsLoaded(int channel_count);
@@ -85,13 +85,13 @@ signals:
     void benchmarkTimerResetRequested();
     void benchmarkTimerPrintRequested(QString);
 
-public slots:
+//public slots:
     bool loadChannels(QUrl url); // includes loading general volumes
     // staged loading
     bool queueSeparationFolder(QUrl folder); // using new staged loader
     void loadStagedVolumes();
 
-protected slots:
+//protected slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
     void loadSecondaryVolumeDataFromFiles(); // When VolumeTexture has already been populated
     void setProgressValue(int progressValue);

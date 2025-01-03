@@ -2088,7 +2088,7 @@ void ImageLoaderBasic::pbd3FlushLiteral(unsigned char* compressionBuffer, unsign
 void ImageLoaderBasic::updateCompressionBuffer3(unsigned char * updatedCompressionBuffer) {
 
   DEBUG_SUMMARY=false;
-  V3DLONG uP=(V3DLONG)updatedCompressionBuffer;
+  V3DLONG uP=(long long)updatedCompressionBuffer;
   //  cerr << "updateCompressionBuffer3 - updatedCompressionBuffer=" << uP << "\n";
 
     if (compressionPosition==0) {
@@ -2202,8 +2202,8 @@ void ImageLoaderBasic::updateCompressionBuffer3(unsigned char * updatedCompressi
     //        << " size=" << compressionLength << " previousTotalDecompSize=" << getDecompressionSize() << " maxDecompSize=" << maxDecompressionSize;
 
     if (DEBUG_SUMMARY) {
-      V3DLONG cStart=(V3DLONG)&compressionBuffer[0];
-      V3DLONG cCurrent=(V3DLONG)compressionPosition;
+      V3DLONG cStart=(long long)&compressionBuffer[0];
+      V3DLONG cCurrent=(long long)compressionPosition;
       V3DLONG cOffset=cCurrent-cStart;
       cerr << "Compression Buffer Offset=" << cOffset << " " << std::hex << cOffset << std::dec << "\n";
     }
@@ -2226,12 +2226,12 @@ V3DLONG ImageLoaderBasic::decompressPBD3(unsigned char * sourceData, unsigned ch
   unsigned char bitOffset=0;
   unsigned char currentByte=sourceData[cp];
 
-  V3DLONG dStart=(V3DLONG)decompressionBuffer;
-  V3DLONG tStart=(V3DLONG)targetData;
+  V3DLONG dStart=(long long)decompressionBuffer;
+  V3DLONG tStart=(long long)targetData;
 
   V3DLONG i=0L;
 
-  V3DLONG sdStart=(V3DLONG)sourceData;
+  V3DLONG sdStart=(long long)sourceData;
   V3DLONG sdEnd=sdStart + sourceLength;
 
   unsigned char valueByLevel[8];

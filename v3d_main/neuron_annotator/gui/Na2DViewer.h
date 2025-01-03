@@ -10,7 +10,7 @@
 // Na2DViewer is the common base class of NaLargeMipWidget and NaZStackWidget
 class Na2DViewer : public QWidget, public NaViewer
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
     Na2DViewer(QWidget * parent = NULL);
@@ -25,14 +25,14 @@ public:
     static const int flip_Y = -1;
     static const int flip_Z = -1;
 
-signals:
+//signals:
     void mouseLeftDragEvent(int dx, int dy, QPoint pos);
 
-public slots:
+//public slots:
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     virtual void invalidate() {NaViewer::invalidate();}
 
-protected slots:
+//protected slots:
     void translateImage(int dx, int dy);
 
 protected:

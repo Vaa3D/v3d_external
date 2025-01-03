@@ -4,8 +4,9 @@
 #include "IOPluginAPI.h"
 #include "CImageUtils.h"
 #include "basic_4dimage.h"
-
-
+#include <QMessageBox>
+#include <QProgressDialog>
+#include <algorithm>
 /********************************
 *   VIRTUAL PYRAMID definitions *
 *********************************
@@ -30,7 +31,7 @@ tf::VirtualPyramid::VirtualPyramid(
         tf::xyz<size_t> block_dim,                      // x-y-z dimensions of virtual pyramid blocks
         const std::string block_format /*= ".tif"*/     // block file format
 )
-throw (iim::IOException, iom::exception, tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -86,7 +87,7 @@ tf::VirtualPyramid::VirtualPyramid(
         tf::xyz<size_t> block_dim,                      // x-y-z dimensions of virtual pyramid blocks
         const std::string block_format /*= ".tif"*/     // block file format
 )
-throw (iim::IOException, iom::exception, tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -125,7 +126,7 @@ float tf::VirtualPyramid::predictGB(
     iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
     int reduction_factor,                       // pyramid reduction factor (i.e. divide by reduction_factor along all axes for all layers)
     float lower_bound                           // lower bound (in MVoxels) for the lowest-res pyramid image (i.e. divide by reduction_factor until the lowest-res has size <= lower_bound)
-)  throw (tf::RuntimeException)
+)  
 {
     if(!highresVol)
         throw tf::RuntimeException("high res volume not instantiated");
@@ -166,7 +167,7 @@ float tf::VirtualPyramid::predictGB(
 float tf::VirtualPyramid::predictGB(
     iim::VirtualVolume* highresVol,             // highest-res (unconverted) volume
     std::vector< xyz<int> > reduction_factors   // pyramid reduction factors (i.e. divide by reduction_factors[i].x along X for layer i)
-)  throw (tf::RuntimeException)
+)  
 {
     if(!highresVol)
         throw tf::RuntimeException("high res volume not instantiated");
@@ -204,7 +205,7 @@ tf::VirtualPyramid::VirtualPyramid(
         std::string highresPath,                   // highest-res (unconverted) volume path
         iim::VirtualVolume* highresVol,            // highest-res (unconverted) volume, if null will be instantiated on-the-fly
         int local)                                  // store data on local drive (i.e. exe's folder) or remote storage (i.e. volume's folder)
-throw (iim::IOException, iom::exception, tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -223,7 +224,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
 }
 
 // VirtualPyramid deconstructor
-tf::VirtualPyramid::~VirtualPyramid() throw(iim::IOException)
+tf::VirtualPyramid::~VirtualPyramid() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -316,7 +317,7 @@ std::string tf::VirtualPyramid::pathLowRes(const std::string & _highresPath)
         return "";
 }
 
-void tf::VirtualPyramid::initPath(bool local) throw (iim::IOException, iom::exception, tf::RuntimeException)
+void tf::VirtualPyramid::initPath(bool local) 
 {
     if(local)
     {
@@ -373,7 +374,7 @@ void tf::VirtualPyramid::initPath(bool local) throw (iim::IOException, iom::exce
     }
 }
 
-void tf::VirtualPyramid::initVolume() throw (iim::IOException, iom::exception, tf::RuntimeException)
+void tf::VirtualPyramid::initVolume() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -418,7 +419,7 @@ void tf::VirtualPyramid::initVolume() throw (iim::IOException, iom::exception, t
 void tf::VirtualPyramid::initPyramid(
         tf::xyz<size_t> block_dim,          // block dimensions
         const std::string block_format      // block file format
-)  throw (iim::IOException, iom::exception, tf::RuntimeException)
+)  
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -524,7 +525,7 @@ tf::VirtualPyramid::loadVOI(
         tf::xyz<size_t> start,  // xyz range [start, end)
         tf::xyz<size_t> end,    // xyz range [start, end)
         int level)              // pyramid level (0=highest resolution, the higher the lower the resolution)
-throw (iim::IOException, iom::exception, tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV1, tf::strprintf("VOI is x=[%d,%d) y=[%d,%d) z=[%d,%d), level = %d", start.x, end.x, start.y, end.y, start.z, end.z, level).c_str(), __itm__current__function__);
 
@@ -606,6 +607,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
         // if required, replace empty voxels (0s) with the chosen visualization method for empty image regions
         if(_unexploredFillingMethod == tf::VirtualPyramid::SALT_AND_PEPPER)
         {
+            //qDebug()<<"csz debug salt and pepper";
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
                 if(!data[i] && ((double)rand() / RAND_MAX) < _unexploredSaltAndPepperPerc)
@@ -613,6 +615,7 @@ throw (iim::IOException, iom::exception, tf::RuntimeException)
         }
         if(_unexploredFillingMethod == tf::VirtualPyramid::SOLID)
         {
+            //qDebug()<<"csz debug solid";
             size_t data_dim = (end.z - start.z)*(end.y - start.y)*(end.x - start.x)*_vol->getNActiveFrames()*_vol->getNACtiveChannels();
             for(size_t i=0; i<data_dim; i++)
                 if(!data[i])
@@ -634,7 +637,7 @@ tf::VirtualPyramid::refill(
         iim::voi3D<> VOI,           // volume of interest in the 'cache_level' coordinate system
         refill_strategy strategy,   // refill strategy
         tf::xyz<size_t> block_dim   // block dimension
-) throw (iim::IOException, iom::exception, tf::RuntimeException)
+) 
 {
     // check preconditions
     if(!_vol)
@@ -717,8 +720,10 @@ tf::VirtualPyramid::refill(
     }
 
     // apply scan strategy
-    if(strategy == REFILL_RANDOM)
-        std::random_shuffle(tiles.begin(), tiles.end());
+    if(strategy == REFILL_RANDOM){
+        std::shuffle(tiles.begin(), tiles.end(),std::default_random_engine(time(NULL)));
+    }
+//        std::random_shuffle(tiles.begin(), tiles.end());
     else if(strategy == REFILL_ZYX)
         std::sort(tiles.begin(), tiles.end());
     else if(strategy == REFILL_CENTER)
@@ -825,7 +830,7 @@ tf::VirtualPyramid::refill(
 void tf::VirtualPyramid::clear(
         bool ask_to_save,       // user is asked whether to save modified data (if any)
         int layer)              // layer selection (-1 = all layers)
-throw (iim::IOException, iom::exception, tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -918,7 +923,7 @@ tf::VirtualPyramidLayer::VirtualPyramidLayer(
         int level,                         // pyramid level (0 for the highest-res, the coarser the resolution the higher)
         VirtualPyramid* parent,            // container
         xyz<int> _reduction_factor)         // reduction factor relative to the highest-res image
-throw (iim::IOException) : VirtualVolume()
+ : VirtualVolume()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -942,7 +947,7 @@ throw (iim::IOException) : VirtualVolume()
     DIM_D = _parent->_vol->getDIM_D()/static_cast<float>(_resamplingFactor.z);
 }
 
-void tf::VirtualPyramidLayer::initChannels() throw (iim::IOException)
+void tf::VirtualPyramidLayer::initChannels() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -956,7 +961,7 @@ void tf::VirtualPyramidLayer::initChannels() throw (iim::IOException)
 }
 
 // VirtualPyramidLayer deconstructor
-tf::VirtualPyramidLayer::~VirtualPyramidLayer() throw (iim::IOException)
+tf::VirtualPyramidLayer::~VirtualPyramidLayer()
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
     active = 0;
@@ -981,7 +986,7 @@ iim::real32* tf::VirtualPyramidLayer::loadSubvolume_to_real32(
         int H1 /* = -1 */,
         int D0 /* = -1 */,
         int D1 /* = -1 */)
-throw (iim::IOException)
+
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -999,7 +1004,7 @@ iim::uint8* tf::VirtualPyramidLayer::loadSubvolume_to_UINT8(
         int D1 /* = -1 */,
         int *channels /* = 0 */,
         int ret_type /* =iim::DEF_IMG_DEPTH */)
-throw (iim::IOException)
+
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
@@ -1020,6 +1025,7 @@ throw (iim::IOException)
 
     try
     {
+        //qDebug()<<"csz debug current level is "<<_level;
         return _parent->loadVOI(xyz<size_t>(H0,V0,D0), xyz<size_t>(H1,V1,D1), _level).data;
     }
     catch(iom::exception e)
@@ -1049,7 +1055,7 @@ tf::HyperGridCache::HyperGridCache(
         xyzct<size_t> image_dim,                       // image dimensions along X, Y, Z, C (channel), and T (time)
         xyzct<size_t> block_dim,					// hypergrid block dimensions along X, Y, Z, C (channel), and T (time)
         const std::string block_fmt)                   // hypergrid block file format
-throw (iim::IOException, tf::RuntimeException, iom::exception)
+
 {
     /**/tf::debug(tf::LEV2, iim::strprintf("_path = \"%s\", image_dim = {%d, %d, %d, %d, %d}, block_dim = {%d, %d, %d, %d, %d}, block_fmt = \"%s\"",
                                            _path.c_str(), image_dim.x, image_dim.y, image_dim.z, image_dim.c, image_dim.t, block_dim.x, block_dim.y, block_dim.z, block_dim.c, block_dim.t, block_fmt.c_str()).c_str(), __itm__current__function__);
@@ -1083,7 +1089,7 @@ throw (iim::IOException, tf::RuntimeException, iom::exception)
 }
 
 // destructor
-tf::HyperGridCache::~HyperGridCache() throw (iim::IOException)
+tf::HyperGridCache::~HyperGridCache() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -1112,7 +1118,7 @@ tf::HyperGridCache::~HyperGridCache() throw (iim::IOException)
 }
 
 // init persistency files
-void tf::HyperGridCache::init() throw (iim::IOException, tf::RuntimeException, iom::exception)
+void tf::HyperGridCache::init() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -1134,7 +1140,7 @@ void tf::HyperGridCache::init() throw (iim::IOException, tf::RuntimeException, i
 }
 
 // init 'hypergrid' 5D matrix
-void tf::HyperGridCache::initHyperGrid() throw (iim::IOException, tf::RuntimeException)
+void tf::HyperGridCache::initHyperGrid() 
 {
     // check preconditions
     if(! (_dims.x && _dims.y && _dims.z && _dims.c && _dims.t))
@@ -1182,7 +1188,7 @@ void tf::HyperGridCache::initHyperGrid() throw (iim::IOException, tf::RuntimeExc
 }
 
 // load from disk
-void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException, iom::exception)
+void tf::HyperGridCache::load() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -1268,7 +1274,7 @@ void tf::HyperGridCache::load() throw (iim::IOException, tf::RuntimeException, i
 }
 
 // save to disk
-void tf::HyperGridCache::save() throw (iim::IOException, tf::RuntimeException, iom::exception)
+void tf::HyperGridCache::save() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -1318,7 +1324,7 @@ tf::HyperGridCache::readData(
         tf::voi4D<int> voi,                     // 4D VOI in X,Y,Z,T space
         active_channels<> channels,             // channels to load
         tf::xyz<int> scaling)					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling) 
-throw (iim::IOException, iom::exception, tf::RuntimeException)
+
 {
     /**/tf::debug(tf::LEV2, tf::strprintf("voi = [%d,%d),{%s},[%d,%d),[%d,%d),[%d,%d), downsampling = {%f,%f,%f}",
                                           voi.start.t, voi.end.t, channels.toString().c_str(), voi.start.z, voi.end.z,
@@ -1400,7 +1406,7 @@ void tf::HyperGridCache::putData(
     const tf::image5D<uint8> & img,		// 5D image input
 	tf::xyzt<size_t> offset,			// offset relative to (0,0,0,0), it is up(or down)scaled if needed
 	tf::xyz<int> scaling)				// scaling along X,Y and Z (powers of 2 only)
-    throw (iim::IOException, iom::exception, tf::RuntimeException)
+    
 {
     /**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims(t,c,z,y,x) = (%d x %d x %d x %d x %d), offset(t,z,y,x) = (%d, %d, %d, %d), scaling(z,y,x) = (%d,%d,%d)",
         _path.c_str(), img.dims.t, img.chans.dim, img.dims.z, img.dims.y, img.dims.x, offset.t, offset.z, offset.y, offset.x, scaling.z, scaling.y, scaling.x).c_str(), __itm__current__function__);
@@ -1536,7 +1542,7 @@ float tf::HyperGridCache::memoryMax()
 
 // completeness index between 0 (0% explored) and 1 (100% explored)
 // it is calculated by counting 'empty' voxels, i.e. that haven't been fetched yet
-float tf::HyperGridCache::completeness(iim::voi3D<> voi, bool force_load_image) throw (iim::IOException, iom::exception, tf::RuntimeException)
+float tf::HyperGridCache::completeness(iim::voi3D<> voi, bool force_load_image) 
 {
     // adjust voi if it has not been provided
     if(voi == iim::voi3D<>::biggest())
@@ -1584,7 +1590,7 @@ tf::HyperGridCache::CacheBlock::CacheBlock(
         xyzct<size_t> origin,          // origin coordinate of the block in the image 5D (xyz+channel+time) space, start at (0,0,0,0,0)
         xyzct<size_t> dims,            // dimensions of the block
         xyzct<size_t> index)           // 5D index in the parent hypergrid
-throw (iim::IOException, iom::exception)
+
 {
     /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
@@ -1608,7 +1614,7 @@ throw (iim::IOException, iom::exception)
 
 
 // destructor
-tf::HyperGridCache::CacheBlock::~CacheBlock() throw (iim::IOException, iom::exception)
+tf::HyperGridCache::CacheBlock::~CacheBlock() 
 {
     /**/tf::debug(tf::LEV_MAX, 0, __itm__current__function__);
 
@@ -1725,7 +1731,7 @@ size_t tf::HyperGridCache::CacheBlock::emptyCountInVOI(iim::voi3D<> voi , bool f
 }
 
 // load from disk
-void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::exception, tf::RuntimeException)
+void tf::HyperGridCache::CacheBlock::load() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -1764,7 +1770,7 @@ void tf::HyperGridCache::CacheBlock::load() throw (iim::IOException, iom::except
 }
 
 // save to disk
-void tf::HyperGridCache::CacheBlock::save() throw (iim::IOException, iom::exception, tf::RuntimeException)
+void tf::HyperGridCache::CacheBlock::save() 
 {
     /**/tf::debug(tf::LEV2, 0, __itm__current__function__);
 
@@ -1802,7 +1808,7 @@ void tf::HyperGridCache::CacheBlock::putData(
 	tf::voi4D<int> image_voi,				// image VOI (already scaled)
 	tf::voi4D<int> block_voi,				// current block VOI (already scaled)
 	tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
-    ) throw (iim::IOException, iom::exception, tf::RuntimeException)
+    ) 
 {
     /**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
         _path.c_str(),
@@ -1881,7 +1887,7 @@ void tf::HyperGridCache::CacheBlock::readData(
     tf::voi4D<int> image_voi,				// image VOI (already scaled)
     tf::voi4D<int> block_voi,				// current block VOI (already scaled)
     tf::xyz<int> scaling					// scaling along X,Y and Z (> 0 upscaling, < 0 downscaling)
-) throw (iim::IOException, iom::exception, tf::RuntimeException)
+) 
 {
     /**/tf::debug(tf::LEV1, strprintf("path = \"%s\", img dims = (%d x %d x %d x %d x %d), image voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d) block voi = [%d,%d),[%d,%d),[%d,%d),[%d,%d), scaling = (%d,%d,%d)",
         _path.c_str(),

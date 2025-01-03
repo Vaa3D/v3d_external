@@ -8,12 +8,12 @@
 #include <QtCore>
 #include <QDir>
 
-using namespace std;
+//using namespace std;
 
 class ImageLoader : public QObject, public QRunnable, ImageLoaderBasic
 {
 
-Q_OBJECT
+//Q_OBJECT
 
 public:
     ImageLoader();
@@ -83,7 +83,7 @@ public:
     unsigned char * convertType2Type1(My4DImage *image);
     void convertType2Type1InPlace(My4DImage *image);
 
-public slots:
+//public slots:
     void cancel()
     {
         if (bIsCanceled) return;
@@ -91,7 +91,7 @@ public slots:
         emit canceled();
     }
 
-signals:
+//signals:
     void progressValueChanged(int progress, int progressIndex); // 0-100
     void progressComplete(int progressIndex);
     void progressAborted(int progressIndex);

@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
 #include <QtGui>
 #endif
-
+#include <QCheckBox>
 #include <QNetworkReply>
 // #include <QXmlSchema> // Qt 4.6 or later only
 #include <QtXml>
@@ -52,15 +52,15 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QDebug>
 #include <QMessageBox>
 #include <QPalette>
-
+#include <QTextEdit>
 namespace v3d {
-    // Set current version here.
+// Set current version here.
 
-    VersionInfo thisVersionOfV3D("4.002");
+VersionInfo thisVersionOfV3D("Vaa3D-x");
 
-    QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
-        thisVersionOfV3D.toQString() +
-        "), Vaa3D-Neuron (2.1), Vaa3D Plugin Interface (2.12) ";
+QString versionnumber = "Vaa3D-x.1.1.4 (3D Visualization-Assisted Analysis) (" +
+                        thisVersionOfV3D.toQString() +
+                        "), Vaa3D-Neuron (2.1), Vaa3D Plugin Interface (2.12), MR-Farm(2.0.3) ";
 }
 
 
@@ -68,7 +68,7 @@ void v3d_aboutinfo()
 {
     QString helptext =
         "<H3>Vaa3D: A Swiss army knife for 3D/4D/5D volume image and surface visualization and processing, developed by Hanchuan Peng, Zongcai Ruan, Fuhui Long, Alessandro Bria, Yimin Wang, et al. All rights reserved.</H3> "
-//      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of Vaa3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
+        //      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of Vaa3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
         "If you have used Vaa3D, please cite as the following: <br><br>"
         "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353. (http://vaa3d.org) </span><br> "
         "<br>"
@@ -99,7 +99,7 @@ void v3d_aboutinfo()
         "<tr><td>.MARKER </td><td>the landmark recording file (which is just a plain csv file with a specified format). </td></tr>"
         "<tr><td>.ATLAS </td><td>the linker file which contains a list of image-stack file names that can be opened using the atlas manager. </td></tr>"
         "<tr><td>.PC_ATLAS </td><td>the linker file which contains a list of point cloud files names for the point cloud atlas. </td></tr>"
-                                    "<tr><td>.ZIP </td><td>on Mac and Linux the .zip files of the above Vaa3D file formats can be opened automatically. </td></tr>"
+        "<tr><td>.ZIP </td><td>on Mac and Linux the .zip files of the above Vaa3D file formats can be opened automatically. </td></tr>"
         "</table><br>"
         "<H3>Keyboard operations</H3>"
         "When any view of images is active, the following short-cut keys can be used. </td></tr>"
@@ -183,8 +183,8 @@ void v3d_aboutinfo()
         "<tr><td>Escape </td>                             <td>Exit from status of defining markers or curves.</td></tr>"
         "<tr><td>Shift , and Shift . </td>                <td>Backward and forward volume time point.</td></tr>"
         "<tr><td>Shift / </td>                            <td>Reset volume time point.</td></tr>"
-		"<tr><td>Shift-W </td>                            <td>Decrease the size of drag window in curve dragging mode.</td></tr>"
-		"<tr><td>Alt-W </td>                              <td>Increase the size of drag window in curve dragging mode.</td></tr>"
+        "<tr><td>Shift-W </td>                            <td>Decrease the size of drag window in curve dragging mode.</td></tr>"
+        "<tr><td>Alt-W </td>                              <td>Increase the size of drag window in curve dragging mode.</td></tr>"
         "</table><br>"
         "<H3>Volume colormap control</H3>"
         "Rectangle point is start or end of colormap curve, and its horizontal coordinate is locked at left or right side. Circle point can be moved freely.<br>"
@@ -213,7 +213,7 @@ void v3d_aboutinfo()
         "<H3>Some known problems</H3>"
         "So far Vaa3D has been tested on hundreds of machines with different software/hardware environments; in most cases (Mac, Linux, Windows) the software has a nice performance. Yet the following are some known problems.<br>"
         "<br><table border=\"1\">"
-	    "<tr><td>Mac machines with Snow Leopard (Mac OS X 10.6.8) and try to run a Linux version of Vaa3D throught X-Window: </td>     <td>The 3D viewer window cannot be launched properly. This seems to be a Snow Leopard bug with X-Windows, as the Linux version of Vaa3D's 3D viewer can run w/o a problem for other Mac OS (e.g. Leopard, i.e. OS X 10.5) and other tested Linux machines (e.g. redhar). </td></tr>"
+        "<tr><td>Mac machines with Snow Leopard (Mac OS X 10.6.8) and try to run a Linux version of Vaa3D throught X-Window: </td>     <td>The 3D viewer window cannot be launched properly. This seems to be a Snow Leopard bug with X-Windows, as the Linux version of Vaa3D's 3D viewer can run w/o a problem for other Mac OS (e.g. Leopard, i.e. OS X 10.5) and other tested Linux machines (e.g. redhar). </td></tr>"
         "<tr><td>Mac machines with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 7300GT video cards</td>     <td>GeForce 7300GT does not support multisampling while it claims to be. This incompatibility makes 3D viewer run very slow. A special Vaa3D version disables the multipling support on this video card solves the problem.</td></tr>"
         "<tr><td>MacBook Pro with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 8600MGT video card driver</td>     <td>Sometimes the labels of markers may be hidden in the 3D volume image rendering. Upgrage to Leopard OS (and thus also upgrade Mac OpenGL driver) solves the problem.</td></tr>"
         "<tr><td>MacBook Pro with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 8600MGT video card driver</td>     <td>The 5D rendering displays abnormal patterns due to a problem in 3D texture of the video card driver. </td></tr>"
@@ -240,8 +240,8 @@ void v3d_aboutinfo()
 
 
     QTextEdit *p_mytext = new QTextEdit(v3d::versionnumber + v3d_compile_info +
-                            "<br>" + build_info +
-                            "<br><br>" + helptext);
+                                        "<br>" + build_info +
+                                        "<br><br>" + helptext);
     p_mytext->setDocumentTitle(v3d::versionnumber);
     p_mytext->resize(700, 700); //use the QWidget function
     p_mytext->setReadOnly(true);
@@ -252,32 +252,32 @@ void v3d_aboutinfo()
 
 void v3d_Lite_info()
 {
-	QString helptext =      "<H2><span style=\"color:#0000FF\">You are using the </span><span style=\"color:#FF0000\">Vaa3D Lite</span>.<span style=\"color:#0000FF\"> "
-							"Most 3D visualization modules have been enabled. However the 3D data/image processing modules have been disabled. "
-							"To enable these tools (and disable this message), you can <span style=\"color:#FF0000\">register as a Vaa3D Pro user for free</span> at http://penglab.janelia.org/proj/v3d </span></H2>";
+    QString helptext =      "<H2><span style=\"color:#0000FF\">You are using the </span><span style=\"color:#FF0000\">Vaa3D Lite</span>.<span style=\"color:#0000FF\"> "
+                       "Most 3D visualization modules have been enabled. However the 3D data/image processing modules have been disabled. "
+                       "To enable these tools (and disable this message), you can <span style=\"color:#FF0000\">register as a Vaa3D Pro user for free</span> at http://penglab.janelia.org/proj/v3d </span></H2>";
 
-	//QMessageBox::information(0, versionnumber, versionnumber + "<br>" + helptext);
+    //QMessageBox::information(0, versionnumber, versionnumber + "<br>" + helptext);
 
-	QString v3d_compile_info = "";
-	if (COMPILE_TARGET_LEVEL==2)
-		v3d_compile_info = "Advantage (alpha)"; //full version with all toolboxes
-	else if (COMPILE_TARGET_LEVEL==1)
-		v3d_compile_info = "Pro";
-	else //COMPILE_TARGET_LEVEL==0
-		v3d_compile_info = "Lite";
+    QString v3d_compile_info = "";
+    if (COMPILE_TARGET_LEVEL==2)
+        v3d_compile_info = "Advantage (alpha)"; //full version with all toolboxes
+    else if (COMPILE_TARGET_LEVEL==1)
+        v3d_compile_info = "Pro";
+    else //COMPILE_TARGET_LEVEL==0
+        v3d_compile_info = "Lite";
 
-	QString build_info = QString("build time: ")+BUILD_TIME+", "+BUILD_OS_INFO+", "+BUILD_QT_INFO+" "+BUILD_BITS;
+    QString build_info = QString("build time: ")+BUILD_TIME+", "+BUILD_OS_INFO+", "+BUILD_QT_INFO+" "+BUILD_BITS;
 
 
-	v3d_msg(v3d::versionnumber + v3d_compile_info +
-			"<br>" + build_info +
-			"<br><br>" + helptext);
-//	p_mytext->setDocumentTitle(versionnumber);
-//	p_mytext->resize(300, 300); //use the QWidget function
-//	p_mytext->setReadOnly(true);
-//	p_mytext->setFontPointSize(12);
-//	p_mytext->show();
-//
+    v3d_msg(v3d::versionnumber + v3d_compile_info +
+            "<br>" + build_info +
+            "<br><br>" + helptext);
+    //	p_mytext->setDocumentTitle(versionnumber);
+    //	p_mytext->resize(300, 300); //use the QWidget function
+    //	p_mytext->setReadOnly(true);
+    //	p_mytext->setFontPointSize(12);
+    //	p_mytext->show();
+    //
 }
 
 namespace v3d {
@@ -421,8 +421,8 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
         // TODO - how to report this upstream...
         v3d_msg("Download failed: " + relativeName, 0);
         QMessageBox::warning(NULL, tr("Download failed"),
-                tr("There was a problem downloading ") + relativeName
-                + "\nTry again later.");
+                             tr("There was a problem downloading ") + relativeName
+                                 + "\nTry again later.");
     }
 
     // We receive ownership of the reply object
@@ -440,9 +440,9 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
 // static
 QString V3DVersionChecker::getPlatformString()
 {
-	// Might have been defined in cmake configuration...
+    // Might have been defined in cmake configuration...
 #ifdef V3D_PLATFORM_NAME
-	return QString(V3D_PLATFORM_NAME);
+    return QString(V3D_PLATFORM_NAME);
 #else
     return QString(BUILD_OS_INFO) + "_" + BUILD_BITS;
 #endif
@@ -457,11 +457,11 @@ QString V3DVersionChecker::getDefaultV3DVersionXmlFileName() {
 // static
 QString V3DVersionChecker::getDefaultV3DVersionUrl()
 {
-//      return "http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/" // testing
+    //      return "http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/" // testing
 
-//    return "http://penglab.janelia.org/proj/vaa3d/stable_version/"
-//            + getPlatformString() + "/"
-//            + getDefaultV3DVersionXmlFileName();
+    //    return "http://penglab.janelia.org/proj/vaa3d/stable_version/"
+    //            + getPlatformString() + "/"
+    //            + getDefaultV3DVersionXmlFileName();
 
     //use the following instead
     return "http://home.penglab.com/proj/vaa3d/current_release/vaa3d_version.xml";
@@ -487,9 +487,9 @@ void V3DVersionChecker::createVersionXml()
     QString defaultPath = defaultDir.filePath(getDefaultV3DVersionXmlFileName());
 
     QString xmlFile = QFileDialog::getSaveFileName(guiParent,
-            tr("Save Vaa3D version xml file"),
-            defaultPath,
-            tr("XML files (*.xml)"));
+                                                   tr("Save Vaa3D version xml file"),
+                                                   defaultPath,
+                                                   tr("XML files (*.xml)"));
 
     if (xmlFile.length() > 0)
         createVersionXml(xmlFile);
@@ -550,7 +550,7 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
     //v3d_msg(xmlFileUrl.toString(),0);
 
     // Is there already a setting for the url?
-	QSettings settings("HHMI", "Vaa3D");
+    QSettings settings("HHMI", "Vaa3D");
     QString versionUrl = settings.value("versionUrl").toString();
     if (versionUrl.length() > 0)
         xmlFileUrl = versionUrl;
@@ -563,7 +563,7 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     connect(nam, SIGNAL(finished(QNetworkReply*)),
-        this, SLOT(gotVersion(QNetworkReply*)));
+            this, SLOT(gotVersion(QNetworkReply*)));
 
     // Prepare data structure for update items.
     updateItems.clear();
@@ -584,18 +584,18 @@ bool V3DVersionChecker::userSelectedNeverUpdateInAnOlderVersionOfV3D()
 {
     QSettings settings("HHMI", "Vaa3D");
     QVariant checkIntervalVariant =
-            settings.value("updateCheckInterval");
+        settings.value("updateCheckInterval");
     if (! checkIntervalVariant.isValid())
         return false; // update frequency is not even set
     int checkInterval = checkIntervalVariant.toInt();
     if (checkInterval >= 0)
         return false; // update frequency is not "Never"
     QVariant latestNeverUpdateVersionVariant =
-            settings.value("latestNeverUpdateVersion");
+        settings.value("latestNeverUpdateVersion");
     if (! latestNeverUpdateVersionVariant.isValid())
         return true; // older version did not even set latestNeverUpdateVersion
     double latestNeverUpdateVersion =
-            latestNeverUpdateVersionVariant.toDouble();
+        latestNeverUpdateVersionVariant.toDouble();
     if ((latestNeverUpdateVersion + 0.0001) < v3d::thisVersionOfV3D.toFloat())
         return true; // user selected never in an older version
     return false;
@@ -606,7 +606,7 @@ bool V3DVersionChecker::userSelectedNeverUpdateInAnOlderVersionOfV3D()
     QSettings settings("HHMI", "Vaa3D");
     settings.setValue("updateCheckInterval", -1); // never
     settings.setValue( "latestNeverUpdateVersion",
-            (double)(v3d::thisVersionOfV3D.toFloat()) );
+                      (double)(v3d::thisVersionOfV3D.toFloat()) );
 }
 
 // Examines last time version updater was queried to decide whether it might
@@ -623,7 +623,7 @@ bool V3DVersionChecker::shouldCheckNow()
 
     bool bCheckNow = true; // default is to check for updates
     // Load relevant persistent variables from Qt cache
-	QSettings settings("HHMI", "Vaa3D");
+    QSettings settings("HHMI", "Vaa3D");
     QVariant latestCheckVariant = settings.value("timeOfLatestUpdateCheck");
     QVariant checkIntervalVariant = settings.value("updateCheckInterval");
     // Use default behavior unless persistent variables are set
@@ -669,9 +669,9 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
         if (b_showAllMessages) {
             if (checkingDialog) checkingDialog->close();
             QMessageBox::information(guiParent,
-                    "Unable to connect to Vaa3D server",
-                    "Could not get latest version information.\n"
-                    "Please try again later;\nOr double check the version URL in the Updates->Options... menu.");
+                                     "Unable to connect to Vaa3D server",
+                                     "Could not get latest version information.\n"
+                                     "Please try again later;\nOr double check the version URL in the Updates->Options... menu.");
         }
         return; // error occurred, so don't bother
     }
@@ -750,7 +750,7 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
     return;
 
     //do NOT use the following code for now as it is over-complicated. Commented by PHC, 20130830.
-/*
+    /*
     QDomElement root = versionDoc.documentElement();
     if (root.tagName() != "v3d_version") {
         qDebug() << "Unrecognized root element " << root.tagName();
@@ -901,8 +901,8 @@ void V3DVersionChecker::install_updates()
 
     if ( (installCount == 0) || (! firstUpdateItem) ) {
         QMessageBox::information(guiParent,
-                tr("No updates to install"),
-                tr("There were no updates to install"));
+                                 tr("No updates to install"),
+                                 tr("There were no updates to install"));
         return;
     }
 
@@ -931,9 +931,9 @@ void V3DVersionChecker::finishUpdates(DownloadingUpdatesDialog* progressDialog)
 {
     progressDialog->close();
     QMessageBox::information(
-            guiParent,
-            tr("Updates were installed"),
-            tr("Updates were installed.\n")
+        guiParent,
+        tr("Updates were installed"),
+        tr("Updates were installed.\n")
             + QString(tr("Please restart V3D!")) );
 }
 
@@ -959,56 +959,56 @@ void V3DVersionChecker::populateLocalUpdateItems()
 
 void V3DVersionChecker::populateLocalPluginsDirs(const QDir& pluginsDir)
 {
-        QStringList dirList = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        foreach (QString dirName, dirList)
-        {
-            QDir subDir = pluginsDir;
-            subDir.cd(dirName);
-            populateLocalPluginsFiles(subDir);
-            populateLocalPluginsDirs(subDir);
-        }
+    QStringList dirList = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    foreach (QString dirName, dirList)
+    {
+        QDir subDir = pluginsDir;
+        subDir.cd(dirName);
+        populateLocalPluginsFiles(subDir);
+        populateLocalPluginsDirs(subDir);
+    }
 }
 
 void V3DVersionChecker::populateLocalPluginsFiles(const QDir& pluginsDir)
 {
-        // Name should be relative to v3d executable
-        QDir v3dDir(QCoreApplication::applicationDirPath());
+    // Name should be relative to v3d executable
+    QDir v3dDir(QCoreApplication::applicationDirPath());
 
-        QStringList fileList = pluginsDir.entryList(QDir::Files);
-        foreach (QString fileName, fileList)
+    QStringList fileList = pluginsDir.entryList(QDir::Files);
+    foreach (QString fileName, fileList)
+    {
+        QString fullpath = pluginsDir.absoluteFilePath(fileName);
+        // Skip plugins with ".old" suffix
+        if (fullpath.endsWith(".old")) continue;
+        if (fullpath.endsWith(".new")) continue;
+
+        QString relativePath = v3dDir.relativeFilePath(fullpath);
+        // Can the plugin be loaded?
+        QPluginLoader* loader = new QPluginLoader(fullpath);
+        if (! loader) return;
+        QObject *plugin = loader->instance(); //a new instance
+        if (plugin)
         {
-            QString fullpath = pluginsDir.absoluteFilePath(fileName);
-			// Skip plugins with ".old" suffix
-			if (fullpath.endsWith(".old")) continue;
-			if (fullpath.endsWith(".new")) continue;
+            float pluginVersion = std::numeric_limits<float>::quiet_NaN();
+            // Can we determine the plugin version?
+            V3DPluginInterface2_1 *if21 =
+                dynamic_cast<V3DPluginInterface2_1 *>(plugin);
+            V3DSingleImageInterface2_1 *sif21 =
+                dynamic_cast<V3DSingleImageInterface2_1 *>(plugin);
+            if (if21) pluginVersion = if21->getPluginVersion();
+            else if (sif21) pluginVersion = sif21->getPluginVersion();
 
-            QString relativePath = v3dDir.relativeFilePath(fullpath);
-            // Can the plugin be loaded?
-            QPluginLoader* loader = new QPluginLoader(fullpath);
-            if (! loader) return;
-            QObject *plugin = loader->instance(); //a new instance
-            if (plugin)
-            {
-                float pluginVersion = std::numeric_limits<float>::quiet_NaN();
-                // Can we determine the plugin version?
-                V3DPluginInterface2_1 *if21 =
-                        dynamic_cast<V3DPluginInterface2_1 *>(plugin);
-                V3DSingleImageInterface2_1 *sif21 =
-                        dynamic_cast<V3DSingleImageInterface2_1 *>(plugin);
-                if (if21) pluginVersion = if21->getPluginVersion();
-                else if (sif21) pluginVersion = sif21->getPluginVersion();
-
-                // Create entry if it is not already there
-                if (updateItems.find(relativePath) == updateItems.end())
-                    updateItems[relativePath] = new UpdateItem(this);
-                UpdateItem& item = *(updateItems[relativePath]);
-                // Update local fields
-                item.relativeName = relativePath;
-                item.localFile = QFileInfo(fullpath);
-                item.localVersion = pluginVersion;
-            }
-            loader->unload();
+            // Create entry if it is not already there
+            if (updateItems.find(relativePath) == updateItems.end())
+                updateItems[relativePath] = new UpdateItem(this);
+            UpdateItem& item = *(updateItems[relativePath]);
+            // Update local fields
+            item.relativeName = relativePath;
+            item.localFile = QFileInfo(fullpath);
+            item.localVersion = pluginVersion;
         }
+        loader->unload();
+    }
 }
 
 std::vector<UpdateItem*> V3DVersionChecker::getUpdatableItems() {
@@ -1164,7 +1164,7 @@ void CheckForUpdatesDialog::show_options() {
 
 
 UpdatesListDialog::UpdatesListDialog(QWidget* guiParent, V3DVersionChecker *checker)
-        : QDialog(guiParent), versionChecker(checker)
+    : QDialog(guiParent), versionChecker(checker)
 {
     setupUi(this);
 
@@ -1214,7 +1214,7 @@ UpdateOptionsDialog::UpdateOptionsDialog(QWidget* guiParent)
     QPushButton* openButton = buttonBox->button(QDialogButtonBox::Open);
     if (openButton) {
         v3d::OpenV3dWebPageAction *action = new
-                v3d::OpenV3dWebPageAction(this);
+            v3d::OpenV3dWebPageAction(this);
         openButton->setText(tr("Open Vaa3D download page"));
         connect(openButton, SIGNAL(clicked()), action, SLOT(trigger()));
     }
@@ -1249,7 +1249,7 @@ void UpdateOptionsDialog::use_default_version_file()
     QString defUrl = V3DVersionChecker::getDefaultV3DVersionUrl();
     lineEdit->setText(defUrl);
     // Use default setting in the future, as well.
-	QSettings settings("HHMI", "Vaa3D");
+    QSettings settings("HHMI", "Vaa3D");
     settings.setValue("versionUrl", defUrl);
 }
 
@@ -1282,7 +1282,7 @@ void UpdateOptionsDialog::on_comboBox_currentIndexChanged(const QString& updateF
 void UpdateOptionsDialog::on_lineEdit_editingFinished() {
     // Save new url
     // v3d_msg("New version file = " + lineEdit->text(), 0);
-	QSettings settings("HHMI", "Vaa3D");
+    QSettings settings("HHMI", "Vaa3D");
     settings.setValue("versionUrl", lineEdit->text());
 }
 
@@ -1296,7 +1296,7 @@ void UpdateOptionsDialog::on_lineEdit_textChanged() // user changes version xml 
 
 
 CheckingForUpdatesDialog::CheckingForUpdatesDialog(QWidget *parentObject)
-        : QDialog(parentObject), bWasCanceled(false)
+    : QDialog(parentObject), bWasCanceled(false)
 {
     setupUi(this);
     connect(this, SIGNAL(rejected()), this, SLOT(canceled()));
@@ -1304,7 +1304,7 @@ CheckingForUpdatesDialog::CheckingForUpdatesDialog(QWidget *parentObject)
 
 
 UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
-        : QMessageBox(parent)
+    : QMessageBox(parent)
 {
     // Use V3D application icon
     QIcon appIcon(":/pic/v3dIcon128.png");
@@ -1343,7 +1343,7 @@ void UpdatesAvailableDialog::remind_me_later()
 
 
 DownloadingUpdatesDialog::DownloadingUpdatesDialog(QWidget *parentObject)
-        : QDialog(parentObject), bWasCanceled(false)
+    : QDialog(parentObject), bWasCanceled(false)
 {
     setupUi(this);
     // Use V3D application icon

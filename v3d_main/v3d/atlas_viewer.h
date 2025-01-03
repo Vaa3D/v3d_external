@@ -35,13 +35,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef __ATLAS_VIEWER_H__
 #define __ATLAS_VIEWER_H__
 
-#include <QtGui>
+//#include <QtGui>
 
 #include "../basic_c_fun/color_xyz.h"
 
 #include "v3d_core.h"
 #include "ChannelTable.h"
-
+#include <QProgressDialog>
 class XFormWidget;
 class My4DImage;
 

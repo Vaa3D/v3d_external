@@ -21,7 +21,7 @@ class PrivateDataColorModel;
 // TODO - allow custom hdr for gallery thumbnails (where does that even go?)
 class DataColorModel : public NaSharedDataModel<PrivateDataColorModel>
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     DataColorModel();
@@ -34,10 +34,10 @@ public:
     const PrivateDataColorModel* dataPtr() const {return d.constData();}
     void setDataFlowModel(const DataFlowModel*);
 
-signals:
+//signals:
     void colorsInitialized();
 
-public slots:
+//public slots:
     void initialize();
     bool initializeRgba32(); // For fast loading directly to OpenGL texture
     bool initializeRgba48(); // For fast loading directly to OpenGL texture

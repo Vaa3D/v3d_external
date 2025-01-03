@@ -56,10 +56,11 @@
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
 # include <algorithm>
+#include <QRegExp>
 #include <QMessageBox>
 #include <QFile>
 #ifdef __ALLOW_VR_FUNCS__
-#include "../../../../vrrenderer/V3dR_Communicator.h"
+#include "../vrrenderer/V3dR_Communicator.h"
 #endif
 
 
@@ -88,28 +89,29 @@ string PMain::HTproofreading = "Start a stoppable/resumable block-by-block scan 
 string PMain::HTquickscan = "<i>QuickScan</i>: a scrollable maximum-intensity-projection-based preview to roughly check hundreds of blocks per minute and load only the nonempty ones.";
 
 PMain* PMain::uniqueInstance = 0;
+
+V3dR_Communicator* PMain::Communicator=0;
+
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
 {
     printf("instance\n");
     if (uniqueInstance == 0)
         uniqueInstance = new PMain(callback, parent);
-    else
-    {
-        uniqueInstance->setWindowState(Qt::WindowNoState);
-        uniqueInstance->raise();
-        uniqueInstance->activateWindow();
-        uniqueInstance->show();
-        if(CViewer::getCurrent())
-        {
-            CViewer::getCurrent()->window3D->setWindowState(Qt::WindowNoState);
-            CViewer::getCurrent()->window3D->raise();
-            CViewer::getCurrent()->window3D->activateWindow();
-            CViewer::getCurrent()->window3D->show();
-            CViewer::getCurrent()->alignToRight(uniqueInstance, 0);
-        }
+
+    uniqueInstance->setWindowState(Qt::WindowNoState);
+    uniqueInstance->raise();
+    uniqueInstance->activateWindow();
+    uniqueInstance->show();
+
+    if (CViewer::getCurrent()) {
+        CViewer::getCurrent()->window3D->setWindowState(Qt::WindowNoState);
+        CViewer::getCurrent()->window3D->raise();
+        CViewer::getCurrent()->window3D->activateWindow();
+        CViewer::getCurrent()->window3D->show();
+        CViewer::getCurrent()->alignToRight(uniqueInstance, 0);
     }
 
-	return uniqueInstance;
+    return uniqueInstance;
 }
 PMain* PMain::getInstance()
 {
@@ -159,7 +161,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     V3D_env = callback;
     parentWidget = parent;
     annotationsPathLRU = "";
-    marginLeft = 65;
+    marginLeft = 45;
 
 #ifdef _NEURON_ASSEMBLER_
 	NeuronAssemblerPortal = nullptr;
@@ -242,30 +244,30 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(exitAction);
 #ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
-        collaborateMenu=menuBar->addMenu("Collaborate");
-        loginAction=new QAction("Login",this);
-        logoutAction=new QAction("Logout",this);
-        importAction=new QAction("Import annotation to cloud",this);
-        downAction=new QAction("Download annotation from cloud",this);
-        loadAction= new QAction("Load annotation and collaborate",this);
+    //        collaborateMenu=menuBar->addMenu("Collaborate");
+    //        loginAction=new QAction("Login",this);
+    //        logoutAction=new QAction("Logout",this);
+    //        importAction=new QAction("Import annotation to cloud",this);
+    //        downAction=new QAction("Download annotation from cloud",this);
+    //        loadAction= new QAction("Load annotation and collaborate",this);
 
-        collaborateMenu->addAction(loginAction);
-        collaborateMenu->addAction(importAction);
-        collaborateMenu->addAction(downAction);
-        collaborateMenu->addAction(loadAction);
-        collaborateMenu->addAction(logoutAction);
+    //        collaborateMenu->addAction(loginAction);
+    //        collaborateMenu->addAction(importAction);
+    //        collaborateMenu->addAction(downAction);
+    //        collaborateMenu->addAction(loadAction);
+    //        collaborateMenu->addAction(logoutAction);
 
-        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
-        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
-        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
-        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
-        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
+    //        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
+    //        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
+    //        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
+    //        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
+    //        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
 
-        logoutAction->setEnabled(false);
-        importAction->setEnabled(false);
-        downAction->setEnabled(false);
-        loadAction->setEnabled(false);
-        managesocket=0;
+    //        logoutAction->setEnabled(false);
+    //        importAction->setEnabled(false);
+    //        downAction->setEnabled(false);
+    //        loadAction->setEnabled(false);
+        //managesocket=0;
 #endif
     /*---------------------------------------------------*/
 
@@ -545,7 +547,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     toolBar->setOrientation(Qt::Horizontal);
     toolBar->setMovable(false);
     toolBar->setFloatable(false);
-    toolBar->setIconSize(QSize(25,25));
+    toolBar->setIconSize(QSize(18,18));
     toolBar->setStyleSheet("QToolBar{background:qlineargradient(x1: 1, y1: 0, x2: 1, y2: 1,"
                            "stop: 0 rgb(180,180,180), stop: 1 rgb(220,220,220)); border-left: none; border-right: none; border-bottom: 1px solid rgb(150,150,150);}");
 
@@ -597,20 +599,20 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     gradientBar->installEventFilter(this);
     Vdim_sbox = new QSpinBox();
     Vdim_sbox->setAlignment(Qt::AlignCenter);
-    Vdim_sbox->setMaximum(1000);
+    Vdim_sbox->setMaximum(2048);
     Vdim_sbox->setValue(CSettings::instance()->getVOIdimV());
     Vdim_sbox->setSuffix("(y)");
     Vdim_sbox->setFont(tinyFont);
     Vdim_sbox->installEventFilter(this);
     Hdim_sbox = new QSpinBox();
     Hdim_sbox->setAlignment(Qt::AlignCenter);
-    Hdim_sbox->setMaximum(1000);
+    Hdim_sbox->setMaximum(2048);
     Hdim_sbox->setValue(CSettings::instance()->getVOIdimH());
     Hdim_sbox->setSuffix("(x)");
     Hdim_sbox->installEventFilter(this);
     Ddim_sbox = new QSpinBox();
     Ddim_sbox->setAlignment(Qt::AlignCenter);
-    Ddim_sbox->setMaximum(1000);
+    Ddim_sbox->setMaximum(2048);
     Ddim_sbox->setValue(CSettings::instance()->getVOIdimD());
     Ddim_sbox->setSuffix("(z)");
     Ddim_sbox->installEventFilter(this);
@@ -766,6 +768,13 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     helpBox = new QHelpBox(this);
     progressBar = new QProgressBar(this);
     statusBar = new QStatusBar();
+    // set edit info and font
+    editStatus = new QLabel("Here show edit status");
+    QFont font("Microsoft YaHei", 15, 87);
+    font.setFamilies({QString::fromUtf8("Calibri")});
+    font.setPointSize(14);
+    font.setBold(true);
+    editStatus->setFont(font);
 
     //****LAYOUT SECTIONS****
     /**/tf::debug(tf::LEV3, "Layouting", __itm__current__function__);
@@ -1091,6 +1100,9 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 
     connect(refSys, SIGNAL(neuronInfoChanged(QString)), dispInfo, SLOT(setText(QString)));
 
+    //connect(glWidget, SIGNAL(changeEditinput(QString)), editStatus, SLOT(setText(QString))); // DLC.2021123
+
+
     //pages
     tabs->addTab(controls_page, "TeraFly controls");
     tabs->addTab(info_page, "Others");
@@ -1104,17 +1116,19 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     QVBoxLayout* innerLayout = new QVBoxLayout();
     QVBoxLayout* bottomLayout = new QVBoxLayout();
     innerLayout->addWidget(toolBar, 0);
+    //innerLayout->addWidget(window3)
     innerLayout->addWidget(tabs, 0);
     innerLayout->addStretch(1);
     QHBoxLayout* helpBoxLayout = new QHBoxLayout();
     helpBoxLayout->setContentsMargins(0,0,0,0);
     helpBoxLayout->addWidget(helpBox, 1);
     innerLayout->addLayout(helpBoxLayout, 1);
-    innerLayout->setSpacing(5);
+    innerLayout->setSpacing(3);
     centralLayout->addLayout(innerLayout, 1);
+    bottomLayout->addWidget(editStatus);
     bottomLayout->addWidget(statusBar);
     bottomLayout->addWidget(progressBar);
-    bottomLayout->setContentsMargins(10,10,10,10);
+    bottomLayout->setContentsMargins(5,5,5,5);
     layout->addWidget(menuBar, 0);
     centralLayout->setContentsMargins(0,0,0,0);
     layout->addLayout(centralLayout, 1);
@@ -1168,19 +1182,16 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     connect(lockMagnification, SIGNAL(toggled(bool)), this, SLOT(setLockMagnification(bool)));
 
     // first resize to the desired size
-    resize(380, CSettings::instance()->getViewerHeight());
-
+    //resize(380, CSettings::instance()->getViewerHeight());
 
     //set always on top and show
     //setWindowFlags(Qt::WindowStaysOnTopHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint);
-    show();
-
 
     // fix current window size
     //setFixedSize(width(), height());
 
     // move to center(vertical)-right(horizontal)
-    move(qApp->desktop()->availableGeometry().width() - width(), 0);
+   //注释 move(qApp->desktop()->availableGeometry().width() - width(), 0);
 
 
     // register this as event filter
@@ -1210,7 +1221,7 @@ void PMain::reset()
     importOptionsMenu->setEnabled(true);
     loadAnnotationsAction->setEnabled(false);
     saveAnnotationsAction->setEnabled(false);
-    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+    //注释saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
     //saveandchangetype->setEnabled(false);
     saveAnnotationsAsAction->setEnabled(false);
     clearAnnotationsAction->setEnabled(false);
@@ -1320,6 +1331,18 @@ void PMain::reset()
         tabs->setCurrentIndex(tab_selected);
     }
     #endif
+
+    // 获取屏幕尺寸
+    QRect screenGeometry = QApplication::primaryScreen()->geometry();
+    int screenWidth = screenGeometry.width();
+    // 获取窗口的尺寸
+    int windowWidth = uniqueInstance->width();
+    // 计算窗口右上角的位置
+    int xPos = screenWidth - windowWidth;
+    int yPos = 0;  // 顶部对齐
+    // 移动窗口
+    uniqueInstance->move(xPos, yPos);
+    uniqueInstance->show();
 }
 
 
@@ -1368,6 +1391,9 @@ void PMain::clearRecentVolumes()
 ***********************************************************************************/
 void PMain::openImage(std::string path /*= ""*/)
 {
+    int flag=0;
+    if(path.size()!=0)
+        flag=1;
     try
     {
         // PRECONDITION CHECK: no image is currently open
@@ -1454,7 +1480,7 @@ void PMain::openImage(std::string path /*= ""*/)
 
         // infer image format
         tf::volume_format image_format(tf::volume_format::UNKNOWN);
-        if(sender() == openTeraFlyVolumeAction)
+        if(sender() == openTeraFlyVolumeAction||flag==1)
             image_format.id = tf::volume_format::TERAFLY;
         else if(sender() == openHDF5VolumeAction)
             image_format.id = tf::volume_format::BDVHDF5;
@@ -1801,157 +1827,112 @@ void PMain::saveAnnotationsAfterRemoveDupNodes()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
-    CViewer *cur_win = CViewer::getCurrent();
+       CViewer *cur_win = CViewer::getCurrent();
 
-    try
-    {
-        if(cur_win)
-        {
-            if(annotationsPathLRU.compare("")==0)
-            {
-                saveAnnotationsAs();
-                return;
-            }
-            QDir dir;
+       try
+       {
+           if(cur_win)
+           {
+               if(annotationsPathLRU.compare("")==0)
+               {
+                   saveAnnotationsAs();
+                   return;
+               }
+               QDir dir;
 
-            if(recentlyUsedPath.isEmpty())
-            {
-                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
-            }
-            else
-            {
-                dir = QFileInfo(recentlyUsedPath).dir();
-            }
+               if(recentlyUsedPath.isEmpty())
+               {
+                   dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+               }
+               else
+               {
+                   dir = QFileInfo(recentlyUsedPath).dir();
+               }
 
-            #ifdef _USE_QT_DIALOGS
-            QString path = "";
-            QFileDialog dialog(0);
-            dialog.setFileMode(QFileDialog::AnyFile);
-            dialog.setAcceptMode(QFileDialog::AcceptSave);
-            dialog.setViewMode(QFileDialog::Detail);
-            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
-            dialog.setWindowTitle("Save annotation file as");
-            dialog.setNameFilter(tr("annotation files (*.ano)"));
-            dialog.setDirectory(dir.absolutePath().toStdString().c_str());
-            if(dialog.exec())
-               if(!dialog.selectedFiles().empty())
-                   path = dialog.selectedFiles().front();
+               #ifdef _USE_QT_DIALOGS
+               QString path = "";
+               QFileDialog dialog(0);
+               dialog.setFileMode(QFileDialog::AnyFile);
+               dialog.setAcceptMode(QFileDialog::AcceptSave);
+               dialog.setViewMode(QFileDialog::Detail);
+               dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+               dialog.setWindowTitle("Save annotation file as");
+               dialog.setNameFilter(tr("annotation files (*.ano)"));
+               dialog.setDirectory(dir.absolutePath().toStdString().c_str());
+               if(dialog.exec())
+                  if(!dialog.selectedFiles().empty())
+                      path = dialog.selectedFiles().front();
 
-            #else
-            //tf::setWidgetOnTop(cur_win->window3D, false);
-#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-            QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-#else
-            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-            QString annotationsBasename = fileFullName;
-            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
-            {
-                QStringList fileNameSplit=fileFullName.split("_stamp_");
-                if(!fileNameSplit.size())
-                    return;
-                annotationsBasename = fileNameSplit[0];
-            }
-#endif
+               #else
+               //tf::setWidgetOnTop(cur_win->window3D, false);
+   #ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+               QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+   #else
+               QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+               QString annotationsBasename = fileFullName;
+               if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+               {
+                   QStringList fileNameSplit=fileFullName.split("_stamp_");
+                   if(!fileNameSplit.size())
+                       return;
+                   annotationsBasename = fileNameSplit[0];
+               }
+   #endif
 
-            QDateTime mytime = QDateTime::currentDateTime();
-//            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm")+"_nodup.ano", tr("annotation files (*.ano)"));
-            QString path = dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm");
-            //tf::setWidgetOnTop(cur_win->window3D, true);
-            #endif
+               QDateTime mytime = QDateTime::currentDateTime();
+   //            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm")+"_nodup.ano", tr("annotation files (*.ano)"));
+               QString path = dir.absolutePath()+"/"+annotationsBasename+"_stamp_"+mytime.toString("yyyy_MM_dd_hh_mm");
+               //tf::setWidgetOnTop(cur_win->window3D, true);
+               #endif
 
-            if(!path.isEmpty())
-            {
-                string preannotationsPathLRU = annotationsPathLRU;
-                annotationsPathLRU = path.toStdString();
-//#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-//                annotationsPathLRU = path.toStdString();
-//#else
-//                //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-//                string filebasename=QFileInfo(path).baseName().toStdString();
-//                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
-//                {
-//                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
-//                    if(!fileNameSplit.size())
-//                        return;
-//                    filebasename = fileNameSplit[0].toStdString();
-//                }
-//                qDebug()<<"filebasename"<<filebasename;
-//                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-//#endif
-                if(annotationsPathLRU.find(".ano") == string::npos)
-                    annotationsPathLRU.append(".ano");
+               if(!path.isEmpty())
+               {
+                   string preannotationsPathLRU = annotationsPathLRU;
+                   annotationsPathLRU = path.toStdString();
 
-                // save current cursor and set wait cursor
-                QCursor cursor = cur_win->view3DWidget->cursor();
-                if(PAnoToolBar::isInstantiated())
-                    PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                CViewer::setCursor(Qt::WaitCursor);
+                   if(annotationsPathLRU.find(".ano") == string::npos)
+                       annotationsPathLRU.append(".ano");
 
-                // save
-                cur_win->storeAnnotations();
-                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(), true, false);
-//                saveAnnotationsAction->setEnabled(true);
-//                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+                   // save current cursor and set wait cursor
+                   QCursor cursor = cur_win->view3DWidget->cursor();
+                   if(PAnoToolBar::isInstantiated())
+                       PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+                   CViewer::setCursor(Qt::WaitCursor);
 
-                //delete old file
-                if(preannotationsPathLRU.compare(annotationsPathLRU))
-                    CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
+                   // save
+                   cur_win->storeAnnotations();
+                   CAnnotations::getInstance()->save(annotationsPathLRU.c_str(), true, false);
+   //                saveAnnotationsAction->setEnabled(true);
+   //                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
 
-                // reset saved cursor
-                CViewer::setCursor(cursor);
-                if(PAnoToolBar::isInstantiated())
-					//PAnoToolBar::instance()->setCursor(cursor);
-					PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
+                   //delete old file
+                   if(preannotationsPathLRU.compare(annotationsPathLRU))
+                       CAnnotations::getInstance()->deleteOldAnnotations(preannotationsPathLRU.c_str());
 
-                // disable save button
-                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
-                saveAnnotationsAction->setEnabled(false);
+                   // reset saved cursor
+                   CViewer::setCursor(cursor);
+                   if(PAnoToolBar::isInstantiated())
+                       //PAnoToolBar::instance()->setCursor(cursor);
+                       PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
-                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
-                recentlyUsedPath = path;
+                   // disable save button
+                   //ljs add saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
+                   saveAnnotationsAction->setEnabled(false);
+
+                   CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                   recentlyUsedPath = path;
 
 
-            }
-            else
-                return;
-//            // save current cursor and set wait cursor
-//            QCursor cursor = cur_win->view3DWidget->cursor();
-//            if(PAnoToolBar::isInstantiated())
-//                PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-//            CViewer::setCursor(Qt::WaitCursor);
+               }
+               else
+                   return;
 
-//            // save
-//            cur_win->storeAnnotations();
-
-//            // Choose saving format. Peng Xie: 2019-02-28
-////            QStringList items;
-////            items << tr("swc") << tr("eswc");
-
-////            bool ok;
-////            QString item = QInputDialog::getItem(this, tr("Choose saving format:"),
-////                                                 tr("Format:"), items, 0, false, &ok);
-////            bool as_swc=false;
-////            if (ok && !item.isEmpty()){
-////                as_swc = (item=="swc") ? true:false;
-////            }
-
-//            bool as_swc = false; // Format option is blocked for simplicity.
-//            CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),true, as_swc);
-
-//            // reset saved cursor
-//            CViewer::setCursor(cursor);
-//            if(PAnoToolBar::isInstantiated())
-//                PAnoToolBar::instance()->setCursor(cursor);
-
-//            // disable save button
-//            saveAnnotationsAfterRemoveDupNodesAction->setEnabled(false);
-//            saveAnnotationsAction->setEnabled(false);
-        }
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-    }
+           }
+       }
+       catch(RuntimeException &ex)
+       {
+           QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+       }
 }
 
 void PMain::autosaveAnnotations()
@@ -2064,115 +2045,115 @@ void PMain::saveAnnotationsAs()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 
-    CViewer *cur_win = CViewer::getCurrent();
+        CViewer *cur_win = CViewer::getCurrent();
 
-    try
-    {
-        if(cur_win)
+        try
         {
-            //obtaining current volume's parent folder path
-//            QDir dir(CImport::instance()->getPath().c_str());
-//            dir.cdUp();
-
-            QDir dir;
-
-            if(recentlyUsedPath.isEmpty())
+            if(cur_win)
             {
-                dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
-            }
-            else
-            {
-                dir = QFileInfo(recentlyUsedPath).dir();
-            }
+                //obtaining current volume's parent folder path
+    //            QDir dir(CImport::instance()->getPath().c_str());
+    //            dir.cdUp();
 
-            #ifdef _USE_QT_DIALOGS
-            QString path = "";
-            QFileDialog dialog(0);
-            dialog.setFileMode(QFileDialog::AnyFile);
-            dialog.setAcceptMode(QFileDialog::AcceptSave);
-            dialog.setViewMode(QFileDialog::Detail);
-            dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
-            dialog.setWindowTitle("Save annotation file as");
-            dialog.setNameFilter(tr("annotation files (*.ano)"));
-            dialog.setDirectory(dir.absolutePath().toStdString().c_str());
-            if(dialog.exec())
-               if(!dialog.selectedFiles().empty())
-                   path = dialog.selectedFiles().front();
+                QDir dir;
 
-            #else
-            //tf::setWidgetOnTop(cur_win->window3D, false);
-#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-			QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-#else
-            QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-            QString annotationsBasename = fileFullName;
-            if(fileFullName.toStdString().find("_stamp_")!=string::npos)
-            {
-                QStringList fileNameSplit=fileFullName.split("_stamp_");
-                if(!fileNameSplit.size())
-                    return;
-                annotationsBasename = fileNameSplit[0];
-            }
-#endif
-
-            //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
-            //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
-            QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
-            //tf::setWidgetOnTop(cur_win->window3D, true);
-            #endif
-
-            QDateTime mytime = QDateTime::currentDateTime();
-
-
-            if(!path.isEmpty())
-            {
-#ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
-				annotationsPathLRU = path.toStdString();
-#else
-                //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-                string filebasename=QFileInfo(path).baseName().toStdString();
-                if(QFileInfo(path).baseName().toStdString().find("_stamp_")!=string::npos)
+                if(recentlyUsedPath.isEmpty())
                 {
-                    QStringList fileNameSplit=QFileInfo(path).baseName().split("_stamp_");
+                    dir = QFileInfo(QString(CImport::instance()->getPath().c_str())).dir();
+                }
+                else
+                {
+                    dir = QFileInfo(recentlyUsedPath).dir();
+                }
+
+                #ifdef _USE_QT_DIALOGS
+                QString path = "";
+                QFileDialog dialog(0);
+                dialog.setFileMode(QFileDialog::AnyFile);
+                dialog.setAcceptMode(QFileDialog::AcceptSave);
+                dialog.setViewMode(QFileDialog::Detail);
+                dialog.setWindowFlags(Qt::WindowStaysOnTopHint);
+                dialog.setWindowTitle("Save annotation file as");
+                dialog.setNameFilter(tr("annotation files (*.ano)"));
+                dialog.setDirectory(dir.absolutePath().toStdString().c_str());
+                if(dialog.exec())
+                   if(!dialog.selectedFiles().empty())
+                       path = dialog.selectedFiles().front();
+
+                #else
+                //tf::setWidgetOnTop(cur_win->window3D, false);
+    #ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+                QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).completeBaseName();
+    #else
+                QString fileFullName = QFileInfo(QString(annotationsPathLRU.c_str())).completeBaseName();
+                QString annotationsBasename = fileFullName;
+                if(fileFullName.toStdString().find("_stamp_")!=string::npos)
+                {
+                    QStringList fileNameSplit=fileFullName.split("_stamp_");
                     if(!fileNameSplit.size())
                         return;
-                    filebasename = fileNameSplit[0].toStdString();
+                    annotationsBasename = fileNameSplit[0];
                 }
-                annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
-#endif
-				if(annotationsPathLRU.find(".ano") == string::npos)
-                    annotationsPathLRU.append(".ano");
+    #endif
 
-                // save current cursor and set wait cursor
-                QCursor cursor = cur_win->view3DWidget->cursor();
-                if(PAnoToolBar::isInstantiated())
-                    PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-                CViewer::setCursor(Qt::WaitCursor);
+                //cout<<"base name is "<<annotationsBasename.toStdString()<<endl;
+                //QString annotationsBasename = QFileInfo(QString(annotationsPathLRU.c_str())).baseName();
+                QString path = QFileDialog::getSaveFileName(this, "Save annotation file as", dir.absolutePath()+"/"+annotationsBasename, tr("annotation files (*.ano)"));
+                //tf::setWidgetOnTop(cur_win->window3D, true);
+                #endif
 
-                // save
-                cur_win->storeAnnotations();
-                CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false,false);
-                saveAnnotationsAction->setEnabled(true);
-                saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+                QDateTime mytime = QDateTime::currentDateTime();
 
-                // reset saved cursor
-                CViewer::setCursor(cursor);
-                if(PAnoToolBar::isInstantiated())
-					//PAnoToolBar::instance()->setCursor(cursor);
-					PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
 
-                //
-                CSettings::instance()->setRecentlyUsedPath(path.toStdString());
-                recentlyUsedPath = path;
+                if(!path.isEmpty())
+                {
+    #ifdef _YUN_  // MK, Dec, 2018, custom build for Yun Wang.
+                    annotationsPathLRU = path.toStdString();
+    #else
+                    //annotationsPathLRU = path.toStdString()+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+                    string filebasename=QFileInfo(path).completeBaseName().toStdString();
+                    if(QFileInfo(path).completeBaseName().toStdString().find("_stamp_")!=string::npos)
+                    {
+                        QStringList fileNameSplit=QFileInfo(path).completeBaseName().split("_stamp_");
+                        if(!fileNameSplit.size())
+                            return;
+                        filebasename = fileNameSplit[0].toStdString();
+                    }
+                    annotationsPathLRU =QFileInfo(path).path().toStdString()+"/"+filebasename+"_stamp_" + mytime.toString("yyyy_MM_dd_hh_mm").toStdString();
+    #endif
+                    if(annotationsPathLRU.find(".ano") == string::npos)
+                        annotationsPathLRU.append(".ano");
+
+                    // save current cursor and set wait cursor
+                    QCursor cursor = cur_win->view3DWidget->cursor();
+                    if(PAnoToolBar::isInstantiated())
+                        PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+                    CViewer::setCursor(Qt::WaitCursor);
+
+                    // save
+                    cur_win->storeAnnotations();
+                    CAnnotations::getInstance()->save(annotationsPathLRU.c_str(),false,false);
+                    saveAnnotationsAction->setEnabled(true);
+                    saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+
+                    // reset saved cursor
+                    CViewer::setCursor(cursor);
+                    if(PAnoToolBar::isInstantiated())
+                        //PAnoToolBar::instance()->setCursor(cursor);
+                        PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
+
+                    //
+                    CSettings::instance()->setRecentlyUsedPath(path.toStdString());
+                    recentlyUsedPath = path;
+                }
+                else
+                    return;
             }
-            else
-                return;
         }
-    }
-    catch(RuntimeException &ex)
-    {
-        QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
-    }
+        catch(RuntimeException &ex)
+        {
+            QMessageBox::critical(this,QObject::tr("Error"), QObject::tr(ex.what()),QObject::tr("Ok"));
+        }
 }
 
 /**********************************************************************************
@@ -2555,6 +2536,7 @@ void PMain::traslXnegClicked()
     CViewer* expl = CViewer::getCurrent();
     if(expl && expl->_isActive && !expl->toBeClosed)
     {
+        qDebug() << expl->volH1-expl->volH0 << "detect parameter is";
         expl->newViewer((expl->volH1-expl->volH0)/2 - (expl->volH1-expl->volH0)*(100-CSettings::instance()->getTraslX())/100.0f,
                       (expl->volV1-expl->volV0)/2,
                       (expl->volD1-expl->volD0)/2, expl->volResIndex, expl->volT0, expl->volT1);
@@ -2855,19 +2837,25 @@ void PMain::doTeraflyVRView()
         if(cur_win&&cur_win->view3DWidget)
         {
             this->hide();
+            //this->showMinimized();
             //qDebug()<<V0_sbox->minimum()<<" , "<<V1_sbox->maximum()<<" , "<< H0_sbox->minimum()<<" , "<<H1_sbox->maximum()<<" , "<<D0_sbox->minimum()<<" , "<<D1_sbox->maximum()<<".";
 
             if(cur_win->view3DWidget->resumeCollaborationVR)
 			{
+              //qDebug()<<"csz debug resumeCollaborationVR is true.";
 				int maxresindex = CImport::instance()->getResolutions()-1;
 				VirtualVolume* vol = CImport::instance()->getVolume(maxresindex);
 				cur_win->view3DWidget->collaborationMaxResolution = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
-				cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;cur_win->view3DWidget->doimageVRView(true);}
+                cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
+                cur_win->view3DWidget->doimageVRView(true);
+            }
 			else
-				cur_win->view3DWidget->doimageVRView(false);
+            {
+                cur_win->view3DWidget->doimageVRView(false);
+                //qDebug()<<"csz debug resumeCollaborationVR is false.";
+            }
             //cur_win->storeAnnotations();
-            this->show();		
-
+            this->show();
         }
     }
     catch(...)
@@ -3535,8 +3523,9 @@ void PMain::annotationsChanged()
 
     // update mini-map, realtime update is slow
     annotationChanged = true;
-    // updateOverview();
-
+    //qDebug()<<"jazz debug------------------------------------------2";
+    updateOverview();
+    //qDebug()<<"jazz debug------------------------------------------2";
     //
     #ifdef Q_OS_MAC
     if(tabs->count() < 4)
@@ -3958,257 +3947,7 @@ int PMain::getCViewerID()
 
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
-void PMain::login()
-{
-    qDebug()<<"in login()";
 
-//    if(managesocket!=0/*&&managesocket->state()==QAbstractSocket::ConnectedState*/)
-//    {
-
-//        qDebug()<<"123";
-//        qDebug()<<"test 1,manage point :"<<managesocket;
-//        if(managesocket->state()==QAbstractSocket::ConnectedState)
-//        {
-//            qDebug()<<"when in login, mansgesocket is connected";
-//            QMessageBox::information(0, tr("Error"),tr("have been logged."));
-//            return;
-//        }
-
-//    }
-    qDebug()<<"QSettings settings";
-    QSettings settings("HHMI", "Vaa3D");
-    QString serverNameDefault = "";
-    if(!settings.value("vr_serverName").toString().isEmpty())
-        serverNameDefault = settings.value("vr_serverName").toString();
-    bool ok1;
-    QString serverName = QInputDialog::getText(0, "Server Address",
-        "Please enter the server address:", QLineEdit::Normal,
-        serverNameDefault, &ok1);
-    QString manageserver_Port;
-    QString userName;
-
-    if(!ok1||serverName.isEmpty())
-    {
-        qDebug()<<"WRONG!EMPTY! ";
-        return ;
-    }else
-    {
-        settings.setValue("vr_serverName", serverName);
-        QString PortDefault = "";
-        if(!settings.value("vr_PORT").toString().isEmpty())
-            PortDefault = settings.value("vr_PORT").toString();
-        bool ok2;
-         manageserver_Port = QInputDialog::getText(0, "Port",//
-            "Please enter server port:", QLineEdit::Normal,
-            PortDefault, &ok2);
-
-        if(!ok2 || manageserver_Port.isEmpty())//
-        {
-            qDebug()<<"WRONG!EMPTY! ";
-            return ;
-        }
-        else
-        {
-            settings.setValue("vr_PORT", manageserver_Port);//
-            QString userNameDefault = "";
-            if(!settings.value("vr_userName").toString().isEmpty())
-                userNameDefault = settings.value("vr_userName").toString();
-            bool ok3;
-             userName = QInputDialog::getText(0, "Lgoin Name",
-                "Please enter your login name:", QLineEdit::Normal,
-                userNameDefault, &ok3);
-
-            if(!ok3 || userName.isEmpty())
-            {
-                qDebug()<<"WRONG!EMPTY! ";
-                //return SendLoginRequest();
-                return ;
-            }else
-                settings.setValue("vr_userName", userName);
-        }
-    }
-    qDebug()<<"test login ";
-//    if(managesocket!=0)    delete managesocket;
-    qDebug()<<"tset 2";
-    managesocket=new ManageSocket;
-    managesocket->ip=serverName;
-    managesocket->manageport=manageserver_Port;
-    managesocket->name=userName;
-    qDebug()<<"test 3";
-
-    managesocket->connectToHost(serverName,manageserver_Port.toInt());
-
-    if( !managesocket->waitForConnected())
-    {
-//        managesocket->deleteLater();
-        QMessageBox::information(this, tr("Error"),tr("can not login,please try again."));
-        delete  managesocket;
-        return;
-    }
-    else{
-        qDebug()<<"send:"<<QString(userName+":login."+"\n");
-        connect(managesocket,SIGNAL(readyRead()),managesocket,SLOT(onReadyRead()));
-//        connect(managesocket,SIGNAL(disconnected()),managesocket,SLOT((deleteLater())));
-        connect(managesocket,SIGNAL(disconnected()),this,SLOT(deleteManageSocket()));
-
-        managesocket->write(QString(userName+":login."+"\n").toUtf8());
-
-        loginAction->setText(serverName);
-        loginAction->setEnabled(false);
-        logoutAction->setEnabled(true);
-        importAction->setEnabled(true);
-        downAction->setEnabled(true);
-        loadAction->setEnabled(true);
-    }
-}
-
-void PMain::logout()
-{
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        managesocket->write(QString(managesocket->name+":logout."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::import()
-{
-
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        managesocket->write(QString(managesocket->name+":import."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-
-}
-
-void PMain::download()
-{
-
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-
-        managesocket->write(QString(managesocket->name+":down."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::load()
-{
-    CViewer *cur_win = CViewer::getCurrent();
-    if(!cur_win)
-    {
-        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
-        return;
-    }
-
-    if(managesocket!=0&&managesocket->state()==QAbstractSocket::ConnectedState)
-    {
-        qDebug()<<"-----------------load annotation----------";
-        connect(managesocket,SIGNAL(loadANO(QString)),this,SLOT(ColLoadANO(QString)));
-
-        cur_win->getGLWidget()->TeraflyCommunicator=new V3dR_Communicator;
-
-        connect(managesocket,SIGNAL(makeMessageSocket(QString,QString,QString)),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(SendLoginRequest(QString,QString,QString)));
-        connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(messageMade()),
-                managesocket,SLOT(messageMade()));
-        connect(managesocket,SIGNAL(disconnected()),
-                cur_win->getGLWidget()->TeraflyCommunicator,
-                SLOT(deleteLater()));//注意，可能需要修改
-        managesocket->write(QString(managesocket->name+":load."+"\n").toUtf8());
-    }else {
-        QMessageBox::information(this, tr("Error"),tr("you have been logout."));
-        return;
-    }
-}
-
-void PMain::deleteManageSocket()
-{
-    qDebug()<<"delete managesocket";
-    qDebug()<<managesocket;
-    managesocket->deleteLater();
-//    delete managesocket;
-//    managesocket=NULL;
-//    managesocket->deleteLater();
-    loginAction->setText("log in");
-    loginAction->setEnabled(true);
-    logoutAction->setEnabled(false);
-    downAction->setEnabled(false);
-    importAction->setEnabled(false);
-    loadAction->setEnabled(false);
-    return;
-}
-
-void PMain::ColLoadANO(QString ANOfile)
-{
-    qDebug()<<"load ANO:"<<ANOfile;
-    CViewer *cur_win = CViewer::getCurrent();
-    QString ANOpath="./clouddata/"+ANOfile;
-    qDebug()<<"test path= "<<ANOpath;
-    if(!ANOpath.isEmpty())
-    {
-
-        annotationsPathLRU = ANOpath.toStdString();
-        CAnnotations::getInstance()->load(annotationsPathLRU.c_str());
-        NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
-
-        // save current cursor and set wait cursor
-        QCursor cursor = cur_win->view3DWidget->cursor();
-        if(PAnoToolBar::isInstantiated())
-            PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
-        CViewer::setCursor(Qt::WaitCursor);
-
-        // load
-        cur_win->loadAnnotations();
-        saveAnnotationsAction->setEnabled(true);
-        saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
-        virtualSpaceSizeMenu->setEnabled(false);
-        myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
-
-        // reset saved cursor
-        CViewer::setCursor(cursor);
-        if(PAnoToolBar::isInstantiated())
-			//PAnoToolBar::instance()->setCursor(cursor);
-			PAnoToolBar::instance()->setCursor(Qt::ArrowCursor); // MK, June, 2020 - fixing possible cause for cursor confusion.
-        annotationChanged = true;
-        updateOverview();
-        qDebug()<<"ok";
-
-        QRegExp anoExp("(.*).ano");
-        QString tmp;
-        if(anoExp.indexIn(ANOpath)!=-1)
-        {
-            tmp=anoExp.cap(1);
-        }
-        QFile *f = new QFile(tmp+".ano");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
-
-        f = new QFile(tmp+".ano.eswc");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
-
-        f = new QFile(tmp+".ano.apo");
-        if(f->exists())
-            f->remove();
-        delete f;
-        f=0;
-
-
-    }
-}
 
 #endif
 

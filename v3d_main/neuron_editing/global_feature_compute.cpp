@@ -1,6 +1,7 @@
 #include "global_feature_compute.h"
 #include <math.h>
 #include <iostream>
+#include <QStack>
 using namespace std;
 
 #define VOID 1000000000

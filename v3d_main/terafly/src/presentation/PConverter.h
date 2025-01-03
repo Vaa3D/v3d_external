@@ -29,12 +29,13 @@
 #ifndef PCONVETER_GUI_H
 #define PCONVETER_GUI_H
 
-
-#include <QtGui>
+#include <QProgressBar>
+//#include <QtGui>
 #include <v3d_interface.h>
 #include "../control/CPlugin.h"
 #include "QHelpBox.h"
-
+#include <QStatusBar>
+#include <QStackedLayout>
 class terafly::PConverter : public QWidget
 {
     Q_OBJECT

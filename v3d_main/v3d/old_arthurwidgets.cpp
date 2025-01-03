@@ -139,11 +139,11 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
 
         int o = 10;
 
-        QBrush bg = palette().brush(QPalette::Background);
-        painter.fillRect(0, 0, o, o, bg);
-        painter.fillRect(width() - o, 0, o, o, bg);
-        painter.fillRect(0, height() - o, o, o, bg);
-        painter.fillRect(width() - o, height() - o, o, o, bg);
+        //QBrush bg = palette().brush(QPalette::Background);
+//        painter.fillRect(0, 0, o, o, bg);
+//        painter.fillRect(width() - o, 0, o, o, bg);
+//        painter.fillRect(0, height() - o, o, o, bg);
+//        painter.fillRect(width() - o, height() - o, o, o, bg);
     } else {
 #ifdef QT_OPENGL_SUPPORT
         if (m_use_opengl) {
@@ -347,15 +347,15 @@ void ArthurFrame::showSource()
     foreach (QString keyword, ppKeywords)
         contents.replace(keyword, QLatin1String("<font color=navy>") + keyword + QLatin1String("</font>"));
 
-    contents.replace(QRegExp("(\\d\\d?)"), QLatin1String("<font color=navy>\\1</font>"));
+  //  contents.replace(QRegExp("(\\d\\d?)"), QLatin1String("<font color=navy>\\1</font>"));
 
-    QRegExp commentRe("(//.+)\\n");
-    commentRe.setMinimal(true);
-    contents.replace(commentRe, QLatin1String("<font color=red>\\1</font>\n"));
+  //  QRegExp commentRe("(//.+)\\n");
+   // commentRe.setMinimal(true);
+    //contents.replace(commentRe, QLatin1String("<font color=red>\\1</font>\n"));
 
-    QRegExp stringLiteralRe("(\".+\")");
-    stringLiteralRe.setMinimal(true);
-    contents.replace(stringLiteralRe, QLatin1String("<font color=green>\\1</font>"));
+   // QRegExp stringLiteralRe("(\".+\")");
+    //stringLiteralRe.setMinimal(true);
+   // contents.replace(stringLiteralRe, QLatin1String("<font color=green>\\1</font>"));
 
     QString html = contents;
     html.prepend("<html><pre>");

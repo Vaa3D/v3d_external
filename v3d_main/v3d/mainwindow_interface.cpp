@@ -44,11 +44,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../3drenderer/renderer_gl1.h" //for finishEditingNeuronTree
 
-#if defined(USE_Qt5)
-  #include <QtWidgets>
-#else
-  #include <QtGui>
-#endif
+
+#include <QtWidgets>
+
 
 #define __MainWindow_interface__
 
@@ -66,11 +64,9 @@ QList<void*> MainWindow::allWindowList()
 {
 	QList<void*> list;
 
-#if defined(USE_Qt5)
+
 	foreach (QWidget* w, workspace->subWindowList()) list << w;
-#else
-	foreach (QWidget* w, workspace->windowList()) list << w;
-#endif
+
 	//qDebug()<<"MainWindow allWindowList: " << list;
 	return list;
 }
@@ -395,14 +391,14 @@ void XFormWidget::close3DWindow()
 {
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D)
 	{
-		mypara_3Dview.window3D->postClose();
+        //mypara_3Dview.window3D->postClose();
 	}
 }
 void XFormWidget::closeROI3DWindow()
 {
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D)
 	{
-		mypara_3Dlocalview.window3D->postClose();
+        //mypara_3Dlocalview.window3D->postClose();
 	}
 }
 
@@ -413,13 +409,14 @@ void XFormWidget::finishEditingSWC()
 			&& (w = mypara_3Dview.window3D->getGLWidget()))
 	{
 		Renderer_gl1* r= (Renderer_gl1*)(w->getRenderer());
-		if (r) r->finishEditingNeuronTree();
+        if (r)
+            r->finishEditingNeuronTree();
 	}
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
 		Renderer_gl1* r= (Renderer_gl1*)(w->getRenderer());
-		if (r) r->finishEditingNeuronTree();
+        if (r) r->finishEditingNeuronTree();
 	}
 }
 
@@ -445,14 +442,14 @@ void XFormWidget::pushImageIn3DWindow()
 	{
 		mypara_3Dview.image4d = getImageData();
 		w->updateImageData();
-		mypara_3Dview.window3D->setDataTitle(windowTitle());
+        //mypara_3Dview.window3D->setDataTitle(windowTitle());
 	}
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
 		mypara_3Dlocalview.image4d = getImageData();
 		w->updateImageData();
-		mypara_3Dlocalview.window3D->setDataTitle(windowTitle());
+        //mypara_3Dlocalview.window3D->setDataTitle(windowTitle());
 	}
 }
 int XFormWidget::pushTimepointIn3DWindow(int timepoint)
@@ -477,7 +474,7 @@ bool XFormWidget::screenShot3DWindow(QString filename)
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D
 			&& (w = mypara_3Dview.window3D->getGLWidget()))
 	{
-		return w->screenShot(filename);
+        return w->screenShot(filename);
 	}
 	return false;
 }
@@ -488,7 +485,7 @@ bool XFormWidget::screenShotROI3DWindow(QString filename)
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
-		return w->screenShot(filename);
+        return w->screenShot(filename);
 	}
 	return false;
 }

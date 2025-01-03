@@ -23,5 +23,6 @@
         <file>pic/arrow_up.png</file>
         <file>pic/arrow_down.png</file>
         <file alias="button_add.png">pic/button_add.png</file>
+        <file>v3dIcon128.ico</file>
     </qresource>
 </RCC>

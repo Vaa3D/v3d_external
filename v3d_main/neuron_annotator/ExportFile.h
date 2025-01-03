@@ -23,7 +23,7 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
 // export XYZC(T) tif file
 class ExportFile : public QThread
 {
-    Q_OBJECT
+   // Q_OBJECT
     
 public:
     ExportFile(
@@ -35,11 +35,11 @@ public:
             bool is2D=false);
     ~ExportFile();
 	
-signals:
+//signals:
     void exportFailed(QString fileName, QString message);
     void exportFinished(QString fileName);
 
-public slots:
+//public slots:
 
 protected:
     virtual void run();

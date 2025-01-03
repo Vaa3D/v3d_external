@@ -581,7 +581,7 @@ template <class T> bool vol3d_square_root_diff(double & res, T *** sa, T *** sb,
 	return true;
 }
 
-template <class T1, class T2> bool mean_and_std(T1 *data, V3DLONG n, T2 & ave, T2 & sdev)
+template<class T1,class T2> bool mean_and_std(T1 *data, V3DLONG n, T2 & ave, T2 & sdev)
 {
     if (!data || n<=0)
 	  return false;
@@ -593,13 +593,13 @@ template <class T1, class T2> bool mean_and_std(T1 *data, V3DLONG n, T2 & ave, T
 	{
 	  //printf("len must be at least 2 in mean_and_std\n");
 	  ave = data[0];
-	  sdev = (T2)0;
+      sdev = (T2)0;
 	  return true; //do nothing
 	}
 
 	s=0.0;
 	for (j=0;j<n;j++) s += data[j];
-	double ave_double=(T2)(s/n); //use ave_double for the best accuracy
+    double ave_double=(T2)(s/n); //use ave_double for the best accuracy
 
 	double var=0.0;
 	for (j=0;j<n;j++) {
@@ -607,8 +607,8 @@ template <class T1, class T2> bool mean_and_std(T1 *data, V3DLONG n, T2 & ave, T
 		var += (p=s*s);
 	}
 	var=(var-ep*ep/n)/(n-1);
-	sdev=(T2)(sqrt(var));
-	ave=(T2)ave_double; //use ave_double for the best accuracy
+    sdev=(T2)(sqrt(var));
+    ave=(T2)ave_double; //use ave_double for the best accuracy
 
 	return true;
 }

@@ -596,7 +596,7 @@ void ChannelTable::pressedClickHandler(int i, int j)
 					qcolor = QColor(c.r, c.g, c.b);
 				}
 
-				curItem->setData(0, qVariantFromValue(qcolor));
+                //curItem->setData(0, qVariantFromValue(qcolor));
 			}
 		    end_batch();
 			if (act)  updatedContent(t);
@@ -615,7 +615,7 @@ void ChannelTable::doubleClickHandler(int i, int j)
 	{
 		QColor qcolor = QCOLORV(curItem->data(0));
 		if (! v3dr_getColorDialog( &qcolor))  return;
-		curItem->setData(0, qVariantFromValue(qcolor));
+        //curItem->setData(0, qVariantFromValue(qcolor));
 	}
 }
 
@@ -629,8 +629,8 @@ void ChannelTable::doubleClickHandler(int i, int j)
 						curItem->setCheckState(BOOL_TO_CHECKED(b));}
 
 #define ADD_QCOLOR(c)	{curItem = new QTableWidgetItem(QVariant::Color);	t->setItem(i, j++, curItem); \
-						curItem->setData(0, VCOLOR(c)); \
-						curItem->setData(Qt::DecorationRole, VCOLOR(c));}
+                        curItem->setData(0, VCOLOR(c)); \
+                        curItem->setData(Qt::DecorationRole, VCOLOR(c));}
 
 #define ADD_STRING(s)	{curItem = new QTableWidgetItem(s);	t->setItem(i, j++, curItem);}
 

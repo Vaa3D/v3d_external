@@ -1,9 +1,9 @@
 #include "ConsoleObserverServiceImpl.h"
 #include "../console/obsConsoleObserverService.h"
 #include "../console/cdsConsoleDataServiceProxy.h"
-#include <QtGui>
+//#include <QtGui>
 #include <sstream>
-
+#include <QDebug>
 #define CLIENT_NAME "NeuronAnnotator"
 
 namespace obs {

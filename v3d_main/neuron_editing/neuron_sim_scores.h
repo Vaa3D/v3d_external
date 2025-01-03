@@ -41,9 +41,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 struct NeuronDistSimple
 {
-        double dist_12_allnodes;//the average distance of all interpolated points: from neuron 1  to neurno 2
-        double dist_21_allnodes;//the average distance of all interpolated points: from neuron 2 to neuron 1
-        double dist_allnodes; //the average distance of all interpolated points, the average of both directions
+    double dist_12_allnodes;//the average distance of all interpolated points: from neuron 1  to neurno 2
+    double dist_21_allnodes;//the average distance of all interpolated points: from neuron 2 to neuron 1
+    double dist_allnodes; //the average distance of all interpolated points, the average of both directions
 	double dist_apartnodes; //the average distance of interpolated points that have significant distance (>= 2 pixels)
 	double percent_apartnodes; //the percentage of interpolated points that have significant distance (>= 2 pixels)
     double percent_12_apartnodes; //the percentage of interpolated points that have significant distance (>= 2 pixels):from neuron 1  to neurno 2

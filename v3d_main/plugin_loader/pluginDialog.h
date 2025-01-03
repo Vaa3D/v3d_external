@@ -36,15 +36,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define PLUGINDIALOG_H
 
 #include "v3d_plugin_loader.h"
+#include <QLabel>
 
 
 
-#if defined(USE_Qt5) 
 #include <QtWidgets>
 #include <QTreeWidgetItem>
-#else
-#include <QtGui>
-#endif
+
 
 class PluginDialog : public QDialog
 {

@@ -4,7 +4,8 @@
 #include <fstream>
 #include "../basic_c_fun/v3d_interface.h"
 
-using namespace std;
+//using namespace std;
+using std::ifstream;
 
 class asc_to_swc
 {

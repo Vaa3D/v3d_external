@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <iostream>
 #include <sstream>
 
-
+using namespace std;
 // command line interface class
 void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
 {

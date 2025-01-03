@@ -6,7 +6,7 @@
 
 class CameraModel : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     CameraModel();
@@ -14,13 +14,13 @@ public:
     const Vector3D& focus() const {return m_focusPosition;}
     const Rotation3D& rotation() const {return m_rotation;}
 
-signals:
+//signals:
     void focusChanged(const Vector3D&);
     void rotationChanged(const Rotation3D&);
     void scaleChanged(qreal);
     void viewChanged();
 
-public slots:
+//public slots:
     void setFocus(const Vector3D& v);
     void setScale(qreal);
     void setRotation(const Rotation3D&);

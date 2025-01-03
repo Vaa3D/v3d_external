@@ -10,27 +10,27 @@
 // Class to print out all debug messages in the main thread.
 class FooDebugWriter : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     static QMutex mutex;
     static FooDebugWriter debugWriter;
 
-public slots:
+//public slots:
     void printMessage(QString message);
 };
 
 
 class FooDebugString : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     FooDebugString();
     void emitMessage();
     QString& string();
 
-signals:
+//signals:
     void messageCompleted(QString message);
 
 protected:

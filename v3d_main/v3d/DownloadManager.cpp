@@ -19,7 +19,7 @@
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QRegExpValidator>
+//#include <QRegExpValidator>
 
 using namespace std;
 
@@ -27,8 +27,8 @@ V3dUrlDialog::V3dUrlDialog(QWidget *parent)
     : QDialog(parent)
 {
     setupUi(this);
-    QRegExp urlRegExp("https?://\\S+");
-    lineEdit->setValidator(new QRegExpValidator(urlRegExp, this));
+    //QRegExp urlRegExp("https?://\\S+");
+   // lineEdit->setValidator(new QRegExpValidator(urlRegExp, this));
     // connect(openButton, SIGNAL(clicked()), this, SLOT(accept()));
     // connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 }

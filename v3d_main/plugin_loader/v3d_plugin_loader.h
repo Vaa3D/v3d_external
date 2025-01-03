@@ -42,11 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define _V3D_PLUGIN_LOADER_H_
 #include <qmenu.h>
 #include <set>
-#if defined(USE_Qt5)
-  #include <QtWidgets>
-#else
-  #include <QtGui>
-#endif
+
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include "../basic_c_fun/v3d_interface.h"
 
@@ -57,7 +53,30 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin);
 
 class MainWindow;
 class V3d_PluginLoader;
+class DataFlowPlus{
+public:
+    static DataFlowPlus& getInstance(){
+        static DataFlowPlus instance;
+        return instance;
+    }
 
+    // Avoid copy construct
+    DataFlowPlus(DataFlowPlus const&) = delete;
+    void operator=(DataFlowPlus const&)  = delete;
+    void insert(QString name,Image4DSimple* img);
+    void insert(QString name,NeuronTree* nt);
+    void insert(QString name,void* sth);
+    Image4DSimple* findimg(QString name);
+    NeuronTree* findnt(QString name);
+    void* findvoid(QString name);
+private:
+    DataFlowPlus();
+    ~DataFlowPlus();
+    static QHash<QString,Image4DSimple*> imgflow;
+    static QHash<QString,NeuronTree*> ntflow;
+    static QHash<QString,void*> voidflow;
+
+};
 class V3d_PluginLoader : public QObject, public V3DPluginCallback2
 {
     Q_OBJECT;
@@ -69,24 +88,33 @@ public:
     static QList<QDir> getPluginsDirList();
 
 public slots:
-	void rescanPlugins();
-	void populateMenus(); //hook menu to v3d, called by rescanPlugins, MainWindow::updateProcessingMenu
-	void aboutPlugins();
+    void rescanPlugins();
+    void populateMenus(); //hook menu to v3d, called by rescanPlugins, MainWindow::updateProcessingMenu
+    void aboutPlugins();
     void runPlugin();
-	void runPlugin(QPluginLoader *loader, const QString & menuString); //by PHC, 101008
+    void runPlugin(QPluginLoader *loader, const QString & menuString); //by PHC, 101008
     void runRecentPlugin(); //added by Zhi Z, 20140721
     void clear_recentPlugins();
 
 protected:
-	bool runSingleImageInterface(QObject* plugin, const QString& command);
-	bool runPluginInterface(QObject* plugin, const QString& command);
-	bool runPluginInterface2(QObject* plugin, const QString& command);
-	bool runPluginInterface2_1(QObject* plugin, const QString& command);
-	void clear();
-	void loadPlugins(); //load only once
-	void addToMenu(QMenu *menu, QObject *plugin, const QStringList &texts, const char *member);
-	void searchPluginDirs(QMenu* menu, const QDir& pluginsDir);
-	void searchPluginFiles(QMenu* menu, const QDir& pluginsDir);
+    //ljs,dlc,csz
+    void pushImageToTeraWin(v3dhandle);
+    void putDataToCViewer(const unsigned char*,V3DPluginCallback2*);
+    bool updateTerafly();
+
+    //csz
+    void OpenImageInTerafly(QString image_path,V3DPluginCallback2* callback);
+    bool isCViewerVisable();
+
+    bool runSingleImageInterface(QObject* plugin, const QString& command);
+    bool runPluginInterface(QObject* plugin, const QString& command);
+    bool runPluginInterface2(QObject* plugin, const QString& command);
+    bool runPluginInterface2_1(QObject* plugin, const QString& command);
+    void clear();
+    void loadPlugins(); //load only once
+    void addToMenu(QMenu *menu, QObject *plugin, const QStringList &texts, const char *member);
+    void searchPluginDirs(QMenu* menu, const QDir& pluginsDir);
+    void searchPluginFiles(QMenu* menu, const QDir& pluginsDir);
     void addrecentPlugins(QMenu* menu); //add by Zhi Z, 20140721
     void updated_recentPlugins();
 
@@ -104,67 +132,64 @@ protected:
     MainWindow* v3d_mainwindow;
 
 public:
-	QStringList getPluginNameList(); //by YuY 20110429
+    QStringList getPluginNameList(); //by YuY 20110429
 
-    // ljs,csz,dlc 20220120
-    virtual void pushImageToTeraWin(v3dhandle data);
-
-//V3DPluginCallback
+    //V3DPluginCallback
 public:
-	virtual bool callPluginFunc(const QString &plugin_name,
-			const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output);
+    virtual bool callPluginFunc(const QString &plugin_name,
+                                const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output);
     //virtual bool callPluginMenu(const QString &plugin_name, const QString &func_name); //a bug caused in v2.823?
 
-	virtual v3dhandleList getImageWindowList() const;
-	virtual v3dhandle currentImageWindow();
-	virtual v3dhandle curHiddenSelectedWindow(); //by PHC 101009
+    virtual v3dhandleList getImageWindowList() const;
+    virtual v3dhandle currentImageWindow();
+    virtual v3dhandle curHiddenSelectedWindow(); //by PHC 101009
 
-	virtual v3dhandle newImageWindow(QString name);
-	virtual void updateImageWindow(v3dhandle image_window, bool b_forceUpdateChannelMinMaxValues); //by PHC, 20120412
+    virtual v3dhandle newImageWindow(QString name);
+    virtual void updateImageWindow(v3dhandle image_window, bool b_forceUpdateChannelMinMaxValues); //by PHC, 20120412
 
-	virtual QString getImageName(v3dhandle image_window) const;
-	virtual void setImageName(v3dhandle image_window, QString name);
+    virtual QString getImageName(v3dhandle image_window) const;
+    virtual void setImageName(v3dhandle image_window, QString name);
 
-	virtual Image4DSimple* getImage(v3dhandle image_window);
-	virtual bool setImage(v3dhandle image_window, Image4DSimple* image);
+    virtual Image4DSimple* getImage(v3dhandle image_window);
+    virtual bool setImage(v3dhandle image_window, Image4DSimple* image);
 
-	//a special debug function. don't use if you don't know how to use. by PHC 100731.
-	virtual bool setImageTest(v3dhandle image_window, Image4DSimple* image, unsigned char *a);
+    //a special debug function. don't use if you don't know how to use. by PHC 100731.
+    virtual bool setImageTest(v3dhandle image_window, Image4DSimple* image, unsigned char *a);
 
-	virtual LandmarkList  getLandmark(v3dhandle image_window);
-	virtual bool setLandmark(v3dhandle image_window, LandmarkList& landmark_list);
+    virtual LandmarkList  getLandmark(v3dhandle image_window);
+    virtual bool setLandmark(v3dhandle image_window, LandmarkList& landmark_list);
 
-	virtual ROIList getROI(v3dhandle image_window);
-	virtual bool setROI(v3dhandle image_window, ROIList & roi_list);
+    virtual ROIList getROI(v3dhandle image_window);
+    virtual bool setROI(v3dhandle image_window, ROIList & roi_list);
 
-	virtual NeuronTree getSWC(v3dhandle image_window);
-	virtual bool setSWC(v3dhandle image_window, NeuronTree & nt);
+    virtual NeuronTree getSWC(v3dhandle image_window);
+    virtual bool setSWC(v3dhandle image_window, NeuronTree & nt);
 
     virtual Image4DSimple * loadImage(char *filename);  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
     virtual Image4DSimple * loadImage(char *filename, V3DLONG zsliceno);  //2013-11-02
     virtual bool saveImage(Image4DSimple * img, char *filename);
 
-	virtual V3D_GlobalSetting getGlobalSetting();
-	virtual bool setGlobalSetting( V3D_GlobalSetting & gs );
+    virtual V3D_GlobalSetting getGlobalSetting();
+    virtual bool setGlobalSetting( V3D_GlobalSetting & gs );
 
-	virtual void open3DWindow(v3dhandle image_window);
-	virtual void close3DWindow(v3dhandle image_window);
-	virtual void openROI3DWindow(v3dhandle image_window);
-	virtual void closeROI3DWindow(v3dhandle image_window);
+    virtual void open3DWindow(v3dhandle image_window);
+    virtual void close3DWindow(v3dhandle image_window);
+    virtual void openROI3DWindow(v3dhandle image_window);
+    virtual void closeROI3DWindow(v3dhandle image_window);
 
-	virtual void pushObjectIn3DWindow(v3dhandle image_window);
-	virtual void pushImageIn3DWindow(v3dhandle image_window);
-	virtual int pushTimepointIn3DWindow(v3dhandle image_window, int timepoint);
+    virtual void pushObjectIn3DWindow(v3dhandle image_window);
+    virtual void pushImageIn3DWindow(v3dhandle image_window);
+    virtual int pushTimepointIn3DWindow(v3dhandle image_window, int timepoint);
 
-	virtual bool screenShot3DWindow(v3dhandle image_window, QString filename);
-	virtual bool screenShotROI3DWindow(v3dhandle image_window, QString filename);
+    virtual bool screenShot3DWindow(v3dhandle image_window, QString filename);
+    virtual bool screenShotROI3DWindow(v3dhandle image_window, QString filename);
 
 
-//V3DPluginCallback2
+    //V3DPluginCallback2
 public:
     virtual View3DControl * getView3DControl(v3dhandle image_window);
-	virtual View3DControl * getLocalView3DControl(v3dhandle image_window);
-	virtual TriviewControl * getTriviewControl(v3dhandle image_window); //aded by PHC, 2010-12-08
+    virtual View3DControl * getLocalView3DControl(v3dhandle image_window);
+    virtual TriviewControl * getTriviewControl(v3dhandle image_window); //aded by PHC, 2010-12-08
 
     //added PHC 20120406. add a main window handle, to allow access everything in Vaa3D
 
@@ -173,14 +198,14 @@ public:
     virtual V3dR_MainWindow * find3DViewerByName(QString fileName); //the name can be partially matched
 
     //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer but based on a tri-view window
-	virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window);
-	virtual QList <CellAPO>    * getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window);
+    virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window);
+    virtual QList <CellAPO>    * getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window);
     virtual QList <LabelSurf> getListLabelSurf_3DGlobalViewer(v3dhandle image_window);
     virtual bool setListLabelSurf_3DGlobalViewer(v3dhandle image_window, QList <LabelSurf> listLabelSurfinput);
 
     //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
-	virtual QList <NeuronTree> * getHandleNeuronTrees_Any3DViewer(V3dR_MainWindow *w);
-	virtual QList <CellAPO>    * getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w);
+    virtual QList <NeuronTree> * getHandleNeuronTrees_Any3DViewer(V3dR_MainWindow *w);
+    virtual QList <CellAPO>    * getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w);
     virtual QList <LabelSurf> getListLabelSurf_Any3DViewer(V3dR_MainWindow *w);
     virtual bool setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput);
 
@@ -209,11 +234,11 @@ public:
     //virtual void setResizeEvent(V3dR_MainWindow *w, int x, int y);
 
 #ifdef _NEURON_ASSEMBLER_
-	virtual int getSurfaceType(V3dR_MainWindow* w);
-	virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w);
-	virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w);
-	virtual QList<CellAPO> send3DviewerApoList(V3dR_MainWindow* w);
-	virtual void refreshSelectedMarkers(V3dR_MainWindow* w);
+    virtual int getSurfaceType(V3dR_MainWindow* w);
+    virtual void set3DViewerMarkerDetectorStatus(bool on_off, V3dR_MainWindow* w);
+    virtual QList<ImageMarker> send3DviewerMarkerList(V3dR_MainWindow* w);
+    virtual QList<CellAPO> send3DviewerApoList(V3dR_MainWindow* w);
+    virtual void refreshSelectedMarkers(V3dR_MainWindow* w);
 #endif
 
 #ifdef __ALLOW_VR_FUNCS__
@@ -236,10 +261,10 @@ public:
 
     virtual bool setImageTeraFly(size_t x, size_t y, size_t z);
 
-	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
-	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
-	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex);
-	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
+    virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName);
+    virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
+    virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex);
+    virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
 };
 
 #endif

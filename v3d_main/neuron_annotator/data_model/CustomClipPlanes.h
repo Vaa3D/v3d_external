@@ -1,6 +1,9 @@
 #ifndef CUSTOMCLIPPLANES_H
 #define CUSTOMCLIPPLANES_H
 
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+
+#include <GL/glew.h>
 
 #include <QUndoStack>
 #include <QUndoCommand>
@@ -9,7 +12,12 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h> //2020-2-15 RZC
 #endif
-#include <GL/gl.h>  //2020-2-10 RZC
+
+#ifdef MACOS_SYSTEM
+#include <gl.h>
+#else
+//#include <GL/gl.h>
+#endif
 
 
 namespace jfrc {

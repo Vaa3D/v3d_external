@@ -1,5 +1,6 @@
+
 //------------------------------------------------------------------------------------------------
-// Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).  
+// Copyright (c) 2012  Alessandro Bria and Giulio Iannello (University Campus Bio-Medico of Rome).
 // All rights reserved.
 //------------------------------------------------------------------------------------------------
 
@@ -9,7 +10,7 @@
 *    By downloading/using/running/editing/changing any portion of codes in this package you agree to this license. If you do not agree to this license, do not download/use/run/edit/change
 *    this code.
 ********************************************************************************************************************************************************************************************
-*    1. This material is free for non-profit research, but needs a special license for any commercial purpose. Please contact Alessandro Bria at a.bria@unicas.it or Giulio Iannello at 
+*    1. This material is free for non-profit research, but needs a special license for any commercial purpose. Please contact Alessandro Bria at a.bria@unicas.it or Giulio Iannello at
 *       g.iannello@unicampus.it for further details.
 *    2. You agree to appropriately cite this work in your related studies and publications.
 *
@@ -18,7 +19,7 @@
 *
 *    3. This material is provided by  the copyright holders (Alessandro Bria  and  Giulio Iannello),  University Campus Bio-Medico and contributors "as is" and any express or implied war-
 *       ranties, including, but  not limited to,  any implied warranties  of merchantability,  non-infringement, or fitness for a particular purpose are  disclaimed. In no event shall the
-*       copyright owners, University Campus Bio-Medico, or contributors be liable for any direct, indirect, incidental, special, exemplary, or  consequential  damages  (including, but not 
+*       copyright owners, University Campus Bio-Medico, or contributors be liable for any direct, indirect, incidental, special, exemplary, or  consequential  damages  (including, but not
 *       limited to, procurement of substitute goods or services; loss of use, data, or profits;reasonable royalties; or business interruption) however caused  and on any theory of liabil-
 *       ity, whether in contract, strict liability, or tort  (including negligence or otherwise) arising in any way out of the use of this software,  even if advised of the possibility of
 *       such damage.
@@ -47,27 +48,27 @@ using namespace terafly;
  *******************************************************************************************************************************/
 namespace terafly
 {
-    /*******************
+/*******************
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.5.11";          // software version
-    int DEBUG = LEV_MAX;                    // debug level
-    debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
-    std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
-    /*-------------------------------------------------------------------------------------------------------------------------*/
+std::string version = "2.5.11";          // software version
+int DEBUG = LEV_MAX;                    // debug level
+debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
+std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
+/*-------------------------------------------------------------------------------------------------------------------------*/
 
-    /*******************
+/*******************
     *  SYNCRONIZATION  *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    QMutex updateGraphicsInProgress;
-    /*-------------------------------------------------------------------------------------------------------------------------*/
+QMutex updateGraphicsInProgress;
+/*-------------------------------------------------------------------------------------------------------------------------*/
 
-    static std::map < std::string, iim::VirtualVolume* > volumes_opened = std::map< std::string, iim::VirtualVolume* >();
+static std::map < std::string, iim::VirtualVolume* > volumes_opened = std::map< std::string, iim::VirtualVolume* >();
 }
 
-// 4 - Call the functions corresponding to the domenu items. 
+// 4 - Call the functions corresponding to the domenu items.
 void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
     /**/tf::debug(tf::LEV1, strprintf("menu_name = %s", menu_name.toStdString().c_str()).c_str(), __itm__current__function__);
@@ -85,13 +86,13 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
 
         // reset widgets to default state
         PMain::getInstance()->reset();
-    }    
+    }
     else if(menu_name == tr("TeraConverter"))
     {
         // launch PConverter's GUI
         PConverter::instance(&callback, 0);
         PConverter::instance()->show();
-        PConverter::instance()->move(QApplication::desktop()->screen()->rect().center() - PConverter::instance()->rect().center());
+        //注释 PConverter::instance()->move(QApplication::desktop()->screen()->rect().center() - PConverter::instance()->rect().center());
         PConverter::instance()->raise();
         PConverter::instance()->activateWindow();
     }
@@ -101,7 +102,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
             CViewer::getCurrent()->invokedFromVaa3D();
         else
             QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
-                                     "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
+                                                       "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
     }
     else
     {
@@ -118,7 +119,7 @@ void TeraFly::doaction(const QString &action_name)
             CViewer::getCurrent()->invokedFromVaa3D();
         else
             QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
-                                     "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
+                                                       "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
     }
     else if(action_name == tr("marker multiselect"))
     {
@@ -129,14 +130,16 @@ void TeraFly::doaction(const QString &action_name)
     {
         if(CViewer::getCurrent())
         {
+            qDebug()<<"-------------------------------0";
             CViewer::getCurrent()->undoStack.beginMacro("vaa3d action");
             CViewer::getCurrent()->undoStack.push(new QUndoVaa3DNeuron(CViewer::getCurrent()));
             CViewer::getCurrent()->undoStack.endMacro();
             PAnoToolBar::instance()->buttonUndo->setEnabled(true);
         }
     }
-    else
+    else{
         QMessageBox::information(0, "Information", tf::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());
+    }
 }
 
 // returns true if version >= min_required_version, where version format is version.major.minor
@@ -170,8 +173,45 @@ bool TeraFly::checkVersion(std::string version, std::string min_required_version
     }
 }
 
-
 // access the 3D curve set for the whole image at the given resolution (default: highest resolution)
+//ljs,dlc,csz
+void PluginInterface::pushImageToTeraWin(v3dhandle data)
+{
+    //获取terafly的glwidget 将data赋值给这个
+    V3dR_GLWidget* terafly_w = CViewer::getCurrent()->getGLWidget();
+    My4DImage *newimage = ((XFormWidget*)data)->getImageData();
+    terafly_w->getiDrawExternalParameter()->image4d = newimage;
+    terafly_w->updateImageData();
+}
+
+bool PluginInterface::updateTerafly()
+{
+    return true;
+}
+
+void PluginInterface::putDataToCViewer(const unsigned char *data,V3DPluginCallback2* call)
+{
+    CViewer::getCurrent()->setImageData(data,call);
+    updateTerafly();
+}
+
+void PluginInterface::OpenImageInTerafly(QString image_path,V3DPluginCallback2* callback)
+{
+    //v3d_msg("csz developed");
+    PMain::instance(callback,0);
+    PMain::getInstance()->reset();
+    std::string path=image_path.toStdString();
+    PMain::getInstance()->openImage(path);
+
+}
+
+bool PluginInterface::isCViewerVisable()
+{
+    if(CViewer::getCurrent())
+        return true;
+    return false;
+}
+
 NeuronTree tf::PluginInterface::getSWC(int resolution)
 {
     NeuronTree nt;
@@ -207,7 +247,7 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
     return nt;
 }
 
-bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
+bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate, int resolution)
 {
     try
     {
@@ -228,7 +268,8 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, int resolution)
         CAnnotations::getInstance()->addCurves(x_range, y_range, z_range, nt);
 
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
+        return true;
     }
     catch (tf::RuntimeException & e)
     {
@@ -264,13 +305,14 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
+        //        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
     }
 
     return markers;
 }
 
-bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resolution)
+bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collaborate, int resolution)
 {
     try
     {
@@ -291,7 +333,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, int resoluti
         CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, landmark_list);
 
         // push content to viewer
-        CViewer::getCurrent()->loadAnnotations();
+        CViewer::getCurrent()->loadAnnotations(collaborate);
     }
     catch (tf::RuntimeException & e)
     {
@@ -542,26 +584,17 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     }
 }
 
-void PluginInterface::pushImageToTeraWin(v3dhandle data)
-{
-    // get XFormWidget after one plugin operation, press this widget to Terafly CViewer
-    V3dR_GLWidget* terafly_w = CViewer::getCurrent()->getGLWidget();
-    My4DImage *newimage = ((XFormWidget*)data)->getImageData();
-    terafly_w->getiDrawExternalParameter()->image4d = newimage;
-    terafly_w->updateImageData();
-}
-
 
 /* ======================================================================================================
- * This method is called by [v3dr_glwidget] when [Alt + F] is hit, 
+ * This method is called by [v3dr_glwidget] when [Alt + F] is hit,
  * which casts CViewer to INeuronAssembler in order to allow Neuron Assembler talking to terafly directly.
  * ========================================================================== MK, Dec, 2019 ============= */
 #ifdef _NEURON_ASSEMBLER_
 INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()
 {
-	terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
-	INeuronAssembler* interfacePtr = qobject_cast<terafly::CViewer*>(currViewerPtr);
-	return interfacePtr;
+    terafly::CViewer* currViewerPtr = terafly::CViewer::getCurrent();
+    INeuronAssembler* interfacePtr = qobject_cast<terafly::CViewer*>(currViewerPtr);
+    return interfacePtr;
 }
 #endif
 // -------------------------------------------------------------------------------------------------------- //

@@ -14,24 +14,30 @@
 #endif
 #include <map>
 #include "qaction.h"
-
+#include<QTreeWidget>
+#include<QCheckBox>
+#include<QLineEdit>
+#include<QVBoxLayout>
+#include<QHBoxLayout>
+#include<QMessageBox>
+#include <QMainWindow>
+#include<QApplication>
 #ifdef __v3d_custom_toolbar_plugin__
 	#include "../basic_c_fun/v3d_interface.h"
 #else
 	#include "../v3d/mainwindow.h"
 	#include "../basic_c_fun/v3d_interface.h"
 #endif
+#include <QToolBar>
 
 class EmptyClass{};
 
 typedef void (EmptyClass::*VoidFunc)();
 #ifndef __v3d_custom_toolbar_plugin__
 typedef void (MainWindow::*MainWindowFunc)();
-#if defined(USE_Qt5)
+
 typedef void (QMdiArea::*WorkspaceFunc)();
-#else
-typedef void (QWorkspace::*WorkspaceFunc)();
-#endif
+
 typedef void (V3d_PluginLoader::*V3dPluginLoaderFunc)();
 #endif
 typedef void (TriviewControl::*TriviewFunc)();

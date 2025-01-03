@@ -45,7 +45,7 @@ void CompartmentMapWidget::loadAtlas()
 
     if(QFile::exists(atlasfile))
     {
-        ((Renderer_gl1 *)renderer)->loadV3DSFile(atlasfile);
+       // ((Renderer_gl1 *)renderer)->loadV3DSFile(atlasfile);
         //((Renderer_gl1 *)renderer)->loadObjectFromFile(atlasfile.toStdString().c_str());
 
         updateTool();
@@ -57,52 +57,52 @@ void CompartmentMapWidget::loadAtlas()
 // display OpenGL graphics
 void CompartmentMapWidget::initializeGL()
 {
-    qDebug()<<"CompartmentMapWidget initializeGL ... ...";
+//    qDebug()<<"CompartmentMapWidget initializeGL ... ...";
 
-    _isSoftwareGL = false;
-    GLeeInit();
+//    _isSoftwareGL = false;
+//    GLeeInit();
 
-    renderer = new Renderer_gl1(this);
+//    renderer = new Renderer_gl1(this);
 
-    // settings
-    renderer->bShowBoundingBox = false; //
-    renderer->bShowAxes        = false;
+//    // settings
+//    renderer->bShowBoundingBox = false; //
+//    renderer->bShowAxes        = false;
 
-    renderer->tryTexCompress = false; // texture
-    renderer->tryTex3D       = false;
-    renderer->tryTexNPT      = false;
-    renderer->tryTexStream   = true;
+//    renderer->tryTexCompress = false; // texture
+//    renderer->tryTex3D       = false;
+//    renderer->tryTexNPT      = false;
+//    renderer->tryTexStream   = true;
 
-    renderer->lineType   = false; // swc
+//    renderer->lineType   = false; // swc
 
-    // prepare
-    if (renderer)
-    {
-        loadAtlas();
-        if(renderer->hasError())	POST_CLOSE(this);
+//    // prepare
+//    if (renderer)
+//    {
+//        loadAtlas();
+//        if(renderer->hasError())	POST_CLOSE(this);
 
-        //qDebug()<<"label surf ..."<<((Renderer_gl1 *)renderer)->listLabelSurf.size();
-        //qDebug()<<"triangle ..."<<((Renderer_gl1 *)renderer)->list_listTriangle.size();
-        //qDebug()<<"glist label ..."<<((Renderer_gl1 *)renderer)->list_glistLabel.size();
+//        //qDebug()<<"label surf ..."<<((Renderer_gl1 *)renderer)->listLabelSurf.size();
+//        //qDebug()<<"triangle ..."<<((Renderer_gl1 *)renderer)->list_listTriangle.size();
+//        //qDebug()<<"glist label ..."<<((Renderer_gl1 *)renderer)->list_glistLabel.size();
 
-        listLabelSurf = ((Renderer_gl1 *)renderer)->getListLabelSurf();
+//        listLabelSurf = ((Renderer_gl1 *)renderer)->getListLabelSurf();
 
-        pCompartmentComboBox->addItem("All On", true);
-        pCompartmentComboBox->addItem("All Off", false);
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            pCompartmentComboBox->addItem(listLabelSurf[i].name, true);
-        }
+//        pCompartmentComboBox->addItem("All On", true);
+//        pCompartmentComboBox->addItem("All Off", false);
+//        for(int i=0; i<listLabelSurf.size(); i++)
+//        {
+//            pCompartmentComboBox->addItem(listLabelSurf[i].name, true);
+//        }
 
-        update();
-    }
+//        update();
+//    }
 
 }
 void CompartmentMapWidget::resizeGL(int width, int height){
-    V3dR_GLWidget::resizeGL(width, height);
+    //V3dR_GLWidget::resizeGL(width, height);
 }
 void CompartmentMapWidget::paintGL(){
-    V3dR_GLWidget::paintGL();
+    //V3dR_GLWidget::paintGL();
 }
 
 void CompartmentMapWidget::setRotation(const Rotation3D& newRotation)
@@ -144,25 +144,25 @@ void CompartmentMapWidget::setFocus(const Vector3D& f)
 
 // event
 void CompartmentMapWidget::focusInEvent(QFocusEvent* e){
-    V3dR_GLWidget::focusInEvent(e);
+    //V3dR_GLWidget::focusInEvent(e);
 }
 void CompartmentMapWidget::focusOutEvent(QFocusEvent* e){
-    V3dR_GLWidget::focusOutEvent(e);
+    //V3dR_GLWidget::focusOutEvent(e);
 }
 void CompartmentMapWidget::enterEvent(QEvent *e){
-    V3dR_GLWidget::enterEvent(e);
+    //V3dR_GLWidget::enterEvent(e);
 }
 void CompartmentMapWidget::leaveEvent(QEvent *e){
-    V3dR_GLWidget::leaveEvent(e);
+    //V3dR_GLWidget::leaveEvent(e);
 }
 void CompartmentMapWidget::mousePressEvent(QMouseEvent *event){
-    V3dR_GLWidget::mousePressEvent(event);
+    //V3dR_GLWidget::mousePressEvent(event);
 }
 void CompartmentMapWidget::mouseReleaseEvent(QMouseEvent *event){
-    V3dR_GLWidget::mouseReleaseEvent(event);
+    //V3dR_GLWidget::mouseReleaseEvent(event);
 }
 void CompartmentMapWidget::mouseMoveEvent(QMouseEvent *event){
-    V3dR_GLWidget::mouseMoveEvent(event);
+    //V3dR_GLWidget::mouseMoveEvent(event);
 }
 void CompartmentMapWidget::wheelEvent(QWheelEvent *event){
     float d = (event->delta())/100;  //
@@ -179,63 +179,63 @@ void CompartmentMapWidget::switchCompartment(int num)
 {
     qDebug()<<"switch status of compartment ... #"<<num;
 
-    if(num<0 || num>listLabelSurf.size()+1) return;
+//    if(num<0 || num>listLabelSurf.size()+1) return;
 
-    listLabelSurf = ((Renderer_gl1 *)renderer)->getListLabelSurf();
+//    listLabelSurf = ((Renderer_gl1 *)renderer)->getListLabelSurf();
 
-    if(num==0) // all on
-    {
-        //gui
-        pCompartmentComboBox->setItemData(0, true);
-        pCompartmentComboBox->setItemData(1, false);
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            pCompartmentComboBox->setItemData(i+2, true);
-        }
+//    if(num==0) // all on
+//    {
+//        //gui
+//        pCompartmentComboBox->setItemData(0, true);
+//        pCompartmentComboBox->setItemData(1, false);
+//        for(int i=0; i<listLabelSurf.size(); i++)
+//        {
+//            pCompartmentComboBox->setItemData(i+2, true);
+//        }
 
-        //widget
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            listLabelSurf[i].on = true;
-        }
-    }
-    else if(num==1) // all off
-    {
-        //gui
-        pCompartmentComboBox->setItemData(0, false);
-        pCompartmentComboBox->setItemData(1, true);
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            pCompartmentComboBox->setItemData(i+2, false);
-        }
+//        //widget
+//        for(int i=0; i<listLabelSurf.size(); i++)
+//        {
+//            listLabelSurf[i].on = true;
+//        }
+//    }
+//    else if(num==1) // all off
+//    {
+//        //gui
+//        pCompartmentComboBox->setItemData(0, false);
+//        pCompartmentComboBox->setItemData(1, true);
+//        for(int i=0; i<listLabelSurf.size(); i++)
+//        {
+//            pCompartmentComboBox->setItemData(i+2, false);
+//        }
 
-        //widget
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            listLabelSurf[i].on = false;
-        }
-    }
-    else
-    {
-        //gui
-        pCompartmentComboBox->setItemData(0, false);
-        pCompartmentComboBox->setItemData(1, false);
+//        //widget
+//        for(int i=0; i<listLabelSurf.size(); i++)
+//        {
+//            listLabelSurf[i].on = false;
+//        }
+//    }
+//    else
+//    {
+//        //gui
+//        pCompartmentComboBox->setItemData(0, false);
+//        pCompartmentComboBox->setItemData(1, false);
 
-        if(pCompartmentComboBox->itemData(num).toBool())
-            pCompartmentComboBox->setItemData(num, false);
-        else
-            pCompartmentComboBox->setItemData(num, true);
+//        if(pCompartmentComboBox->itemData(num).toBool())
+//            pCompartmentComboBox->setItemData(num, false);
+//        else
+//            pCompartmentComboBox->setItemData(num, true);
 
-        //widget
-        listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
-    }
+//        //widget
+//        listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
+//    }
 
-    ((Renderer_gl1 *)renderer)->setListLabelSurf(listLabelSurf);
+//    ((Renderer_gl1 *)renderer)->setListLabelSurf(listLabelSurf);
 
-    update();
+//    update();
 
-    // test codes
-    emit viscomp3dview(listLabelSurf);
+//    // test codes
+//    emit viscomp3dview(listLabelSurf);
 }
 
 void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboBox)

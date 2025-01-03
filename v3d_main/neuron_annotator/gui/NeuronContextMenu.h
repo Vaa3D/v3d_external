@@ -7,15 +7,15 @@
 
 class NeuronContextMenu : public QMenu
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit NeuronContextMenu(QWidget *parent = 0);
     QAction* exec(const QPoint& pos, int neuronIndex, bool isShown = true);
     void connectActions(const NeuronSelectionModel& neuronSelectionModel);
 
-signals:
+//signals:
 
-public slots:
+//public slots:
 
 protected:
     //

@@ -43,11 +43,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //#include "../common_lib/src_packages/mylib_tiff/image.h"
 //};
 
-#ifdef _ALLOW_WORKMODE_MENU_
+//#ifdef _ALLOW_WORKMODE_MENU_
 #include "../neuron_annotator/utility/ImageLoaderBasic.h"
-#endif
+//#endif
 
 typedef unsigned short int USHORTINT16;
+
 
 
 void Image4DSimple::loadImage(const char* filename)
@@ -170,7 +171,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
     //else if ( curFileSuffix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     else if ( curFileSuffix && strcasecmp(curFileSuffix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
     {
-    	  v3d_msg("start to try v3dpbd", 0);
+          v3d_msg("start to try v3dpbd", 0);
         ImageLoaderBasic imageLoader;
         if (! imageLoader.loadRaw2StackPBD(imgSrcFile, this, false) == 0) {
             v3d_msg("Error happens in v3dpbd file reading. Stop. \n", false);
@@ -189,7 +190,7 @@ void Image4DSimple::loadImage(const char* filename, bool b_useMyLib)
     }
 #endif
 	else //then assume it is Hanchuan's Vaa3D RAW format
-	{
+    {
 		v3d_msg("The data does not have supported image file suffix, -- now this program assumes it is Vaa3D's RAW format and tries to load it... \n", false);
 		if (loadRaw2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 		{

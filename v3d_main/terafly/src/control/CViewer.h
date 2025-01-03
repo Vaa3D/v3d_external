@@ -125,7 +125,7 @@ class terafly::CViewer : public QWidget
         * renderer at the given location.
         * This is based on the Vaa3D 3D point selection with one mouse click.
         ***********************************************************************************/
-        XYZ getRenderer3DPoint(int x, int y) throw (tf::RuntimeException);
+        XYZ getRenderer3DPoint(int x, int y) ;
 
         /**********************************************************************************
         * Syncronizes widgets from <src> to <dst>
@@ -134,6 +134,21 @@ class terafly::CViewer : public QWidget
 
 
     public:
+
+
+        //ljs,dlc,csz
+        void setImageData(const unsigned char*data,V3DPluginCallback2 *);
+        inline unsigned char*getImageData(){
+            return imgData;
+        }
+        inline unsigned char*setImageData1(unsigned char*data){
+            imgData = data;
+        }
+
+
+
+
+
 
         //CONSTRUCTOR, DECONSTRUCTOR
         CViewer(V3DPluginCallback2* _V3D_env, int _resIndex, tf::uint8* _imgData, int _volV0, int _volV1,
@@ -246,7 +261,7 @@ class terafly::CViewer : public QWidget
         * Called by the next(prev) <CExplorerWindow>  when the user  zooms out(in) and  the
         * lower(higher) resoolution has to be reestabilished.
         ***********************************************************************************/
-        void restoreViewerFrom(CViewer* source) throw (tf::RuntimeException);
+        void restoreViewerFrom(CViewer* source) ;
 
         /**********************************************************************************
         * Generates a new viewer using the given coordinates.
@@ -269,7 +284,7 @@ class terafly::CViewer : public QWidget
         /**********************************************************************************
         * Refresh image data (if viewer is not busy - otherwise no refresh is possible)
         ***********************************************************************************/
-        void refresh() throw (tf::RuntimeException);
+        void refresh() ;
 
         /**********************************************************************************
         * Resizes  the  given image subvolume in a  newly allocated array using the fastest
@@ -288,7 +303,7 @@ class terafly::CViewer : public QWidget
                    int& y0m, int& y1m,          // black-filled VOI [y0m, y1m) in the local rfsys
                    int& z0m, int& z1m,          // black-filled VOI [z0m, z1m) in the local rfsys
                    int& t0m, int& t1m)          // black-filled VOI [t0m, t1m] in the local rfsys
-        throw (tf::RuntimeException);
+        ;
 
         /**********************************************************************************
         * Returns  the  maximum intensity projection  of the given VOI in a newly allocated
@@ -302,26 +317,26 @@ class terafly::CViewer : public QWidget
                    tf::direction dir = tf::z,
                    bool to_BGRA = false,        //true if mip data must be stored into BGRA format
                    tf::uint8 alpha = 255)      //alpha transparency used if to_BGRA is true
-        throw (tf::RuntimeException);
+        ;
 
 
         /**********************************************************************************
         * Makes the current view the last one by  deleting (and deallocting) its subsequent
         * views.
         ***********************************************************************************/
-        void makeLastView() throw (tf::RuntimeException);
+        void makeLastView() ;
 
         /**********************************************************************************
         * Annotations are stored/loaded to/from the <CAnnotations> object
         ***********************************************************************************/
-        void storeAnnotations() throw (tf::RuntimeException);
-        void loadAnnotations() throw (tf::RuntimeException);
-        void clearAnnotations() throw (tf::RuntimeException);
-        void deleteSelectedMarkers() throw (tf::RuntimeException);
-        void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) throw (tf::RuntimeException);
-        void createMarkerAt(int x, int y) throw (tf::RuntimeException);
-        void createMarker2At(int x, int y) throw (tf::RuntimeException);
-        void updateAnnotationSpace() throw (tf::RuntimeException);
+        void storeAnnotations() ;
+        void loadAnnotations(bool collaborate=false) ;
+        void clearAnnotations() ;
+        void deleteSelectedMarkers() ;
+        void deleteMarkerAt(int x, int y, QList<LocationSimple>* deletedMarkers = 0) ;
+        void createMarkerAt(int x, int y) ;
+        void createMarker2At(int x, int y) ;
+        void updateAnnotationSpace() ;
 
         /**********************************************************************************
         * Saves/restores the state of PMain spinboxes for subvolume selection
@@ -492,7 +507,7 @@ class terafly::CViewer : public QWidget
         /**********************************************************************************
         * utility method: return volume dimension along the given direction
         ***********************************************************************************/
-        inline int dimension(iim::axis dir) throw (tf::RuntimeException)
+        inline int dimension(iim::axis dir) 
         {
             if(dir == iim::vertical || dir == iim::inv_vertical)
                 return volV1-volV0;
@@ -507,7 +522,7 @@ class terafly::CViewer : public QWidget
         /**********************************************************************************
         * utility method: return current origin coordinate along the given direction
         ***********************************************************************************/
-        inline int origin(iim::axis dir) throw (tf::RuntimeException)
+        inline int origin(iim::axis dir) 
         {
             if(dir == iim::vertical || dir == iim::inv_vertical)
                 return volV0;
@@ -523,7 +538,7 @@ class terafly::CViewer : public QWidget
         * utility method: return Vaa3D viewer limit along the given direction
         ***********************************************************************************/
         template<typename T>
-        T vaa3dLimit(iim::axis dir) throw (tf::RuntimeException)
+        T vaa3dLimit(iim::axis dir) 
         {
             if(dir == iim::vertical || dir == iim::inv_vertical)
                 return static_cast<T>(LIMIT_VOLY);
@@ -666,9 +681,9 @@ class terafly::CViewer : public QWidget
         }
 
         // return Vaa3D image
-        const Image4DSimple* getImage() throw (tf::RuntimeException);
+        const Image4DSimple* getImage() ;
 
-        void  setImage(int x, int y, int z) throw (tf::RuntimeException);
+        void  setImage(int x, int y, int z) ;
 
 };
 

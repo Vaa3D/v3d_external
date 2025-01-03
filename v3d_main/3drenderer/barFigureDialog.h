@@ -45,7 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #else
   #include <QtGui>
 #endif
-
+#include <QDialog>
 class barFigureDialog : public QDialog
 {
 public:

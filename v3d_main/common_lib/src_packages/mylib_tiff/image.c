@@ -24,7 +24,7 @@
 #include "MY_TIFF/tiff.io.h"
 #include "MY_TIFF/tiff.image.h"
 #include "image.h"
-
+#include <ctype.h>
 /****************************************************************************************
  *                                                                                      *
  *  SPACE MANAGEMENT AND HELPER ROUTINES                                                *

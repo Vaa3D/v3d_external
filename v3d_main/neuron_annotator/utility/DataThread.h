@@ -11,7 +11,7 @@ class OntologyAnnotation;
 
 class DataThread : public QThread
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit DataThread(char* endpoint_url, QObject *parent = 0);
@@ -22,7 +22,7 @@ public:
     // when it's done.
     void disregard();
 
-signals:
+//signals:
     // The caller must listen for this signal and take responsibility for the
     // memory management of the parameter object (results).
     void gotResults(const void *results);
@@ -43,7 +43,7 @@ protected:
 
 class GetOntologyThread : public DataThread
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
     explicit GetOntologyThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
@@ -58,7 +58,7 @@ private:
 
 class GetAnnotatedBranchThread : public DataThread
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
     explicit GetAnnotatedBranchThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
@@ -75,7 +75,7 @@ private:
 
 class GetEntityThread : public DataThread
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
     explicit GetEntityThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
@@ -90,7 +90,7 @@ private:
 
 class GetParentsThread : public DataThread
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit GetParentsThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
@@ -105,7 +105,7 @@ private:
 
 class GetAncestorThread : public DataThread
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
     explicit GetAncestorThread(char* endpoint_url, qint64 entityId, const QString & type, QObject *parent = 0);
@@ -121,7 +121,7 @@ private:
 
 class GetEntityAnnotationsThread : public DataThread
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit GetEntityAnnotationsThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);
@@ -139,7 +139,7 @@ private:
 
 class CreateAnnotationThread : public DataThread
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit CreateAnnotationThread(char* endpoint_url, OntologyAnnotation *annotation, QObject *parent = 0);
@@ -157,7 +157,7 @@ private:
 
 class RemoveAnnotationThread : public DataThread
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit RemoveAnnotationThread(char* endpoint_url, qint64 annotationId, QObject *parent = 0);
@@ -173,7 +173,7 @@ private:
 
 class GetAnnotationSessionThread : public DataThread
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit GetAnnotationSessionThread(char* endpoint_url, qint64 sessionId, QObject *parent = 0);
@@ -190,7 +190,7 @@ private:
 
 class SelectEntityThread : public DataThread
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit SelectEntityThread(char* endpoint_url, qint64 entityId, QObject *parent = 0);

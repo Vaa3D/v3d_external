@@ -7,7 +7,7 @@
 
 class ColorRangeSliderWidget : public QWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
 
@@ -26,12 +26,12 @@ public:
     void setDataRange(qreal min, qreal max) {dataMin = min; dataMax = max;}
     void setHighlightControl(Control);
 
-signals:
+//signals:
     void hdrMinChanged(int min);
     void hdrMaxChanged(int max);
     void gammaChanged(double gamma);
 
-public slots:
+//public slots:
     void setHdrMin(int min);
     void setHdrMax(int max);
     void setGamma(double gamma);

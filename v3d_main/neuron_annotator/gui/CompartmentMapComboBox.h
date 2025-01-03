@@ -12,7 +12,7 @@
 // interactive select compartment
 class CompartmentMapComboBox: public QComboBox
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     CompartmentMapComboBox(QWidget *widget = 0);

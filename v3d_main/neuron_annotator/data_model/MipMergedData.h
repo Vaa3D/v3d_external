@@ -14,7 +14,7 @@ class MipMergeLayer; // forward declaration
 // a blended image, for use in the NaLargeMipWidget.
 class MipMergedData : public NaLockableData
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     friend class MipMergeLayer;
 
@@ -25,7 +25,7 @@ public:
             const NeuronSelectionModel& neuronSelectionModel);
     virtual ~MipMergedData();
 
-public slots:
+//public slots:
     virtual void update(); // full update, on mipFragmentData.dataChanged
     void toggleNeuronVisibility(int index, bool status); // update a single neuron, on neuronSelectionModel.neuronMaskUpdated, O(log nfrags)
     void toggleOverlayVisibility(int index, bool status);
@@ -99,7 +99,7 @@ public:
 // are individual neuron mips, and the root is a combined mip.
 class MipMergeLayer : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit MipMergeLayer(MipMergedData& mipMergedDataParam,
@@ -111,10 +111,10 @@ public:
     bool updateWithoutSignal();
     void setVisibility(bool bIsVisibleParam);
 
-signals:
+//signals:
     void dataChanged();
 
-public slots:
+//public slots:
     void update(); // emits dataChanged() if data changes.
 
 protected:

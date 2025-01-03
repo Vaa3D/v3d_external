@@ -1,4 +1,8 @@
-﻿#include "./v3dr_gl_vr.h"
+﻿#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+#include <GL/glew.h>
+#include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
 #include"./spline.h"
 //#include <GL/glew.h>
@@ -23,6 +27,8 @@
 #include <stdio.h>
 #include <string>
 #include <cstdlib>
+#include <QThread> //dlc
+
 
 #include "shader_m.h"
 #include "Sphere.h"
@@ -36,6 +42,9 @@
 #define APIENTRY
 #endif
 
+//#ifdef _WIN32
+//#include <windows.h>
+//#endif
 #ifndef _countof
 #define _countof(x) (sizeof(x)/sizeof((x)[0]))
 #endif
@@ -88,10 +97,12 @@ bool CMainApplication::showshootingPad = false;
 #define default_radius 0.618
 #define drawing_step_size 2  //the larger, the fewer SWC nodes
 //LMG for Windows UTC Timestamp 15/10/2018
+#ifdef Q_OS_WIN
 #define timegm _mkgmtime
+#endif
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
-const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
+const double neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
 { 255.0 , 255.0 , 255.0 }, //white
 { 255.0 , 255.0 , 251.062496062 },
 { 255.0 , 255.0 , 247.124992125 },
@@ -657,14 +668,17 @@ void dprintf( const char *fmt, ... )
 	va_list args;
 	char buffer[ 2048 ];
 
-	va_start( args, fmt );
+    va_start( args, fmt );
+#ifdef Q_OS_WIN
 	vsprintf_s( buffer, fmt, args );
+#endif
 	va_end( args );
 
 	if ( g_bPrintf )
 		printf( "%s", buffer );
-
+#ifdef Q_OS_WIN
 	OutputDebugStringA( buffer );
+#endif
 }
 
 
@@ -750,6 +764,7 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 
 	for( int i = 1; i < argc; i++ )
 	{
+#ifdef Q_OS_WIN
 		if( !stricmp( argv[i], "-gldebug" ) )
 		{
 			m_bDebugOpenGL = true;
@@ -770,6 +785,27 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 		{
 			g_bPrintf = false;
 		}
+#endif
+        if( !strcmp( argv[i], "-gldebug" ) )
+        {
+            m_bDebugOpenGL = true;
+        }
+        else if( !strcmp( argv[i], "-verbose" ) )
+        {
+            m_bVerbose = true;
+        }
+        else if( !strcmp( argv[i], "-novblank" ) )
+        {
+            m_bVblank = false;
+        }
+        else if( !strcmp( argv[i], "-noglfinishhack" ) )
+        {
+            m_bGlFinishHack = false;
+        }
+        else if( !strcmp( argv[i], "-noprintf" ) )
+        {
+            g_bPrintf = false;
+        }
 	}
 	// other initialization tasks are done in BInit
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
@@ -782,7 +818,8 @@ CMainApplication::CMainApplication( int argc, char *argv[] )
 CMainApplication::~CMainApplication()
 {
 	// work is done in Shutdown
-	dprintf( "Shutdown" );
+    qDebug()<<"shut down";
+    qDebug()<<"csz debug";
 	this->mainwindow->show();
 }
 
@@ -824,8 +861,10 @@ bool CMainApplication::BInit()
 	{
 		m_pHMD = NULL;
 		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+
+        printf( buf, sizeof( buf ), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+
+        //SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
 
@@ -840,8 +879,8 @@ bool CMainApplication::BInit()
 		vr::VR_Shutdown();
 
 		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+        printf( buf, sizeof( buf ), "Unable to get render model interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+        //SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
 	m_pChaperone = (vr::IVRChaperone *)vr::VR_GetGenericInterface( vr::IVRChaperone_Version, &eError );
@@ -853,8 +892,8 @@ bool CMainApplication::BInit()
 		vr::VR_Shutdown();
 
 		char buf[1024];
-		sprintf_s( buf, sizeof( buf ), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
-		SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
+        printf( buf, sizeof( buf ), "Unable to get chaper interface: %s", vr::VR_GetVRInitErrorAsEnglishDescription( eError ) );
+        //SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "VR_Init Failed", buf, NULL );
 		return false;
 	}
 
@@ -982,8 +1021,8 @@ bool CMainApplication::BInit()
 	u_clippoint = glm::vec3(0.0,0.0,2.0);
 	teraflyPOS = 0;
 	CollaborationCreatorPos = 0;
-	SDL_StartTextInput();
-	SDL_ShowCursor( SDL_DISABLE );
+    //SDL_StartTextInput();
+    //SDL_ShowCursor( SDL_DISABLE );
 	currentNT.listNeuron.clear();
 	currentNT.hashNeuron.clear();
 
@@ -1442,6 +1481,7 @@ bool CMainApplication::HandleInput()
 		if ( sdlEvent.type == SDL_QUIT )
 		{
 			bRet = true;
+            return bRet;
 		}
 		else if ( sdlEvent.type == SDL_KEYDOWN )
 		{
@@ -1449,6 +1489,7 @@ bool CMainApplication::HandleInput()
 			     || sdlEvent.key.keysym.sym == SDLK_q )
 			{
 				bRet = true;
+                return bRet;
 			}
 			if( sdlEvent.key.keysym.sym == SDLK_c )
 
@@ -2067,8 +2108,7 @@ bool CMainApplication::HandleInput()
 void CMainApplication::RunMainLoop()
 {
 	bool bQuit = false;
-
-	while ( !bQuit )
+    while ( !bQuit )
 	{
 		bQuit = HandleInput();
 		if (bQuit) break;
@@ -2082,8 +2122,9 @@ bool CMainApplication::HandleOneIteration()
 	bool bQuit = false;
 	bQuit = HandleInput();
 	RenderFrame();
+    SDL_StopTextInput();
 	if(bQuit==true) Shutdown();
-	
+
 	return bQuit;
 
 }
@@ -3437,8 +3478,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
 							//sketchedNTList.removeAt(segInfo[1]);
 							//SetupSingleMorphologyLine(segInfo[0],2);
 							//SetupSingleMorphologyLine(segInfo[1],2);
-							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
-							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
+//							qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
+//							qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
 							QString tempdelname = sketchedNTList.at(segInfo[0]).name;
 							QString tempdelname1 = sketchedNTList.at(segInfo[1]).name;
 							bool delerror1 = DeleteSegment(tempdelname);
@@ -4160,7 +4201,7 @@ void CMainApplication::RenderFrame()
 		}
 
 		RenderStereoTargets();
-		RenderCompanionWindow();
+        RenderCompanionWindow();
 		vr::Texture_t leftEyeTexture = {(void*)(uintptr_t)leftEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture );
 		vr::Texture_t rightEyeTexture = {(void*)(uintptr_t)rightEyeDesc.m_nResolveTextureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
@@ -4177,7 +4218,7 @@ void CMainApplication::RenderFrame()
 	}
 	// SwapWindow
 	{
-		SDL_GL_SwapWindow( m_pCompanionWindow );
+        SDL_GL_SwapWindow( m_pCompanionWindow );
 	}
 
 	// Clear
@@ -4194,14 +4235,12 @@ void CMainApplication::RenderFrame()
 		glFlush();
 		glFinish();
 	}
-
 	// Spew out the controller and pose count whenever they change.
 	if ( m_iTrackedControllerCount != m_iTrackedControllerCount_Last || m_iValidPoseCount != m_iValidPoseCount_Last )
 	{
 		m_iValidPoseCount_Last = m_iValidPoseCount;//question: what are these? why keep count and count_last? just to observe change?
 		m_iTrackedControllerCount_Last = m_iTrackedControllerCount;//note: maybe used for drawing controllers
-		
-		dprintf( "PoseCount:%d(%s) Controllers:%d\n", m_iValidPoseCount, m_strPoseClasses.c_str(), m_iTrackedControllerCount );
+        dprintf( "cPoseCount:%d(%s) Controllers:%d\n", m_iValidPoseCount, m_strPoseClasses.c_str(), m_iTrackedControllerCount );
 	}
 	UpdateHMDMatrixPose();
 }
@@ -5657,9 +5696,15 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 void CMainApplication::RenderControllerAxes() //note: note render, actually setup VAO and VBO for axes
 {
 	// don't draw controllers if somebody else has input focus
-	if( m_pHMD->IsInputFocusCapturedByAnotherProcess() )
+#ifdef Q_OS_WIN
+    if( !m_pHMD->IsInputAvailable() )
 		return;
+#endif
 
+#ifdef Q_OS_LINUX
+    if( m_pHMD->IsInputFocusCapturedByAnotherProcess() )
+        return;
+#endif
 	std::vector<float> vertdataarray;
 
 	m_uiControllerVertcount = 0;
@@ -6414,7 +6459,12 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
 		}
 	}
 	//=================== draw the controller axis lines ======================
-	bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
+#ifdef Q_OS_WIN
+    bool bIsInputCapturedByAnotherProcess = !m_pHMD->IsInputAvailable();
+#endif
+#ifdef Q_OS_LINUX
+    bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
+#endif
 	if( !bIsInputCapturedByAnotherProcess&&m_modeTouchPad_R == tr_clipplane)
 	{
 		glUseProgram( m_unControllerTransformProgramID );
@@ -6706,14 +6756,14 @@ QString CMainApplication::NT2QString()
 
 void CMainApplication::UpdateNTList(QString &msg, int type)//may need to be changed to AddtoNTList( , )
 {	
-	QStringList qsl = QString(msg).trimmed().split(" ",QString::SkipEmptyParts);
+    QStringList qsl = QString(msg).trimmed().split(" ",Qt::SkipEmptyParts);
 	int str_size = qsl.size()-(qsl.size()%7);//to make sure that the string list size always be 7*N;
 	//qDebug()<<"qsl.size()"<<qsl.size()<<"str_size"<<str_size;
 	NeuronSWC S_temp;
 	NeuronTree newTempNT;
 	newTempNT.listNeuron.clear();
 	newTempNT.hashNeuron.clear();
-    qDebug()<<"type"<<type<<endl;
+//    qDebug()<<"type"<<type<<endl;
 	//each segment has a unique ID storing as its name
 	newTempNT.name  = "sketch_"+ QString("%1").arg(sketchNum++);
 	for(int i=0;i<str_size;i++)
@@ -6921,11 +6971,20 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 	CGLRenderModel *pRenderModel = NULL;
 	for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
 	{
+#ifdef Q_OS_WIN
 		if( !stricmp( (*i)->GetName().c_str(), pchRenderModelName ) )
 		{
 			pRenderModel = *i;
 			break;
 		}
+#endif
+#ifdef Q_OS_LINUX
+        if( !strcmp( (*i)->GetName().c_str(), pchRenderModelName ) )
+        {
+            pRenderModel = *i;
+            break;
+        }
+#endif
 	}
 
 	// load the model if we didn't find one
@@ -6985,7 +7044,15 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
 
 float CMainApplication::GetGlobalScale()
 {
-	return m_globalScale;
+    return m_globalScale;
+}
+
+void CMainApplication::startvrloop()
+{
+    bool bQuit=false;
+    bQuit = HandleInput();
+    if(bQuit)
+        emit stopvr();
 }
 
 //-----------------------------------------------------------------------------
@@ -8301,6 +8368,7 @@ void CMainApplication::HelpFunc_createOctreetexture(int step)
 }
 void CMainApplication::StartTimer()
 {
+#ifdef Q_OS_WIN
 	LARGE_INTEGER frequencyCount;
 	QueryPerformanceFrequency(&frequencyCount);
 
@@ -8309,17 +8377,21 @@ void CMainApplication::StartTimer()
 
 	QueryPerformanceCounter(&frequencyCount);
 	CounterStart = frequencyCount.QuadPart;
+#endif
 }
 
 double CMainApplication::GetTime()
 {
+#ifdef Q_OS_WIN
 	LARGE_INTEGER currentTime;
 	QueryPerformanceCounter(&currentTime);
 	return double(currentTime.QuadPart-CounterStart)/countsPerSecond;
+#endif
 }
 
 double CMainApplication::GetFrameTime()
 {
+#ifdef Q_OS_WIN
 	LARGE_INTEGER currentTime;
 	__int64 tickCount;
 	QueryPerformanceCounter(&currentTime);
@@ -8331,6 +8403,7 @@ double CMainApplication::GetFrameTime()
 		tickCount = 0.0f;
 
 	return float(tickCount)/countsPerSecond;
+#endif
 }
 void CMainApplication::bindTexturePara()
 {

@@ -10,7 +10,7 @@ class EntityTreeItem;
 
 class EntityTreeModel : public QAbstractItemModel
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     EntityTreeModel(QObject *parent = 0);

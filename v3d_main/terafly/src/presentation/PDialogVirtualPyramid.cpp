@@ -223,7 +223,7 @@ PDialogVirtualPyramid::PDialogVirtualPyramid(const std::string & _volumepath, ii
     //setFixedWidth(900);
     //setFixedHeight(600);
 
-    this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
+    //注释this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
 
     /**/tf::debug(tf::LEV1, "object successfully constructed", __itm__current__function__);
 }

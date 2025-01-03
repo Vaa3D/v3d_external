@@ -27,6 +27,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 #include "mainwindow.h"
 #include "../imaging/v3d_imaging.h"
+#include <QInputDialog>
 using namespace std;
 #include "dialog_rotate.h"
 #include "landmark_property_dialog.h"
@@ -278,7 +279,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				V3DLONG bpos_c = QInputDialog::getInt(this, tr("Channel to extract"), tr("Which channel to extract:"), 1, 1, imgData->getCDim(), 1, &ok1);
 #else
-				V3DLONG bpos_c = QInputDialog::getInteger(this, tr("Channel to extract"), tr("Which channel to extract:"), 1, 1, imgData->getCDim(), 1, &ok1);
+                V3DLONG bpos_c = QInputDialog::getInt(this, tr("Channel to extract"), tr("Which channel to extract:"), 1, 1, imgData->getCDim(), 1, &ok1);
 #endif
 				if (ok1)
 				{
@@ -330,7 +331,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				tval = QInputDialog::getInt(this, tr("fill value"), tr("fill value:"), 0, 0, 255, 10, &ok1); //090512 RZC
 #else
-				tval = QInputDialog::getInteger(this, tr("fill value"), tr("fill value:"), 0, 0, 255, 10, &ok1); //090512 RZC
+                tval = QInputDialog::getInt(this, tr("fill value"), tr("fill value:"), 0, 0, 255, 10, &ok1); //090512 RZC
 #endif
 				if (ok1)
 				{
@@ -346,7 +347,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				mask_channel_no = QInputDialog::getInt(this, tr("range"), tr("which channel contains the mask (non-zero indicats the mask rgn:"), 3, 1, imgData->getCDim(), 1, &ok1);
 #else
-				mask_channel_no = QInputDialog::getInteger(this, tr("range"), tr("which channel contains the mask (non-zero indicats the mask rgn:"), 3, 1, imgData->getCDim(), 1, &ok1);
+                mask_channel_no = QInputDialog::getInt(this, tr("range"), tr("which channel contains the mask (non-zero indicats the mask rgn:"), 3, 1, imgData->getCDim(), 1, &ok1);
 #endif
 				if (ok1)
 				{
@@ -460,7 +461,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 					chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(imgData->getCDim()), 1, &ok1);
 #else
-					chno = QInputDialog::getInteger(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(imgData->getCDim()), 1, &ok1);
+                    chno = QInputDialog::getInt(0, QString("select a channel"), QString("select a channel of image you'd apply AutoMarker to:"), 1, 1, int(imgData->getCDim()), 1, &ok1);
 #endif
 				if (ok1)
 				{
@@ -507,7 +508,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 					mincoord = QInputDialog::getInt(this, tr("range"), tr("start section:"), 1, 1, mincoord, 10, &ok1);
 #else
-					mincoord = QInputDialog::getInteger(this, tr("range"), tr("start section:"), 1, 1, mincoord, 10, &ok1);
+                    mincoord = QInputDialog::getInt(this, tr("range"), tr("start section:"), 1, 1, mincoord, 10, &ok1);
 #endif
 					if (ok1)
 					{
@@ -515,7 +516,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 						maxcoord = QInputDialog::getInt(this, tr("range"), tr("end section:"), maxcoord, 1, maxcoord, 10, &ok1);
 #else
-						maxcoord = QInputDialog::getInteger(this, tr("range"), tr("end section:"), maxcoord, 1, maxcoord, 10, &ok1);
+                        maxcoord = QInputDialog::getInt(this, tr("range"), tr("end section:"), maxcoord, 1, maxcoord, 10, &ok1);
 #endif
 						if (ok1)
 							imgData->proj_general_projection(myaxis, mincoord-1, maxcoord-1);
@@ -546,7 +547,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				lowerbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Lowerbound of the foreground intensity:"), 30, 0, 255, 10, &ok1);
 #else
-				lowerbound = QInputDialog::getInteger(this, tr("Equalization range"), tr("Lowerbound of the foreground intensity:"), 30, 0, 255, 10, &ok1);
+                lowerbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Lowerbound of the foreground intensity:"), 30, 0, 255, 10, &ok1);
 #endif
 				if (ok1)
 				{
@@ -554,7 +555,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 					higherbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Higherbound of the foreground intensity:"), 255, 0, 255, 10, &ok1);
 #else
-					higherbound = QInputDialog::getInteger(this, tr("Equalization range"), tr("Higherbound of the foreground intensity:"), 255, 0, 255, 10, &ok1);
+                    higherbound = QInputDialog::getInt(this, tr("Equalization range"), tr("Higherbound of the foreground intensity:"), 255, 0, 255, 10, &ok1);
 #endif
 					if (ok1)
 						imgData->proj_general_hist_equalization((unsigned char)lowerbound, (unsigned char)higherbound);
@@ -579,7 +580,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				int shiftnbits = QInputDialog::getInt(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
 #else
-				int shiftnbits = QInputDialog::getInteger(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
+                int shiftnbits = QInputDialog::getInt(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
 #endif
 				if (ok1)
 				{
@@ -599,7 +600,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to scale intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
-				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to scale intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+                channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to scale intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #endif
 				if (ok1)
 				{
@@ -631,7 +632,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to threshold intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
-				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to threshold intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+                channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to threshold intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #endif
 				if (ok1)
 				{
@@ -651,7 +652,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to binarize intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
-				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to binarize intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+                channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to binarize intensity (select 0 to choose *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #endif
 				if (ok1)
 				{
@@ -676,7 +677,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 				channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to invert color (select 0 to invert *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #else
-				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to invert color (select 0 to invert *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
+                channo = QInputDialog::getInt(this, tr("Channel"), tr("Which channel to invert color (select 0 to invert *ALL* channels):"), 1, 0, imgData->getCDim(), 1, &ok1);
 #endif
 				if (ok1)
 					if (imgData) imgData->invertcolor(channo-1);
@@ -695,7 +696,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 #if defined(USE_Qt5)
 					int nchannels = QInputDialog::getInt(this, tr("select number of color channels"), tr("How many color channels to want to have:"), 2, 1, 10, 1, &ok1);
 #else
-					int nchannels = QInputDialog::getInteger(this, tr("select number of color channels"), tr("How many color channels to want to have:"), 2, 1, 10, 1, &ok1);
+                    int nchannels = QInputDialog::getInt(this, tr("select number of color channels"), tr("How many color channels to want to have:"), 2, 1, 10, 1, &ok1);
 #endif
 					if (ok1)
 					{
@@ -753,7 +754,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item==tr(" -- Randomly seed landmarks/control-points"))
 			{
 				bool ok1;
-				int kch = QInputDialog::getInteger(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
+                int kch = QInputDialog::getInt(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
 				if (ok1)
 					imgData->proj_worm_random_landmarking(kch-1, 1, 40);
 			}
@@ -772,35 +773,35 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item==tr(" -- Straighten using slice-restacking"))
 			{
 				bool ok1;
-				int OutWid = QInputDialog::getInteger(this, tr("Diameter of cutting plane"), tr("Diameter (# pixels) of each cutting plane:"), 160, 1, qMin(imgData->getXDim(),imgData->getYDim()), 20, &ok1);
+                int OutWid = QInputDialog::getInt(this, tr("Diameter of cutting plane"), tr("Diameter (# pixels) of each cutting plane:"), 160, 1, qMin(imgData->getXDim(),imgData->getYDim()), 20, &ok1);
 				if (ok1)
 					imgData->proj_worm_straightening(true, OutWid); //directly do straightening
 			}
 			else if (item==tr(" -- Seed landmarks/control-points on regular grid"))
 			{
 				bool ok1;
-				int kch = QInputDialog::getInteger(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
+                int kch = QInputDialog::getInt(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
 				if (ok1)
 					imgData->proj_alignment_seed_grid(kch-1);
 			}
 			else if (item==tr(" -- Seed landmarks/control-points using big gradient (edge) points"))
 			{
 				bool ok1;
-				int kch = QInputDialog::getInteger(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
+                int kch = QInputDialog::getInt(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
 				if (ok1)
 					imgData->proj_alignment_seed_gradient(kch-1);
 			}
 			else if (item==tr(" -- Seed landmarks/control-points using big curvature (corner) points"))
 			{
 				bool ok1;
-				int kch = QInputDialog::getInteger(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
+                int kch = QInputDialog::getInt(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
 				if (ok1)
 					imgData->proj_alignment_seed_curvature(kch-1);
 			}
 			else if (item==tr(" -- Seed landmarks/control-points randomly"))
 			{
 				bool ok1;
-				int kch = QInputDialog::getInteger(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
+                int kch = QInputDialog::getInt(this, tr("Channel No. used to determine foreground"), tr("Channel No:"), 1, 1, imgData->getCDim(), 1, &ok1);
 				if (ok1)
 					imgData->proj_alignment_seed_random(kch-1, 2.0, 100);
 			}
@@ -844,7 +845,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 					int cur_pt_ind = imgData->find_closest_control_pt(imgData->curFocusX, imgData->curFocusY, imgData->curFocusZ, dmin);
 					cur_pt_ind = (cur_pt_ind<0) ? 1 : (cur_pt_ind + 1);
 					bool ok1;
-					int pt_ind = QInputDialog::getInteger(this, tr("landmark index"), tr("which landmark you want to find the match:"), cur_pt_ind, 1, imgData->listLandmarks.count(), 1, &ok1);
+                    int pt_ind = QInputDialog::getInt(this, tr("landmark index"), tr("which landmark you want to find the match:"), cur_pt_ind, 1, imgData->listLandmarks.count(), 1, &ok1);
 					if (ok1)
 					{
 						imgData->proj_alignment_matching_1single_pt(pt_ind-1);
@@ -872,13 +873,13 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item==tr(" -- top-down skeletonization"))
 			{
 				bool ok1;
-				int kch = QInputDialog::getInteger(this, tr("Channel no"), tr("which channel contains your fibrous structures (e.g. neurons):"), 1, 1, imgData->getCDim(), 1, &ok1);
+                int kch = QInputDialog::getInt(this, tr("Channel no"), tr("which channel contains your fibrous structures (e.g. neurons):"), 1, 1, imgData->getCDim(), 1, &ok1);
 				if (ok1)
 				{
 					double kfactor = QInputDialog::getDouble(this, tr("threshold"), tr("threshold factor:"), 1, -1, 10, 1, &ok1);
 					if (ok1)
 					{
-						int npt = QInputDialog::getInteger(this, tr("Number of points"), tr("Number of initial seed points:"), 200, 1, 10000, 50, &ok1);
+                        int npt = QInputDialog::getInt(this, tr("Number of points"), tr("Number of initial seed points:"), 200, 1, 10000, 50, &ok1);
 						if (ok1)
 						{
 							imgData->proj_alignment_seed_random(kch-1, kfactor, npt);

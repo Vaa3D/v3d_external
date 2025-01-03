@@ -7,21 +7,21 @@
 // GUI widget with slider and text entry for updating gamma value
 class GammaWidget : public QWidget, public Ui::GammaWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     GammaWidget(QWidget * parent = NULL);
 
-signals:
+//signals:
     void gammaBrightnessChanged(qreal gamma);
 
-public slots:
+//public slots:
     void setGammaBrightness(qreal gamma);
     void on_gamma_lineEdit_textChanged(const QString & value);
     void on_gamma_slider_valueChanged(int gammaInt);
     void reset();
 
-protected slots:
+//protected slots:
     void updateGammaLineEdit(qreal gamma);
 
 protected:

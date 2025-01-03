@@ -44,7 +44,7 @@
 #include "VirtualPyramid.h"
 #include "PDialogVirtualPyramid.h"
 
-using namespace std;
+//using namespace std;
 
 class terafly::CImport : public QThread
 {
@@ -164,7 +164,7 @@ class terafly::CImport : public QThread
                 return (volumes.back()->getDIM_V()-1.0f)/(volumes[resIndex]->getDIM_V()-1.0f);
             else return 1.0f;
         }
-        inline float getRescaleFactor(int res0, int res1, iim::axis dir) throw (tf::RuntimeException)
+        inline float getRescaleFactor(int res0, int res1, iim::axis dir) 
         {
             try{
                 return volumes[res0]->getDIM(dir)/static_cast<float>(volumes[res1]->getDIM(dir));
@@ -211,10 +211,10 @@ class terafly::CImport : public QThread
         // 1) the volume map does not exist OR
         // 2) it is not compatible with the current version OR
         // 3) contains a number of 'T' frames with T < vmapTDimMax
-        bool hasVolumeMapToBeRegenerated(std::string vmapFilepath, std::string min_required_version) throw (tf::RuntimeException);
+        bool hasVolumeMapToBeRegenerated(std::string vmapFilepath, std::string min_required_version) ;
 
         // instance high res volume for virtual pyramid
-        void vpInstanceHighResVolume() throw (tf::RuntimeException);
+        void vpInstanceHighResVolume() ;
 
 
     signals:

@@ -278,6 +278,7 @@ class terafly::PMain : public QWidget
         QHelpBox* helpBox;              //help box
         QProgressBar* progressBar;      //progress bar
         QStatusBar* statusBar;          //status bar
+        QLabel* editStatus;             //edit infomation
 
         QCheckBox *checkBox_overview;  //added an overview checkbox by ZZ 04262018
         QCheckBox *lockMagnification;
@@ -599,23 +600,26 @@ class terafly::PMain : public QWidget
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 public:
-        ManageSocket * managesocket;
-protected:
-        QMenu* collaborateMenu;
-        QAction* loginAction;
-        QAction* logoutAction;
-        QAction* importAction;
-        QAction* downAction;
-        QAction* loadAction;
-public slots:
-        void login();
-        void logout();
-        void import();
-        void download();
-        void load();
-        void deleteManageSocket();
-public slots:
-        void ColLoadANO(QString ANOfile);
+        static V3dR_Communicator *Communicator;
+
+//public:
+//        ManageSocket * managesocket;
+//protected:
+//        QMenu* collaborateMenu;
+//        QAction* loginAction;
+//        QAction* logoutAction;
+//        QAction* importAction;
+//        QAction* downAction;
+//        QAction* loadAction;
+//public slots:
+//        void login();
+//        void logout();
+//        void import();
+//        void download();
+//        void load();
+//        void deleteManageSocket();
+//public slots:
+//        void ColLoadANO(QString ANOfile);
         //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
 /*---------------------------------------------------*/
 #endif

@@ -32,22 +32,26 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
  *  GLee2glew.h
  *
  *  Created by Ruan Zongcai on 2020-2-7.
- * 
+ *
  *  Translate GLee to GLEW because glee had stopped updating for a long time.
  */
 
 #ifndef GLEE2GLEW_H_
 #define GLEE2GLEW_H_
 
+#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
+
+#include <GL/glew.h>
+
 /************************************************************************************************************
  * if try to include <QtWidgets> it will also include gl.h with QtOGL, then GLEW throws error when including glew.h,
  * because gl.h has been included before GLEW.
  * If try to include glew.h before any Qt includes, then Qt undefines all GLEW macros (except *EXT, *ARB) and get undefined symbol errors.
- * 
+ *
 Qt5 seems to have set OpenGLES to a high priority than desktop openGL.
 Don't think GLEW will work with the Angle based build of Qt5.
 
-One solution to this is to build Qt5 from source code suing the setting -opengl desktop before you build. 
+One solution to this is to build Qt5 from source code suing the setting -opengl desktop before you build.
 Something like this:  configure -debug-and-release -opengl desktop
 Then use nmake to build and it works fine.
 
@@ -59,6 +63,12 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 
 //@2020-5-10 RZC: for crash using glew & Qt4 at linux
 //@2020-10-31 RZC: fixed crash by USING (glewExperimental=true) BEFORE glewInit() AT LINUX
+
+//#if defined(__APPLE__)
+//#include <OpenGL/glu.h>
+//#else
+//#include <GL/glu.h>
+//#endif
 
 #if 0// ! defined( USE_Qt5 )
 //
@@ -78,22 +88,18 @@ Since the actual OpenGL code makes no references to Qt, then it doesn't have to 
 ////#define glBindBufferARB		glBindBuffer
 ////#define glDeleteBuffersARB	glDeleteBuffers
 ////#define glMapBufferARB		glMapBuffer
-////#define glUnmapBufferARB		glUnmapBuffer
+////#define glUnmapBufferARB	glUnmapBuffer
 ////#define glBufferDataARB		glBufferData
 //#endif
 //
 #else
-
-#define GLEW_STATIC ////STATIC link by including glew.c into GLee2glew.c
-#include <glew/GL/glew.h>
-
 
 #define GLEE_VERSION_2_0    GLEW_VERSION_2_0
 #define GLEE_VERSION_1_5    GLEW_VERSION_1_5
 #define GLEE_VERSION_1_4    GLEW_VERSION_1_4
 #define GLEE_VERSION_1_3    GLEW_VERSION_1_3
 #define GLEE_VERSION_1_2    GLEW_VERSION_1_2
- 
+
 //#define GLeeInit() (glewInit())
 //// MUST USING (glewExperimental=true) BEFORE glewInit() AT LINUX
 #define GLeeInit()  ((glewExperimental=true) && (glewInit()==GLEW_OK))

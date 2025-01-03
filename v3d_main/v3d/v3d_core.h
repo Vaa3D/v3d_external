@@ -76,7 +76,7 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 #include "../basic_c_fun/basic_4dimage.h"
 #include "../basic_c_fun/basic_landmark.h"
 #include "../basic_c_fun/basic_surf_objs.h"
-
+#include <QElapsedTimer>
 #include "../basic_c_fun/img_definition.h"
 
 #include "../neuron_editing/v_neuronswc.h"
@@ -189,21 +189,21 @@ struct Mapview_Paras {
 
 struct InvidualAtlasFileInfo
 {
-	int n;			  // index
-	QString category; //the name of the GAL4 line, or other categorical info
-	QString imgfile;  //the name of the actual image file
-	bool exist;       //if the file exist or not
-	RGBA8 color;
-	bool on;
+    int n;			  // index
+    QString category; //the name of the GAL4 line, or other categorical info
+    QString imgfile;  //the name of the actual image file
+    bool exist;       //if the file exist or not
+    RGBA8 color;
+    bool on;
 };
 
 QList <InvidualAtlasFileInfo> readAtlasFormatFile(const char * filename); //081124
 
 struct DataChannelColor
 {
-	int n;			  // index
-	RGBA8 color;
-	bool on;
+    int n;			  // index
+    RGBA8 color;
+    bool on;
 };
 
 
@@ -214,253 +214,262 @@ int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC
 
 class MyTextBrowser : public QTextBrowser
 {
-	Q_OBJECT;
+    Q_OBJECT;
 
 public:
-	MyTextBrowser(QWidget * parent=0);
-	~MyTextBrowser(){}
+    MyTextBrowser(QWidget * parent=0);
+    ~MyTextBrowser(){}
 
 public slots:
-	void setText2FocusPointFeatureWidget()
-	{
-		this->setText(focusFeatureViewTextContent);
-		this->update();
-	}
+    void setText2FocusPointFeatureWidget()
+    {
+        this->setText(focusFeatureViewTextContent);
+        this->update();
+    }
 
 public:
-	void setFocusFeatureViewTextContent(QString text)
-	{
-		focusFeatureViewTextContent = text;
-	}
+    void setFocusFeatureViewTextContent(QString text)
+    {
+        focusFeatureViewTextContent = text;
+    }
 
-	QString getFocusFeatureViewTextContent()
-	{
-		return focusFeatureViewTextContent;
-	}
+    QString getFocusFeatureViewTextContent()
+    {
+        return focusFeatureViewTextContent;
+    }
 
 private:
-	QString focusFeatureViewTextContent;
+    QString focusFeatureViewTextContent;
 
 };
 
 class My4DImage : public QObject, public Image4DSimple
 {
-	Q_OBJECT;
+    Q_OBJECT;
 
 public:
         double at(int x, int y, int z, int c=0) const; //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
-	void **** getData(ImagePixelType & dtype);
-	void **** getData() {return data4d_virtual;}
-	bool isEmpty() {return (!data4d_virtual) ?  true : false; }
+    void **** getData(ImagePixelType & dtype);
+    void **** getData() {return data4d_virtual;}
+    bool isEmpty() {return (!data4d_virtual) ?  true : false; }
 
-	bool valid() {
+    bool valid() {
     return (!data4d_virtual || !(this->Image4DSimple::valid()) ) ?  false : true;
     }
 
-	void loadImage(const char* filename);
-	void setupData4D();
-	void setupDefaultColorChannelMapping();
-	bool updateminmaxvalues();
-	void loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype); //an overloaded function to create a blank image
+    void loadImage(const char* filename);
+    void setupData4D();
+    void setupDefaultColorChannelMapping();
+    bool updateminmaxvalues();
+    void loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype); //an overloaded function to create a blank image
 
-	void setFocusX(V3DLONG x) {curFocusX = (x>=1 && x <= this->getXDim()) ? x-1 : -1;}
-	void setFocusY(V3DLONG y) {curFocusY = (y>=1 && y <= this->getYDim()) ? y-1 : -1;}
-	void setFocusZ(V3DLONG z) {curFocusZ = (z>=1 && z <= this->getZDim()) ? z-1 : -1;}
-	V3DLONG getFocusX() {return curFocusX;}
-	V3DLONG getFocusY() {return curFocusY;}
-	V3DLONG getFocusZ() {return curFocusZ;}
+    void setFocusX(V3DLONG x) {curFocusX = (x>=1 && x <= this->getXDim()) ? x-1 : -1;}
+    void setFocusY(V3DLONG y) {curFocusY = (y>=1 && y <= this->getYDim()) ? y-1 : -1;}
+    void setFocusZ(V3DLONG z) {curFocusZ = (z>=1 && z <= this->getZDim()) ? z-1 : -1;}
+    V3DLONG getFocusX() {return curFocusX;}
+    V3DLONG getFocusY() {return curFocusY;}
+    V3DLONG getFocusZ() {return curFocusZ;}
 
-	My4DImage();
-	~My4DImage();
+    My4DImage();
+    ~My4DImage();
 
-	float **** data4d_float32;
-	USHORTINT16 **** data4d_uint16;
-	unsigned char **** data4d_uint8;
-	void **** data4d_virtual;
+    float **** data4d_float32;
+    USHORTINT16 **** data4d_uint16;
+    unsigned char **** data4d_uint8;
+    void **** data4d_virtual;
 
-	void updateViews();
+    void updateViews();
 
-	bool reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3);
-	bool permute(V3DLONG dimorder[4]);
+    bool reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3);
+    bool permute(V3DLONG dimorder[4]);
 
-	double * p_vmax, * p_vmin; //whole volume max/min values. Use pointer to handle multiple channels separately
-	double getChannalMinIntensity(V3DLONG channo);
-	double getChannalMaxIntensity(V3DLONG channo);
+    double * p_vmax, * p_vmin; //whole volume max/min values. Use pointer to handle multiple channels separately
+    double getChannalMinIntensity(V3DLONG channo);
+    double getChannalMaxIntensity(V3DLONG channo);
 
-	bool bLinkFocusViews;
-	bool bDisplayFocusCross;
-	bool bLookingGlass;
+    bool bLinkFocusViews;
+    bool bDisplayFocusCross;
+    bool bLookingGlass;
 
-	ColorMap *colorMap;
+    ColorMap *colorMap;
 
-	void createColorMap(int len, ImageDisplayColorType c=colorPseudoMaskColor);
-	void switchColorMap(int len, ImageDisplayColorType c);
-	void getColorMapInfo(int &len, ImageDisplayColorType &c);
+    void createColorMap(int len, ImageDisplayColorType c=colorPseudoMaskColor);
+    void switchColorMap(int len, ImageDisplayColorType c);
+    void getColorMapInfo(int &len, ImageDisplayColorType &c);
 
-	V3DLONG curFocusX, curFocusY, curFocusZ;
-	XFormView *p_xy_view, *p_yz_view, *p_zx_view;
+    V3DLONG curFocusX, curFocusY, curFocusZ;
+    XFormView *p_xy_view, *p_yz_view, *p_zx_view;
 
-	MyTextBrowser *p_focusPointFeatureWidget;
+    MyTextBrowser *p_focusPointFeatureWidget;
 
-	XFormWidget *p_mainWidget;
+    XFormWidget *p_mainWidget;
 
-	void cleanExistData_butKeepFileName();
-	void cleanExistData();
-	void cleanExistData_only4Dpointers();
-	bool setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz1, V3DLONG nsz2, V3DLONG nsz3, ImagePixelType ndatatype, V3DLONG nszt=-1, TimePackType tpk=TIME_PACK_NONE);//nszt==-1 will not reset the ntimepoints and pack type
+    void cleanExistData_butKeepFileName();
+    void cleanExistData();
+    void cleanExistData_only4Dpointers();
+    bool setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz1, V3DLONG nsz2, V3DLONG nsz3, ImagePixelType ndatatype, V3DLONG nszt=-1, TimePackType tpk=TIME_PACK_NONE);//nszt==-1 will not reset the ntimepoints and pack type
 
-	void set_xy_view(XFormView *p) {p_xy_view = p;}
-	void set_yz_view(XFormView *p) {p_yz_view = p;}
-	void set_zx_view(XFormView *p) {p_zx_view = p;}
-	XFormView * get_xy_view() {return p_xy_view;}
-	XFormView * get_yz_view() {return p_yz_view;}
-	XFormView * get_zx_view() {return p_zx_view;}
+    void set_xy_view(XFormView *p) {p_xy_view = p;}
+    void set_yz_view(XFormView *p) {p_yz_view = p;}
+    void set_zx_view(XFormView *p) {p_zx_view = p;}
+    XFormView * get_xy_view() {return p_xy_view;}
+    XFormView * get_yz_view() {return p_yz_view;}
+    XFormView * get_zx_view() {return p_zx_view;}
 
-	void setFocusFeatureView(MyTextBrowser *p) {p_focusPointFeatureWidget = p;}
-	QTextBrowser *getFocusFeatureView() {return p_focusPointFeatureWidget;}
-	QString setFocusFeatureViewText();
+    void setFocusFeatureView(MyTextBrowser *p) {p_focusPointFeatureWidget = p;}
+    QTextBrowser *getFocusFeatureView() {return p_focusPointFeatureWidget;}
+    QString setFocusFeatureViewText();
 
-	void setMainWidget(XFormWidget *p) {p_mainWidget=p;}
-	XFormWidget * getXWidget() {return p_mainWidget;}
+    void setMainWidget(XFormWidget *p) {p_mainWidget=p;}
+    XFormWidget * getXWidget() {return p_mainWidget;}
 
-	void setFlagLinkFocusViews(bool t) {bLinkFocusViews = t;}
-	bool getFlagLinkFocusViews() {return bLinkFocusViews;}
-	void setFlagDisplayFocusCross(bool t) {bDisplayFocusCross = t;}
-	bool getFlagDisplayFocusCross() {return bDisplayFocusCross;}
+    void setFlagLinkFocusViews(bool t) {bLinkFocusViews = t;}
+    bool getFlagLinkFocusViews() {return bLinkFocusViews;}
+    void setFlagDisplayFocusCross(bool t) {bDisplayFocusCross = t;}
+    bool getFlagDisplayFocusCross() {return bDisplayFocusCross;}
 
-	//void setFlagImgValScaleDisplay(bool t) {bImgValScaleDisplay=t;}
-	bool getFlagImgValScaleDisplay();
+    //void setFlagImgValScaleDisplay(bool t) {bImgValScaleDisplay=t;}
+    bool getFlagImgValScaleDisplay();
 
-	void setFlagLookingGlass(bool t) {bLookingGlass=t;}
-	bool getFlagLookingGlass() {return bLookingGlass;}
+    void setFlagLookingGlass(bool t) {bLookingGlass=t;}
+    bool getFlagLookingGlass() {return bLookingGlass;}
 
-	void recordFocusProperty(PxLocationUsefulness t);
-	V3DLONG find_closest_control_pt(int sx, int sy, int sz, double & dmin);
-	V3DLONG find_closest_control_pt_thres(int sx, int sy, int sz, double rr, double & dmin);
+    void recordFocusProperty(PxLocationUsefulness t);
+    V3DLONG find_closest_control_pt(int sx, int sy, int sz, double & dmin);
+    V3DLONG find_closest_control_pt_thres(int sx, int sy, int sz, double rr, double & dmin);
 
-	QList <DataChannelColor> listChannels; //100824
-	QList <LocationSimple> listLandmarks;
-	QList <PtIndexAndParents> listLocationRelationship;
-	QList <InvidualAtlasFileInfo> listAtlasFiles;
-	int atlasColorBlendChannel;
-	bool bUseFirstImgAsMask;
-	QString curSearchText;
+    QList <DataChannelColor> listChannels; //100824
+    QList <LocationSimple> listLandmarks;
+    QList <PtIndexAndParents> listLocationRelationship;
+    QList <InvidualAtlasFileInfo> listAtlasFiles;
+    int atlasColorBlendChannel;
+    bool bUseFirstImgAsMask;
+    QString curSearchText;
 
     //timer //20120702
-    QTime triviewTimer;  //added on 20120702.
+    QElapsedTimer triviewTimer;  //added on 20120702.
     bool b_triviewTimerON;
 
-	bool compute_rgn_stat(LocationSimple & pt, int channo);
-	void loadLandmarkFromFile();
-	void saveLandmarkToFile();
-	void exportLandmarkToPointCloudAPOFile();
-	void exportLandmarkandRelationToSWCFile();
-	void exportNeuronToSWCFile();
+    //collaboration
+    bool b_addnewSWC;
+    int cur_chno;
+    double cur_createmode;
+    V_NeuronSWC colla_cur_seg;
+    vector<XYZ> ExtractDeletingNode();
+    vector<XYZ> ExtractDeletingNode(vector<V_NeuronSWC>&);
+    vector<XYZ> ExtractDeletingNode2(map<size_t, vector<V_NeuronSWC_unit>> &originalSegMap, vector<V_NeuronSWC> &vector_VSWC);
 
-	void computePointNeighborMoment(int x, int y, int z, int c, double & curptval, double & ave, double & sdev, double & skew, double & curt);
-	void computePointNeighborMoment(LocationSimple & L, int c); //overload for convenience
+    bool compute_rgn_stat(LocationSimple & pt, int channo);
+    void loadLandmarkFromFile();
+    void saveLandmarkToFile();
+    void exportLandmarkToPointCloudAPOFile();
+    void exportLandmarkandRelationToSWCFile();
+    void exportNeuronToSWCFile();
 
-	bool saveVANO_data();
-	bool saveMovie();
-	bool saveFile();
+    void computePointNeighborMoment(int x, int y, int z, int c, double & curptval, double & ave, double & sdev, double & skew, double & curt);
+    void computePointNeighborMoment(LocationSimple & L, int c); //overload for convenience
+
+    bool saveVANO_data();
+    bool saveMovie();
+    bool saveFile();
     bool saveFile(char filename[]);
     bool saveFile(QString outputFile);
-	void crop(int landmark_crop_opt);
-	void crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epos_y, V3DLONG bpos_z, V3DLONG epos_z, V3DLONG bpos_c, V3DLONG epos_c, int landmark_crop_opt);
-	bool maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
-	bool maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
-	bool maskBW_channel(V3DLONG mask_channel_no);
+    void crop(int landmark_crop_opt);
+    void crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epos_y, V3DLONG bpos_z, V3DLONG epos_z, V3DLONG bpos_c, V3DLONG epos_c, int landmark_crop_opt);
+    bool maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
+    bool maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
+    bool maskBW_channel(V3DLONG mask_channel_no);
 
-	bool invertcolor(int channo); //channo < 0 will invert all channels. Only works for uint8
-	bool scaleintensity(int channo, double lower_th, double higher_th, double target_min, double target_max); //map the value linear from [lower_th, higher_th] to [target_min, target_max].
-	bool thresholdintensity(int channo, double th); //anything < th will be 0, others unchanged
-	bool binarizeintensity(int channo, double th); //anything < th will be 0, others will be 1
+    bool invertcolor(int channo); //channo < 0 will invert all channels. Only works for uint8
+    bool scaleintensity(int channo, double lower_th, double higher_th, double target_min, double target_max); //map the value linear from [lower_th, higher_th] to [target_min, target_max].
+    bool thresholdintensity(int channo, double th); //anything < th will be 0, others unchanged
+    bool binarizeintensity(int channo, double th); //anything < th will be 0, others will be 1
 
-	bool rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt);
-	bool flip(AxisCode my_axiscode);
+    bool rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt);
+    bool flip(AxisCode my_axiscode);
 
-	bool b_proj_worm_mst_diameter_set;
+    bool b_proj_worm_mst_diameter_set;
 
     V_NeuronSWC_list tracedNeuron, tracedNeuron_old;//add tracedNeuron_old by PHC, 20150523
 
-	V3DLONG last_hit_landmark, cur_hit_landmark;
-	BoundingBox trace_bounding_box;
-	float trace_z_thickness;
+    V3DLONG last_hit_landmark, cur_hit_landmark;
+    BoundingBox trace_bounding_box;
+    float trace_z_thickness;
 
-	bool proj_trace_deformablepath_one_point(V3DLONG startmark_id); // 090603 RZC: output a shortest path tree
-	bool proj_trace_deformablepath_one_point_to_allotherpoints(V3DLONG startmark_id); //090609: phc. one pt to all other points
-	bool proj_trace_deformablepath_two_points(V3DLONG startmark_id, V3DLONG endmark_id, bool b_select_para=false, int method_code=0); //method code = 0 for shortest path and 1 for deformable model only
-	bool proj_trace_deformablepath_two_points(V3DLONG startmark_id, V3DLONG endmark_id, int npoints, bool b_select_para, bool b_fitradius, int method_code); //overloading function provided for convenience
-	bool proj_trace_deformablepath_two_points_basic(LocationSimple & p1, LocationSimple & p2, CurveTracePara & trace_para);
-	bool proj_trace_deformablepath_two_points_adaptive(LocationSimple & p1, LocationSimple & p2, CurveTracePara & trace_para);
-	int proj_trace_deformablepath_two_points_shortestdist(LocationSimple & p1, LocationSimple & p2, CurveTracePara & trace_para);
-	int proj_trace_deformablepath_all_points_shortestdist(LocationSimple & p0, vector<LocationSimple> & pp, CurveTracePara & trace_para) ;
-	bool proj_trace_smooth_downsample_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end);
-	bool proj_trace_shortestpath_rgnaroundcurve(CurveTracePara & trace_para, int seg_begin, int seg_end);
-	bool proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end, float myzthickness);
+    bool proj_trace_deformablepath_one_point(V3DLONG startmark_id); // 090603 RZC: output a shortest path tree
+    bool proj_trace_deformablepath_one_point_to_allotherpoints(V3DLONG startmark_id); //090609: phc. one pt to all other points
+    bool proj_trace_deformablepath_two_points(V3DLONG startmark_id, V3DLONG endmark_id, bool b_select_para=false, int method_code=0); //method code = 0 for shortest path and 1 for deformable model only
+    bool proj_trace_deformablepath_two_points(V3DLONG startmark_id, V3DLONG endmark_id, int npoints, bool b_select_para, bool b_fitradius, int method_code); //overloading function provided for convenience
+    bool proj_trace_deformablepath_two_points_basic(LocationSimple & p1, LocationSimple & p2, CurveTracePara & trace_para);
+    bool proj_trace_deformablepath_two_points_adaptive(LocationSimple & p1, LocationSimple & p2, CurveTracePara & trace_para);
+    int proj_trace_deformablepath_two_points_shortestdist(LocationSimple & p1, LocationSimple & p2, CurveTracePara & trace_para);
+    int proj_trace_deformablepath_all_points_shortestdist(LocationSimple & p0, vector<LocationSimple> & pp, CurveTracePara & trace_para) ;
+    bool proj_trace_smooth_downsample_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end);
+    bool proj_trace_shortestpath_rgnaroundcurve(CurveTracePara & trace_para, int seg_begin, int seg_end);
+    bool proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end, float myzthickness);
 //<<<<<<< HEAD
     bool proj_trace_add_curve_segment(vector<XYZ> &loc_list, int chno, double default_type=3, double default_radius=1, double creatmode=0, double default_timestamp=0, double default_tfresindex=0); // LMG 26/10/2018 creation mode
     NeuronTree proj_trace_add_curve_segment_append_to_a_neuron(vector<XYZ> &mCoord, int chno, NeuronTree & neuronEdited, double default_type=3, double creatmode=0, double default_timestamp=0, double default_tfresindex=0); //150523 // LMG 26/10/2018 creation mode to eswc
 //>>>>>>> master
-	bool proj_trace_deformNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_select_para=true);
-	bool proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_dispfig);
+    bool proj_trace_deformNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_select_para=true);
+    bool proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_dispfig);
 
-	bool proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_mergeAllClosebyNeuronNodes(NeuronTree *p_tree);
-	bool proj_trace_mergeAllClosebyNeuronNodes();
+    bool proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_mergeAllClosebyNeuronNodes(NeuronTree *p_tree);
+    bool proj_trace_mergeAllClosebyNeuronNodes();
 
-	QList <V_NeuronSWC_list> tracedNeuron_historylist;
-	static const int MAX_history = 30;
-	int cur_history;
-	void proj_trace_history_append(V_NeuronSWC_list & tNeuron);
-	void proj_trace_history_append();
-	void proj_trace_history_undo(V_NeuronSWC_list & tNeuron);
-	void proj_trace_history_undo();
-	void proj_trace_history_redo(V_NeuronSWC_list & tNeuron);
-	void proj_trace_history_redo();
+    QList <V_NeuronSWC_list> tracedNeuron_historylist;
+    static const int MAX_history = 30;
+    int cur_history;
+    void proj_trace_history_append(V_NeuronSWC_list & tNeuron);
+    void proj_trace_history_append();
+    void proj_trace_history_undo(V_NeuronSWC_list & tNeuron);
+    void proj_trace_history_undo();
+    void proj_trace_history_redo(V_NeuronSWC_list & tNeuron);
+    void proj_trace_history_redo();
 
-	bool proj_trace_changeNeuronSegType(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_reverseNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_deleteNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
-	double proj_trace_measureLengthNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_breakNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_joinNearbyNeuronSegs_pathclick(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_joinNearbyNeuronSegs_markclick(V3DLONG node_id, NeuronTree *p_tree);
-	bool proj_trace_joinAllNeuronSegs(V3DLONG node_id, NeuronTree *p_tree);
-	// load traced neuron to 3D view
-	void update_3drenderer_neuron_view();
-	void update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer);
+    bool proj_trace_changeNeuronSegType(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_changeNeuronSegRadius(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_reverseNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_deleteNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
+    double proj_trace_measureLengthNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_breakNeuronSeg(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_joinNearbyNeuronSegs_pathclick(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_joinNearbyNeuronSegs_markclick(V3DLONG node_id, NeuronTree *p_tree);
+    bool proj_trace_joinAllNeuronSegs(V3DLONG node_id, NeuronTree *p_tree);
+    // load traced neuron to 3D view
+    void update_3drenderer_neuron_view();
+    void update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer);
 
-	bool proj_general_principal_axis(ImagePlaneDisplayType ptype);
-	bool proj_general_resampling(ImageResamplingCode mycode, double target_rez, double cur_rez, int interp_method);
-	bool proj_general_resampling_landmark_only(ImageResamplingCode mycode, double target_rez, double cur_rez);
-	bool proj_general_landmark_plusminus_constant(ImageResamplingCode mycode, double cval);
-	bool proj_general_projection(AxisCode myaxis, V3DLONG mincoord, V3DLONG maxcoord);
-	bool proj_general_blend_channel_real(My4DImage * pBlendDstImg, My4DImage * pBlendSrcImg, V3DLONG chnoBlendSrcImg, double rr, double gg, double bb, bool b_assignVal_NoComparison);
-	bool proj_general_blend_channels();
-	bool proj_general_blend_atlasfiles();
-	bool proj_general_split_channels(bool b_keepallchannels, int chno);
-	bool proj_general_hist_display();
-	bool proj_general_linear_adjustment();
-	bool proj_general_hist_equalization(unsigned char lowerbound, unsigned char higherbound);
-	bool proj_general_convertIndexedImg2RGB();
-	bool proj_general_scaleandconvert28bit(int lb, int ub); //lb, ub: lower bound, upper bound
-	bool proj_general_scaleandconvert28bit_1percentage(double apercent); //apercent: percentage of saturation, typiecally 0.01
-	bool proj_general_convert16bit_to_8bit(int shiftnbits);
-	bool proj_general_convert32bit_to_8bit(int shiftnbits);
-	bool proj_general_maskBlue2Zero();
+    bool proj_general_principal_axis(ImagePlaneDisplayType ptype);
+    bool proj_general_resampling(ImageResamplingCode mycode, double target_rez, double cur_rez, int interp_method);
+    bool proj_general_resampling_landmark_only(ImageResamplingCode mycode, double target_rez, double cur_rez);
+    bool proj_general_landmark_plusminus_constant(ImageResamplingCode mycode, double cval);
+    bool proj_general_projection(AxisCode myaxis, V3DLONG mincoord, V3DLONG maxcoord);
+    bool proj_general_blend_channel_real(My4DImage * pBlendDstImg, My4DImage * pBlendSrcImg, V3DLONG chnoBlendSrcImg, double rr, double gg, double bb, bool b_assignVal_NoComparison);
+    bool proj_general_blend_channels();
+    bool proj_general_blend_atlasfiles();
+    bool proj_general_split_channels(bool b_keepallchannels, int chno);
+    bool proj_general_hist_display();
+    bool proj_general_linear_adjustment();
+    bool proj_general_hist_equalization(unsigned char lowerbound, unsigned char higherbound);
+    bool proj_general_convertIndexedImg2RGB();
+    bool proj_general_scaleandconvert28bit(int lb, int ub); //lb, ub: lower bound, upper bound
+    bool proj_general_scaleandconvert28bit_1percentage(double apercent); //apercent: percentage of saturation, typiecally 0.01
+    bool proj_general_convert16bit_to_8bit(int shiftnbits);
+    bool proj_general_convert32bit_to_8bit(int shiftnbits);
+    bool proj_general_maskBlue2Zero();
 
 
-	QList <LocationSimple> autoMarkerFromImg(V3DLONG chno);
-	QList <LocationSimple> autoMarkerFromImg(V3DLONG chno, BoundingBox bbox, float zthickness);
+    QList <LocationSimple> autoMarkerFromImg(V3DLONG chno);
+    QList <LocationSimple> autoMarkerFromImg(V3DLONG chno, BoundingBox bbox, float zthickness);
 
 signals:
-	void focusFeatureViewTextUpdated();
-	void signal_trace_history_append(); //20170801 RZC add
+    void focusFeatureViewTextUpdated();
+    void signal_trace_history_append(); //20170801 RZC add
 
 public slots:
-	void setText2FocusPointFeatureWidget();
+    void setText2FocusPointFeatureWidget();
 
 };
 
@@ -475,26 +484,26 @@ class XFormView : public ArthurFrame //class XFormView : public QWidget
 
 public:
     XFormView(QWidget *parent);
-	void setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
+    void setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
 
     void paint(QPainter *);
     void drawPixmapType(QPainter *painter);
     void drawLookingGlassMap(QPainter *painter, QPoint *curPt);
-	void drawSelectedLocations(QPainter *painter, QList <LocationSimple> *curList, QList <PtIndexAndParents> * curRelation);
+    void drawSelectedLocations(QPainter *painter, QList <LocationSimple> *curList, QList <PtIndexAndParents> * curRelation);
 
     void drawROI(QPainter *painter);
 
-	int disp_width, disp_height;
-	double disp_scale;
-	int get_disp_width() {return disp_width;}
-	int get_disp_height() {return disp_height;}
-	double get_disp_scale() {return disp_scale;}
-	void set_disp_width(int a) {disp_width = a;}
-	void set_disp_height(int a) {disp_height = a;}
-	void set_disp_scale(double a) {disp_scale = a; }
+    int disp_width, disp_height;
+    double disp_scale;
+    int get_disp_width() {return disp_width;}
+    int get_disp_height() {return disp_height;}
+    double get_disp_scale() {return disp_scale;}
+    void set_disp_width(int a) {disp_width = a;}
+    void set_disp_height(int a) {disp_height = a;}
+    void set_disp_scale(double a) {disp_scale = a; }
 
-	// Converts point from mouse event coordinates to image coordinates
-	QPointF mouseEventToImageCoords(const QPoint& p);
+    // Converts point from mouse event coordinates to image coordinates
+    QPointF mouseEventToImageCoords(const QPoint& p);
 
     void mousePressEvent(QMouseEvent *e);
     void mouseLeftButtonPressEvent(QMouseEvent *e);
@@ -502,32 +511,32 @@ public:
 
     void mouseDoubleClickEvent(QMouseEvent * e);
 
-	void mouseMoveEvent (QMouseEvent * e);
+    void mouseMoveEvent (QMouseEvent * e);
     void enterEvent (QEvent * e);
     void leaveEvent (QEvent * e);
 
-	void wheelEvent(QWheelEvent * e);
+    void wheelEvent(QWheelEvent * e);
 
     void dispHistogram();
-	QRect getRoiBoundingRect();
-	void deleteROI();
-	const QPolygon & getRoi() {return roiPolygon;}
+    QRect getRoiBoundingRect();
+    void deleteROI();
+    const QPolygon & getRoi() {return roiPolygon;}
 
     double scale() const { return m_scale; }
 
     int focusPlaneCoord() {return cur_focus_pos;}
-	ImagePlaneDisplayType focusPlaneType() {return Ptype;}
+    ImagePlaneDisplayType focusPlaneType() {return Ptype;}
 
 public slots:
-	void setPixmap(const QPixmap& pxm, bool bGlass)  //110722 RZC, for directly update pixmap of 3view. //110803 RZC, add bGlass
-	{
-		if (! bGlass)
-			this->pixmap = pxm;
-		else
-			this->pixmap_glass = pxm;
-		update();
-	}
-	void updateViewPlane() {changeFocusPlane(cur_focus_pos);} // 090504 RZC: make FocusPlane image updated from image stack
+    void setPixmap(const QPixmap& pxm, bool bGlass)  //110722 RZC, for directly update pixmap of 3view. //110803 RZC, add bGlass
+    {
+        if (! bGlass)
+            this->pixmap = pxm;
+        else
+            this->pixmap_glass = pxm;
+        update();
+    }
+    void updateViewPlane() {changeFocusPlane(cur_focus_pos);} // 090504 RZC: make FocusPlane image updated from image stack
 
     void changeScale(int scale);
     void changeFocusPlane(int c);
@@ -535,14 +544,14 @@ public slots:
     void setPixmapType();
     void reset();
 
-	void popupImageProcessingDialog();
-	void popupImageProcessingDialog(QString item); //added on 080613
+    void popupImageProcessingDialog();
+    void popupImageProcessingDialog(QString item); //added on 080613
 
 signals:
-	void colorChanged(int); //110722 RZC, connected to XFormWidget::colorChanged(int)
-	void colorChangedGlass(int); //110803 RZC, connected to XFormWidget::colorChangedGlass(int)
+    void colorChanged(int); //110722 RZC, connected to XFormWidget::colorChanged(int)
+    void colorChangedGlass(int); //110803 RZC, connected to XFormWidget::colorChangedGlass(int)
 
-	void scaleChanged(int scale);
+    void scaleChanged(int scale);
 //    void colorTypeChanged(ImageDisplayColorType c); //probably should be deleted later
     void focusXChanged(int x_new);
     void focusYChanged(int y_new);
@@ -552,23 +561,23 @@ protected:
     void do_keyPressEvent ( QKeyEvent * e);
 
 public:
-	QPolygon roiPolygon;//061009
+    QPolygon roiPolygon;//061009
 
 private:
     enum XFormType { VectorType, PixmapType, TextType};
 
     double m_scale;
-	QPointF curDisplayCenter;
-	QPointF curDisplayCenter0;
+    QPointF curDisplayCenter;
+    QPointF curDisplayCenter0;
 
-	QPoint curMousePos;
-	bool bMouseCurorIn;
+    QPoint curMousePos;
+    bool bMouseCurorIn;
 
-	QPoint dragStartPosition;
+    QPoint dragStartPosition;
 
-	QCursor myCursor;
+    QCursor myCursor;
 
-	//QPoint curMouseShiftPressPos; //080102
+    //QPoint curMouseShiftPressPos; //080102
 
     XFormType Gtype;
     ImagePlaneDisplayType Ptype;
@@ -581,24 +590,24 @@ private:
 
     int cur_focus_pos;
 
-	My4DImage * imgData; //a reference to the real data stored in the XFormWidget
+    My4DImage * imgData; //a reference to the real data stored in the XFormWidget
 
-	bool b_displayFocusCrossLine;
+    bool b_displayFocusCrossLine;
 
-	int focusPosInWidth, focusPosInHeight;
+    int focusPosInWidth, focusPosInHeight;
 
-	bool b_moveCurrentLandmark;
-	V3DLONG ind_landmarkToBeChanged;
+    bool b_moveCurrentLandmark;
+    V3DLONG ind_landmarkToBeChanged;
 
 private:
-	bool internal_only_imgplane_op(); //100814. by PHC. added for better modulization in data display
+    bool internal_only_imgplane_op(); //100814. by PHC. added for better modulization in data display
 };
 
 struct BlendingImageInfo
 {
-	My4DImage * pimg;
-	int channo;
-	double rr, gg, bb;
+    My4DImage * pimg;
+    int channo;
+    double rr, gg, bb;
 };
 
 

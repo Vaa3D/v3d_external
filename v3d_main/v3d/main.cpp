@@ -51,6 +51,9 @@ Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsist
 
 #include "v3d_compile_constraints.h"
 
+//add by ljs
+#include <QSplashScreen>
+
 #include <QApplication>
 #include <QFile>
 
@@ -75,7 +78,7 @@ void printHelp_align();
 void printHelp_straight();
 void printHelp_trace();
 
-V3dApplication* V3dApplication::theApp = 0;
+//V3dApplication* V3dApplication::theApp = 0;   csz20220621
 
 void printHelp_v3d()
 {
@@ -113,11 +116,16 @@ void printHelp_v3d()
 int main(int argc, char **argv)
 {
 //    qInstallMsgHandler(customMessageHandler);
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling,true);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
  for (int myii=0; myii<argc;myii++)
  {
      v3d_msg(QString("[%1]").arg(argv[myii]));
  }
-
+#if (QT_VERSION >= QT_VERSION_CHECK(6,0,0))
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Floor);
+#endif
 
 #ifdef COMPILE_TO_COMMANDLINE
 
@@ -137,19 +145,36 @@ int main(int argc, char **argv)
 			Q_INIT_RESOURCE(v3d);
 
             V3dApplication* app = V3dApplication::getInstance(argc, argv);
+
+            //创建启动动画类实例
+            //add by ljs
+//            QPixmap a = QPixmap(":/pic/v3dIcon128.png");
+//            QSplashScreen splash(a); //文件绝对路径 也可以使用相对路径
+//            splash.showMessage(QStringLiteral("正在初始化..."));//消息提示
+//            splash.show();  //显示
+//            app->processEvents(); //保证先完成启动画面的绘制显示，再执行后面的w显示
+            app->setWindowIcon(QIcon(":/v3dIcon128.ico"));
+
+
+
             if(!parser.i_v3d.hideV3D)
             {
                 app->activateMainWindow();
             }
-
             MainWindow* mainWin=app->getMainWindow();
+
+            //add by ljs add start picture
+//            QElapsedTimer t;
+//            t.start();
+
+
+//            splash.finish(mainWin); //结束
 
 			if (!mainWin)
 			{
 				v3d_msg("Unable to open the Vaa3D main window. Quit.");
 				return false;
 			}
-
             app->installEventFilter(mainWin);
 
             if (mainWin)
@@ -158,7 +183,8 @@ int main(int argc, char **argv)
 
                 if(!parser.i_v3d.hideV3D)
                 {
-                    mainWin->show();
+//                    mainWin->move(0,0);
+//                    mainWin->show();
                     if(parser.i_v3d.openNeuronAnnotator)
                     {
 #ifdef _ALLOW_WORKMODE_MENU_
@@ -168,6 +194,7 @@ int main(int argc, char **argv)
                 }
             }
 
+
 			// plugin module
 			if(parser.i_v3d.pluginname)
 			{
@@ -176,6 +203,9 @@ int main(int argc, char **argv)
 				mainWin->setPluginMethod(parser.i_v3d.pluginmethod);
 				mainWin->setPluginFunc(parser.i_v3d.pluginfunc);
 			}
+
+
+
 
 			// multiple image/object handling module
 			if(parser.i_v3d.fileList.size()==0 || parser.i_v3d.hideV3D)
@@ -232,6 +262,8 @@ int main(int argc, char **argv)
 			}
 
 
+
+
             // Check for software updates.
             // But not if V3D has been invoked with a file to open immediately.
             // Like the logic Fiji uses: http://pacific.mpi-cbg.de/wiki/index.php/Update_Fiji
@@ -264,7 +296,7 @@ int main(int argc, char **argv)
                 }
             }
             //if ( (nchild == 0) && userCanUpdate )
-
+            app->setWindowIcon(QIcon(":/v3dIcon128.ico"));
 #ifndef V3D_SKIP_AUTO_VERSION_CHECK
             {
                 // This is the automatic check for latest version
@@ -298,6 +330,7 @@ int main(int argc, char **argv)
 			// -------------------------------------------------------
 
 		}
+
 		else
 		{
 			return false;
@@ -367,3 +400,4 @@ int main(int argc, char **argv)
 #endif
 
 }
+

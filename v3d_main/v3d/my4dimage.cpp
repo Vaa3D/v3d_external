@@ -1100,7 +1100,7 @@ bool My4DImage::saveVANO_data()
 #if defined(USE_Qt5)
 	int ch_ind = QInputDialog::getInt(0, "channel index", "which channel you want to collect statitics and annotate?", 1, 1, getCDim(), 1, &ok1) - 1;
 #else
-	int ch_ind = QInputDialog::getInteger(0, "channel index", "which channel you want to collect statitics and annotate?", 1, 1, getCDim(), 1, &ok1) - 1;
+    int ch_ind = QInputDialog::getInt(0, "channel index", "which channel you want to collect statitics and annotate?", 1, 1, getCDim(), 1, &ok1) - 1;
 #endif
 
 	if (!ok1)
@@ -3759,7 +3759,7 @@ void My4DImage::exportLandmarkToPointCloudAPOFile()
 #if defined(USE_Qt5)
 	int channo = QInputDialog::getInt(0, "select number of color channel", "which color channel you want to collect statistics?", 1, 1, getCDim(), 1, &ok1);
 #else
-	int channo = QInputDialog::getInteger(0, "select number of color channel", "which color channel you want to collect statistics?", 1, 1, getCDim(), 1, &ok1);
+    int channo = QInputDialog::getInt(0, "select number of color channel", "which color channel you want to collect statistics?", 1, 1, getCDim(), 1, &ok1);
 #endif
 	if (!ok1)
 		return;
@@ -4744,7 +4744,7 @@ bool My4DImage::proj_general_hist_display()
 #if defined(USE_Qt5)
 		dmin = QInputDialog::getInt(0, QString("histogram range"), QString("min intensity of the histogram range"), 0, 0, 65535, 10, &ok1);
 #else
-		dmin = QInputDialog::getInteger(0, QString("histogram range"), QString("min intensity of the histogram range"), 0, 0, 65535, 10, &ok1);
+        dmin = QInputDialog::getInt(0, QString("histogram range"), QString("min intensity of the histogram range"), 0, 0, 65535, 10, &ok1);
 #endif
 		if (ok1)
 		{
@@ -4752,7 +4752,7 @@ bool My4DImage::proj_general_hist_display()
 #if defined(USE_Qt5)
 			dmax = QInputDialog::getInt(0, QString("histogram range"), QString("max intensity of the histogram range (max(8bits data)=255, max(16bit data)=65535)"), 255, 0, 65535, 10, &ok1);
 #else
-			dmax = QInputDialog::getInteger(0, QString("histogram range"), QString("max intensity of the histogram range (max(8bits data)=255, max(16bit data)=65535)"), 255, 0, 65535, 10, &ok1);
+            dmax = QInputDialog::getInt(0, QString("histogram range"), QString("max intensity of the histogram range (max(8bits data)=255, max(16bit data)=65535)"), 255, 0, 65535, 10, &ok1);
 #endif
 			if (!ok1)
 				return false;
@@ -4825,8 +4825,8 @@ bool My4DImage::proj_general_hist_display()
 	}
 	QString labelRB = (dmax>=0) ? QString("%1").arg(dmax) : QString("%1").arg("255 or upper_bnd");
 
-	barFigureDialog *dlg = new barFigureDialog(vvec, labelsLT, labelRB, 0, QSize(400, 150), QColor(50,50,50));
-	dlg->show();
+//	barFigureDialog *dlg = new barFigureDialog(vvec, labelsLT, labelRB, 0, QSize(400, 150), QColor(50,50,50));
+//	dlg->show();
 
 	return true;
 }

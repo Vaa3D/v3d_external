@@ -5,7 +5,7 @@
 // I had to remove the gl.h include to get linux to compile - Mac seems to be OK without it also - Sean
 // Hmm. Doesn't compile on my Mac..., perhaps including QGLWidget instead of gl.h will succeed on linux. - Christopher
 // My mac needs one of these to define the symbol "GLdouble"
-#include <QGLWidget>
+
 #include <cmath>
 #include <iostream>
 
@@ -46,7 +46,7 @@ public:
     };
 
     Rotation3D();
-    Rotation3D(const GLdouble mRot[16]);
+   // Rotation3D(const GLdouble mRot[16]);
     Rotation3D(const Quaternion& quat) {
         setRotationFromQuaternion(quat);
     }
@@ -71,7 +71,7 @@ public:
     Rotation3D& setRotationFromBodyFixedXYZAngles(qreal rotX, qreal rotY, qreal rotZ);
     Rotation3D& setRotationFromAngleAboutUnitVector( qreal angleInRadians, const UnitVector3D& unitVector );
     Rotation3D& setRotationFromQuaternion( const Quaternion& q );
-    void setGLMatrix(GLdouble mRot[16]) const;
+   // void setGLMatrix(GLdouble mRot[16]) const;
     qreal trace() const;
 
 protected:

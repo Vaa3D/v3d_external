@@ -16,7 +16,7 @@
 
 class SingleCut : public QWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     SingleCut(QWidget* parent = NULL);
@@ -33,7 +33,7 @@ public:
 
     Ui::SingleCut ui;
 
-signals:
+//signals:
     void cutGuideRequested(bool doShow);
     void clipPlaneRequested();
     void keepPlaneRequested();
@@ -41,7 +41,7 @@ signals:
     void orientRequested();
     void currentWidgetRequested(int);
 
-public slots:
+//public slots:
     void on_axisBox_activated(const QString& text);
     void on_cutButton_clicked();
     void on_edgeButton_clicked();

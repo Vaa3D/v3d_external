@@ -236,7 +236,7 @@ void KeypointFeaturesDialog::compute_pointfea()
 	if (!imgdata || !imgdata->valid()) return;
 	
 	QTime t;
-	t.start();
+    //t.start();
 
 	pt.x = coord_x->text().toInt()-1;
 	pt.y = coord_y->text().toInt()-1;
@@ -354,7 +354,7 @@ void KeypointFeaturesDialog::compute_pointfea()
 		    pt.fpa[3].diffpca.lambda1, pt.fpa[3].diffpca.lambda2, pt.fpa[3].diffpca.lambda3);
 
 	//testing cost time
-	qDebug("Time elapsed: %d ms \n", t.elapsed());
+    //qDebug("Time elapsed: %d ms \n", t.elapsed());
 }
 
 
@@ -363,7 +363,7 @@ bool KeypointFeaturesDialog::compute_similarmap()
 	if (!imgdata || !imgdata->valid()) return false;
 	
 	QTime t;
-	t.start();
+    //t.start();
 	
 	pt.x = coord_x->text().toInt()-1;
 	pt.y = coord_y->text().toInt()-1;
@@ -1106,7 +1106,7 @@ bool KeypointFeaturesDialog::compute_similarmap()
 	}
 	
 	//testing cost time
-	qDebug("Time elapsed: %d ms \n", t.elapsed());
+    //qDebug("Time elapsed: %d ms \n", t.elapsed());
 	
 	//Exit Normal
 	return true;

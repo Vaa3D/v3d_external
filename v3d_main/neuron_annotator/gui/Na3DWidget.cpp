@@ -53,7 +53,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     qDebug() << "Na3DWidget constructor; _idep = " << _idep;
     _idep->image4d = NULL;
     resetView();
-    setVolCompress(false); // might look nicer?
+    //setVolCompress(false); // might look nicer?
 
     setAutoFillBackground(false); // needed for combining 2D and 3D rendering in paintEvent()
 
@@ -558,7 +558,7 @@ void Na3DWidget::initializeGL()
     }
     else
         // qDebug() << "OpenGL context does not support stereo 3D";
-    V3dR_GLWidget::initializeGL();
+    //V3dR_GLWidget::initializeGL();
 
     init_members();
 
@@ -1063,7 +1063,7 @@ void Na3DWidget::keyPressEvent(QKeyEvent *e)
     // case Qt::Key_Minus: // zoom out
     // case Qt::Key_Equal: // zoom in
     case Qt::Key_F: // pixel interpolation
-        V3dR_GLWidget::keyPressEvent(e);
+        //V3dR_GLWidget::keyPressEvent(e);
         break;
     default:
         QOpenGLWidget_proxy::keyPressEvent(e);
@@ -1074,7 +1074,7 @@ void Na3DWidget::keyPressEvent(QKeyEvent *e)
 void Na3DWidget::keyReleaseEvent(QKeyEvent *e)
 {
     updateCursor();
-    V3dR_GLWidget::keyReleaseEvent(e);
+    //V3dR_GLWidget::keyReleaseEvent(e);
 }
 
 // Drag mouse to rotate; shift-drag to translate.
@@ -1138,7 +1138,8 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
         // qDebug() << "rotate";
         bool bUseClassicV3dRotation = false;
         if (bUseClassicV3dRotation)
-            V3dR_GLWidget::mouseMoveEvent(event); // regular V3D rotate behavior
+            //V3dR_GLWidget::mouseMoveEvent(event); // regular V3D rotate behavior
+            return;
         else {
             Rotation3D oldRotation = cameraModel.rotation();
             // std::cout << "old rotation = " << oldRotation << std::endl;
@@ -1200,7 +1201,7 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
     {
                 (renderer->movePen(event->x(), event->y(), false));
 		updateTool();
-                    V3dR_GLWidget::update();
+                    //V3dR_GLWidget::update();
     }
 
         if (event->button()==Qt::LeftButton && renderer && left_quickclick) // left click
@@ -1462,7 +1463,7 @@ void Na3DWidget::mouseDoubleClickEvent(QMouseEvent * event)
     mouseClickManager.mouseDoubleClickEvent(event);
     updateCursor();
     if (event->button() != Qt::LeftButton) {
-        V3dR_GLWidget::mouseDoubleClickEvent(event);
+       // V3dR_GLWidget::mouseDoubleClickEvent(event);
         return;
     }
     double dx = event->pos().x() - width()/2.0;
@@ -1482,8 +1483,8 @@ void Na3DWidget::resizeEvent(QResizeEvent * event)
 /* virtual */
 void Na3DWidget::resizeGL(int w, int h)
 {
-    if (bResizeEnabled)
-        V3dR_GLWidget::resizeGL(w, h);
+//    if (bResizeEnabled)
+//        V3dR_GLWidget::resizeGL(w, h);
 }
 
 void Na3DWidget::updateDefaultScale()
@@ -1698,7 +1699,7 @@ void Na3DWidget::choiceRenderer()
         makeCurrent();
         GLeeInit();
         renderer = new RendererNeuronAnnotator(this);
-        renderer->setThickness(_thickness);
+        //renderer->setThickness(_thickness);
 
         getRendererNa()->setColorMapTextureId(defaultColormapTextureId);
         connect(getRendererNa(), SIGNAL(progressValueChanged(int)),

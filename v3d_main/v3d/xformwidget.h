@@ -42,6 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "mapview.h"
 
+
 #include <QMdiSubWindow>
 #include <QMenu>
 
@@ -60,7 +61,7 @@ struct iDrawExternalParameter
 	XFormWidget *xwidget;
 	V3dR_MainWindow *window3D; //pointer to 3DView main window, by RZC 080921, 090503
 	QList <V3dR_MainWindow *> * p_list_3Dview_win; //by PHC, 081003. This is linked to a mainwindow, which will keep record of all generated V3dR_MainWindows
-	MainWindow *V3Dmainwindow; //the pointer to the V3D main window, so that V3dR can get the global setting preferences. add on 090503
+    MainWindow *V3Dmainwindow; //the pointer to the V3D main window, so that V3dR can get the global setting preferences. add on 090503
 
 	QStringList swc_file_list;
 	QStringList pointcloud_file_list;
@@ -128,10 +129,11 @@ struct iDrawExternalParameter
 #if defined(USE_Qt5)
 class XFormWidget : public QMdiSubWindow, public TriviewControl //class XFormWidget : public QMainWindow
 #else
-class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
+//class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
+class XFormWidget : public QMdiSubWindow, public TriviewControl
 #endif
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     XFormWidget(QWidget *parent);
@@ -171,7 +173,7 @@ public:
 
 
 	//for communication of windows
-	void setMainControlWindow(MainWindow * p) {p_mainWindow = p;}
+    void setMainControlWindow(MainWindow * p) {p_mainWindow = p;/*v3d_mainwindow=p;*/}
 	virtual MainWindow * getMainControlWindow() {return p_mainWindow;}
 
 	void forceToChangeFocus(int x, int y, int z); //081210
@@ -197,6 +199,8 @@ public:
 	iDrawExternalParameter mypara_3Dlocalview;
 	V3D_atlas_viewerDialog *atlasViewerDlg;
 
+    //MainWindow *v3d_mainwindow;
+
 	V3DLONG bbx0, bbx1, bby0, bby1, bbz0, bbz1; //by PHC. 100821. the current regional bbox. for curve based zoomin
 	void setLocal3DViewerBBox(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1)
 	{
@@ -208,6 +212,9 @@ public:
 		bbz1 = z1;
 	}
 
+    //screen size
+    int screenW;
+    int screenH;
 
 	double disp_zoom; //081114
 	bool b_use_dispzoom;
@@ -266,6 +273,7 @@ private:
 	QLabel *xScaleSliderLabel, *yScaleSliderLabel, *zScaleSliderLabel;
 	QCheckBox *lookingGlassCheckBox;
 	QPushButton *zoomWholeViewButton;
+
 
     QRadioButton *colorRedType, *colorGreenType, *colorBlueType, *colorAllType;
     QRadioButton *colorRed2GrayType, *colorGreen2GrayType, *colorBlue2GrayType, *colorAll2GrayType;
@@ -327,7 +335,8 @@ public slots:
 #if defined(USE_Qt5)
 	void onActivated(QMdiSubWindow* );
 #else
-	void onActivated(QWidget* );
+    //void onActivated(QWidget* );
+    void onActivated(QMdiSubWindow*);
 #endif
 //110803 RZC, for sync multiple ChannelTabWidget
 	void syncChannelTabWidgets(ChannelTabWidget* sender);

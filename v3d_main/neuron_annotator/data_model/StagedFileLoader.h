@@ -109,7 +109,7 @@ enum SignalChannel {
  */
 class ProgressiveLoader : public QObject, public QList<ProgressiveLoadItem*>
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     ProgressiveLoader();
@@ -127,10 +127,10 @@ public:
     virtual void queueSeparationFolder(QUrl url);
     virtual void reset(); // restart from the beginning
 
-signals:
+//signals:
     void newFoldersFound();
 
-public slots:
+//public slots:
     void reexamineResultDirectory(QString dirName);
 
 protected:

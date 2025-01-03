@@ -6,9 +6,11 @@ SOURCES += ../terafly/src/terarepo/src/imagemanager/ComposedVolume.cpp
 SOURCES += ../terafly/src/terarepo/src/stitcher/TPAlgoLQP.cpp
 
 
+QT += core5compat widgets opengl openglwidgets
+#CONFIG   += c++11
 # enable Vaa3D-TeraFly mode
 DEFINES += _VAA3D_TERAFLY_PLUGIN_MODE
-
+#QMAKE_CXXFLAGS += -std=c++11
 #generic set up
 CONFIG += use_experimental_features
 #DEFINES += QT_NO_DEBUG_STREAM
@@ -46,7 +48,7 @@ win32 {
      message("WARNING: hdf5: no support for 32 bit windows")
    ## 64bit
      INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5-win64
-     LIBS += -L$$V3DMAINPATH/common_lib/winlib64 -lhdf5 -lszip -lzlib
+     LIBS += -L$$V3DMAINPATH/common_lib/mingw64 -lhdf5 -lszip -lzlib
 }
 
 macx {
@@ -54,9 +56,10 @@ INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
 LIBS += -L$$V3DMAINPATH/common_lib/lib_mac64 -lhdf5 -lszip -lz
 }
 
-unix {
-INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
-LIBS += -L$$V3DMAINPATH/common_lib/lib_unix64 -lhdf5 -lszip -lz -ldl
+unix:!macx {
+    INCLUDEPATH += $$V3DMAINPATH/common_lib/include/hdf5
+
+    LIBS += -L$$V3DMAINPATH/common_lib/lib_ubuntu -lhdf5 -lszip -lz -ldl
 }
 #Vaa3D headers and sources needed by the plugin
 INCLUDEPATH+= $$QT_PATH/demos/shared

@@ -7,19 +7,19 @@
 
 class DynamicRangeTool : public QDialog
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     explicit DynamicRangeTool(QWidget *parent = 0);
     void setColorModel(DataColorModel*);
     void updateChannelData();
 
-signals:
+//signals:
     void channelChanged(int index);
     void channelColorChanged(int index, /*QRgb*/ int color);
     void channelHdrRangeChanged(int index, qreal min, qreal max);
     void channelGammaChanged(int index, qreal gamma);
 
-public slots:
+//public slots:
     void setChannel(int channelIndex);
     void selectColor();
     void setHdrMin(int min);

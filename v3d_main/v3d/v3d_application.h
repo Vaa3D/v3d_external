@@ -54,10 +54,20 @@ private:
 #endif
 			theApp->installEventFilter(qMainWindow);
 			QSettings settings("HHMI", "Vaa3D");
-            QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
-            QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
+//            QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
+//            QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
+            QPoint windowPosition = QPoint(30, 30);
+            // 获取主屏幕的大小
+            QScreen *screen = QGuiApplication::primaryScreen();
+            QRect screenGeometry = screen->geometry();
+
+            // 计算窗口的大小为屏幕大小的一半
+            int width = screenGeometry.width() * 2 / 3;
+            int height = screenGeometry.height() * 4 / 5;
+
+            // 设置窗口大小
             qMainWindow->move(windowPosition);
-            qMainWindow->resize(windowSize);
+            qMainWindow->resize(width, height);
             qMainWindow->show();
         }
     }
@@ -73,12 +83,12 @@ public:
     }
 
     static void handleCloseEvent(QCloseEvent* event) {
-        mainWindow->handleCoordinatedCloseEvent(event);
+        //mainWindow->handleCoordinatedCloseEvent(event);
 
 #ifdef _ALLOW_WORKMODE_MENU_
-        if (naMainWindow!=0) {
-            naMainWindow->handleCoordinatedCloseEvent(event);
-        }
+//        if (naMainWindow!=0) {
+//            naMainWindow->handleCoordinatedCloseEvent(event);
+//        }
 #endif
 
         QCoreApplication::postEvent(theApp, new QEvent(QEvent::Quit)); // this more OK
@@ -101,10 +111,10 @@ public:
         }
 
 #ifdef _ALLOW_WORKMODE_MENU_
-        if (naMainWindow!=0) {
-            naMainWindow->setV3DDefaultModeCheck(true);
-        }
-        mainWindow->setV3DDefaultModeCheck(true);
+//        if (naMainWindow!=0) {
+//            naMainWindow->setV3DDefaultModeCheck(true);
+//        }
+//        mainWindow->setV3DDefaultModeCheck(true);
 #endif
     }
 
@@ -114,10 +124,10 @@ public:
             mainWindowIsActive=false;
         }
 #ifdef _ALLOW_WORKMODE_MENU_
-        mainWindow->setV3DDefaultModeCheck(false);
-        if (naMainWindow!=0) {
-            naMainWindow->setV3DDefaultModeCheck(false);
-        }
+//        mainWindow->setV3DDefaultModeCheck(false);
+//        if (naMainWindow!=0) {
+//            naMainWindow->setV3DDefaultModeCheck(false);
+//        }
 #endif
     }
 

@@ -45,63 +45,63 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 V3dr_colormapDialog::V3dr_colormapDialog(V3dR_GLWidget* w, QWidget *parent)
-	:SharedToolDialog(w, parent)
+    :SharedToolDialog(w, parent)
 {
-	qDebug("V3dr_colormapDialog::V3dr_colormapDialog");
+    qDebug("V3dr_colormapDialog::V3dr_colormapDialog");
 
-	setWindowTitle(tr("Volume Colormap")); //Color Map Options")); // 090423 RZC: changed
+    setWindowTitle(tr("Volume Colormap")); //Color Map Options")); // 090423 RZC: changed
 
-	glwidget = 0;
-	renderer = 0;
-	bCanUndo = bMod = false;
+    glwidget = 0;
+    renderer = 0;
+    bCanUndo = bMod = false;
 
-	undoButton=loadButton=saveButton=applyButton = 0;
+    undoButton=loadButton=saveButton=applyButton = 0;
 
-	createFirst();
-	linkTo(w);/////
+    createFirst();
+    linkTo(w);/////
 
    // shortkeyClose = new QShortcut(QKeySequence(Qt::Key_Escape), this, SLOT(hide()));
 }
 
 V3dr_colormapDialog::~V3dr_colormapDialog()
 {
-	qDebug("V3dr_colormapDialog::~V3dr_colormapDialog");
-	if (glwidget) glwidget->clearColormapDialog();
+    qDebug("V3dr_colormapDialog::~V3dr_colormapDialog");
+    if (glwidget) glwidget->clearColormapDialog();
 }
 
 
 void V3dr_colormapDialog::linkTo(QWidget* w) //point to new view
 {
-	if (! w)  return;
+    if (! w)  return;
 
-	IncRef(w); //DecRef(w);
-	qDebug("  V3dr_colormapDialog::linkTo ( %p )  ref=%d", w, ref);
+    IncRef(w); //DecRef(w);
+    qDebug("  V3dr_colormapDialog::linkTo ( %p )  ref=%d", w, ref);
 
-	glwidget = (V3dR_GLWidget*)w;
-	renderer = (Renderer_gl2*)(glwidget->getRenderer());
+    glwidget = (V3dR_GLWidget*)w;
+    renderer = (Renderer_gl2*)(glwidget->getRenderer());
 
-	if (renderer && (renderer->data_unitbytes >1)) applyButton->setEnabled(false);
-	bCanUndo = bMod = false;
+    if (renderer && (renderer->data_unitbytes >1)) applyButton->setEnabled(false);
+    bCanUndo = bMod = false;
 
-	saveOldcurve();
-	//updateStops();
+    saveOldcurve();
+    //updateStops();
     QTimer::singleShot(100, this, SLOT( updateStops() )); // So STRANGE!, may because Resize event
 }
 
 
 void V3dr_colormapDialog::createFirst()
 {
-	QGroupBox *editorGroup[N_CHANNEL];
+    QGroupBox *editorGroup[N_CHANNEL];
     for(int i=0; i<N_CHANNEL; i++)
     {
-    	m_editor[i] = 0;
-    	editorGroup[i] = 0;
+        m_editor[i] = 0;
+        editorGroup[i] = 0;
 
-		editorGroup[i] = new QGroupBox(this);
-		editorGroup[i]->setTitle(tr("Channel %1").arg(i+1));
-		m_editor[i] = new GradientEditor(editorGroup[i]);
+        editorGroup[i] = new QGroupBox(this);
+        editorGroup[i]->setTitle(tr("Channel %1").arg(i+1));
+        m_editor[i] = new GradientEditor(editorGroup[i]);
 
-		//editorGroup[i]->setMinimumSize(180,400);
+        //editorGroup[i]->setMinimumSize(180,400);
     }
 
 
@@ -148,7 +148,7 @@ void V3dr_colormapDialog::createFirst()
 
 
     QGroupBox *controlGroup = new QGroupBox(this);
-	controlGroup->setFixedWidth(150);
+    controlGroup->setFixedWidth(150);
     QVBoxLayout *controlLayout = new QVBoxLayout(controlGroup);
     controlLayout->addWidget(presetGroup);
     controlLayout->addWidget(btnGroup);
@@ -159,10 +159,10 @@ void V3dr_colormapDialog::createFirst()
     QHBoxLayout *allLayout = new QHBoxLayout(this);
     for(int i=0; i<N_CHANNEL; i++)
     {
-    	allLayout->addWidget(editorGroup[i]);
+        allLayout->addWidget(editorGroup[i]);
     }
     allLayout->addWidget(controlGroup);
-	HALF_MARGINS(allLayout);
+    HALF_MARGINS(allLayout);
 
 
     // Signal
@@ -183,7 +183,7 @@ void V3dr_colormapDialog::createFirst()
 
     for(int i=0; i<N_CHANNEL; i++)
     {
-    	connect(m_editor[i], SIGNAL(gradientStopsChanged(const QGradientStops &)), this, SLOT(updateColormap()));
+        connect(m_editor[i], SIGNAL(gradientStopsChanged(const QGradientStops &)), this, SLOT(updateColormap()));
     }
 
 
@@ -201,7 +201,7 @@ void V3dr_colormapDialog::setDefault(int ich, int jch, int k)
 //	QGradientStops stops;
 //	#define PRESET(x, a)  {int b = int((a)*255+0.5); stops << QGradientStop((x), QColor(b,b,b,b)); }
 
-	QPolygonF curve;
+    QPolygonF curve;
     #define PRESET(x, a)  { curve << QPointF((x), (a)); }
 
     switch (k)
@@ -247,116 +247,116 @@ void V3dr_colormapDialog::setDefault(int ich, int jch, int k)
     }
 
     if (m_editor[ich])
-   	{
+    {
 //    	bool mask[4];  	for (int j=0; j<4; j++)  mask[j] = (j==jch);
 //    	m_editor[ich]->setGradientStops(mask, stops);
 
-    	m_editor[ich]->setNormalCurve(jch, curve);
-   	}
+        m_editor[ich]->setNormalCurve(jch, curve);
+    }
 }
 
 void V3dr_colormapDialog::updateStops()
 {
-	//qDebug() << "V3dr_colormapDialog::updateStops";
-	if (! renderer)  return;
+    //qDebug() << "V3dr_colormapDialog::updateStops";
+    if (! renderer)  return;
 
-	for(int i=0; i<N_CHANNEL; i++)
-	{
-		if (! m_editor[i])  continue;
+    for(int i=0; i<N_CHANNEL; i++)
+    {
+        if (! m_editor[i])  continue;
 
-		for (int j=0; j<4; j++)
-		{
-			m_editor[i]->setNormalCurve(j, renderer->colormap_curve[i][j]);
+        for (int j=0; j<4; j++)
+        {
+            m_editor[i]->setNormalCurve(j, renderer->colormap_curve[i][j]);
 
-		//	qDebug() << QString("[%1][%2]").arg(i).arg(j) << renderer->colormap_curve[i][j];
-		}
-	}
-	updateColormap();  //081220
+        //	qDebug() << QString("[%1][%2]").arg(i).arg(j) << renderer->colormap_curve[i][j];
+        }
+    }
+    updateColormap();  //081220
 }
 
 void V3dr_colormapDialog::updateColormap()
 {
-	//qDebug() << "V3dr_colormapDialog::updateColormap";
+    //qDebug() << "V3dr_colormapDialog::updateColormap";
 
-	if (! renderer)  return;
+    if (! renderer)  return;
 
-	bMod = true;
-	undoButton->setEnabled(bCanUndo && bMod);
+    bMod = true;
+    undoButton->setEnabled(bCanUndo && bMod);
 
-	for(int i=0; i<N_CHANNEL; i++)
-	{
-		if (! m_editor[i])  continue;
+    for(int i=0; i<N_CHANNEL; i++)
+    {
+        if (! m_editor[i])  continue;
 
-		for (int j=0; j<4; j++)
-		{
-			renderer->colormap_curve[i][j] = m_editor[i]->normalCurve(j); //081219
+        for (int j=0; j<4; j++)
+        {
+            renderer->colormap_curve[i][j] = m_editor[i]->normalCurve(j); //081219
 
-		//	qDebug() << QString("[%1][%2]").arg(i).arg(j) << renderer->colormap_curve[i][j];
-		}
+        //	qDebug() << QString("[%1][%2]").arg(i).arg(j) << renderer->colormap_curve[i][j];
+        }
 
-		for (int k=0; k<=255; k++)
-		{
-			QRgb argb = m_editor[i]->colorF( k/255.0 );
-			(renderer->colormap[i][k]).r = (unsigned char)qRed(argb);
-			(renderer->colormap[i][k]).g = (unsigned char)qGreen(argb);
-			(renderer->colormap[i][k]).b = (unsigned char)qBlue(argb);
-			(renderer->colormap[i][k]).a = (unsigned char)qAlpha(argb);
-			//printf("{[%d][%d]%08x}",0,k, (renderer->colormap[0][k]).i);
-		}
-	}
+        for (int k=0; k<=255; k++)
+        {
+            QRgb argb = m_editor[i]->colorF( k/255.0 );
+            (renderer->colormap[i][k]).r = (unsigned char)qRed(argb);
+            (renderer->colormap[i][k]).g = (unsigned char)qGreen(argb);
+            (renderer->colormap[i][k]).b = (unsigned char)qBlue(argb);
+            (renderer->colormap[i][k]).a = (unsigned char)qAlpha(argb);
+            //printf("{[%d][%d]%08x}",0,k, (renderer->colormap[0][k]).i);
+        }
+    }
 
-	UPDATE_VIEW(glwidget);
+    UPDATE_VIEW(glwidget);
 }
 
 void V3dr_colormapDialog::saveOldcurve()
 {
-	if (! renderer)  return;
+    if (! renderer)  return;
 
-	// save renderer's stops
-	for(int i=0; i<N_CHANNEL; i++)
-	for(int j=0; j<4; j++)
-	{
-		oldcurve[i][j] = renderer->colormap_curve[i][j];
-	}
-	bCanUndo = true;
-	undoButton->setEnabled(bCanUndo && bMod);
+    // save renderer's stops
+    for(int i=0; i<N_CHANNEL; i++)
+    for(int j=0; j<4; j++)
+    {
+        oldcurve[i][j] = renderer->colormap_curve[i][j];
+    }
+    bCanUndo = true;
+    undoButton->setEnabled(bCanUndo && bMod);
 }
 
 void V3dr_colormapDialog::undo()
 {
-	qDebug("  V3dr_colormapDialog::undo");
+    qDebug("  V3dr_colormapDialog::undo");
 
-	if (bCanUndo && bMod && renderer)
-	{
-		// restore the old state
-		for(int i=0; i<N_CHANNEL; i++)
-		for (int j=0; j<4; j++)
-		{
-			renderer->colormap_curve[i][j] = oldcurve[i][j];
-		}
+    if (bCanUndo && bMod && renderer)
+    {
+        // restore the old state
+        for(int i=0; i<N_CHANNEL; i++)
+        for (int j=0; j<4; j++)
+        {
+            renderer->colormap_curve[i][j] = oldcurve[i][j];
+        }
 
-		updateStops();
-	}
-	//bCanUndo = false; // 090707 to be solved later
-	undoButton->setEnabled(bCanUndo && bMod);
+        updateStops();
+    }
+    //bCanUndo = false; // 090707 to be solved later
+    undoButton->setEnabled(bCanUndo && bMod);
 
-	UPDATE_VIEW(glwidget);
+    UPDATE_VIEW(glwidget);
 }
 
 void V3dr_colormapDialog::load()
 {
-	qDebug("Vaa3dr_colormapDialog::load");
-	hide();
+    qDebug("Vaa3dr_colormapDialog::load");
+    hide();
 
     QString filename = QFileDialog::getOpenFileName(0, QObject::tr("Open Color Map File"),
-    		".vaa3dcm",
-    		QObject::tr("Vaa3D Color Map File (*.vaa3dcm);;(*.*)"
-    				));
+            ".vaa3dcm",
+            QObject::tr("Vaa3D Color Map File (*.vaa3dcm);;(*.*)"
+                    ));
     qDebug()<< "load file: " << filename;
 
     try {
 
-    	if (filename.size())   loadColormapFile(filename);
+        if (filename.size())   loadColormapFile(filename);
 
     } catch (...) { }
 
@@ -365,18 +365,18 @@ void V3dr_colormapDialog::load()
 
 void V3dr_colormapDialog::save()
 {
-	qDebug("Vaa3dr_colormapDialog::save");
-	hide();
+    qDebug("Vaa3dr_colormapDialog::save");
+    hide();
 
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save Color Map File"),
-    		".vaa3dcm",
-    		QObject::tr("Vaa3D Color Map File (*.vaa3dcm);;(*.*)"
-    				));
+            ".vaa3dcm",
+            QObject::tr("Vaa3D Color Map File (*.vaa3dcm);;(*.*)"
+                    ));
     qDebug()<< "save file: " << filename;
 
     try {
 
-		if (filename.size())   saveColormapFile(filename);
+        if (filename.size())   saveColormapFile(filename);
 
     } catch (...) { }
 
@@ -385,15 +385,15 @@ void V3dr_colormapDialog::save()
 
 void V3dr_colormapDialog::loadColormapFile(const QString& filename)
 {
-	QFile qf(filename);
-	if (! qf.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		QMessageBox::critical(0, QObject::tr("open file"), QObject::tr("open file [%1] failed!").arg(filename));
-		return;
-	}
+    QFile qf(filename);
+    if (! qf.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox::critical(0, QObject::tr("open file"), QObject::tr("open file [%1] failed!").arg(filename));
+        return;
+    }
 
-	PROGRESS_DIALOG("Loading Colormap", this);
-	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
+    PROGRESS_DIALOG("Loading Colormap", this);
+    PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 
 
     QPolygonF curve[N_CHANNEL][4];
@@ -411,85 +411,85 @@ void V3dr_colormapDialog::loadColormapFile(const QString& filename)
         int ich, jch;
         qreal x, y;
 
-        QStringList qsl = QString(buf).split(" ", QString::SkipEmptyParts); // 090528 RZC: add QString::SkipEmptyParts
+        QStringList qsl = QString(buf).split(" ", Qt::SkipEmptyParts); // 090528 RZC: add QString::SkipEmptyParts
         if (qsl.size()==0)   continue;
 
         for (int i=0; i<qsl.size(); i++)
         {
-        	qsl[i].truncate(99);
-        	if (i==0) ich = qsl[i].toInt();
-        	if (i==1) jch = qsl[i].toInt();
-        	if (i==2) x = qsl[i].toFloat();
-        	if (i==3) y = qsl[i].toFloat();
+            qsl[i].truncate(99);
+            if (i==0) ich = qsl[i].toInt();
+            if (i==1) jch = qsl[i].toInt();
+            if (i==2) x = qsl[i].toFloat();
+            if (i==3) y = qsl[i].toFloat();
         }
         //qDebug("%s  ///  %d %d (%g %g)", buf,  ich, jch, x, y);
         {
-        	ich = qBound(0, ich, N_CHANNEL);
-        	jch = qBound(0, jch, 3);
-        	x = qBound(0.0, x, 1.0);
-        	y = qBound(0.0, y, 1.0);
+            ich = qBound(0, ich, N_CHANNEL);
+            jch = qBound(0, jch, 3);
+            x = qBound(0.0, x, 1.0);
+            y = qBound(0.0, y, 1.0);
 
-        	curve[ich][jch] << QPointF(x, y);
+            curve[ich][jch] << QPointF(x, y);
         }
     }
     qDebug("---------------------read %d lines", count);
 
 
     for(int i=0; i<N_CHANNEL; i++)
-	{
-		if (! m_editor[i])  continue;
+    {
+        if (! m_editor[i])  continue;
 
-		for (int j=0; j<4; j++)
-		{
-			m_editor[i]->setNormalCurve(j, curve[i][j]);
-		}
-	}
+        for (int j=0; j<4; j++)
+        {
+            m_editor[i]->setNormalCurve(j, curve[i][j]);
+        }
+    }
     updateColormap();
 }
 
 void V3dr_colormapDialog::saveColormapFile(const QString& filename)
 {
-	QFile qf(filename);
-	if (! qf.open(QIODevice::WriteOnly | QIODevice::Text))
-	{
-		QMessageBox::critical(0, QObject::tr("open file"), QObject::tr("open file [%1] failed!").arg(filename));
-		return;
-	}
+    QFile qf(filename);
+    if (! qf.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::critical(0, QObject::tr("open file"), QObject::tr("open file [%1] failed!").arg(filename));
+        return;
+    }
 
-	PROGRESS_DIALOG("Saving Colormap", this);
-	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
+    PROGRESS_DIALOG("Saving Colormap", this);
+    PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 
 
     QPolygonF curve[N_CHANNEL][4];
     for(int i=0; i<N_CHANNEL; i++)
-	{
-		if (! m_editor[i])  continue;
+    {
+        if (! m_editor[i])  continue;
 
-		for (int j=0; j<4; j++)
-		{
-			curve[i][j] = m_editor[i]->normalCurve(j);
-		}
-	}
+        for (int j=0; j<4; j++)
+        {
+            curve[i][j] = m_editor[i]->normalCurve(j);
+        }
+    }
 
     int count = 0;
     qDebug("-------------------------------------------------------");
 
     char buf[200];
-	sprintf(buf, "# ich(0--n-1) jch(0--3) x y \n");	//qDebug("%s", buf);
-	qf.write(buf, strlen(buf));
+    sprintf(buf, "# ich(0--n-1) jch(0--3) x y \n");	//qDebug("%s", buf);
+    qf.write(buf, strlen(buf));
 
     for(int i=0; i<N_CHANNEL; i++)
-	for (int j=0; j<4; j++)
+    for (int j=0; j<4; j++)
     {
         for (int k=0; k<curve[i][j].size(); k++)
         {
-			qreal x = curve[i][j].at(k).x();
-			qreal y = curve[i][j].at(k).y();
+            qreal x = curve[i][j].at(k).x();
+            qreal y = curve[i][j].at(k).y();
 
             sprintf(buf, "curve %d %d %g %g\n", i,j, x,y);	//qDebug("%s", buf);
-			qf.write(buf, strlen(buf));
+            qf.write(buf, strlen(buf));
 
-			count++;
+            count++;
         }
     }
     qDebug("---------------------write %d lines", count);
@@ -497,20 +497,20 @@ void V3dr_colormapDialog::saveColormapFile(const QString& filename)
 
 void V3dr_colormapDialog::applyToImage()
 {
-	//qDebug("V3dr_colormapDialog::applyToImage");
+    //qDebug("V3dr_colormapDialog::applyToImage");
 
-	if (QMessageBox::question(0, QObject::tr("Applying Colormap to Image"),  //100810: Cmd-V instead of Cmd-R
-						tr("Are you sure to APPLY current colormap to the image stack in Tri-view ? \n\n"
-						   "(You can press Ctrl/Cmd-V to update the modified data into 3D-view after applying colormap)."),
-						QMessageBox::No | QMessageBox::Yes,
-						QMessageBox::Yes)
-		==QMessageBox::No)
-		return;
+    if (QMessageBox::question(0, QObject::tr("Applying Colormap to Image"),  //100810: Cmd-V instead of Cmd-R
+                        tr("Are you sure to APPLY current colormap to the image stack in Tri-view ? \n\n"
+                           "(You can press Ctrl/Cmd-V to update the modified data into 3D-view after applying colormap)."),
+                        QMessageBox::No | QMessageBox::Yes,
+                        QMessageBox::Yes)
+        ==QMessageBox::No)
+        return;
 
-	PROGRESS_DIALOG("Applying colormap to the image stack in tri-view", this);
-	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
+    PROGRESS_DIALOG("Applying colormap to the image stack in tri-view", this);
+    PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
 
-	if (renderer)	renderer->applyColormapToImage();
+    if (renderer)	renderer->applyColormapToImage();
 
-	PROGRESS_PERCENT(100);
+    PROGRESS_PERCENT(100);
 }

@@ -641,12 +641,15 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 	ChannelTable* ct = qobject_cast<ChannelTable*>(page); //110805 RZC
 	if (! t) return;
 
-	QColor qcolor0(255,255,255);
+//	QColor qcolor0(255,255,255);
+    static QColor last_color(255,255,255);
+    QColor qcolor0 = last_color;
 	if (map==0)
 	{
-		//qcolor0 = QColorDialog::getColor(QColor());
+        qcolor0=last_color;
+        //qcolor0 = QColorDialog::getColor(QColor());
 		//if (! qcolor0.isValid()) return; // this no use for cancel, Qt's bug
-		if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
+         v3dr_getColorDialog( &qcolor0) ;// return; //090424 RZC
 	}
 
 	PROGRESS_DIALOG("Updating color    ", this);
@@ -675,7 +678,8 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 		else //map==0
 			if (! curItem->isSelected()) continue; // skip un-selected
 
-		curItem->setData(0, qVariantFromValue(qcolor));
+        curItem->setData(0, QVariant::fromValue(qcolor));
+        last_color = qcolor;
 		//UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
 	}
 
@@ -786,8 +790,8 @@ void V3D_atlas_viewerDialog::colorSelected()
 		COLOR_ITEM_OF_TABLE(item, t, i);
 		if (item->isSelected())
 		{
-			item->setData(Qt::DecorationRole, qVariantFromValue(qcolor));
-			item->setData(Qt::DisplayRole, qVariantFromValue(qcolor));
+//            item->setData(Qt::DecorationRole, qVariantFromValue(qcolor));
+//            item->setData(Qt::DisplayRole, qVariantFromValue(qcolor));
 		}
 	}
 
@@ -950,10 +954,10 @@ void V3D_atlas_viewerDialog::setItemEditor()
 
 	//	QItemEditorCreatorBase *spinCreator = new QStandardItemEditorCreator<QSpinBox>();
 	//	QItemEditorCreatorBase *comboCreator = new QStandardItemEditorCreator<QComboBox>();
-	QItemEditorCreatorBase *colorCreator = new QStandardItemEditorCreator<ColorEditor>();
+    //QItemEditorCreatorBase *colorCreator = new QStandardItemEditorCreator<ColorEditor>();
 
 	factory->registerEditor(QVariant::String, 0);
-	factory->registerEditor(QVariant::Color, colorCreator);
+    //factory->registerEditor(QVariant::Color, colorCreator);
 
 	QItemEditorFactory::setDefaultFactory(factory);
 }

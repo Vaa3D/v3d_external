@@ -1,5 +1,7 @@
 #include "v3d_application.h"
 
+V3dApplication* V3dApplication::theApp = 0;   //csz 20220621
+
 MainWindow* V3dApplication::mainWindow=0; //reset to be 0. by Hanchuan Peng, 20110705
 bool V3dApplication::mainWindowIsActive;
 
@@ -11,11 +13,11 @@ bool V3dApplication::naMainWindowIsActive;
 V3dApplication::V3dApplication(int & argc, char ** argv) 
     : QApplication(argc, argv)
 {
-#if defined(USE_Qt5)
-	QSurfaceFormat format;
-  format.setDepthBufferSize(24);
-  QSurfaceFormat::setDefaultFormat(format);
-#endif
+
+        QSurfaceFormat format;
+      format.setDepthBufferSize(24);
+      QSurfaceFormat::setDefaultFormat(format);
+
   
 	if (!V3dApplication::mainWindow) //force checking. by Hanchuan Peng, 20110705
 		V3dApplication::mainWindow = new MainWindow();

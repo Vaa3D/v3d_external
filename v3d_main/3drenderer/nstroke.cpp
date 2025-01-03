@@ -1312,7 +1312,6 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
 {
     if(editinput == 3)
         deleteMultiNeuronsByStrokeCommit();
-
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
@@ -1325,6 +1324,9 @@ void Renderer_gl1::callStrokeRetypeMultiNeurons()
             oldCursor = QCursor(Qt::ArrowCursor);
             w->setCursor(QCursor(Qt::PointingHandCursor));
         }
+    }
+    if(w){
+        retypeMultiNeuronsbyshortcut();
     }
 }
 
@@ -1689,6 +1691,7 @@ void Renderer_gl1::callCreateMarkerNearestNode(int x, int y)
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w && listNeuronTree.size()>0)
     {
+
         w->setEditMode();
         if(listNeuronTree.at(0).editable==true || listNeuronTree.at(listNeuronTree.size()-1).editable==true)
         {
@@ -1878,6 +1881,7 @@ void Renderer_gl1::_updateDragPoints(int x, int y)
           const MarkerPos &pos = listMarkerPos.at(nm-1);
 
           // get XYZ from MarkerPos
+          qDebug()<<"void Renderer_gl1::_updateDragPoints(int x, int y)";
           XYZ dragPt = getCenterOfMarkerPos(pos);
           //MarkerPosToXYZCenter(pos, dragPt, lastDragPos);
           //lastDragPos = dragPt;

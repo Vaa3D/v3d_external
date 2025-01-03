@@ -73,11 +73,11 @@ bool neuron_subpattern_search(int option, MainWindow *pmain)
         QString datfilename = "tracing_menu";
 
         QTime t;
-        t.start();
+       // t.start();
         mypluginloader.runPlugin(loader, datfilename);
         //the data IO manager is specially designed to pass the datafilename parameter in this way.
         //2013-12-02. by PHC. what an ugly design here!
-        v3d_msg(QString("** invoke time for the plugin is [%1] ms.").arg(t.elapsed()*1000), 0);
+       // v3d_msg(QString("** invoke time for the plugin is [%1] ms.").arg(t.elapsed()*1000), 0);
     }
     catch (...)
     {

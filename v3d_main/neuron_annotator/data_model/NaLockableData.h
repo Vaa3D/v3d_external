@@ -17,7 +17,7 @@ class NaLockableDataBaseWriteLocker;
 // the status of read locks every 25 milliseconds or so.
 class NaLockableData : public QObject
 {
-    Q_OBJECT
+   // Q_OBJECT
 
 public:
     friend class NaLockableDataBaseReadLocker;
@@ -31,7 +31,7 @@ public:
     virtual ~NaLockableData();
     bool representsActualData() const {return ! bAbortWrite;}
 
-signals:
+//signals:
     void dataChanged(); // ready for downstream clients to read all data
     void progressMessageChanged(QString msg);
     void progressValueChanged(int); // on a scale of 0-100
@@ -39,7 +39,7 @@ signals:
     void progressCompleted(); // successful completion
     void invalidated();
 
-public slots:
+//public slots:
     virtual void update() {} // recreate everything from upstream data
     virtual void invalidate() {
         if (bAbortWrite) return;

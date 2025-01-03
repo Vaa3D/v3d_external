@@ -24,7 +24,7 @@ class QRectF;
 
 class NaZStackWidget : public Na2DViewer
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     enum Color {
@@ -67,7 +67,7 @@ public:
     void recordColorChannelROIPos();
     virtual void setDataFlowModel(const DataFlowModel* dataFlowModel);
 
-public slots:
+//public slots:
     void do_HDRfilter();
     void updatePixmap();
     void setRedChannel();
@@ -81,7 +81,7 @@ public slots:
     void updateHDRView();
     void showContextMenu(QPoint);
 
-signals:
+//signals:
     void curZsliceChanged(int);
     void curColorChannelChanged(NaZStackWidget::Color);
     void hdrBoxSizeChanged(int boxSize);
@@ -89,7 +89,7 @@ signals:
     void hdrRangeChanged(int channel, qreal min, qreal max);
     void statusMessage(const QString&);
 
-protected slots:
+//protected slots:
     void onMouseLeftDragEvent(int dx, int dy, QPoint pos);
     void resetHdrBox();
 

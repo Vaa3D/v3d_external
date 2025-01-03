@@ -40,7 +40,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v_neuronswc.h"
 #include <iostream>
 #include "global_feature_compute.h"
-
+using namespace std;
 V_NeuronSWC get_v_neuron_swc(const NeuronTree *p);
 vector<V_NeuronSWC> get_neuron_segments(const NeuronTree *p);
 void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const vector<V_NeuronSWC> & segment_list);
@@ -58,13 +58,10 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
     {
         bool ok1;
 
-#if defined(USE_Qt5)
+
         V3DLONG d_thres_new = QInputDialog::getInt(0, "change the default distance threshold",
                                                        "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
-#else
-        V3DLONG d_thres_new = QInputDialog::getInteger(0, "change the default distance threshold",
-                                                       "The visible-spatial-distance threshold of two neurons: ", d_thres, 2, 20, 1, &ok1);
-#endif
+
         if (ok1)
         {
             d_thres = d_thres_new;
@@ -85,7 +82,7 @@ NeuronDistSimple neuron_score_rounding_nearest_neighbor(const NeuronTree *p1, co
 	V3DLONG nseg1, nseg2;
 	double sum12big, sum21big;
     double maxdist12 = -1, maxdist21 = -1; //set as some big numbers
-	V3DLONG nseg1big, nseg2big;
+    V3DLONG nseg1big, nseg2big;
     sum12 = dist_directional_swc_1_2(nseg1, nseg1big, sum12big, p1, p2, maxdist12);
     sum21 = dist_directional_swc_1_2(nseg2, nseg2big, sum21big, p2, p1, maxdist21);
 
@@ -182,7 +179,7 @@ double dist_directional_swc_1_2(V3DLONG & nseg1, V3DLONG & nseg1big, double & su
             if (cur_d>=d_thres)
 			{
 				sum1big += cur_d;
-				nseg1big++;
+                nseg1big++;
                 //qDebug() << "(" << cur_d << ", " << nseg1big << ")";
 			}
 
@@ -475,7 +472,7 @@ vector<V_NeuronSWC> get_neuron_segments(const NeuronTree *p)
 
 void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const vector<V_NeuronSWC> & segment_list)
 {
-	QMap <V_NeuronSWC_coord, V_NeuronSWC_unit> map;
+    QMultiMap <V_NeuronSWC_coord, V_NeuronSWC_unit> map;
 	map.clear();
 
 	for (V3DLONG i=0; i<segment_list.size(); i++)
@@ -485,27 +482,28 @@ void neuron_branch_tip_count(V3DLONG &n_branch, V3DLONG &n_tip, const vector<V_N
 		{
 			V_NeuronSWC_unit node = seg.row.at(j);
 			V_NeuronSWC_coord key = node;
-			map.insertMulti(key, node);
+            //map.insertMulti(key, node);
+            map.insert(key, node);
 		}
 	}
 
 	n_branch = 0;
 	n_tip = 2*segment_list.size();
 
-	QList <V_NeuronSWC_coord> keys = map.uniqueKeys();
-	for (V3DLONG i=0; i<keys.size(); i++)
-	{
-		V_NeuronSWC_coord key = keys.at(i);
-		int nkey = map.count(key);
-		if (nkey >= 3)
-		{
-			n_branch ++;
-		}
-		if (nkey >= 2)
-		{
-			n_tip -= nkey;
-		}
-	}
+    //QList <V_NeuronSWC_coord> keys = map.uniqueKeys();
+//	for (V3DLONG i=0; i<keys.size(); i++)
+//	{
+//		V_NeuronSWC_coord key = keys.at(i);
+//		int nkey = map.count(key);
+//		if (nkey >= 3)
+//		{
+//			n_branch ++;
+//		}
+//		if (nkey >= 2)
+//		{
+//			n_tip -= nkey;
+//		}
+//	}
 }
 
 //091212 RZC

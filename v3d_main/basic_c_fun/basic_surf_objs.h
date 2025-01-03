@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -43,21 +43,21 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "color_xyz.h"
 #include "v3d_message.h"
 
-#include <QtGui> // this is for QList, QString etc types
+//#include <QtGui> // this is for QList, QString etc types
 #include <QFileDialog>
 
 // .ano linker files
 
 struct P_ObjectFileType
 {
-	QStringList raw_image_file_list;
-	QStringList labelfield_image_file_list;
-	QStringList annotation_file_list;
-	QStringList swc_file_list;
-	QStringList pointcloud_file_list;
-	QStringList surface_file_list;
-        // Added by Peng Xie, 2019-06-05
-        QStringList marker_file_list;
+    QStringList raw_image_file_list;
+    QStringList labelfield_image_file_list;
+    QStringList annotation_file_list;
+    QStringList swc_file_list;
+    QStringList pointcloud_file_list;
+    QStringList surface_file_list;
+    // Added by Peng Xie, 2019-06-05
+    QStringList marker_file_list;
 };
 
 bool importKeywordString2FileType(QString ss, QString vv, QString basedir, P_ObjectFileType & cc);
@@ -67,13 +67,13 @@ bool saveAnoFile(QString openFileNameLabel, const P_ObjectFileType & cc); // a c
 
 struct BasicSurfObj
 {
-	V3DLONG n;				// index
-	RGBA8 color;
-	bool on;
-	bool selected;
-	QString name;
-	QString comment;
-	BasicSurfObj() {n=0; color.r=color.g=color.b=color.a=255; on=true;selected=false; name=comment="";}
+    V3DLONG n;				// index
+    RGBA8 color;
+    bool on;
+    bool selected;
+    QString name;
+    QString comment;
+    BasicSurfObj() {n=0; color.r=color.g=color.b=color.a=255; on=true;selected=false; name=comment="";}
 };
 
 // .marker marker files
@@ -83,15 +83,15 @@ struct BasicSurfObj
 //##########################################################################################
 struct ImageMarker : public BasicSurfObj
 {
-	int type;			// 0-pxUnknown, 1-pxLocaNotUseful, 2-pxLocaUseful, 3-pxLocaUnsure, 4-pxTemp
-	int shape;			// 0-pxUnset, 1-pxSphere, 2-pxCube, 3-pxCircleX, 4-pxCircleY, 5-pxCircleZ,
-	// 6-pxSquareX, 7-pxSquareY, 8-pxSquareZ, 9-pxLineX, 10-pxLineY, 11-pxLineZ,
-	// 12-pxTriangle, 13-pxDot;
-	float x, y, z;		// point coordinates
-	float radius;
+    int type;			// 0-pxUnknown, 1-pxLocaNotUseful, 2-pxLocaUseful, 3-pxLocaUnsure, 4-pxTemp
+    int shape;			// 0-pxUnset, 1-pxSphere, 2-pxCube, 3-pxCircleX, 4-pxCircleY, 5-pxCircleZ,
+    // 6-pxSquareX, 7-pxSquareY, 8-pxSquareZ, 9-pxLineX, 10-pxLineY, 11-pxLineZ,
+    // 12-pxTriangle, 13-pxDot;
+    float x, y, z;		// point coordinates
+    float radius;
 
-	operator XYZ() const { return XYZ(x, y, z); }
-	ImageMarker() {type=shape=0; radius=x=y=z=0;}
+    operator XYZ() const { return XYZ(x, y, z); }
+    ImageMarker() {type=shape=0; radius=x=y=z=0;}
     ImageMarker(float x0, float y0, float z0) {type=shape=0; x=x0; y=y0; z=z0; radius=0;}
     ImageMarker(int t0, int s0, float x0, float y0, float z0, float r0) {type=t0; shape=s0; x=x0; y=y0; z=z0; radius=r0;}
 };
@@ -104,15 +104,15 @@ bool writeMarker_file(const QString & filename, const QList <ImageMarker> & list
 
 struct CellAPO  : public BasicSurfObj
 {
-	float x, y, z;		// point coordinates
+    float x, y, z;		// point coordinates
     float intensity;
     float sdev, pixmax, mass;
-	float volsize;		// volume size
+    float volsize;		// volume size
     QString orderinfo;
     //char *timestamp;    // timestamp  LMG 26/9/2018
     QString timestamp;		// timestamp  LMG 27/9/2018
 
-	operator XYZ() const { return XYZ(x, y, z); }
+    operator XYZ() const { return XYZ(x, y, z); }
     CellAPO() {x=y=z=intensity=volsize=sdev=pixmax=mass=0; timestamp=""; orderinfo="";}
 };
 
@@ -123,23 +123,23 @@ bool writeAPO_file(const QString& filename, const QList <CellAPO> & listCell);
 
 struct NeuronSWC : public BasicSurfObj
 {
-	int type;			// 0-Undefined, 1-Soma, 2-Axon, 3-Dendrite, 4-Apical_dendrite, 5-Fork_point, 6-End_point, 7-Custom
-	float x, y, z;		// point coordinates
+    int type;			// 0-Undefined, 1-Soma, 2-Axon, 3-Dendrite, 4-Apical_dendrite, 5-Fork_point, 6-End_point, 7-Custom
+    float x, y, z;		// point coordinates
 
     union{
-	float r;			// radius
-    float radius;
+        float r;			// radius
+        float radius;
     };
-    
+
     union{
-	V3DLONG pn;				// previous point index (-1 for the first point)
-    V3DLONG parent;				// previous point index (-1 for the first point)
+        V3DLONG pn;				// previous point index (-1 for the first point)
+        V3DLONG parent;				// previous point index (-1 for the first point)
     };
-    
+
     V3DLONG level; //20120217, by PHC. for ESWC format
     QList<float> fea_val; //20120217, by PHC. for ESWC format
 
-	V3DLONG seg_id; //this is reused for ESWC format, 20120217, by PHC
+    V3DLONG seg_id; //this is reused for ESWC format, 20120217, by PHC
     V3DLONG nodeinseg_id; //090925, 091027: for segment editing
 
     V3DLONG creatmode;      // creation mode LMG 8/10/2018
@@ -147,7 +147,7 @@ struct NeuronSWC : public BasicSurfObj
 
     double tfresindex;         // TeraFly resolution index LMG 13/12/2018
 
-	operator XYZ() const { return XYZ(x, y, z); }
+    operator XYZ() const { return XYZ(x, y, z); }
     NeuronSWC () {n=type=pn=0; x=y=z=r=0; seg_id=-1; nodeinseg_id=0; fea_val=QList<float>(); level=-1; creatmode=0; timestamp=0; tfresindex=0;}
 };
 
@@ -155,21 +155,21 @@ struct NeuronSWC : public BasicSurfObj
 
 struct LabelSurf : public BasicSurfObj
 {
-	int label;			// label
-	int label2;			// label2 (range from label to label2)
+    int label;			// label
+    int label2;			// label2 (range from label to label2)
 
-	operator int() const { return label; }
-	LabelSurf() {label=label2=0;}
+    operator int() const { return label; }
+    LabelSurf() {label=label2=0;}
 };
 
 // .neuron trees
 
 struct NeuronTree : public BasicSurfObj
 {
-	QList <NeuronSWC> listNeuron;
-        QHash <int, int>  hashNeuron;
-	QString file;
-	bool editable;
+    QList <NeuronSWC> listNeuron;
+    QHash <int, int>  hashNeuron;
+    QString file;
+    bool editable;
     int linemode; //local control if a neuron will displayed as line or tube mode(s). by PHC 20130926
 
     NeuronTree()
@@ -213,50 +213,50 @@ struct NeuronTree : public BasicSurfObj
 
 
 
-	void copy(const NeuronTree & p)
-	{
-		n=p.n; color=p.color; on=p.on; selected=p.selected; name=p.name; comment=p.comment;
-		listNeuron = p.listNeuron;
-		hashNeuron = p.hashNeuron;
-		file     = p.file;
-		editable = p.editable;
+    void copy(const NeuronTree & p)
+    {
+        n=p.n; color=p.color; on=p.on; selected=p.selected; name=p.name; comment=p.comment;
+        listNeuron = p.listNeuron;
+        hashNeuron = p.hashNeuron;
+        file     = p.file;
+        editable = p.editable;
         linemode = p.linemode;
-	}
-	void copyGeometry(const NeuronTree & p)
-	{
-		if (p.listNeuron.size()!=listNeuron.size()) return;
+    }
+    void copyGeometry(const NeuronTree & p)
+    {
+        if (p.listNeuron.size()!=listNeuron.size()) return;
 
-		NeuronSWC *p_tmp;
-		for (V3DLONG i=0;i<listNeuron.size();i++)
-		{
-			p_tmp = (NeuronSWC *)(&(listNeuron.at(i)));
-			//qDebug()<<"before:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
-			p_tmp->x = p.listNeuron.at(i).x;
-			p_tmp->y = p.listNeuron.at(i).y;
-			p_tmp->z = p.listNeuron.at(i).z;
+        NeuronSWC *p_tmp;
+        for (V3DLONG i=0;i<listNeuron.size();i++)
+        {
+            p_tmp = (NeuronSWC *)(&(listNeuron.at(i)));
+            //qDebug()<<"before:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
+            p_tmp->x = p.listNeuron.at(i).x;
+            p_tmp->y = p.listNeuron.at(i).y;
+            p_tmp->z = p.listNeuron.at(i).z;
             p_tmp->r = p.listNeuron.at(i).r;
             p_tmp->creatmode = p.listNeuron.at(i).creatmode;    // Creation Mode LMG 8/10/2018
             p_tmp->timestamp = p.listNeuron.at(i).timestamp;    // Timestamp LMG 27/9/2018
             p_tmp->tfresindex = p.listNeuron.at(i).tfresindex;  // TeraFly resolution index 13/12/2018
-			//qDebug()<<"src:"<<p.listNeuron.at(i).x<<p.listNeuron.at(i).y<<p.listNeuron.at(i).z<<p.listNeuron.at(i).r;
-			//qDebug()<<"after:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
-		}
-	}
-	bool projection(int axiscode=3) //axiscode, 1 -- x, 2 -- y, 3 -- z, 4 -- r
-	{
-		if (axiscode!=1 && axiscode!=2 && axiscode!=3 && axiscode!=4) return false;
-		NeuronSWC *p_tmp;
-		for (V3DLONG i=0;i<listNeuron.size();i++)
-		{
-			p_tmp = (NeuronSWC *)(&(listNeuron.at(i)));
-			//qDebug()<<"before:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
-			if (axiscode==1) p_tmp->x = 0;
-			else if (axiscode==2) p_tmp->y = 0;
-			else if (axiscode==3) p_tmp->z = 0;
-			else if (axiscode==4) p_tmp->r = 0.5;
-		}
-		return true;
-	}
+            //qDebug()<<"src:"<<p.listNeuron.at(i).x<<p.listNeuron.at(i).y<<p.listNeuron.at(i).z<<p.listNeuron.at(i).r;
+            //qDebug()<<"after:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
+        }
+    }
+    bool projection(int axiscode=3) //axiscode, 1 -- x, 2 -- y, 3 -- z, 4 -- r
+    {
+        if (axiscode!=1 && axiscode!=2 && axiscode!=3 && axiscode!=4) return false;
+        NeuronSWC *p_tmp;
+        for (V3DLONG i=0;i<listNeuron.size();i++)
+        {
+            p_tmp = (NeuronSWC *)(&(listNeuron.at(i)));
+            //qDebug()<<"before:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
+            if (axiscode==1) p_tmp->x = 0;
+            else if (axiscode==2) p_tmp->y = 0;
+            else if (axiscode==3) p_tmp->z = 0;
+            else if (axiscode==4) p_tmp->r = 0.5;
+        }
+        return true;
+    }
 };
 
 NeuronTree readSWC_file(const QString& filename);
@@ -268,37 +268,36 @@ bool writeESWC_file(const QString& filename, const NeuronTree& nt);
 
 inline bool operator==(ImageMarker& a, ImageMarker& b)
 {
-	return XYZ(a)==XYZ(b);
+    return XYZ(a)==XYZ(b);
 }
 
 inline bool operator==(CellAPO& a, CellAPO& b)
 {
-	return XYZ(a)==XYZ(b);
+    return XYZ(a)==XYZ(b);
 }
 
 inline bool operator==(NeuronSWC& a, NeuronSWC& b)
 {
-	return XYZ(a)==XYZ(b);
+    return XYZ(a)==XYZ(b);
 }
 
 inline bool operator==(LabelSurf& a, LabelSurf& b) // for test of contains
 {
-	return int(a)==int(b);
+    return int(a)==int(b);
 }
 inline bool operator<(LabelSurf& a, LabelSurf& b)  // for test of sort
 {
-	return int(a)<int(b);
+    return int(a)<int(b);
 }
 inline bool operator>(LabelSurf& a, LabelSurf& b)  // for test of sort
 {
-	return int(a)>int(b);
+    return int(a)>int(b);
 }
 
 inline bool operator==(NeuronTree& a, NeuronTree& b)
 {
-	return QString::compare(a.file, b.file, Qt::CaseSensitive)==0;
+    return QString::compare(a.file, b.file, Qt::CaseSensitive)==0;
 }
 
 
 #endif
-

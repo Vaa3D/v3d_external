@@ -12,7 +12,7 @@
 
 class GalleryButton : public QWidget
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     enum ButtonType {
@@ -42,12 +42,12 @@ public:
     void setContextMenu(NeuronContextMenu* menu);
     void setNeuronSelectionModel(const NeuronSelectionModel&);
 
-signals:
+//signals:
     void fragmentVisibilityChanged(int index, bool visible);
     void fragmentSelectionChanged(int index, bool selected); // not used
     void fragmentHighlightChanged(NeuronIndex fragmentIndex, bool highlighted); // not used
 
-public slots:
+//public slots:
     /// Returns true if value changed
     bool setFragmentVisibility(bool checked);
     bool setFragmentSelection(bool selected);

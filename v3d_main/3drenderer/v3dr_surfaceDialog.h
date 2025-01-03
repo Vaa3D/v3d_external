@@ -75,165 +75,166 @@ class V3dr_surfaceDialog: public SharedToolDialog
     Q_OBJECT;
 
 public:
-	V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent=0);
-	virtual ~V3dr_surfaceDialog();
+    V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent=0);
+    virtual ~V3dr_surfaceDialog();
     void setCurTab(int i)  {if(i<0) i=iLastTab;  if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504, 110713
-	int  getCurTab()       {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622
-	int meshDensity;
+    int  getCurTab()       {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622
+    int meshDensity;
 
 protected:
-	V3dR_GLWidget *glwidget, *tolink_widget;
-	Renderer_gl1* renderer;
-	int iLastTab;   //updated in linkTo before re-create tab
-	bool bCanUndo, bMod;
-	bool bAttached;
-	QString title;
-	int last_marker; //updated in pressedClickHandler
-	bool isBatchOperation; //added by Y. Wang 20160525
+    V3dR_GLWidget *glwidget, *tolink_widget;
+    Renderer_gl1* renderer;
+    int iLastTab;   //updated in linkTo before re-create tab
+    bool bCanUndo, bMod;
+    bool bAttached;
+    QString title;
+    int last_marker; //updated in pressedClickHandler
+    bool isBatchOperation; //added by Y. Wang 20160525
     int sortNeuronSegment;
 
-	void setItemEditor();
-	void createFirst();
+    void setItemEditor();
+    void createFirst();
 
 public slots:
-	virtual void linkTo(QWidget* w); //link to new view
-	virtual int DecRef(QWidget* w); //override for attached widget closing
-	void onAttached(bool);
+    virtual void linkTo(QWidget* w); //link to new view
+    virtual int DecRef(QWidget* w); //override for attached widget closing
+    void onAttached(bool);
 
-	void undo();
+    void undo();
 
-	void selectAll();
-	void deselectAll();
-	void selectInverse();
+    void selectAll();
+    void deselectAll();
+    void selectInverse();
 
-	void selectedOnOff(bool state);
-	void selectedOn()  {selectedOnOff(true);}
-	void selectedOff() {selectedOnOff(false);}
+    void selectedOnOff(bool state);
+    void selectedOn()  {selectedOnOff(true);}
+    void selectedOff() {selectedOnOff(false);}
 
-	void doMenuOfColor();
-	void selectedColor(int map=0);
-	void mapSegmentColor() {selectedColor(1);}
-	void mapMultiNeuronColor() {selectedColor(2);}
-	void mapHanchuanColor() {selectedColor(-2);}
-	void mapRandomColor()   {selectedColor(-1);}
+    void doMenuOfColor();
+    void selectedColor(int map=0);
+    void mapSegmentColor() {selectedColor(1);}
+    void mapMultiNeuronColor() {selectedColor(2);}
+    void mapHanchuanColor() {selectedColor(-2);}
+    void mapRandomColor()   {selectedColor(-1);}
 
     void doMenuOfDisplayMode();
     void setSWCDisplayMode(int v);
     void setSWCDisplayUsingGlobalSettings() {setSWCDisplayMode(-1);}
     void setSWCDisplayUsingLine() {setSWCDisplayMode(1);}
     void setSWCDisplayUsingTube() {setSWCDisplayMode(0);}
-	/*void setMeshDensity(int newMeshDensity);
-	void setMeshDensity27() {setMeshDensity(27);}
-	void setMeshDensity18() {setMeshDensity(18);}
-	void setMeshDensity9() {setMeshDensity(9);}
-	void setMeshDensityDefault() {setMeshDensity(36);}*/
+//注释了
+//    void setMeshDensity(int newMeshDensity);
+//    void setMeshDensity27() {setMeshDensity(27);}
+//    void setMeshDensity18() {setMeshDensity(18);}
+//    void setMeshDensity9() {setMeshDensity(9);}
+//    void setMeshDensityDefault() {setMeshDensity(36);}
 
-	void pressedClickHandler(int row, int col);
-	void doubleClickHandler(int row, int col);
-	void pickSurf(int row, int col);
-	void pickNeuronSegment(int row, int col);
-	void pickSWC(int row, int col);
-	void pickAPO(int row, int col);
-	void pickAPO_Set(int row, int col);
-	void pickMarker(int row, int col);
+    void pressedClickHandler(int row, int col);
+    void doubleClickHandler(int row, int col);
+    void pickSurf(int row, int col);
+    void pickNeuronSegment(int row, int col);
+    void pickSWC(int row, int col);
+    void pickAPO(int row, int col);
+    void pickAPO_Set(int row, int col);
+    void pickMarker(int row, int col);
 
-	void editObjNameAndComments();
+    void editObjNameAndComments();
 #ifdef _YUN_
-	void labelSortMarkers();
+    void labelSortMarkers();
 #endif
-	void editNeuronSegmentType();
+    void editNeuronSegmentType();
 
-	void findNext();
-	void findPrev();
-	void findAllHighlight();
+    void findNext();
+    void findPrev();
+    void findAllHighlight();
 
-	void onMarkerLocalView();
+    void onMarkerLocalView();
 
     void zoomMarkerLocation();
 
     void updateMarkerList(QList <ImageMarker> markers); // sync object_manager with renderer
 
-	// -- MK, June, 2018
+    // -- MK, June, 2018
     void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).
-	int getMarkerNum() { return this->listMarker.size(); }
+    int getMarkerNum() { return this->listMarker.size(); }
 
-    //
+
     void sortNeuronSegmentByType(QTableWidgetItem* item);
 
 protected:
-	void clearTables_fromTab();
-	void createTables_addtoTab();
+    void clearTables_fromTab();
+    void createTables_addtoTab();
 
-	QTableWidget* createTableSurf();
-	QTableWidget* createTableSWC();
-	QTableWidget* createTableNeuronSegment();
-	QTableWidget* createTableAPO();
-	QTableWidget* createTableMarker();
-	QTableWidget* createTableAPO_Set();
+    QTableWidget* createTableSurf();
+    QTableWidget* createTableSWC();
+    QTableWidget* createTableNeuronSegment();
+    QTableWidget* createTableAPO();
+    QTableWidget* createTableMarker();
+    QTableWidget* createTableAPO_Set();
 
-	QTableWidget* currentTableWidget();
+    QTableWidget* currentTableWidget();
 
-	QVector<bool> in_batch_stack;
-	void begin_batch() {in_batch_stack.push_back(true);}
-	void end_batch()   {in_batch_stack.pop_back();}
-	void updatedContent(QTableWidget* t);
+    QVector<bool> in_batch_stack;
+    void begin_batch() {in_batch_stack.push_back(true);}
+    void end_batch()   {in_batch_stack.pop_back();}
+    void updatedContent(QTableWidget* t);
 
-	void createMenuOfColor();
-	QMenu menuColor;
+    void createMenuOfColor();
+    QMenu menuColor;
 
     void createMenuOfDisplayMode();
     QMenu menuDisplayMode;
 
-	QPushButton *okButton, *cancelButton, *undoButton,
-		*selectAllButton, *deselectAllButton, *inverseSelectButton,
-		*onSelectButton, *offSelectButton, *colorSelectButton,
-		*editNameCommentButton, *markerLocalView, *neuronSegmentType,
+    QPushButton *okButton, *cancelButton, *undoButton,
+        *selectAllButton, *deselectAllButton, *inverseSelectButton,
+        *onSelectButton, *offSelectButton, *colorSelectButton,
+        *editNameCommentButton, *markerLocalView, *neuronSegmentType,
 #ifdef _YUN_
-		*objectSetDisplayModeButton,
-		*labelSortMarkerButton; // MK, Feb, 2020
+        *objectSetDisplayModeButton,
+        *labelSortMarkerButton; // MK, Feb, 2020
 #else
-		*objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
+        *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
 #endif
 
-	QTabWidget *tabOptions;
-	QTableWidget *table[1+6];
-	QCheckBox *checkBox_accumulateLastHighlightHits, *checkBox_attachedToCurrentView;
+    QTabWidget *tabOptions;
+    QTableWidget *table[1+6];
+    QCheckBox *checkBox_accumulateLastHighlightHits, *checkBox_attachedToCurrentView;
 
-	// search group
-	QLabel *searchTextEditLabel, *searchTextResultLabel;
-	QLineEdit *searchTextEdit;
-	QPushButton *doSearchTextNext, *doSearchTextPrev, *doSearchTextHighlightAllHits;
+    // search group
+    QLabel *searchTextEditLabel, *searchTextResultLabel;
+    QLineEdit *searchTextEdit;
+    QPushButton *doSearchTextNext, *doSearchTextPrev, *doSearchTextHighlightAllHits;
 
-	// save state for cancel/undo
-	QList <LabelSurf> listLabelSurf;
-	QList <NeuronTree> listNeuronTree;
-	QList <CellAPO> listCell;
-	QList <ImageMarker> listMarker;
+    // save state for cancel/undo
+    QList <LabelSurf> listLabelSurf;
+    QList <NeuronTree> listNeuronTree;
+    QList <CellAPO> listCell;
+    QList <ImageMarker> listMarker;
 
-	void init_members()
-	{
-		glwidget = tolink_widget = 0;
-		renderer = 0;
-		iLastTab = -1;
-		bCanUndo = bMod = false;
-		bAttached = false;
-		title = tr("Object Manager");  //Object Pick/Color Options")); //090423 RZC: changed
-		last_marker = -1;
-		isBatchOperation = false;
+    void init_members()
+    {
+        glwidget = tolink_widget = 0;
+        renderer = 0;
+        iLastTab = -1;
+        bCanUndo = bMod = false;
+        bAttached = false;
+        title = tr("Object Manager");  //Object Pick/Color Options")); //090423 RZC: changed
+        last_marker = -1;
+        isBatchOperation = false;
         sortNeuronSegment = 0;
 
-		okButton=cancelButton=undoButton=0;
-		selectAllButton=deselectAllButton=inverseSelectButton=
-			onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=markerLocalView =0;
+        okButton=cancelButton=undoButton=0;
+        selectAllButton=deselectAllButton=inverseSelectButton=
+            onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=markerLocalView =0;
         objectSetDisplayModeButton = 0;
         neuronSegmentType = 0;
-		for (int i=0; i<=6; i++)  table[i]=0; //by PHC, 090521 change to 5
-		tabOptions=0;
-		checkBox_accumulateLastHighlightHits = checkBox_attachedToCurrentView =0;//100809 RZC
-		searchTextEditLabel=searchTextResultLabel = 0;
-		searchTextEdit =0;
-		doSearchTextNext=doSearchTextPrev=doSearchTextHighlightAllHits =0;
-	}
+        for (int i=0; i<=6; i++)  table[i]=0; //by PHC, 090521 change to 5
+        tabOptions=0;
+        checkBox_accumulateLastHighlightHits = checkBox_attachedToCurrentView =0;//100809 RZC
+        searchTextEditLabel=searchTextResultLabel = 0;
+        searchTextEdit =0;
+        doSearchTextNext=doSearchTextPrev=doSearchTextHighlightAllHits =0;
+    }
 };
 
 

@@ -10,14 +10,14 @@
 // base class NaSharedDataSignaller .
 class NaSharedDataSignaller : public QObject
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     NaSharedDataSignaller(); // no parent, because it has its own QThread
     virtual ~NaSharedDataSignaller();
     bool representsActualData() const {return ! bAbortWrite;}
 
-signals:
+//signals:
     void dataChanged(); // ready for downstream clients to read all data
     void progressMessageChanged(QString msg);
     void progressValueChanged(int); // on a scale of 0-100
@@ -26,7 +26,7 @@ signals:
     void invalidated();
     void actualDataRepresented();
 
-public slots:
+//public slots:
     virtual void update() {} // recreate everything from upstream data
     virtual void invalidate() {
         if (bAbortWrite) return;

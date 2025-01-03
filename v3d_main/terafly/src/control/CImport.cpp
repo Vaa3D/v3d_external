@@ -167,7 +167,7 @@ void tf::CImport::reset()
 }
 
 // instance high res volume for virtual pyramid
-void CImport::vpInstanceHighResVolume() throw (tf::RuntimeException)
+void CImport::vpInstanceHighResVolume()
 {
     try
     {
@@ -355,8 +355,10 @@ void CImport::run()
         /**************** 3) GENERATING / LOADING VOLUME 3D MAP *****************
         We generate once for all a volume map from lowest-resolution volume.
         *************************************************************************/
-//        string volMapPath = tf::cdUp(path) + "/" + VMAP_BIN_FILE_NAME;
-        string volMapPath = QDir::currentPath().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        //string volMapPath = tf::cdUp(path) + "/" + VMAP_BIN_FILE_NAME;
+        //string volMapPath = QDir::currentPath().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        string volMapPath = QApplication::applicationDirPath().toStdString() + "/" + VMAP_BIN_FILE_NAME;
+        cout<<volMapPath<<endl;
 
         if(hasVolumeMapToBeRegenerated(volMapPath.c_str(), "0.9.42") || reimport || regenerateVMap)
         {
@@ -449,7 +451,7 @@ void CImport::run()
 // 2) it is not compatible with the current version OR
 // 3) contains a number of 'T' frames with T < vmapTDimMax
 bool CImport::hasVolumeMapToBeRegenerated(std::string vmapFilepath,
-                                          std::string min_required_version) throw (RuntimeException)
+                                          std::string min_required_version) 
 {
     /**/tf::debug(tf::LEV1, strprintf("vmapFilepath = \"%s\", min_required_version = \"%s\"",
                                         vmapFilepath.c_str(), min_required_version.c_str()).c_str(), __itm__current__function__);
