@@ -51,7 +51,7 @@ namespace terafly
     *    PARAMETERS    *
     ********************
     ---------------------------------------------------------------------------------------------------------------------------*/
-    std::string version = "2.5.11";          // software version
+    std::string version = "1.3.7";          // software version
     int DEBUG = LEV_MAX;                    // debug level
     debug_output DEBUG_DEST = TO_STDOUT;    // where debug messages should be print (default: stdout)
     std::string DEBUG_FILE_PATH = "/Users/Administrator/Desktop/terafly_debug.log";   //filepath where to save debug information
@@ -78,7 +78,7 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
     //register custom types
     qRegisterMetaType<tf::integer_array>("tf::integer_array");
 
-    if (menu_name == tr("TeraFly"))
+    if (menu_name == tr("CAR-WS"))
     {
         // launch plugin's GUI
         PMain::instance(&callback, 0);
@@ -100,8 +100,8 @@ void TeraFly::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWi
         if(CViewer::getCurrent())
             CViewer::getCurrent()->invokedFromVaa3D();
         else
-            QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
-                                     "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
+            QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with CAR-WS.\n\n"
+                                     "You can find CAR-WS under Advanced > Big-Image-Data > CAR-WS.");
     }
     else
     {
@@ -117,8 +117,8 @@ void TeraFly::doaction(const QString &action_name)
         if(CViewer::getCurrent())
             CViewer::getCurrent()->invokedFromVaa3D();
         else
-            QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with TeraFly.\n\n"
-                                     "You can find TeraFly under Advanced > Big-Image-Data > TeraFly.");
+            QMessageBox::information(0, "Information", "This option is available only when visualizing Big-Image-Data with CAR-WS.\n\n"
+                                     "You can find CAR-WS under Advanced > Big-Image-Data > CAR-WS.");
     }
     else if(action_name == tr("marker multiselect"))
     {
@@ -137,7 +137,7 @@ void TeraFly::doaction(const QString &action_name)
         }
     }
     else{
-        QMessageBox::information(0, "Information", tf::strprintf("Unrecognized action \"%s\" called on TeraFly", qPrintable(action_name)).c_str());
+        QMessageBox::information(0, "Information", tf::strprintf("Unrecognized action \"%s\" called on CAR-WS", qPrintable(action_name)).c_str());
 }
 }
 
@@ -240,7 +240,7 @@ NeuronTree tf::PluginInterface::getSWC(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
 
     return nt;
@@ -272,7 +272,7 @@ bool tf::PluginInterface::setSWC(NeuronTree & nt, bool collaborate, int resoluti
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
 }
 
@@ -304,8 +304,8 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        qDebug()<<QString("Exception catched in TeraFly plugin API: ") + e.what();
-        //        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        qDebug()<<QString("Exception catched in CAR-WS plugin API: ") + e.what();
+        //        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
 
     return markers;
@@ -336,7 +336,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collabo
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
 }
 
@@ -357,7 +357,7 @@ std::string tf::PluginInterface::getPath(int resolution)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 }
@@ -376,7 +376,7 @@ const Image4DSimple* tf::PluginInterface::getImage()
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -396,7 +396,7 @@ int tf::PluginInterface::getRes()
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), false);
     }
     return NULL;
 }
@@ -413,7 +413,7 @@ int tf::PluginInterface::getallRes()
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), false);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), false);
     }
     return NULL;
 }
@@ -431,11 +431,11 @@ size_t tf::PluginInterface::getXDim(const std::string & path)
     }
     catch (iom::exception & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     catch (iim::IOException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -452,11 +452,11 @@ size_t tf::PluginInterface::getYDim(const std::string & path)
     }
     catch (iom::exception & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     catch (iim::IOException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -472,11 +472,11 @@ size_t tf::PluginInterface::getZDim(const std::string & path)
     }
     catch (iom::exception & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     catch (iim::IOException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -492,11 +492,11 @@ size_t tf::PluginInterface::getCDim(const std::string & path)
     }
     catch (iom::exception & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     catch (iim::IOException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -512,11 +512,11 @@ size_t tf::PluginInterface::getTDim(const std::string & path)
     }
     catch (iom::exception & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     catch (iim::IOException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -537,11 +537,11 @@ unsigned char* tf::PluginInterface::getSubVolume(const std::string & path, size_
     }
     catch (iom::exception & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     catch (iim::IOException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     return NULL;
 
@@ -558,11 +558,11 @@ void tf::PluginInterface::releaseOpenedVolumes()
     }
     catch (iom::exception & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
     catch (iim::IOException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
 }
 
@@ -579,14 +579,14 @@ bool tf::PluginInterface::setImage(size_t x, size_t y, size_t z)
     }
     catch (tf::RuntimeException & e)
     {
-        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+        v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
 }
 
 
 /* ======================================================================================================
  * This method is called by [v3dr_glwidget] when [Alt + F] is hit, 
- * which casts CViewer to INeuronAssembler in order to allow Neuron Assembler talking to terafly directly.
+ * which casts CViewer to INeuronAssembler in order to allow Neuron Assembler talking to CAR-WS directly.
  * ========================================================================== MK, Dec, 2019 ============= */
 #ifdef _NEURON_ASSEMBLER_
 INeuronAssembler* tf::PluginInterface::getTeraflyCViewer()

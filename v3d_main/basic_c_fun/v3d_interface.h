@@ -73,6 +73,8 @@ QT_END_NAMESPACE
 #include "basic_triview.h"
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
+#include <vector>
+#include "../neuron_editing/v_neuronswc.h"
 
 #ifdef _NEURON_ASSEMBLER_
 #include "INeuronAssembler.h"
@@ -224,8 +226,8 @@ public:
   
     //added PHC 20120406. add a main window handle, to allow access everything in Vaa3D
     
-    virtual MainWindow * getVaa3DMainWindow() = 0; 
-    virtual QList <V3dR_MainWindow *> getListAll3DViewers() = 0; 
+    virtual MainWindow * getVaa3DMainWindow() = 0;
+    virtual QList <V3dR_MainWindow *> getListAll3DViewers() = 0;
     virtual V3dR_MainWindow * find3DViewerByName(QString fileName) = 0; //the name can be partially matched    
     
     //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer, but based on a tri-view
@@ -285,7 +287,9 @@ public:
 	virtual int setSWC_noDecompose(V3dR_MainWindow* window, const char* fileName) = 0;
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex) = 0;
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex) = 0;
-	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
+    virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
+    virtual v3dhandle getTeraflyCommunicator() = 0;
+    virtual void syncAddManySegs(std::vector<V_NeuronSWC> segs) = 0;
 
     //ljs,dlc,csz 为了更新terafly当前的窗口显示
     virtual bool updateTerafly() = 0;

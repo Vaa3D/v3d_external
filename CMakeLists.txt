@@ -488,6 +488,7 @@ add_executable(Vaa3D-x WIN32 MACOSX_BUNDLE
     v3d_main/v3d/atlas_viewer.h
     v3d_main/v3d/colormap.cpp
     v3d_main/v3d/colormap.h
+    v3d_main/v3d/customdebug.h
     v3d_main/v3d/compute_win_diff.h
     v3d_main/v3d/compute_win_pca.h
     v3d_main/v3d/dialog_curve_trace.ui

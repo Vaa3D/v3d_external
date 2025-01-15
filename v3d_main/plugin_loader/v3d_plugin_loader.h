@@ -45,6 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include "../basic_c_fun/v3d_interface.h"
+#include "./vrrenderer/V3dR_Communicator.h"
 
 
 QString     v3d_getInterfaceName(QObject *plugin);
@@ -86,6 +87,7 @@ public:
     V3d_PluginLoader(MainWindow* mainwindow); //by PHC, 101008. a convenience function for access plugin interface w/o a menu
     virtual ~V3d_PluginLoader() {clear();}
     static QList<QDir> getPluginsDirList();
+    V3dR_Communicator* TeraflyCommunicator;
 
 public slots:
 	void rescanPlugins();
@@ -265,6 +267,9 @@ public:
 	virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex);
 	virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex);
 	virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces);
+
+    virtual v3dhandle getTeraflyCommunicator();
+    virtual void syncAddManySegs(std::vector<V_NeuronSWC> segs);
 };
 
 #endif

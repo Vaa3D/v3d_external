@@ -6841,16 +6841,16 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
             //                            }
             //                        }
 
-//            if(w->TeraflyCommunicator
-//                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState&&allsegs.size()>0)
-//            {
-//                w->SetupCollaborateInfo();
-//                w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,currentTraceType,"TeraFly");
-//                //                if(w->TeraflyCommunicator->timer_exit->isActive()){
-//                //                    w->TeraflyCommunicator->timer_exit->stop();
-//                //                }
-//                //                w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
-//            }
+            if(w->TeraflyCommunicator
+                &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState&&allsegs.size()>0)
+            {
+                w->SetupCollaborateInfo();
+                w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,currentTraceType,"TeraFly");
+                //                if(w->TeraflyCommunicator->timer_exit->isActive()){
+                //                    w->TeraflyCommunicator->timer_exit->stop();
+                //                }
+                //                w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+            }
 
             curImg->update_3drenderer_neuron_view(w, this);
             QHash<QString, int>  soma_cnt;
@@ -6869,6 +6869,7 @@ void Renderer_gl1::retypeMultiNeuronsByStroke()
 }
 
 void Renderer_gl1::retypeMultiNeuronsbyshortcut(){
+    qDebug()<<"retypeMultiNeuronsbyshortcut";
     int node_type = 0;
     int node_level = 0;
 

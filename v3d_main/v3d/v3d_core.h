@@ -80,7 +80,7 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 #include "../basic_c_fun/img_definition.h"
 
 #include "../neuron_editing/v_neuronswc.h"
-
+#include "loadmanagewidget.h"
 #include "colormap.h"
 
 #include "mapview.h"

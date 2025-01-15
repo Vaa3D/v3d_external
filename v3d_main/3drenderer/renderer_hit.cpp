@@ -1509,8 +1509,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
            }
        }
 
-
-
        else if (act == app2Convenient)
        {
            if (w && curImg)
@@ -1523,7 +1521,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                //set the hiddenSelectWidget for the V3D mainwindow
                if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
                {
-                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+                   if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                   {
+                    w->SetupCollaborateInfo();
+                   }
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp, w->TeraflyCommunicator);
                }
                else
                {
@@ -2470,7 +2472,25 @@ void Renderer_gl1::endSelectMode()
             if (w) curImg = v3dr_getImage4d(_idep);
             //cout << "restoring" << endl;
 
-            if (this->originalSegMap.empty()) return;
+//            if (this->originalSegMap.empty()) return;
+            if (this->originalSegMap.empty()) {
+                curImg->update_3drenderer_neuron_view(w, this);
+                curImg->proj_trace_history_append();
+                this->pressedShowSubTree = false;
+                this->connectEdit = connectEdit_none;
+                cntCur3DCurveMarkers = 0;
+                list_listCurvePos.clear();
+                listMarkerPos.clear();
+                b_ablation = false; //by Jianlong Zhou, 20120726
+                b_lineAblation = false; //by Jianlong Zhou, 20120801
+                if (selectMode != smObject)
+                {
+                    selectMode = smObject;
+                    if (w) { w->setCursor(oldCursor); }
+                }
+                editinput = 0;
+                return;
+            }
 
             for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
                 curImg->tracedNeuron.seg[it->first].row = it->second;
@@ -2614,6 +2634,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             else if (selectMode == smDeleteMultiNeurons)
             {
                 deleteMultiNeuronsByStroke();
+                V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+                My4DImage* curImg = 0;
+                if(w){
+                    curImg = v3dr_getImage4d(_idep);
+                }
+                if(w -> TeraflyCommunicator){
+                    deleteMultiNeuronsByStrokeCommit();
+                }
             }
             else if (selectMode == smRetypeMultiNeurons)
             {

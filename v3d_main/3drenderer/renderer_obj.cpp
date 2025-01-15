@@ -334,7 +334,7 @@ const GLubyte neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----
 { 13, 0, 0 },
 { 11, 0, 0 } // black
 };
-//>>>>>>> master
+
 #define ____neuron_color_table____
 const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////////////////////
         {255, 255, 255},  // white,   0-undefined
