@@ -44,14 +44,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_common.h"
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
-
+#include "../terafly/src/control/CImport.h"
 #include "qtr_widget.h"
 #include "ItemEditor.h"
 
 // design for sorting type column of neuron segment
 class CustomTableWidgetItem : public QTableWidgetItem
 {
-  //Q_OBJECT;
+    //Q_OBJECT;
 
 public:
 
@@ -80,6 +80,9 @@ public:
     void setCurTab(int i)  {if(i<0) i=iLastTab;  if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504, 110713
     int  getCurTab()       {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622
     int meshDensity;
+    //    XYZ ImageMaxRes;//
+    //    XYZ ImageCurRes;
+    //    XYZ ImageStartPoint;
 
 protected:
     V3dR_GLWidget *glwidget, *tolink_widget;
@@ -122,12 +125,11 @@ public slots:
     void setSWCDisplayUsingGlobalSettings() {setSWCDisplayMode(-1);}
     void setSWCDisplayUsingLine() {setSWCDisplayMode(1);}
     void setSWCDisplayUsingTube() {setSWCDisplayMode(0);}
-//注释了
-//    void setMeshDensity(int newMeshDensity);
-//    void setMeshDensity27() {setMeshDensity(27);}
-//    void setMeshDensity18() {setMeshDensity(18);}
-//    void setMeshDensity9() {setMeshDensity(9);}
-//    void setMeshDensityDefault() {setMeshDensity(36);}
+    /*void setMeshDensity(int newMeshDensity);
+    void setMeshDensity27() {setMeshDensity(27);}
+    void setMeshDensity18() {setMeshDensity(18);}
+    void setMeshDensity9() {setMeshDensity(9);}
+    void setMeshDensityDefault() {setMeshDensity(36);}*/
 
     void pressedClickHandler(int row, int col);
     void doubleClickHandler(int row, int col);
@@ -139,9 +141,6 @@ public slots:
     void pickMarker(int row, int col);
 
     void editObjNameAndComments();
-#ifdef _YUN_
-    void labelSortMarkers();
-#endif
     void editNeuronSegmentType();
 
     void findNext();
@@ -156,9 +155,8 @@ public slots:
 
     // -- MK, June, 2018
     void menuExecBuffer(); // This is an ad hoc solution to avoid crash when a new CViewer is called from object manager (Windows platform).
-    int getMarkerNum() { return this->listMarker.size(); }
 
-
+    //
     void sortNeuronSegmentByType(QTableWidgetItem* item);
 
 protected:
@@ -173,7 +171,6 @@ protected:
     QTableWidget* createTableAPO_Set();
 
     QTableWidget* currentTableWidget();
-
     QVector<bool> in_batch_stack;
     void begin_batch() {in_batch_stack.push_back(true);}
     void end_batch()   {in_batch_stack.pop_back();}
@@ -189,12 +186,7 @@ protected:
         *selectAllButton, *deselectAllButton, *inverseSelectButton,
         *onSelectButton, *offSelectButton, *colorSelectButton,
         *editNameCommentButton, *markerLocalView, *neuronSegmentType,
-#ifdef _YUN_
-        *objectSetDisplayModeButton,
-        *labelSortMarkerButton; // MK, Feb, 2020
-#else
         *objectSetDisplayModeButton; //add objectSetDisplayMode 20130926
-#endif
 
     QTabWidget *tabOptions;
     QTableWidget *table[1+6];
@@ -234,6 +226,9 @@ protected:
         searchTextEditLabel=searchTextResultLabel = 0;
         searchTextEdit =0;
         doSearchTextNext=doSearchTextPrev=doSearchTextHighlightAllHits =0;
+        //        int maxresindex = terafly::CImport::instance()->getResolutions()-1;
+        //        IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
+        //        ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
     }
 };
 

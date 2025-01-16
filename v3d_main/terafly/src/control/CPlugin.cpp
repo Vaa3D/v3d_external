@@ -311,6 +311,34 @@ LandmarkList tf::PluginInterface::getLandmark(int resolution)
     return markers;
 }
 
+LandmarkList tf::PluginInterface::getLandmarkDirectly(int resolution)
+{
+    LandmarkList markers;
+    try
+    {
+        // set default parameter
+        if(resolution == infp<int>())
+            resolution = CImport::instance()->getResolutions() - 1;
+        // check preconditions
+        if(resolution != CImport::instance()->getResolutions() - 1)
+            throw tf::RuntimeException(tf::strprintf("Accessing curve/marker structures at lower resolutions (res index = %d) not yet implemented", resolution));
+        if(CViewer::getCurrent() == 0)
+            throw tf::RuntimeException(tf::strprintf("Cannot access current image viewer"));
+        // store last changes made on the viewer to the octree
+        //        CViewer::getCurrent()->storeAnnotations();
+        // get entire octree content
+        interval_t x_range(0, std::numeric_limits<int>::max());
+        interval_t y_range(0, std::numeric_limits<int>::max());
+        interval_t z_range(0, std::numeric_limits<int>::max());
+        CAnnotations::getInstance()->findLandmarks(x_range, y_range, z_range, markers);
+    }
+    catch (tf::RuntimeException & e)
+    {
+        v3d_msg(QString("Exception catched in TeraFly plugin API: ") + e.what(), true);
+    }
+    return markers;
+}
+
 bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collaborate, int resolution)
 {
     try

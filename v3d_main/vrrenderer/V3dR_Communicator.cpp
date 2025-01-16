@@ -3,7 +3,7 @@
 #include "../terafly/src/presentation/PMain.h"
 #include "3drenderer/v3dr_qualitycontroldialog.h"
 #include <QRegExp>
-#include <QtGui>
+//#include <QtGui>
 #include <QListWidgetItem>
 #include <iostream>
 #include <sstream>

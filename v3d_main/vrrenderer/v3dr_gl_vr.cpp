@@ -1,6 +1,6 @@
-﻿#ifdef Q_OS_WIN
-#include <windows.h>
-#endif
+﻿//#ifdef Q_OS_WIN
+//#include <windows.h>
+//#endif
 #include <GL/glew.h>
 #include "./v3dr_gl_vr.h"
 #include "VRFinger.h"
@@ -10,8 +10,6 @@
 
 #include "../v3d/vr_vaa3d_call.h"
 #include "../neuron_tracing/fastmarching_linker.h"
-
-
 
 #if defined( OSX )
 #include <Foundation/Foundation.h>
@@ -92,7 +90,9 @@ bool CMainApplication::showshootingPad = false;
 #define default_radius 0.618
 #define drawing_step_size 2  //the larger, the fewer SWC nodes
 //LMG for Windows UTC Timestamp 15/10/2018
+#ifdef Q_OS_WIN
 #define timegm _mkgmtime
+#endif
 //the following table is copied from renderer_obj.cpp and should be eventually separated out as a single neuron drawing routine. Boted by PHC 20170616
 
 const double neuron_type_color_heat[ ][3] = { //whilte---> yellow ---> red ----> black  (hotness increases)
@@ -662,13 +662,17 @@ void dprintf( const char *fmt, ... )
     char buffer[ 2048 ];
 
     va_start( args, fmt );
+#ifdef Q_OS_WIN
     vsprintf_s( buffer, fmt, args );
+#endif
     va_end( args );
 
     if ( g_bPrintf )
         printf( "%s", buffer );
 
+#ifdef Q_OS_WIN
     OutputDebugStringA( buffer );
+#endif
 }
 
 
@@ -3212,8 +3216,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
                             //sketchedNTList.removeAt(segInfo[1]);
                             //SetupSingleMorphologyLine(segInfo[0],2);
                             //SetupSingleMorphologyLine(segInfo[1],2);
-                            qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name<<endl;
-                            qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name<<endl;
+                            qDebug()<<"sketchedNTList.at(segInfo[0]).name "<<sketchedNTList.at(segInfo[0]).name;
+                            qDebug()<<"sketchedNTList.at(segInfo[1]).name "<<sketchedNTList.at(segInfo[1]).name;
                             QString tempdelname = sketchedNTList.at(segInfo[0]).name;
                             QString tempdelname1 = sketchedNTList.at(segInfo[1]).name;
                             bool delerror1 = DeleteSegment(tempdelname);
@@ -5769,9 +5773,15 @@ void CMainApplication::SetupMorphologyLine(NeuronTree neuron_Tree,
 void CMainApplication::RenderControllerAxes() //note: note render, actually setup VAO and VBO for axes
 {
     // don't draw controllers if somebody else has input focus
+#ifdef Q_OS_WIN
+    if( !m_pHMD->IsInputAvailable() )
+        return;
+#endif
+
+#ifdef Q_OS_LINUX
     if( m_pHMD->IsInputFocusCapturedByAnotherProcess() )
         return;
-
+#endif
     std::vector<float> vertdataarray;
 
     m_uiControllerVertcount = 0;
@@ -6550,7 +6560,12 @@ void CMainApplication::RenderScene( vr::Hmd_Eye nEye )
         }
     }
     //=================== draw the controller axis lines ======================
+#ifdef Q_OS_WIN
+    bool bIsInputCapturedByAnotherProcess = !m_pHMD->IsInputAvailable();
+#endif
+#ifdef Q_OS_LINUX
     bool bIsInputCapturedByAnotherProcess = m_pHMD->IsInputFocusCapturedByAnotherProcess();
+#endif
     if( !bIsInputCapturedByAnotherProcess&&m_modeTouchPad_R == tr_clipplane)
     {
         glUseProgram( m_unControllerTransformProgramID );
@@ -7157,7 +7172,7 @@ int CMainApplication::findseg(QVector<XYZ> coords,float dist)
             index=i;dist=sum/nt.listNeuron.size();
         }
 
-        reverse(coords.begin(),coords.end());
+        std::reverse(coords.begin(),coords.end());
         sum=0;
         for(int j=0;j<nt.listNeuron.size();j++)
         {
@@ -7350,11 +7365,20 @@ CGLRenderModel *CMainApplication::FindOrLoadRenderModel( const char *pchRenderMo
     CGLRenderModel *pRenderModel = NULL;
     for( std::vector< CGLRenderModel * >::iterator i = m_vecRenderModels.begin(); i != m_vecRenderModels.end(); i++ )
     {
+#ifdef Q_OS_WIN
         if( !stricmp( (*i)->GetName().c_str(), pchRenderModelName ) )
         {
             pRenderModel = *i;
             break;
         }
+#endif
+#ifdef Q_OS_LINUX
+        if( !strcmp( (*i)->GetName().c_str(), pchRenderModelName ) )
+        {
+            pRenderModel = *i;
+            break;
+        }
+#endif
     }
 
     // load the model if we didn't find one
@@ -8738,6 +8762,7 @@ void CMainApplication::HelpFunc_createOctreetexture(int step)
 }
 void CMainApplication::StartTimer()
 {
+#ifdef Q_OS_WIN
     LARGE_INTEGER frequencyCount;
     QueryPerformanceFrequency(&frequencyCount);
 
@@ -8746,17 +8771,21 @@ void CMainApplication::StartTimer()
 
     QueryPerformanceCounter(&frequencyCount);
     CounterStart = frequencyCount.QuadPart;
+#endif
 }
 
 double CMainApplication::GetTime()
 {
+#ifdef Q_OS_WIN
     LARGE_INTEGER currentTime;
     QueryPerformanceCounter(&currentTime);
     return double(currentTime.QuadPart-CounterStart)/countsPerSecond;
+#endif
 }
 
 double CMainApplication::GetFrameTime()
 {
+#ifdef Q_OS_WIN
     LARGE_INTEGER currentTime;
     __int64 tickCount;
     QueryPerformanceCounter(&currentTime);
@@ -8768,6 +8797,7 @@ double CMainApplication::GetFrameTime()
         tickCount = 0.0f;
 
     return float(tickCount)/countsPerSecond;
+#endif
 }
 void CMainApplication::bindTexturePara()
 {

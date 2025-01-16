@@ -1421,7 +1421,7 @@ int VR_MainWindow::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
             mindist=sum/coords.size();
             index=i;
         }
-        reverse(coords.begin(),coords.end());
+        std::reverse(coords.begin(),coords.end());
         sum=0;
         for(int j=0;j<coords.size();j++)
         {

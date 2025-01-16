@@ -69,8 +69,11 @@ using QOpenGLWidget_proxy = QOpenGLWidget;
 
 #include "ui_setVoxSize.h" //ui design
 
+class Renderer;
+class V3dR_MainWindow;
 class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
+class V3dR_Communicator;
 
 #ifdef __ALLOW_VR_FUNCS__
     class VR_MainWindow;
@@ -87,6 +90,18 @@ class V3dR_GLWidget :  public QOpenGLWidget, protected QOpenGLFunctions , public
 {
     Q_OBJECT;
 
+    struct segInfoUnit
+    {
+        segInfoUnit() { hierarchy = 0; }
+        long segID;
+        long head_tail;
+        long nodeCount;
+        bool refine;
+
+        int branchID, paBranchID;
+        int hierarchy;
+    };
+
 public:
     V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow=0, QString title="");
     ~V3dR_GLWidget();
@@ -99,12 +114,13 @@ public:
     void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
     static bool disableUndoRedo;
     static bool skipFormat;
+    static string image_path;
     QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset); //tool tip function for real dimension of image
 
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
     QWidget* getMainWindow() {return mainwindow;}
     Renderer* getRenderer()   {return renderer;}
-        const Renderer* getRenderer() const {return renderer;} // const version CMB
+    const Renderer* getRenderer() const {return renderer;} // const version CMB
     QString getDataTitle()    {return data_title;}
     void setDataTitle(QString newdt) {data_title = newdt;}
     int getNumKeyHolding()    {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
@@ -125,10 +141,11 @@ public:
     virtual void preparingRenderer();
 #ifdef __ALLOW_VR_FUNCS__
     void UpdateVRcollaInfo();
+    void startVRScene();
     VRwidget* getvrwidget(){return &vr_widget;} //csz
     bool VRClientON;
     VR_MainWindow * myvrwin;
-    V3dR_Communicator * TeraflyCommunicator;
+    static V3dR_Communicator * TeraflyCommunicator;
     XYZ teraflyZoomInPOS;
     XYZ CollaborationCreatorPos;
     XYZ collaborationMaxResolution;
@@ -138,6 +155,11 @@ public:
 
     static bool resumeCollaborationVR;
 #endif
+    void SetupCollaborateInfo();
+    vector<XYZ> getImageCurResAndStartPoint();
+    XYZ ImageMaxRes;
+    const static vector<QString> quality_control_types;
+
 public:
     virtual void choiceRenderer();
     virtual void settingRenderer(); // for setting the default renderer state when initialize
@@ -421,6 +443,8 @@ public slots:
     virtual void toggleShader();
     virtual void showGLinfo();
 
+    void testgetswc();
+    void CollabolateSetSWC(vector<XYZ> Loc_list, int chno, double createmode);
     virtual void updateWithTriView();
     virtual void updateLandmark();
     virtual void updateImageData();
@@ -632,6 +656,47 @@ public:
         isoperating=false;
 #endif
     }
+
+#ifdef __ALLOW_VR_FUNCS__
+    //for collaborate
+public slots:
+    void CollaAddSeg(QString segInfo, int isBegin);
+    void CollaDelSeg(QString segInfo, int isMany);
+    void CollaAddMarker(QString markerPOS, QString comment);
+    void CollaAddManyMarkers(QString markersPOS, QString comment);
+    void CollaDelMarkers(QString markersPOS);
+    void CollaRetypeMarker(QString markerPos);
+    void CollaRetypeSeg(QString segInfo,int type, int isMany);
+    void CollaConnectSeg(QString segInfo);
+    void CollaSplitSeg(QString segInfo);
+    void CollaAddManySegs(QString segsInfo);
+
+    void newThreadAddSeg(QString segInfo, int isBegin);
+    void newThreadDelSeg(QString segInfo, int isMany);
+    void newThreadAddMarker(QString markerPOS, QString comment);
+    void newThreadAddManyMarkers(QString markersPOS, QString comment);
+    void newThreadDelMarker(QString markerPOS);
+    void newThreadRetypeMarker(QString markerPos);
+    void newThreadRetypeSeg(QString segInfo,int type,int isMany);
+    void newThreadConnectSeg(QString segInfo);
+    void newThreadSplitSeg(QString segInfo);
+
+public:
+    double distance(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2);
+    XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
+    void deleteCurveInAllSpace(QString segInfo, int isMany);//neewd to finish
+    void addManyCurvesInAllSpace(QString segsInfo);
+    void addCurveInAllSapce(QString segInfo, int isBegin);
+    void connectCurveInAllSapce(QString info);
+    bool simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo);
+    int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);
+    map<string, set<size_t>> getWholeGrid2SegIDMap(V_NeuronSWC_list& inputSegments);
+    void reverseSeg(V_NeuronSWC& seg);
+    float getSegLength(QVector<XYZ> coords);
+    static bool noTerafly;
+    //    static QStringList global_delMSG;
+    //    NeuronTree convertMsg2NT(QStringList list);
+#endif
 };
 
 #endif

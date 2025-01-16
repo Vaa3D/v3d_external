@@ -914,6 +914,7 @@ class terafly::PluginInterface
 
         // access the 3D landmark list defined for the whole image at the given resolution (default: highest resolution)
         static LandmarkList getLandmark(int resolution = infp<int>());
+        static LandmarkList getLandmarkDirectly(int resolution = infp<int>());
         static bool setLandmark(LandmarkList & landmark_list, bool collaborate=false, int resolution = infp<int>());
 
         // get path of the image volume at the given resolution (default: highest resolution)

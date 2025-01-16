@@ -45,12 +45,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include<QAction>
 #include <QTimer>
 
+#include "qregexp.h"
 #include "v3dr_glwidget.h"
 #include "v3dr_surfaceDialog.h"
 #include "v3dr_colormapDialog.h"
 #include "v3dr_mainwindow.h"
 #include "../terafly/src/control/CPlugin.h"
 #include "../terafly/src/presentation/PMain.h"
+#include "../vrrenderer/V3dR_Communicator.h"
 #include "../v3d/vr_vaa3d_call.h"
 // Dynamically choice a renderer
 #include "renderer.h"
@@ -63,6 +65,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include <cstdio>
 
 //#include <QGLFormat>
+#include "basic_landmark.h"
 
 #include<QWidget>
 #include <QMessageBox>
@@ -73,11 +76,23 @@ bool V3dR_GLWidget::skipFormat = false; // 201602 TDP: allow skip format to avoi
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 bool V3dR_GLWidget::resumeCollaborationVR=false;
+string V3dR_GLWidget::image_path="";
 #endif
 #include <QWheelEvent>
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
 V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
+
+const vector<QString> V3dR_GLWidget::quality_control_types = {
+    "Multifurcation",
+    "Approaching bifurcation",
+    "Loop",
+    "Missing",
+    "Crossing error",
+    "Color mutation",
+    "Isolated branch",
+    "Angle error"
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(USE_Qt5)
@@ -117,6 +132,7 @@ void V3dR_GLWidget::closeEvent(QCloseEvent* e)
 
 
     //QWidget::closeEvent(e); //accept
+    deleteLater(); //Schedules this object for deletion
     closeEvent(e);
     /////////////////////////////////////////////////////
 }
@@ -146,6 +162,11 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
     this->data_title = title;
     this->renderer = 0;
     this->show_progress_bar = true;
+
+    terafly::PMain* pMain = terafly::PMain::getInstance();
+    if (pMain)
+        this->TeraflyCommunicator = pMain->Communicator;
+    SetupCollaborateInfo();
 
     ///////////////////////////////////////////////////////////////
     init_members();
@@ -195,6 +216,30 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 //////////////////////////////////////////////////////
 void V3dR_GLWidget::deleteRenderer() {makeCurrent(); DELETE_AND_ZERO(renderer);} //090710 RZC: to delete renderer before ~V3dR_GLWidget()
 void V3dR_GLWidget::createRenderer() {makeCurrent(); deleteRenderer(); initializeGL();} //090710 RZC: to create renderer at any time
+
+void V3dR_GLWidget::SetupCollaborateInfo()
+{
+    qDebug()<<data_title;
+    QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");
+    if(rx.indexIn(data_title) != -1 && (TeraflyCommunicator !=nullptr))
+    {
+        TeraflyCommunicator->ImageStartPoint = XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt());
+        TeraflyCommunicator->ImageCurRes = XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt());
+        //        qDebug()<<TeraflyCommunicator->ImageStartPoint.x<<" "<<TeraflyCommunicator->ImageStartPoint.y<<" "<<TeraflyCommunicator->ImageStartPoint.z;
+        //        qDebug()<<TeraflyCommunicator->ImageCurRes.x<<" "<<TeraflyCommunicator->ImageCurRes.y<<" "<<TeraflyCommunicator->ImageCurRes.z;
+    }
+}
+
+vector<XYZ> V3dR_GLWidget::getImageCurResAndStartPoint(){
+    QRegExp rx("Res\\((\\d+)\\s.\\s(\\d+)\\s.\\s(\\d+)\\),Volume\\sX.\\[(\\d+),(\\d+)\\],\\sY.\\[(\\d+),(\\d+)\\],\\sZ.\\[(\\d+),(\\d+)\\]");
+    vector<XYZ> results;
+    if(rx.indexIn(data_title) != -1)
+    {
+        results.push_back(XYZ(rx.cap(1).toInt(),rx.cap(2).toInt(),rx.cap(3).toInt()));
+        results.push_back(XYZ(rx.cap(4).toInt(),rx.cap(6).toInt(),rx.cap(8).toInt()));
+    }
+    return results;
+}
 
 void V3dR_GLWidget::choiceRenderer()
 {
@@ -1320,9 +1365,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
             else
             {
                 // delete connected segments that have been highlighted, MK, July, 2018
+                // delete connected segments that have been highlighted, MK, July, 2018
                 Renderer_gl1* thisRenderer = static_cast<Renderer_gl1*>(this->getRenderer());
                 if (thisRenderer->selectMode == Renderer::smShowSubtree)
                 {
+                    V3dR_GLWidget* w = this;
                     My4DImage* curImg = 0;
                     if (this) curImg = v3dr_getImage4d(_idep);
                     if (thisRenderer->originalSegMap.empty()) return;
@@ -1330,10 +1377,35 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                     for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
                         curImg->tracedNeuron.seg[*segIDit].to_be_deleted = true;
 
+                    vector<V_NeuronSWC> vector_VSWC;
+                    curImg->ExtractDeletingNode2(thisRenderer->originalSegMap, vector_VSWC);
+
+                    if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        w->SetupCollaborateInfo();
+                            //                        for(auto seg:vector_VSWC)
+                            //                            w->TeraflyCommunicator->UpdateDelSegMsg(seg,"TeraFly");//ask QiLi
+                        w->TeraflyCommunicator->UpdateDelManyConnectedSegsMsg(vector_VSWC,"TeraFly");
+                    }
+                    //                        while(!future.isFinished())
+                    //                        {
+                    //                            QApplication::processEvents(QEventLoop::AllEvents, 100);
+                    //                        }
+                    if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                    {
+                        //                        if(w->TeraflyCommunicator->timer_exit->isActive()){
+                        //                            w->TeraflyCommunicator->timer_exit->stop();
+                        //                        }
+                        //                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                    }
+
                     thisRenderer->escPressed_subtree();
 
                     curImg->update_3drenderer_neuron_view(this, thisRenderer);
                     curImg->proj_trace_history_append();
+                    //                    for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
+                    //                        curImg->tracedNeuron.seg[i].printInfo();
+                    //                    }
                 }
             }
             break;
@@ -2186,7 +2258,7 @@ void V3dR_GLWidget::doimage3DVRView(bool bCanCoMode)
             this->collaborationMaxResolution = XYZ(img4d->getXDim(),img4d->getYDim(),img4d->getZDim());
             this->Resindex = -1;
             cout<<"CViewer::getCurrent()->volResIndex;   "<<this->Resindex<<endl;
-            this->doimageVRView(true);
+            this->doimageVRView(false);
             //cur_win->storeAnnotations();
             //this->show();
 
@@ -2235,6 +2307,11 @@ void V3dR_GLWidget::process3Dwindow(bool show)
     }
 
 }
+
+void V3dR_GLWidget::startVRScene() {
+
+}
+
 //VR注释
 void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
 {
@@ -2244,85 +2321,173 @@ void V3dR_GLWidget::doimageVRView(bool bCanCoMode)//0518
     My4DImage *img4d = this->getiDrawExternalParameter()->image4d;
     this->getMainWindow()->hide();
 //    process3Dwindow(false);
-    this->getiDrawExternalParameter()->V3Dmainwindow->showMinimized();
-    QMessageBox::StandardButton reply;
-    if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
-        reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
-    else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
-        reply = QMessageBox::Yes;
-    else
-        reply = QMessageBox::No;
-    if (reply == QMessageBox::Yes)
+//    this->getiDrawExternalParameter()->V3Dmainwindow->showMinimized();
+
+    if(bCanCoMode&&TeraflyCommunicator)
     {
-        if(VRClientON==false)
+        if (TeraflyCommunicator )
         {
-            VRClientON = true;
-            if(myvrwin)
+                myvrwin = new VR_MainWindow(TeraflyCommunicator);
+                myvrwin->setWindowTitle("VR MainWindow");
+                bool linkerror = (TeraflyCommunicator == nullptr);
+                //VRClientON = linkerror;
+                if (linkerror)  // there is error with linking ,linkerror = 0
+                {
+                    qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show();
+                    return;
+                }
+                //connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
+                QString VRinfo = this->getDataTitle();
+                qDebug()<<"in collaboarte mode";
+                qDebug()<<"VR get data_title = "<<VRinfo;
+                resumeCollaborationVR = false;//reset resumeCollaborationVR
+                myvrwin->ResIndex = Resindex;
+                //_call_that_cun 1~9 is shift or zoom
+                int _call_that_func =myvrwin->StartVRScene(
+                    listNeuronTrees,
+                    img4d,
+                    (MainWindow *)(this->getMainWindow()),
+                    !linkerror,
+                    VRinfo,
+                    CollaborationCreatorRes,
+                    TeraflyCommunicator,
+                    &teraflyZoomInPOS,
+                    &CollaborationCreatorPos,
+                    collaborationMaxResolution
+                    );
+
+                qDebug()<<"--------------1--------------------";
+
+                //			UpdateVRcollaInfo();
+
+                updateWithTriView();
+                img4d->update_3drenderer_neuron_view();
+
                 delete myvrwin;
-            myvrwin = 0;
-            myvrwin = new VR_MainWindow();
-            myvrwin->setWindowTitle("VR MainWindow");
-            //bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
+                myvrwin=nullptr;
 
-            if(!TeraflyCommunicator)  // there is error with linking ,linkerror = 0
-            {qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); VRClientON = false;return;}
-            connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
-            QString VRinfo = this->getDataTitle();
-            qDebug()<<"VR get data_title = "<<VRinfo;
-            resumeCollaborationVR = false;//reset resumeCollaborationVR
-            myvrwin->ResIndex = Resindex;
-            int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
+                if (_call_that_func > 0)
+                {
+                    qDebug()<<"result is "<<_call_that_func;
+                    qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
 
-            qDebug()<<"result is "<<_call_that_func;
-            qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
-#ifdef __ALLOW_VR_FUNCS_
-            UpdateVRcollaInfo();
-#endif
-            updateWithTriView();
+                    resumeCollaborationVR = true;
+                    emit(signalCallTerafly(_call_that_func));
+                }
+                else if(_call_that_func == -1)//a temporary status for some special use,
+                {
+                    call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+                }
 
-            if (_call_that_func > 0)
-            {
-                resumeCollaborationVR = true;
-                emit(signalCallTerafly(_call_that_func));
-            }
-            else if(_call_that_func == -1)
-            {
-                call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-            }
         }
         else
         {
-            v3d_msg("The ** client is running.Failed to start VR client.");
-            //this->getMainWindow()->show();
+                v3d_msg("The ** client is running.Failed to start VR client.");
+                this->getMainWindow()->show();
         }
     }
     else
-    {
+    {//non collaborate mode
         // bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
-
         int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
-
         qDebug()<<"result is "<<_call_that_func;
         qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
         updateWithTriView();
         if (_call_that_func > 0)
         {
-            emit(signalCallTerafly(_call_that_func));
+                emit(signalCallTerafly(_call_that_func));
         }
         else if(_call_that_func == -1)
         {
-            call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+                call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
         }
-//        qDebug()<<"csz debug";
-//        this->getMainWindow()->show();
-//         if(_Call_ZZ_Plugin)
-//         {
-//            // call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
-//            emit(signalCallTerafly());
-//         }
+
+        //this->getMainWindow()->show();
+        // if(_Call_ZZ_Plugin)
+        // {
+        // 	// call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+        // 	emit(signalCallTerafly());
+        // }
     }
-        this->getiDrawExternalParameter()->V3Dmainwindow->showNormal();
-//        process3Dwindow(true);
+
+//    QMessageBox::StandardButton reply;
+//    if(bCanCoMode&&(!resumeCollaborationVR))// get into collaboration  first time
+//        reply = QMessageBox::question(this, "Vaa3D VR", "Collaborative mode?", QMessageBox::Yes|QMessageBox::No);
+//    else if(resumeCollaborationVR)	//if resume collaborationVR ,reply = yes and no question message box
+//        reply = QMessageBox::Yes;
+//    else
+//        reply = QMessageBox::No;
+//    if (reply == QMessageBox::Yes)
+//    {
+//        if(VRClientON==false)
+//        {
+//            VRClientON = true;
+//            if(myvrwin)
+//                delete myvrwin;
+//            myvrwin = 0;
+//            myvrwin = new VR_MainWindow();
+//            myvrwin->setWindowTitle("VR MainWindow");
+//            //bool linkerror = myvrwin->SendLoginRequest(resumeCollaborationVR);
+
+//            if(!TeraflyCommunicator)  // there is error with linking ,linkerror = 0
+//            {qDebug()<<"can't connect to server .unknown wrong ";this->getMainWindow()->show(); VRClientON = false;return;}
+//            connect(myvrwin,SIGNAL(VRSocketDisconnect()),this,SLOT(OnVRSocketDisConnected()));
+//            QString VRinfo = this->getDataTitle();
+//            qDebug()<<"VR get data_title = "<<VRinfo;
+//            resumeCollaborationVR = false;//reset resumeCollaborationVR
+//            myvrwin->ResIndex = Resindex;
+//            int _call_that_func = myvrwin->StartVRScene(listNeuronTrees,img4d,(MainWindow *)(this->getMainWindow()),1,VRinfo,CollaborationCreatorRes,&teraflyZoomInPOS,&CollaborationCreatorPos,collaborationMaxResolution);
+
+//            qDebug()<<"result is "<<_call_that_func;
+//            qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+//#ifdef __ALLOW_VR_FUNCS_
+//            UpdateVRcollaInfo();
+//#endif
+//            updateWithTriView();
+
+//            if (_call_that_func > 0)
+//            {
+//                resumeCollaborationVR = true;
+//                emit(signalCallTerafly(_call_that_func));
+//            }
+//            else if(_call_that_func == -1)
+//            {
+//                call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+//            }
+//        }
+//        else
+//        {
+//            v3d_msg("The ** client is running.Failed to start VR client.");
+//            //this->getMainWindow()->show();
+//        }
+//    }
+//    else
+//    {
+//        // bool _Call_ZZ_Plugin = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow())); // both nt and img4d can be empty.
+
+//        int _call_that_func = startStandaloneVRScene(listNeuronTrees, img4d, (MainWindow *)(this->getMainWindow()),&teraflyZoomInPOS); // both nt and img4d can be empty.
+
+//        qDebug()<<"result is "<<_call_that_func;
+//        qDebug()<<"xxxxxxxxxxxxx ==%1 y ==%2 z ==%3"<<teraflyZoomInPOS.x<<teraflyZoomInPOS.y<<teraflyZoomInPOS.z;
+//        updateWithTriView();
+//        if (_call_that_func > 0)
+//        {
+//            emit(signalCallTerafly(_call_that_func));
+//        }
+//        else if(_call_that_func == -1)
+//        {
+//            call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+//        }
+////        qDebug()<<"csz debug";
+////        this->getMainWindow()->show();
+////         if(_Call_ZZ_Plugin)
+////         {
+////            // call_neuron_assembler_live_plugin((MainWindow *)(this->getMainWindow()));
+////            emit(signalCallTerafly());
+////         }
+//    }
+//        this->getiDrawExternalParameter()->V3Dmainwindow->showNormal();
+////        process3Dwindow(true);
 
 }
 void V3dR_GLWidget::doclientView(bool check_flag)
@@ -3986,6 +4151,7 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
             {
                 cout << "  --> assigned color(type) to highlighted neuron:" << pressedNumber << " " << endl;
                 My4DImage* curImg = 0;
+                V3dR_GLWidget* w = this;
                 if (this) curImg = v3dr_getImage4d(_idep);
                 if (thisRenderer->originalSegMap.empty()) return;
 
@@ -4000,8 +4166,27 @@ void V3dR_GLWidget::subtreeHighlightModeMonitor()
                     //}
                 }
 
+                vector<V_NeuronSWC> allsegs;
+                for (set<size_t>::iterator segIDit = thisRenderer->subtreeSegs.begin(); segIDit != thisRenderer->subtreeSegs.end(); ++segIDit)
+                {
+                    allsegs.push_back(curImg->tracedNeuron.seg[*segIDit]);
+                }
+
+                if(w->TeraflyCommunicator&&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+                    w->SetupCollaborateInfo();
+                    w->TeraflyCommunicator->UpdateRetypeManySegsMsg(allsegs,pressedNumber,"TeraFly");
+
+                    //                    if(w->TeraflyCommunicator->timer_exit->isActive()){
+                    //                        w->TeraflyCommunicator->timer_exit->stop();
+                    //                    }
+                    //                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+
+                }
+
                 curImg->update_3drenderer_neuron_view(this, thisRenderer);
                 curImg->proj_trace_history_append();
+                thisRenderer->escPressed_subtree();
+                return;
             }
         }
 
@@ -4047,7 +4232,9 @@ void V3dR_GLWidget::callCreateMarkerNearestNode()
         y = y * 2;
 #endif
         renderer->callCreateMarkerNearestNode(x,y);
+        terafly::CViewer::getCurrent()->storeAnnotations();
 
+        updateTool();
         update();
     }
 }
@@ -4272,6 +4459,45 @@ void V3dR_GLWidget::showGLinfo()
     p->resize(700, 700);
 }
 
+void V3dR_GLWidget::testgetswc()
+{
+    NeuronTree testswc = terafly::PluginInterface::getSWC();
+    if (testswc.listNeuron.size() > 0)
+    {
+        for (int i = 0; i < testswc.listNeuron.size(); ++i)
+            cout << "listNeuron  " << testswc.listNeuron[i].n<< " pos x " << testswc.listNeuron.at(i).x << " pos y " << testswc.listNeuron.at(i).y << " pos z " << testswc.listNeuron.at(i).z << endl;
+    }
+}
+
+void V3dR_GLWidget::CollabolateSetSWC(vector<XYZ> Loc_list,int chno,double createmode)
+{
+    cout << "begin set swc" << endl;
+    NeuronTree GlobalNT = terafly::PluginInterface::getSWC();
+    int StartN = 1;
+    cout << "current swc size is " << GlobalNT.listNeuron.size();
+    if (GlobalNT.listNeuron.size()>0)
+    {
+        int tempN = GlobalNT.listNeuron.back().n;
+    }
+    for (int i = 0; i < Loc_list.size(); ++i)
+    {
+        NeuronSWC SL0;
+        SL0.x = Loc_list[i].x;
+        SL0.y = Loc_list[i].y;
+        SL0.z = Loc_list[i].z;
+        SL0.r = 1;
+        SL0.n = StartN + i;
+        if (i = 0) SL0.pn = -1;
+        else SL0.pn = StartN + i - 1;
+        SL0.creatmode = 618;
+        GlobalNT.listNeuron.append(SL0);
+        GlobalNT.hashNeuron.insert(SL0.n, GlobalNT.listNeuron.size() - 1);
+    }
+
+    terafly::PluginInterface::setSWC(GlobalNT,true);
+    GlobalNT = terafly::PluginInterface::getSWC();
+    cout << "current swc size is " << GlobalNT.listNeuron.size();
+}
 
 void V3dR_GLWidget::updateWithTriView()
 {
@@ -4518,6 +4744,1298 @@ void V3dR_GLWidget::UpdateVRcollaInfo()
 
 }
 #endif
+
+bool V3dR_GLWidget::noTerafly=true;
+V3dR_Communicator* V3dR_GLWidget::TeraflyCommunicator=nullptr;
+
+void V3dR_GLWidget::UpdateVRcollaInfo()
+{
+    //    qDebug()<<"UpdateVRcollaInfo";
+    //    int _size=myvrwin->VROutinfo.deletedcurvespos.size();
+    //    QString _string;
+    //    if(_size>0)
+    //    {
+    //        for(int i=0;i<_size;i++)
+    //        {
+    //            _string+=QString("%1 %2 %3_").arg(myvrwin->VROutinfo.deletedcurvespos.at(i).x)
+    //                    .arg(myvrwin->VROutinfo.deletedcurvespos.at(i).y)
+    //                    .arg(myvrwin->VROutinfo.deletedcurvespos.at(i).z);
+    //        }
+    //    }
+
+    //    if(!_string.isEmpty())
+    //    {
+    //        CollaDelSeg(_string);
+    //    }
+
+    //    int __size=myvrwin->VROutinfo.deletemarkerspos.size();
+    //    QString __string;
+
+    //    if(__size>0)
+    //    {
+
+    //        for(int i=0;i<__size;i++)
+    //        {
+    //            QString temp=myvrwin->VROutinfo.deletemarkerspos.at(i);
+    //            CollaAddMarker(temp);
+    //        }
+    //    }
+
+    //    int ___size=myvrwin->VROutinfo.retypeMsgs.size();
+    //    if(___size>0)
+    //    {
+    //        for(int i=0;i<___size;i++)
+    //        {
+    //            QString temp=myvrwin->VROutinfo.retypeMsgs.at(i);
+    //            CollretypeSeg(temp,3);
+    //        }
+    //    }
+}
+
+void V3dR_GLWidget::CollaAddMarker(QString markerPOS, QString comment)
+{
+    QStringList markerInfo=markerPOS.split(" ",Qt::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+
+    LocationSimple marker/*=markers.at(0)*/;
+    marker.color.r = markerInfo.at(0).toUInt();
+    marker.color.g = markerInfo.at(1).toUInt();
+    marker.color.b = markerInfo.at(2).toUInt();
+    marker.x=markerInfo.at(3).toFloat();
+    marker.y=markerInfo.at(4).toFloat();
+    marker.z=markerInfo.at(5).toFloat();
+    marker.comments = comment.toStdString();
+
+    for(auto it=markers.begin();it!=markers.end(); ++it)
+    {
+        if(it->color.r==marker.color.r&&it->color.g==marker.color.g&&it->color.b==marker.color.b
+            &&abs(it->x-marker.x)<1&&abs(it->y-marker.y)<1&&abs(it->z-marker.z)<1)
+        {
+        qDebug()<<"the marker has already existed";
+        return;
+        }
+    }
+
+    markers.append(marker);
+L: terafly::PluginInterface::setLandmark(markers,true);
+}
+
+void V3dR_GLWidget::newThreadAddMarker(QString markerPOS, QString comment){
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddMarker, markerPOS);
+    CollaAddMarker(markerPOS,comment);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+void V3dR_GLWidget::CollaAddManyMarkers(QString markersPOS, QString comment){
+    if(markersPOS.isEmpty())
+        return;
+
+    QStringList tobeAddMarkers=markersPOS.split(",",Qt::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+
+    for(int i=0; i<tobeAddMarkers.size(); i++){
+        bool needAdd = true;
+        QStringList markerInfo=tobeAddMarkers[i].split(" ",Qt::SkipEmptyParts);
+        LocationSimple marker/*=markers.at(0)*/;
+        marker.color.r = markerInfo.at(0).toUInt();
+        marker.color.g = markerInfo.at(1).toUInt();
+        marker.color.b = markerInfo.at(2).toUInt();
+        marker.x=markerInfo.at(3).toFloat();
+        marker.y=markerInfo.at(4).toFloat();
+        marker.z=markerInfo.at(5).toFloat();
+        marker.comments = comment.toStdString();
+
+        for(auto it=markers.begin();it!=markers.end(); ++it)
+        {
+        if(it->color.r==marker.color.r&&it->color.g==marker.color.g&&it->color.b==marker.color.b
+            &&abs(it->x-marker.x)<1&&abs(it->y-marker.y)<1&&abs(it->z-marker.z)<1)
+        {
+                qDebug()<<"the marker has already existed";
+                needAdd = false;
+                break;
+        }
+        }
+
+        if(needAdd)
+        markers.append(marker);
+    }
+
+L: terafly::PluginInterface::setLandmark(markers,true);
+        //    TeraflyCommunicator->emitAddManyMarkersDone();
+
+}
+
+void V3dR_GLWidget::newThreadAddManyMarkers(QString markersPOS, QString comment){
+    CollaAddManyMarkers(markersPOS, comment);
+}
+
+void V3dR_GLWidget::CollaDelMarkers(QString markersPOS)
+{
+    if(markersPOS.isEmpty())
+        return;
+
+    QStringList tobeDelMarkers=markersPOS.split(",",Qt::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+    bool flag = false;
+    for(int i=0; i<tobeDelMarkers.size(); i++){
+        QStringList markerInfo=tobeDelMarkers[i].split(" ",Qt::SkipEmptyParts);
+        LocationSimple marker/*=markers.at(0)*/;
+        marker.x=markerInfo.at(3).toFloat();
+        marker.y=markerInfo.at(4).toFloat();
+        marker.z=markerInfo.at(5).toFloat();
+
+        int index=-1;
+        double mindist=1;
+        for(int i=0;i<markers.size();i++)
+        {
+        double dist = sqrt(
+            (markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
+            (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
+            (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z)
+            );
+        if(dist<mindist)
+        {
+                mindist=dist;
+                index=i;
+        }
+        }
+        if(index>=0){
+        if(std::find(quality_control_types.begin(), quality_control_types.end(), QString::fromStdString(markers.at(index).comments)) != quality_control_types.end()){
+                flag = true;
+                CellAPO cellApo;
+                cellApo.x = markers.at(index).x;
+                cellApo.y = markers.at(index).y;
+                cellApo.z = markers.at(index).z;
+                cellApo.color = markers.at(index).color;
+                cellApo.comment = QString::fromStdString(markers.at(index).comments);
+                TeraflyCommunicator->checkedQcMarkers.push_back(cellApo);
+        }
+        markers.removeAt(index);
+        }
+        else
+        qDebug()<<"Error:cannot find marker <1 " + tobeDelMarkers[i];
+    }
+
+    terafly::PluginInterface::setLandmark(markers,true);
+    if(flag){
+        TeraflyCommunicator->emitUpdateQcInfo();
+        TeraflyCommunicator->emitUpdateQcMarkersCounts();
+    }
+}
+
+void V3dR_GLWidget::newThreadDelMarker(QString markerPOS){
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelMarker, markerPOS);
+    CollaDelMarkers(markerPOS);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+void V3dR_GLWidget::CollaRetypeMarker(QString markerPOS){
+    QStringList markerInfo=markerPOS.split(" ",Qt::SkipEmptyParts);
+    LandmarkList markers=terafly::PluginInterface::getLandmark();
+
+    LocationSimple marker;
+    bool flag = false;
+
+    marker.x=markerInfo.at(3).toFloat();
+    marker.y=markerInfo.at(4).toFloat();
+    marker.z=markerInfo.at(5).toFloat();
+
+    int index=-1;
+    double mindist=1;
+    for(int i=0;i<markers.size();i++)
+    {
+        double dist = sqrt(
+            (markers.at(i).x-marker.x)*(markers.at(i).x-marker.x)+
+            (markers.at(i).y-marker.y)*(markers.at(i).y-marker.y)+
+            (markers.at(i).z-marker.z)*(markers.at(i).z-marker.z)
+            );
+        if(dist<mindist)
+        {
+        mindist=dist;
+        index=i;
+        }
+    }
+    if(index>=0)
+    {
+        if(std::find(quality_control_types.begin(), quality_control_types.end(), QString::fromStdString(markers.at(index).comments)) != quality_control_types.end())
+        flag = true;
+        markers[index].color.r=markerInfo.at(0).toUInt();
+        markers[index].color.g=markerInfo.at(1).toUInt();
+        markers[index].color.b=markerInfo.at(2).toUInt();
+    }
+    else
+        qDebug()<<"Error:cannot find marker <1 " + markerPOS;
+    terafly::PluginInterface::setLandmark(markers,true);
+
+    if(flag){
+        TeraflyCommunicator->emitUpdateQcInfo();
+    }
+}
+
+void V3dR_GLWidget::newThreadRetypeMarker(QString markerPOS){
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeMarker, markerPOS);
+    CollaRetypeMarker(markerPOS);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+
+void V3dR_GLWidget::CollaDelSeg(QString segInfo, int isMany)
+{
+    //    QStringList delSegGlobalList=segInfo.split(";",QString::SkipEmptyParts);
+    //    vector <XYZ> local_list;
+    //    SetupCollaborateInfo();
+    //    for(int i=0;i<delSegGlobalList.size();i++)
+    //    {
+    //        QStringList nodeXYZ=delSegGlobalList.at(i).split(" ",QString::SkipEmptyParts);
+    //        auto localXYZ=ConvertreceiveCoords(nodeXYZ.at(1).toFloat(),nodeXYZ.at(2).toFloat(),nodeXYZ.at(3).toFloat());
+    //        local_list.push_back(localXYZ);
+    //    }
+    //    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+    //    float mindist=1*TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x;
+    //    if(!rendererGL1Ptr->deleteMultiNeuronsByStrokeCommit(local_list,mindist))
+    deleteCurveInAllSpace(segInfo, isMany);
+    //    POST_updateGL();
+}
+
+void V3dR_GLWidget::newThreadDelSeg(QString segInfo, int isMany){
+    CollaDelSeg(segInfo, isMany);
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaDelSeg, segInfo, isMany);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+void V3dR_GLWidget::CollaRetypeSeg(QString segInfo,int type,int isMany)
+{
+    qDebug()<<"begin collretypeseg";
+    if(segInfo.isEmpty()) return;
+    QStringList retypeSegGlobalList=segInfo.split(",",Qt::SkipEmptyParts);
+    QVector<XYZ> coords;
+
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    //    qDebug()<<"zll______________retype2";
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    for(int i=0;i<retypeSegGlobalList.size();i++)
+    {
+        if(retypeSegGlobalList.at(i)!="$"){
+        auto node= retypeSegGlobalList.at(i).split(" ");
+        coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
+        }
+        else{
+        int index=findseg(v_ns_list,coords);
+        if(index>=0)
+        {
+                for(int k=0;k<v_ns_list.seg.at(index).row.size();k++)
+                {
+                //            qDebug()<<"zll______________retype4";
+                v_ns_list.seg.at(index).row.at(k).type=type;
+                }
+                //        qDebug()<<"retype sucess";
+        }else
+        {
+            //        qDebug()<<"zll______________retype5";
+                //                qDebug()<<"Error:cannot find segment to retype " + segInfo;
+        }
+        coords.clear();
+        }
+    }
+
+    if(isMany==0){
+        int index=findseg(v_ns_list,coords);
+        if(index>=0)
+        {
+        for(int k=0;k<v_ns_list.seg.at(index).row.size();k++)
+        {
+                //            qDebug()<<"zll______________retype4";
+                v_ns_list.seg.at(index).row.at(k).type=type;
+        }
+        //        qDebug()<<"retype sucess";
+        }else
+        {
+            //        qDebug()<<"zll______________retype5";
+        //            qDebug()<<"Error:cannot find segment to retype " + segInfo;
+        }
+    }
+    //    qDebug()<<"zll______________retype1";
+
+
+    //    qDebug()<<"zll______________retype3";
+
+    //    qDebug()<<"zll______________retype6";
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+
+    terafly::PluginInterface::setSWC(nt,true);
+}
+
+void V3dR_GLWidget::newThreadRetypeSeg(QString segInfo,int type, int isMany){
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaRetypeSeg, segInfo, type, isMany);
+    CollaRetypeSeg(segInfo, type, isMany);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+void V3dR_GLWidget::CollaAddSeg(QString segInfo, int isBegin)
+{
+    //    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
+    //    SetupCollaborateInfo();
+    //    vector<XYZ> loc_coords;
+    //    int type;
+
+    //    for(int i=0;i<qsl.size();i++)
+    //    {
+    //        QStringList temp=qsl[i].trimmed().split(" ");
+
+    //        float x=temp[1].toFloat();
+    //        float y=temp[2].toFloat();
+    //        float z=temp[3].toFloat();
+    //        type=temp[0].toInt();
+    //        loc_coords.push_back(ConvertreceiveCoords(x,y,z));
+    //    }
+
+    //    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
+    //    qDebug()<<"add in seg";
+    //    rendererGL1Ptr->addCurveSWC(loc_coords, 1, 1,type);
+    //    POST_updateGL();
+    addCurveInAllSapce(segInfo, isBegin);
+}
+
+void V3dR_GLWidget::newThreadAddSeg(QString segInfo, int isBegin){
+    CollaAddSeg(segInfo, isBegin);
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaAddSeg, segInfo);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+void V3dR_GLWidget::CollaAddManySegs(QString segsInfo){
+    addManyCurvesInAllSpace(segsInfo);
+}
+
+void V3dR_GLWidget::CollaConnectSeg(QString segInfo)
+{
+    connectCurveInAllSapce(segInfo);
+}
+
+void V3dR_GLWidget::newThreadConnectSeg(QString segInfo){
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaConnectSeg, segInfo);
+    CollaConnectSeg(segInfo);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+void V3dR_GLWidget::CollaSplitSeg(QString segInfo){
+    if(segInfo.isEmpty()) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    XYZ point1,point2;
+
+    auto segInfos=segInfo.split(",");
+
+    float mindist=1;
+
+    QVector<XYZ> coords;
+    int firstIndex;
+    for(int i=0;i<segInfos.size();i++)
+    {
+        if(segInfos.at(i)!="$"){
+        auto node= segInfos.at(i).split(" ");
+        coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
+        }
+        else{
+        firstIndex=i;
+        int index=findseg(v_ns_list,coords);
+        qDebug()<<"INDEX:"<<index;
+        if(index>=0)
+        {
+                point1.x=v_ns_list.seg[index].row[0].x;
+                point1.y=v_ns_list.seg[index].row[0].y;
+                point1.z=v_ns_list.seg[index].row[0].z;
+                point2.x=v_ns_list.seg[index].row[v_ns_list.seg[index].row.size()-1].x;
+                point2.y=v_ns_list.seg[index].row[v_ns_list.seg[index].row.size()-1].y;
+                point2.z=v_ns_list.seg[index].row[v_ns_list.seg[index].row.size()-1].z;
+                v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
+        }else
+        {
+                qDebug()<<"ERROR:cannot delete curve " + segInfo;
+                return;
+        }
+        coords.clear();
+        break;
+        }
+    }
+
+    QStringList pointlist=segInfos;
+    for(int i=0;i<=firstIndex;i++){
+        pointlist.removeAt(0);
+    }
+    //    qDebug()<<pointlist;
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    int index=0;
+    int cnt=pointlist.size();
+    for(int i=0;i<cnt;i++)
+    {
+        if(pointlist[i]!="$"){
+        NeuronSWC S;
+        QStringList nodelist=pointlist[i].split(' ',Qt::SkipEmptyParts);
+        if(nodelist.size()<4)
+                return;
+        S.n=i+1;
+        S.type=nodelist[0].toUInt();
+
+        S.x=nodelist[1].toFloat();
+        S.y=nodelist[2].toFloat();
+        S.z=nodelist[3].toFloat();
+        S.r=1;
+
+        if(index==0) S.pn=-1;
+        else S.pn=i;
+        newTempNT.listNeuron.push_back(S);
+        newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+        index++;
+        }
+        else{
+        index=0;
+        }
+
+    }
+    vector<V_NeuronSWC> addsegs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
+    if(addsegs.size()<=1)
+        return;
+    qDebug()<<"new seg is constructed";
+
+    for(int i=0;i<addsegs.size();i++){
+        if(distance(addsegs[i].row[0].x,point1.x,addsegs[i].row[0].y,point1.y,addsegs[i].row[0].z,point1.z)<0.3){
+        addsegs[i].row[0].x=point1.x;
+        addsegs[i].row[0].y=point1.y;
+        addsegs[i].row[0].z=point1.z;
+        }
+        if(distance(addsegs[i].row[0].x,point2.x,addsegs[i].row[0].y,point2.y,addsegs[i].row[0].z,point2.z)<0.3){
+        addsegs[i].row[0].x=point2.x;
+        addsegs[i].row[0].y=point2.y;
+        addsegs[i].row[0].z=point2.z;
+        if(addsegs[i].row[0].parent!=-1){
+                reverse(addsegs[i].row.begin(),addsegs[i].row.end());
+                //父子关系逆序
+                int nodeNo = 1;
+                for (vector<V_NeuronSWC_unit>::iterator it_unit = addsegs[i].row.begin();
+                     it_unit != addsegs[i].row.end(); it_unit++)
+                {
+                it_unit->data[0] = nodeNo;
+                it_unit->data[6] = nodeNo + 1;
+                ++nodeNo;
+                }
+                (addsegs[i].row.end() - 1)->data[6] = -1;
+        }
+        }
+        if(distance(addsegs[i].row[addsegs[i].row.size()-1].x,point2.x,addsegs[i].row[addsegs[i].row.size()-1].y,point2.y,addsegs[i].row[addsegs[i].row.size()-1].z,point2.z)<0.3){
+        addsegs[i].row[addsegs[i].row.size()-1].x=point2.x;
+        addsegs[i].row[addsegs[i].row.size()-1].y=point2.y;
+        addsegs[i].row[addsegs[i].row.size()-1].z=point2.z;
+        }
+        if(distance(addsegs[i].row[addsegs[i].row.size()-1].x,point1.x,addsegs[i].row[addsegs[i].row.size()-1].y,point1.y,addsegs[i].row[addsegs[i].row.size()-1].z,point1.z)<0.3){
+        addsegs[i].row[addsegs[i].row.size()-1].x=point1.x;
+        addsegs[i].row[addsegs[i].row.size()-1].y=point1.y;
+        addsegs[i].row[addsegs[i].row.size()-1].z=point1.z;
+        if(addsegs[i].row[0].parent!=-1){
+                reverse(addsegs[i].row.begin(),addsegs[i].row.end());
+                //父子关系逆序
+                int nodeNo = 1;
+                for (vector<V_NeuronSWC_unit>::iterator it_unit = addsegs[i].row.begin();
+                     it_unit != addsegs[i].row.end(); it_unit++)
+                {
+                it_unit->data[0] = nodeNo;
+                it_unit->data[6] = nodeNo + 1;
+                ++nodeNo;
+                }
+                (addsegs[i].row.end() - 1)->data[6] = -1;
+        }
+        }
+        v_ns_list.seg.push_back(addsegs[i]);
+    }
+
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+}
+
+void V3dR_GLWidget::newThreadSplitSeg(QString segInfo){
+    //    QFuture<void> future = QtConcurrent::run(this, &V3dR_GLWidget::CollaSplitSeg, segInfo);
+    CollaSplitSeg(segInfo);
+    //    while(!future.isFinished())
+    //    {
+    //        QApplication::processEvents(QEventLoop::AllEvents, 100);
+    //    }
+}
+
+int V3dR_GLWidget::findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords)
+{
+    /**TeraflyCommunicator->ImageCurRes.x/TeraflyCommunicator->ImageMaxRes.x*/;
+    double length = getSegLength(coords);
+    double mindist = 1;
+
+    mindist = 1 + 1 * sqrt(length)/(sqrt(length) + 1);
+    if(coords.size() <= 2){
+        mindist = 1;
+    }
+
+    int index=-1;
+
+    //    for(int j=0;j<coords.size();j++)
+    //    {
+    //        qDebug()<<j<<":"<<coords[j].x<<" "<<coords[j].y<<" "<<coords[j].z;
+    //    }
+    for(int i=0;i<v_ns_list.seg.size();i++)
+    {
+        if(coords.size()!=v_ns_list.seg.at(i).row.size()) continue;
+        auto seg=v_ns_list.seg.at(i).row;
+        //        for(int j=0;j<coords.size();j++)
+        //        {
+        //            qDebug()<<j<<":"<<seg[j].x<<" "<<seg[j].y<<" "<<seg[j].z;
+        //        }
+        float sum=0;
+        for(int j=0;j<coords.size();j++)
+        {
+        sum+=sqrt(pow(coords[j].x-seg[j].x,2)+pow(coords[j].y-seg[j].y,2)
+                    +pow(coords[j].z-seg[j].z,2));
+        }
+        if(sum/coords.size()<mindist)
+        {
+        mindist=sum/coords.size();
+        index=i;
+        }
+        reverse(coords.begin(),coords.end());
+        sum=0;
+        for(int j=0;j<coords.size();j++)
+        {
+        sum+=sqrt(pow(coords[j].x-seg[j].x,2)+pow(coords[j].y-seg[j].y,2)
+                    +pow(coords[j].z-seg[j].z,2));
+        }
+        if(sum/coords.size()<mindist)
+        {
+        mindist=sum/coords.size();
+        index=i;
+        }
+    }
+    //    if(index<0) qDebug()<<"fail to findseg";
+    return index;
+}
+
+float V3dR_GLWidget::getSegLength(QVector<XYZ> coords){
+    float length = 0;
+    int size = coords.size();
+    for(int i = 0; i < size - 1; i++){
+        length += distance(coords[i].x, coords[i+1].x, coords[i].y, coords[i+1].y, coords[i].z, coords[i+1].z);
+    }
+    return length;
+}
+
+map<string, set<size_t>> V3dR_GLWidget::getWholeGrid2SegIDMap(V_NeuronSWC_list& inputSegments){
+    map<string, set<size_t>> wholeGrid2SegIDMap;
+
+    for(size_t i=0; i<inputSegments.seg.size(); ++i){
+        V_NeuronSWC seg = inputSegments.seg[i];
+
+        for(size_t j=0; j<seg.row.size(); ++j){
+        float xLabel = seg.row[j].x;
+        float yLabel = seg.row[j].y;
+        float zLabel = seg.row[j].z;
+        QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+        string gridKey = gridKeyQ.toStdString();
+        wholeGrid2SegIDMap[gridKey].insert(size_t(i));
+        }
+    }
+
+    return wholeGrid2SegIDMap;
+}
+
+void V3dR_GLWidget::reverseSeg(V_NeuronSWC& seg){
+    reverse(seg.row.begin(), seg.row.end());
+    for(int i=0; i<seg.row.size(); i++){
+        seg.row[i].n=i+1;
+        seg.row[i].parent=i+2;
+    }
+    seg.row[seg.row.size()-1].parent=-1;
+}
+
+void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only call by delete curve
+{
+    //    qDebug()<<"enter deleteCurveInAllSpace";
+    if(segInfo.isEmpty()) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+    //    qDebug()<<"ZLL________________1";
+
+    auto segInfos=segInfo.split(",");
+
+    float mindist=1;
+
+    QVector<XYZ> coords;
+    for(int i=0;i<segInfos.size();i++)
+    {
+        if(segInfos.at(i)!="$"){
+        auto node= segInfos.at(i).split(" ");
+        coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
+        }
+        else{
+        int index=findseg(v_ns_list,coords);
+        if(index>=0)
+        {
+                //        qDebug()<<"ZLL_____________________2.5";
+                v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
+        }else
+        {
+                //                qDebug()<<"ERROR:cannot delete curve " + segInfo;
+        }
+        coords.clear();
+        }
+    }
+    if(isMany==0){
+        int index=findseg(v_ns_list,coords);
+        if(index>=0)
+        {
+        //        qDebug()<<"ZLL_____________________2.5";
+        v_ns_list.seg.erase(v_ns_list.seg.begin()+index);
+        }else
+        {
+        //            qDebug()<<"ERROR:cannot delete curve " + segInfo;
+        }
+    }
+    //    qDebug()<<"ZLL________________2";
+
+    //    qDebug()<<"ZLL________________3";
+
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+    //    qDebug()<<"ZLL________________4";
+}
+
+void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
+{
+    //    qDebug()<<"enter";
+    if(segInfo.isEmpty()) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    XYZ point1,point2;
+    QStringList pointlist=segInfo.split(",",Qt::SkipEmptyParts);
+    QStringList pointlist_1=pointlist[0].split(' ',Qt::SkipEmptyParts);
+    point1.x=pointlist_1[1].toFloat();
+    point1.y=pointlist_1[2].toFloat();
+    point1.z=pointlist_1[3].toFloat();
+    for(int i=0;i<pointlist.size();i++)
+    {
+        if(pointlist[i]=="$"){
+        QStringList pointlist_2=pointlist[i-1].split(' ',Qt::SkipEmptyParts);
+        point2.x=pointlist_2[1].toFloat();
+        point2.y=pointlist_2[2].toFloat();
+        point2.z=pointlist_2[3].toFloat();
+        break;
+        }
+    }
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    QStringList qsl=segInfo.split(",",Qt::SkipEmptyParts);
+    //    qDebug()<<"after receive the msg"<<segInfo;
+    int index=0;
+    int timestamp=QDateTime::currentMSecsSinceEpoch();
+    for (int i = 0; i<qsl.size(); i++)
+    {
+        if(qsl[i]!="$"){
+        NeuronSWC S;
+        QStringList nodelist=qsl[i].split(" ",Qt::SkipEmptyParts);
+        //            qDebug()<<i<<":"<<nodelist;
+        if(nodelist.size()<4) return;
+        S.n=i+1;
+        S.type=nodelist[0].toInt();
+        S.x=nodelist[1].toFloat();
+        S.y=nodelist[2].toFloat();
+        S.z=nodelist[3].toFloat();
+        S.r=1;
+        if(index==0) S.pn=-1;
+        else S.pn=i;
+        S.timestamp=timestamp;
+        newTempNT.listNeuron.push_back(S);
+        newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+        index++;
+        }
+        else{
+        index=0;
+        }
+    }
+
+    //        qDebug()<<"new NT is constructed";
+    auto segs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
+
+    QVector<XYZ> coords;
+    bool isNeedReverse = false;
+    if(segs.size()==2){
+        int comparedIndex=0;
+        if(isBegin==1){
+        comparedIndex=segs[0].row.size()-1;
+        }else if(isBegin==0){
+        comparedIndex=0;
+        }
+        for(int i=0;i<segs[1].row.size();i++){
+        coords.push_back(XYZ(segs[1].row[i].x,segs[1].row[i].y,segs[1].row[i].z));
+        }
+        index=findseg(v_ns_list, coords);
+        if(index>=0)
+        {
+        int row_index = -1;
+        double mindist = 5;
+        for(int i=0;i<v_ns_list.seg[index].row.size();i++){
+                double dist=distance(segs[0].row[comparedIndex].x,v_ns_list.seg[index].row[i].x,segs[0].row[comparedIndex].y,v_ns_list.seg[index].row[i].y,segs[0].row[comparedIndex].z,v_ns_list.seg[index].row[i].z);
+                if(dist<mindist)
+                {
+                mindist=dist;
+                row_index=i;
+                }
+        }
+        if(row_index == -1){
+                qDebug()<<"INFO:cannot find nearest point in first connected seg";
+                qDebug()<<segs[0].row[comparedIndex].x<<" "<<segs[0].row[comparedIndex].y<<" "<<segs[0].row[comparedIndex].z;
+        }
+        else{
+                segs[0].row[comparedIndex].x=v_ns_list.seg[index].row[row_index].x;
+                segs[0].row[comparedIndex].y=v_ns_list.seg[index].row[row_index].y;
+                segs[0].row[comparedIndex].z=v_ns_list.seg[index].row[row_index].z;
+                if(comparedIndex==0)
+                isNeedReverse=true;
+        }
+        if(isNeedReverse)
+                reverseSeg(segs[0]);
+        }
+        else
+        {
+        std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
+        }
+    }
+
+    if(segs.size()==3){
+        //        set<size_t> segIds1;
+        //        set<size_t> segIds2;
+        //        int firstIndex = -1;
+        //        int firstEndIndex = -1;
+        for(int i=0;i<segs[1].row.size();i++){
+        coords.push_back(XYZ(segs[1].row[i].x,segs[1].row[i].y,segs[1].row[i].z));
+        }
+        index=findseg(v_ns_list, coords);
+        if(index>=0)
+        {
+        int row_index = -1;
+        double mindist = 5;
+        for(int i=0;i<v_ns_list.seg[index].row.size();i++){
+                double dist=distance(segs[0].row[segs[0].row.size()-1].x,v_ns_list.seg[index].row[i].x,segs[0].row[segs[0].row.size()-1].y,v_ns_list.seg[index].row[i].y,segs[0].row[segs[0].row.size()-1].z,v_ns_list.seg[index].row[i].z);
+                if(dist<mindist)
+                {
+                mindist=dist;
+                row_index=i;
+                }
+        }
+        if(row_index == -1){
+                qDebug()<<"INFO:cannot find nearest point in first connected seg";
+                qDebug()<<segs[0].row[segs[0].row.size()-1].x<<" "<<segs[0].row[segs[0].row.size()-1].y<<" "<<segs[0].row[segs[0].row.size()-1].z;
+        }
+        else{
+                segs[0].row[segs[0].row.size()-1].x=v_ns_list.seg[index].row[row_index].x;
+                segs[0].row[segs[0].row.size()-1].y=v_ns_list.seg[index].row[row_index].y;
+                segs[0].row[segs[0].row.size()-1].z=v_ns_list.seg[index].row[row_index].z;
+                //                float xLabel = v_ns_list.seg[index].row[row_index].x;
+                //                float yLabel = v_ns_list.seg[index].row[row_index].y;
+                //                float zLabel = v_ns_list.seg[index].row[row_index].z;
+                //                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+                //                string gridKey = gridKeyQ.toStdString();
+                //                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
+                //                segIds1 = wholeGrid2SegIDMap[gridKey];
+                //                firstIndex = row_index;
+                //                firstEndIndex = v_ns_list.seg[index].row.size()-1;
+        }
+        }
+        else
+        {
+        std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
+        }
+
+        coords.clear();
+        for(int i=0;i<segs[2].row.size();i++){
+        coords.push_back(XYZ(segs[2].row[i].x,segs[2].row[i].y,segs[2].row[i].z));
+        }
+        index=findseg(v_ns_list, coords);
+
+        if(index>=0)
+        {
+        int row_index = -1;
+        double mindist = 5;
+        for(int i=0;i<v_ns_list.seg[index].row.size();i++){
+                double dist=distance(segs[0].row[0].x,v_ns_list.seg[index].row[i].x,segs[0].row[0].y,v_ns_list.seg[index].row[i].y,segs[0].row[0].z,v_ns_list.seg[index].row[i].z);
+                if(dist<mindist)
+                {
+                mindist=dist;
+                row_index=i;
+                }
+        }
+        if(row_index == -1){
+                qDebug()<<"INFO:cannot find nearest point in first connected seg";
+                qDebug()<<segs[0].row[0].x<<" "<<segs[0].row[0].y<<" "<<segs[0].row[0].z;
+        }
+        else{
+                segs[0].row[0].x=v_ns_list.seg[index].row[row_index].x;
+                segs[0].row[0].y=v_ns_list.seg[index].row[row_index].y;
+                segs[0].row[0].z=v_ns_list.seg[index].row[row_index].z;
+                //                float xLabel = v_ns_list.seg[index].row[row_index].x;
+                //                float yLabel = v_ns_list.seg[index].row[row_index].y;
+                //                float zLabel = v_ns_list.seg[index].row[row_index].z;
+                //                QString gridKeyQ = QString::number(xLabel) + "_" + QString::number(yLabel) + "_" + QString::number(zLabel);
+                //                string gridKey = gridKeyQ.toStdString();
+                //                map<string, set<size_t>> wholeGrid2SegIDMap = getWholeGrid2SegIDMap(v_ns_list);
+                //                segIds2 = wholeGrid2SegIDMap[gridKey];
+        }
+        }
+        else
+        {
+        std::cerr<<"INFO:not find connected seg ,"<<segInfo.toStdString()<<std::endl;
+        }
+        //        if(segIds1.size()==1 && segIds2.size()==1 && firstIndex==firstEndIndex && firstEndIndex!=-1 )
+        //            isNeedReverse = true;
+        //        if(segIds1.size()==1 && segIds2.size()>1)
+        //            isNeedReverse = true;
+        //        if(isNeedReverse)
+        //            reverseSeg(segs[0]);
+    }
+
+    v_ns_list.seg.push_back(segs[0]);
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+    //    qDebug()<<"end";
+    //    QString fileName = "";
+    //    writeSWC_file(fileName,nt);
+}
+
+void V3dR_GLWidget::addManyCurvesInAllSpace(QString segsInfo){
+    if(segsInfo.isEmpty()) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    NeuronTree newTempNT;
+    newTempNT.listNeuron.clear();
+    newTempNT.hashNeuron.clear();
+    QStringList qsl=segsInfo.split(",",Qt::SkipEmptyParts);
+    //    qDebug()<<"after receive the msg"<<segInfo;
+    int index=0;
+    int timestamp=QDateTime::currentMSecsSinceEpoch();
+    for (int i = 0; i<qsl.size(); i++)
+    {
+        if(qsl[i]!="$"){
+        NeuronSWC S;
+        QStringList nodelist=qsl[i].split(" ",Qt::SkipEmptyParts);
+        //            qDebug()<<i<<":"<<nodelist;
+        if(nodelist.size()<4) return;
+        S.n=i+1;
+        S.type=nodelist[0].toInt();
+        S.x=nodelist[1].toFloat();
+        S.y=nodelist[2].toFloat();
+        S.z=nodelist[3].toFloat();
+        S.r=1;
+        if(index==0) S.pn=-1;
+        else S.pn=i;
+        S.timestamp=timestamp;
+        newTempNT.listNeuron.push_back(S);
+        newTempNT.hashNeuron.insert(S.n,newTempNT.listNeuron.size());
+        index++;
+        }
+        else{
+        index=0;
+        }
+    }
+
+    auto segs=NeuronTree__2__V_NeuronSWC_list(newTempNT).seg;
+    for(auto seg:segs){
+        v_ns_list.seg.push_back(seg);
+    }
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+    qDebug()<<"addManySegs finished";
+}
+
+void V3dR_GLWidget::connectCurveInAllSapce(QString info){
+    QStringList pointlist=info.split(",",Qt::SkipEmptyParts);
+    QStringList specPointsInfo1=pointlist[0].split(' ',Qt::SkipEmptyParts);
+    QStringList specPointsInfo2=pointlist[1].split(' ',Qt::SkipEmptyParts);
+    XYZ p1=XYZ(specPointsInfo1[0].toFloat(), specPointsInfo1[1].toFloat(), specPointsInfo1[2].toFloat());
+    XYZ p2=XYZ(specPointsInfo2[0].toFloat(), specPointsInfo2[1].toFloat(), specPointsInfo2[2].toFloat());
+    pointlist.removeAt(0);
+    pointlist.removeAt(0);
+
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    //    for(int i=0;i<v_ns_list.seg.size();i++){
+    //        v_ns_list.seg[i].printInfo();
+    //    }
+
+    vector<segInfoUnit> segInfo;
+
+    float mindist=1;
+
+    QVector<XYZ> coords;
+    for(int i=0;i<pointlist.size();i++)
+    {
+        if(pointlist.at(i)!="$"){
+        auto node= pointlist.at(i).split(" ");
+        coords.push_back(XYZ(node[1].toFloat(),node[2].toFloat(),node[3].toFloat()));
+        }
+        else{
+        int index=findseg(v_ns_list,coords);
+        qDebug()<<"INDEX"<<index;
+        if(index>=0)
+        {
+                //父子关系逆序
+                if (v_ns_list.seg[index].row.begin()->data[6] != 2) // Sort the node numbers of involved segments
+                {
+                int nodeNo = 1;
+                for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
+                     it_unit != v_ns_list.seg[index].row.end(); it_unit++)
+                {
+                        it_unit->data[0] = nodeNo;
+                        it_unit->data[6] = nodeNo + 1;
+                        ++nodeNo;
+                }
+                (v_ns_list.seg[index].row.end() - 1)->data[6] = -1;
+                }
+
+                //构造segInfo
+                if(segInfo.size()==0){
+                double mindist=5;
+                vector<V_NeuronSWC_unit>::iterator it_res=v_ns_list.seg[index].row.end();
+                for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
+                     it_unit != v_ns_list.seg[index].row.end(); it_unit++)
+                {
+                        double dist=distance(p1.x,it_unit->data[2],p1.y,it_unit->data[3],p1.z,it_unit->data[4]);
+                        if(dist<mindist)
+                        {
+                            mindist=dist;
+                            it_res=it_unit;
+                        }
+
+                }
+                if(it_res==v_ns_list.seg[index].row.end()){
+                        qDebug()<<"cannot find nearest point in first to be connected seg";
+                        qDebug()<<p1.x<<" "<<p1.y<<" "<<p1.z;
+                }
+                else{
+                        //---------------------- Get seg IDs
+                        //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
+                        qDebug()<<p1.x<<" "<<p1.y<<" "<<p1.z;
+                        qDebug()<<it_res->data[2]<<" "<<it_res->data[3]<<" "<<it_res->data[4];
+                        segInfoUnit curSeg;
+                        curSeg.head_tail = it_res->data[6];
+                        curSeg.segID = index;
+                        curSeg.nodeCount = v_ns_list.seg[index].row.size();
+                        curSeg.refine = false;
+                        curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
+                        curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
+                        curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
+                        segInfo.push_back(curSeg);
+                }
+                }
+
+                else if(segInfo.size()==1){
+                double mindist=5;
+                vector<V_NeuronSWC_unit>::iterator it_res=v_ns_list.seg[index].row.end();
+                for (vector<V_NeuronSWC_unit>::iterator it_unit = v_ns_list.seg[index].row.begin();
+                     it_unit != v_ns_list.seg[index].row.end(); it_unit++)
+                {
+                        double dist=distance(p2.x,it_unit->data[2],p2.y,it_unit->data[3],p2.z,it_unit->data[4]);
+                        if(dist<mindist)
+                        {
+                            mindist=dist;
+                            it_res=it_unit;
+                        }
+
+                }
+                if(it_res==v_ns_list.seg[index].row.end()){
+                        qDebug()<<"cannot find nearest point in first to be connected seg";
+                        qDebug()<<p2.x<<" "<<p2.y<<" "<<p2.z;
+                }
+                else{
+                        //---------------------- Get seg IDs
+                        //qDebug() << nodeOnStroke->at(j).seg_id << " " << nodeOnStroke->at(j).parent << " " << p.x() << " " << p.y();
+                        qDebug()<<p2.x<<" "<<p2.y<<" "<<p2.z;
+                        qDebug()<<it_res->data[2]<<" "<<it_res->data[3]<<" "<<it_res->data[4];
+                        segInfoUnit curSeg;
+                        curSeg.head_tail = it_res->data[6];
+                        curSeg.segID = index;
+                        curSeg.nodeCount = v_ns_list.seg[index].row.size();
+                        curSeg.refine = false;
+                        curSeg.branchID = v_ns_list.seg[index].branchingProfile.ID;
+                        curSeg.paBranchID = v_ns_list.seg[index].branchingProfile.paID;
+                        curSeg.hierarchy = v_ns_list.seg[index].branchingProfile.hierarchy;
+                        segInfo.push_back(curSeg);
+                }
+                }
+        }
+        else
+        {
+                qDebug()<<"ERROR:cannot find curve " + info;
+        }
+        coords.clear();
+        }
+    }
+
+    bool res = simpleConnectExecutor(v_ns_list, segInfo);
+    if(!res){
+        return;
+    }
+
+    if (v_ns_list.seg[segInfo[0].segID].to_be_deleted)
+    {
+        qDebug()<<"enter tracedNeuron.seg[segInfo[0]]";
+        vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(v_ns_list.seg[segInfo[1].segID]);
+        for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
+        v_ns_list.seg.push_back(*addedIt);
+
+        v_ns_list.seg[segInfo[1].segID].to_be_deleted = true;
+        v_ns_list.seg[segInfo[1].segID].on = false;
+
+    }
+    else if (v_ns_list.seg[segInfo[1].segID].to_be_deleted)
+    {
+        qDebug()<<"enter tracedNeuron.seg[segInfo[1]]";
+        vector<V_NeuronSWC> connectedSegDecomposed = decompose_V_NeuronSWC(v_ns_list.seg[segInfo[0].segID]);
+        for (vector<V_NeuronSWC>::iterator addedIt = connectedSegDecomposed.begin(); addedIt != connectedSegDecomposed.end(); ++addedIt)
+        v_ns_list.seg.push_back(*addedIt);
+
+        v_ns_list.seg[segInfo[0].segID].to_be_deleted = true;
+        v_ns_list.seg[segInfo[0].segID].on = false;
+    }
+
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
+
+}
+
+bool V3dR_GLWidget::simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo){
+    qDebug()<<"begin to simpleConnectExecutor";
+    // This method is the "executor" of Renderer_gl1::simpleConnect(), MK, May, 2018
+
+    if(segInfo.size() < 2){
+        return false;
+    }
+
+    //////////////////////////////////////////// HEAD TAIL CONNECTION ////////////////////////////////////////////
+    if ((segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2) && (segInfo.at(1).head_tail == -1 || segInfo.at(1).head_tail == 2))
+    {
+        segInfoUnit mainSeg, branchSeg;
+        if (segInfo.at(0).nodeCount >= segInfo.at(1).nodeCount)
+        {
+        mainSeg = segInfo.at(0);
+        branchSeg = segInfo.at(1);
+        qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+        qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+        else
+        {
+        mainSeg = segInfo.at(1);
+        branchSeg = segInfo.at(0);
+        qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+        qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+
+        double assignedType;
+        assignedType = segments.seg[segInfo.at(0).segID].row[0].type;
+        segments.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
+        //        qDebug()<<"zll___debug__mainSeg.head_tail"<<mainSeg.head_tail;
+        if (mainSeg.head_tail == -1)
+        {
+        //            qDebug()<<"(zll-debug)branchSeg.head_tail="<<branchSeg.head_tail;
+        if (branchSeg.head_tail == -1) // head to head
+        {
+                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.end() - 1;
+                     itNextSeg >= segments.seg[branchSeg.segID].row.begin(); --itNextSeg)
+                {
+                itNextSeg->seg_id = branchSeg.segID;
+                segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+        }
+        else if (branchSeg.head_tail == 2) // head to tail
+        {
+                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.begin();
+                     itNextSeg != segments.seg[branchSeg.segID].row.end(); ++itNextSeg)
+                {
+                itNextSeg->seg_id = branchSeg.segID;
+                segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+        }
+        segments.seg[branchSeg.segID].to_be_deleted = true;
+        segments.seg[branchSeg.segID].on = false;
+
+        // sorting the new segment here, and reassign the root node to the new tail
+        size_t nextSegNo = 1;
+        for (vector<V_NeuronSWC_unit>::iterator itSort = segments.seg[mainSeg.segID].row.begin();
+             itSort != segments.seg[mainSeg.segID].row.end(); ++itSort)
+        {
+                itSort->data[0] = nextSegNo;
+                itSort->data[6] = itSort->data[0] + 1;
+                ++nextSegNo;
+        }
+        (segments.seg[mainSeg.segID].row.end() - 1)->data[6] = -1;
+        }
+        else if (mainSeg.head_tail == 2)
+        {
+        std::reverse(segments.seg[mainSeg.segID].row.begin(), segments.seg[mainSeg.segID].row.end());
+        //            qDebug()<<"zll___debug__2_branchSeg.head_tail"<<branchSeg.head_tail;
+        if (branchSeg.head_tail == -1) // tail to head
+        {
+                for(auto itNextSeg = segments.seg[branchSeg.segID].row.rbegin();
+                     itNextSeg != segments.seg[branchSeg.segID].row.rend();itNextSeg++){
+                itNextSeg->seg_id = branchSeg.segID;
+                segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+        }
+        else if (branchSeg.head_tail == 2) // tail to tail
+        {
+                for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[branchSeg.segID].row.begin();
+                     itNextSeg != segments.seg[branchSeg.segID].row.end(); itNextSeg++)
+                {
+                itNextSeg->seg_id = branchSeg.segID;
+                segments.seg[mainSeg.segID].row.push_back(*itNextSeg);
+                }
+        }
+        segments.seg[branchSeg.segID].to_be_deleted = true;
+        segments.seg[branchSeg.segID].on = false;
+
+        // sorting the new segment here, and reassign the root node to the new tail
+        std::reverse(segments.seg[mainSeg.segID].row.begin(), segments.seg[mainSeg.segID].row.end());
+        size_t nextSegNo = 1;
+        for (vector<V_NeuronSWC_unit>::iterator itSort = segments.seg[mainSeg.segID].row.begin();
+             itSort != segments.seg[mainSeg.segID].row.end(); itSort++)
+        {
+                itSort->data[0] = nextSegNo;
+                itSort->data[6] = itSort->data[0] + 1;
+                ++nextSegNo;
+        }
+        (segments.seg[mainSeg.segID].row.end() - 1)->data[6] = -1;
+        }
+
+        // correcting types, based on the main segment type
+        for (vector<V_NeuronSWC_unit>::iterator reID = segments.seg[mainSeg.segID].row.begin();
+             reID != segments.seg[mainSeg.segID].row.end(); ++reID)
+        {
+        reID->seg_id = mainSeg.segID;
+        reID->type = assignedType;
+        //            qDebug()<<"zll_debug"<<reID->type;
+        }
+    }
+    //////////////////////////////////////////// END of [HEAD TAIL CONNECTION] ////////////////////////////////////////////
+
+    //////////////////////////////////////////// BRANCHING CONNECTION ////////////////////////////////////////////
+    if ((segInfo.at(0).head_tail != -1 && segInfo.at(0).head_tail != 2) ^ (segInfo.at(1).head_tail != -1 && segInfo.at(1).head_tail != 2))
+    {
+        segInfoUnit mainSeg, branchSeg;
+        if (segInfo.at(0).head_tail == -1 || segInfo.at(0).head_tail == 2)
+        {
+        mainSeg = segInfo.at(1);
+        branchSeg = segInfo.at(0);
+        qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+        qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+        else
+        {
+        mainSeg = segInfo.at(0);
+        branchSeg = segInfo.at(1);
+        qDebug() << "primary seg length:" << mainSeg.nodeCount << "   primary seg orient:" << mainSeg.head_tail;
+        qDebug() << "secondary seg length:" << branchSeg.nodeCount << "   secondary seg orient:" << branchSeg.head_tail;
+        }
+
+        double assignedType;
+        assignedType = segments.seg[segInfo.at(0).segID].row[0].type;
+        segments.seg[mainSeg.segID].row[0].seg_id = mainSeg.segID;
+        if (branchSeg.head_tail == 2) // branch to tail
+        {
+        std::reverse(segments.seg[branchSeg.segID].row.begin(), segments.seg[branchSeg.segID].row.end());
+        size_t branchSegLength = segments.seg[branchSeg.segID].row.size();
+        size_t mainSegLength = segments.seg[mainSeg.segID].row.size();
+        segments.seg[mainSeg.segID].row.insert(segments.seg[mainSeg.segID].row.end(), segments.seg[branchSeg.segID].row.begin(), segments.seg[branchSeg.segID].row.end());
+        size_t branchN = mainSegLength + 1;
+        for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[mainSeg.segID].row.end() - 1;
+             itNextSeg != segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSegLength - 1); --itNextSeg)
+        {
+                itNextSeg->n = branchN;
+                itNextSeg->seg_id = mainSeg.segID;
+                itNextSeg->parent = branchN - 1;
+                ++branchN;
+        }
+        (segments.seg[mainSeg.segID].row.end() - 1)->parent = (segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
+        segments.seg[branchSeg.segID].to_be_deleted = true;
+        segments.seg[branchSeg.segID].on = false;
+        }
+        else if (branchSeg.head_tail == -1) // branch to head
+        {
+        size_t branchSegLength = segments.seg[branchSeg.segID].row.size();
+        size_t mainSegLength = segments.seg[mainSeg.segID].row.size();
+        segments.seg[mainSeg.segID].row.insert(segments.seg[mainSeg.segID].row.end(), segments.seg[branchSeg.segID].row.begin(), segments.seg[branchSeg.segID].row.end());
+        size_t branchN = mainSegLength + 1;
+        for (vector<V_NeuronSWC_unit>::iterator itNextSeg = segments.seg[mainSeg.segID].row.end() - 1;
+             itNextSeg != segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSegLength - 1); --itNextSeg)
+        {
+                itNextSeg->n = branchN;
+                itNextSeg->seg_id = mainSeg.segID;
+                itNextSeg->parent = branchN - 1;
+                ++branchN;
+        }
+        (segments.seg[mainSeg.segID].row.end() - 1)->parent = (segments.seg[mainSeg.segID].row.begin() + ptrdiff_t(mainSeg.head_tail - 2))->n;
+        segments.seg[branchSeg.segID].to_be_deleted = true;
+        segments.seg[branchSeg.segID].on = false;
+        }
+
+        // correcting types, based on the main segment type
+        for (vector<V_NeuronSWC_unit>::iterator reID = segments.seg[mainSeg.segID].row.begin();
+             reID != segments.seg[mainSeg.segID].row.end(); ++reID)
+        {
+        reID->seg_id = mainSeg.segID;
+        reID->type = assignedType;
+        }
+    }
+    //////////////////////////////////////////// END of [BRANCHING CONNECTION] ////////////////////////////////////////////
+
+    return true;
+}
+
+double V3dR_GLWidget::distance(const double x1, const double x2, const double y1, const double y2, const double z1, const double z2){
+    return sqrt(
+        (x1-x2)*(x1-x2)+
+        (y1-y2)*(y1-y2)+
+        (z1-z2)*(z1-z2)
+        );
+}
+
+XYZ V3dR_GLWidget::ConvertreceiveCoords(float x,float y,float z)// global-> local
+{
+    return TeraflyCommunicator->ConvertGlobaltoLocalBlockCroods(x,y,z);
+}
+
+//#endif
 ///////////////////////////////////////////////////////////////////////////////////////////
 #define __end_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////
+

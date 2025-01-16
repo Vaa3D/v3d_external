@@ -1,16 +1,14 @@
 #ifndef V3DR_COMMUNICATOR_H
 #define V3DR_COMMUNICATOR_H
 
+//#include <QtGui>
 #include <QObject>
-#include <QtGui>
 //#include <QtCore/QCoreApplication>
 #include <QTcpSocket>
 #include <QMessageBox>
 //#include"../3drenderer/v3dr_common.h"
 //#include <QRegExpValidator>
-//#ifdef _WIN32
-//    #include <windows.h>
-//#endif
+
 #include "../neuron_editing/v_neuronswc.h"
 #include "../basic_c_fun/v3d_interface.h"
 #include "fileserver.h"

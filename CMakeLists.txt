@@ -3,6 +3,9 @@ project(Vaa3D-x VERSION 1.0 LANGUAGES C CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# 设置 C++ 标准版本
+set(CMAKE_CXX_STANDARD 11)  # 设置 C++11
+
 # Set up AUTOMOC and some sensible defaults for runtime execution
 # When using Qt 6.3, you can replace the code block below with
 # qt_standard_project_setup()
@@ -46,6 +49,10 @@ add_executable(Vaa3D-x WIN32 MACOSX_BUNDLE
     v3d_main/3drenderer/v3dr_mainwindow.h
     v3d_main/3drenderer/v3dr_surfaceDialog.cpp
     v3d_main/3drenderer/v3dr_surfaceDialog.h
+    v3d_main/3drenderer/v3dr_onlineuserdialog.cpp
+    v3d_main/3drenderer/v3dr_onlineuserdialog.h
+    v3d_main/3drenderer/v3dr_qualitycontroldialog.h
+    v3d_main/3drenderer/v3dr_qualitycontroldialog.cpp
     v3d_main/basic_c_fun/INeuronAssembler.h
     v3d_main/basic_c_fun/IPMain4NeuronAssembler.h
     v3d_main/basic_c_fun/basic_4dimage.cpp
