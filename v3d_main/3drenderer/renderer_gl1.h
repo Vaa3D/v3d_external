@@ -144,6 +144,16 @@ class Renderer_gl1 : public Renderer
     friend class V3dr_colormapDialog;
 
 public:
+    XYZ ImageCurRes;
+    XYZ ImageStartPoint;
+    XYZ ImageMaxRes;
+
+    //Coordinate transform
+    XYZ ConvertGlobaltoLocalBlockCroods(double x,double y,double z);
+    XYZ ConvertLocalBlocktoGlobalCroods(double x,double y,double z);
+    XYZ ConvertMaxRes2CurrResCoords(double x,double y,double z);
+    XYZ ConvertCurrRes2MaxResCoords(double x,double y,double z);
+
     Renderer_gl1(void* widget);
     virtual ~Renderer_gl1();
     virtual const int class_version() {return 1;}
@@ -552,7 +562,7 @@ public:
      bool hierarchyRelabel;
 
      void simpleConnect();
-     void simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
+     bool simpleConnectExecutor(My4DImage* curImg, vector<segInfoUnit>& segInfo);
     void showSubtree();
      void showConnectedSegs();
      void sort_tracedNeuron(My4DImage* curImg, size_t rootID);  // Sort swc, Peng Xie, June 2019
@@ -618,6 +628,7 @@ public:
 
      // @ADDED by Alessandro on 2015-05-23. Called when "Esc" key is pressed and tracedNeuron must be updated.
      void deleteMultiNeuronsByStrokeCommit();
+     bool deleteMultiNeuronsByStrokeCommit(vector<XYZ> local_list, float mindist);
      // @ADDED by Alessandro on 2015-09-30. Select multiple markers by one-mouse stroke.
 
      void selectMultiMarkersByStroke();

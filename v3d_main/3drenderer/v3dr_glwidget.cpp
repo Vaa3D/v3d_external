@@ -715,7 +715,7 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 
     if (event->button()==Qt::LeftButton)
     {
-        lastPos = event->pos();
+        lastPos = event->pos() * devicePixelRatio();
         t_mouseclick_left = clock();
         if(pluginLeftMouseFuncs.find(currentPluginState) != pluginLeftMouseFuncs.end())
         {
@@ -772,9 +772,9 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 
     // setFocus(); // accept KeyPressEvent, by RZC 080831
 
-    int dx = event->x() - lastPos.x();
-    int dy = event->y() - lastPos.y();
-    lastPos = event->pos();
+    int dx = event->x() * devicePixelRatio() - lastPos.x();
+    int dy = event->y() * devicePixelRatio() - lastPos.y();
+    lastPos = event->pos() * devicePixelRatio();
 
     if ((event->buttons() & Qt::RightButton) && renderer) //right-drag for 3d curve
         if ( ABS(dx) + ABS(dy) >=2 )

@@ -1827,15 +1827,87 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno, double creatmode
         //// Vaa3d || Terafly
         else
         {
+            //            qDebug()<<"11111111111111:   currentTraceType: "<<currentTraceType;
             if(selectMode == smCurveTiltedBB_fm_sbbox) //LMG 26/10/2018 Creation mode 1 for BBox
                 creatmode = 1;
             if(selectMode == smCurveCreate_MarkerCreate1_fm)
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType,default_radius_gd,creatmode);
             else
                 curImg->proj_trace_add_curve_segment(loc_list, chno,currentTraceType, 1,creatmode);
+
+            //            qDebug()<<"22222222222222:   currentTraceType: "<<currentTraceType;
+            QVector<XYZ> coords;
+            int firstSegID=-1;
+            int secondSegID=-1;
+            for(int i=0;i<curImg->colla_cur_seg.row.size();i++)
+            {
+                coords.push_back(XYZ(curImg->colla_cur_seg.row[i].x,curImg->colla_cur_seg.row[i].y,curImg->colla_cur_seg.row[i].z));
+            }
+            int index=w->findseg(curImg->tracedNeuron,coords);
+            if(index<0)
+                qDebug("addCurve: index<0");
+
+            //            curImg->colla_cur_seg.printInfo();
+            for(size_t i=0; i<curImg->tracedNeuron.seg.size(); ++i){
+                V_NeuronSWC seg=curImg->tracedNeuron.seg[i];
+                for(size_t j=0; j<seg.row.size(); j++){
+                    if(fabs(seg.row[j].x-curImg->colla_cur_seg.row[0].x)<1e-4&&fabs(seg.row[j].y-curImg->colla_cur_seg.row[0].y)<1e-4&&
+                        fabs(seg.row[j].z-curImg->colla_cur_seg.row[0].z)<1e-4&&index!=i)
+                        firstSegID=i;
+                    if(fabs(seg.row[j].x-curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].x)<1e-4&&
+                        fabs(seg.row[j].y-curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].y)<1e-4&&
+                        fabs(seg.row[j].z-curImg->colla_cur_seg.row[curImg->colla_cur_seg.row.size()-1].z)<1e-4&&index!=i)
+                        secondSegID=i;
+                }
+            }
+
+            qDebug()<<"firstSegID: "<<firstSegID<<"  secondSegID: "<<secondSegID;
+            vector<V_NeuronSWC> connectedSegs;
+            bool isBegin = true;
+
+            if(firstSegID!=-1)
+                connectedSegs.push_back(curImg->tracedNeuron.seg[firstSegID]);
+            if(secondSegID!=-1)
+                connectedSegs.push_back(curImg->tracedNeuron.seg[secondSegID]);
+
+            if(firstSegID!=-1&&connectedSegs.size()==1)
+                isBegin=true;
+            if(secondSegID!=-1&&connectedSegs.size()==1)
+                isBegin=false;
+
+            if (!fromserver)
+            {
+                if (w->TeraflyCommunicator
+                    &&w->TeraflyCommunicator->socket&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState
+                    && curImg->colla_cur_seg.row.size() > 0)
+                {
+                    //                    qDebug()<<"seg type="<<curImg->colla_cur_seg.row[0].type;
+                    //                    cout << "Send msg success" << endl;
+                    w->TeraflyCommunicator->cur_chno = curImg->cur_chno;
+                    w->TeraflyCommunicator->cur_createmode = curImg->cur_createmode;
+                    w->SetupCollaborateInfo();
+                    w->TeraflyCommunicator->UpdateAddSegMsg(curImg->colla_cur_seg, connectedSegs, "TeraFly", isBegin);
+                    //                    if(w->TeraflyCommunicator->timer_exit->isActive()){
+                    //                        w->TeraflyCommunicator->timer_exit->stop();
+                    //                    }
+                    //                    w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                }/*else
+                {
+                    QMessageBox::information(0,tr("Message "),
+                                     tr("Connection Lost!Data has been saved!"),
+                                     QMessageBox::Ok);
+                }*/
+            }
             curImg->update_3drenderer_neuron_view(w, this);
+
+            //            QFuture<void> future = QtConcurrent::run([=](){
+            //                for(int i=0;i<curImg->tracedNeuron.seg.size();i++){
+            //                    curImg->tracedNeuron.seg[i].printInfo();
+            //                }
+            //            });
         }
     }
+
 
 
 #else
