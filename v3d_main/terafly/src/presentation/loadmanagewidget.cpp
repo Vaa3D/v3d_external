@@ -12,6 +12,8 @@
 #include "../control/CViewer.h"
 #include "json.hpp"
 
+using json = nlohmann::json;
+
 QNetworkAccessManager* LoadManageWidget::accessManager= new QNetworkAccessManager();
 QString LoadManageWidget::HostAddress="";
 QString LoadManageWidget::DBMSAddress="";
@@ -88,11 +90,15 @@ void LoadManageWidget::getUserId(){
     param.insert("metaInfo",metaInfo);
     param.insert("UserVerifyInfo",userVerify);
     param.insert("UserName",userinfo->name);
-    QJson::Serializer serializer;
-    bool ok;
-    QByteArray json=serializer.serialize(param,&ok);
 
-    QNetworkReply* reply = accessManager->post(request, json);
+    // 将 QVariantMap 转换为 QJsonObject
+    QJsonObject jsonObject = QJsonObject::fromVariantMap(param);
+
+    // 将 QJsonObject 序列化为 JSON 字符串
+    QJsonDocument doc(jsonObject);
+    QByteArray byteArray = doc.toJson();
+
+    QNetworkReply* reply = accessManager->post(request, byteArray);
     QEventLoop eventLoop;
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
@@ -101,14 +107,13 @@ void LoadManageWidget::getUserId(){
     qDebug()<<"getUserId "<<code;
     if(code==200)
     {
-        json=reply->readAll();
+        QByteArray tmpArray = reply->readAll();
+        std::string jsonString = tmpArray.toStdString();
+        json response_json = json::parse(jsonString);
 
-        QJson::Parser parser;
-
-        auto result = parser.parse(json,&ok).toMap();
-        auto metaInfo = result["metaInfo"].toMap();
-        bool status = metaInfo["Status"].toBool();
-        QString message = metaInfo["Message"].toString();
+        auto metaInfo = response_json["metaInfo"];
+        bool status = metaInfo["Status"];
+        QString message = QString::fromStdString(metaInfo["Message"]);
         if(!status){
             QString msg = "GetUser Failed! " + message;
             qDebug()<<msg;
@@ -118,8 +123,8 @@ void LoadManageWidget::getUserId(){
             return;
         }
 
-        auto userInfo = result["UserInfo"].toMap();
-        userinfo->id = userInfo["UserId"].toInt();
+        auto userInfo = response_json["UserInfo"];
+        userinfo->id = userInfo["UserId"];
 
     }
     else{
@@ -143,11 +148,15 @@ void LoadManageWidget::getAllProjectSwcList(){
     QVariantMap param;
     param.insert("metaInfo",metaInfo);
     param.insert("UserVerifyInfo",userVerify);
-    QJson::Serializer serializer;
-    bool ok;
-    QByteArray json=serializer.serialize(param,&ok);
 
-    QNetworkReply* reply = accessManager->post(request, json);
+    // 将 QVariantMap 转换为 QJsonObject
+    QJsonObject jsonObject = QJsonObject::fromVariantMap(param);
+
+    // 将 QJsonObject 序列化为 JSON 字符串
+    QJsonDocument doc(jsonObject);
+    QByteArray byteArray = doc.toJson();
+
+    QNetworkReply* reply = accessManager->post(request, byteArray);
     QEventLoop eventLoop;
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
@@ -162,13 +171,13 @@ void LoadManageWidget::getAllProjectSwcList(){
     qDebug()<<"getAllProject: "<<code;
     if(code==200)
     {
-        json=reply->readAll();
+        QByteArray tmpArray = reply->readAll();
+        std::string jsonString = tmpArray.toStdString();
+        json response_json = json::parse(jsonString);
 
-        QJson::Parser parser;
-        auto result = parser.parse(json,&ok).toMap();
-        auto metaInfo = result["metaInfo"].toMap();
-        bool status = metaInfo["Status"].toBool();
-        QString message = metaInfo["Message"].toString();
+        auto metaInfo = response_json["metaInfo"];
+        bool status = response_json["Status"];
+        QString message = QString::fromStdString(metaInfo["Message"]);
         if(!status){
             QString msg = "GetAllProject Failed! " + message;
             qDebug()<<msg;
@@ -178,11 +187,11 @@ void LoadManageWidget::getAllProjectSwcList(){
             return;
         }
 
-        auto projectInfos = result["ProjectInfo"].toList();
+        auto projectInfos = response_json["ProjectInfo"];
         for(int i = 0; i < projectInfos.size(); ++i){
-            auto projectInfo = projectInfos.at(i).toMap();
-            QString projectName = projectInfo["Name"].toString();
-            QString proUuid = projectInfo["Base"].toMap()["Uuid"].toString();
+            auto projectInfo = projectInfos.at(i);
+            QString projectName = QString::fromStdString(projectInfo["Name"]);
+            QString proUuid = QString::fromStdString(projectInfo["Base"]["Uuid"]);
             proName2IdMap[projectName] = proUuid;
             projectWidget->addItem(projectName);
             getAllSwcUuidAndNameByProId(projectName, proUuid);
@@ -215,11 +224,15 @@ void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proU
     param.insert("metaInfo",metaInfo);
     param.insert("UserVerifyInfo",userVerify);
     param.insert("ProjectUuid",proUuid);
-    QJson::Serializer serializer;
-    bool ok;
-    QByteArray json=serializer.serialize(param,&ok);
 
-    QNetworkReply* reply = accessManager->post(request, json);
+    // 将 QVariantMap 转换为 QJsonObject
+    QJsonObject jsonObject = QJsonObject::fromVariantMap(param);
+
+    // 将 QJsonObject 序列化为 JSON 字符串
+    QJsonDocument doc(jsonObject);
+    QByteArray byteArray = doc.toJson();
+
+    QNetworkReply* reply = accessManager->post(request, byteArray);
     QEventLoop eventLoop;
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
@@ -230,13 +243,14 @@ void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proU
     }
     if(code==200)
     {
-        json=reply->readAll();
+        QByteArray tmpArray=reply->readAll();
 
-        QJson::Parser parser;
-        auto result = parser.parse(json,&ok).toMap();
-        auto metaInfo = result["metaInfo"].toMap();
-        bool status = metaInfo["Status"].toBool();
-        QString message = metaInfo["Message"].toString();
+        std::string jsonString = tmpArray.toStdString();
+        json response_json = json::parse(jsonString);
+
+        auto metaInfo = response_json["metaInfo"];
+        bool status = metaInfo["Status"];
+        QString message = QString::fromStdString(metaInfo["Message"]);
         if(!status){
             QString msg = "GetProjectSwcNamesByProjectUuid Failed! " + message;
             qDebug()<<msg;
@@ -246,7 +260,7 @@ void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proU
             return;
         }
 
-        auto swcUuidNameList = result["swcUuidName"].toList();
+        auto swcUuidNameList = response_json["swcUuidName"];
         std::vector<int> imageList;
         std::vector<int> indexs;
         QList<QString> swcNameList;
@@ -254,8 +268,8 @@ void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proU
 
         for(int j = 0; j < swcUuidNameList.size(); ++j){
             indexs.push_back(j);
-            QString swcName = swcUuidNameList.at(j).toMap()["SwcName"].toString();
-            QString swcUuid = swcUuidNameList.at(j).toMap()["SwcUuid"].toString();
+            QString swcName = QString::fromStdString(swcUuidNameList.at(j)["SwcName"]);
+            QString swcUuid = QString::fromStdString(swcUuidNameList.at(j)["SwcUuid"]);
 
             int removedLen = QString(".ano.eswc").length();
             int len = swcName.size();
@@ -371,11 +385,14 @@ void LoadManageWidget::loadAno()
     param.insert("ano",swcName);
     param.insert("user",userVerify);
 
-    QJson::Serializer serializer;
-    bool ok;
-    QByteArray json=serializer.serialize(param,&ok);
+    // 将 QVariantMap 转换为 QJsonObject
+    QJsonObject jsonObject = QJsonObject::fromVariantMap(param);
 
-    QNetworkReply* reply = accessManager->post(request, json);
+    // 将 QJsonObject 序列化为 JSON 字符串
+    QJsonDocument doc(jsonObject);
+    QByteArray byteArray = doc.toJson();
+
+    QNetworkReply* reply = accessManager->post(request, byteArray);
     QEventLoop eventLoop;
     QObject::connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
@@ -387,12 +404,13 @@ void LoadManageWidget::loadAno()
     if(code==200)
     {
         qDebug()<<"replycode"<<reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-        json=reply->readAll();
-        //        qDebug()<<"loadAnojson"<<json;
-        QJson::Parser parser;
-        auto result=parser.parse(json,&ok).toMap();
-        auto ano=result["ano"].toString();
-        auto port=result["port"].toString();
+        QByteArray tmpArray=reply->readAll();
+
+        std::string jsonString = tmpArray.toStdString();
+        json response_json = json::parse(jsonString);
+
+        auto ano=QString::fromStdString(response_json["ano"]);
+        auto port=QString::fromStdString(response_json["port"]);
         qDebug()<<ano<<"\n"<<port;
         m_port = port;
         emit triggerStartCollaborate(port);

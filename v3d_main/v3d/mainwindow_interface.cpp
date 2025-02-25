@@ -207,30 +207,56 @@ NeuronTree MainWindow::getSWC(void* window)
 	if (! w) return NeuronTree();
 	return V_NeuronSWC_list__2__NeuronTree(w->getImageData()->tracedNeuron);
 }
-bool MainWindow::setSWC(void* window, NeuronTree & nt)
+bool MainWindow::setSWC(void* window, NeuronTree & nt, bool isCollaborateUpdate)
 {
 	XFormWidget* w = validateImageWindow(window);
 	if (w)
 	{
-		qDebug()<<"MainWindow set SWC: "<< w << &nt;
-		
-		int rootNum = 0;
-		int duplicateNum = 0;
-		for (QList<NeuronSWC>::iterator it = nt.listNeuron.begin(); it != nt.listNeuron.end(); ++it)
-		{
-			if (it->parent == -1)
-			{
-				++rootNum;
-				for (QList<NeuronSWC>::iterator itCheck = nt.listNeuron.begin(); itCheck != nt.listNeuron.end(); ++itCheck)
-					if (itCheck->n == it->n) continue;
-					else if (itCheck->x == it->x && itCheck->y == it->y && itCheck->z == it->z) ++duplicateNum;
-			}
-		}
-		cout << "ROOT NUMBER: " << rootNum << endl;
-		cout << "DUPLICATE NUMBER: " << duplicateNum << endl;
-		cout << "TOTAL NUMBER OF NODE: " << nt.listNeuron.size() << endl;
-		
-		w->getImageData()->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(nt);
+        qDebug()<<"MainWindow set SWC: "<< w << &nt;
+
+        int rootNum = 0;
+        int duplicateNum = 0;
+        for (QList<NeuronSWC>::iterator it = nt.listNeuron.begin(); it != nt.listNeuron.end(); ++it)
+        {
+            if (it->parent == -1)
+            {
+                ++rootNum;
+                for (QList<NeuronSWC>::iterator itCheck = nt.listNeuron.begin(); itCheck != nt.listNeuron.end(); ++itCheck)
+                    if (itCheck->n == it->n) continue;
+                    else if (itCheck->x == it->x && itCheck->y == it->y && itCheck->z == it->z) ++duplicateNum;
+            }
+        }
+        cout << "ROOT NUMBER: " << rootNum << endl;
+        cout << "DUPLICATE NUMBER: " << duplicateNum << endl;
+        cout << "TOTAL NUMBER OF NODE: " << nt.listNeuron.size() << endl;
+        w->getImageData()->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(nt);
+
+        if(!isCollaborateUpdate){
+            for(size_t i=0; i<w->getImageData()->tracedNeuron.seg.size(); i++){
+                map<int,int> type2Nums;
+                for(size_t j=0; j<w->getImageData()->tracedNeuron.seg[i].row.size(); j++){
+                    if(type2Nums.find(w->getImageData()->tracedNeuron.seg[i].row[j].type)==type2Nums.end()){
+                        type2Nums[w->getImageData()->tracedNeuron.seg[i].row[j].type] = 1;
+                    }
+                    else{
+                        type2Nums[w->getImageData()->tracedNeuron.seg[i].row[j].type]++;
+                    }
+                }
+                int maxNum = 0;
+                int finalType = -1;
+                for(auto it=type2Nums.begin(); it!=type2Nums.end(); it++){
+                    if(it->second > maxNum){
+                        maxNum = it->second;
+                        finalType = it->first;
+                    }
+                }
+                if(finalType!=-1){
+                    for(size_t j=0; j<w->getImageData()->tracedNeuron.seg[i].row.size(); j++){
+                        w->getImageData()->tracedNeuron.seg[i].row[j].type = finalType;
+                    }
+                }
+            }
+        }
 
 	
 		//missing update?, by Hanchuan Peng, 100602 //updateImageWindow

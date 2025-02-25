@@ -26,6 +26,9 @@
 *       specific prior written permission.
 ********************************************************************************************************************************************************************************************/
 
+#include <iostream>
+#include <fstream>
+#include "nlohmann_json/json.hpp"
 #include "PMain.h"
 #include "PDialogImport.h"
 #include "PAbout.h"
@@ -59,6 +62,11 @@
 #include <QRegExp>
 #include <QMessageBox>
 #include <QFile>
+#include <cstdlib>
+#include <future>
+#include "../3drenderer/v3dr_qualitycontrolDialog.h"
+#include "../3drenderer/v3dr_onlineuserdialog.h"
+#include "v3d_application.h"
 #ifdef __ALLOW_VR_FUNCS__
 #include "../vrrenderer/V3dR_Communicator.h"
 #endif
@@ -66,6 +74,7 @@
 
 using namespace terafly;
 using namespace iim;
+using json = nlohmann::json;
 
 string PMain::HTwelcome = "Go to <i>File > Open volume</i> and select From the file dialog, select any of volume resolutions starting with \"RES\". To change volume import options, go to <i>Options > Import</i>.";
 string PMain::HTbase =    "<b>What's this?</b><br><i>Move the mouse over an object and its description will be displayed here.</i>";
@@ -90,7 +99,15 @@ string PMain::HTquickscan = "<i>QuickScan</i>: a scrollable maximum-intensity-pr
 
 PMain* PMain::uniqueInstance = 0;
 
+std::unique_ptr<LoadManageWidget> PMain::managewidget_ptr=nullptr;
 V3dR_Communicator* PMain::Communicator=0;
+string PMain::image_path = "";
+
+string PMain::hostIp;
+string PMain::braintellServerAddress;
+string PMain::dbmsServerAddress;
+string PMain::apiVersion;
+UserInfo PMain::userinfo;
 
 PMain* PMain::instance(V3DPluginCallback2 *callback, QWidget *parent)
 {
@@ -120,7 +137,7 @@ PMain* PMain::getInstance()
     else
     {
         tf::warning("TeraFly not yet instantiated", __itm__current__function__);
-        QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
+//        QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
 		return 0;
     }
 }
@@ -128,6 +145,24 @@ PMain* PMain::getInstance()
 void PMain::uninstance()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+
+    if(Communicator && Communicator->socket)
+    {
+        Communicator->socket->deleteLater();
+        Communicator->socket=0;
+    }
+    if(Communicator && Communicator->qcDialog){
+        Communicator->qcDialog->deleteLater();
+        Communicator->qcDialog=0;
+    }
+    if(Communicator && Communicator->onlineUserDialog){
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
+    }
+    if(Communicator){
+        delete Communicator;
+        Communicator = 0;
+    }
 
     CImport::uninstance();
     PDialogImport::uninstance();
@@ -148,6 +183,13 @@ void PMain::uninstance()
 PMain::~PMain()
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
+}
+
+QIcon PMain::getIcon(QString path, int w, int h){
+    QPixmap pixmap(path);
+    QPixmap scaledPixmap = pixmap.scaled(w, h, Qt::KeepAspectRatio);
+    QIcon icon(scaledPixmap);
+    return icon;
 }
 
 PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
@@ -191,7 +233,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     closeVolumeAction = new QAction(QIcon(":/icons/close.png"), "Close image", this);
     //saveandchangetype=new QAction(QIcon(":/icons/changetype.png"),"Change curren types",this);
     //returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
-    loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
+    loadAnnotationsAction = new QAction(getIcon(":/icons/open_ano.png", 50, 50), "Load annotations", this);
     saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
     saveAnnotationsAfterRemoveDupNodesAction=new QAction("Remove dup nodes before saving annotations",this);
     saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
@@ -242,32 +284,73 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
+//    fileMenu->setStyleSheet("QMenu::item { min-height: 30px; }");
 #ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
-    //        collaborateMenu=menuBar->addMenu("Collaborate");
-    //        loginAction=new QAction("Login",this);
-    //        logoutAction=new QAction("Logout",this);
-    //        importAction=new QAction("Import annotation to cloud",this);
-    //        downAction=new QAction("Download annotation from cloud",this);
-    //        loadAction= new QAction("Load annotation and collaborate",this);
+    collaborateMenu=menuBar->addMenu("Collaborate");
 
-    //        collaborateMenu->addAction(loginAction);
-    //        collaborateMenu->addAction(importAction);
-    //        collaborateMenu->addAction(downAction);
-    //        collaborateMenu->addAction(loadAction);
-    //        collaborateMenu->addAction(logoutAction);
+    //    configAction=new QAction("Config",collaborateMenu);
+    //    collaborateMenu->addAction(configAction);
+    //    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
 
-    //        connect(loginAction,SIGNAL(triggered()),this,SLOT(login()));
-    //        connect(logoutAction,SIGNAL(triggered()),this,SLOT(logout()));
-    //        connect(importAction,SIGNAL(triggered()),this,SLOT(import()));
-    //        connect(downAction,SIGNAL(triggered()),this,SLOT(download()));
-    //        connect(loadAction,SIGNAL(triggered()),this,SLOT(load()));
+    loadAction=new QAction("Load Reconstruction From Server",collaborateMenu);
+    collaborateMenu->addAction(loadAction);
+    connect(loadAction,SIGNAL(triggered()),this,SLOT(LoadFromServer()));
 
-    //        logoutAction->setEnabled(false);
-    //        importAction->setEnabled(false);
-    //        downAction->setEnabled(false);
-    //        loadAction->setEnabled(false);
-        //managesocket=0;
+    sendSomaPosAction=new QAction("Send Soma Position",collaborateMenu);
+    collaborateMenu->addAction(sendSomaPosAction);
+    connect(sendSomaPosAction,SIGNAL(triggered()),this,SLOT(sendSomaPosition()));
+
+    analyzeMenu=collaborateMenu->addMenu("Analyze");
+    somaNearByAction=new QAction("Analyze points near soma", analyzeMenu);
+    analyzeMenu->addAction(somaNearByAction);
+    connect(somaNearByAction,SIGNAL(triggered()),this,SLOT(analyzeSomaNearBy()));
+
+    colorMutationAction=new QAction("Analyze color mutations", analyzeMenu);
+    analyzeMenu->addAction(colorMutationAction);
+    connect(colorMutationAction,SIGNAL(triggered()),this,SLOT(analyzeColorMutation()));
+
+    dissociativeAction=new QAction("Analyze Isolated branches", analyzeMenu);
+    analyzeMenu->addAction(dissociativeAction);
+    connect(dissociativeAction,SIGNAL(triggered()),this,SLOT(analyzeDissociative()));
+
+    angleAction=new QAction("Analyze the Angles of dendrite bifurcations", analyzeMenu);
+    analyzeMenu->addAction(angleAction);
+    connect(angleAction,SIGNAL(triggered()),this,SLOT(analyzeAngle()));
+
+    defineSomaAction=new QAction("Define Soma",collaborateMenu);
+    collaborateMenu->addAction(defineSomaAction);
+    connect(defineSomaAction,SIGNAL(triggered()),this,SLOT(defineSoma()));
+
+    //    openSwcManagerClientAction=new QAction("Data Management Client", collaborateMenu);
+    //    collaborateMenu->addAction(openSwcManagerClientAction);
+    //    connect(openSwcManagerClientAction,SIGNAL(triggered()),this,SLOT(openSwcManagerClient()));
+    //    openSwcManagerClientAction->setDisabled(false);
+
+    qcManagerAction = new QAction("Quality Control Manager", collaborateMenu);
+    collaborateMenu->addAction(qcManagerAction);
+    connect(qcManagerAction, SIGNAL(triggered()), this, SLOT(openQcManager()));
+
+    onlineUsersAction = new QAction("Check Online Users", collaborateMenu);
+    collaborateMenu->addAction(onlineUsersAction);
+    connect(onlineUsersAction, SIGNAL(triggered()), this, SLOT(openOnlineUserDialog()));
+
+    disconnectAction = new QAction("Disconnect From Server", collaborateMenu);
+    collaborateMenu->addAction(disconnectAction);
+    connect(disconnectAction, SIGNAL(triggered()), this, SLOT(disconnectFromServer()));
+
+    //    defineSomaAction->setEnabled(false);
+
+    //    userMenu=collaborateMenu->addMenu("Option");
+    //    configAction=new QAction("Config",userMenu);
+    //    connect(configAction,SIGNAL(triggered()),this,SLOT(configApp()));
+
+    //    userMenu->addAction(configAction);
+    Communicator=nullptr;
+    userView=nullptr;
+    timerCheckConn = new QTimer(this);
+    connect(timerCheckConn, SIGNAL(timeout()), this, SLOT(checkConnection()));
+
 #endif
     /*---------------------------------------------------*/
 
@@ -977,14 +1060,23 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 	/* --------------------- forth row ---------------------- */
 	teraflyVRView = new QPushButton("See in VR",0);
 	teraflyVRView->setToolTip("You can see current image in VR environment.");
-	collaborationVRView = new QPushButton("Collaborate in VR",0);
-	collaborationVRView->setToolTip("Start collaboration mode with VR.");
-	
+    collaborationVRView = new QPushButton("Collaborate in CAR-VR",0);
+    collaborationVRView->setToolTip("Start collaboration mode with VR.");
+
+    collautotrace=new QPushButton("start autotrace",0);//HL
+    collautotrace->setToolTip("staty autotrace at a small block in col_mode ");
+    collautotrace->setDisabled(true);
+
 	QWidget* VR_buttons = new QWidget();
 	QHBoxLayout *VR_buttons_layout = new QHBoxLayout();
 	VR_buttons_layout->addWidget(teraflyVRView, 1);
     VR_buttons_layout->addWidget(collaborationVRView, 1);
-	VR_buttons->setLayout(VR_buttons_layout);
+
+    QVBoxLayout *col_trace_layout=new QVBoxLayout();
+    col_trace_layout->addLayout(VR_buttons_layout);
+    col_trace_layout->addWidget(collautotrace,1);
+
+    VR_buttons->setLayout(VR_buttons_layout);
 	localviewer_panel_layout->addWidget(VR_buttons,0);
 #endif
     localviewer_panel_layout->setContentsMargins(10,5,10,5);
@@ -1137,7 +1229,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     layout->setSpacing(0);
     setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
+    setWindowTitle(QString("CAR-WS v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
     // signals and slots
@@ -1289,8 +1381,8 @@ void PMain::reset()
 //    T0_sbox->setValue(0);
 //    T1_sbox->setValue(0);
     frameCoord->setText("");
-    refSys->setXRotation(200);
-    refSys->setYRotation(50);
+    refSys->setXRotation(180);
+    refSys->setYRotation(40);
     refSys->setZRotation(0);
     refSys->setFilled(true);
     refSys->setDims(1,1,1);
@@ -2371,6 +2463,14 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
             info_page->showVirtualPyramidTab();
         }
 
+        // 获取屏幕尺寸
+        QRect screenGeometry = QApplication::primaryScreen()->geometry();
+        int screenWidth = screenGeometry.width();
+        int screenHeight = screenGeometry.height();
+        int curWidth = uniqueInstance->width();
+        uniqueInstance->resize(curWidth, screenHeight - 100);
+
+        new_win->resize(screenWidth - curWidth - 100, screenHeight - 100);
     }
 
     //resetting some widgets
@@ -2404,8 +2504,11 @@ void PMain::closeEvent(QCloseEvent *evt)
         }
         else
         {
-            evt->accept();
             PMain::uninstance();
+            evt->accept();
+
+            V3dApplication::getMainWindow()->close();
+            V3dApplication::getInstance()->deleteLater();
         }
     }
 }
@@ -2864,9 +2967,19 @@ void PMain::doTeraflyVRView()
     }
 }
 
+void PMain::doimageVRView(bool flag){
+    CViewer *cur_win = CViewer::getCurrent();
+    cur_win->view3DWidget->doimageVRView(flag);
+}
+
+void PMain::showPMain(){
+    this->show();
+}
+
 void PMain::doCollaborationVRView()
 {
 	qDebug()<<"PMain::doCollaborationVRView()";
+    timerCheckConn->stop();
 	try
     {
         CViewer *cur_win = CViewer::getCurrent();
@@ -2881,6 +2994,8 @@ void PMain::doCollaborationVRView()
 			cur_win->view3DWidget->collaborationMaxResolution = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
 			cur_win->view3DWidget->Resindex = CViewer::getCurrent()->volResIndex;
             cur_win->view3DWidget->doimageVRView(true);
+            this->show();
+            timerCheckConn->start(3000);
             //cur_win->storeAnnotations();
             //this->show();		
 
@@ -3945,9 +4060,926 @@ int PMain::getCViewerID()
 }
 #endif
 
-#ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
+#ifdef __ALLOW_VR_FUNCS__
+
+void PMain::configApp()
+{
+    QSettings settings("HHMI", "Vaa3D");
+
+    bool ok;
+    auto UserName = QInputDialog::getText(0, "UserName","Please enter the UserName:", QLineEdit::Normal,settings.value("UserName").toString(), &ok);
+    if(ok)
+        settings.setValue("UserName", UserName);
+
+    auto UserPasswd = QInputDialog::getText(0, "UserPasswd","Please enter the UserPasswd:", QLineEdit::Normal,settings.value("UserPasswd").toString(), &ok);
+    if(ok)
+        settings.setValue("UserPasswd", UserPasswd);
+
+}
+
+void PMain::LoadFromServer()
+{
+    CViewer *cur_win = CViewer::getCurrent();
+    if(!cur_win)
+    {
+        QMessageBox::information(this, tr("Error"),tr("please load the brain data."));
+        return;
+    }
+    QSettings settings("HHMI", "CAR");
+    if(!settings.contains("UserName") || !settings.contains("UserPasswd")){
+        QMessageBox::information(0,tr("Message "),
+                                 tr("Please enter from the main screen of CAR"),
+                                 QMessageBox::Ok);
+        return;
+    }
+
+    userinfo.name=settings.value("UserName").toString();
+    userinfo.passwd=settings.value("UserPasswd").toString();
+    qDebug() << userinfo.passwd;
+    //    userinfo.colorid = settings.value("UserID").toInt();
+
+    // 读取 JSON 配置文件
+    string configFilePath = QCoreApplication::applicationDirPath().toStdString() + "/config.json";
+    std::ifstream configFile(configFilePath);
+    if (!configFile.is_open()) {
+        std::cerr << "Failed to open config file." << std::endl;
+    }
+
+    json config;
+    configFile >> config;
+
+    // 读取配置项
+    if(config.contains("hostIp")){
+        PMain::hostIp = config["hostIp"];
+        std::cout << "hostIp: " << hostIp << std::endl;
+    }
+    else{
+        std::cerr << "Failed to read hostIp from config file." << std::endl;
+    }
+
+    if(config.contains("braintellServerAddress")){
+        PMain::braintellServerAddress = config["braintellServerAddress"];
+        std::cout << "braintellServerAddress: " << braintellServerAddress << std::endl;
+    }
+    else{
+        std::cerr << "Failed to read braintellServerAddress from config file." << std::endl;
+    }
+
+    if(config.contains("dbmsServerAddress")){
+        PMain::dbmsServerAddress = config["dbmsServerAddress"];
+        std::cout << "dbmsServerAddress: " << dbmsServerAddress << std::endl;
+    }
+    else {
+        std::cerr << "Failed to read dbmsServerAddress from config file." << std::endl;
+    }
+
+    if(config.contains("apiVersion")){
+        PMain::apiVersion = config["apiVersion"];
+        std::cout << "apiVersion: " << apiVersion << std::endl;
+    }
+    else {
+        std::cerr << "Failed to read apiVersion from config file." << std::endl;
+    }
+
+    LoadManageWidget::HostAddress=QString::fromStdString(braintellServerAddress);
+    LoadManageWidget::DBMSAddress=QString::fromStdString(dbmsServerAddress);
+    LoadManageWidget::ApiVersion=QString::fromStdString(apiVersion);
+
+    //    if(managewidget_ptr){
+    //        qDebug()<<"delete managewidget";
+    //        managewidget_ptr.reset();
+    //        managewidget_ptr=nullptr;
+    //    }
+
+    if(managewidget_ptr == nullptr){
+        //更新一下用户信息
+        managewidget_ptr = std::make_unique<LoadManageWidget>(&userinfo);
+        connect(managewidget_ptr.get(),SIGNAL(triggerStartCollaborate(QString)),this,SLOT(startCollaborate(QString)));
+    }
+
+    managewidget_ptr->raise();
+    managewidget_ptr->show();
+}
+
+bool PMain::startCollaborate(QString port)
+{
+    qDebug()<<"enter startCollaborate========================================";
+    managewidget_ptr->hide();
+
+    if(!Communicator)
+    {
+        Communicator=new V3dR_Communicator();
+    }
+    else{
+        Communicator->CreatorMarkerPos = 0;
+        Communicator->CreatorMarkerRes = 0;
+        Communicator->resetdatatype();
+
+        //        Communicator->socket = new QTcpSocket(Communicator);
+    }
+
+    //    disconnect(Communicator->timer_iniconn, SIGNAL(timeout()), 0, 0);
+    //    connect(Communicator->timer_iniconn, SIGNAL(timeout()), Communicator, SLOT(initConnect()));//初始化客户端未获得连接时，每五秒自动连接一次
+
+    //    disconnect(Communicator->m_timerConnect, SIGNAL(timeout()), 0, 0);
+    //    connect(Communicator->m_timerConnect, SIGNAL(timeout()), Communicator, SLOT(autoReconnect()));
+
+    //    disconnect(Communicator->timer_exit, SIGNAL(timeout()), 0, 0);
+    //    connect(Communicator->timer_exit, SIGNAL(timeout()), Communicator, SLOT(autoExit()));
+
+    qDebug()<<Communicator;
+
+    if(Communicator->socket){
+        delete Communicator->socket;
+        Communicator->socket=0;
+        timerCheckConn->stop();
+        Communicator->resetdatatype();
+    }
+    Communicator->socket=new QTcpSocket();
+    if(Communicator->qcDialog){
+        delete Communicator->qcDialog;
+        Communicator->qcDialog=0;
+    }
+    if(Communicator->onlineUserDialog){
+        delete Communicator->onlineUserDialog;
+        Communicator->onlineUserDialog=0;
+    }
+
+    int maxresindex = terafly::CImport::instance()->getResolutions()-1;
+    IconImageManager::VirtualVolume* vol = terafly::CImport::instance()->getVolume(maxresindex);
+    qDebug()<<vol->getDIM_H();
+    Communicator->ImageMaxRes = XYZ(vol->getDIM_H(),vol->getDIM_V(),vol->getDIM_D());
+    teraflyVRView->setDisabled(false);
+    collaborationVRView->setEnabled(true);
+    collautotrace->setEnabled(false);
+
+    disconnect(Communicator,SIGNAL(load(QString)), 0, 0);
+    // load信号会在接收到服务器传来的startCollaborate消息后触发
+    connect(Communicator,SIGNAL(load(QString)),this,SLOT(getAndLoadAno(QString)),Qt::DirectConnection);
+
+    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+
+    cur_win->getGLWidget()->TeraflyCommunicator = this->Communicator;
+    Communicator->userId=QString::number(userinfo.id);
+    Communicator->userName=userinfo.name;
+    Communicator->password=userinfo.passwd;
+    qDebug()<<Communicator->userId;
+    qDebug()<<Communicator->userName;
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSeg(QString, int)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString, int)),
+            cur_win->getGLWidget(),SLOT(newThreadAddSeg(QString, int)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addManySegs(QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addManySegs(QString)),
+            cur_win->getGLWidget(),SLOT(CollaAddManySegs(QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delSeg(QString,int)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delSeg(QString,int)),
+            cur_win->getGLWidget(),SLOT(newThreadDelSeg(QString,int)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(splitSeg(QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(splitSeg(QString)),
+            cur_win->getGLWidget(),SLOT(newThreadSplitSeg(QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addMarker(QString,QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addMarker(QString,QString)),
+            cur_win->getGLWidget(),SLOT(newThreadAddMarker(QString,QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addManyMarkers(QString,QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addManyMarkers(QString,QString)),
+            cur_win->getGLWidget(),SLOT(newThreadAddManyMarkers(QString,QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(delMarker(QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(delMarker(QString)),
+            cur_win->getGLWidget(),SLOT(newThreadDelMarker(QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(retypeMarker(QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeMarker(QString)),
+            cur_win->getGLWidget(),SLOT(newThreadRetypeMarker(QString)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(retypeSeg(QString,int,int)), 0, 0);
+    //    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int)),
+    //            cur_win->getGLWidget(),SLOT(CollaRetypeSeg(QString,int)));
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(retypeSeg(QString,int,int)),
+            cur_win->getGLWidget(),SLOT(newThreadRetypeSeg(QString,int,int)));
+
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(connectSeg(QString)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(connectSeg(QString)),
+            cur_win->getGLWidget(),SLOT(newThreadConnectSeg(QString)));
+
+    connect(Communicator->socket,SIGNAL(readyRead()),Communicator,SLOT(onReadyRead()));
+    connect(Communicator->socket,SIGNAL(connected()),Communicator,SLOT(onConnected()));
+
+    connect(Communicator->socket,SIGNAL(disconnected()),this,SLOT(onMessageDisConnect()));
+    connect(Communicator->socket,SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onMessageError(QAbstractSocket::SocketError)));
+
+    disconnect(Communicator,SIGNAL(exit()), 0, 0);
+    connect(Communicator,SIGNAL(exit()), this, SLOT(handleExit()));
+
+    //    disconnect(Communicator,SIGNAL(updateuserview(QString)), 0, 0);
+    //    connect(Communicator,SIGNAL(updateuserview(QString)),this,SLOT(updateuserview(QString)));
+    disconnect(Communicator,SIGNAL(updateOnlineUsers(QString)), 0, 0);
+    connect(Communicator,SIGNAL(updateOnlineUsers(QString)),this,SLOT(updateOnlineUserList(QString)));
+
+    disconnect(Communicator,SIGNAL(reloadFile(QString)), 0, 0);
+    connect(Communicator,SIGNAL(reloadFile(QString)),this,SLOT(startCollaborate(QString)));
+
+    disconnect(Communicator,SIGNAL(setDefineSomaActionState(bool)), 0, 0);
+    connect(Communicator,SIGNAL(setDefineSomaActionState(bool)),this,SLOT(setDefineSomaState(bool)));
+
+    disconnect(Communicator, SIGNAL(resetConn(QString)), 0, 0);
+    connect(Communicator, SIGNAL(resetConn(QString)), this, SLOT(resetConnection(QString)));
+
+    Communicator->setAddressIP(QString::fromStdString(hostIp));
+
+    Communicator->setPort(port.toUInt());
+
+    qDebug()<<Communicator->userId;
+
+    Communicator->socket->connectToHost(QString::fromStdString(hostIp), port.toUInt());
+    qDebug() << "---------" << QString::fromStdString(hostIp) << " " << port.toUInt() << "\n";
+    //    Communicator->timer_iniconn->start(5000);
+
+    if(!Communicator->socket->waitForConnected(1000*5))
+    {
+        QString msg = "connect failed";
+        QMessageBox messageBox;
+        messageBox.setWindowTitle(tr("Information"));
+        messageBox.setText(tr(msg.toStdString().c_str()));
+        messageBox.setIcon(QMessageBox::Information);
+        QTimer::singleShot(3000, &messageBox, SLOT(accept()));
+        messageBox.exec();
+
+        //        QMessageBox::information(0,tr("Message "),
+        //                         tr("connect failed"),
+        //                         QMessageBox::Ok);
+
+        Communicator->socket->deleteLater();
+        Communicator->socket=nullptr;
+        Communicator->qcDialog->deleteLater();
+        Communicator->qcDialog=nullptr;
+        if(Communicator->onlineUserDialog){
+            Communicator->onlineUserDialog->deleteLater();
+            Communicator->onlineUserDialog=nullptr;
+        }
+        Communicator->deleteLater();
+        Communicator=nullptr;
+        timerCheckConn->stop();
+        return false;
+    }
+    if(!timerCheckConn->isActive()){
+        timerCheckConn->start(3000);
+    }
+    return true;
+}
+
+//void PMain::getAno(QString anoFile){
+//    QString savedDirPath = QCoreApplication::applicationDirPath()+"/loaddata";
+//    QDir dir(savedDirPath);
+//    if(!dir.exists()){
+//        dir.mkdir(savedDirPath);
+//    }
+
+//    QNetworkRequest request;
+//    QNetworkAccessManager accessManager;
+//    request.setUrl(QUrl(urlToDBMS+"getanoimage"));
+//    request.setHeader(QNetworkRequest::ContentTypeHeader,"application/json");
+//    QVariantMap userVerify;
+//    userVerify.insert("name",userinfo.name);
+//    userVerify.insert("passwd",userinfo.passwd);
+//    QVariantMap param;
+//    param.insert("user",userVerify);
+//    QJson::Serializer serializer;
+//    bool ok;
+//    QByteArray json=serializer.serialize(param,&ok);
+//    qDebug()<<json;
+//    QNetworkReply* reply = accessManager.post(request, json);
+//    if(!reply)
+//        qDebug()<<"reply = nullptr";
+
+//    QEventLoop eventLoop;
+//    connect(reply, SIGNAL(finished()),&eventLoop,SLOT(quit()));
+//    eventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+
+//    int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+//    qDebug()<<"getAno"<<code;
+//    if(code==200)
+//    {
+//        // 读取服务器端文件数据
+//        QByteArray data = reply->readAll();
+
+//        // 定义本地文件路径
+//        QString localFilePath = savedDirPath + "/" + anoFile;
+
+//        // 创建QFile对象用于写入本地文件
+//        QFile localFile(localFilePath);
+//        if (localFile.open(QIODevice::WriteOnly)) {
+//            // 写入文件
+//            localFile.write(data);
+//            localFile.close();
+//            qDebug() << "ano File saved to: " << localFilePath;
+//        } else {
+//            qDebug() << "Failed to open local file for writing.";
+//        }
+//    }
+//    else{
+//        qDebug() << "Error during HTTP request: " << reply->errorString();
+//        QMessageBox::information(0,tr("Message "),
+//                                 tr("get file error!"),
+//                                 QMessageBox::Ok);
+//    }
+
+//    reply->deleteLater();
+
+//}
+
+void PMain::getAndLoadAno(QString anoFile){
+    //    getAno(anoFile);
+    ColLoadANO(anoFile);
+}
+
+void PMain::ColLoadANO(QString ANOfile)
+{
+    qDebug()<<"ColoadAno_anofile"<<ANOfile;
+    CViewer *cur_win = CViewer::getCurrent();
+    QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
+    QStringList anoList=QDir(loaddir).entryList(QDir::Files);
+    qDebug()<<anoList;
+    if(!anoList.contains(ANOfile))
+    {
+        qDebug()<<"cannot find load data "<<ANOfile;
+        // 做一些处理？
+        QMessageBox::information(0,tr("Warning "),
+                                 tr("Cannot find anofile!"),
+                                 QMessageBox::Ok);
+        return;
+    }
+    QString ANOpath=QCoreApplication::applicationDirPath()+"/loaddata/"+ANOfile;
+    qDebug()<<"anopath"<<ANOpath;
+
+    //新增
+    //    QFileInfo fileInfo = QFileInfo(ANOpath);
+    //    int interval = fileInfo.lastModified().msecsTo(QDateTime::currentDateTime());
+    //    if(interval > 1000*60*1)
+    //    {
+    //        qDebug()<<"file data error"<<ANOfile;
+    //        // 做一些处理？
+    //        return;
+    //    }
+
+    CAnnotations::getInstance()->load(ANOpath.toStdString().c_str());
+
+    NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
+    // save current cursor and set wait cursor
+
+    QCursor cursor = cur_win->view3DWidget->cursor();
+    if(PAnoToolBar::isInstantiated())
+        PAnoToolBar::instance()->setCursor(Qt::WaitCursor);
+    CViewer::setCursor(Qt::WaitCursor);
+
+    // load
+    cur_win->loadAnnotations();
+    saveAnnotationsAction->setEnabled(false);
+    //saveAnnotationsAfterRemoveDupNodesAction->setEnabled(true);
+    virtualSpaceSizeMenu->setEnabled(false);
+
+    myRenderer_gl1::cast(static_cast<Renderer_gl1*>(cur_win->getGLWidget()->getRenderer()))->isTera = true;
+
+    // reset saved cursor
+    CViewer::setCursor(cursor);
+    if(PAnoToolBar::isInstantiated())
+        PAnoToolBar::instance()->setCursor(cursor);
+    annotationChanged = true;
+    updateOverview();
+
+    Communicator->qcDialog=new V3dr_qualitycontrolDialog(cur_win->getGLWidget());
+    connect(Communicator,SIGNAL(updateQcInfo()),Communicator->qcDialog,SLOT(updateInfo()));
+    connect(Communicator,SIGNAL(updateQcSegsCounts()),Communicator->qcDialog,SLOT(updateSegsCounts()));
+    connect(Communicator,SIGNAL(updateQcMarkersCounts()),Communicator->qcDialog,SLOT(updateMarkersCounts()));
+    // 获取窗口的左上角坐标
+    QPoint topLeftPoint = cur_win->getGLWidget()->geometry().topLeft();
+    Communicator->onlineUserDialog=new V3dr_onlineusersDialog(topLeftPoint);
+
+    V3dR_GLWidget::noTerafly=false;
+    return;
+
+}
+void PMain::updateuserview(QString userlist)
+{
+    if(userView==nullptr)
+    {
+        userView=new QListWidget;
+        tabs->addTab(userView,"Online Users");
+    }
+
+    userView->clear();
+    userView->addItems(userlist.split(";"));
+
+}
+
+void PMain::updateOnlineUserList(QString userList){
+    vector<QString> users;
+    QStringList list = userList.split(",");
+    for(auto it = list.begin(); it != list.end(); it++){
+        users.push_back(*it);
+    }
+    if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog){
+        vector<QString> oldUsers = this->Communicator->onlineUserDialog->getUserList();
+        this->Communicator->onlineUserDialog->setUserList(users);
+
+        if(oldUsers.size() == 0){
+            return;
+        }
+
+        QString specialUser = "";
+
+        if(users.size() > oldUsers.size()){
+            for(auto it = users.begin(); it != users.end(); it++){
+                if(std::find(oldUsers.begin(), oldUsers.end(), *it) != oldUsers.end()){
+                    continue;
+                }
+                else{
+                    specialUser = *it;
+                    break;
+                }
+            }
+            if(specialUser != "" && specialUser != this->Communicator->userName){
+                QString msg = specialUser + " entered the room";
+                QMessageBox messageBox;
+                messageBox.setWindowTitle(tr("Information"));
+                messageBox.setText(tr(msg.toStdString().c_str()));
+                messageBox.setIcon(QMessageBox::Information);
+                QTimer::singleShot(800, &messageBox, SLOT(accept()));
+                messageBox.exec();
+                //                QString msg = specialUser + " entered the room";
+                //                QMessageBox::information(0,tr("Message "),
+                //                                         tr(msg.toStdString().c_str()),
+                //                                         QMessageBox::Ok);
+            }
+        }
+
+        if(users.size() < oldUsers.size()){
+            for(auto it = oldUsers.begin(); it != oldUsers.end(); it++){
+                if(std::find(users.begin(), users.end(), *it) != users.end()){
+                    continue;
+                }
+                else{
+                    specialUser = *it;
+                    break;
+                }
+            }
+            if(specialUser != "" && specialUser != this->Communicator->userName){
+                QString msg = specialUser + " left the room";
+                QMessageBox messageBox;
+                messageBox.setWindowTitle(tr("Information"));
+                messageBox.setText(tr(msg.toStdString().c_str()));
+                messageBox.setIcon(QMessageBox::Information);
+                QTimer::singleShot(800, &messageBox, SLOT(accept()));
+                messageBox.exec();
+
+                //                QMessageBox::information(0,tr("Message "),
+                //                                         tr(msg.toStdString().c_str()),
+                //                                         QMessageBox::Ok);
+            }
+        }
+    }
+}
+
+void PMain::onMessageDisConnect()
+{
+    qDebug() <<"Disconnection!";
+    if(Communicator->socket)
+        qDebug()<<Communicator->socket->errorString();
+
+    //    QMessageBox::information(0,tr("Message "),
+    //                             tr("Server rejected connect! Further operations won't be synced!"),
+    //                             QMessageBox::Ok);
+    //    if(this->Communicator->m_timerConnect->isActive()){
+    //        return;
+    //    }
+
+    //    else{
+    qDebug()<<Communicator->socket;
+    if(Communicator->socket)
+    {
+        qDebug()<<this->Communicator->socket;
+        Communicator->socket->close();
+        Communicator->socket->deleteLater();
+        Communicator->socket=0;
+        Communicator->qcDialog->deleteLater();
+        Communicator->qcDialog=nullptr;
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
+        Communicator->resetdatatype();
+    }
+    //    this->Communicator ->deleteLater();
+    //    this->Communicator = nullptr;
+    //    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    //    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+
+    if(userView)
+    {
+        userView->deleteLater();
+        userView=nullptr;
+    }
+
+    //  this->Communicator->b_isConnectedState = false;
+    //  this->Communicator->m_timerConnect->start(5000);
 
 
+    //    this->Communicator->socket->deleteLater();
+    //    this->Communicator ->deleteLater();
+    //    this->Communicator = nullptr;
+    //    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    //    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+
+    //    if(userView)
+    //    {
+    //        userView->deleteLater();
+    //        userView=nullptr;
+    //    }
+}
+
+void PMain::onMessageError(QAbstractSocket::SocketError socketError)
+{
+    qDebug() <<"Error!";
+    if(Communicator->socket)
+        qDebug()<<Communicator->socket->errorString();
+
+    const QMetaObject & mo = QAbstractSocket::staticMetaObject;
+    QMetaEnum me = mo.enumerator(mo.indexOfEnumerator("SocketError"));
+    qDebug()<<me.valueToKey(socketError);
+
+    this->Communicator->b_isConnectedState = false;
+    //    this->Communicator->m_timerConnect->start(5000);
+    //    if(me.valueToKey(socketError)=="SocketTimeoutError"){
+    //        QMessageBox::information(0,tr("Message "),
+    //                                 tr("Disconnection! Further operations won't be synced! Reconnect will start"),
+    //                                 QMessageBox::Ok);
+    //        this->Communicator->m_timerConnect->start(5000);
+    //    }
+    //    else if(me.valueToKey(socketError)=="RemoteHostClosedError"){
+    //        QMessageBox::information(0,tr("Message "),
+    //                             tr("Disconnection! Further operations won't be synced! Please restart the software."),
+    //                             QMessageBox::Ok);
+    //    }else{
+    //        QMessageBox::information(0,tr("Message "),
+    //                                 tr("Connect failed!"),
+    //                                 QMessageBox::Ok);
+    //    }
+    //    QMessageBox::information(0,tr("Message "),
+    //                             tr("Disconnection! Further operations won't be synced! Please try to reload the swcfile."),
+    //                             QMessageBox::Ok);
+    QString msg = "Disconnection! Further operations won't be synced!";
+    QMessageBox messageBox;
+    messageBox.setWindowTitle(tr("Information"));
+    messageBox.setText(tr(msg.toStdString().c_str()));
+    messageBox.setIcon(QMessageBox::Information);
+    QTimer::singleShot(800, &messageBox, SLOT(accept()));
+    messageBox.exec();
+
+    //    this->Communicator->socket->deleteLater();
+    //    this->Communicator ->deleteLater();
+    //    this->Communicator = nullptr;
+    //    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    //    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+    //    QMessageBox::information(0,tr("Message "),
+    //                             tr("Error! Further operations won't be synced!"),
+    //                             QMessageBox::Ok);
+    //    if(userView)
+    //    {
+    //        userView->deleteLater();
+    //        userView=nullptr;
+    //    }
+}
+
+void PMain::handleExit(){
+    qDebug()<<this->Communicator->socket;
+    if(this->Communicator->socket)
+    {
+        this->Communicator->socket->deleteLater();
+        this->Communicator->socket=0;
+        timerCheckConn->stop();
+        Communicator->qcDialog->deleteLater();
+        Communicator->qcDialog=0;
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
+        Communicator->resetdatatype();
+    }
+    //    this->Communicator ->deleteLater();
+    //    this->Communicator = nullptr;
+    //    terafly::CViewer *cur_win = terafly::CViewer::getCurrent();
+    //    cur_win->getGLWidget()->TeraflyCommunicator = nullptr;
+
+    if(userView)
+    {
+        userView->deleteLater();
+        userView=nullptr;
+    }
+}
+
+void PMain::analyzeSomaNearBy(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_SomaNearBy:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::analyzeColorMutation(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_ColorMutation:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::analyzeDissociative(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_Dissociative:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::analyzeAngle(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/ANALYZE_Angle:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::defineSoma(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/DEFINE_Soma:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::sendSomaPosition(){
+    if(this->Communicator && this->Communicator->socket){
+        Communicator->sendMsg(QString("/SEND_SomaPos:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::setDefineSomaState(bool flag){
+    defineSomaAction->setEnabled(flag);
+}
+
+void PMain::openSwcManagerClient(){
+    char formattedString[256];
+    // 设置要运行的程序的路径
+    const char* programDirPath = ((QCoreApplication::applicationDirPath()).toStdString() + "/thirdparty/SwcDbmsQtGuiClient_Win").c_str();
+    const char* programName = "SwcManagerClient.exe";
+
+    sprintf(formattedString, R"(start "" "%s/%s")", programDirPath, programName);
+
+    // 设置命令行参数（可选）
+
+    // 启动应用程序并返回一个 std::future 对象
+    std::future<int> resultFuture = std::async(std::launch::async, [&formattedString]() {
+        return system(formattedString);
+    });
+
+    // 等待应用程序完成并获取返回值
+    int result = resultFuture.get();
+
+    // 检查返回值
+    if (result == 0) {
+        std::cout << "Application exited successfully." << std::endl;
+    } else {
+        std::cout << "Failed to start or application exited with an error." << std::endl;
+    }
+}
+
+void PMain::openQcManager(){
+    if(this->Communicator && this->Communicator->socket && this->Communicator->qcDialog){
+        this->Communicator->qcDialog->show();
+        this->Communicator->qcDialog->raise();
+    }
+}
+
+void PMain::openOnlineUserDialog(){
+    if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog){
+        this->Communicator->onlineUserDialog->show();
+    }
+    if(this->Communicator && this->Communicator->socket && this->Communicator->onlineUserDialog==nullptr){
+        CViewer *cur_win = CViewer::getCurrent();
+        // 获取窗口的左上角坐标
+        QPoint topLeftPoint = cur_win->getGLWidget()->geometry().topLeft();
+        this->Communicator->onlineUserDialog=new V3dr_onlineusersDialog(topLeftPoint);
+    }
+}
+
+void PMain::disconnectFromServer(){
+    if(this->Communicator && this->Communicator->socket){
+        this->Communicator->socket->disconnectFromHost();
+        this->Communicator->socket->deleteLater();
+        this->Communicator->socket=0;
+        Communicator->qcDialog->deleteLater();
+        Communicator->qcDialog=0;
+        Communicator->onlineUserDialog->deleteLater();
+        Communicator->onlineUserDialog=nullptr;
+        Communicator->resetdatatype();
+    }
+    timerCheckConn->stop();
+    QString msg = "success!";
+    QMessageBox messageBox;
+    messageBox.setWindowTitle(tr("Information"));
+    messageBox.setText(tr(msg.toStdString().c_str()));
+    messageBox.setIcon(QMessageBox::Information);
+    QTimer::singleShot(800, &messageBox, SLOT(accept()));
+    messageBox.exec();
+}
+
+void PMain::getImagePath(QString path){
+    string old_path = image_path;
+    image_path = path.toStdString();
+    qDebug()<<"----------------- "<< QString::fromStdString(image_path);
+
+    //    if(this->Communicator && this->Communicator->socket){
+    //        this->Communicator->socket->deleteLater();
+    //        this->Communicator->socket=0;
+    //        Communicator->qcDialog->deleteLater();
+    //        Communicator->qcDialog=0;
+    //        Communicator->onlineUserDialog->deleteLater();
+    //        Communicator->onlineUserDialog=nullptr;
+    //        Communicator->resetdatatype();
+    //    }
+}
+
+void PMain::checkConnection(){
+    if(!Communicator->socket || Communicator->socket->state() != QAbstractSocket::ConnectedState){
+        QString msg = "Disconnection! Start Reconnecting...";
+        QMessageBox messageBox;
+        messageBox.setWindowTitle(tr("Information"));
+        messageBox.setText(tr(msg.toStdString().c_str()));
+        messageBox.setIcon(QMessageBox::Information);
+        QTimer::singleShot(800, &messageBox, SLOT(accept()));
+        messageBox.exec();
+        startCollaborate(LoadManageWidget::m_port);
+    }
+}
+
+void PMain::resetConnection(QString port){
+    startCollaborate(port);
+    timerCheckConn->start(3000);
+}
+
+//void PMain::checkConnectionForVR(){
+//    if(!Communicator->socket || Communicator->socket->state() != QAbstractSocket::ConnectedState){
+//        QString msg = "Disconnection! Start Reconnecting...";
+//        qDebug() << msg;
+//        if(startCollaborate(LoadManageWidget::m_port)){
+//            CViewer *cur_win = CViewer::getCurrent();
+//            while(cur_win && cur_win->view3DWidget && cur_win->view3DWidget->myvrwin && !cur_win->view3DWidget->myvrwin->isQuit){
+//                cur_win->view3DWidget->myvrwin->bQuit = true;
+//            }
+
+////                if(cur_win->view3DWidget->myvrwin->pMainApplication){
+////                    cur_win->view3DWidget->myvrwin->shutdown();
+////                    delete cur_win->view3DWidget->myvrwin;
+////                    cur_win->view3DWidget->myvrwin=nullptr;
+////                }
+////            }
+////            doCollaborationVRView();
+//        }
+//        else{
+//            CViewer *cur_win = CViewer::getCurrent();
+//            while(cur_win && cur_win->view3DWidget && cur_win->view3DWidget->myvrwin && !cur_win->view3DWidget->myvrwin->isQuit){
+//                cur_win->view3DWidget->myvrwin->bQuit = true;
+//            }
+////                if(cur_win->view3DWidget->myvrwin->pMainApplication){
+////                    cur_win->view3DWidget->myvrwin->shutdown();
+////                    delete cur_win->view3DWidget->myvrwin;
+////                    cur_win->view3DWidget->myvrwin=nullptr;
+////                }
+////            }
+//        }
+//        timerCheckConnVR->stop();
+//        timerCheckConn->start(3000);
+//    }
+//}
+
+//void PMain::startAutoTrace()
+//{
+//    const int blocksize=128;
+//    CViewer *cur_win = CViewer::getCurrent();
+//    if(cur_win->getGLWidget()->TeraflyCommunicator)
+//    {
+//        if(cur_win->getGLWidget()->TeraflyCommunicator->socket->state()!=QAbstractSocket::ConnectedState)
+//        {
+//            QMessageBox::information(this, tr("Error"),tr("you have been logout."));
+//            return;
+//        }
+//
+////        XYZ tempNode=cur_win->getGLWidget()->TeraflyCommunicator->AutoTraceNode;//Global
+//        XYZ center;//Global
+//
+//        center.x=int(tempNode.x);
+////        center.y=tempNode.y;
+////        center.x=tempNode.x+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_x);
+//        center.y=int(tempNode.y+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_y));
+////        center.z=tempNode.z+blocksize/2*(cur_win->getGLWidget()->TeraflyCommunicator->flag_z);
+//        center.z=int(tempNode.z);
+//
+//        CellAPO centerAPO;
+//        centerAPO.x=center.x;centerAPO.y=center.y;centerAPO.z=center.z;
+//        QList <CellAPO> List_APO_Write;
+//        List_APO_Write.push_back(centerAPO);
+//        writeAPO_file("V3APO.apo",List_APO_Write);//get .apo to get .v3draw
+//
+//        QList <ImageMarker> tmp1;
+//        ImageMarker startPoint;//Local
+//
+//        startPoint.x=blocksize/2+1;
+////        startPoint.y=blocksize/2;
+////        startPoint.x=tempNode.x-center.x+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_x*2;
+//        startPoint.y=tempNode.y-center.y+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_y*2;
+////        startPoint.z=tempNode.z-center.z+blocksize/2+cur_win->getGLWidget()->TeraflyCommunicator->flag_z*2;
+//         startPoint.z=blocksize/2+1.5;
+//
+//        qDebug()<<"global start point:"<<tempNode.x<<" "<<tempNode.y<<" "<<tempNode.z;
+//        qDebug()<<"flag:"<<cur_win->getGLWidget()->TeraflyCommunicator->flag_x<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_y<<" "<<cur_win->getGLWidget()->TeraflyCommunicator->flag_z;
+//        qDebug()<<"global center point:"<<center.x<<" "<<center.y<<" "<<center.z;
+//        qDebug()<<"local start point:"<<startPoint.x<<" "<<startPoint.y<<" "<<startPoint.z;
+//
+//
+//        tmp1.push_back(startPoint);
+//        writeMarker_file("./tmp.marker",tmp1);//app2 startPoint
+//        XYZ tempPara[]={cur_win->getGLWidget()->TeraflyCommunicator->ImageMaxRes,
+//                        tempNode,
+//                        startPoint
+//                        };
+//
+//        QRegExp pathEXP("(.*)RES(.*)");
+//        QString path;
+//        if(pathEXP.indexIn(currentPath)!=-1)
+//        {
+//            path=pathEXP.cap(1)+QString("RES(%1x%2x%3)").arg(tempPara->y).arg(tempPara->x).arg(tempPara->z);
+//        }
+//
+//        qDebug()<<"path:"<<path;
+//
+//        QDir dir("./");
+//        if(!dir.cd("testV3draw"))
+//        {
+//            dir.mkdir("testV3draw");
+//        }
+//        dir=QDir("testV3draw");
+//        {
+//            QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
+//            for(int i=0;i<file_list.size();i++)
+//            {
+//                    QFile *f=new QFile(file_list[i].filePath());
+//                    if(f->exists()) f->remove();
+//                    delete  f;
+//            }
+//        }
+//        QProcess p;
+//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_geometry/crop3d_image_series/cropped3DImageSeries.dll"
+//                  <<"/f"<<"cropTerafly"<<"/i"<<path<<"V3APO.apo"<<"./testV3draw/"
+//                  <<"/p"<<QString::number(blocksize)<<QString::number(blocksize)<<QString::number(blocksize));
+//        QString rawFileName=QString("%1.000_%2.000_%3.000.v3draw").arg(center.x).arg(center.y).arg(center.z);
+//
+//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe",QStringList()<<"/x"<<"C:/cmy_test/plugins/image_thresholding/Simple_Adaptive_Thresholding/ada_threshold.dll"
+//                            <<"/f"<<"adath"<<"/i"<<"./testV3draw/"+rawFileName<<"/o"<<QString("./testV3draw/thres_"+rawFileName));
+////        cout<<"e.g. v3d -x threshold -f adath -i input.raw -o output.raw -p 5 3"<<endl;
+//
+//        qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+//                  <<"/f"<<"app2"<<"/i"<< QString("./testV3draw/thres_"+rawFileName) <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
+//
+//         QFileInfoList file_list=dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot);
+//         QRegExp APP2Exp("(.*)_app2.swc");
+//         for(int i=0;i<file_list.size();i++)
+//         {
+////             qDebug()<<file_list.at(i).fileName();
+//             if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1&&file_list.at(i).fileName().contains(QString("thres_"+rawFileName)))
+//             {
+//                 emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
+//                 break;
+//             }
+//         }
+//        QRegExp v3drawExp("(.*).v3draw");
+//        if(v3drawExp.indexIn(file_list.at(0).fileName())!=-1)
+//        {
+//            qDebug()<<file_list.at(0).absolutePath();
+//            QString v3drawpath=file_list.at(0).absolutePath()+"/"+file_list.at(0).fileName();
+//            qDebug()<<p.execute("C:/cmy_test/vaa3d_msvc.exe", QStringList()<<"/x"<<"C:/cmy_test/plugins/neuron_tracing/Vaa3D_Neuron2/vn2.dll"
+//                      <<"/f"<<"app2"<<"/i"<< v3drawpath <<"/p"<<"./tmp.marker"<<QString::number(0)<<QString::number(-1));
+//            //delete v3draw
+////            QFile *f=new QFile(v3drawpath);
+////            if(f->exists()) f->remove();
+////            delete  f;
+
+//             file_list=dir.entryInfoList(QDir::Files);
+//             QRegExp APP2Exp("(.*)_app2.swc");
+//             for(int i=0;i<file_list.size();i++)
+//             {
+//                 if(APP2Exp.indexIn(file_list.at(i).fileName())!=-1)
+//                 {
+//                     emit signal_communicator_read_res(file_list.at(i).absolutePath()+"/"+file_list.at(i).fileName(),tempPara);//tempPara={MaxRes, start_global,start_local}
+//                     break;
+//                 }
+
+//             }
+//        }
+//    }
+
+//}
 #endif
 

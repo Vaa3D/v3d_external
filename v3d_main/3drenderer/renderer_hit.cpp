@@ -49,7 +49,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) Automatic reconstruction 
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include "../neuron_toolbox/vaa3d_neurontoolbox.h"
 #include "../terafly/src/control/CImport.h"
+#include "../terafly/src/control/CPlugin.h"
+#include "../terafly/src/control/CViewer.h"
 #include "v3d_application.h"
+#include <QWidget>
 
 #endif //test_main_cpp
 
@@ -438,13 +441,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     if (pluginsDir1.cd("plugins/Retrace")==true)
                     {
                         listAct.append(act = new QAction("", w)); act->setSeparator(true);
-                        listAct.append(actRetrace = new QAction("Retrace", w));
+//                        listAct.append(actRetrace = new QAction("Retrace", w));
                         listAct.append(app2Convenient = new QAction("app2Convenient", w));
 
-                        listAct.append(app2Terafly = new QAction("app2Terafly", w));
-                        listAct.append(app2MultiTerafly = new QAction("app2MultiTerafly", w));
-                        listAct.append(app2TeraflyWithPara = new QAction("app2TeraflyWithPara", w));
-                        listAct.append(app2MultiTeraflyWithPara = new QAction("app2MultiTeraflyWithPara", w));
+//                        listAct.append(app2Terafly = new QAction("app2Terafly", w));
+//                        listAct.append(app2MultiTerafly = new QAction("app2MultiTerafly", w));
+//                        listAct.append(app2TeraflyWithPara = new QAction("app2TeraflyWithPara", w));
+//                        listAct.append(app2MultiTeraflyWithPara = new QAction("app2MultiTeraflyWithPara", w));
 
                     }
 
@@ -974,23 +977,33 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 LIST_COLOR(listMarker, names[2]-1, w);
          //ALSO UPDATE THE TRIVIEW's marker color //by PHC 20140626
 #ifndef test_main_cpp
-        {
-            My4DImage* image4d = v3dr_getImage4d(_idep);
-            if (image4d)
-            {
-                if (names[2]-1>=0 && names[2]-1<listMarker.size())
                 {
-                    RGBA8 cc = listMarker.at(names[2]-1).color;
-                    LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
-                    s->color = cc;
+                    My4DImage* image4d = v3dr_getImage4d(_idep);
+                    if (image4d){
+                        if (names[2]-1>=0 && names[2]-1<listMarker.size()){
+                            RGBA8 cc = listMarker.at(names[2]-1).color;
+                            LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(names[2]-1)));
+                            s->color = cc;
+                            terafly::CViewer::getCurrent()->storeAnnotations();
+                            if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                            {
+                                w->SetupCollaborateInfo();
+                                w->TeraflyCommunicator->UpdateRetypeMarkerMsg(s->x,s->y,s->z,s->color,"TeraFly");
+                    //                        if(w->TeraflyCommunicator->timer_exit->isActive()){
+                    //                            w->TeraflyCommunicator->timer_exit->stop();
+                    //                        }
+                    //                        w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                                w->TeraflyCommunicator->emitUpdateQcInfo();
+                            }
+                        }
+                    }
                 }
-            }
-        }
 #endif
 
                 break;
         }
         curImg->proj_trace_history_append();
+        w->updateTool();
     }
 #ifndef test_main_cpp    //140211
     else if (act == actSaveSurfaceObj)
@@ -1469,47 +1482,45 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
         }
     }
 
-    else if (act == actRetrace)
-       {
-   //        QTableWidget *tableWidget = new QTableWidget(1,1);
-   //        QPushButton *button = new QPushButton("ok");
-   //        tableWidget->setCellWidget(1,1,button);
-   //        combobox = new QComboBox();
-   //        combobox->resize(200,200);
-   //        combobox->setWindowTitle("Retrace");
-   //        QStringList strList;
-   //        strList<<"Retrace"<<"app2Convenient"<<"app2Terafly"<<"app2MultiTerafly"<<"app2TeraflyWithPara"<<"app2MultiTeraflyWithPara";
-   //        combobox->addItems(strList);
+//    else if (act == actRetrace)
+//       {
+//   //        QTableWidget *tableWidget = new QTableWidget(1,1);
+//   //        QPushButton *button = new QPushButton("ok");
+//   //        tableWidget->setCellWidget(1,1,button);
+//   //        combobox = new QComboBox();
+//   //        combobox->resize(200,200);
+//   //        combobox->setWindowTitle("Retrace");
+//   //        QStringList strList;
+//   //        strList<<"Retrace"<<"app2Convenient"<<"app2Terafly"<<"app2MultiTerafly"<<"app2TeraflyWithPara"<<"app2MultiTeraflyWithPara";
+//   //        combobox->addItems(strList);
 
 
 
-   //        tableWidget->setCellWidget(0,0,combobox);
-   //        connect(button,SIGNAL(clicked(bool)),this,SLOT(pressBtn()));
+//   //        tableWidget->setCellWidget(0,0,combobox);
+//   //        connect(button,SIGNAL(clicked(bool)),this,SLOT(pressBtn()));
 
-   //        QString name = combobox->currentText();
-   //        qDebug()<<name;
-
-
-
-           if (w && curImg)
-           {
-               v3d_msg("Enter the neuron tracing module APP2.", 0);
-               v3d_imaging_paras myimagingp;
-               myimagingp.OPS = "Retrace";
-               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-               //set the hiddenSelectWidget for the V3D mainwindow
-               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-               {
-                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-               }
-               else
-               {
-                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-               }
-           }
-       }
+//   //        QString name = combobox->currentText();
+//   //        qDebug()<<name;
 
 
+
+//           if (w && curImg)
+//           {
+//               v3d_msg("Enter the neuron tracing module APP2.", 0);
+//               v3d_imaging_paras myimagingp;
+//               myimagingp.OPS = "Retrace";
+//               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//               //set the hiddenSelectWidget for the V3D mainwindow
+//               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//               {
+//                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//               }
+//               else
+//               {
+//                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//               }
+//           }
+//       }
 
        else if (act == app2Convenient)
        {
@@ -1523,7 +1534,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                //set the hiddenSelectWidget for the V3D mainwindow
                if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
                {
-                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+                   if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                   {
+                    w->SetupCollaborateInfo();
+                   }
+                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp, w->TeraflyCommunicator);
                }
                else
                {
@@ -1532,88 +1547,88 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
            }
        }
 
-       else if (act == app2MultiTerafly)
-       {
-           if (w && curImg)
-           {
-               v3d_msg("app2MultiTerafly", 0);
-               v3d_imaging_paras myimagingp;
-               myimagingp.OPS = "app2MultiTerafly";
-               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//       else if (act == app2MultiTerafly)
+//       {
+//           if (w && curImg)
+//           {
+//               v3d_msg("app2MultiTerafly", 0);
+//               v3d_imaging_paras myimagingp;
+//               myimagingp.OPS = "app2MultiTerafly";
+//               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-               //set the hiddenSelectWidget for the V3D mainwindow
-               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-               {
-                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-               }
-               else
-               {
-                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-               }
-           }
-       }
+//               //set the hiddenSelectWidget for the V3D mainwindow
+//               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//               {
+//                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//               }
+//               else
+//               {
+//                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//               }
+//           }
+//       }
 
-       else if (act == app2MultiTeraflyWithPara)
-       {
-           if (w && curImg)
-           {
-               v3d_msg("app2MultiTeraflyWithPara", 0);
-               v3d_imaging_paras myimagingp;
-               myimagingp.OPS = "app2MultiTeraflyWithPara";
-               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//       else if (act == app2MultiTeraflyWithPara)
+//       {
+//           if (w && curImg)
+//           {
+//               v3d_msg("app2MultiTeraflyWithPara", 0);
+//               v3d_imaging_paras myimagingp;
+//               myimagingp.OPS = "app2MultiTeraflyWithPara";
+//               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-               //set the hiddenSelectWidget for the V3D mainwindow
-               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-               {
-                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-               }
-               else
-               {
-                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-               }
-           }
-       }
+//               //set the hiddenSelectWidget for the V3D mainwindow
+//               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//               {
+//                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//               }
+//               else
+//               {
+//                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//               }
+//           }
+//       }
 
-       else if (act == app2Terafly)
-       {
-           if (w && curImg)
-           {
-               v3d_msg("app2Terafly", 0);
-               v3d_imaging_paras myimagingp;
-               myimagingp.OPS = "app2Terafly";
-               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//       else if (act == app2Terafly)
+//       {
+//           if (w && curImg)
+//           {
+//               v3d_msg("app2Terafly", 0);
+//               v3d_imaging_paras myimagingp;
+//               myimagingp.OPS = "app2Terafly";
+//               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-               //set the hiddenSelectWidget for the V3D mainwindow
-               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-               {
-                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-               }
-               else
-               {
-                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-               }
-           }
-       }
-       else if (act == app2TeraflyWithPara)
-       {
-           if (w && curImg)
-           {
-               v3d_msg("app2TeraflyWithPara", 0);
-               v3d_imaging_paras myimagingp;
-               myimagingp.OPS = "app2TeraflyWithPara";
-               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+//               //set the hiddenSelectWidget for the V3D mainwindow
+//               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//               {
+//                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//               }
+//               else
+//               {
+//                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//               }
+//           }
+//       }
+//       else if (act == app2TeraflyWithPara)
+//       {
+//           if (w && curImg)
+//           {
+//               v3d_msg("app2TeraflyWithPara", 0);
+//               v3d_imaging_paras myimagingp;
+//               myimagingp.OPS = "app2TeraflyWithPara";
+//               myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
-               //set the hiddenSelectWidget for the V3D mainwindow
-               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
-               {
-                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
-               }
-               else
-               {
-                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
-               }
-           }
-       }
+//               //set the hiddenSelectWidget for the V3D mainwindow
+//               if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+//               {
+//                   v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+//               }
+//               else
+//               {
+//                   v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+//               }
+//           }
+//       }
 
 #define __vaa3d_gd_curveline_tracing__ // dummy, just for easy locating //by PHC 20170529
     else if (act == actGDCurveline)
@@ -1693,6 +1708,42 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 else if (tmpind==curImg->last_hit_landmark) //in this case remove the last hit
                     curImg->last_hit_landmark = -1;
                 // otherwise do nothing, - the last hit pos will not change
+
+                My4DImage* image4d = v3dr_getImage4d(_idep);
+                if (image4d)
+                {
+                    if (tmpind>=0 && tmpind<image4d->listLandmarks.size())
+                    {
+                            LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks.at(tmpind)));
+                            terafly::CViewer::getCurrent()->storeAnnotations();
+                            if(w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+                            {
+                                bool flag = false;
+                                vector<CellAPO> tobeSendMarkers;
+                                CellAPO imageMarker;
+                                imageMarker.x = s->x;
+                                imageMarker.y = s->y;
+                                imageMarker.z = s->z;
+                                imageMarker.color = s->color;
+                                imageMarker.comment = QString::fromStdString(s->comments);
+                                tobeSendMarkers.push_back(imageMarker);
+
+                                w->SetupCollaborateInfo();
+                                w->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
+
+                                if(std::find(w->quality_control_types.begin(), w->quality_control_types.end(), imageMarker.comment) != w->quality_control_types.end()){
+                                    flag = true;
+                                    w->TeraflyCommunicator->checkedQcMarkers.push_back(imageMarker);
+                                }
+                                if(flag){
+                                    w->TeraflyCommunicator->emitUpdateQcInfo();
+                                    w->TeraflyCommunicator->emitUpdateQcMarkersCounts();
+                                }
+
+                            }
+                    }
+                }
+
                 curImg->listLandmarks.removeAt(tmpind); //remove the specified landmark
                 //updateLandmark(); //update the landmark list in 3D viewer. Commented as this is too expensive, use the following cheap way
                 listMarker.removeAt(tmpind);
@@ -2470,7 +2521,25 @@ void Renderer_gl1::endSelectMode()
             if (w) curImg = v3dr_getImage4d(_idep);
             //cout << "restoring" << endl;
 
-            if (this->originalSegMap.empty()) return;
+//            if (this->originalSegMap.empty()) return;
+            if (this->originalSegMap.empty()) {
+                curImg->update_3drenderer_neuron_view(w, this);
+                curImg->proj_trace_history_append();
+                this->pressedShowSubTree = false;
+                this->connectEdit = connectEdit_none;
+                cntCur3DCurveMarkers = 0;
+                list_listCurvePos.clear();
+                listMarkerPos.clear();
+                b_ablation = false; //by Jianlong Zhou, 20120726
+                b_lineAblation = false; //by Jianlong Zhou, 20120801
+                if (selectMode != smObject)
+                {
+                    selectMode = smObject;
+                    if (w) { w->setCursor(oldCursor); }
+                }
+                editinput = 0;
+                return;
+            }
 
             for (map<size_t, vector<V_NeuronSWC_unit> >::iterator it = this->originalSegMap.begin(); it != this->originalSegMap.end(); ++it)
                 curImg->tracedNeuron.seg[it->first].row = it->second;
@@ -2578,6 +2647,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         x = 2 * x;
         y = 2 * y;
 #endif
+        x = x * QApplication::primaryScreen()->devicePixelRatio();
+        y = y * QApplication::primaryScreen()->devicePixelRatio();
         _appendMarkerPos(x,y);
         if (b_move)
         {
@@ -2614,6 +2685,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             else if (selectMode == smDeleteMultiNeurons)
             {
                 deleteMultiNeuronsByStroke();
+                V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+                My4DImage* curImg = 0;
+                if(w){
+                    curImg = v3dr_getImage4d(_idep);
+                }
+                if(w -> TeraflyCommunicator){
+                    deleteMultiNeuronsByStrokeCommit();
+                }
             }
             else if (selectMode == smRetypeMultiNeurons)
             {
@@ -2674,6 +2753,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         x = 2 * x;
         y = 2 * y;
 #endif
+        x = x * QApplication::primaryScreen()->devicePixelRatio();
+        y = y * QApplication::primaryScreen()->devicePixelRatio();
         _appendMarkerPos(x,y);
         if (b_move)
         {
@@ -4669,8 +4750,9 @@ void Renderer_gl1::refineMarkerLocal(int marker_id)
     //added by PHC, 090120. update the marker location in both views
     updateMarkerLocation(marker_id, loc);
 }
-void Renderer_gl1::addMarker(XYZ &loc, bool fromserver)
+void Renderer_gl1::addMarker(XYZ &loc,bool fromserver)
 {
+    //    auto globalMarkers = terafly::PluginInterface::getLandmarkDirectly();
     XYZ pt(loc.x+1, loc.y+1, loc.z+1); // marker position is 1-based
 #ifndef test_main_cpp
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -4689,49 +4771,91 @@ void Renderer_gl1::addMarker(XYZ &loc, bool fromserver)
                 break;
             }
         }
-        if (markerindex>=0/*listLoc.size()>0*/)
+        const GLubyte neuron_type_color[ ][3] = {
+            {255, 255, 255},  // white,   0-undefined
+            {20,  20,  20 },  // black,   1-soma
+            {200, 20,  0  },  // red,     2-axon
+            {0,   20,  200},  // blue,    3-dendrite
+            {200, 0,   200},  // purple,  4-apical dendrite
+            //the following is Hanchuan's extended color. 090331
+            {0,   200, 200},  // cyan,    5
+            {220, 200, 0  },  // yellow,  6
+            {0,   200, 20 },  // green,   7
+            {188, 94,  37 },  // coffee,  8
+            {180, 200, 120},  // asparagus,	9
+            {250, 100, 120},  // salmon,	10
+            {120, 200, 200},  // ice,		11
+            {100, 120, 200},  // orchid,	12
+            //the following is Hanchuan's further extended color. 111003
+            {255, 128, 168},  //	13
+            {128, 255, 168},  //	14
+            {128, 168, 255},  //	15
+            {168, 255, 128},  //	16
+            {255, 168, 128},  //	17
+            {168, 128, 255}, //	18
+            {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+            //the following (20-275) is used for matlab heat map. 120209 by WYN
+            {0,0,131}, //20
+
+        };
+        if (markerindex>=0)
         {
             S.inputProperty = listLoc.at(markerindex).inputProperty;
             S.comments = listLoc.at(markerindex).comments;
             S.category = listLoc.at(markerindex).category;
-            S.color = listLoc.at(markerindex).color;
-            currentMarkerColor = listLoc.at(markerindex).color;;
+            //            S.color = currentMarkerColor;
+
+            S.color.r=neuron_type_color[int(currentTraceType)][0];
+            S.color.g=neuron_type_color[int(currentTraceType)][1];
+            S.color.b=neuron_type_color[int(currentTraceType)][2];
+            //            currentMarkerColor = listLoc.at(markerindex).color;;
         }
         else
         {
             S.inputProperty = pxLocaUseful;
             //S.color = random_rgba8(255);
-            S.color = currentMarkerColor;
+            //            S.color = currentMarkerColor;
+            S.color.r=neuron_type_color[int(currentTraceType)][0];
+            S.color.g=neuron_type_color[int(currentTraceType)][1];
+            S.color.b=neuron_type_color[int(currentTraceType)][2];
         }
+
+
         S.x = pt.x;
         S.y = pt.y;
         S.z = pt.z;
         if (V3Dmainwindow)
             S.radius = V3Dmainwindow->global_setting.default_marker_radius;
         S.on = true;
+        qDebug()<<"Marker:"<<S.x<<","<<S.y<<","<<S.z<<","<<S.color.r<<","<<S.color.g<<","<<S.color.b;
+
         listLoc.append(S);
-        if(!fromserver){
-//            w->TeraflyCommunicator->Upda
+
+        if(!fromserver&&w->TeraflyCommunicator!=nullptr&&w->TeraflyCommunicator->socket!=nullptr&&w->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+        {
+            w->SetupCollaborateInfo();
+            w->TeraflyCommunicator->UpdateAddMarkerMsg(S.x,S.y,S.z,S.color,"TeraFly");
+            //            if(w->TeraflyCommunicator->timer_exit->isActive()){
+            //                w->TeraflyCommunicator->timer_exit->stop();
+            //            }
+            //            w->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
         }
 
         updateLandmark();
+        //        vector<XYZ> results = w->getImageCurResAndStartPoint();
+        //        ImageCurRes = results[0];
+        //        ImageStartPoint = results[1];
+        //        ImageMaxRes = w->ImageMaxRes;
+        //        LocationSimple marker = S;
+        //        XYZ coor = ConvertCurrRes2MaxResCoords(S.x, S.y, S.z);
+        //        marker.x = coor.x;
+        //        marker.y = coor.y;
+        //        marker.z = coor.z;
+        //        globalMarkers.append(marker);
+        //        terafly::PluginInterface::setLandmark(globalMarkers);
     }
 #else
-    ImageMarker S;
-    memset(&S, 0, sizeof(S));
-    S.x = pt.x;
-    S.y = pt.y;
-    S.z = pt.z;
-    if (listMarker.size()>0)
-    {
-        S.color = listMarker.last().color;
-    }
-    else
-    {
-        S.color = random_rgba8(255);
-    }
-    S.on = true;
-    listMarker.append(S);
+
 #endif
 }
 
@@ -6077,4 +6201,40 @@ void Renderer_gl1::updateMarkerList(QList <ImageMarker> markers, int i)
         LocationSimple *s = (LocationSimple *)(&(image4d->listLandmarks[i]));
         s->color = listMarker[i].color;
     }
+}
+
+XYZ Renderer_gl1::ConvertGlobaltoLocalBlockCroods(double x,double y,double z)
+{
+    auto node=ConvertMaxRes2CurrResCoords(x,y,z);
+    node.x-=(ImageStartPoint.x-1);
+    node.y-=(ImageStartPoint.y-1);
+    node.z-=(ImageStartPoint.z-1);
+    return node;
+}
+
+XYZ Renderer_gl1::ConvertLocalBlocktoGlobalCroods(double x,double y,double z)
+{
+    x+=(ImageStartPoint.x-1);
+    y+=(ImageStartPoint.y-1);
+    z+=(ImageStartPoint.z-1);
+
+    XYZ node=ConvertCurrRes2MaxResCoords(x,y,z);
+    return node;
+}
+
+XYZ Renderer_gl1::ConvertMaxRes2CurrResCoords(double x,double y,double z)
+{
+    x/=(ImageMaxRes.x/ImageCurRes.x);
+    y/=(ImageMaxRes.y/ImageCurRes.y);
+    z/=(ImageMaxRes.z/ImageCurRes.z);
+    return XYZ(x,y,z);
+}
+
+XYZ Renderer_gl1::ConvertCurrRes2MaxResCoords(double x,double y,double z)
+{
+    //    qDebug()<<ImageMaxRes.x/ImageCurRes.x;
+    x*=(ImageMaxRes.x/ImageCurRes.x);
+    y*=(ImageMaxRes.y/ImageCurRes.y);
+    z*=(ImageMaxRes.z/ImageCurRes.z);
+    return XYZ(x,y,z);
 }

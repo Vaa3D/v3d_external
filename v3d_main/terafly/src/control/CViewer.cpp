@@ -138,7 +138,6 @@ void CViewer::show()
         vaa3d_controls_layout->addWidget(window3D->toolBtnGroup);
         vaa3d_controls_layout->addWidget(window3D->tabCutPlane);
         vaa3d_controls_layout->addWidget(window3D->tabRotZoom);
-        vaa3d_controls_layout->addWidget(window3D->editLine);
         vaa3d_controls->setLayout(vaa3d_controls_layout);
         PMain::getInstance()->tabs->insertTab(1, vaa3d_controls, "Vaa3D controls");
         PMain::getInstance()->tabs->setCurrentIndex(tab_selected);
@@ -1905,6 +1904,50 @@ void CViewer::storeAnnotations()
         }
 }
 
+void CViewer::storeMarkers(){
+        QList<LocationSimple> markers = triViewWidget->getImageData()->listLandmarks;
+        //if(!markers.empty())  // 2017-10-05. Alessandro. @FIXED: markers set should be saved also when it's empty to deal with the special case when all markers in this VOI have been deleted
+        {
+            // 2015-04-15. Alessandro. @FIXED: excluding hidden markers is no more needed (and no more correct) since the
+            // load/store annotation VOIs are now the same (see fix of 2014-11-17).
+            // @fixed by Alessandro on 2014-07-21: excluding hidden markers from store operation
+            QElapsedTimer timer;
+            interval_t x_range(anoH0, anoH1);
+            interval_t y_range(anoV0, anoV1);
+            interval_t z_range(anoD0, anoD1);
+            timer.start();
+            //        QList<LocationSimple>::iterator it = markers.begin();
+            //        while (it != markers.end())
+            //        {
+            //            if (is_outside((*it).x, (*it).y, (*it).z))
+            //            {
+            //                #ifdef terafly_enable_debug_annotations
+            //                tf::debug(tf::LEV3, strprintf("(%.0f, %.0f, %.0f) excluded from store operation because it is a hidden marker", it->x, it->y, it->z).c_str(), 0, true);
+            //                #endif
+            //                it = markers.erase(it);
+            //            }
+            //            else
+            //                ++it;
+            //        }
+            //        PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: exclude hidden landmarks, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+
+            //converting local coordinates into global coordinates
+            timer.restart();
+            for(int i=0; i<markers.size(); i++)
+            {
+                markers[i].x = coord2global<float>(markers[i].x, iim::horizontal, false, -1, false, false, __itm__current__function__);
+                markers[i].y = coord2global<float>(markers[i].y, iim::vertical,   false, -1, false, false, __itm__current__function__);
+                markers[i].z = coord2global<float>(markers[i].z, iim::depth,      false, -1, false, false, __itm__current__function__);
+            }
+            PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: convert landmark coordinates, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+
+            //storing markers
+            timer.restart();
+            CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, markers);
+            PLog::instance()->appendOperation(new AnnotationOperation(QString("store annotations: store landmarks in the octree, view ").append(title.c_str()).toStdString(), tf::CPU, timer.elapsed()));
+        }
+}
+
 void CViewer::clearAnnotations()
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
@@ -1924,52 +1967,91 @@ void CViewer::clearAnnotations()
 void CViewer::deleteSelectedMarkers()
 {
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
+    qDebug()<<"delete mul selected markers huanglei";
 
     if(PAnoToolBar::instance()->buttonMarkerRoiDelete->isChecked())
     {
-        // associate selected image markers to vaa3d markers and delete
-        QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
-        QList<LocationSimple> deletedMarkers;
-        QList<ImageMarker> &listMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
-        for (QList<ImageMarker>::iterator it = listMarker.begin(); it!= listMarker.end(); it++)
-        {
-            if (it->selected && !CAnnotations::isMarkerOutOfRendererBounds(*it, *this))
+            // associate selected image markers to vaa3d markers and delete
+            QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
+            QList<LocationSimple> deletedMarkers;
+            QList<ImageMarker> &listMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+
+            vector<CellAPO> tobeSendMarkers;
+            bool flag = false;
+            for (QList<ImageMarker>::iterator it = listMarker.begin(); it!= listMarker.end(); it++)
             {
+                if (it->selected && !CAnnotations::isMarkerOutOfRendererBounds(*it, *this))
+                {
                 for(QList<LocationSimple>::iterator jt = vaa3dMarkers.begin(); jt != vaa3dMarkers.end();)
                 {
                     if(jt->x == it->x && jt->y == it->y && jt->z == it->z)
                     {
                         deletedMarkers.push_back(*jt);
+                        RGBA8 color = jt->color;
                         jt = vaa3dMarkers.erase(jt);
+
+                        if(view3DWidget->TeraflyCommunicator!=nullptr
+                            &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+                        {
+                            view3DWidget->SetupCollaborateInfo();
+                            CellAPO marker;
+                            marker.x = it->x;
+                            marker.y = it->y;
+                            marker.z = it->z;
+                            marker.color = it->color;
+                            marker.comment = it->comment;
+                            tobeSendMarkers.push_back(marker);
+                            //                            if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
+                            //                                view3DWidget->TeraflyCommunicator->timer_exit->stop();
+                            //                            }
+                            //                            view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+                            if(std::find(view3DWidget->quality_control_types.begin(), view3DWidget->quality_control_types.end(), it->comment) != view3DWidget->quality_control_types.end()){
+                                flag = true;
+                                view3DWidget->TeraflyCommunicator->checkedQcMarkers.push_back(marker);
+                            }
+                        }
+
                         break;
                     }
                     else
                         ++jt;
                 }
+
                 it->selected = false;
+                }
+
             }
-        }
 
-        // set new markers
-        V3D_env->setLandmark(window, vaa3dMarkers);
-        V3D_env->pushObjectIn3DWindow(window);
+            terafly::CViewer::getCurrent()->storeAnnotations();
+            if(view3DWidget->TeraflyCommunicator!=nullptr
+                &&view3DWidget->TeraflyCommunicator->socket!=nullptr&&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState){
+                view3DWidget->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
+                if(flag){
+                view3DWidget->TeraflyCommunicator->emitUpdateQcInfo();
+                view3DWidget->TeraflyCommunicator->emitUpdateQcMarkersCounts();
+                }
+            }
+
+            // set new markers
+            V3D_env->setLandmark(window, vaa3dMarkers);
+            V3D_env->pushObjectIn3DWindow(window);
+
+            // update visible markers
+            PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
 
-        // update visible markers
-        PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
+            // add Undo action
+            undoStack.beginMacro("delete markers");
+            undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
+            undoStack.endMacro();
+            PAnoToolBar::instance()->buttonUndo->setEnabled(true);
 
 
-        // add Undo action
-        undoStack.beginMacro("delete markers");
-        undoStack.push(new QUndoMarkerDeleteROI(this, deletedMarkers));
-        undoStack.endMacro();
-        PAnoToolBar::instance()->buttonUndo->setEnabled(true);
-
-
-        // need to refresh annotation tools as this Vaa3D's action resets the Vaa3D annotation mode
-        PAnoToolBar::instance()->refreshTools();
+            // need to refresh annotation tools as this Vaa3D's action resets the Vaa3D annotation mode
+            PAnoToolBar::instance()->refreshTools();
     }
 }
+
 
 void CViewer::createMarkerAt(int logicX, int logicY)
 {
@@ -3402,14 +3484,6 @@ const Image4DSimple* CViewer::getImage()
     image->setTimePackType(TIME_PACK_C);
     return image;
 }
-
-
-
-
-
-
-
-
 
 void CViewer::setImage(int x, int y, int z)
 {

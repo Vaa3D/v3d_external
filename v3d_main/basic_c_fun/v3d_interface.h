@@ -73,6 +73,8 @@ QT_END_NAMESPACE
 #include "basic_triview.h"
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
+#include <vector>
+#include "../neuron_editing/v_neuronswc.h"
 
 #ifdef _NEURON_ASSEMBLER_
 #include "INeuronAssembler.h"
@@ -158,7 +160,8 @@ public:
     virtual bool setROI(v3dhandle image_window, ROIList & roi_list) = 0;
 
     virtual NeuronTree getSWC(v3dhandle image_window) = 0;
-    virtual bool setSWC(v3dhandle image_window, NeuronTree & nt) = 0;
+    virtual bool setSWC(v3dhandle image_window, NeuronTree & nt, bool collaborate=false) = 0;
+    virtual bool setSWC(v3dhandle image_window, V_NeuronSWC_list segments, bool collaborate=false) = 0;
 
     virtual Image4DSimple * loadImage(char *filename) = 0;  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs
     virtual Image4DSimple * loadImage(char *filename, V3DLONG zsliceno) = 0;  //2013-11-02. load one single slice from an image, useful when the image is large
@@ -286,6 +289,8 @@ public:
     virtual bool hideSWC(V3dR_MainWindow* window, int treeIndex) = 0;
     virtual bool displaySWC(V3dR_MainWindow* window, int treeIndex) = 0;
     virtual QList<NeuronTree> loadedNeurons(V3dR_MainWindow* window, QList<string>& loadedSurfaces) = 0;
+    virtual v3dhandle getTeraflyCommunicator() = 0;
+    virtual void syncAddManySegs(std::vector<V_NeuronSWC> segs) = 0;
 
     //ljs,dlc,csz 为了更新terafly当前的窗口显示
     virtual bool updateTerafly() = 0;

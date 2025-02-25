@@ -891,6 +891,7 @@ public:
     // access points
     static void domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
     static void doaction(const QString &action_name);
+    static void closePMain();
 
     // returns true if version >= min_required_version, where version format is version.major.minor
     static bool checkVersion(std::string version, std::string min_required_version);
@@ -914,6 +915,7 @@ public:
 
     // access the 3D landmark list defined for the whole image at the given resolution (default: highest resolution)
     static LandmarkList getLandmark(int resolution = infp<int>());
+    static LandmarkList getLandmarkDirectly(int resolution = infp<int>());
     static bool setLandmark(LandmarkList & landmark_list, bool collaborate=false, int resolution = infp<int>());
 
     // get path of the image volume at the given resolution (default: highest resolution)
@@ -951,4 +953,3 @@ public:
 };
 
 #endif
-

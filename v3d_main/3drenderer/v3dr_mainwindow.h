@@ -46,7 +46,6 @@ Last update: 080814: move iDrawExternalParameter to v3d_core.h
 #include "qtr_widget.h"
 
 
-
 class V3dR_GLWidget;
 
 class V3dR_MainWindow : public QWidget
@@ -54,14 +53,13 @@ class V3dR_MainWindow : public QWidget
     Q_OBJECT
 
 public:
-    V3dR_MainWindow(iDrawExternalParameter* idep);
+    V3dR_MainWindow(iDrawExternalParameter* idep, bool isForTerafly = true);
     ~V3dR_MainWindow();
-	void setDataTitle(QString newdt);
+    void setDataTitle(QString newdt);
 
-	QString getTitlePrefix() {return title_prefix;}
-	QString getDataTitle() {return data_title;}
-	V3dR_GLWidget * getGLWidget() {return glWidget;}
-
+    QString getTitlePrefix() {return title_prefix;}
+    QString getDataTitle() {return data_title;}
+    V3dR_GLWidget * getGLWidget() {return glWidget;}
 
 protected:
     virtual void closeEvent(QCloseEvent* e);
@@ -110,41 +108,38 @@ public slots:
 
     // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
     void hideDisplayControls();
-    //注释
-//    void about();
-//    //for movie control
 
-//    void setXRotStep(int t);
-//    void setYRotStep(int t);
-//    void setZRotStep(int t);
-//    void setNSteps(int t);
-
+    //	void about();
+    //    //for movie control
+    //    void setXRotStep(int t);
+    //    void setYRotStep(int t);
+    //    void setZRotStep(int t);
+    //    void setNSteps(int t);
 
 public:
-    //MainWindow *v3d_mainwindow;
     iDrawExternalParameter null_idep; //090918: for editing swc
-	iDrawExternalParameter* _idep;
-	QString title_prefix;
-	QString data_title;
+    iDrawExternalParameter* _idep;
+    QString title_prefix;
+    QString data_title;
 
     void saveFrameFunc(int i);
-	QString outputDir;
+    QString outputDir;
 
-	// animate() return total frames to render in one loop_scpript
-	V3DLONG animate(QString& loop_scpript, int rotation_time_ms, int rotation_frames,  // FPS = rotation_frames*1000/rotation_time_ms
-					int rotation_timepoints=0, bool bSaveFrame=false);
+    // animate() return total frames to render in one loop_scpript
+    V3DLONG animate(QString& loop_scpript, int rotation_time_ms, int rotation_frames,  // FPS = rotation_frames*1000/rotation_time_ms
+                    int rotation_timepoints=0, bool bSaveFrame=false);
     int sAnimate;  // 0--stop, 1--run once, 2--run loop
     bool bAnimating;
     QTimer animate_timer;
     struct {
-    	QStringList loop_list;
-    	int frame_time_ms;
-    	int rotation_frames;
-    	int rotation_timepoints;
-    	float frame_timepoints;
-    	int iframe_rotation;
-    	int irotation;
-    	bool bSaveFrame;
+        QStringList loop_list;
+        int frame_time_ms;
+        int rotation_frames;
+        int rotation_timepoints;
+        float frame_timepoints;
+        int iframe_rotation;
+        int irotation;
+        bool bSaveFrame;
     } animate_option;
     QString scriptAnimateRot;
     int FPS;
@@ -153,34 +148,34 @@ public:
     void default_animate_para()
     {
         scriptAnimateRot = "X Y Z";
-		FPS = 15; //the best choice: 15 frame/second
+        FPS = 15; //the best choice: 15 frame/second
         rotationSpeedSec = 12;
-		rotationTimePoints = 0;
+        rotationTimePoints = 0;
     }
 
     QMenu menuAnimate;
     QMenu menuSurfFile;
-	void createMenuOfSurfFile();
-	void createMenuOfAnimate();
+    void createMenuOfSurfFile();
+    void createMenuOfAnimate();
 
-	QAbstractSlider *createCutPlaneSlider(int maxval, Qt::Orientation hv = Qt::Horizontal);
-	QAbstractSlider *createRotateSlider(Qt::Orientation hv = Qt::Horizontal);
-	QAbstractSlider *createShiftSlider(Qt::Orientation hv = Qt::Horizontal);
-	QAbstractSlider *createZoomSlider(Qt::Orientation hv = Qt::Horizontal);
-	QAbstractSlider *createRangeSlider(int znear, int zfar, Qt::Orientation hv = Qt::Horizontal);
-	QAbstractSlider *createTranparentSlider(Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createCutPlaneSlider(int maxval, Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createRotateSlider(Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createShiftSlider(Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createZoomSlider(Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createRangeSlider(int znear, int zfar, Qt::Orientation hv = Qt::Horizontal);
+    QAbstractSlider *createTranparentSlider(Qt::Orientation hv = Qt::Horizontal);
     QAbstractSlider *createContrastSlider(Qt::Orientation hv = Qt::Horizontal);
     QAbstractSlider *createThicknessSlider(Qt::Orientation hv = Qt::Horizontal);
-	QDoubleSpinBox *createThicknessSpinBox();
-	QComboBox *createChannelComboBox();
-	QSpinBox *createMarkerSizeSpinBox();
-	QSpinBox *createRotateSpinBox();
-	QSpinBox *createShiftSpinBox();
-	QSpinBox *createZoomSpinBox();
+    QDoubleSpinBox *createThicknessSpinBox();
+    QComboBox *createChannelComboBox();
+    QSpinBox *createMarkerSizeSpinBox();
+    QSpinBox *createRotateSpinBox();
+    QSpinBox *createShiftSpinBox();
+    QSpinBox *createZoomSpinBox();
 
-	//void createActions();
+    //void createActions();
     //void createMenus();
-	//QSize getSize();
+    //QSize getSize();
 
     //widget controls////////////////////////////////////////////////////////////////
 
@@ -194,14 +189,14 @@ public:
     QScrollBar* timeSlider;
 
     // volume display control
-	QRadioButton *dispType_maxip, *dispType_minip, *dispType_alpha, *dispType_cs3d;
-	QLabel *thicknessSlider_Label, *transparentSlider_Label; //for disable, by RZC 080822
+    QRadioButton *dispType_maxip, *dispType_minip, *dispType_alpha, *dispType_cs3d;
+    QLabel *thicknessSlider_Label, *transparentSlider_Label; //for disable, by RZC 080822
     QLabel *contrastSlider_Label; //by ZZ 03072018
     QLabel *editLine; //for display editinfo, DLC
     QString editdisplay;
 
-	QDoubleSpinBox *zthicknessBox; //by PHC, 090215
-	QComboBox *comboBox_channel;
+    QDoubleSpinBox *zthicknessBox; //by PHC, 090215
+    QComboBox *comboBox_channel;
     QAbstractSlider *thicknessSlider, *transparentSlider;
     QAbstractSlider *contrastSlider;
 
@@ -215,9 +210,9 @@ public:
     QPushButton *surfobjManagerButton; //or Object Manager button
 
     // other control
-	QCheckBox *checkBox_displayAxes, *checkBox_displayBoundingBox, *checkBox_OrthoView;
+    QCheckBox *checkBox_displayAxes, *checkBox_displayBoundingBox, *checkBox_OrthoView;
     QPushButton *colorButton, *brightButton, *reloadDataButton, *backgroundColorSwitchButton;
-	QPushButton *movieSaveButton, *animateButton, *resOfOriginalImage, *BrainAtlas;
+    QPushButton *movieSaveButton, *animateButton, *resOfOriginalImage, *BrainAtlas;
     QComboBox * comboRotType;
 
     // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
@@ -230,14 +225,14 @@ public:
 
     // rotation, zoom, shift control
     QAbstractSlider *xRotSlider, *yRotSlider, *zRotSlider;
-	QAbstractSlider *zoomSlider, *xShiftSlider, *yShiftSlider;
+    QAbstractSlider *zoomSlider, *xShiftSlider, *yShiftSlider;
     QSpinBox *xRotBox, *yRotBox, *zRotBox, *zoomBox, *xShiftBox, *yShiftBox;
     QCheckBox *checkBox_absoluteRot;
     QPushButton *zoomReset, *rotReset, *rotAbsolute, *rotAbsolutePose; //wwbmark freeze
 
 #ifdef __ALLOW_VR_FUNCS__
     QPushButton *rotVRView;
-	QPushButton *rotCView;
+    QPushButton *rotCView;
 #endif
 
     QTabWidget *tabRotZoom;
@@ -255,80 +250,79 @@ public:
     // @ADDED by Alessandro on 2015-09-30: giving access to layout allows later changes (e.g. addition of new elements)
     QHBoxLayout *centralLayout;
 
-	void init_members() // more clear putting them here, by RZC 080828
-	{
-        //qDebug()<<"jazzbrain debug init_members in v3dr_mainwindow.h";
-		default_animate_para();
-	    sAnimate = 0;
-		bAnimating = false;
-	    connect(&animate_timer, SIGNAL(timeout()), this, SLOT(animateStep())); //only connect once
-	    animate_timer.stop();
+    void init_members() // more clear putting them here, by RZC 080828
+    {
+        default_animate_para();
+        sAnimate = 0;
+        bAnimating = false;
+        connect(&animate_timer, SIGNAL(timeout()), this, SLOT(animateStep())); //only connect once
+        animate_timer.stop();
 
 
-		//centralWidget=0;
-	    glWidgetArea=pixmapLabelArea=0;
-	    glWidget=0;
-	    timeSlider=0;
+        //centralWidget=0;
+        glWidgetArea=pixmapLabelArea=0;
+        glWidget=0;
+        timeSlider=0;
 
-	    dispType_minip=dispType_maxip=dispType_alpha=dispType_cs3d=0;
+        dispType_minip=dispType_maxip=dispType_alpha=dispType_cs3d=0;
         thicknessSlider_Label=transparentSlider_Label=contrastSlider_Label=0;
         transparentSlider=contrastSlider=0;
-	    thicknessSlider=0; zthicknessBox=0;
-	    comboBox_channel=0;
-		checkBox_channelR=checkBox_channelG=checkBox_channelB=checkBox_channelA=checkBox_volCompress=0;
-	    volumeColormapButton=0;
+        thicknessSlider=0; zthicknessBox=0;
+        comboBox_channel=0;
+        checkBox_channelR=checkBox_channelG=checkBox_channelB=checkBox_channelA=checkBox_volCompress=0;
+        volumeColormapButton=0;
 
-	    checkBox_displayMarkers=checkBox_displaySurf=checkBox_markerLabel=checkBox_surfStretch=0;
-	    spinBox_markerSize=0;
-	    updateLandmarkButton=loadSaveObjectsButton=0;
-	    surfobjManagerButton=0;
+        checkBox_displayMarkers=checkBox_displaySurf=checkBox_markerLabel=checkBox_surfStretch=0;
+        spinBox_markerSize=0;
+        updateLandmarkButton=loadSaveObjectsButton=0;
+        surfobjManagerButton=0;
 
-		checkBox_displayAxes=checkBox_displayBoundingBox=checkBox_OrthoView=0;
-		colorButton=brightButton=reloadDataButton=0;
-		movieSaveButton=animateButton=0;
-		comboRotType=0;
+        checkBox_displayAxes=checkBox_displayBoundingBox=checkBox_OrthoView=0;
+        colorButton=brightButton=reloadDataButton=0;
+        movieSaveButton=animateButton=0;
+        comboRotType=0;
 
-	    tabOptions=0;
+        tabOptions=0;
 
         // @ADDED by Alessandro on 2015-05-07 : hide/display controls.
         controlGroup = 0;
         hideDisplayControlsButton = 0;
         displayControlsHidden = 0;
 
-		xRotSlider=yRotSlider=zRotSlider=0;
-		zoomSlider=xShiftSlider=yShiftSlider=0;
-	    xRotBox=yRotBox=zRotBox=zoomBox=xShiftBox=yShiftBox=0;
-	    checkBox_absoluteRot=0;
+        xRotSlider=yRotSlider=zRotSlider=0;
+        zoomSlider=xShiftSlider=yShiftSlider=0;
+        xRotBox=yRotBox=zRotBox=zoomBox=xShiftBox=yShiftBox=0;
+        checkBox_absoluteRot=0;
         zoomReset=rotReset=rotAbsolute=rotAbsolutePose=0;
 
 #ifdef __ALLOW_VR_FUNCS__
         rotVRView=0;
-		rotCView=0;
+        rotCView=0;
 #endif
 
-		tabRotZoom=0;
+        tabRotZoom=0;
 
-		xcminSlider=xcmaxSlider=ycminSlider=ycmaxSlider=zcminSlider=zcmaxSlider=fcutSlider=0;
-		xcLock=ycLock=zcLock=0;
-		checkBox_xCS=checkBox_yCS=checkBox_zCS=checkBox_fCS=0;
-	    xCSSlider=yCSSlider=zCSSlider=fCSSlider=0;
-	    xSminSlider=xSmaxSlider=ySminSlider=ySmaxSlider=zSminSlider=zSmaxSlider=0;
-	    stackedCutPlane = 0;
+        xcminSlider=xcmaxSlider=ycminSlider=ycmaxSlider=zcminSlider=zcmaxSlider=fcutSlider=0;
+        xcLock=ycLock=zcLock=0;
+        checkBox_xCS=checkBox_yCS=checkBox_zCS=checkBox_fCS=0;
+        xCSSlider=yCSSlider=zCSSlider=fCSSlider=0;
+        xSminSlider=xSmaxSlider=ySminSlider=ySmaxSlider=zSminSlider=zSmaxSlider=0;
+        stackedCutPlane = 0;
 
-	    tabCutPlane = 0;
-	}
-	void createControlWidgets();
-	void connectSignal();
-	//void disconnectSignal(); // no need to disconnect
+        tabCutPlane = 0;
+    }
+    void createControlWidgets();
+    void connectSignal();
+    //void disconnectSignal(); // no need to disconnect
 
-    QMenu *fileMenu;
-    QMenu *helpMenu;
-    QAction *grabFrameBufferAct;
-    QAction *renderIntoPixmapAct;
-    QAction *clearPixmapAct;
-    QAction *exitAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
+    //    QMenu *fileMenu;
+    //    QMenu *helpMenu;
+    //    QAction *grabFrameBufferAct;
+    //    QAction *renderIntoPixmapAct;
+    //    QAction *clearPixmapAct;
+    //    QAction *exitAct;
+    //    QAction *aboutAct;
+    //    QAction *aboutQtAct;
 };
 
 

@@ -29,7 +29,6 @@
 #ifndef PMAIN_GUI_H
 #define PMAIN_GUI_H
 
-
 #include "renderer_gl2.h"
 
 #include <QtGui>
@@ -47,7 +46,7 @@
 #include "PTabVolumeInfo.h"
 #ifdef __ALLOW_VR_FUNCS__
 #include "fileserver.h"
-
+#include "loadmanagewidget.h"
 
 
 /*----------------collaborate mdoe-------------------*/
@@ -69,6 +68,7 @@ class terafly::PMain : public QWidget
         static PMain* uniqueInstance;
         PMain(){    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);   }
         PMain(V3DPluginCallback2 *callback, QWidget *parent);
+        QIcon getIcon(QString path, int w, int h);
 
         //members
         V3DPluginCallback2* V3D_env;    //handle of V3D environment
@@ -219,6 +219,9 @@ class terafly::PMain : public QWidget
 #ifdef __ALLOW_VR_FUNCS__
 		QPushButton* teraflyVRView;
 		QPushButton* collaborationVRView;
+
+        //huanglei
+        QPushButton* collautotrace;
 #endif
         /* ------- zoom options panel widgets ------- */
         QGroupBox* zoom_panel;
@@ -590,6 +593,8 @@ class terafly::PMain : public QWidget
 
         void setLockMagnification(bool locked);
 
+        void getImagePath(QString path);
+
 
     signals:
 
@@ -600,28 +605,62 @@ class terafly::PMain : public QWidget
 #ifdef __ALLOW_VR_FUNCS__
 /*----------------collaborate mdoe-------------------*/
 public:
-        static V3dR_Communicator *Communicator;
+    static V3dR_Communicator *Communicator;
+    static string image_path;
+    QMenu *collaborateMenu,*userMenu;
+    QMenu *analyzeMenu;
+    //    QAction *loadAction,*configAction;
+    QAction *loadAction;
+    QAction *somaNearByAction,*colorMutationAction,*dissociativeAction,*angleAction;
+    QAction *defineSomaAction,*sendSomaPosAction;
+    //    QAction *openSwcManagerClientAction;
+    QAction *qcManagerAction;
+    QListWidget *userView;
+    QAction *onlineUsersAction;
+    QAction *disconnectAction;
+    static UserInfo userinfo;
+    static std::unique_ptr<LoadManageWidget> managewidget_ptr;
+    static string hostIp;
+    static string braintellServerAddress;
+    static string dbmsServerAddress;
+    static string apiVersion;
+    int retryCount = 0;
 
-//public:
-//        ManageSocket * managesocket;
-//protected:
-//        QMenu* collaborateMenu;
-//        QAction* loginAction;
-//        QAction* logoutAction;
-//        QAction* importAction;
-//        QAction* downAction;
-//        QAction* loadAction;
-//public slots:
-//        void login();
-//        void logout();
-//        void import();
-//        void download();
-//        void load();
-//        void deleteManageSocket();
-//public slots:
-//        void ColLoadANO(QString ANOfile);
-        //V3dR_Communicator *TeraflyCommunicator;  move to v3dr_glwidget.h
-/*---------------------------------------------------*/
+    void getAno(QString anoFile);
+    void doimageVRView(bool flag);
+
+public slots:
+    void configApp();
+    void LoadFromServer();
+    bool startCollaborate(QString port);
+    void getAndLoadAno(QString anoFile);
+    void ColLoadANO(QString ANOfile);
+    void onMessageDisConnect();
+    void onMessageError(QAbstractSocket::SocketError);
+    void updateuserview(QString userlist);
+    void updateOnlineUserList(QString userList);
+    void handleExit();
+
+    void analyzeSomaNearBy();
+    void analyzeColorMutation();
+    void analyzeDissociative();
+    void analyzeAngle();
+    void defineSoma();
+    void sendSomaPosition();
+    void setDefineSomaState(bool);
+    void openSwcManagerClient();
+    void openQcManager();
+    void openOnlineUserDialog();
+    void disconnectFromServer();
+    void checkConnection();
+    //    void checkConnectionForVR();
+    void showPMain();
+    void resetConnection(QString port);
+
+private:
+    QString currentPath;//for auto trace
+    QTimer* timerCheckConn;
+
 #endif
 };
 

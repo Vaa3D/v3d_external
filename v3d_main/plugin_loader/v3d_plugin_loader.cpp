@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
@@ -1071,11 +1072,63 @@ NeuronTree V3d_PluginLoader::getSWC(v3dhandle image_window)
     }
     return NeuronTree();
 }
-bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt)
+
+bool V3d_PluginLoader::setSWC(v3dhandle image_window, NeuronTree & nt, bool collaborate)
 {
     if (v3d_mainwindow)
     {
-        return v3d_mainwindow->setSWC(image_window, nt);
+        //        if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+        //            auto segments = NeuronTree__2__V_NeuronSWC_list(nt);
+        //            for(auto it = segments.seg.begin(); it != segments.seg.end();){
+        //                bool flag = true;
+        //                for(auto row_it = it->row.begin(); row_it != it->row.end(); row_it++){
+        //                    if(row_it->x < 0 || row_it->x >= TeraflyCommunicator->ImageMaxRes.x ||
+        //                        row_it->y < 0 || row_it->y >= TeraflyCommunicator->ImageMaxRes.y ||
+        //                        row_it->z < 0 || row_it->z >= TeraflyCommunicator->ImageMaxRes.z){
+        //                        it = segments.seg.erase(it);
+        //                        flag = false;
+        //                        break;
+        //                    }
+        //                }
+        //                if(flag)
+        //                    it++;
+        //            }
+        //            NeuronTree newNt = V_NeuronSWC_list__2__NeuronTree(segments);
+        //            return v3d_mainwindow->setSWC(image_window, newNt, collaborate);
+        //        }
+        //        else{
+        return v3d_mainwindow->setSWC(image_window, nt, collaborate);
+
+    }
+    return false;
+}
+
+bool V3d_PluginLoader::setSWC(v3dhandle image_window, V_NeuronSWC_list segments, bool collaborate)
+{
+    if (v3d_mainwindow)
+    {
+        if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState){
+            for(auto it = segments.seg.begin(); it != segments.seg.end();){
+                bool flag = true;
+                for(auto row_it = it->row.begin(); row_it != it->row.end(); row_it++){
+                    if(row_it->x < 0 || row_it->x >= TeraflyCommunicator->ImageMaxRes.x ||
+                        row_it->y < 0 || row_it->y >= TeraflyCommunicator->ImageMaxRes.y ||
+                        row_it->z < 0 || row_it->z >= TeraflyCommunicator->ImageMaxRes.z){
+                        it = segments.seg.erase(it);
+                        flag = false;
+                        break;
+                    }
+                }
+                if(flag)
+                    it++;
+            }
+            NeuronTree newNt = V_NeuronSWC_list__2__NeuronTree(segments);
+            return v3d_mainwindow->setSWC(image_window, newNt, collaborate);
+        }
+        else{
+            auto nt = V_NeuronSWC_list__2__NeuronTree(segments);
+            return v3d_mainwindow->setSWC(image_window, nt, collaborate);
+        }
     }
     return false;
 }
@@ -1115,6 +1168,21 @@ QList<NeuronTree> V3d_PluginLoader::loadedNeurons(V3dR_MainWindow* window, QList
         return v3d_mainwindow->loadedNeurons(window, loadedSurfaces);
     }
     return emptyList;
+}
+
+v3dhandle V3d_PluginLoader::getTeraflyCommunicator(){
+    if(TeraflyCommunicator)
+        return v3dhandle(TeraflyCommunicator);
+}
+
+void V3d_PluginLoader::syncAddManySegs(std::vector<V_NeuronSWC> segs){
+    for(auto &seg:segs){
+        std::reverse(seg.row.begin(), seg.row.end());
+    }
+    if(TeraflyCommunicator&&TeraflyCommunicator->socket!=nullptr&&TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
+    {
+        TeraflyCommunicator->UpdateAddManySegsMsg(segs, "TeraFly");
+    }
 }
 
 Image4DSimple * V3d_PluginLoader::loadImage(char *filename)  //2013-08-09. two more functions for simplied calls to use Vaa3D's image loading and saving functions without linking to additional libs

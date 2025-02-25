@@ -1,4 +1,5 @@
 
+#include "qregexp.h"
 #include "renderer_gl1.h"
 
 #include "PAnoToolBar.h"
@@ -377,28 +378,59 @@ void PAnoToolBar::buttonFragmenTraceChecked(bool checked)
 void PAnoToolBar::buttonUndoClicked()
 {
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
-
+    qDebug() << "-----------------terafly undo --------------";
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->undoStack.canUndo())
+    //新增
+    if(expl->getGLWidget()->TeraflyCommunicator&&expl->getGLWidget()->TeraflyCommunicator->socket&&expl->getGLWidget()->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
     {
-        expl->undoStack.undo();
-        if(!expl->undoStack.canUndo())
-            buttonUndo->setEnabled(false);
-        buttonRedo->setEnabled(true);
+        bool flag = false;
+        if(expl->getGLWidget()->TeraflyCommunicator->undoDeque.size()!=0)
+        {
+            QString msg=expl->getGLWidget()->TeraflyCommunicator->undoDeque.back();
+            QRegExp reg("/(.*)_(.*):(.*)");
+            if(reg.indexIn(msg)!=-1)
+            {
+                QString operationType=reg.cap(1);
+                QString operatorMsg=reg.cap(3);
+                if("drawmanylines"==operationType){
+                    flag=true;
+                }
+            }
+        }
+        expl->getGLWidget()->TeraflyCommunicator->UpdateUndoDeque();
+        if(flag)
+            expl->getGLWidget()->cancelSelect();
+    }else
+    {
+        if(expl && expl->undoStack.canUndo())
+        {
+            expl->undoStack.undo();
+            if(!expl->undoStack.canUndo())
+                buttonUndo->setEnabled(false);
+            buttonRedo->setEnabled(true);
+        }
     }
 }
 
 void PAnoToolBar::buttonRedoClicked()
 {
     /**/tf::debug(tf::LEV3, 0, __itm__current__function__);
-
+    qDebug()<<"flag huanglei";
     CViewer* expl = CViewer::getCurrent();
-    if(expl && expl->undoStack.canRedo())
+    if(expl->getGLWidget()->TeraflyCommunicator&&expl->getGLWidget()->TeraflyCommunicator->socket&&expl->getGLWidget()->TeraflyCommunicator->socket->state()==QAbstractSocket::ConnectedState)
     {
-        expl->undoStack.redo();
-        if(!expl->undoStack.canRedo())
-            buttonRedo->setEnabled(false);
-        buttonUndo->setEnabled(true);
+        qDebug()<<"redo 1";
+        expl->getGLWidget()->TeraflyCommunicator->UpdateRedoDeque();
+        qDebug()<<"redo 2";
+    }else
+    {
+        if(expl && expl->undoStack.canRedo())
+        {
+            expl->undoStack.redo();
+            if(!expl->undoStack.canRedo())
+                buttonRedo->setEnabled(false);
+            buttonUndo->setEnabled(true);
+        }
     }
 }
 
