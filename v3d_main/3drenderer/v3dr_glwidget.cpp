@@ -692,6 +692,7 @@ void V3dR_GLWidget::stillPaint()
 #define IS_CTRL_MODIFIER		((KM==Qt::ControlModifier) || (KM==CTRL2_MODIFIER))
 #define WITH_CTRL_MODIFIER		((KM & Qt::ControlModifier) || (KM & CTRL2_MODIFIER))
 #define IS_ALT_MODIFIER			((KM==Qt::AltModifier) || (KM==ALT2_MODIFIER))
+#define IS_ALT_SHIFT_MODIFIER   ((KM==(Qt::AltModifier | Qt::ShiftModifier)))
 #define WITH_ALT_MODIFIER		((KM & Qt::AltModifier) || (KM & ALT2_MODIFIER))
 #define IS_SHIFT_MODIFIER		((KM==Qt::ShiftModifier))
 #define WITH_SHIFT_MODIFIER		((KM & Qt::ShiftModifier))
@@ -1330,9 +1331,9 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
                 )
             {
                 toggleTex2D3D();
-            }else if (IS_ALT_MODIFIER)
+            }else if (IS_ALT_MODIFIER || IS_ALT_SHIFT_MODIFIER)
             {
-                emit changeEditinput("Alt+T");
+                emit changeEditinput("Alt+T: Retyping");
                 if(!isoperating)
                     isoperating=true;
                 callStrokeRetypeMultiNeurons();//For multiple segments retyping shortcut, by ZZ,02212018

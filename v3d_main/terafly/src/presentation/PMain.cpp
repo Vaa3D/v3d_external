@@ -2470,7 +2470,7 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
         int curWidth = uniqueInstance->width();
         uniqueInstance->resize(curWidth, screenHeight - 100);
 
-        new_win->resize(screenWidth - curWidth - 100, screenHeight - 100);
+        new_win->resize(screenWidth - curWidth - 100, screenHeight - 80);
     }
 
     //resetting some widgets
