@@ -698,8 +698,8 @@ void Renderer::drawEditInfo()
         }
 
         sprintf(str, "%s", editdisplay.c_str());
-
         drawString(A0.x + td, A0.y, A0.z, str, 0, 18); // same renderText problem above, 20210825
+
 //        drawString(A0.x + td, A0.y + td, A0.z, "bigneuron.org", 0, fontsize);
         //glColor3f(1, 0, 0);		drawString(A1.x + td, A0.y, A0.z, "X");
         //glColor3f(0, 1, 0);		drawString(A0.x, A1.y + td, A0.z, "Y");
@@ -710,7 +710,6 @@ void Renderer::drawEditInfo()
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
-
 
 }
 
