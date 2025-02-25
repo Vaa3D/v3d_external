@@ -283,7 +283,7 @@ MainWindow::MainWindow()
 ////qDebug()<<"jazz---------------debug---------------4";
     //const GLubyte* OpenGLVersion = glGetString(GL_VERSION);
 ////qDebug()<<"jazz---------------debug---------------5";
-
+    func_open_terafly();
 }
 
 //void MainWindow::postClose() //090812 RZC
@@ -312,7 +312,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     //if (workspace)  workspace->deleteLater(); //110802 RZC //will call ~XFormView to raise BAD_ACCESS
     disconnect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus())); //instead of above line
+    terafly::TeraFly::closePMain();
     V3dApplication::handleCloseEvent(event);
+    return;
 }
 void MainWindow::transactionStart()
 {

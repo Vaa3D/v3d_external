@@ -68,6 +68,7 @@ class terafly::PMain : public QWidget
         static PMain* uniqueInstance;
         PMain(){    /**/tf::debug(tf::LEV1, 0, __itm__current__function__);   }
         PMain(V3DPluginCallback2 *callback, QWidget *parent);
+        QIcon getIcon(QString path, int w, int h);
 
         //members
         V3DPluginCallback2* V3D_env;    //handle of V3D environment

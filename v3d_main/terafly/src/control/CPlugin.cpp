@@ -141,6 +141,13 @@ void TeraFly::doaction(const QString &action_name)
 }
 }
 
+void TeraFly::closePMain(){
+    if(PMain::getInstance()){
+            PMain::uninstance();
+            PMain::getInstance()->deleteLater();
+    }
+}
+
 // returns true if version >= min_required_version, where version format is version.major.minor
 bool TeraFly::checkVersion(std::string version, std::string min_required_version)
 {

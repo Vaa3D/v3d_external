@@ -3776,7 +3776,8 @@ void CMainApplication::ProcessVREvent( const vr::VREvent_t & event )
             }
 
             //special situation for splitnode in head or end
-            if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())/*||nearestNT.listNeuron.size()<=3||nearestNode==*(nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2)*/)
+            if((nearestNode==*nearestNT.listNeuron.begin())||(nearestNode==nearestNT.listNeuron.back())/*||nearestNT.listNeuron.size()<=3||nearestNode==*
+            (nearestNT.listNeuron.begin()+1)||nearestNode==*(nearestNT.listNeuron.end()-2)*/)
             {
                 qDebug()<<"split node in hear/end or neuron is too short";
                 break;

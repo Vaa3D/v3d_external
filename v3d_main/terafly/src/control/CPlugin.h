@@ -891,6 +891,7 @@ class terafly::TeraFly : public QObject
         // access points
         static void domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
         static void doaction(const QString &action_name);
+        static void closePMain();
 
         // returns true if version >= min_required_version, where version format is version.major.minor
         static bool checkVersion(std::string version, std::string min_required_version);

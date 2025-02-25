@@ -137,7 +137,7 @@ PMain* PMain::getInstance()
     else
     {
         tf::warning("TeraFly not yet instantiated", __itm__current__function__);
-        QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
+//        QMessageBox::critical(0,QObject::tr("Error"), QObject::tr("TeraFly not yet instantiated"),QObject::tr("Ok"));
 		return 0;
     }
 }
@@ -185,6 +185,13 @@ PMain::~PMain()
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
 }
 
+QIcon PMain::getIcon(QString path, int w, int h){
+    QPixmap pixmap(path);
+    QPixmap scaledPixmap = pixmap.scaled(w, h, Qt::KeepAspectRatio);
+    QIcon icon(scaledPixmap);
+    return icon;
+}
+
 PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
 {
     /**/tf::debug(tf::LEV1, 0, __itm__current__function__);
@@ -226,7 +233,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     closeVolumeAction = new QAction(QIcon(":/icons/close.png"), "Close image", this);
     //saveandchangetype=new QAction(QIcon(":/icons/changetype.png"),"Change curren types",this);
     //returntochangedtype=new QAction(QIcon(":/icons/returntype.png"),"Return curren types",this);
-    loadAnnotationsAction = new QAction(QIcon(":/icons/open_ano.png"), "Load annotations", this);
+    loadAnnotationsAction = new QAction(getIcon(":/icons/open_ano.png", 50, 50), "Load annotations", this);
     saveAnnotationsAction = new QAction(QIcon(":/icons/save.png"), "Save annotations", this);
     saveAnnotationsAfterRemoveDupNodesAction=new QAction("Remove dup nodes before saving annotations",this);
     saveAnnotationsAsAction = new QAction(QIcon(":/icons/saveas.png"), "Save annotations as", this);
@@ -277,6 +284,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     fileMenu->addAction(clearAnnotationsAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
+//    fileMenu->setStyleSheet("QMenu::item { min-height: 30px; }");
 #ifdef __ALLOW_VR_FUNCS__
     /*----------------collaborate mdoe-------------------*/
     collaborateMenu=menuBar->addMenu("Collaborate");
@@ -1221,7 +1229,7 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     layout->setSpacing(0);
     setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
-    setWindowTitle(QString("TeraFly v").append(terafly::version.c_str()));
+    setWindowTitle(QString("CAR-WS v").append(terafly::version.c_str()));
     this->setFont(tinyFont);
 
     // signals and slots
@@ -1373,8 +1381,8 @@ void PMain::reset()
 //    T0_sbox->setValue(0);
 //    T1_sbox->setValue(0);
     frameCoord->setText("");
-    refSys->setXRotation(200);
-    refSys->setYRotation(50);
+    refSys->setXRotation(180);
+    refSys->setYRotation(40);
     refSys->setZRotation(0);
     refSys->setFilled(true);
     refSys->setDims(1,1,1);
@@ -2455,6 +2463,14 @@ void PMain::importDone(RuntimeException *ex, qint64 elapsed_time)
             info_page->showVirtualPyramidTab();
         }
 
+        // 获取屏幕尺寸
+        QRect screenGeometry = QApplication::primaryScreen()->geometry();
+        int screenWidth = screenGeometry.width();
+        int screenHeight = screenGeometry.height();
+        int curWidth = uniqueInstance->width();
+        uniqueInstance->resize(curWidth, screenHeight - 100);
+
+        new_win->resize(screenWidth - curWidth - 100, screenHeight - 100);
     }
 
     //resetting some widgets
@@ -2951,6 +2967,11 @@ void PMain::doTeraflyVRView()
     }
 }
 
+void PMain::doimageVRView(bool flag){
+    CViewer *cur_win = CViewer::getCurrent();
+    cur_win->view3DWidget->doimageVRView(flag);
+}
+
 void PMain::showPMain(){
     this->show();
 }
@@ -2958,6 +2979,7 @@ void PMain::showPMain(){
 void PMain::doCollaborationVRView()
 {
 	qDebug()<<"PMain::doCollaborationVRView()";
+    timerCheckConn->stop();
 	try
     {
         CViewer *cur_win = CViewer::getCurrent();

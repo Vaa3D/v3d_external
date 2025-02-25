@@ -1648,6 +1648,9 @@ void Renderer_gl1::segEnd2SegIDmapping(My4DImage* curImg)
 	//this->tail2SegIDmap.clear();
 	for (vector<V_NeuronSWC>::iterator it = curImg->tracedNeuron.seg.begin(); it != curImg->tracedNeuron.seg.end(); ++it)
 	{
+        if(it->row.size() == 0){
+            continue;
+        }
 		double xLabelTail = it->row.begin()->x;
 		double yLabelTail = it->row.begin()->y;
 		double zLabelTail = it->row.begin()->z;
