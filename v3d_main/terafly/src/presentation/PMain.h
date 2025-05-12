@@ -602,6 +602,7 @@ public:
     QAction *loadAction;
     QAction *somaNearByAction,*colorMutationAction,*dissociativeAction,*angleAction;
     QAction *defineSomaAction,*sendSomaPosAction;
+    QAction *openAutoCorrectAction;
 //    QAction *openSwcManagerClientAction;
     QAction *qcManagerAction;
     QListWidget *userView;
@@ -614,6 +615,7 @@ public:
     static string dbmsServerAddress;
     static string apiVersion;
     int retryCount = 0;
+    bool isAutoCorrectionEnabled = false;
 
     void getAno(QString anoFile);
     void doimageVRView(bool flag);
@@ -636,6 +638,7 @@ public slots:
     void analyzeAngle();
     void defineSoma();
     void sendSomaPosition();
+    void enableAutoCorrection();
     void setDefineSomaState(bool);
     void openSwcManagerClient();
     void openQcManager();

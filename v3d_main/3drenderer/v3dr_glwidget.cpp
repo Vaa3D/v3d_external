@@ -1780,7 +1780,7 @@ void V3dR_GLWidget::hideTool()
 }
 void V3dR_GLWidget::updateTool()
 {
-//    qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
+    qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
 
     if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
     {
@@ -4611,26 +4611,6 @@ void V3dR_GLWidget::newThreadRetypeSeg(QString segInfo,int type, int isMany){
 
 void V3dR_GLWidget::CollaAddSeg(QString segInfo, int isBegin)
 {
-    //    QStringList qsl=segInfo.split(";",QString::SkipEmptyParts);
-    //    SetupCollaborateInfo();
-    //    vector<XYZ> loc_coords;
-    //    int type;
-
-    //    for(int i=0;i<qsl.size();i++)
-    //    {
-    //        QStringList temp=qsl[i].trimmed().split(" ");
-
-    //        float x=temp[1].toFloat();
-    //        float y=temp[2].toFloat();
-    //        float z=temp[3].toFloat();
-    //        type=temp[0].toInt();
-    //        loc_coords.push_back(ConvertreceiveCoords(x,y,z));
-    //    }
-
-    //    Renderer_gl1* rendererGL1Ptr = static_cast<Renderer_gl1*>(this->getRenderer());
-    //    qDebug()<<"add in seg";
-    //    rendererGL1Ptr->addCurveSWC(loc_coords, 1, 1,type);
-    //    POST_updateGL();
     addCurveInAllSapce(segInfo, isBegin);
 }
 
@@ -4641,6 +4621,10 @@ void V3dR_GLWidget::newThreadAddSeg(QString segInfo, int isBegin){
     //    {
     //        QApplication::processEvents(QEventLoop::AllEvents, 100);
     //    }
+}
+
+void V3dR_GLWidget::CollaAddSegBatch(QStringList msgList, QVector<int> isBeginVec){
+    addCurveBatchInAllSpace(msgList, isBeginVec);
 }
 
 void V3dR_GLWidget::CollaAddManySegs(QString segsInfo){
@@ -4964,18 +4948,10 @@ void V3dR_GLWidget::deleteCurveInAllSpace(QString segInfo, int isMany) //only ca
 //    }
 //    qDebug()<<"ZLL________________2";
 //    int index=findseg(v_ns_list,coords);
-
-
-
-
 //}
 
-void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
-{
-    //    qDebug()<<"enter";
+void V3dR_GLWidget::addCurveToSegList(V_NeuronSWC_list& v_ns_list, QString segInfo, int isBegin){
     if(segInfo.isEmpty()) return;
-    NeuronTree  nt = terafly::PluginInterface::getSWC();
-    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
 
     XYZ point1,point2;
     QStringList pointlist=segInfo.split(",",QString::SkipEmptyParts);
@@ -5167,11 +5143,29 @@ void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
     }
 
     v_ns_list.seg.push_back(segs[0]);
+}
+
+void V3dR_GLWidget::addCurveInAllSapce(QString segInfo, int isBegin)
+{
+    //    qDebug()<<"enter";
+    if(segInfo.isEmpty()) return;
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    addCurveToSegList(v_ns_list, segInfo, isBegin);
     nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
     terafly::PluginInterface::setSWC(nt,true);
-    //    qDebug()<<"end";
-    //    QString fileName = "";
-    //    writeSWC_file(fileName,nt);
+}
+
+void V3dR_GLWidget::addCurveBatchInAllSpace(QStringList msgList, QVector<int> isBeginVec){
+    NeuronTree  nt = terafly::PluginInterface::getSWC();
+    V_NeuronSWC_list v_ns_list=NeuronTree__2__V_NeuronSWC_list(nt);
+
+    for (int i = 0; i < msgList.size(); i++){
+        addCurveToSegList(v_ns_list, msgList[i], isBeginVec[i]);
+    }
+    nt=V_NeuronSWC_list__2__NeuronTree(v_ns_list);
+    terafly::PluginInterface::setSWC(nt,true);
 }
 
 void V3dR_GLWidget::addManyCurvesInAllSpace(QString segsInfo){

@@ -121,6 +121,12 @@ public slots:
      */
     void TFProcess(QString msg);
     /**
+     * @brief TFProcessBatch
+     * @param msg
+     * 消息处理函数
+     */
+    void TFProcessBatch(QStringList msg);
+    /**
      * @brief processWarnMsg
      * @param msg
      * 警告处理函数
@@ -135,9 +141,15 @@ public slots:
     /**
      * @brief processSendMsg
      * @param msg
-     * 分析处理函数
+     * 发送处理函数
      */
     void processSendMsg(QString msg);
+    /**
+     * @brief processSwitchMsg
+     * @param msg
+     * 转换处理函数
+     */
+    void processSwitchMsg(QString msg);
     /**
      * @brief onReadyRead
      * 读取输入，并执行相关处理
@@ -169,11 +181,14 @@ signals:
     void resetConn(QString);
     //msg process
     void msgtoprocess(QString);//转发消息给消息处理函数（TFProcess/TVProcess）
+    void msgtoprocessbatch(QStringList);
     void msgtowarn(QString);//转发消息给警告处理函数（processWarnMsg）
     void msgtoanalyze(QString);//转发消息给分析处理函数(processAnalyzeMsg)
     void msgtosend(QString);//转发消息给发送处理函数(processSendMsg)
+    void msgtoswitch(QString);//转发消息给转换处理函数(processSwitchMsg)
 
     void addSeg(QString,int);//加线信号 （type x y z;type x y z;...）
+    void addSegBatch(QStringList,QVector<int>);
     void addManySegs(QString);//加很多线信号
     void delSeg(QString,int);//减线信号 （type x y z;type x y z;...）
     void splitSeg(QString);//break seg信号

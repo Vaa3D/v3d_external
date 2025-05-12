@@ -33,6 +33,8 @@ V3dR_Communicator::V3dR_Communicator(QObject *partent):b_isConnectedState(false)
     connect(this,SIGNAL(msgtowarn(QString)),this,SLOT(processWarnMsg(QString)));
     connect(this,SIGNAL(msgtoanalyze(QString)),this,SLOT(processAnalyzeMsg(QString)));
     connect(this,SIGNAL(msgtosend(QString)),this,SLOT(processSendMsg(QString)));
+    connect(this,SIGNAL(msgtoswitch(QString)),this,SLOT(processSwitchMsg(QString)));
+    connect(this,SIGNAL(msgtoprocessbatch(QStringList)),this,SLOT(TFProcessBatch(QStringList)));
     //    connect(this->socket,SIGNAL(disconnected()),this,SLOT(onDisconnected()));
     //    m_timerConnect = new QTimer(this);
     //    timer_iniconn=new QTimer(this);
@@ -137,9 +139,12 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
     QRegExp analyzeRex("^/FEEDBACK_ANALYZE_(.*):.*$");
     QRegExp defineRex("^/FEEDBACK_DEFINE_(.*):.*$");
     QRegExp sendRex("^/FEEDBACK_SEND_(.*):.*$");
+    QRegExp switchRex("^/FEEDBACK_SWITCH_(.*):.*$");
 
-    for(auto &msg:list)
-    {
+//    if (list.size() > 1){
+//        emit msgtoprocessbatch(list);
+//    }
+    for (QString& msg : list){
         if(msg.size()<64)
             qDebug()<<"OnRead:"<<msg;
         if(msg.startsWith("STARTCOLLABORATE:")){
@@ -149,7 +154,7 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
             emit ack();
         }
         else if(onlineUsersRex.indexIn(msg) != -1){
-//            emit updateuserview(usersRex.cap(1));
+    //            emit updateuserview(usersRex.cap(1));
             emit updateOnlineUsers(onlineUsersRex.cap(1));
         }else if(warnRex.indexIn(msg) != -1){
             emit msgtowarn(msg);
@@ -157,6 +162,8 @@ void V3dR_Communicator::preprocessmsgs(QStringList list)
             emit msgtoanalyze(msg);
         }else if(sendRex.indexIn(msg) != -1){
             emit msgtosend(msg);
+        }else if(switchRex.indexIn(msg) != -1){
+            emit msgtoswitch(msg);
         }
         else{
             emit msgtoprocess(msg);
@@ -498,6 +505,36 @@ void V3dR_Communicator::processSendMsg(QString line){
     }
 }
 
+void V3dR_Communicator::processSwitchMsg(QString line){
+    QRegExp switchreg("^/FEEDBACK_SWITCH_(.*):(.*)");
+    line=line.trimmed();
+    if(switchreg.indexIn(line)!=-1)
+    {
+        QString type=switchreg.cap(1).trimmed();
+        QString operatorMsg=switchreg.cap(2).trimmed();
+        QString msg = operatorMsg;
+
+        QStringList listWithHeader=msg.split(',',QString::SkipEmptyParts);
+        QString msgHeader=listWithHeader[0];
+        QString sender=msgHeader.split(" ").at(0).trimmed();
+        QString request_senderid=msgHeader.split(" ").at(1).trimmed();
+        int result=msgHeader.split(" ").at(2).trimmed().toInt();
+        QStringList msgList=listWithHeader;
+        msgList.removeAt(0);
+
+        if (sender=="server" && type=="AutoCorrectionState")
+        {
+            if(result==1)
+            {
+                QMessageBox::information(0,tr("Infomation "),
+                                         msgList[0],
+                                         QMessageBox::Ok);
+            }
+        }
+
+    }
+}
+
 void V3dR_Communicator::TFProcess(QString line) {
     QRegExp msgreg("/(.*)_(.*):(.*)");
 
@@ -507,11 +544,18 @@ void V3dR_Communicator::TFProcess(QString line) {
         QString operationtype=msgreg.cap(1).trimmed();
         bool isNorm=msgreg.cap(2).trimmed()=="norm";
         QString operatorMsg=msgreg.cap(3).trimmed();
+        QStringList listwithheader=operatorMsg.split(',',QString::SkipEmptyParts);
+        QString user=listwithheader[0].split(" ").at(1).trimmed();
+
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+
+        if (user == userId){
+            qDebug() << operationtype + "_recive_timestamp: " + QString::number(timestampMillseconds);
+        }
 
         if(operationtype == "drawline" )
         {
             QString msg=operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"drawline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
@@ -519,7 +563,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 return;
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
             int isBegin=listwithheader[0].split(" ").at(2).toUInt();
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userId" << userId;
@@ -531,7 +574,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         }else if(operationtype == "delline")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"delline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
@@ -540,7 +582,6 @@ void V3dR_Communicator::TFProcess(QString line) {
             }
             QStringList infos=listwithheader[0].split(" ");
             bool isTeraFly=infos.at(0).trimmed()=="0";
-            QString user=infos.at(1).trimmed();
             unsigned int isMany=0;
             if(infos.size()>=6)
                 isMany=infos.at(5).trimmed().toInt();
@@ -567,7 +608,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         }else if(operationtype=="splitline")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"splitline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
@@ -576,7 +616,6 @@ void V3dR_Communicator::TFProcess(QString line) {
             }
             QStringList infos=listwithheader[0].split(" ");
             bool isTeraFly=infos.at(0).trimmed()=="0";
-            QString user=infos.at(1).trimmed();
 
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==useriD" << userId;
@@ -588,7 +627,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         }else if(operationtype == "addmarker")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"addmarker_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
@@ -596,7 +634,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 return;
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userId" << userId;
             else
@@ -606,7 +643,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         }else if(operationtype == "delmarker")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"delmarker_msg_count"<<listwithheader.count();
             if(listwithheader.size()<=1)
             {
@@ -614,7 +650,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 return;
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userId" << userId;
             else
@@ -625,7 +660,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         }else if(operationtype == "retypemarker")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"retypemarker_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
@@ -633,7 +667,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 return;
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userId" << userId;
             else
@@ -644,7 +677,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         else if(operationtype == "retypeline")
         {
             QString msg =operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"retypeline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<=1)
             {
@@ -655,7 +687,6 @@ void V3dR_Communicator::TFProcess(QString line) {
             QStringList infos=listwithheader[0].split(" ");
 
             bool isTeraFly=infos.at(0).trimmed()=="0";
-            QString user=infos.at(1).trimmed();
             int type=infos.at(2).trimmed().toInt();
             unsigned int isMany=0;
             if(infos.size()>=7)
@@ -672,7 +703,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         else if(operationtype == "connectline")
         {
             QString msg = operatorMsg;
-            QStringList listwithheader = msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"connectline_msg_count"<<listwithheader.count();
             if(listwithheader.size()<=1)
             {
@@ -680,7 +710,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 return;
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userId" << userId;
             else
@@ -691,7 +720,6 @@ void V3dR_Communicator::TFProcess(QString line) {
         }
         else if(operationtype == "drawmanylines"){
             QString msg=operatorMsg;
-            QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
             qDebug()<<"drawmanylines_msg_count"<<listwithheader.count();
             if(listwithheader.size()<1)
             {
@@ -699,7 +727,6 @@ void V3dR_Communicator::TFProcess(QString line) {
                 return;
             }
             bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
-            QString user=listwithheader[0].split(" ").at(1).trimmed();
             if (user == userId && isNorm && isTeraFly)
                 qDebug() << "user:" << user << "==userId" << userId;
             else
@@ -711,10 +738,60 @@ void V3dR_Communicator::TFProcess(QString line) {
     }
 }
 
+void V3dR_Communicator::TFProcessBatch(QStringList msgList) {
+    QStringList processedMsgList;
+    QVector<int> isBeginVec;
+    QString operationType;
+
+    qDebug() << msgList;
+    for(QString& line : msgList){
+        QRegExp msgreg("/(.*)_(.*):(.*)");
+
+        line=line.trimmed();
+        if(msgreg.indexIn(line)!=-1)
+        {
+            QString opType=msgreg.cap(1).trimmed();
+            operationType = opType;
+            bool isNorm=msgreg.cap(2).trimmed()=="norm";
+            QString operatorMsg=msgreg.cap(3).trimmed();
+
+            if(opType == "drawline" )
+            {
+                QString msg=operatorMsg;
+                QStringList listwithheader=msg.split(',',QString::SkipEmptyParts);
+                qDebug()<<"drawline_msg_count"<<listwithheader.count();
+                if(listwithheader.size()<1)
+                {
+                    qDebug()<<"msg only contains header:"<<msg;
+                    return;
+                }
+                bool isTeraFly=listwithheader[0].split(" ").at(0).trimmed()=="0";
+                QString user=listwithheader[0].split(" ").at(1).trimmed();
+                int isBegin=listwithheader[0].split(" ").at(2).toUInt();
+                if (user == userId && isNorm && isTeraFly)
+                    qDebug() << "user:" << user << "==userId" << userId;
+                else
+                {
+                    listwithheader.removeAt(0);
+
+                }
+                processedMsgList.append(listwithheader.join(","));
+                isBeginVec.push_back(isBegin);
+            }
+        }
+    }
+
+    if (operationType == "drawline"){
+        emit addSegBatch(processedMsgList, isBeginVec);
+    }
+}
+
 void V3dR_Communicator::UpdateAddSegMsg(V_NeuronSWC seg, vector<V_NeuronSWC> connectedSegs, QString clienttype, bool isBegin)
 {
     if(clienttype=="TeraFly")
     {
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "drawline_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(int(isBegin)).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -776,6 +853,8 @@ void V3dR_Communicator::UpdateConnectSegMsg(XYZ p1, XYZ p2, V_NeuronSWC seg1, V_
 {
     if(clienttype=="TeraFly")
     {
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "connectline_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         XYZ GlobalCrood1 = ConvertLocalBlocktoGlobalCroods(p1.x,p1.y,p1.z);
@@ -808,6 +887,9 @@ void V3dR_Communicator::UpdateDelSegMsg(V_NeuronSWC seg,QString clienttype,vecto
         if(seg.row.size() == 0){
             return;
         }
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "delline_send_timestamp: " + QString::number(timestampMillseconds);
+
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -837,6 +919,8 @@ void V3dR_Communicator::UpdateDelManySegMsg(vector<V_NeuronSWC> segs, QString cl
     if(segs.size() == 0){
         return;
     }
+    qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    qDebug() << "delline_send_timestamp: " + QString::number(timestampMillseconds);
 
     QStringList result;
     result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
@@ -874,7 +958,6 @@ void V3dR_Communicator::UpdateDelManySegMsg(vector<V_NeuronSWC> segs, QString cl
 void V3dR_Communicator::UpdateDelManyConnectedSegsMsg(vector<V_NeuronSWC> segs,QString clienttype){
     if(clienttype=="TeraFly")
     {
-
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
         for(int i=0;i<segs.size();i++){
@@ -911,7 +994,8 @@ void V3dR_Communicator::UpdateAddMarkerMsg(float X, float Y, float Z,RGBA8 color
 {
     if(clienttype=="TeraFly")
     {
-
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "addmarker_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
@@ -936,7 +1020,8 @@ void V3dR_Communicator::UpdateRetypeMarkerMsg(float X,float Y,float Z, RGBA8 col
 {
     if(clienttype=="TeraFly")
     {
-
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "retypemarker_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
@@ -951,7 +1036,8 @@ void V3dR_Communicator::UpdateDelMarkersMsg(vector<CellAPO> markers,QString clie
 {
     if(clienttype=="TeraFly")
     {
-
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "delmarker_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
 
@@ -983,6 +1069,8 @@ void V3dR_Communicator::UpdateRetypeSegMsg(V_NeuronSWC seg,int type,QString clie
         if(seg.row.size() == 0){
             return;
         }
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "retypeline_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6").arg(0).arg(userId).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -996,6 +1084,8 @@ void V3dR_Communicator::UpdateRetypeManySegsMsg(vector<V_NeuronSWC> segs,int typ
 {
     if(clienttype=="TeraFly")
     {
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "retypeline_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5 %6 %7").arg(0).arg(userId).arg(type).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z).arg(1));
 
@@ -1058,6 +1148,8 @@ void V3dR_Communicator::UpdateSplitSegMsg(V_NeuronSWC seg,V3DLONG nodeinseg_id,Q
         V_NeuronSWC_list new_slist = split_V_NeuronSWC_simplepath (seg, nodeinseg_id);
         if(new_slist.seg.size()==1)
             return;
+        qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+        qDebug() << "splitline_send_timestamp: " + QString::number(timestampMillseconds);
         QStringList result;
         result.push_back(QString("%1 %2 %3 %4 %5").arg(0).arg(userId).arg(ImageCurRes.x).arg(ImageCurRes.y).arg(ImageCurRes.z));
         result+=V_NeuronSWCToSendMSG(seg);
@@ -1121,6 +1213,8 @@ void V3dR_Communicator::UpdateUndoDeque()
                 msg="/"+operationType+"_undo:"+newMsg;
             }
 
+            qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+            qDebug() << operationType + "_send_timestamp: " + QString::number(timestampMillseconds);
             sendMsg(msg);
             undoDeque.pop_back();
 
@@ -1182,6 +1276,8 @@ void V3dR_Communicator::UpdateRedoDeque()
             }
 
             //            qDebug()<<msg;
+            qint64 timestampMillseconds = QDateTime::currentDateTime().toMSecsSinceEpoch();
+            qDebug() << operationType + "_send_timestamp: " + QString::number(timestampMillseconds);
             sendMsg(msg);
             redoDeque.pop_back();
 

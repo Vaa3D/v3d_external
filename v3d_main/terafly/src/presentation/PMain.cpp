@@ -288,20 +288,24 @@ PMain::PMain(V3DPluginCallback2 *callback, QWidget *parent) : QWidget(parent)
     collaborateMenu->addAction(sendSomaPosAction);
     connect(sendSomaPosAction,SIGNAL(triggered()),this,SLOT(sendSomaPosition()));
 
+    openAutoCorrectAction=new QAction("Enable/Disable Auto-Correction",collaborateMenu);
+    collaborateMenu->addAction(openAutoCorrectAction);
+    connect(openAutoCorrectAction,SIGNAL(triggered()),this,SLOT(enableAutoCorrection()));
+
     analyzeMenu=collaborateMenu->addMenu("Analyze");
-    somaNearByAction=new QAction("Analyze points near soma", analyzeMenu);
+    somaNearByAction=new QAction("Analyze Points Near Soma", analyzeMenu);
     analyzeMenu->addAction(somaNearByAction);
     connect(somaNearByAction,SIGNAL(triggered()),this,SLOT(analyzeSomaNearBy()));
 
-    colorMutationAction=new QAction("Analyze color mutations", analyzeMenu);
+    colorMutationAction=new QAction("Analyze Color Mutations", analyzeMenu);
     analyzeMenu->addAction(colorMutationAction);
     connect(colorMutationAction,SIGNAL(triggered()),this,SLOT(analyzeColorMutation()));
 
-    dissociativeAction=new QAction("Analyze Isolated branches", analyzeMenu);
+    dissociativeAction=new QAction("Analyze Isolated Branches", analyzeMenu);
     analyzeMenu->addAction(dissociativeAction);
     connect(dissociativeAction,SIGNAL(triggered()),this,SLOT(analyzeDissociative()));
 
-    angleAction=new QAction("Analyze the Angles of dendrite bifurcations", analyzeMenu);
+    angleAction=new QAction("Analyze the Angles of Dendrite Bifurcations", analyzeMenu);
     analyzeMenu->addAction(angleAction);
     connect(angleAction,SIGNAL(triggered()),this,SLOT(analyzeAngle()));
 
@@ -4240,6 +4244,10 @@ bool PMain::startCollaborate(QString port)
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSeg(QString, int)),
             cur_win->getGLWidget(),SLOT(newThreadAddSeg(QString, int)));
 
+    disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addSegBatch(QStringList, QVector<int>)), 0, 0);
+    connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addSegBatch(QStringList, QVector<int>)),
+            cur_win->getGLWidget(),SLOT(CollaAddSegBatch(QStringList, QVector<int>)));
+
     disconnect(cur_win->getGLWidget()->TeraflyCommunicator, SIGNAL(addManySegs(QString)), 0, 0);
     connect(cur_win->getGLWidget()->TeraflyCommunicator,SIGNAL(addManySegs(QString)),
             cur_win->getGLWidget(),SLOT(CollaAddManySegs(QString)));
@@ -4722,6 +4730,14 @@ void PMain::defineSoma(){
 void PMain::sendSomaPosition(){
     if(this->Communicator && this->Communicator->socket){
         Communicator->sendMsg(QString("/SEND_SomaPos:%1 %2").arg(0).arg(Communicator->userId));
+    }
+}
+
+void PMain::enableAutoCorrection(){
+    if(this->Communicator && this->Communicator->socket){
+        isAutoCorrectionEnabled = !isAutoCorrectionEnabled;
+        int state = isAutoCorrectionEnabled ? 1 : 0;
+        Communicator->sendMsg(QString("/SWITCH_AutoCorrectionState:%1 %2 %3").arg(0).arg(Communicator->userId).arg(state));
     }
 }
 

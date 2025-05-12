@@ -626,6 +626,7 @@ public:
     //for collaborate
 public slots:
     void CollaAddSeg(QString segInfo, int isBegin);
+    void CollaAddSegBatch(QStringList msgList, QVector<int> isBeginVec);
     void CollaDelSeg(QString segInfo, int isMany);
     void CollaAddMarker(QString markerPOS, QString comment);
     void CollaAddManyMarkers(QString markersPOS, QString comment);
@@ -651,7 +652,9 @@ public:
     XYZ ConvertreceiveCoords(float x,float y,float z);// global-> local
     void deleteCurveInAllSpace(QString segInfo, int isMany);//neewd to finish
     void addManyCurvesInAllSpace(QString segsInfo);
+    void addCurveToSegList(V_NeuronSWC_list& v_ns_list, QString segInfo, int isBegin);
     void addCurveInAllSapce(QString segInfo, int isBegin);
+    void addCurveBatchInAllSpace(QStringList msgList, QVector<int> isBeginVec);
     void connectCurveInAllSapce(QString info);
     bool simpleConnectExecutor(V_NeuronSWC_list& segments, vector<segInfoUnit>& segInfo);
     int findseg(V_NeuronSWC_list v_ns_list,QVector<XYZ> coords);
