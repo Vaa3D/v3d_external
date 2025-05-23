@@ -1710,7 +1710,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                 // otherwise do nothing, - the last hit pos will not change
 
                 My4DImage* image4d = v3dr_getImage4d(_idep);
-                if (image4d)
+                if (image4d && w->TeraflyCommunicator && w->TeraflyCommunicator->socket)
                 {
                     if (tmpind>=0 && tmpind<image4d->listLandmarks.size())
                     {
@@ -2652,12 +2652,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
         _appendMarkerPos(x,y);
         if (b_move)
         {
-            qDebug("\t track ( %i, %i ) to define Curve", x,y);
+//            qDebug("\t track ( %i, %i ) to define Curve", x,y);
             this->sShowTrack = 1;  //csz20220628
             return 1; //display 2d track
         }
         // release button
-        qDebug("\t track-end ( %i, %i ) to define Curve (%i points)", x,y, listMarkerPos.size());
+//        qDebug("\t track-end ( %i, %i ) to define Curve (%i points)", x,y, listMarkerPos.size());
         if (listMarkerPos.size() >=3) //drop short click
             list_listCurvePos.append(listMarkerPos);
         listMarkerPos.clear();
@@ -2763,7 +2763,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
             return 1; //display 2d track
         }
         // else release button
-        qDebug("\t track-end ( %i, %i ) to refine Curve (%i points)", x,y, listMarkerPos.size());
+//        qDebug("\t track-end ( %i, %i ) to refine Curve (%i points)", x,y, listMarkerPos.size());
         if (listMarkerPos.size() >=3) //drop short click
             list_listCurvePos.append(listMarkerPos);
         listMarkerPos.clear();

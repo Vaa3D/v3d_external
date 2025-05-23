@@ -366,6 +366,7 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collabo
         interval_t z_range(0, std::numeric_limits<int>::max());
         CAnnotations::getInstance()->addLandmarks(x_range, y_range, z_range, landmark_list);
 
+        qDebug() << "22222222222";
         // push content to viewer
         CViewer::getCurrent()->loadAnnotations(collaborate);
     }
@@ -373,6 +374,8 @@ bool tf::PluginInterface::setLandmark(LandmarkList & landmark_list, bool collabo
     {
         v3d_msg(QString("Exception catched in CAR-WS plugin API: ") + e.what(), true);
     }
+
+    return true;
 }
 
 // get path of the image volume at the given resolution (default: highest resolution)

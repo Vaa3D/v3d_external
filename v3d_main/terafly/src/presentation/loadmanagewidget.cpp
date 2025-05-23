@@ -66,7 +66,8 @@ LoadManageWidget::LoadManageWidget(UserInfo *user): userinfo(user)
     int screenWidth = screenGeometry.width();
     int screenHeight = screenGeometry.height();
 
-    this->setMinimumSize(1100, 420);
+    this->setWindowTitle("CAR-WS");
+    this->setMinimumSize(1000, 420);
     this->move((screenWidth - this->width()) / 2 - 50, (screenHeight - this->height()) / 2);//移动到所在屏幕中间
 
     connect(loadBtn,SIGNAL(clicked()),this,SLOT(loadAno()));
@@ -168,7 +169,7 @@ void LoadManageWidget::getAllProjectSwcList(){
     proAndSwcName2SwcIdMap.clear();
 
     int code=reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    qDebug()<<"getAllProject: "<<code;
+    qDebug()<<"getAllProject "<<code;
     if(code==200)
     {
         QByteArray tmpArray = reply->readAll();
@@ -176,8 +177,9 @@ void LoadManageWidget::getAllProjectSwcList(){
         json response_json = json::parse(jsonString);
 
         auto metaInfo = response_json["metaInfo"];
-        bool status = response_json["Status"];
+        bool status = metaInfo["Status"];
         QString message = QString::fromStdString(metaInfo["Message"]);
+
         if(!status){
             QString msg = "GetAllProject Failed! " + message;
             qDebug()<<msg;
@@ -241,6 +243,7 @@ void LoadManageWidget::getAllSwcUuidAndNameByProId(QString proName, QString proU
     if(code != 200){
         qDebug()<<"getProjectSwcNamesByProjectUuid: "<<code;
     }
+    qDebug()<<"getProjectSwcNamesByProjectUuid: "<<code;
     if(code==200)
     {
         QByteArray tmpArray=reply->readAll();

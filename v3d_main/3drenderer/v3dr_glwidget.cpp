@@ -728,8 +728,8 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 
     if (!isoperating&&event->button()==Qt::RightButton && renderer) //right-click
     {
-        int x = event->x();
-        int y = event->y();
+        int x = event->x() * devicePixelRatio();
+        int y = event->y() * devicePixelRatio();
         #ifdef _ENABLE_MACX_DRAG_DROP_FIX_
         x = 2 * x;
         y = 2 * y;
@@ -4228,6 +4228,8 @@ void V3dR_GLWidget::callCreateMarkerNearestNode()
         QPoint gpos = mapFromGlobal(cursor().pos());
         int x = gpos.x();
         int y = gpos.y();
+        x = x * devicePixelRatio();
+        y = y * devicePixelRatio();
 #ifdef MACOS_SYSTEM
         x = x * 2;
         y = y * 2;
@@ -4864,7 +4866,7 @@ void V3dR_GLWidget::CollaAddManyMarkers(QString markersPOS, QString comment){
         markers.append(marker);
     }
 
-L: terafly::PluginInterface::setLandmark(markers,true);
+    terafly::PluginInterface::setLandmark(markers,true);
         //    TeraflyCommunicator->emitAddManyMarkersDone();
 
 }

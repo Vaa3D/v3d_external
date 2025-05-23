@@ -13,10 +13,10 @@ void V3dr_onlineusersDialog::createLayout(QPoint topLeftPoint){
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(userListWidget);
     this->setLayout(layout);
-    this->move(topLeftPoint.x() + 65, topLeftPoint.y() + 40);
+    this->move(topLeftPoint.x() + 80, topLeftPoint.y() + 50);
     // 设置窗口的最小大小为推荐的最小大小
     QSize size = this->minimumSizeHint();
-    this->resize(size.width() + 85, size.height() + 25);
+    this->resize(size.width() + 60, size.height() + 25);
     this->show();
 }
 

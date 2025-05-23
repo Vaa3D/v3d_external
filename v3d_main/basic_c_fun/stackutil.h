@@ -65,6 +65,8 @@ extern "C" {
 };
 
 #include "v3d_basicdatatype.h"
+#include "imageio_mylib.h" //100817. PHC
+#include "../io/v3d_nrrd.h" //150507, PHC
 
 typedef char BIT8_UNIT;
 typedef short int BIT16_UNIT;
@@ -134,10 +136,6 @@ bool ensure_file_exists_and_size_not_too_big(char *filename, V3DLONG sz_thres);
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype); //070215
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype, int chan_id_to_load); //081204
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype); //070214
-
-
-#include "imageio_mylib.h" //100817. PHC
-#include "../io/v3d_nrrd.h" //150507, PHC
 
 #endif
 

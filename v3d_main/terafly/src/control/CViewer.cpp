@@ -667,6 +667,10 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             qDebug() << "globalPosition: " << mouseEvt->globalPosition();
 
             qDebug()<<"object == view3DWidget && event->type() == QEvent::MouseButtonPress)";
+
+            int x = mouseEvt->x() * devicePixelRatio();
+            int y = mouseEvt->y() * devicePixelRatio();
+
             if(mouseEvt->button() == Qt::RightButton && PAnoToolBar::instance()->buttonMarkerDelete->isChecked())
             {
                 deleteMarkerAt(mouseEvt->x(), mouseEvt->y());
@@ -687,7 +691,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             // ignore Vaa3D-right-click-popup marker create operations
             else if(mouseEvt->button() == Qt::RightButton)
             {
-                view3DWidget->getRenderer()->hitPoint(mouseEvt->x(), mouseEvt->y());
+                view3DWidget->getRenderer()->hitPoint(x, y);
                 Renderer::SelectMode mode = view3DWidget->getRenderer()->selectMode;
                 bool addMarker = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->b_addthismarker;
 
@@ -876,6 +880,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             has_double_clicked = true;
 
             QMouseEvent* mouseEvt = (QMouseEvent*)event;
+            int x = mouseEvt->x() * devicePixelRatio();
+            int y = mouseEvt->y() * devicePixelRatio();
 
             myRenderer_gl1* thisRenderer = myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()));
 
@@ -883,7 +889,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
             {
                 //ljs debug double click terafly widget steps
                 qDebug()<<"------------2)";
-                XYZ point = getRenderer3DPoint(mouseEvt->x(), mouseEvt->y());
+                XYZ point = getRenderer3DPoint(x, y);
                 if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                 {
                     float xsign = point.x - (volH1-volH0)/2;
@@ -915,8 +921,8 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 // ------------------------------------------------------------------------------------------------------------------------ MK, Nov, 2018 -----------------
                 NeuronTree* treePtr = (NeuronTree *)&(thisRenderer->listNeuronTree.at(0));
                 double dist;
-                V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(mouseEvt->x(), mouseEvt->y(), treePtr, dist);
-                cout << " === mouse coords: " << mouseEvt->x() << " " << mouseEvt->y() << endl;
+                V3DLONG index = thisRenderer->findNearestNeuronNode_WinXY(x, y, treePtr, dist);
+                cout << " === mouse coords: " << x << " " << y << endl;
                 cout << " === nearest node: " << treePtr->listNeuron.at(index).x << " " << treePtr->listNeuron.at(index).y << endl;
                 cout << " === distance: " << dist << endl;
                 // --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -925,7 +931,7 @@ bool CViewer::eventFilter(QObject *object, QEvent *event)
                 {
                     qDebug()<<"------------5)";
                     cout << "out of nearest SWC search range" << endl;
-                    XYZ point = thisRenderer->get3DPoint(mouseEvt->x(), mouseEvt->y());
+                    XYZ point = thisRenderer->get3DPoint(x, y);
                     if(PMain::getInstance()->isMagnificationLocked && volResIndex>0)
                     {
                         float xsign = point.x - (volH1-volH0)/2;
@@ -2126,6 +2132,7 @@ void CViewer::deleteMarkerAt(int logicX, int logicY, QList<LocationSimple> *dele
 {
     int deviceCoordX = logicX * devicePixelRatio();
     int deviceCoordY = logicY * devicePixelRatio();
+    qDebug() << "enter deleteMarkerAt";
 
     /**/ tf::debug(tf::LEV1,
                    strprintf("title = %s, point = (%d, %d)",
@@ -2142,6 +2149,9 @@ void CViewer::deleteMarkerAt(int logicX, int logicY, QList<LocationSimple> *dele
     vector<int> vaa3dMarkers_tbd;
     QList<LocationSimple> vaa3dMarkers = V3D_env->getLandmark(window);
     QList <ImageMarker> imageMarkers = static_cast<Renderer_gl1*>(view3DWidget->getRenderer())->listMarker;
+    vector<CellAPO> tobeSendMarkers;
+    bool flag = false;
+
     for(int i=0; i<imageMarkers.size(); i++)
     {
         if(imageMarkers[i].selected)
@@ -2152,6 +2162,31 @@ void CViewer::deleteMarkerAt(int logicX, int logicY, QList<LocationSimple> *dele
                    vaa3dMarkers[j].z == imageMarkers[i].z &&
                    !CAnnotations::isMarkerOutOfRendererBounds(vaa3dMarkers[j], *this))
                     vaa3dMarkers_tbd.push_back(j);
+
+            qDebug()<<"imageMarkers[i].color: "<<imageMarkers[i].color.r<<" "<<imageMarkers[i].color.g<<" "<<imageMarkers[i].color.b;
+
+            if(view3DWidget->TeraflyCommunicator!=nullptr && view3DWidget->TeraflyCommunicator->socket
+                &&view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState)
+            {
+                view3DWidget->SetupCollaborateInfo();
+                CellAPO marker;
+                marker.x = imageMarkers[i].x;
+                marker.y = imageMarkers[i].y;
+                marker.z = imageMarkers[i].z;
+                marker.color = imageMarkers[i].color;
+                marker.comment = imageMarkers[i].comment;
+                tobeSendMarkers.push_back(marker);
+
+                if(std::find(view3DWidget->quality_control_types.begin(), view3DWidget->quality_control_types.end(), marker.comment) != view3DWidget->quality_control_types.end()){
+                    flag = true;
+                    view3DWidget->TeraflyCommunicator->checkedQcMarkers.push_back(marker);
+                }
+
+                //                if(view3DWidget->TeraflyCommunicator->timer_exit->isActive()){
+                //                    view3DWidget->TeraflyCommunicator->timer_exit->stop();
+                //                }
+                //                view3DWidget->TeraflyCommunicator->timer_exit->start(2*60*60*1000);
+            }
         }
     }
 
@@ -2174,6 +2209,15 @@ void CViewer::deleteMarkerAt(int logicX, int logicY, QList<LocationSimple> *dele
     // set new markers
     V3D_env->setLandmark(window, vaa3dMarkers);
     V3D_env->pushObjectIn3DWindow(window);
+    terafly::CViewer::getCurrent()->storeAnnotations();
+
+    if (view3DWidget->TeraflyCommunicator && view3DWidget->TeraflyCommunicator->socket && view3DWidget->TeraflyCommunicator->socket->state() == QAbstractSocket::ConnectedState){
+        view3DWidget->TeraflyCommunicator->UpdateDelMarkersMsg(tobeSendMarkers, "TeraFly");
+        if (flag) {
+            view3DWidget->TeraflyCommunicator->emitUpdateQcInfo();
+            view3DWidget->TeraflyCommunicator->emitUpdateQcMarkersCounts();
+        }
+    }
 
     // end select mode
     view3DWidget->getRenderer()->endSelectMode();
@@ -2238,6 +2282,7 @@ void CViewer::updateAnnotationSpace()
 
 void CViewer::loadAnnotations(bool collaborate)
 {
+     qDebug() << "enter loadAnnotations";
     myRenderer_gl1::cast(static_cast<Renderer_gl1*>(view3DWidget->getRenderer()))->isTera = true;
 
     /**/tf::debug(tf::LEV1, strprintf("title = %s", titleShort.c_str()).c_str(), __itm__current__function__);
@@ -2301,8 +2346,7 @@ void CViewer::loadAnnotations(bool collaborate)
     /**/tf::debug(tf::LEV3, strprintf("assigning annotations").c_str(), __itm__current__function__);
     timer.restart();
     V3D_env->setLandmark(window, vaa3dMarkers);
-
-    V3D_env->setSWC(window, vaa3dCurves);
+    V3D_env->setSWC(window, vaa3dCurves, collaborate);
     V3D_env->pushObjectIn3DWindow(window);
     view3DWidget->enableMarkerLabel(false);
 
@@ -2315,10 +2359,11 @@ void CViewer::loadAnnotations(bool collaborate)
     view3DWidget->updateTool();
     view3DWidget->update();
 
-
+    qDebug() << "111";
     //update visible markers
     PAnoToolBar::instance()->buttonMarkerRoiViewChecked(PAnoToolBar::instance()->buttonMarkerRoiView->isChecked());
 
+    qDebug() << "222";
     PLog::instance()->appendOperation(new AnnotationOperation(QString("load annotations: push objects into view ").append(title.c_str()).toStdString(), tf::GPU, timer.elapsed()));
 }
 
@@ -2556,6 +2601,7 @@ void CViewer::restoreViewerFrom(CViewer* source)
         window3D->timeSlider->installEventFilter(this);
 
         //loading annotations of the current view
+        qDebug() << "111111";
         this->loadAnnotations();
 
         // 5D data: select the same time frame (if available)

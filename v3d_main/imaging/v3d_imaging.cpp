@@ -161,7 +161,22 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p, V3dR_Commu
             return false;
         }
 
-        QString fullpath = pluginsDir.absoluteFilePath(fileList.at(0)); //always just use the first file (assume it is the only one) found in the folder as the "correct" dll
+        QString fullpath;
+
+#if defined Q_OS_WIN
+        for (auto& file : fileList){
+            if (file.endsWith("dll")){
+                fullpath = pluginsDir.absoluteFilePath(file);
+            }
+        }
+#else
+        for (auto& file : fileList){
+            if (file.endsWith("a")){
+                fullpath = pluginsDir.absoluteFilePath(file);
+            }
+        }
+#endif
+//        QString fullpath = pluginsDir.absoluteFilePath(fileList.at(0)); //always just use the first file (assume it is the only one) found in the folder as the "correct" dll
         //the real dll name should be "microimaging.dll"
 
         QPluginLoader* loader = new QPluginLoader(fullpath);
@@ -176,6 +191,9 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p, V3dR_Commu
         V3d_PluginLoader mypluginloader(mainwindow);
         if(communicator)
             mypluginloader.TeraflyCommunicator = communicator;
+        else{
+            mypluginloader.TeraflyCommunicator = nullptr;
+        }
 
         if (curw)
         {

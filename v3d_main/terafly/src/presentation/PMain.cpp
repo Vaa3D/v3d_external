@@ -4155,7 +4155,7 @@ void PMain::LoadFromServer()
     if(managewidget_ptr == nullptr){
         //更新一下用户信息
         managewidget_ptr = std::make_unique<LoadManageWidget>(&userinfo);
-        connect(managewidget_ptr.get(),SIGNAL(triggerStartCollaborate(QString)),this,SLOT(startCollaborate(QString)));
+        connect(managewidget_ptr.get(),&LoadManageWidget::triggerStartCollaborate,this,&PMain::startCollaborate);
     }
 
     managewidget_ptr->raise();
@@ -4405,6 +4405,11 @@ void PMain::ColLoadANO(QString ANOfile)
     qDebug()<<"ColoadAno_anofile"<<ANOfile;
     CViewer *cur_win = CViewer::getCurrent();
     QString loaddir=QCoreApplication::applicationDirPath()+"/loaddata";
+    QFileInfo fileInfo(loaddir);
+    if(!fileInfo.isDir()){
+        QDir dir;
+        dir.mkdir(loaddir);
+    }
     QStringList anoList=QDir(loaddir).entryList(QDir::Files);
     qDebug()<<anoList;
     if(!anoList.contains(ANOfile))
@@ -4428,9 +4433,8 @@ void PMain::ColLoadANO(QString ANOfile)
     //        // 做一些处理？
     //        return;
     //    }
-
+    qDebug() << CAnnotations::getInstance();
     CAnnotations::getInstance()->load(ANOpath.toStdString().c_str());
-
     NeuronTree treeOnTheFly = CAnnotations::getInstance()->getOctree()->toNeuronTree();
     // save current cursor and set wait cursor
 
@@ -4452,14 +4456,14 @@ void PMain::ColLoadANO(QString ANOfile)
     if(PAnoToolBar::isInstantiated())
         PAnoToolBar::instance()->setCursor(cursor);
     annotationChanged = true;
-    updateOverview();
+//    updateOverview();
 
     Communicator->qcDialog=new V3dr_qualitycontrolDialog(cur_win->getGLWidget());
-    connect(Communicator,SIGNAL(updateQcInfo()),Communicator->qcDialog,SLOT(updateInfo()));
-    connect(Communicator,SIGNAL(updateQcSegsCounts()),Communicator->qcDialog,SLOT(updateSegsCounts()));
-    connect(Communicator,SIGNAL(updateQcMarkersCounts()),Communicator->qcDialog,SLOT(updateMarkersCounts()));
+    connect(Communicator,&V3dR_Communicator::updateQcInfo,Communicator->qcDialog,&V3dr_qualitycontrolDialog::updateInfo);
+    connect(Communicator,&V3dR_Communicator::updateQcSegsCounts,Communicator->qcDialog,&V3dr_qualitycontrolDialog::updateSegsCounts);
+    connect(Communicator,&V3dR_Communicator::updateQcMarkersCounts,Communicator->qcDialog,&V3dr_qualitycontrolDialog::updateMarkersCounts);
     // 获取窗口的左上角坐标
-    QPoint topLeftPoint = cur_win->getGLWidget()->geometry().topLeft();
+    QPoint topLeftPoint = CViewer::getCurrent()->geometry().topLeft();
     Communicator->onlineUserDialog=new V3dr_onlineusersDialog(topLeftPoint);
 
     V3dR_GLWidget::noTerafly=false;

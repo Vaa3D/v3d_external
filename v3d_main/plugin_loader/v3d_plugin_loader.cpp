@@ -546,6 +546,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
         plugin_menu.update();
     }
 
+    qDebug() << plugin;
     bool done = false;
 	if (!done)  { done = runPluginInterface2_1(plugin, menuString); v3d_msg("done with runPluginInterface2_1().",0); }
 	if (!done)  { done = runPluginInterface2(plugin, menuString); v3d_msg("done with runPluginInterface2().",0); }
@@ -716,7 +717,8 @@ bool V3d_PluginLoader::runPluginInterface2_1(QObject* plugin, const QString& com
     V3DPluginInterface2_1 *iface = qobject_cast<V3DPluginInterface2_1 *>(plugin);
 	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
 
-        qDebug()<<"runPluginInterface2_1 ..."<<iface;
+    qDebug() << callback;
+    qDebug()<<"runPluginInterface2_1 ..."<<iface;
 
 	if (iface && callback)
     {
